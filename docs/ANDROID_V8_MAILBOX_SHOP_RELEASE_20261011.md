@@ -1,5 +1,65 @@
 # v8 — mağaza ve sandık mesaj kutusu
 
+12 Ekim son kullanıcı kararı: mevcut tamamlanan manuel mağaza testleriyle
+bu aşama kapatılıp kapalı test/yayın hazırlığına devam edilecek. Yapılmayan
+harcanmış-kaynak/diğer SKU/teknik defter testleri PASS olarak işaretlenmez.
+Sırada mevcut Kontrol panelindeki kapalı test katılım/süre ve üretim erişimi
+kartının güncel insan ekranı vardır; yeni alım/iade/AAB/yayın/deploy başlatılmaz.
+Önceki tamamlanan PGS/OAuth yayın adımları tekrarlanmaz; Alpha/tester erişimi
+korunur. Son aktif takip CODEX_CHECKPOINT.md başındadır.
+
+12 Ekim insan cihaz teyidi: kullanıcı v8'i Alpha'da yayımlayıp güncellediğini
+ve satın alımdaki Öğe bulunamadı hatasının kalktığını bildirdi. Exact yeni
+makbuz/grant/consume veya yeni-politika refund henüz bağımsız doğrulanmadı.
+Uç, geçiş pasif ve ücretsiz Test kartı/no-charge görünür insan teyidiyle
+yeni Ücretli Sezon Geçişi iade testi hazırlanıyor. Önce eski Uç ödüllerini
+koruyan başlangıç; ardından yeni alım/politika/kaynak/iade sırayla sınanır.
+İş bilgisayarından ve insan terminalinden pinli SSH başarısız; kullanıcı
+manuel devam istedi. Uç başlangıcı insan teyidiyle 1184 Akı/996 kredi,
+geçiş pasif, ücretsiz Test kartı görünür. Önce yalnız ücretsiz geçiş alımı,
+aktiflik/bakiye teyidi; ödül/harcama/iade sonraki adımlardır. Manuel UI
+sonuçları sunucu makbuz/policy/defter/idempotency PASS sayılmaz.
+Sonraki insan teyidi: günlük emirler sonrası alım başlangıcı **1239 Akı/
+1041 kredi** (+55/+45 ücretsiz kazanım); Ücretli Sezon Geçişi aktif,
+henüz geçiş ödülü toplanmadı. Eski1184/996 iade hedefi olarak kullanılmaz;
+günlük kazançlar premium kesintisine dahil edilmez.
+Son manuel ödül/iade teyidi: ücretli18. kademe ödülü toplandı. Kullanıcı
+ilk2 Onarım parçası bildirimini **12 Onarım parçası** olarak düzeltti;
+gerçek delta **10 Akı +12 Onarım**, önce Onarım seviye5/parça7, sonra
+**1249 Akı /19 Onarım parçası**. Kredi son bilinen1041, seviye son bilinen5.
+Kullanıcı geri ödemeyi yaptığını bildirdi; sipariş/revoke seçimi henüz
+bağımsız doğrulanmadı. Tekrar iade/alım yok. Başka işlem yoksa beklenen
+sonuç **1239 Akı /1041 kredi /7 Onarım parçası, seviye5, geçiş pasif**;
+Sonraki kullanıcı teyidi: **1239 Akı /7 Onarım parçası /seviye5 /geçiş
+pasif**. Gözlenen premium10Akı+12Onarım geri alınmış, modül seviyesi
+korunmuştur; bu değerler manuel iade testinde beklenenle eşleşir. Son
+kullanıcı yanıtı iade sonrası Devre Kredisi'nin de **1041** kaldığını teyit
+etti. **Harcanmamış premium ödül iadesi manuel senaryosu PASS**; bildirilen
+başlangıç bakiyeleri ve seviye korunmuş, geçiş pasifleşmiş. Eski17 kademe/
+diğer kaynaklar,
+Google revoke seçimi ve sunucu policy/ledger/dedup bağımsız okunmadı;
+tam teknik veya tüm iade senaryoları PASS sayılmaz.
+Son doğrulanmış tarama aralığı30dk olsa da
+Google görünürlüğü/sonraki başarılı tarama/uç payı/retry nedeniyle iadeden
+itibaren kesin30dk değildir. Bugünkü SSH yokluğunda tarama/defter okunmadı;
+sonuç insan tarafından bildirildi; bu senaryoda bekleyen bakiye teyidi yok.
+Sonraki kontrollü yeniden alım adımı: yalnız ücretsiz Test kartı/no-charge
+uyarısıyla aynı sezon geçişinin bir kez daha alınması ve başka ödül/harcama
+yapılmaması tarif edildi. Kullanıcı **18. kademe alındı, yeniden toplama yok,
+ödüller otomatik geri geldi,1249 Akı/19 Onarım parçası** bildirdi. Bu dar
+manuel geri-yükleme/claimed-tier görünümü beklenenle eşleşir. Yeniden alım
+sonrası1041kredi/seviye5/geçişaktif değerleri de kullanıcının **son teyit
+geçerli** yanıtıyla teyit edildi. **Aynı sezonda yeniden alım/otomatik kaynak
+geri yükleme/18. kademenin alındı kalması manuel senaryosu PASS**; bekleyen
+insan bakiye/seviye/hak teyidi yok. Yeni sipariş/test ödeme yöntemi/consume/
+policy/defter/dedup bağımsız okunmadı. Harcanmış kaynak
+açığı/oynayarak kapatma senaryoları henüz yapılmadı. Başka yeni alım/iade/
+harcama başlatılmadı; agent Google/sunucu write yapmadı.
+Geliştirici iadesinde revoke seçilmezse Voided Purchases API kaydı dönmez:
+https://developers.google.com/android-publisher/voided-purchases
+Public HTTPS health200 tek başına veri/ayar kanıtı değildir. Ayrıntı son
+`CODEX_CHECKPOINT.md` bölümünde; yeni kod/build/deploy/Google write yapılmadı.
+
 Durum (11 Ekim 23:03 TR): kullanıcının push ettiği exact
 `12524b8a17941be991becf16fa965cfabb5196ee` commit'inin CI38169062735 beş job'ı
 başarılı. R16 sunucu yedekli geçiş ve 330s sağlık/WIF-polling gözlemiyle

@@ -16,7 +16,7 @@ def test_every_title_has_an_id_and_a_growing_reward():
 
 
 def test_title_view_marks_reached_claimed_and_claimable_stages():
-    view = operator_title_view(950, 12, ("devre_teknisyeni",))
+    view = operator_title_view(950, 61, ("devre_teknisyeni",))
     stages = {stage["id"]: stage for stage in view["stages"]}
     assert view["current"]["id"] == "iletken_ustasi"
     assert view["next"]["id"] == "cekirdek_muhafizi"
@@ -25,23 +25,23 @@ def test_title_view_marks_reached_claimed_and_claimable_stages():
     assert stages["iletken_ustasi"]["claimable"] is True
     assert stages["cekirdek_muhafizi"]["reached"] is False
     assert stages["devre_ciragi"]["claimable"] is False
-    assert (view["trophies"], view["wins"]) == (950, 12)
+    assert (view["trophies"], view["wins"]) == (950, 61)
 
 
 def test_title_reward_is_claimed_once_and_only_after_reaching_it():
     service = MetaProgressionService()
     profile = PlayerProfile(player_id="title-player", display_name="Unvan", rating=320)
-    profile.lifetime_stats["wins"] = 3
+    profile.lifetime_stats["wins"] = 20
     credits = profile.circuit_credits
     with pytest.raises(MetaProgressionError):
         service.claim_operator_title_reward(profile, "iletken_ustasi")
     with pytest.raises(MetaProgressionError):
         service.claim_operator_title_reward(profile, "devre_ciragi")
     receipt = service.claim_operator_title_reward(profile, "devre_teknisyeni")
-    assert receipt["rewards"] == {"circuit_credits": 100}
-    assert profile.circuit_credits == credits + 100
+    assert receipt["rewards"] == {"circuit_credits": 150}
+    assert profile.circuit_credits == credits + 150
     assert service.claim_operator_title_reward(profile, "devre_teknisyeni")["replayed"] is True
-    assert profile.circuit_credits == credits + 100
+    assert profile.circuit_credits == credits + 150
     titles = profile.to_view()["operator_title_progression"]["stages"]
     assert titles[1]["claimed"] is True
 

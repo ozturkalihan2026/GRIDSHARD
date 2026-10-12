@@ -19,10 +19,48 @@ test("Ana menü güncel alt gezintideki ekranlara gidip geri döner", async ({ p
     await expect(page.locator('body[data-app-screen="menu"]')).toBeVisible();
   }
 
+  // Profil simgesi profili doğrudan açar; sayfada sekme çubuğu yoktur.
   await page.locator("#lobby-profile-button").click();
   await expect(page.locator('body[data-app-screen="profile"]')).toBeVisible();
+  await expect(page.locator(".profile-terminal-tabs")).toHaveCount(0);
   await page.locator('[data-shell-screen="menu"]').click();
   await expect(page.locator('body[data-app-screen="menu"]')).toBeVisible();
+
+  // Üç çizgi menüsü dört sayfayı alt alta listeler ve dokunulanı açar.
+  const menuButton = page.locator("#lobby-menu-button");
+  const menu = page.locator("#lobby-menu");
+  await expect(menu).toBeHidden();
+  await menuButton.click();
+  await expect(menu).toBeVisible();
+  await expect(menuButton).toHaveAttribute("aria-expanded", "true");
+  await expect(menu.locator("button")).toHaveText(["KOZMETİK", "ÖDÜLLER", "ARKADAŞ", "AYARLAR"]);
+  const placement = await page.evaluate(() => {
+    const box = (selector) => document.querySelector(selector).getBoundingClientRect();
+    const inbox = box("#reward-inbox-button");
+    const button = box("#lobby-menu-button");
+    const rows = [...document.querySelectorAll("#lobby-menu > button")].map((row) => row.getBoundingClientRect());
+    return {
+      rightOfInbox: button.left >= inbox.right,
+      belowButton: box("#lobby-menu").top >= button.bottom,
+      stacked: rows.every((row, index) => index === 0 || (row.top >= rows[index - 1].bottom - 1 && row.left === rows[0].left)),
+    };
+  });
+  expect(placement).toEqual({ rightOfInbox:true, belowButton:true, stacked:true });
+
+  // Dışarıya dokunmak yalnız menüyü kapatır; alttaki düğme çalışmaz.
+  await page.locator("#home-battle-button").click({ force:true });
+  await expect(menu).toBeHidden();
+  await expect(page.locator('body[data-app-screen="menu"]')).toBeVisible();
+  await expect(page.locator("#home-matchmaking-overlay")).toBeHidden();
+
+  for (const screen of ["avatar", "daily", "friends", "settings"]) {
+    await menuButton.click();
+    await menu.locator(`[data-open-screen="${screen}"]`).click();
+    await expect(page.locator(`body[data-app-screen="${screen}"]`)).toBeVisible();
+    await page.locator('[data-shell-screen="menu"]').click();
+    await expect(page.locator('body[data-app-screen="menu"]')).toBeVisible();
+    await expect(menu).toBeHidden();
+  }
 });
 
 test("Kart sırası, kısa otomatik ad ve sade operatör bildirimleri", async ({ page }) => {
@@ -55,9 +93,9 @@ test("Kart sırası, kısa otomatik ad ve sade operatör bildirimleri", async ({
 
   // Deliberately exercise both pending sources; they must share one indicator.
   const light = await page.evaluate(() => {
-    const profile = document.querySelector("#lobby-profile-button");
-    profile.classList.add("has-avatar-notification", "has-social-notification");
-    const style = getComputedStyle(profile, "::after");
+    const menuButton = document.querySelector("#lobby-menu-button");
+    menuButton.classList.add("has-avatar-notification", "has-social-notification");
+    const style = getComputedStyle(menuButton, "::after");
     return { width:style.width, height:style.height, animation:style.animationName, background:style.backgroundImage };
   });
   expect(light).toEqual({ width:"8px", height:"8px", animation:"none", background:"none" });

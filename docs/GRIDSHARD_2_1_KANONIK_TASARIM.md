@@ -236,9 +236,29 @@ Bu sayede hasar odaklı bir modül Seviye 15'te taban hasarının yaklaşık **1
 
 Yükseltme şartı:
 
-`Modül Parçası + Devre Kredisi`
+`Modül Parçası + Devre Kredisi` (efsanevi modülde seviye 8'den sonra ayrıca Akı)
 
-Akı modül seviyesinde harcanmaz. Akı yalnız yetenek düğümleri ve çekirdek gelişiminde kullanılır.
+**Maliyet tablosu (12 Ekim 2026, kullanıcı kararı "enderliğe göre").** Enderlik arttıkça daha az parça ve daha çok Devre Kredisi gerekir. Hücre: Devre Kredisi / parça.
+
+| Seviye | Sıradan | Ender | Destansı | Efsanevi |
+|---|---|---|---|---|
+| 1 → 2 | 100 / 2 | 150 / 2 | 200 / 2 | 300 / 1 |
+| 2 → 3 | 200 / 4 | 300 / 4 | 400 / 2 | 600 / 2 |
+| 3 → 4 | 400 / 8 | 600 / 6 | 800 / 4 | 1.200 / 3 |
+| 4 → 5 | 600 / 14 | 900 / 10 | 1.200 / 8 | 1.800 / 4 |
+| 5 → 6 | 1.000 / 22 | 1.500 / 16 | 2.000 / 12 | 3.000 / 6 |
+| 6 → 7 | 1.500 / 32 | 2.250 / 24 | 3.000 / 16 | 4.500 / 10 |
+| 7 → 8 | 2.200 / 44 | 3.300 / 34 | 4.400 / 22 | 6.600 / 14 + 20 Akı |
+| 8 → 9 | 3.200 / 58 | 4.800 / 44 | 6.400 / 30 | 9.600 / 18 + 30 Akı |
+| 9 → 10 | 4.800 / 74 | 7.200 / 56 | 9.600 / 38 | 14.400 / 22 + 40 Akı |
+| 10 → 11 | 7.000 / 92 | 10.500 / 70 | 14.000 / 46 | 21.000 / 28 + 50 Akı |
+| 11 → 12 | 10.000 / 112 | 15.000 / 84 | 20.000 / 56 | 30.000 / 34 + 60 Akı |
+| 12 → 13 | 15.000 / 136 | 22.500 / 102 | 30.000 / 68 | 45.000 / 40 + 80 Akı |
+| 13 → 14 | 22.000 / 164 | 33.000 / 124 | 44.000 / 82 | 66.000 / 50 + 100 Akı |
+| 14 → 15 | 32.000 / 200 | 48.000 / 150 | 64.000 / 100 | 96.000 / 60 + 120 Akı |
+| **Toplam** | 100.000 / 962 | 150.000 / 726 | 200.000 / 486 | 300.000 / 292 + 500 Akı |
+
+Kaynak: `module_upgrade_cost` (`server/app/meta_progression.py`). Oyuncunun o güne kadarki kart seviyeleri değişmez; tablo sonraki yükseltmelerde geçerlidir. Akı ayrıca yetenek düğümleri ve çekirdek gelişiminde kullanılır.
 
 ### Yetenek eşikleri
 
@@ -287,9 +307,19 @@ Maliyet enderliği değil, simülasyonda ölçülen güç ve tempo değerini izl
 
 Yeni hesap 0 kupada başlar. 12 arena toplam 0–3599 kupayı kapsar. 3600 kupadan sonra Ligler başlar.
 
-Her arenada **2 veya 3 yeni modül** açılır. Başlangıç eğitiminde 6 temel modül verilir; arena yolu bunun üzerine 30 modül daha açarak ilk hedef kataloğu **36 modüle** çıkarır.
+**Modül açılışları (12 Ekim 2026, kullanıcı kararı).** Arena 1'de yalnız altı modül açıktır ve başlangıç destesini oluşturur: Lazer, Kalkan, Batarya, Soğutucu, EMP, Güçlendirici. Arena 2–11 ikişer, Arena 12 üç modül açar (efsanevi olmayan 23 modül). Yedi efsanevi modül yalnız **lige girişte** açılır: Kıvılcım — İyon Mızrağı, Voltaj — Prizma Kalkanı, Reaktör — Kesici, Kuantum — Anka Onarım, Nexus — Kuantum Topu, Şampiyonlar — Omega Güçlendirici, Efsanevi — Tekillik Projektörü. GRIDSHARD Ligi modül açmaz. Toplam **36 modül**.
 
-Arena detay sayfası ana ekrandaki Arena alanına dokununca açılır ve dikey kaydırılan bir **Devre Yolu** gösterir. Yol üzerinde kupa eşikleri, ara ödüller, modül açılışları, çekirdek açılışları ve arena bitiş ödülleri görülür.
+**Ligler.** Kıvılcım, Voltaj, Reaktör, Kuantum ve Nexus ligleri beşer kademelidir (I–V, kademe 100 kupa; 3600, 4100, 4600, 5100, 5600). Şampiyonlar Ligi I–V 6100'de (kademe 200), Efsanevi Lig I–V 7100'de (kademe 300) başlar; yolun sonu tek kademeli **GRIDSHARD Ligi**'dir (8600). Kademeler ara ödül verir (Devre Kredisi, modül parçası, Akı); lig geçişleri ana ödülleri verir: lige girişte o ligin modülü ve hedefli parçası, lig sonunda **lig sandığı**. Sezon değişiminde lig oyuncusu 3600 kupaya döner; alınmış ödüller, açılmış modüller ve unvan kalır.
+
+**Lig sandıkları.** Her ligin kendi sandığı vardır: Kıvılcım, Voltaj, Reaktör, Kuantum, Nexus, Şampiyonlar ve Efsane Sandığı. Mağazadaki ve diğer ekranlardaki sandıklardan adı, içeriği, biçimi ve rengiyle ayrıdır; mağaza stoğuna girmez. İçeriği şansa bağlı değildir: o ligin efsanevi modülünden parça, Devre Kredisi ve Akı (1.500 / 60 / 6 parça ile başlar, 20.000 / 500 / 15 parçaya çıkar). Yolun son durağı **GRIDSHARD Sandığı**'dır: 25.000 Devre Kredisi, 1.000 Akı, 100 modül parçası ve yalnız bu sandıkla açılan kozmetik seti (profil resmi, çerçeve, profil arka planı, emoji).
+
+**Önceden açılmış modüller.** Dağıtım değişmeden önce bir hesabın açmış olduğu modül o hesapta açık kalır (`legacy_module_unlocks`); kupa düşse de sezon değişse de kapanmaz.
+
+Arena detay sayfası ana ekrandaki Arena alanına dokununca açılır ve dikey kaydırılan bir **Devre Yolu** gösterir. Yol üzerinde kupa eşikleri, ara ödüller, modül açılışları ve (modüllerden ayrı bir satırda) çekirdek açılışları görülür. Yolun arka planı desenlidir ve aşamaların rengi yol boyunca değişir. Her ligin kendi amblemi ve rengi vardır; kademe amblemin altındaki beş çentikten okunur. Lig sandığı hücre içinde değil, yolun ucunda havada durur; üzerine gelince ya da dokununca içeriği diğer sandıklardaki önizleme paneliyle görünür, alınabilir olduğunda altında ayrı **AL** düğmesi çıkar. Bir lige ilk kez giren oyuncuya, o ligde açılan modül ana ekrana dönüşte bir pencereyle tanıtılır.
+
+**Operatör unvanları.** Unvan en yüksek kupaya ve toplam galibiyete göre verilir; ödülü alınmış unvan oyuncuda kalır. Devre Çırağı (0 / 0), Devre Teknisyeni (300 kupa / 20 galibiyet), İletken Ustası (900 / 60), Çekirdek Muhafızı (1800 / 130), Arena Mimarı (3000 / 220), Lig Öncüsü (3600 / 280), Nexus Stratejisti (5600 / 450), Şampiyon Operatör (6100 / 550), Efsane Mühendisi (7100 / 750), GRIDSHARD Efsanesi (8600 / 1000; yalnız GRIDSHARD Ligi'ne çıkan oyuncu).
+
+**Eğitim savaşı.** Yönetmenli ilk savaş yalnız Arena 1 modüllerini kullanır: Lazer, Soğutucu, Kalkan, Batarya, Güçlendirici dersleri ve Sabotaj sınıfının (EMP) tanıtımı. Sahne kimliklerinin sürümü vardır (`TUTORIAL_SCRIPT_VERSION`); sürümü bildirmeyen eski paket yönetilmeyen, yumuşatılmış ilk maçı oynar.
 
 Tam tablo: `docs/ARENA_MODUL_ODUL_KANONU.md` ve `server/data/arena_progression_v1.json`.
 
@@ -310,7 +340,7 @@ Tam tablo: `docs/ARENA_MODUL_ODUL_KANONU.md` ve `server/data/arena_progression_v
 
 ## 8. Eşleştirme
 
-Oyuncular **aynı Arena/Lig kademesi** içinde aranır.
+Oyuncular **aynı eşleştirme kuşağı** içinde aranır: arenalarda kuşak arenanın kendisidir; liglerde kuşak 200 kupadır ve 5600 üstü tek kuşaktır. Lig kademeleri 100 kupaya indiği için kuşak, görünen kademeden ayrıdır (`matchmaking_band`).
 
 | Bekleme | Kupa penceresi |
 |---:|---:|
@@ -330,7 +360,8 @@ Her arena için 10 profil; toplam **120 AI oyuncu**. Her arena setinde 10 farkl�
 
 Botlar:
 
-- arena dışı kart kullanamaz,
+- arena dışı kart kullanamaz (Arena 1 botlarının hepsi aynı altı modülle oynar),
+- lig maçında Arena 12 destesiyle oynar; oyuncunun liginde açılmış efsanevi modüller destesine girebilir,
 - 6 kartlık farklı desteler kullanır,
 - insan benzeri görünen adlara sahiptir,
 - karar gecikmesi ve hata oranı taşır,
@@ -357,7 +388,7 @@ Savaş rafındaki `Ç` harfi kaldırılarak seçili çekirdeğin gerçek görsel
 | Anka | 11 | Kurtarma/iyileştirme |
 | Kuantum | 12 | Üst düzey taktik esneklik |
 
-Çekirdek seviyesi `Akı + Çekirdek Parçası` ile artar. Seviye artışı iki alanı birlikte geliştirir: **(1) pasif enerji üretimi/kapasitesi, (2) aktif Çekirdek gücü**. Örneğin Aşırı Yük Çekirdeği Seviye 1'de +%25 / 3 sn; her seviyede +1 yüzde puan hasar, her 3 seviyede +0.1 sn süre kazanır. Enerji üretimi ayrıca seviye başına yaklaşık %4 bileşik artış hedefiyle başlatılır ve denge simülasyonunda kalibre edilir.
+Çekirdek seviyesi `Akı + Çekirdek Parçası` ile artar (12 Ekim 2026: Akı 50 × seviye, toplam 5.250; parça 1, 1, 2, 2, 3, 4, 5, 6, 8, 10, 12, 15, 18, 22, toplam 109 — parça yalnız Elmas Sandık'tan geldiği için eğri kısadır). Seviye artışı iki alanı birlikte geliştirir: **(1) pasif enerji üretimi/kapasitesi, (2) aktif Çekirdek gücü**. Örneğin Aşırı Yük Çekirdeği Seviye 1'de +%25 / 3 sn; her seviyede +1 yüzde puan hasar, her 3 seviyede +0.1 sn süre kazanır. Enerji üretimi ayrıca seviye başına yaklaşık %4 bileşik artış hedefiyle başlatılır ve denge simülasyonunda kalibre edilir.
 
 ### Çekirdek V1 dengeleme hedefleri
 
@@ -405,7 +436,7 @@ Günlük teklif sandıkları **Devre Kredisi** ile alınır. Akı mağaza harcam
 
 ### Sandık mağazası ve günlük alım sınırı (7 Ekim 2026)
 
-Mağazada dört sandık satılır: Bronz 1000 ve Gümüş 2000 Devre Kredisi, Altın 500 ve Elmas 1000 Akı (7 Ekim 2026'da yükseltildi; önceki fiyatlar 300 / 1000 Devre Kredisi ve 250 / 1000 Akı). Her alım sandığı hemen açar. Her sandık türü bir UTC gününde sınırlı sayıda alınır: **Bronz 5, Gümüş 3, Altın 2, Elmas 1** (`STORE_CHEST_DAILY_LIMITS`, `server/app/meta_progression.py`). Haklar UTC gün dönümünde (Türkiye saatiyle 03.00) yenilenir. 8 saatte bir verilen hediye Bronz Sandık ve savaşta kazanılan sandıklar sınıra girmez. Ayda bir günlük %40 indirim sürer; o gün de aynı sınır geçerlidir. Sayım mağaza makbuzlarından yapılır; oyuncu kaydına yeni alan eklenmedi.
+Mağazada dört sandık satılır: Bronz 1000 ve Gümüş 2000 Devre Kredisi, Altın 500 ve Elmas 1000 Akı (7 Ekim 2026'da yükseltildi; önceki fiyatlar 300 / 1000 Devre Kredisi ve 250 / 1000 Akı). Her alım sandığı hemen açar. Her sandık türü bir UTC gününde sınırlı sayıda alınır: **Bronz 5, Gümüş 3, Altın 2, Elmas 1** (`STORE_CHEST_DAILY_LIMITS`, `server/app/meta_progression.py`). Haklar UTC gün dönümünde (Türkiye saatiyle 03.00) yenilenir. 8 saatte bir verilen hediye Bronz Sandık ve savaşta kazanılan sandıklar sınıra girmez. Ayda bir günlük %40 indirim sürer; o gün de aynı sınır geçerlidir. İndirim günü alt çubuktaki Mağaza düğmesinde indirim oranı ("-%40") görünür. Sayım mağaza makbuzlarından yapılır; oyuncu kaydına yeni alan eklenmedi.
 
 ### Sezon ve turnuva takvimi: dört haftalık döngü (Beta.72 tur 6)
 
@@ -415,7 +446,7 @@ Turnuvada kayıt ilk haftanın Pazartesi–Çarşamba günleri açıktır ve yal
 
 ### Sezon ödül yolu: ücretsiz ve ücretli geçiş (Beta.72 arayüz turu)
 
-Sezon ödülleri iki sütundur. Solda ücretsiz yol, sağda ücretli geçiş vardır. Her kademe sandık olarak görünür; sandığa dokununca içindeki ödüller gerçek görselleriyle önizlenir. Ücretli geçiş sütunu her kademede ücretsiz ödülün **iki katı** kaynak (Devre Kredisi, Akı, modül ve çekirdek parçası) ve iki sandık verir. Kozmetikler ücretsiz yolda kalır. Geçişin etkin olduğu sezon profilde tutulur ve sezon değişince sona erer; ücretli kademe talepleri de sıfırlanır.
+Sezon ödülleri iki sütundur. Solda ücretsiz yol, sağda ücretli geçiş vardır. Her kademe sandık olarak görünür; sandığa dokununca içindeki ödüller gerçek görselleriyle önizlenir. Ücretli geçiş sütunu her kademede ücretsiz ödülün **iki katı** kaynak (Devre Kredisi, Akı, modül ve çekirdek parçası) ve iki sandık verir. Kozmetikler ücretsiz yolda kalır. Geçişin etkin olduğu sezon profilde tutulur ve sezon değişince sona erer; ücretli kademe talepleri de sıfırlanır. Geçişi açma düğmesi sağ sütunda, "ÜCRETLİ GEÇİŞ" başlığının hemen altında durur; üstünde ayrı bir bilgilendirme satırı yoktur (fiyat düğmenin üstünde yazar).
 
 **Karar (25 Eylül 2026):** Ücretli geçiş gerçek parayla açılacak, ama şimdi değil; oyun içi para onu açmaz. Beta.68 sınırı geçerlidir: mağaza makbuz doğrulaması, idempotent teslim ve iade işleme tamamlanmadan fiyat açılmaz. Bu yüzden ücretli sütun kilitli görünür ve satın alma kapalıdır.
 
@@ -427,14 +458,20 @@ Sezon ödülleri iki sütundur. Solda ücretsiz yol, sağda ücretli geçiş var
   - Oyun bildirimleri: oyun güncellemeleri ile takım turnuvası maç saati gibi oyuncuya özel bildirimler.
   - Okunmamış öğe varken kutuda kırmızı nokta yanar.
 - **Kupasız savaş daveti:** Arkadaşlar → Savaş sekmesinden gönderilir. Liste çevrimiçi arkadaşlardan başlar. Davet karşı tarafın mesaj kutusuna düşer ve **Kabul Et** onu doğrudan savaş alanına götürür. Daveti gönderen oyuncu da, aynı oturumda gönderdiyse kabul anında otomatik olarak savaş alanına geçer. Aynı arkadaşa bekleyen bir davet varken yenisi açılmaz; davet reddedilebilir. Takım üyeleriyle yapılan kupasız antrenman istekleri de aynı mesaj kutusuna düşer.
+- **Üç çizgi menüsü** (üst barda mesaj kutusunun sağında): dokununca Kozmetik, Ödüller, Arkadaş ve Ayarlar alt alta listelenir; dokunulan sayfa açılır. Menünün dışına dokunmak yalnız menüyü kapatır. Profil, soldaki profil simgesinden doğrudan açılır; bu sayfaların altında sekme çubuğu yoktur ve ana ekrana alt çubuktaki Ev düğmesiyle dönülür.
 - **Arkadaşlar ekranı:** beş alt sekme (Arkadaşlar, Mesajlar, Gelen İstekler, Gönderilen, Savaş), üstte davet kodu ve oyuncu arama.
-  - Gelen istek, okunmamış mesaj ya da bekleyen savaş davetinde ilgili alt sekmede, profildeki Arkadaş sekmesinde ve avatarda kırmızı nokta yanar.
+  - Gelen istek, okunmamış mesaj ya da bekleyen savaş davetinde ilgili alt sekmede, menüdeki Arkadaş satırında ve üç çizgi düğmesinde kırmızı nokta yanar.
   - Gönderilen istek geri çekilebilir.
 - **Herkese açık profil:** Devre Koleksiyonu (sıralama kupaları ve rozetler) ziyaretçilere de görünür. Arkadaş ekle, paylaş, şikâyet ve engelle eylemleri yan yana, etiketli düğmelerdir.
-- **Takım yönetimi** (takım simgesi): iki alt sekmesi vardır.
+- **Takım sayfası:** takım durumu sunucudan gelene kadar yalnız "Yükleniyor…" görünür; takımı olan oyuncu "katıl / oluştur" ekranını görmez. Yükleme başarısız olursa hata ve yeniden deneme düğmesi çıkar. Profilde takım başlığı ve istatistikler ayrı kartlardır, onları saran ek çerçeve yoktur; üye sayısı istatistiklerin ilkidir, toplam kupa ikincidir. Profil, Üyeler, İstek, Sohbet ve Savaş alt sekme çubuğundadır.
+- **Takım yönetimi** (takım başlığının sağındaki üç çizgi düğmesi; yalnız liderde görünür): dokununca Kozmetik ve Üye Yönetimi alt alta listelenir; dokunulan sayfa açılır, geri düğmesi profile döndürür. Bekleyen başvuru varken düğmede kırmızı nokta, Üye Yönetimi satırında başvuru sayısı görünür.
   - Kozmetik: Lider Görünümü. Amblem (10), çerçeve (6) ve isim rengi (6) herkese açık seçeneklerdir ve Kaydet ile uygulanır. Turnuvada kazanılan takım kozmetikleri ayrıca listelenir.
   - Üye Yönetimi: başvurular, üyeyi çıkarma ve liderliği devretme.
   - Başka bir takımın profilinde yönetim düğmesi görünmez.
+- **Kartlar — yükseltme göstergeleri (12 Ekim 2026):** yükseltilebilir modül ve çekirdek kartının sağ üstünde, yukarı doğru hareket eden yalın yeşil ok durur (daire içinde değildir). "Yükseltilebilir", bilgi ekranındaki Yükselt düğmesinin açık olmasıdır: kart açık, azami seviyede değil, parça (modülde evrensel parça dahil) ve Devre Kredisi (çekirdekte Akı) yetiyor. Seçilebilir yetenek de aynı oku yakar ve bilgi ekranındaki Yetenekler sekmesinde ok görünür. Böyle bir kart varken alt çubuktaki Kartlar düğmesinde yeşil ışık yanar. Hareket azaltma tercihinde ve Düşük grafik ayarında ok durur.
+- **Kart bilgi ekranı:** seviye ve parça satırının altındaki üç kutu modülde CAN, BEKLEME (saniye) ve HASAR'dır; çekirdekte ENERJİ, DEPO ve YETENEK. Bir sonraki seviyede değişen değerin yanında fark yeşil yazar (artışta "+değer", kısalan beklemede "-değer"); ayrı bir "sonraki seviye" kutusu yoktur. Akım maliyeti İstatistik sekmesindedir.
+- **Kozmetikler:** kilitli seçeneğin altında yalnız "KİLİTLİ" yazar; nereden kazanıldığı yazmaz (ödüller dönemden döneme değişecektir). Oyuncu ve takım kozmetiklerinde aynıdır.
+- **Günlük meta "Akım Desteği":** etki satırı "Akım üretimi +%15" yazar. **Açık iş:** kural bugün Batarya, Kapasitör ve Akım Dengeleyici'nin etkisini %15 artırır, Akım yenilenmesini değiştirmez; kullanıcı kararıyla (12 Ekim 2026) kural metne uydurulacaktır (`docs/OYUN_DUZENLEMELERI_PLANI.md`, D16).
 - **Etkinlikler:** ayrı ödül sayfası yoktur. Sıralamada ilk üç satırın yanında ödül sandığı ve içerik önizlemesi bulunur. Takım eşleşmeleri sayfası yalnız oyuncunun kendi takımının eşleşmesini gösterir. Her üye satırında maç saati yazar; kendi satırında maç saati gelince "Savaş Alanına Gir" düğmesi açılır.
 
 ## 12. İstatistik ekranı

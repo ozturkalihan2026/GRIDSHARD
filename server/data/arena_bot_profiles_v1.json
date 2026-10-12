@@ -9,9 +9,9 @@
       "rating": 70,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "pulse_cannon",
+        "amplifier",
         "shield",
-        "repair",
+        "cooler",
         "emp",
         "battery",
         "laser"
@@ -28,9 +28,9 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "repair",
+        "amplifier",
         "battery",
-        "pulse_cannon",
+        "shield",
         "emp",
         "cooler"
       ],
@@ -45,12 +45,12 @@
       "rating": 104,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "pulse_cannon",
+        "cooler",
         "laser",
         "amplifier",
         "emp",
-        "armor",
-        "repair"
+        "shield",
+        "battery"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -65,10 +65,10 @@
       "battle_pool_ids": [
         "shield",
         "laser",
-        "armor",
-        "pulse_cannon",
+        "amplifier",
+        "emp",
         "battery",
-        "repair"
+        "cooler"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -86,7 +86,7 @@
         "battery",
         "laser",
         "cooler",
-        "repair"
+        "emp"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -101,9 +101,9 @@
       "battle_pool_ids": [
         "emp",
         "laser",
-        "repair",
+        "amplifier",
         "shield",
-        "pulse_cannon",
+        "battery",
         "cooler"
       ],
       "decision_delay_ms": 1450,
@@ -118,8 +118,8 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "cooler",
-        "repair",
-        "pulse_cannon",
+        "emp",
+        "laser",
         "shield",
         "battery",
         "amplifier"
@@ -136,7 +136,7 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "battery",
-        "pulse_cannon",
+        "emp",
         "cooler",
         "shield",
         "laser",
@@ -153,10 +153,10 @@
       "rating": 206,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "pulse_cannon",
+        "cooler",
         "laser",
         "emp",
-        "repair",
+        "shield",
         "battery",
         "amplifier"
       ],
@@ -172,7 +172,7 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "emp",
-        "armor",
+        "amplifier",
         "laser",
         "cooler",
         "battery",
@@ -189,12 +189,12 @@
       "rating": 370,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "missile_launcher",
+        "laser",
         "cooler",
         "repair",
         "emp",
         "battery",
-        "pulse_cannon"
+        "armor"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -210,9 +210,9 @@
         "laser",
         "cooler",
         "battery",
-        "pulse_cannon",
+        "armor",
         "emp",
-        "missile_launcher"
+        "repair"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -225,8 +225,8 @@
       "rating": 404,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "pulse_cannon",
-        "missile_launcher",
+        "armor",
+        "repair",
         "cooler",
         "emp",
         "battery",
@@ -246,7 +246,7 @@
         "armor",
         "amplifier",
         "shield",
-        "missile_launcher",
+        "repair",
         "battery",
         "laser"
       ],
@@ -266,7 +266,7 @@
         "battery",
         "laser",
         "cooler",
-        "targeting_computer"
+        "repair"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -283,7 +283,7 @@
         "laser",
         "amplifier",
         "armor",
-        "pulse_cannon",
+        "cooler",
         "repair"
       ],
       "decision_delay_ms": 1450,
@@ -299,10 +299,10 @@
       "battle_pool_ids": [
         "repair",
         "cooler",
-        "pulse_cannon",
+        "laser",
         "armor",
         "battery",
-        "targeting_computer"
+        "amplifier"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -316,10 +316,10 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "battery",
-        "pulse_cannon",
-        "targeting_computer",
+        "laser",
+        "repair",
         "armor",
-        "missile_launcher",
+        "amplifier",
         "cooler"
       ],
       "decision_delay_ms": 1670,
@@ -333,8 +333,8 @@
       "rating": 506,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "pulse_cannon",
-        "missile_launcher",
+        "armor",
+        "repair",
         "battery",
         "cooler",
         "shield",
@@ -353,7 +353,7 @@
       "battle_pool_ids": [
         "emp",
         "shield",
-        "pulse_cannon",
+        "laser",
         "amplifier",
         "battery",
         "armor"
@@ -369,7 +369,7 @@
       "rating": 670,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "arc_cannon",
+        "pulse_cannon",
         "armor",
         "cooler",
         "emp",
@@ -392,7 +392,7 @@
         "battery",
         "missile_launcher",
         "emp",
-        "arc_cannon"
+        "pulse_cannon"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -424,7 +424,7 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "shield",
-        "targeting_computer",
+        "repair",
         "armor",
         "pulse_cannon",
         "battery",
@@ -441,8 +441,8 @@
       "rating": 738,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "targeting_computer",
-        "barrier",
+        "cooler",
+        "armor",
         "battery",
         "missile_launcher",
         "amplifier",
@@ -461,7 +461,7 @@
       "battle_pool_ids": [
         "emp",
         "missile_launcher",
-        "targeting_computer",
+        "repair",
         "battery",
         "laser",
         "cooler"
@@ -479,9 +479,9 @@
       "battle_pool_ids": [
         "cooler",
         "amplifier",
-        "arc_cannon",
+        "missile_launcher",
         "battery",
-        "capacitor",
+        "pulse_cannon",
         "repair"
       ],
       "decision_delay_ms": 1560,
@@ -496,10 +496,10 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "battery",
-        "arc_cannon",
+        "missile_launcher",
         "cooler",
-        "capacitor",
-        "barrier",
+        "armor",
+        "shield",
         "pulse_cannon"
       ],
       "decision_delay_ms": 1670,
@@ -513,7 +513,7 @@
       "rating": 806,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "arc_cannon",
+        "missile_launcher",
         "laser",
         "battery",
         "cooler",
@@ -534,7 +534,7 @@
         "emp",
         "armor",
         "missile_launcher",
-        "targeting_computer",
+        "repair",
         "battery",
         "shield"
       ],
@@ -549,10 +549,10 @@
       "rating": 970,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "drone_bay",
+        "missile_launcher",
         "barrier",
         "amplifier",
-        "jammer",
+        "emp",
         "battery",
         "pulse_cannon"
       ],
@@ -569,10 +569,10 @@
       "battle_pool_ids": [
         "laser",
         "amplifier",
-        "capacitor",
+        "battery",
         "pulse_cannon",
         "cooler",
-        "arc_cannon"
+        "missile_launcher"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -586,11 +586,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "pulse_cannon",
-        "drone_bay",
+        "missile_launcher",
         "cooler",
-        "jammer",
+        "emp",
         "armor",
-        "arc_cannon"
+        "laser"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -607,7 +607,7 @@
         "repair",
         "barrier",
         "laser",
-        "drone_bay",
+        "missile_launcher",
         "shield"
       ],
       "decision_delay_ms": 1230,
@@ -639,7 +639,7 @@
       "rating": 1055,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "jammer",
+        "barrier",
         "emp",
         "pulse_cannon",
         "repair",
@@ -675,7 +675,7 @@
       "rating": 1089,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "capacitor",
+        "barrier",
         "missile_launcher",
         "cooler",
         "battery",
@@ -698,7 +698,7 @@
         "emp",
         "cooler",
         "battery",
-        "drone_bay"
+        "laser"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -711,11 +711,11 @@
       "rating": 1123,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "jammer",
+        "targeting_computer",
         "barrier",
         "laser",
         "repair",
-        "capacitor",
+        "battery",
         "emp"
       ],
       "decision_delay_ms": 1890,
@@ -729,7 +729,7 @@
       "rating": 1270,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "railgun",
+        "arc_cannon",
         "barrier",
         "targeting_computer",
         "emp",
@@ -749,10 +749,10 @@
       "battle_pool_ids": [
         "laser",
         "targeting_computer",
-        "current_balancer",
-        "railgun",
+        "capacitor",
+        "arc_cannon",
         "emp",
-        "drone_bay"
+        "missile_launcher"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -766,10 +766,10 @@
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
-        "drone_bay",
+        "arc_cannon",
         "cooler",
         "emp",
-        "reflector",
+        "barrier",
         "laser"
       ],
       "decision_delay_ms": 1120,
@@ -785,10 +785,10 @@
       "battle_pool_ids": [
         "shield",
         "cooler",
-        "drone_bay",
-        "railgun",
+        "arc_cannon",
+        "missile_launcher",
         "battery",
-        "reflector"
+        "barrier"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -803,7 +803,7 @@
       "battle_pool_ids": [
         "cooler",
         "barrier",
-        "current_balancer",
+        "capacitor",
         "laser",
         "amplifier",
         "repair"
@@ -820,7 +820,7 @@
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "emp",
-        "jammer",
+        "capacitor",
         "laser",
         "cooler",
         "barrier",
@@ -858,7 +858,7 @@
         "battery",
         "pulse_cannon",
         "amplifier",
-        "current_balancer",
+        "arc_cannon",
         "shield",
         "capacitor"
       ],
@@ -874,8 +874,8 @@
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
-        "railgun",
-        "jammer",
+        "missile_launcher",
+        "emp",
         "repair",
         "cooler",
         "arc_cannon"
@@ -892,11 +892,11 @@
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "emp",
-        "reflector",
-        "drone_bay",
+        "barrier",
+        "arc_cannon",
         "cooler",
         "battery",
-        "jammer"
+        "capacitor"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
@@ -910,7 +910,7 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "reflector",
+        "barrier",
         "targeting_computer",
         "emp",
         "capacitor",
@@ -931,7 +931,7 @@
         "cooler",
         "battery",
         "laser",
-        "virus",
+        "jammer",
         "missile_launcher"
       ],
       "decision_delay_ms": 1010,
@@ -946,7 +946,7 @@
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "missile_launcher",
-        "railgun",
+        "drone_bay",
         "repair",
         "cooler",
         "shield",
@@ -965,9 +965,9 @@
       "battle_pool_ids": [
         "armor",
         "repair",
-        "reflector",
+        "barrier",
         "laser",
-        "railgun",
+        "drone_bay",
         "shield"
       ],
       "decision_delay_ms": 1230,
@@ -982,7 +982,7 @@
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "repair",
-        "reflector",
+        "barrier",
         "battery",
         "pulse_cannon",
         "targeting_computer",
@@ -999,11 +999,11 @@
       "rating": 1655,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "virus",
+        "emp",
         "cooler",
         "pulse_cannon",
-        "overclock_unit",
-        "reflector",
+        "targeting_computer",
+        "barrier",
         "jammer"
       ],
       "decision_delay_ms": 1450,
@@ -1020,9 +1020,9 @@
         "amplifier",
         "cooler",
         "missile_launcher",
-        "reflector",
+        "barrier",
         "capacitor",
-        "overclock_unit"
+        "targeting_computer"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -1040,7 +1040,7 @@
         "repair",
         "battery",
         "armor",
-        "current_balancer"
+        "jammer"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -1058,7 +1058,7 @@
         "cooler",
         "amplifier",
         "barrier",
-        "railgun"
+        "drone_bay"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -1073,7 +1073,7 @@
       "battle_pool_ids": [
         "battery",
         "shield",
-        "railgun",
+        "drone_bay",
         "targeting_computer",
         "capacitor",
         "jammer"
@@ -1090,7 +1090,7 @@
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "laser",
-        "reflector",
+        "barrier",
         "targeting_computer",
         "jammer",
         "current_balancer",
@@ -1110,7 +1110,7 @@
         "pulse_cannon",
         "cooler",
         "capacitor",
-        "plasma_mortar",
+        "railgun",
         "emp",
         "drone_bay"
       ],
@@ -1127,10 +1127,10 @@
       "battle_pool_ids": [
         "missile_launcher",
         "railgun",
-        "nano_medic",
+        "targeting_computer",
         "emp",
         "cooler",
-        "plasma_mortar"
+        "drone_bay"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -1144,9 +1144,9 @@
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "shield",
-        "nano_medic",
+        "targeting_computer",
         "armor",
-        "plasma_mortar",
+        "drone_bay",
         "current_balancer",
         "railgun"
       ],
@@ -1161,7 +1161,7 @@
       "rating": 1938,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
-        "nano_medic",
+        "targeting_computer",
         "battery",
         "capacitor",
         "laser",
@@ -1180,7 +1180,7 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "emp",
-        "virus",
+        "current_balancer",
         "laser",
         "targeting_computer",
         "armor",
@@ -1198,7 +1198,7 @@
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "cooler",
-        "nano_medic",
+        "repair",
         "pulse_cannon",
         "armor",
         "current_balancer",
@@ -1217,9 +1217,9 @@
       "battle_pool_ids": [
         "current_balancer",
         "pulse_cannon",
-        "overclock_unit",
+        "targeting_computer",
         "cooler",
-        "reflector",
+        "barrier",
         "battery"
       ],
       "decision_delay_ms": 1670,
@@ -1237,7 +1237,7 @@
         "railgun",
         "cooler",
         "repair",
-        "guardian_dome",
+        "barrier",
         "laser"
       ],
       "decision_delay_ms": 1780,
@@ -1256,7 +1256,7 @@
         "drone_bay",
         "cooler",
         "current_balancer",
-        "virus"
+        "emp"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
@@ -1270,11 +1270,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "guardian_dome",
+        "reflector",
         "targeting_computer",
-        "virus",
+        "jammer",
         "battery",
-        "quantum_repeater"
+        "railgun"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -1290,7 +1290,7 @@
         "pulse_cannon",
         "targeting_computer",
         "current_balancer",
-        "plasma_mortar",
+        "railgun",
         "cooler",
         "arc_cannon"
       ],
@@ -1309,7 +1309,7 @@
         "railgun",
         "cooler",
         "jammer",
-        "guardian_dome",
+        "reflector",
         "drone_bay"
       ],
       "decision_delay_ms": 1120,
@@ -1326,7 +1326,7 @@
         "armor",
         "nano_medic",
         "laser",
-        "plasma_mortar",
+        "railgun",
         "battery",
         "reflector"
       ],
@@ -1344,8 +1344,8 @@
         "cooler",
         "reflector",
         "current_balancer",
-        "quantum_repeater",
-        "overclock_unit",
+        "railgun",
+        "nano_medic",
         "amplifier"
       ],
       "decision_delay_ms": 1340,
@@ -1361,10 +1361,10 @@
       "battle_pool_ids": [
         "jammer",
         "emp",
-        "quantum_repeater",
+        "railgun",
         "amplifier",
         "barrier",
-        "virus"
+        "nano_medic"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -1378,11 +1378,11 @@
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "repair",
-        "overclock_unit",
+        "nano_medic",
         "laser",
         "cooler",
         "battery",
-        "chrono_relay"
+        "targeting_computer"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -1399,7 +1399,7 @@
         "laser",
         "targeting_computer",
         "capacitor",
-        "guardian_dome",
+        "reflector",
         "current_balancer"
       ],
       "decision_delay_ms": 1670,
@@ -1431,10 +1431,10 @@
       "rating": 2323,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "virus",
+        "jammer",
         "reflector",
         "arc_cannon",
-        "chrono_relay",
+        "nano_medic",
         "battery",
         "emp"
       ],
@@ -1449,7 +1449,7 @@
       "rating": 2470,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
-        "swarm_fabricator",
+        "drone_bay",
         "battery",
         "overclock_unit",
         "emp",
@@ -1472,7 +1472,7 @@
         "battery",
         "railgun",
         "cooler",
-        "swarm_fabricator"
+        "drone_bay"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -1487,7 +1487,7 @@
       "battle_pool_ids": [
         "pulse_cannon",
         "drone_bay",
-        "chrono_relay",
+        "overclock_unit",
         "virus",
         "reflector",
         "laser"
@@ -1521,10 +1521,10 @@
       "rating": 2538,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
-        "chrono_relay",
+        "overclock_unit",
         "barrier",
         "battery",
-        "plasma_mortar",
+        "railgun",
         "nano_medic",
         "targeting_computer"
       ],
@@ -1541,7 +1541,7 @@
       "battle_pool_ids": [
         "virus",
         "jammer",
-        "plasma_mortar",
+        "railgun",
         "targeting_computer",
         "shield",
         "emp"
@@ -1559,7 +1559,7 @@
       "battle_pool_ids": [
         "cooler",
         "nano_medic",
-        "quantum_repeater",
+        "railgun",
         "shield",
         "capacitor",
         "repair"
@@ -1576,7 +1576,7 @@
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "capacitor",
-        "quantum_repeater",
+        "railgun",
         "overclock_unit",
         "current_balancer",
         "cooler",
@@ -1593,12 +1593,12 @@
       "rating": 2606,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "quantum_repeater",
+        "railgun",
         "laser",
         "jammer",
         "cooler",
         "reflector",
-        "ion_spear"
+        "drone_bay"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -1630,11 +1630,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "phase_armor",
+        "guardian_dome",
         "overclock_unit",
         "cooler",
         "current_balancer",
-        "quantum_repeater"
+        "plasma_mortar"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -1651,7 +1651,7 @@
         "overclock_unit",
         "cooler",
         "plasma_mortar",
-        "disruptor",
+        "virus",
         "laser"
       ],
       "decision_delay_ms": 1010,
@@ -1667,8 +1667,8 @@
       "battle_pool_ids": [
         "missile_launcher",
         "railgun",
-        "chrono_relay",
-        "disruptor",
+        "overclock_unit",
+        "virus",
         "cooler",
         "pulse_cannon"
       ],
@@ -1701,10 +1701,10 @@
       "rating": 2838,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
-        "chrono_relay",
+        "nano_medic",
         "reflector",
         "battery",
-        "quantum_repeater",
+        "plasma_mortar",
         "overclock_unit",
         "cooler"
       ],
@@ -1719,9 +1719,9 @@
       "rating": 2855,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "disruptor",
+        "virus",
         "jammer",
-        "quantum_repeater",
+        "plasma_mortar",
         "amplifier",
         "armor",
         "emp"
@@ -1739,7 +1739,7 @@
       "battle_pool_ids": [
         "cooler",
         "overclock_unit",
-        "ion_spear",
+        "plasma_mortar",
         "armor",
         "current_balancer",
         "nano_medic"
@@ -1756,7 +1756,7 @@
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "current_balancer",
-        "ion_spear",
+        "plasma_mortar",
         "targeting_computer",
         "battery",
         "reflector",
@@ -1773,12 +1773,12 @@
       "rating": 2906,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
-        "ion_spear",
+        "plasma_mortar",
         "pulse_cannon",
         "cooler",
         "battery",
         "guardian_dome",
-        "swarm_fabricator"
+        "railgun"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -1791,10 +1791,10 @@
       "rating": 2923,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
-        "disruptor",
+        "virus",
         "barrier",
         "pulse_cannon",
-        "chrono_relay",
+        "overclock_unit",
         "current_balancer",
         "emp"
       ],
@@ -1832,7 +1832,7 @@
         "current_balancer",
         "plasma_mortar",
         "cooler",
-        "quantum_cannon"
+        "quantum_repeater"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -1868,7 +1868,7 @@
         "laser",
         "plasma_mortar",
         "battery",
-        "prism_shield"
+        "guardian_dome"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -1886,7 +1886,7 @@
         "current_balancer",
         "quantum_repeater",
         "targeting_computer",
-        "phoenix_repair"
+        "overclock_unit"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -1900,10 +1900,10 @@
       "core_type": "core_capacitor",
       "battle_pool_ids": [
         "emp",
-        "disruptor",
+        "jammer",
         "quantum_repeater",
         "cooler",
-        "prism_shield",
+        "guardian_dome",
         "virus"
       ],
       "decision_delay_ms": 1450,
@@ -1917,10 +1917,10 @@
       "rating": 3172,
       "core_type": "core_phoenix",
       "battle_pool_ids": [
-        "phoenix_repair",
+        "chrono_relay",
         "amplifier",
-        "ion_spear",
-        "prism_shield",
+        "quantum_repeater",
+        "guardian_dome",
         "battery",
         "cooler"
       ],
@@ -1936,7 +1936,7 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "battery",
-        "ion_spear",
+        "quantum_repeater",
         "amplifier",
         "current_balancer",
         "armor",
@@ -1953,7 +1953,7 @@
       "rating": 3206,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "ion_spear",
+        "plasma_mortar",
         "laser",
         "cooler",
         "overclock_unit",
@@ -1990,11 +1990,11 @@
       "core_type": "core_phoenix",
       "battle_pool_ids": [
         "pulse_cannon",
-        "prism_shield",
+        "phase_armor",
         "overclock_unit",
         "cooler",
         "capacitor",
-        "ion_spear"
+        "swarm_fabricator"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -2045,7 +2045,7 @@
       "battle_pool_ids": [
         "laser",
         "chrono_relay",
-        "prism_shield",
+        "phase_armor",
         "quantum_repeater",
         "capacitor",
         "shield"
@@ -2064,7 +2064,7 @@
         "chrono_relay",
         "reflector",
         "battery",
-        "ion_spear",
+        "swarm_fabricator",
         "amplifier",
         "precision_matrix"
       ],
@@ -2080,8 +2080,8 @@
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "virus",
-        "disruptor",
-        "ion_spear",
+        "emp",
+        "swarm_fabricator",
         "repair",
         "shield",
         "jammer"
@@ -2097,12 +2097,12 @@
       "rating": 3472,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
-        "phoenix_repair",
+        "precision_matrix",
         "cooler",
         "swarm_fabricator",
         "battery",
         "capacitor",
-        "omega_amplifier"
+        "chrono_relay"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -2138,7 +2138,7 @@
         "battery",
         "targeting_computer",
         "cooler",
-        "ion_spear"
+        "quantum_repeater"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -2156,7 +2156,7 @@
         "pulse_cannon",
         "overclock_unit",
         "cooler",
-        "disruptor"
+        "virus"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002

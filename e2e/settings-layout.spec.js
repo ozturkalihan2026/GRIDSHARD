@@ -27,7 +27,10 @@ test("responsive tablet, seasons and categorized settings with one rename", asyn
   const positions = await season.evaluate(row => [...row.children].map(x => x.getBoundingClientRect().top));
   expect(Math.max(...positions) - Math.min(...positions)).toBeLessThan(15);
   await page.screenshot({path:info.outputPath("profile-season.png")});
-  await page.locator("#profile-summary-panel [data-open-screen=settings]").click();
+  // Ayarlar, ana ekrandaki üç çizgi menüsünden açılır.
+  await page.locator('[data-shell-screen="menu"]').click();
+  await page.locator("#lobby-menu-button").click();
+  await page.locator("#lobby-menu [data-open-screen=settings]").click();
   const tab = category => page.locator(`[data-settings-tab=${category}]`);
   await expect(page.locator("#profile-display-name")).toBeVisible();
   await expect(page.locator("#settings-sound")).toBeHidden();
@@ -61,8 +64,8 @@ test("responsive tablet, seasons and categorized settings with one rename", asyn
   await expect(page.locator("#profile-name-change-note")).toContainText("kullanıldı");
   await page.reload();
   await waitForParticipantReady(page);
-  await page.locator("#lobby-profile-button").click();
-  await page.locator("#profile-summary-panel [data-open-screen=settings]").click();
+  await page.locator("#lobby-menu-button").click();
+  await page.locator("#lobby-menu [data-open-screen=settings]").click();
   await expect(page.locator("#profile-display-name-save")).toBeDisabled();
   await tab("audio").click();
   await expect(page.locator("#settings-sound-muted")).toBeChecked();

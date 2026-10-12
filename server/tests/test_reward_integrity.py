@@ -110,7 +110,7 @@ def test_arena_chest_and_shop_receipts_carry_actual_module_and_core_ids():
     league_profile = profiles.get_or_create("league-receipt-player")
     league_profile.rating = 3700
     league_profile.highest_rating = 3700
-    league = meta.claim_arena_reward(league_profile, "league_1_3700")
+    league = meta.claim_arena_reward(league_profile, "league_spark_1_3700")
     assert league["module_definition_id"] in unlocked_module_ids(3700)
     assert league["rewards"]["module_definition_id"] == league["module_definition_id"]
 

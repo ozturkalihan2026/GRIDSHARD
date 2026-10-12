@@ -11,8 +11,8 @@ test("Güncel günlük emirler ve 40 kademeli sezon yolu gerçek tarayıcıda g�
 
   await page.goto("/?e2e=1", { waitUntil: "domcontentloaded" });
   await waitForParticipantReady(page);
-  await page.locator("#lobby-profile-button").click();
-  await page.locator('[data-screen-panel="profile"] [data-open-screen="daily"]').click();
+  await page.locator("#lobby-menu-button").click();
+  await page.locator('#lobby-menu [data-open-screen="daily"]').click();
   await page.locator('#rewards-hub-screen [data-open-screen="daily-missions"]').click();
   await expect(page.locator("#daily-mission-list .daily-mission-card")).toHaveCount(6);
   await page.locator('#daily-missions-screen .reward-back-link').click();

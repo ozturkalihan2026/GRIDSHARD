@@ -4,9 +4,9 @@ const { expect } = require("@playwright/test");
 const DEFAULT_POOL = [
   "laser",
   "shield",
-  "repair",
-  "cooler",
   "battery",
+  "cooler",
+  "emp",
   "amplifier"
 ];
 

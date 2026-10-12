@@ -30,7 +30,7 @@ class MetaProgressionError(ValueError):
 from .arena_canon import (
     ARENAS, MODULES, RANK_STAGES, rank_stage_for_rating, trophy_delta as trophy_delta,
     module_stats, unlocked_module_ids, unlocked_reward_module_ids,
-    module_talent_options,
+    module_talent_options, unlock_stage_for_module,
 )
 from threading import RLock
 
@@ -41,12 +41,30 @@ MODULE_EFFECT_LINES = {
 }
 RARITY_UNLOCK_ARENA = {"common": 1, "rare": 1, "epic": 5, "legendary": 9}
 
+# Yükseltme maliyeti (12 Ekim 2026, kullanıcı kararı "enderliğe göre"): enderlik
+# arttıkça daha az parça ve daha çok Devre Kredisi; efsanevide seviye 8'den
+# sonra Akı da gerekir. Tablo: docs/OYUN_DUZENLEMELERI_PLANI.md, D9.
 RARITY_COST_MULTIPLIER = {
     "common": 1.0,
-    "rare": 1.35,
-    "epic": 1.8,
-    "legendary": 2.5,
+    "rare": 1.5,
+    "epic": 2.0,
+    "legendary": 3.0,
 }
+MODULE_UPGRADE_CREDIT_CURVE = (
+    100, 200, 400, 600, 1000, 1500, 2200, 3200, 4800, 7000, 10000, 15000, 22000, 32000,
+)
+MODULE_UPGRADE_SHARD_CURVES = {
+    "common": (2, 4, 8, 14, 22, 32, 44, 58, 74, 92, 112, 136, 164, 200),
+    "rare": (2, 4, 6, 10, 16, 24, 34, 44, 56, 70, 84, 102, 124, 150),
+    "epic": (2, 2, 4, 8, 12, 16, 22, 30, 38, 46, 56, 68, 82, 100),
+    "legendary": (1, 2, 3, 4, 6, 10, 14, 18, 22, 28, 34, 40, 50, 60),
+}
+MODULE_UPGRADE_FLUX_CURVES = {
+    "legendary": (0, 0, 0, 0, 0, 0, 20, 30, 40, 50, 60, 80, 100, 120),
+}
+# Çekirdek parçası yalnız Elmas Sandık'tan gelir; eğri buna göre kısadır.
+CORE_UPGRADE_SHARD_CURVE = (1, 1, 2, 2, 3, 4, 5, 6, 8, 10, 12, 15, 18, 22)
+CORE_UPGRADE_FLUX_PER_LEVEL = 50
 
 MODULE_TALENT_RESET_COST_PER_SELECTION = 25
 
@@ -347,13 +365,12 @@ def module_upgrade_cost(module_definition_id: str, current_level: int) -> dict:
     rarity = MODULE_RARITY.get(module_definition_id, "common")
     next_level = max(0, int(current_level)) + 1
     multiplier = RARITY_COST_MULTIPLIER[rarity]
-    credit_curve = (100, 220, 380, 600, 900, 1300, 1800, 2400, 3150, 4050, 5150, 6500, 8100, 10000)
-    shard_curve = (2, 4, 8, 14, 22, 32, 44, 58, 74, 92, 112, 136, 164, 200)
     index = min(13, next_level - 1)
     return {
         "next_level": next_level,
-        "circuit_credits": round(credit_curve[index] * multiplier),
-        "shards": shard_curve[index],
+        "circuit_credits": round(MODULE_UPGRADE_CREDIT_CURVE[index] * multiplier),
+        "shards": MODULE_UPGRADE_SHARD_CURVES[rarity][index],
+        "flux_shards": MODULE_UPGRADE_FLUX_CURVES.get(rarity, (0,) * 14)[index],
     }
 
 
@@ -404,6 +421,7 @@ def _select_reward_module(
         profile.rating,
         profile.highest_rating,
         preferred_ids,
+        getattr(profile, "legacy_module_unlocks", ()),
     )
     candidates = _module_ids_for_rarity(rarity, eligible) if rarity else list(eligible)
     if not candidates:
@@ -549,6 +567,18 @@ class MetaProgressionService:
                 rewards["module_definition_id"] = module_definition_id
             if core_type_id:
                 rewards["core_type_id"] = core_type_id
+            # GRIDSHARD Sandığı: kozmetikleri yalnız bu durak açar.
+            for field_name, attribute in (
+                ("avatar_id", "unlocked_avatar_ids"),
+                ("avatar_frame_id", "unlocked_avatar_frame_ids"),
+                ("profile_background_id", "unlocked_profile_background_ids"),
+                ("emoji_id", "unlocked_battle_emoji_ids"),
+            ):
+                cosmetic_id = rewards.get(field_name)
+                if cosmetic_id:
+                    setattr(profile, attribute, tuple(
+                        dict.fromkeys((*getattr(profile, attribute), cosmetic_id))
+                    ))
             if rewards.get("chest_id"):
                 definition = CHEST_DEFINITIONS[rewards["chest_id"]]
                 now = self._now_func()
@@ -574,7 +604,7 @@ class MetaProgressionService:
                 raise MetaProgressionError("Unvan ödülü bulunamadı.")
             if title_id in profile.operator_title_claims:
                 return {"title_id": title_id, "replayed": True}
-            titles = operator_title_view(profile.rating, int(profile.lifetime_stats.get("wins", 0)), profile.operator_title_claims)
+            titles = operator_title_view(max(profile.rating, profile.highest_rating), int(profile.lifetime_stats.get("wins", 0)), profile.operator_title_claims)
             if not any(item["id"] == title_id and item["reached"] for item in titles["stages"]):
                 raise MetaProgressionError("Bu unvana henüz ulaşmadın.")
             profile.circuit_credits += reward
@@ -591,7 +621,7 @@ class MetaProgressionService:
                 "current_trophies": profile.rating,
                 "highest_trophies": max(profile.rating, profile.highest_rating),
                 "rank": current_rank["name_tr"],
-                "unlocked_modules": len(unlocked_module_ids(profile.highest_rating)),
+                "unlocked_modules": len(unlocked_module_ids(profile.highest_rating, profile.legacy_module_unlocks)),
                 "upgraded_modules": sum(v > 0 for v in profile.module_upgrade_levels.values()),
                 "highest_module_level": 1 + max(profile.module_upgrade_levels.values(), default=0),
                 "unlocked_cores": sum(profile.highest_rating >= (c["unlock_arena"] - 1) * 300 for c in CORE_TYPES),
@@ -793,6 +823,7 @@ class MetaProgressionService:
         definition = BASIC_MODULE_DEFINITIONS[module_id]
         rarity = MODULE_RARITY.get(module_id, "common")
         unlock_arena = MODULES[module_id]["unlock_arena"]
+        unlock_stage = unlock_stage_for_module(module_id)
         level = int(profile.module_upgrade_levels.get(module_id, 0))
         selected_talent_count = len(profile.module_talents.get(module_id, {}))
         return {
@@ -802,7 +833,15 @@ class MetaProgressionService:
             "rarity": rarity,
             "unlock_arena": unlock_arena,
             "unlock_trophies": MODULES[module_id]["unlock_trophies"],
-            "unlocked": max(profile.highest_rating, profile.rating) >= MODULES[module_id]["unlock_trophies"],
+            # unlock_arena 12'den büyükse modül bir lige girişte açılır.
+            "unlock_stage_id": unlock_stage["id"],
+            "unlock_stage_kind": "arena" if unlock_stage["kind"] == "arena" else "league",
+            "unlock_stage_name_tr": unlock_stage.get("league_name_tr") or unlock_stage["name_tr"],
+            "unlock_stage_name_en": unlock_stage.get("league_name_en") or "",
+            "unlocked": (
+                max(profile.highest_rating, profile.rating) >= MODULES[module_id]["unlock_trophies"]
+                or module_id in profile.legacy_module_unlocks
+            ),
             "level": level,
             "shards": int(profile.module_shards.get(module_id, 0)),
             "next_upgrade_cost": module_upgrade_cost(module_id, level) if level < 14 else None,
@@ -841,28 +880,39 @@ class MetaProgressionService:
         unlocked = max(profile.highest_rating, profile.rating) >= (core_type["unlock_arena"] - 1) * 300
         counter = max(0, min(14, profile.core_upgrade_levels.get(core_type["id"], 0)))
         signature = core_signature(core_type["id"])
+        energy_skill_multiplier = 1 + .03 * sum(
+            s.endswith("_energy") for s in profile.core_skills.get(core_type["id"], ())
+        )
+
+        def energy_stats(level_counter: int) -> dict:
+            return {
+                "energy_per_second": round(
+                    BASE_CORE_GENERATION_PER_SECOND
+                    * CORE_LEVEL_GENERATION_MULTIPLIER ** level_counter
+                    * energy_skill_multiplier,
+                    2,
+                ),
+                "energy_capacity": round(
+                    CORE_RESERVE_BASE_CAPACITY + CORE_RESERVE_PER_LEVEL * level_counter,
+                    1,
+                ),
+            }
+
         return {
             **{key: value for key, value in core_type.items() if key != "skills"},
             "unlocked": unlocked, "selected": profile.selected_core_type == core_type["id"],
             "level": counter + 1, "shards": profile.core_shards_by_type.get(core_type["id"], 0),
             "legacy_shards": profile.core_shards,
-            "energy_per_second": round(
-                BASE_CORE_GENERATION_PER_SECOND
-                * CORE_LEVEL_GENERATION_MULTIPLIER ** counter
-                * (1 + .03 * sum(s.endswith("_energy") for s in profile.core_skills.get(core_type["id"], ()))),
-                2,
-            ),
-            "energy_capacity": round(
-                CORE_RESERVE_BASE_CAPACITY + CORE_RESERVE_PER_LEVEL * counter,
-                1,
-            ),
+            **energy_stats(counter),
+            # Bilgi ekranı bir sonraki seviyenin farkını bu değerlerden yazar.
+            "next_stats": energy_stats(counter + 1) if counter < 14 else None,
             # Enderlik güç eğrisi yoktur; kimliği imza mekaniği taşır (Beta.72).
             "signature_id": signature["signature_id"],
             "signature_name_tr": signature["name_tr"],
             "signature_mechanic": f"{signature['name_tr']} — {signature['signature_tr']}",
             "telegraph_tr": signature["telegraph_tr"],
             "counterplay_tr": signature["counterplay_tr"],
-            "next_upgrade_cost": {"flux_shards": 20 * (counter + 1), "shards": (2, 4, 8, 12, 20, 30, 45, 65, 90, 120, 160, 210, 270, 340)[counter]} if counter < 14 else None,
+            "next_upgrade_cost": {"flux_shards": CORE_UPGRADE_FLUX_PER_LEVEL * (counter + 1), "shards": CORE_UPGRADE_SHARD_CURVE[counter]} if counter < 14 else None,
             "skills": [{**skill, "learned": skill["id"] in profile.core_skills.get(core_type["id"], ()),
                         "tier_selected": any(s.startswith(skill["tier"] + "_") for s in profile.core_skills.get(core_type["id"], ()))} for skill in core_type["skills"]],
             "ranked_normalized": False,
@@ -909,7 +959,7 @@ class MetaProgressionService:
             node = next((n for n in module_talent_options(module_id) if n["tier"] == tier), None)
             if not node or choice not in {c["id"] for c in node["choices"]}:
                 raise MetaProgressionError("Yetenek bulunamadı.")
-            if module_id not in unlocked_module_ids(max(profile.highest_rating, profile.rating)) or profile.module_upgrade_levels.get(module_id, 0) + 1 < node["level"]:
+            if module_id not in unlocked_module_ids(max(profile.highest_rating, profile.rating), profile.legacy_module_unlocks) or profile.module_upgrade_levels.get(module_id, 0) + 1 < node["level"]:
                 raise MetaProgressionError("Gerekli modül seviyesine ulaşılmadı.")
             choices = profile.module_talents.setdefault(module_id, {})
             if tier in choices:
@@ -986,9 +1036,16 @@ class MetaProgressionService:
         if shards < 0:
             raise MetaProgressionError("Bu modül parçasının iade açığını oynayarak kapatmalısın.")
         universal_shards = max(0, int(profile.universal_module_shards))
-        if profile.circuit_credits < cost["circuit_credits"] or shards + universal_shards < cost["shards"]:
-            raise MetaProgressionError(f"Gerekli: {cost['circuit_credits']} Devre Kredisi ve {cost['shards']} modül parçası.")
+        flux_cost = int(cost.get("flux_shards", 0))
+        if (
+            profile.circuit_credits < cost["circuit_credits"]
+            or shards + universal_shards < cost["shards"]
+            or profile.flux_shards < flux_cost
+        ):
+            flux_copy = f", {cost['shards']} modül parçası ve {flux_cost} Akı." if flux_cost else f" ve {cost['shards']} modül parçası."
+            raise MetaProgressionError(f"Gerekli: {cost['circuit_credits']} Devre Kredisi{flux_copy}")
         profile.circuit_credits -= int(cost["circuit_credits"])
+        profile.flux_shards -= flux_cost
         card_shards_spent = min(shards, int(cost["shards"]))
         universal_spent = int(cost["shards"]) - card_shards_spent
         profile.module_shards[module_id] = shards - card_shards_spent
@@ -1000,6 +1057,7 @@ class MetaProgressionService:
             "level_before": level,
             "level_after": int(cost["next_level"]),
             "circuit_credits_spent": int(cost["circuit_credits"]),
+            "flux_shards_spent": flux_cost,
             "shards_spent": int(cost["shards"]),
             "module_shards_spent": card_shards_spent,
             "universal_module_shards_spent": universal_spent,

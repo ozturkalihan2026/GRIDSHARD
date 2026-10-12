@@ -6,7 +6,9 @@ const css = fs.readFileSync("./src/canon.css", "utf8");
 const html = fs.readFileSync("./index.html", "utf8");
 
 assert.ok(app.includes("function renderTrophyValue"));
-assert.ok(app.includes('renderTrophyValue("team-total-trophies"'));
+// Takım başlığındaki kupa kalktı; toplam kupa istatistiklerin içindedir.
+assert.ok(!app.includes('renderTrophyValue("team-total-trophies"'));
+assert.ok(app.includes('setText("team-profile-total-trophies"'));
 assert.ok(!app.includes('renderTrophyValue("profile-current-trophies"'));
 assert.match(app, /activeLeaderboardTab === "core_damage"[\s\S]{0,260}renderTrophyValue\(score/);
 assert.ok(html.includes('class="trophy-value-icon" aria-hidden="true">🏆</span>'));

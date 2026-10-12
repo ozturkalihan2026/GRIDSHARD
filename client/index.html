@@ -121,6 +121,17 @@
       <button id="reward-inbox-button" class="reward-inbox-button" type="button" aria-label="Mesaj ve ödül kutusunu aç" title="Mesaj Kutusu">
         <svg class="reward-inbox-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m4 7.5 8 6 8-6"/></svg><i id="reward-inbox-notification" hidden></i>
       </button>
+      <!-- Üç çizgi menüsü: Kozmetik, Ödüller, Arkadaş ve Ayarlar buradan açılır.
+           Profil, soldaki profil simgesinden doğrudan açılır. -->
+      <button id="lobby-menu-button" class="lobby-menu-button" type="button" aria-label="Menüyü aç" title="Menü" aria-haspopup="true" aria-expanded="false" aria-controls="lobby-menu">
+        <svg class="lobby-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <nav id="lobby-menu" class="dropdown-menu lobby-menu" aria-label="Menü" hidden>
+        <button type="button" data-open-screen="avatar">KOZMETİK</button>
+        <button type="button" data-open-screen="daily">ÖDÜLLER</button>
+        <button type="button" data-open-screen="friends">ARKADAŞ</button>
+        <button type="button" data-open-screen="settings">AYARLAR</button>
+      </nav>
       <div class="lobby-season-progress" hidden>
         <div>
           <span>İLERLEME HATTI</span>
@@ -193,13 +204,19 @@
       <section id="operator-titles-next" class="operator-titles-next" aria-labelledby="operator-titles-next-title">
         <strong id="operator-titles-next-title">Sonraki: Devre Teknisyeni</strong>
         <div class="operator-titles-meter"><span>Kupa</span><progress id="operator-titles-trophy-progress" max="1" value="0"></progress><small id="operator-titles-trophy-copy">0 / 300</small></div>
-        <div class="operator-titles-meter"><span>Galibiyetler</span><progress id="operator-titles-win-progress" max="1" value="0"></progress><small id="operator-titles-win-copy">0 / 3</small></div>
+        <div class="operator-titles-meter"><span>Galibiyetler</span><progress id="operator-titles-win-progress" max="1" value="0"></progress><small id="operator-titles-win-copy">0 / 20</small></div>
       </section>
       <p id="operator-titles-complete" class="operator-titles-complete"></p>
       <p class="operator-titles-note">Unvanlar kupa ve galibiyetle açılır; her yeni unvan bir kez Devre Kredisi ödülü verir.</p>
       <p id="operator-titles-status" role="status" aria-live="polite"></p>
       <ol id="operator-titles-list" class="operator-titles-list"></ol>
       <footer class="operator-titles-footer"><button id="operator-titles-close" type="button">Kapat</button></footer>
+    </dialog>
+
+    <dialog id="module-unlock-dialog" class="module-unlock-dialog" aria-labelledby="module-unlock-title">
+      <header class="module-unlock-header"><span>YENİ MODÜL AÇILDI</span><h2 id="module-unlock-title"></h2><p id="module-unlock-stage"></p></header>
+      <div id="module-unlock-list" class="module-unlock-list"></div>
+      <footer class="module-unlock-footer"><button id="module-unlock-close" type="button">TAMAM</button></footer>
     </dialog>
 
     <dialog id="arena-detail-dialog" class="arena-detail-dialog" aria-labelledby="arena-detail-title">
@@ -336,6 +353,8 @@
       <button type="button" class="menu-action" data-open-screen="shop" data-shell-screen="shop" aria-label="Mağaza" title="Mağaza">
         <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1 11H5L4 9Z"/><path d="M7 9V6a5 5 0 0 1 10 0v3M9 13h6"/></svg>
         <span class="menu-action-title">MAĞAZA</span>
+        <!-- Sandık indirimi günü indirim oranı (renderDockIndicators). -->
+        <span id="dock-shop-sale" class="dock-sale-badge" aria-hidden="true" hidden></span>
       </button>
       <button type="button" class="menu-action" data-open-screen="modules" data-shell-screen="modules" aria-label="Kartlar" title="Kartlar">
         <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="menu-action-title">KARTLAR</span>
@@ -455,9 +474,15 @@
 
     <section id="team-screen" class="mobile-hub-screen team-screen" data-screen-panel="team" hidden>
       <p id="team-action-status" class="mobile-action-status team-action-status" role="status" aria-live="polite"></p>
+      <!-- Takım durumu sunucudan gelene kadar yalnız bu bölüm görünür; takımı
+           olan oyuncu "katıl / oluştur" ekranını bir an bile görmez. -->
+      <section id="team-loading" class="team-loading">
+        <p id="team-loading-text" class="team-empty-state">Yükleniyor…</p>
+        <button id="team-loading-retry" type="button" hidden>BAĞLANTIYI YENİDEN DENE</button>
+      </section>
       <!-- Takımı olmayan oyuncu: ilk sekme mevcut takımların listesi (yeri
            olan takımın karşısında BAŞVUR), ikinci sekme takım oluşturma. -->
-      <section id="team-onboarding" class="team-onboarding">
+      <section id="team-onboarding" class="team-onboarding" hidden>
         <nav class="friends-tabs team-lobby-tabs" aria-label="Takım bölümleri">
           <button type="button" data-team-lobby-tab="list" class="is-active" aria-pressed="true">TAKIMLAR</button>
           <button type="button" data-team-lobby-tab="create" aria-pressed="false">TAKIM OLUŞTUR</button>
@@ -481,14 +506,23 @@
       <section id="team-hub" class="team-hub" hidden>
         <div class="team-panels">
           <section data-team-panel="profile" class="team-panel team-profile-panel is-active">
+            <!-- Sağdaki üç çizgi menüsü yalnız liderde görünür ve takım
+                 yönetiminin iki sayfasını açar: Kozmetik ve Üye Yönetimi. -->
             <header id="team-identity-card" class="team-identity-card">
-              <button id="team-management-open" class="team-avatar-button" type="button" aria-label="Takım yönetimini aç"><span id="team-avatar-glyph">⬡</span></button>
+              <span class="team-avatar-button" aria-hidden="true"><span id="team-avatar-glyph">⬡</span></span>
               <div class="team-profile-open"><h3 id="team-name">Takım</h3><p id="team-description" class="team-description" hidden></p></div>
-              <div class="team-summary-metrics"><strong id="team-member-count">0 / 30 ÜYE</strong><strong id="team-total-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong></div>
+              <button id="team-menu-button" class="lobby-menu-button team-menu-button" type="button" aria-label="Takım yönetimini aç" title="Takım Yönetimi" aria-haspopup="true" aria-expanded="false" aria-controls="team-menu" hidden>
+                <svg class="lobby-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+              </button>
+              <nav id="team-menu" class="dropdown-menu team-menu" aria-label="Takım yönetimi bölümleri" hidden>
+                <button type="button" data-team-management-tab="cosmetics">KOZMETİK</button>
+                <button type="button" data-team-management-tab="members">ÜYE YÖNETİMİ<i id="team-application-badge" class="team-application-badge" hidden></i></button>
+              </nav>
             </header>
             <section class="team-profile-statistics">
               <div class="public-profile-section-heading team-stats-heading"><h3>Takım İstatistikleri</h3></div>
               <div class="team-profile-stat-grid public-profile-stat-grid">
+                <article><span>ÜYE SAYISI</span><strong id="team-member-count">0 / 30</strong></article>
                 <article><span>TOPLAM KUPA</span><strong id="team-profile-total-trophies">0</strong></article>
                 <article><span>ORTALAMA KUPA</span><strong id="team-profile-average-trophies">0</strong></article>
                 <article><span>TOPLAM MAÇ</span><strong id="team-profile-total-matches">0</strong></article>
@@ -537,10 +571,6 @@
           </section>
           <section data-team-panel="management" class="team-panel team-management-panel" hidden>
             <header class="team-management-heading"><button id="team-management-back" type="button" aria-label="Takım profiline dön">←</button><div><h3>Takım Yönetimi</h3></div></header>
-            <nav class="team-management-tabs" aria-label="Takım yönetimi bölümleri">
-              <button type="button" data-team-management-tab="cosmetics" class="is-active">KOZMETİK</button>
-              <button type="button" data-team-management-tab="members">ÜYE YÖNETİMİ<i id="team-application-badge" class="team-application-badge" hidden></i></button>
-            </nav>
             <section data-team-management-panel="cosmetics" class="team-management-subpanel team-appearance-editor">
               <div class="team-appearance-heading"><h4>Lider Görünümü</h4><small>Kilitli seçenekler takım turnuvasında kazanılır.</small></div>
               <div id="team-appearance-preview" class="team-appearance-preview" aria-live="polite"></div>
@@ -720,7 +750,6 @@
           <article class="statistics-metric-card"><span>Toplam Hasar</span><strong id="statistics-total-damage">0</strong><small>Rakip devrelere verilen</small></article>
         </div>
       </section>
-      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" class="is-active" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">KOZMETİK</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="friends">ARKADAŞ</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
     <section class="profile-summary-panel avatar-customization-screen" id="avatar-customization-screen" data-screen-panel="avatar" hidden>
@@ -735,7 +764,6 @@
       <section class="avatar-picker-section" data-cosmetic-panel="emoji" aria-label="Savaş emojileri" hidden><div id="battle-emoji-choice-list" class="avatar-choice-list"></div></section>
       <section class="avatar-picker-section" data-cosmetic-panel="background" aria-label="Profil arka planları" hidden><div id="profile-background-choice-list" class="avatar-choice-list"></div></section>
       <p id="avatar-action-status" class="season-action-status" role="status"></p>
-      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" class="is-active" data-open-screen="avatar">KOZMETİK</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="friends">ARKADAŞ</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
     <section class="engagement-summary-panel rewards-hub-screen" id="rewards-hub-screen" data-screen-panel="daily" hidden>
@@ -745,7 +773,6 @@
         <button type="button" data-open-screen="rewards"><strong>Sezon Ödülleri</strong></button>
       </div>
       <span hidden aria-hidden="true">40 KADEMELİ SEZON YOLUNU AÇ</span>
-      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">KOZMETİK</button><button type="button" class="is-active" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="friends">ARKADAŞ</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
     <section class="engagement-summary-panel daily-rewards-screen" id="daily-rewards-screen" data-screen-panel="daily-rewards" hidden>
@@ -755,7 +782,6 @@
         <div id="monthly-login-track" class="monthly-login-track"></div>
       </section>
       <button type="button" class="reward-back-link" data-open-screen="daily">← ÖDÜL BÖLÜMLERİ</button>
-      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">KOZMETİK</button><button type="button" class="is-active" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="friends">ARKADAŞ</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
     <section class="engagement-summary-panel daily-missions-screen" id="daily-missions-screen" data-screen-panel="daily-missions" hidden>
@@ -773,7 +799,6 @@
       </section>
       <p id="daily-action-status" class="season-action-status" role="status"></p>
       <button type="button" class="reward-back-link" data-open-screen="daily">← ÖDÜL BÖLÜMLERİ</button>
-      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">KOZMETİK</button><button type="button" class="is-active" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="friends">ARKADAŞ</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
     <section class="engagement-summary-panel season-rewards-screen" id="season-rewards-screen" data-screen-panel="rewards" aria-label="Sezon Ödülleri" hidden>
@@ -783,14 +808,15 @@
         <div class="season-progress-meta"><small id="season-progress-copy">0 Deneyim kaldı</small><small id="season-progress-ratio" title="Mevcut kademeye kadar toplanan deneyim / bir sonraki kademenin deneyimi">0 / 100 Deneyim</small></div>
       </div>
       <section id="season-reward-panel" class="season-reward-panel" aria-label="Sezon ödül yolu">
-        <div class="season-pass-columns" aria-hidden="true"><span>ÜCRETSİZ</span><span class="is-premium">ÜCRETLİ GEÇİŞ</span></div>
-        <p id="season-premium-status" class="season-premium-status" role="status"></p>
-        <button id="season-premium-buy" class="season-premium-buy" type="button" hidden>ÜCRETLİ GEÇİŞİ AÇ · 199,99 TL</button>
+        <!-- Satın alma düğmesi sağ sütunda, "ÜCRETLİ GEÇİŞ" başlığının hemen altında durur. -->
+        <div class="season-pass-columns">
+          <span aria-hidden="true">ÜCRETSİZ</span><span class="is-premium" aria-hidden="true">ÜCRETLİ GEÇİŞ</span>
+          <button id="season-premium-buy" class="season-premium-buy" type="button" hidden>ÜCRETLİ GEÇİŞİ AÇ · 199,99 TL</button>
+        </div>
         <p id="season-action-status" class="season-action-status" role="status"></p>
         <div id="season-reward-track" class="season-reward-track"></div>
         <button type="button" class="reward-back-link" data-open-screen="daily">← ÖDÜL BÖLÜMLERİ</button>
       </section>
-      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">KOZMETİK</button><button type="button" class="is-active" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="friends">ARKADAŞ</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
     <section class="statistics-summary-panel" id="statistics-summary-panel" data-screen-panel="statistics" hidden>
@@ -888,7 +914,6 @@
         <div id="friend-battle-list" class="social-player-list"></div>
         <div id="friend-battle-invites" class="social-player-list"></div>
       </section>
-      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">KOZMETİK</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" class="is-active" data-open-screen="friends">ARKADAŞ</button><button type="button" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
     <section class="settings-summary-panel" id="settings-summary-panel" data-screen-panel="settings" hidden>
@@ -1205,7 +1230,6 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
       </details>
       </section>
-      <nav class="profile-terminal-tabs" aria-label="Operatör terminali bölümleri"><button type="button" data-open-screen="profile">PROFİL</button><button type="button" data-open-screen="avatar">KOZMETİK</button><button type="button" data-open-screen="daily">ÖDÜLLER</button><button type="button" data-open-screen="friends">ARKADAŞ</button><button type="button" class="is-active" data-open-screen="settings">AYARLAR</button></nav>
     </section>
 
 

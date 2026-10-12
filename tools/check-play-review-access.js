@@ -109,8 +109,8 @@ async function check() {
         });
       }
       // Exercise the real Settings entry point after the reload.
-      await step("Open the profile terminal", () => page.locator("#lobby-profile-button").click());
-      await step("Open Settings in source app", () => page.locator('[data-open-screen="settings"]:visible').first().click());
+      await step("Open the top-bar menu", () => page.locator("#lobby-menu-button").click());
+      await step("Open Settings in source app", () => page.locator('#lobby-menu [data-open-screen="settings"]').click());
       await page.locator('#settings-tab-account').click();
       await page.locator('#settings-panel-account [data-review-access-open]').click();
       const dialogState = await page.evaluate(() => ({open:document.getElementById("review-access-dialog").open,

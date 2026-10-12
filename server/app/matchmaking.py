@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass
 from typing import Callable
 from uuid import uuid4
-from .arena_canon import rank_stage_for_rating
+from .arena_canon import matchmaking_band
 
 
 BASE_RATING_WINDOW = 100
@@ -129,7 +129,7 @@ class MatchmakingService:
         for candidate in self._queue.values():
             if candidate.player_id == player_id:
                 continue
-            if rank_stage_for_rating(source.rating)["id"] != rank_stage_for_rating(candidate.rating)["id"]:
+            if matchmaking_band(source.rating) != matchmaking_band(candidate.rating):
                 continue
 
             candidate_window = (

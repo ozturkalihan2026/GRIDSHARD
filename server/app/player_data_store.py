@@ -12,7 +12,7 @@ from threading import RLock, get_ident
 import time
 from typing import Protocol
 
-from .arena_canon import MODULES
+from .arena_canon import MODULES, legacy_module_unlocks
 from .display_names import ensure_display_name_available
 from .game.battle_pool import migrate_battle_pool
 from .player_profile import (
@@ -637,6 +637,7 @@ class PlayerDataStoreService:
             "highest_rating": max(profile.rating, profile.highest_rating),
             "arena_reward_claims": list(profile.arena_reward_claims),
             "operator_title_claims": list(profile.operator_title_claims),
+            "legacy_module_unlocks": list(profile.legacy_module_unlocks),
             "active_season_id": profile.active_meta_season_id,
             "season_archives": [dict(item) for item in profile.season_archives],
             "coins": profile.coins,
@@ -917,6 +918,19 @@ class PlayerDataStoreService:
             highest_rating=max(int(data["rating"]), int(meta.get("highest_rating", 0))),
             arena_reward_claims=tuple(meta.get("arena_reward_claims", ())),
             operator_title_claims=tuple(meta.get("operator_title_claims", ())),
+            # Alanı olmayan kayıt eski dağıtımdan kalmadır: o günkü en yüksek
+            # kupayla açık olan modüller bir kez hesaplanır ve kayda yazılır.
+            legacy_module_unlocks=(
+                tuple(
+                    str(module_id)
+                    for module_id in meta["legacy_module_unlocks"]
+                    if str(module_id) in MODULES
+                )
+                if "legacy_module_unlocks" in meta
+                else legacy_module_unlocks(
+                    max(int(data["rating"]), int(meta.get("highest_rating", 0)))
+                )
+            ),
             circuit_credits=int(meta.get("circuit_credits", 350)) + (
                 max(0, int(meta.get("coins", 600))) if int(meta.get("progression_version", 1)) < 2 else 0
             ),

@@ -9,7 +9,7 @@ from .display_names import (
     default_operator_name, is_automatic_player_id,
 )
 
-from .arena_canon import MODULES, unlocked_reward_module_ids
+from .arena_canon import GRIDSHARD_CHEST_REWARDS, MODULES, unlocked_reward_module_ids
 from .text_safety import public_name_rejection
 from .competition_cycle import CYCLE_EPOCH, CYCLE_LENGTH, competition_cycle, cycle_for_id
 from .season_competition import LEADERBOARD_PRIZES, TEAM_PRIZES, WEEKLY_PRIZES
@@ -127,25 +127,40 @@ DAILY_MISSIONS = (
     },
 )
 
+# 12 Ekim 2026: kupa koşulları ilk beş unvanda aynı; galibiyet koşulları, yüzde
+# 65 kazanan oyuncunun o kupaya vardığındaki galibiyet sayısına göre yükseltildi.
+# Son unvan yalnız GRIDSHARD Ligi'ne (8600 kupa) çıkan oyuncunundur.
 OPERATOR_TITLE_STAGES = (
     {"id": "devre_ciragi", "title_tr": "Devre Çırağı", "required_trophies": 0, "required_wins": 0, "reward_circuit_credits": 0},
-    {"id": "devre_teknisyeni", "title_tr": "Devre Teknisyeni", "required_trophies": 300, "required_wins": 3, "reward_circuit_credits": 100},
-    {"id": "iletken_ustasi", "title_tr": "İletken Ustası", "required_trophies": 900, "required_wins": 10, "reward_circuit_credits": 150},
-    {"id": "cekirdek_muhafizi", "title_tr": "Çekirdek Muhafızı", "required_trophies": 1800, "required_wins": 25, "reward_circuit_credits": 200},
-    {"id": "arena_mimari", "title_tr": "Arena Mimarı", "required_trophies": 3000, "required_wins": 50, "reward_circuit_credits": 300},
-    {"id": "gridshard_efsanesi", "title_tr": "GRIDSHARD Efsanesi", "required_trophies": 4200, "required_wins": 100, "reward_circuit_credits": 500},
+    {"id": "devre_teknisyeni", "title_tr": "Devre Teknisyeni", "required_trophies": 300, "required_wins": 20, "reward_circuit_credits": 150},
+    {"id": "iletken_ustasi", "title_tr": "İletken Ustası", "required_trophies": 900, "required_wins": 60, "reward_circuit_credits": 300},
+    {"id": "cekirdek_muhafizi", "title_tr": "Çekirdek Muhafızı", "required_trophies": 1800, "required_wins": 130, "reward_circuit_credits": 500},
+    {"id": "arena_mimari", "title_tr": "Arena Mimarı", "required_trophies": 3000, "required_wins": 220, "reward_circuit_credits": 800},
+    {"id": "lig_oncusu", "title_tr": "Lig Öncüsü", "required_trophies": 3600, "required_wins": 280, "reward_circuit_credits": 1000},
+    {"id": "nexus_stratejisti", "title_tr": "Nexus Stratejisti", "required_trophies": 5600, "required_wins": 450, "reward_circuit_credits": 1500},
+    {"id": "sampiyon_operator", "title_tr": "Şampiyon Operatör", "required_trophies": 6100, "required_wins": 550, "reward_circuit_credits": 2000},
+    {"id": "efsane_muhendisi", "title_tr": "Efsane Mühendisi", "required_trophies": 7100, "required_wins": 750, "reward_circuit_credits": 3000},
+    {"id": "gridshard_efsanesi", "title_tr": "GRIDSHARD Efsanesi", "required_trophies": 8600, "required_wins": 1000, "reward_circuit_credits": 5000},
 )
+FINAL_OPERATOR_TITLE_ID = OPERATOR_TITLE_STAGES[-1]["id"]
 
 
-def operator_title_progression(rating: int, wins: int) -> dict:
-    """Resolve the permanent operator title from trophies and verified wins."""
+def operator_title_progression(rating: int, wins: int, claimed_ids=()) -> dict:
+    """Resolve the permanent operator title from peak trophies and verified wins.
+
+    Ödülü alınmış unvan, koşullar sonradan yükselse de oyuncuda kalır; son
+    unvan bunun dışındadır (yalnız GRIDSHARD Ligi'ne çıkan oyuncu taşır).
+    """
     trophies = max(0, int(rating))
     victories = max(0, int(wins))
+    kept = set(claimed_ids or ()) - {FINAL_OPERATOR_TITLE_ID}
     unlocked = [
         stage
         for stage in OPERATOR_TITLE_STAGES
-        if trophies >= stage["required_trophies"]
-        and victories >= stage["required_wins"]
+        if (
+            trophies >= stage["required_trophies"]
+            and victories >= stage["required_wins"]
+        ) or stage["id"] in kept
     ]
     current = unlocked[-1]
     current_index = OPERATOR_TITLE_STAGES.index(current)
@@ -163,7 +178,7 @@ def operator_title_progression(rating: int, wins: int) -> dict:
 
 def operator_title_view(rating: int, wins: int, claimed_ids=()) -> dict:
     """Resolve title progress and one-time reward eligibility."""
-    progression = operator_title_progression(rating, wins)
+    progression = operator_title_progression(rating, wins, claimed_ids)
     current_id = progression["current"]["id"]
     current_index = next(index for index, stage in enumerate(OPERATOR_TITLE_STAGES) if stage["id"] == current_id)
     claimed = set(claimed_ids)
@@ -295,6 +310,9 @@ def _cosmetic_unlock_sources() -> dict[str, dict[str, list[dict]]]:
                 add(kind, prize.get(field_name), {"kind": kind_name, "position": prize["position"]})
     for emoji_id in FREE_BATTLE_EMOJI_IDS:
         add("battle_emoji", emoji_id, {"kind": "free"})
+    # Yalnız Devre Yolu'nun son durağındaki GRIDSHARD Sandığı ile açılır.
+    for field_name, kind in fields.items():
+        add(kind, GRIDSHARD_CHEST_REWARDS.get(field_name), {"kind": "gridshard_chest"})
     return sources
 
 
@@ -356,6 +374,7 @@ def _profile_reward_identity(profile, reward: dict, seed: str) -> dict:
             profile.rating,
             profile.highest_rating,
             profile.preferred_battle_pool_ids,
+            profile.legacy_module_unlocks,
         )
         roll = int(hashlib.sha256(f"{seed}:module".encode("utf-8")).hexdigest()[:12], 16)
         enriched["module_definition_id"] = pool[roll % len(pool)]
@@ -415,6 +434,8 @@ class PlayerProfile:
     unlocked_titles: tuple[str, ...] = ("Devre Çırağı",)
     equipped_title: str = "Devre Çırağı"
     operator_title_claims: tuple[str, ...] = ()
+    # 12 Ekim 2026 dağıtımından önce açılmış, yeni eşikle kilitlenecek modüller.
+    legacy_module_unlocks: tuple[str, ...] = ()
     unlocked_avatar_ids: tuple[str, ...] = ("default",)
     selected_avatar_id: str = "default"
     unlocked_avatar_frame_ids: tuple[str, ...] = ("none",)
@@ -513,7 +534,7 @@ class PlayerProfile:
         from .meta_progression import rank_stage_for_rating
 
         title_progression = operator_title_view(
-            self.rating,
+            max(self.rating, self.highest_rating),
             int(self.lifetime_stats.get("wins", 0)),
             self.operator_title_claims,
         )
@@ -709,8 +730,9 @@ class PlayerProfile:
             "flux_shards": self.flux_shards,
             "claimed_season_tiers": list(self.claimed_season_tiers),
             "equipped_title": operator_title_progression(
-                self.rating,
+                max(self.rating, self.highest_rating),
                 int(self.lifetime_stats.get("wins", 0)),
+                self.operator_title_claims,
             )["current"]["title_tr"],
             "unlocked_titles": list(self.unlocked_titles),
             "daily_mission_day": self.daily_mission_day,

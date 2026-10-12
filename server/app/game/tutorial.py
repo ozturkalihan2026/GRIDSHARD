@@ -29,14 +29,21 @@ from .heat import MAX_HEAT, is_overheated
 from .models import BattleCommand, BattleModule, BattleStatus, ModuleStatus
 
 
+# Sahne kimliklerinin sürümü. İstemci eşleşme isteğinde tanıdığı sürümü bildirir;
+# daha eski istemciye (v8 ve öncesi: sürüm 1, Onarım dersi) yeni sahneler
+# gönderilmez, o oyuncu yönetilmeyen yumuşatılmış ilk maçı oynar. Sürüm 2:
+# Kalkan dersi ve Sabotaj tanıtımı (12 Ekim 2026).
+TUTORIAL_SCRIPT_VERSION = 2
+
 # Oyuncunun eğitimde kurduğu kartlar. Destesinde hepsi yoksa (ör. desteyi
 # değiştirmiş eski hesap) savaş yönetilmez; yumuşatılmış ilk maç oynanır.
-TUTORIAL_REQUIRED_CARDS = ("laser", "cooler", "repair", "battery", "amplifier")
+TUTORIAL_REQUIRED_CARDS = ("laser", "cooler", "shield", "battery", "amplifier")
 # Eğitim maçının oyuncu destesi: eğitim kartlarının hepsini içerir ve her
 # hesapta açıktır (Başlangıç Devresi).
 TUTORIAL_PLAYER_DECK = tuple(DEFAULT_BATTLE_POOL_IDS)
-# Betiğin rakibe kurduğu kartları içeren geçerli altılı deste.
-TUTORIAL_ENEMY_DECK = ("laser", "shield", "armor", "repair", "battery", "amplifier")
+# Betiğin rakibe kurduğu kartları içeren geçerli altılı deste; oyuncununki
+# gibi yalnız Arena 1'de açık modüllerden oluşur.
+TUTORIAL_ENEMY_DECK = tuple(DEFAULT_BATTLE_POOL_IDS)
 
 ACK_COMMAND = "tutorial_ack"
 DEPLOY_COMMAND = "deploy_module"
@@ -55,12 +62,11 @@ DEPLOY_CONFIRM_TICKS = 8
 
 PLAYER_CORE_HP_FLOOR_RATIO = 0.6
 ENEMY_CORE_HP_FLOOR_RATIO = 0.45
-# Rakip Lazeri: önce görünür hasar, onarım dersinde zararsız, sonda orta güç.
+# Rakip Lazeri: önce görünür hasar, Kalkan dersinde orta güç, arada zararsız.
 ENEMY_LASER_STRONG = (14.0, 900)
 ENEMY_LASER_WEAK = (1.0, 1600)
 ENEMY_LASER_NORMAL = (5.0, 1500)
 DAMAGED_MODULE_HP_RATIO = (0.35, 0.5)
-REPAIR_LESSON_HP_GAIN = 25
 # Son sahne: rakip kolay düşer; yine de uzarsa betik maçı bitirir.
 FINALE_ENEMY_MODULE_HP_RATIO = 0.4
 FINALE_ENEMY_CORE_HP_RATIO = 0.55
@@ -92,6 +98,7 @@ STAGES: tuple[TutorialStage, ...] = (
     TutorialStage("type_attack", "ack"),
     TutorialStage("type_defense", "ack"),
     TutorialStage("type_support", "ack"),
+    TutorialStage("type_sabotage", "ack"),
     TutorialStage("type_system", "ack"),
     TutorialStage("limits", "ack"),
     TutorialStage("hp_bar", "ack", focus="laser"),
@@ -99,8 +106,8 @@ STAGES: tuple[TutorialStage, ...] = (
     TutorialStage("deploy_cooler", "deploy", deploy="cooler", focus="laser"),
     TutorialStage("watch_cooler", "watch", focus="laser", min_ms=3000, max_ms=6000),
     TutorialStage("enemy_attack", "watch", focus="cooler", min_ms=3500, max_ms=3500),
-    TutorialStage("deploy_repair", "deploy", deploy="repair", focus="cooler"),
-    TutorialStage("watch_repair", "watch", focus="cooler", min_ms=3500, max_ms=5500),
+    TutorialStage("deploy_shield", "deploy", deploy="shield", focus="cooler"),
+    TutorialStage("watch_shield", "watch", focus="shield", min_ms=3500, max_ms=3500),
     TutorialStage("energy_low", "watch", focus="laser", min_ms=2200, max_ms=2200),
     TutorialStage("deploy_battery", "deploy", deploy="battery", focus="laser"),
     TutorialStage("watch_battery", "watch", focus="battery", min_ms=3000, max_ms=3000),
@@ -128,7 +135,6 @@ class TutorialDirector:
         self._deploy_baseline = 0
         self._deploy_wait_ticks = 0
         self._blackout = False
-        self._repair_baseline_hp = 0
         self._absent_since: float | None = None
         self._waiting_since: float | None = None
         self._restored_inactivity_ms = session.engine.inactivity_forfeit_ms
@@ -266,9 +272,9 @@ class TutorialDirector:
                 self.engine._check_overheat(self.player_id, laser)
         elif stage.id == "enemy_attack":
             self._ensure_enemy_laser(*ENEMY_LASER_STRONG)
-        elif stage.id == "watch_repair":
-            damaged = self._most_damaged_player_module()
-            self._repair_baseline_hp = damaged.hp if damaged is not None else 0
+        elif stage.id == "watch_shield":
+            # Kalkan ateşi üstüne çeker; vuruşlar görünsün diye Lazer orta güçte.
+            self._ensure_enemy_laser(*ENEMY_LASER_NORMAL)
         elif stage.id == "energy_low":
             self._blackout = True
             self._drain_energy()
@@ -284,6 +290,8 @@ class TutorialDirector:
         if stage.id == "enemy_attack":
             self._settle_damaged_module()
             self._ensure_enemy_laser(*ENEMY_LASER_WEAK)
+        elif stage.id == "watch_shield":
+            self._ensure_enemy_laser(*ENEMY_LASER_WEAK)
         elif stage.id == "deploy_battery":
             self._blackout = False
             player = self.engine.state.players[self.player_id]
@@ -294,12 +302,6 @@ class TutorialDirector:
         if stage.id == "watch_cooler":
             laser = self._player_module("laser")
             return laser is None or not is_overheated(laser)
-        if stage.id == "watch_repair":
-            damaged = self._most_damaged_player_module()
-            return (
-                damaged is None
-                or damaged.hp - self._repair_baseline_hp >= REPAIR_LESSON_HP_GAIN
-            )
         return True
 
     def _prepare_deploy(self, stage: TutorialStage) -> None:
@@ -368,7 +370,7 @@ class TutorialDirector:
             )
 
     def _settle_damaged_module(self) -> None:
-        """Onarım dersi için bir modül görünür biçimde yaralı olsun."""
+        """Kalkan dersi için bir modül görünür biçimde yaralı olsun."""
         target = self._player_module("cooler") or self._most_damaged_player_module()
         if target is None:
             return

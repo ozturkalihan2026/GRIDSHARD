@@ -73,7 +73,8 @@ def test_login_reward_follows_four_week_cycle_and_persists_real_currency_and_car
 
 def test_operator_title_requires_both_trophies_and_wins():
     assert operator_title_progression(1200, 2)["current"]["title_tr"] == "Devre Çırağı"
-    assert operator_title_progression(1200, 10)["current"]["title_tr"] == "İletken Ustası"
+    assert operator_title_progression(1200, 59)["current"]["title_tr"] == "Devre Teknisyeni"
+    assert operator_title_progression(1200, 60)["current"]["title_tr"] == "İletken Ustası"
 
 
 def test_cosmetic_selection_roundtrips_through_player_store():

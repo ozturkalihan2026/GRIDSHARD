@@ -8,7 +8,7 @@ const app = fs.readFileSync("./src/app.js", "utf8");
 const css = fs.readFileSync("./src/canon.css", "utf8");
 
 const seasonPanel = html.match(
-  /<section id="season-reward-panel"[\s\S]*?<\/section>\s*<nav class="profile-terminal-tabs"/
+  /<section id="season-reward-panel"[\s\S]*?<\/section>\s*<\/section>/
 )?.[0] || "";
 
 assert.ok(seasonPanel.includes('id="season-reward-track"'));

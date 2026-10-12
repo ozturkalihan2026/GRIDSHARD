@@ -1298,6 +1298,8 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
 .team-action-status { min-height:18px;margin:4px 14px 0;text-align:center; }
 .team-action-status:empty { min-height:0;margin-top:0; }
 .team-action-status[data-state="error"] { color:#ff8795; }
+.team-loading { padding:26px 14px;display:grid;justify-items:center;gap:12px; }
+.team-loading button { min-height:44px;padding:0 16px;border:1px solid #55dac9;border-radius:9px;color:#08202b;background:#73e9d6;font:900 .52rem var(--gs-font-display); }
 .team-onboarding { padding:14px;display:grid;gap:12px; }
 .team-action-card,.team-identity-card,.team-panel { border:1px solid rgba(81,202,202,.28);border-radius:14px;background:linear-gradient(145deg,#102e49,#091a31);box-shadow:inset 0 1px rgba(255,255,255,.03); }
 .team-action-card { padding:16px;display:grid;gap:10px; }
@@ -1312,7 +1314,6 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
 .team-identity-card > :first-child { display:grid;gap:4px;min-width:0; }
 .team-identity-card h3 { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .team-profile-open { min-width:0;padding:2px 4px;border:0;color:inherit;background:transparent;text-align:left; }
-.team-summary-metrics { display:grid;justify-items:end;gap:5px;color:#ffe177;font:800 .48rem var(--gs-font-display); }
 .team-tabs { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px; }
 .team-tabs button { min-height:38px;padding:0 3px;border:1px solid rgba(72,137,174,.34);border-radius:8px;color:#91a9bd;background:#0b2037;font:800 .42rem var(--gs-font-display); }
 .team-tabs button.is-active { border-color:#67e2d0;color:#67e2d0;background:#14354b; }
@@ -1320,8 +1321,6 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
 .team-panel { min-height:340px;padding:14px;display:grid;align-content:start;gap:11px; }
 .team-panel[hidden] { display:none; }
 .team-panel > p,.team-policy-note { margin:0;color:#94aabd;font-size:.55rem;line-height:1.5; }
-.team-profile-panel { padding:10px;background:linear-gradient(160deg,#0c2943,#07182d); }
-.team-profile-panel > .team-identity-card { border-color:rgba(92,229,212,.42); }
 .team-profile-panel .team-profile-statistics { padding:12px; }
 .team-profile-panel .team-profile-stat-grid article { min-height:82px; }
 .team-member-list,.team-request-list,.team-training-list { margin:0;padding:0;display:grid;gap:7px;list-style:none; }
@@ -1697,22 +1696,6 @@ body[data-app-screen="avatar"] .battle-shell {
 .profile-secondary-actions button,.profile-season-road-link { padding:9px;border:1px solid #3a7291;border-radius:9px;background:#123552;color:#dbfaff;font:800 .52rem var(--gs-font-display); }
 .profile-account-health { display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;color:#68839b;font-size:.4rem; }
 .profile-account-health button { padding:2px 6px;border:1px solid #48627d;border-radius:5px;background:#112740;color:#fff; }
-
-.profile-terminal-tabs {
-  position:sticky;
-  z-index:8;
-  bottom:-18px;
-  margin:auto -18px -18px;
-  padding:7px 8px max(7px,env(safe-area-inset-bottom));
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:5px;
-  border-top:1px solid rgba(80,210,210,.28);
-  background:rgba(4,17,34,.97);
-  backdrop-filter:blur(8px);
-}
-.profile-terminal-tabs button { min-height:38px;border:1px solid transparent;border-radius:8px;background:transparent;color:#9bb2c8;font:800 .48rem var(--gs-font-display); }
-.profile-terminal-tabs button.is-active { border-color:#55e9d9;color:#6affeb;background:rgba(62,221,207,.1); }
 
 .monthly-login-panel {
   padding:10px;
@@ -2568,14 +2551,6 @@ body[data-app-screen="rewards"] .season-reward-panel > .season-action-status:not
   margin:5px 0 8px;
   background:#07182d;
 }
-body[data-app-screen="rewards"] .season-rewards-screen > .profile-terminal-tabs {
-  display:grid !important;
-  /* This panel has 12px padding, unlike the old 18px terminal frame. */
-  margin-left:0 !important;
-  margin-right:0 !important;
-  min-width:0;
-  width:100%;
-}
 
 .post-match-reward-stage .post-match-reward-outcome,
 .post-match-reward-stage > h2 {
@@ -2747,11 +2722,11 @@ body[data-app-screen="play"] .module-shelf .module-card .current-cost-badge {
   --gs-notification-glow:0 0 0 2px rgba(255,113,137,.12),0 0 7px rgba(255,113,137,.32);
 }
 [data-open-screen].has-persistent-notification,
-#lobby-profile-button.has-avatar-notification,
-#lobby-profile-button.has-social-notification { position:relative; }
+#lobby-menu-button.has-avatar-notification,
+#lobby-menu-button.has-social-notification { position:relative; }
 [data-open-screen].has-persistent-notification::after,
-#lobby-profile-button.has-avatar-notification::after,
-#lobby-profile-button.has-social-notification::after,
+#lobby-menu-button.has-avatar-notification::after,
+#lobby-menu-button.has-social-notification::after,
 .friends-tabs button.has-friends-notification::after {
   content:"";
   position:absolute;
@@ -2767,11 +2742,8 @@ body[data-app-screen="play"] .module-shelf .module-card .current-cost-badge {
   box-shadow:var(--gs-notification-glow);
   pointer-events:none;
 }
-.profile-terminal-tabs [data-open-screen].has-persistent-notification::after {
-  right:10px;
-}
-#lobby-profile-button.has-avatar-notification::after,
-#lobby-profile-button.has-social-notification::after {
+#lobby-menu-button.has-avatar-notification::after,
+#lobby-menu-button.has-social-notification::after {
   top:3px;
   right:3px;
 }
@@ -2916,14 +2888,6 @@ body[data-app-screen="play"] .module-shelf .module-card .current-cost-badge {
   align-self:end;
 }
 .team-tabs button { height:38px;min-height:38px; }
-
-/* The tab bar belongs to the terminal frame, not the scrollable content. */
-.profile-terminal-tabs {
-  bottom:0 !important;
-  margin-top:12px !important;
-  margin-bottom:-18px !important;
-  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
-}
 
 /* Beta.45 EV deck refinement: the core is a visible backdrop, while the
    deck controls sit in the lower compact band. */
@@ -3374,39 +3338,6 @@ body[data-app-screen="play"] .module-explosion.core-explosion::after {
     display:grid !important;
     visibility:visible !important;
   }
-
-  #profile-summary-panel,
-  #avatar-customization-screen,
-  #rewards-hub-screen,
-  #daily-rewards-screen,
-  #daily-missions-screen,
-  #season-rewards-screen,
-  #friends-screen,
-  #settings-summary-panel {
-    padding-bottom:calc(76px + env(safe-area-inset-bottom)) !important;
-    scroll-padding-bottom:calc(76px + env(safe-area-inset-bottom));
-  }
-  /* Sezon ekranında yalnız ödül yolu kayar; yol sabit sekmelerin 8 px üstünde biter. */
-  #season-rewards-screen {
-    padding-bottom:calc(62px + env(safe-area-inset-bottom)) !important;
-  }
-
-  .profile-terminal-tabs {
-    position:fixed !important;
-    z-index:96 !important;
-    right:auto !important;
-    bottom:calc(67px + max(5px,env(safe-area-inset-bottom))) !important;
-    left:50% !important;
-    width:min(calc(100vw - 24px),456px) !important;
-    min-height:52px;
-    margin:0 !important;
-    padding:7px 8px !important;
-    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
-    transform:translateX(-50%);
-    border:1px solid rgba(80,210,210,.28);
-    border-radius:13px 13px 0 0;
-    box-shadow:0 -9px 24px rgba(1,9,21,.62);
-  }
 }
 
 /* Beta.72 — modül kimlik paneli. İçerik alanı açık zeminlidir; enderlik rengi
@@ -3843,6 +3774,16 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
   box-shadow:0 -9px 24px rgba(1,9,21,.62);
 }
 
+/* --- Takım sayfası: fazla çerçeveler yok, başlıkta yönetim menüsü -----------
+   Ekranın dış çerçevesi ile profil ve yönetim bölümlerini saran çerçeve
+   yoktur. Başlık kartının sağındaki üç çizgi düğmesi yalnız liderde görünür;
+   Kozmetik ve Üye Yönetimi sayfalarını açar (.dropdown-menu). */
+#team-screen { border-color:transparent !important;background:none !important;box-shadow:none !important; }
+.team-profile-panel,.team-management-panel { min-height:0 !important;padding:0 !important;border:0;background:none;box-shadow:none; }
+.team-profile-panel > .team-identity-card { position:relative;border-color:rgba(92,229,212,.42); }
+.team-menu-button { width:42px;height:42px; }
+.team-menu-button[hidden] { display:none !important; }
+
 /* --- Sezon ödülleri: ücretsiz ve ücretli geçiş sütunları ------------------- */
 .season-pass-columns,
 .season-pass-row {
@@ -3854,19 +3795,6 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
 .season-pass-columns::before { content:""; }
 .season-pass-columns span { color:#6ff1e0;font:900 .5rem var(--gs-font-display);letter-spacing:.12em;text-align:center; }
 .season-pass-columns span.is-premium { color:#ffd36e; }
-.season-premium-status {
-  margin:0;
-  padding:8px 10px;
-  border:1px dashed rgba(255,211,110,.5);
-  border-radius:10px;
-  color:#ffe7a8;
-  background:#1a1a17;
-  font-size:.54rem;
-  line-height:1.45;
-  text-align:left;
-}
-.season-premium-status[data-active="true"] { border-style:solid;border-color:#ffd36e;color:#fff4d1; }
-.season-premium-status[hidden] { display:none !important; }
 .season-pass-row {
   align-items:center;
   padding:10px 8px;
@@ -4027,16 +3955,6 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
 .team-fixture-empty { margin:0;padding:14px 6px;color:#a6bccd;font-size:.56rem;text-align:center; }
 
 /* --- Takım yönetimi: Kozmetik ve Üye Yönetimi ------------------------------ */
-.team-management-tabs { display:grid;grid-template-columns:1fr 1fr;gap:6px; }
-.team-management-tabs button {
-  min-height:36px;
-  border:1px solid rgba(72,137,174,.34);
-  border-radius:8px;
-  color:#a9c0d3;
-  background:#0b2037;
-  font:800 .5rem var(--gs-font-display);
-}
-.team-management-tabs button.is-active { border-color:#67e2d0;color:#67e2d0;background:#14354b; }
 .team-management-subpanel { display:grid;gap:10px; }
 .team-management-subpanel[hidden] { display:none !important; }
 .team-management-subpanel h5 { margin:4px 0 0;color:#dbe9f5;font:800 .6rem var(--gs-font-display);text-align:left; }
@@ -4146,10 +4064,7 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
 .profile-featured-modules { padding-top:54px !important; }
 
 /* --- Arkadaşlar: araç çubuğu ve beş alt sekme ------------------------------- */
-/* Profil paneli esnek sütun olarak kalır; içerik kısa olsa da terminal
-   sekmeleri diğer profil ekranlarındaki gibi en altta durur. */
 .friends-screen { gap:10px !important; }
-#friends-screen > .profile-terminal-tabs { margin-top:auto !important; }
 .friends-hero { display:grid;justify-items:center;gap:2px;text-align:center; }
 .friends-hero .screen-kicker { color:#62ead8; }
 .friends-hero h3 { margin:0;color:#f5f9ff;font:900 .95rem var(--gs-font-display); }
@@ -4749,10 +4664,9 @@ body:not([data-app-screen="play"]) .app-progress-ribbon #reward-inbox-button {
 }
 .avatar-choice-list button[data-frame="season_crown"] > span { border-color:#ffe98a;box-shadow:0 0 0 2px #ffd35a,0 0 12px #e4b83a; }
 
-/* --- Kozmetik: kilidin kaynağı (sezon yolu, lider panosu, turnuva) --------- */
-.cosmetic-lock-source { display:grid;justify-items:center;gap:1px;color:#ffe7a8 !important;line-height:1.2;text-align:center; }
-.cosmetic-lock-source > span::before { content:"🔒 ";font-size:.9em; }
-.cosmetic-lock-source > span + span::before { content:"· ";color:#b7cbdc; }
+/* --- Kozmetik: kilitli seçenek (nereden kazanıldığı yazmaz) ---------------- */
+.cosmetic-locked-label { color:#ffe7a8 !important;line-height:1.2;text-align:center; }
+.cosmetic-locked-label::before { content:"🔒 ";font-size:.9em; }
 .avatar-choice-list button[data-state="locked"] { filter:grayscale(.65);opacity:.62; }
 
 /* --- Gerçek emojiler: renkli emoji yazı tipiyle, parıltısız ---------------- */
@@ -5578,16 +5492,22 @@ body[data-app-screen="play"] .vertical-circuit-arena .module-card.has-heat-bar >
 .paid-product-card .resource-symbol { width:26px;height:26px; }
 .paid-refund-deficits { margin:4px 0;padding:8px;border:1px solid rgba(255,214,95,.4);border-radius:8px;color:#ffe071;font-size:.55rem;line-height:1.5;overflow-wrap:anywhere; }
 
-/* --- Sezon ödülleri: ücretli geçiş satın alma -------------------------------- */
+/* --- Sezon ödülleri: ücretli geçiş satın alma --------------------------------
+   Düğme başlık satırının sağ sütununda, "ÜCRETLİ GEÇİŞ" yazısının altındadır;
+   dar sütunda yazısı iki satıra iner. */
 .season-premium-buy {
-  width:100%;
-  min-height:40px;
-  margin:4px 0 8px;
+  grid-column:3;
+  min-width:0;
+  min-height:36px;
+  margin:0;
+  padding:5px 4px;
   border:1px solid #ffe071;
   border-radius:10px;
   color:#17202b;
   background:linear-gradient(135deg,#ffe26f,#ffbd50);
-  font:900 .56rem var(--gs-font-display);
+  font:900 .5rem/1.25 var(--gs-font-display);
+  white-space:normal;
+  overflow-wrap:anywhere;
 }
 .season-premium-buy[hidden] { display:none; }
 .season-premium-buy:disabled { color:#9db1c4;border-color:#38536d;background:#10263d; }
@@ -6043,9 +5963,6 @@ body[data-battle-perspective="on"][data-app-screen="play"][data-online-status="b
   width:min(calc(100vw - 24px),calc(var(--gs-phone-width) - 24px)) !important;
   border-radius:24px !important;
 }
-.battle-shell .profile-terminal-tabs {
-  width:min(calc(100vw - 24px),calc(var(--gs-phone-width) - 24px)) !important;
-}
 body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-player-card { position:relative; z-index:2; }
 body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip { overflow:hidden; }
 .profile-current-season { align-items:center; }
@@ -6313,9 +6230,9 @@ body[data-app-screen="menu"] .app-progress-ribbon {
   min-height:64px !important;
   max-height:64px !important;
   padding:7px 10px !important;
-  grid-template-columns:50px minmax(0,1fr) 46px !important;
+  grid-template-columns:50px minmax(0,1fr) 42px 42px !important;
   grid-template-rows:minmax(0,1fr) !important;
-  column-gap:10px !important;
+  column-gap:8px !important;
   row-gap:0 !important;
   align-items:center !important;
   border-radius:16px !important;
@@ -6339,22 +6256,86 @@ body[data-app-screen="menu"] .app-progress-ribbon .lobby-player-card {
   align-content:center;
   text-align:left;
 }
+/* Ad, sağdaki iki düğmeye yer açmak için dar ekranda küçülür: 360 px'te
+   "Pilot-" ile başlayan en geniş otomatik ad kesilmeden sığar. */
 body[data-app-screen="menu"] .app-progress-ribbon .lobby-player-card strong {
-  font-size:1rem !important;
+  font-size:clamp(.82rem,4.1vw,1rem) !important;
   line-height:1.1;
 }
 body[data-app-screen="menu"] .app-progress-ribbon #lobby-player-details {
   justify-self:start;
   font-size:.78rem;
 }
-body[data-app-screen="menu"] .app-progress-ribbon #reward-inbox-button {
+body[data-app-screen="menu"] .app-progress-ribbon #reward-inbox-button,
+body[data-app-screen="menu"] .app-progress-ribbon #lobby-menu-button {
   grid-column:3;
   grid-row:1;
-  width:46px;
-  min-width:46px;
+  width:42px;
+  min-width:42px;
   height:42px;
   justify-self:end;
   align-self:center;
+}
+body[data-app-screen="menu"] .app-progress-ribbon #lobby-menu-button { grid-column:4; }
+
+/* --- Üç çizgi menüsü --------------------------------------------------------
+   Düğme mesaj kutusunun sağındadır; liste düğmenin altında açılır. Takım
+   sayfasındaki bölüm menüsü de aynı .dropdown-menu kalıbını kullanır. */
+.lobby-menu-button {
+  position:relative;
+  padding:0 !important;
+  display:grid !important;
+  place-items:center;
+  overflow:visible;
+  border:1px solid rgba(95,220,211,.38);
+  border-radius:10px;
+  color:#b6cfdf;
+  background:#0a2138;
+}
+.lobby-menu-button[aria-expanded="true"] { border-color:#55e9d9;color:#6affeb;background:#0e2f49; }
+.lobby-menu-icon { width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round; }
+.dropdown-menu {
+  position:absolute;
+  z-index:130;
+  top:calc(100% + 6px);
+  right:0;
+  min-width:176px;
+  max-width:calc(100vw - 24px);
+  display:grid;
+  gap:3px;
+  padding:6px;
+  border:1px solid rgba(95,220,211,.42);
+  border-radius:13px;
+  background:rgba(5,20,38,.98);
+  box-shadow:0 16px 34px rgba(1,9,21,.72);
+}
+.dropdown-menu[hidden] { display:none !important; }
+/* Açık menü alt çubuğun da üstündedir; kısa (yatay) ekranda son satırlar
+   çubuğun arkasında kalmaz, sığmayan liste kendi içinde kayar. */
+.app-progress-ribbon.has-open-dropdown { z-index:110 !important; }
+.lobby-menu { max-height:calc(100vh - 128px);overflow-y:auto; }
+.dropdown-menu > button {
+  position:relative;
+  min-height:44px;
+  padding:0 34px 0 14px;
+  border:1px solid transparent;
+  border-radius:9px;
+  color:#dcebf6;
+  background:transparent;
+  box-shadow:none;
+  font:800 .74rem var(--gs-font-display);
+  letter-spacing:.05em;
+  text-align:left;
+  white-space:nowrap;
+}
+.dropdown-menu > button:hover,
+.dropdown-menu > button:focus-visible { border-color:rgba(85,233,217,.55);color:#6affeb;background:rgba(62,221,207,.1);outline:none; }
+.dropdown-menu > button:active { background:rgba(62,221,207,.18); }
+.dropdown-menu > button.is-active { border-color:#55e9d9;color:#6affeb;background:rgba(62,221,207,.1); }
+.dropdown-menu > button.has-persistent-notification::after {
+  top:50%;
+  right:13px;
+  transform:translateY(-50%);
 }
 .app-progress-ribbon .lobby-season-progress[hidden] { display:none !important; }
 
@@ -6678,9 +6659,8 @@ body[data-app-screen="modules"] .module-collection-grid {
 .team-create-cost[data-affordable="false"] { color:#ff9ba8; }
 .team-description { margin:2px 0 0; color:#b9cbdb; font-size:.7rem; line-height:1.3; }
 .team-description[hidden] { display:none; }
-/* Lider için bekleyen başvuru ışığı. */
-#team-management-open.has-team-application { position:relative; }
-#team-management-open.has-team-application::after {
+/* Lider için bekleyen başvuru ışığı (takım menüsünün düğmesinde). */
+#team-menu-button.has-team-application::after {
   content:"";
   position:absolute;
   top:-3px;
@@ -7136,13 +7116,9 @@ body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .name
 #friend-invite-create:disabled,
 #friend-search-form :disabled { opacity:.45; }
 
-/* === Sezon ekranı, 680 px üstü (masaüstü tarayıcı) ==========================
-   Sekme çubuğu bu genişlikte akışın içindedir. Genel "telefon genişliği − 24 px"
-   kuralı sezon ekranında ızgara sütununu 26 px genişletip kademe satırını ve
-   ödül yolunu sağdan kırpıyordu; çubuk burada panelin kendi genişliğini kullanır. */
+/* === Sezon ekranı, 680 px üstü (masaüstü tarayıcı) ========================== */
 @media (min-width:681px) {
   body[data-app-screen="rewards"] .season-rewards-screen { grid-template-columns:minmax(0,1fr); }
-  body[data-app-screen="rewards"] .season-rewards-screen > .profile-terminal-tabs { width:100% !important; }
 }
 
 /* Sandık mağazası günlük alım hakkı (7 Ekim 2026): kartta olasılık özetinin
@@ -7175,3 +7151,294 @@ body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .name
   line-height:1;
   text-shadow:0 3px 0 #6b430c, 0 0 20px rgba(255,209,102,.35);
 }
+
+/* === Oyun düzenlemeleri Faz 1: yükseltme göstergeleri (Ekim 2026) ===========
+   Yükseltilebilir modül ve çekirdek kartının sağ üstünde, yukarı doğru
+   hareket eden yeşil ok (daire içinde değil, yalın ok);
+   modül destedeyse (✓) ok onun hemen altına iner, seçili çekirdekte (✓) sol
+   üste geçer (büyük simgenin üstüne binmesin). Aynı ok, seçilebilir yetenek
+   varken bilgi ekranındaki Yetenekler sekmesinde durur. */
+.upgrade-arrow {
+  width:16px;
+  height:16px;
+  display:block;
+  flex:none;
+  pointer-events:none;
+  animation:upgrade-arrow-rise 1.1s ease-in-out infinite;
+}
+.upgrade-arrow > svg {
+  width:100%;
+  height:100%;
+  display:block;
+  overflow:visible;
+  fill:#4be38a;
+  stroke:#052416;
+  stroke-width:1.3;
+  stroke-linejoin:round;
+  paint-order:stroke;
+}
+@keyframes upgrade-arrow-rise {
+  0%,100% { transform:translateY(2px);opacity:.72; }
+  50% { transform:translateY(-2px);opacity:1; }
+}
+@media (prefers-reduced-motion:reduce) { .upgrade-arrow { animation:none; } }
+body[data-graphics="dusuk"] .upgrade-arrow { animation:none; }
+.collection-module-tile > .upgrade-arrow,
+.core-collection-tile > .upgrade-arrow { position:absolute;z-index:2;top:4px;right:3px; }
+.collection-module-tile[data-selected="true"] > .upgrade-arrow { top:21px; }
+/* Çekirdek kartı dardır ve simgesi büyüktür: ok biraz küçülür. */
+.core-collection-tile > .upgrade-arrow { width:14px;height:14px; }
+.core-collection-tile > b + .upgrade-arrow { right:auto;left:3px; }
+.module-detail-tabs button.has-upgrade-arrow { position:relative; }
+.module-detail-tabs button > .upgrade-arrow { position:absolute;top:6px;right:calc(50% - 27px);width:14px;height:14px; }
+
+/* Bilgi ekranı: bir sonraki seviyede artan değerin yanındaki yeşil "+değer". */
+.module-detail-stats .stat-next-gain {
+  color:#5ff09a;
+  font:800 .56rem var(--gs-font-display);
+  font-style:normal;
+  white-space:nowrap;
+}
+/* "Sonraki seviye" kutusu kalkınca tek kalan son kutu satırı doldurur. */
+.module-overview-grid > div:last-child:nth-child(odd) { grid-column:1 / -1; }
+
+/* Alt çubuk: Kartlar düğmesinde yeşil ışık (yükseltme mevcut), Mağaza
+   düğmesinde sandık indirimi günü indirim oranı. Dock düğmelerinin ::after
+   öğesi başka amaçla kapatıldığı için ışık burada açıkça tanımlanır. */
+:root { --gs-upgrade-light:#4be38a; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification,
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-sale-badge { position:relative;overflow:visible !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification::after {
+  content:"" !important;
+  display:block !important;
+  position:absolute;
+  top:6px !important;
+  right:auto !important;
+  bottom:auto !important;
+  left:calc(50% + 8px) !important;
+  width:9px !important;
+  height:9px !important;
+  border:1px solid var(--gs-notification-ring) !important;
+  box-sizing:border-box;
+  border-radius:50% !important;
+  background:var(--gs-upgrade-light) !important;
+  box-shadow:0 0 0 2px rgba(75,227,138,.14),0 0 7px rgba(75,227,138,.45) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:none !important;
+}
+.dock-sale-badge {
+  position:absolute;
+  z-index:3;
+  top:-4px;
+  right:1px;
+  padding:1px 3px;
+  border:1px solid #6b430c;
+  border-radius:7px;
+  color:#17202b;
+  background:linear-gradient(135deg,#ffe26f,#ffbd50);
+  font:900 .5rem/1.3 var(--gs-font-display);
+  letter-spacing:0;
+  white-space:nowrap;
+  pointer-events:none;
+}
+.dock-sale-badge[hidden] { display:none !important; }
+
+/* Devre Yolu düzenlemesi (12 Ekim 2026): lig geçişlerindeki ana ödüller,
+   lige girişte açılan modülün tanıtımı ve GRIDSHARD Sandığı kozmetik seti. */
+.arena-reward-node.is-main-reward { border-color:#ffd36b;background:linear-gradient(180deg,rgba(255,211,107,.12),rgba(16,45,72,.2)); }
+.arena-reward-node.is-main-reward i { border-color:#ffd36b;box-shadow:0 0 10px rgba(255,211,107,.3); }
+.arena-reward-node.is-main-reward.is-claimed { border-color:#4ae8ca;background:none; }
+.arena-reward-node.is-final-reward { justify-self:center !important;border-width:2px;box-shadow:0 0 20px rgba(255,211,107,.28); }
+.arena-league-module-unlocks > span { color:#ffd36b; }
+
+.module-unlock-dialog { width:min(380px,92vw);max-height:calc(100dvh - 24px);padding:18px 16px 14px;border:1px solid rgba(255,211,107,.55);border-radius:16px;background:linear-gradient(180deg,#10284a,#07142b);color:#e8f6ff;overflow-y:auto;overscroll-behavior:contain;box-shadow:0 0 34px rgba(255,211,107,.18); }
+.module-unlock-dialog::backdrop { background:rgba(2,8,20,.78); }
+.module-unlock-header { display:grid;gap:4px;text-align:center; }
+.module-unlock-header > span { color:#ffd36b;font:900 .62rem var(--gs-font-display);letter-spacing:.12em; }
+.module-unlock-header h2 { margin:0;color:#f7fbff;font:900 1.2rem var(--gs-font-display);overflow-wrap:anywhere; }
+.module-unlock-header p { margin:0;color:#b9d4e8;font-size:.78rem; }
+.module-unlock-list { display:grid;gap:10px;margin:14px 0 4px; }
+.module-unlock-card { --unlock-accent:#ffd36b;display:grid;justify-items:center;gap:6px;width:100%;padding:16px 12px 12px;border:1px solid var(--unlock-accent);border-radius:14px;background:radial-gradient(circle at 50% 18%,rgba(255,211,107,.16),rgba(9,26,50,.4) 62%);color:inherit;text-align:center;cursor:pointer;animation:module-unlock-arrive .55s cubic-bezier(.2,.9,.3,1.25) both; }
+.module-unlock-card[data-category="saldırı"] { --unlock-accent:#ff667d; }
+.module-unlock-card[data-category="savunma"] { --unlock-accent:#71aaff; }
+.module-unlock-card[data-category="destek"] { --unlock-accent:#8be879; }
+.module-unlock-card[data-category="sabotaj"] { --unlock-accent:#c27dff; }
+.module-unlock-card[data-category="sistem"],.module-unlock-card[data-category="enerji"] { --unlock-accent:#62e4ff; }
+.module-unlock-card > i { width:72px;height:72px;display:grid;place-items:center;border:2px solid var(--unlock-accent);border-radius:16px;background:#0b2240;color:var(--unlock-accent);font:900 1.9rem var(--gs-font-display);font-style:normal;box-shadow:0 0 22px color-mix(in srgb,var(--unlock-accent) 45%,transparent); }
+.module-unlock-card > strong { font:900 .95rem var(--gs-font-display);color:#f7fbff;overflow-wrap:anywhere; }
+.module-unlock-card > span { color:#ffd36b;font:800 .62rem var(--gs-font-display);letter-spacing:.06em; }
+.module-unlock-card > p { margin:0;color:#cfe3f2;font-size:.74rem;line-height:1.4; }
+.module-unlock-card > small { margin-top:4px;color:#67f3df;font:800 .58rem var(--gs-font-display);letter-spacing:.08em; }
+.module-unlock-footer { display:flex;justify-content:center;margin-top:12px; }
+.module-unlock-footer button { min-height:40px;padding:9px 30px;border:1px solid rgba(97,238,220,.5);border-radius:10px;background:rgba(97,238,220,.1);color:#e8f6ff;font:800 .72rem var(--gs-font-display);cursor:pointer; }
+@keyframes module-unlock-arrive { from { opacity:0;transform:translateY(18px) scale(.86); } to { opacity:1;transform:none; } }
+@media (prefers-reduced-motion:reduce) { .module-unlock-card { animation:none; } }
+body[data-graphics="dusuk"] .module-unlock-card { animation:none; }
+
+.profile-avatar[data-avatar="gridshard_apex"] { color:#fff3b0;background:radial-gradient(circle at 40% 32%,#b4832a,#5a2a6e 58%,#0a1022); }
+.profile-avatar[data-frame="gridshard_apex"] { border-color:#ffd96b;box-shadow:0 0 0 3px #7a3fb0,0 0 26px #ffcf5a; }
+.lobby-profile-button .profile-avatar[data-frame="gridshard_apex"] { border-color:#ffd96b;box-shadow:0 0 0 3px #7a3fb0,0 0 24px #ffcf5a,inset 0 0 10px rgba(255,217,107,.18); }
+.avatar-choice-list button[data-frame="gridshard_apex"] > span { border-color:#ffd96b;box-shadow:0 0 0 2px #7a3fb0,0 0 12px #ffcf5a; }
+.season-reward-cosmetic-preview[data-frame="gridshard_apex"] { box-shadow:0 0 0 1px #7a3fb0,0 0 7px #ffcf5a; }
+.app-progress-ribbon[data-profile-background="gridshard_apex"],.profile-identity-card[data-profile-background="gridshard_apex"] { background:repeating-linear-gradient(60deg,rgba(255,217,107,.09) 0 2px,transparent 2px 16px),linear-gradient(125deg,#5a3a10,#3b1f63 52%,#0f2646) !important;box-shadow:inset 0 0 26px rgba(255,211,107,.2); }
+
+/* Devre Yolu görünümü (12 Ekim 2026, kullanıcı isteği): desenli arka plan, yol
+   boyunca değişen renk, her lige ayrı amblem, çekirdek satırı ve lig sonunda
+   havada duran sandıklar. */
+.unified-module-level[data-league-lock="true"] { padding:1px 4px;letter-spacing:0; }
+
+.arena-detail-dialog[open] > .arena-path {
+  background:
+    radial-gradient(circle at 14% 12%,rgba(86,241,223,.13),transparent 38%),
+    radial-gradient(circle at 86% 46%,rgba(190,125,255,.13),transparent 40%),
+    radial-gradient(circle at 22% 88%,rgba(255,196,92,.09),transparent 36%),
+    radial-gradient(circle,rgba(130,205,255,.26) 1.1px,transparent 1.7px) 0 0 / 44px 44px,
+    repeating-linear-gradient(0deg,rgba(96,170,230,.075) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,rgba(96,170,230,.075) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(135deg,transparent 0 88px,rgba(86,241,223,.055) 88px 90px,transparent 90px 176px),
+    linear-gradient(180deg,#06203a,#0b1638 52%,#170f36) !important;
+}
+.arena-path-stage {
+  --stage-hue:200;
+  border-color:hsl(var(--stage-hue) 62% 58% / .42) !important;
+  background:linear-gradient(160deg,hsl(var(--stage-hue) 64% 21% / .93),hsl(calc(var(--stage-hue) + 24) 58% 10% / .95)) !important;
+}
+/* Henüz ulaşılmamış aşama soluk görünür; kartın zemini opak kalır ki arka plan
+   deseni yazıların altından geçmesin. */
+.arena-path-stage:not(.is-unlocked) { opacity:1 !important; }
+.arena-path-stage:not(.is-unlocked) > * { opacity:.6; }
+.arena-path-stage .arena-path-marker { color:hsl(var(--stage-hue) 86% 68%);background:hsl(var(--stage-hue) 60% 12%); }
+.arena-path-stage.is-current { border-color:#ffe174 !important; }
+.arena-path-stage::after { background:linear-gradient(180deg,hsl(var(--stage-hue) 70% 55% / .7),rgba(57,91,119,.5)); }
+
+.arena-path-stage.is-league { --league-accent:#c895ff; }
+.arena-path-stage[data-league="spark"] { --league-accent:#ffd24a;--stage-hue:44; }
+.arena-path-stage[data-league="volt"] { --league-accent:#5ad1ff;--stage-hue:198; }
+.arena-path-stage[data-league="reactor"] { --league-accent:#6dffa0;--stage-hue:146; }
+.arena-path-stage[data-league="quantum"] { --league-accent:#b58cff;--stage-hue:262; }
+.arena-path-stage[data-league="nexus"] { --league-accent:#ff8ad1;--stage-hue:322; }
+.arena-path-stage[data-league="champions"] { --league-accent:#ffb347;--stage-hue:30; }
+.arena-path-stage[data-league="legendary"] { --league-accent:#ff7a6b;--stage-hue:6; }
+.arena-path-stage[data-league="gridshard"] { --league-accent:#fff0a8;--stage-hue:276; }
+.arena-path-stage.is-league[data-league] {
+  border-color:color-mix(in srgb,var(--league-accent) 48%,transparent) !important;
+  background:linear-gradient(160deg,hsl(var(--stage-hue) 46% 17% / .94),rgba(11,18,42,.96)) !important;
+}
+.arena-path-stage[data-league="gridshard"] {
+  background:linear-gradient(150deg,rgba(90,58,16,.95),rgba(59,31,99,.95) 55%,rgba(15,38,70,.96)) !important;
+  box-shadow:0 0 26px rgba(255,211,107,.2),inset 0 0 26px rgba(255,211,107,.08);
+}
+.arena-path-stage.is-league[data-league] .arena-path-marker {
+  position:relative;
+  color:var(--league-accent);
+  border-color:var(--league-accent);
+  background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--league-accent) 26%,#0b1730),#0b1730 72%);
+  box-shadow:0 0 12px color-mix(in srgb,var(--league-accent) 42%,transparent);
+}
+.arena-path-stage.is-league[data-league] h3 { color:var(--league-accent) !important; }
+.league-emblem { width:24px;height:24px;fill:color-mix(in srgb,currentColor 22%,transparent);stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round; }
+.arena-path-stage.is-league .league-emblem { margin-top:-5px; }
+.league-emblem-tier { position:absolute;left:50%;bottom:5px;display:flex;gap:2px;transform:translateX(-50%); }
+.league-emblem-tier i { width:4px;height:4px;border-radius:50%;background:color-mix(in srgb,currentColor 26%,transparent); }
+.league-emblem-tier i.is-on { background:currentColor;box-shadow:0 0 4px currentColor; }
+
+.arena-core-unlocks { margin-top:10px; }
+.arena-core-unlocks > span { color:#ffd98a; }
+.arena-core-unlocks button {
+  --arena-module:#56f1df;
+  width:auto !important;
+  height:auto !important;
+  min-height:40px;
+  max-width:100%;
+  padding:5px 12px 5px 6px !important;
+  display:inline-flex !important;
+  align-items:center;
+  gap:8px;
+  border-radius:20px !important;
+}
+.arena-core-unlocks button > i { width:30px;height:30px;flex:none;display:grid;place-items:center;border:1px solid var(--arena-module);border-radius:50%;color:var(--arena-module);background:#0b1f38;font:900 .95rem var(--gs-font-display);font-style:normal;box-shadow:0 0 10px color-mix(in srgb,var(--arena-module) 40%,transparent); }
+.arena-core-unlocks button > strong { min-width:0;color:#eaf6ff;font:800 .6rem var(--gs-font-display);overflow-wrap:anywhere;text-align:left; }
+
+.arena-league-chest-stop { position:relative;display:grid;justify-items:center;padding-top:26px; }
+.arena-league-chest-stop::before { content:"";position:absolute;left:50%;top:2px;width:4px;height:20px;transform:translateX(-50%);border-radius:4px;background:repeating-linear-gradient(180deg,#3d6485 0 5px,transparent 5px 9px); }
+.arena-path-stage[data-league="gridshard"] .arena-league-chest-stop { padding-top:12px; }
+.arena-path-stage[data-league="gridshard"] .arena-league-chest-stop::before { display:none; }
+.arena-reward-node.is-floating-chest,
+.arena-reward-node.is-floating-chest.is-main-reward,
+.arena-reward-node.is-floating-chest.is-claimable,
+.arena-reward-node.is-floating-chest.is-claimed {
+  justify-self:center !important;
+  width:auto;
+  max-width:100%;
+  min-height:124px;
+  padding:6px 14px 2px;
+  display:grid;
+  grid-template-columns:minmax(0,auto);
+  justify-items:center;
+  align-content:start;
+  gap:3px;
+  border:0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+  text-align:center;
+}
+.arena-reward-node.is-floating-chest > .league-chest-button {
+  order:-1;
+  position:relative;
+  width:84px;
+  height:78px;
+  margin-bottom:6px;
+  border:0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+  animation:arena-chest-float 3.4s ease-in-out infinite;
+}
+.arena-reward-node.is-floating-chest > .league-chest-button::before { content:"";position:absolute;inset:-8px -14px 4px;border-radius:50%;background:radial-gradient(circle,rgba(255,211,107,.26),transparent 68%); }
+.arena-reward-node.is-floating-chest > .league-chest-button::after { content:"";position:absolute;left:50%;bottom:-9px;width:56px;height:9px;border-radius:50%;background:radial-gradient(ellipse,rgba(120,205,255,.38),transparent 70%);transform:translateX(-50%);animation:arena-chest-shadow 3.4s ease-in-out infinite; }
+.league-chest { position:relative;z-index:1;width:76px;height:71px;overflow:visible;color:var(--league-accent,#ffd36b); }
+.league-chest-lid { fill:color-mix(in srgb,currentColor 58%,#101a34);stroke:currentColor;stroke-width:1.6;stroke-linejoin:round; }
+.league-chest-body { fill:color-mix(in srgb,currentColor 30%,#0b1730);stroke:currentColor;stroke-width:1.6;stroke-linejoin:round; }
+.league-chest-strap { fill:none;stroke:color-mix(in srgb,currentColor 50%,#ffffff);stroke-width:1.2;opacity:.5; }
+.league-chest-shine { fill:none;stroke:#ffffff;stroke-opacity:.55;stroke-width:1.4;stroke-linecap:round; }
+.league-chest-seam { fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;filter:drop-shadow(0 0 3px currentColor); }
+.league-chest-lock { fill:#0b1730;stroke:currentColor;stroke-width:1.6; }
+.league-chest-emblem { fill:color-mix(in srgb,currentColor 24%,transparent);stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round; }
+.league-chest[data-league-chest="gridshard"] { width:98px;height:92px;color:#ffd96b;filter:drop-shadow(0 0 10px rgba(255,207,90,.6)) drop-shadow(0 0 20px rgba(190,125,255,.45)); }
+.league-chest[data-league-chest="gridshard"] .league-chest-body { fill:#3b1f63; }
+.league-chest[data-league-chest="gridshard"] .league-chest-lid { fill:#8a5a18; }
+.league-chest-button { display:grid;place-items:center;padding:0;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent; }
+.league-chest-button:focus-visible { outline:2px solid #fff0a0;outline-offset:4px;border-radius:14px; }
+.league-chest-button[aria-expanded="true"] .league-chest { filter:drop-shadow(0 0 10px currentColor); }
+.arena-league-chest-claim { order:4;min-width:96px;min-height:38px;margin-top:6px;padding:6px 24px;border:1px solid #fff0a8;border-radius:12px;background:linear-gradient(180deg,#ffe58a,#ffbf4d);color:#1b1408;font:900 .66rem var(--gs-font-display);letter-spacing:.06em;cursor:pointer;box-shadow:0 0 16px rgba(255,220,93,.35); }
+.arena-league-chest-claim:disabled { opacity:.6; }
+.arena-league-chest-state { order:4;margin-top:2px;color:#78ecd7;font:800 .54rem var(--gs-font-display);letter-spacing:.06em; }
+.arena-reward-node.is-floating-chest > strong { font-size:.66rem;color:#fff2c4; }
+.arena-reward-node.is-floating-chest .arena-reward-trophy { order:3;margin-top:2px;font-size:.5rem; }
+.arena-reward-node.is-floating-chest.is-claimable > .league-chest-button { animation-duration:1.5s; }
+.arena-reward-node.is-floating-chest.is-claimable > .league-chest-button::before { background:radial-gradient(circle,rgba(255,224,121,.5),transparent 68%); }
+.arena-reward-node.is-floating-chest.is-claimable > strong { color:#ffe98a;text-shadow:0 0 10px rgba(255,220,93,.5); }
+.arena-reward-node.is-floating-chest.is-claimed > .league-chest-button { animation:none;opacity:.5;filter:saturate(.5); }
+.arena-reward-node.is-floating-chest.is-claimed > .league-chest-button::after { animation:none; }
+.arena-reward-node.is-floating-chest.is-claimed > strong { color:#78ecd7; }
+.arena-reward-node.is-floating-chest.is-final-reward { min-height:150px; }
+.arena-reward-node.is-floating-chest.is-final-reward > .league-chest-button { width:104px;height:98px; }
+.arena-reward-node.is-floating-chest.is-final-reward > strong { font-size:.74rem; }
+@keyframes arena-chest-float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-7px); } }
+@keyframes arena-chest-shadow { 0%,100% { opacity:.9;transform:translateX(-50%) scaleX(1); } 50% { opacity:.5;transform:translateX(-50%) scaleX(.78); } }
+@media (prefers-reduced-motion:reduce) {
+  .arena-reward-node.is-floating-chest > .league-chest-button,
+  .arena-reward-node.is-floating-chest > .league-chest-button::after { animation:none; }
+}
+body[data-graphics="dusuk"] .arena-reward-node.is-floating-chest > .league-chest-button,
+body[data-graphics="dusuk"] .arena-reward-node.is-floating-chest > .league-chest-button::after { animation:none; }
+
+/* Devre Yolu penceresinin satırları: durum yazısı boşken gizlenir; satırlar açıkça
+   verilmezse alt çubuk 0 piksellik satıra düşer ve yolun son 64 pikselini örter
+   (son aşamanın altı görünmez). */
+.arena-detail-dialog[open] > .arena-road-header { grid-row:1; }
+.arena-detail-dialog[open] > #arena-reward-status { grid-row:2; }
+.arena-detail-dialog[open] > .arena-path { grid-row:3; }
+.arena-detail-dialog[open] > .arena-path-footer { grid-row:4; }

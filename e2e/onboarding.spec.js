@@ -17,9 +17,9 @@ const MENU_STEPS = [
 // server/app/game/tutorial.py içindeki STAGES ile aynı sıra.
 const BATTLE_STAGES = [
   "arena", "current", "deploy_laser", "watch_laser",
-  "type_attack", "type_defense", "type_support", "type_system", "limits",
+  "type_attack", "type_defense", "type_support", "type_sabotage", "type_system", "limits",
   "hp_bar", "heat_bar", "deploy_cooler", "watch_cooler",
-  "enemy_attack", "deploy_repair", "watch_repair",
+  "enemy_attack", "deploy_shield", "watch_shield",
   "energy_low", "deploy_battery", "watch_battery",
   "enemy_boost", "deploy_laser_2", "deploy_amplifier", "finale",
 ];

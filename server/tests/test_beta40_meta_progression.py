@@ -17,10 +17,12 @@ from app.player_statistics import PlayerStatisticsService
 
 def test_rank_model_contains_all_planned_stages_and_arena_floor():
     assert len([item for item in RANK_STAGES if item["kind"] == "arena"]) == 12
-    assert len([item for item in RANK_STAGES if item["kind"] == "league"]) == 5
+    assert len([item for item in RANK_STAGES if item["kind"] == "league"]) == 25
     assert len([item for item in RANK_STAGES if item["kind"] == "champions_league"]) == 5
-    assert len([item for item in RANK_STAGES if item["kind"] == "legendary_league"]) == 1
-    assert rank_stage_for_rating(5600)["id"] == "legendary"
+    assert len([item for item in RANK_STAGES if item["kind"] == "legendary_league"]) == 5
+    assert len([item for item in RANK_STAGES if item["kind"] == "gridshard_league"]) == 1
+    assert rank_stage_for_rating(5600)["id"] == "league_nexus_1"
+    assert rank_stage_for_rating(8600)["id"] == "gridshard"
     assert arena_floor_for_rating(3700) == 3600
 
 

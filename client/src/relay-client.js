@@ -1464,6 +1464,9 @@
           Number(result.team_tournament_points_after || 0),
         tierAdvanced: result.tier_advanced || null,
         battlePremiumApplied: Boolean(result.battle_premium_applied),
+        newlyUnlockedModuleIds: Array.isArray(result.newly_unlocked_module_ids)
+          ? result.newly_unlocked_module_ids.map(String)
+          : [],
       };
     }
 
@@ -1912,7 +1915,8 @@
                 player_id:
                   this.playerId,
                 // İlk oyun deneyimi: yönetmenli ilk savaş isteği.
-                ...(tutorial ? { tutorial: true } : {}),
+                // tutorial_script: bu istemcinin tanıdığı sahne sürümü (Kalkan dersi).
+                ...(tutorial ? { tutorial: true, tutorial_script: 2 } : {}),
               }),
             }
           );

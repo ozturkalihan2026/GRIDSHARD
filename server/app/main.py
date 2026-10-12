@@ -89,7 +89,9 @@ from .game.pvp_protocol import PVP_PROTOCOL_VERSION
 from .game.pvp_setup import InitialModulePlacement, PvPSetupPayload
 from .game.pvp_websocket import PvPWebSocketAdapter
 from .game.pvp_runner import PvPTickRunner
-from .game.tutorial import TUTORIAL_ENEMY_DECK, TUTORIAL_PLAYER_DECK, TutorialDirector
+from .game.tutorial import (
+    TUTORIAL_ENEMY_DECK, TUTORIAL_PLAYER_DECK, TUTORIAL_SCRIPT_VERSION, TutorialDirector,
+)
 from .safe_chat import team_description_text, visible_message
 from .match_accounting import TUTORIAL_TRAINING_MATCH_TYPE
 from .version import VERSION
@@ -1185,8 +1187,14 @@ def attach_player_progression_to_session(
         if profile.daily_meta_day == today and daily_meta_by_id(profile.daily_meta_id)
         else ""
     )
-    from .arena_canon import unlocked_module_ids
-    session.engine.state.player_unlocked_modules[player_id] = unlocked_module_ids(max(profile.rating, profile.highest_rating))
+    from .arena_canon import LEGACY_STARTER_DECK_IDS, unlocked_module_ids
+    # Eski paketin gömülü başlangıç destesi yeni hesapta da savaşa girebilir.
+    session.engine.state.player_unlocked_modules[player_id] = tuple(dict.fromkeys((
+        *unlocked_module_ids(
+            max(profile.rating, profile.highest_rating), profile.legacy_module_unlocks
+        ),
+        *LEGACY_STARTER_DECK_IDS,
+    )))
 
 
 def player_data_persistence_health() -> dict:
@@ -1396,6 +1404,9 @@ class MatchmakingJoinRequest(BaseModel):
     # oyuncunun ilk Arena maçı yönetilir; eğitimi yeniden başlatan oyuncu ise
     # hesaba işlenmeyen bir eğitim maçı oynar (bkz. game/tutorial.py).
     tutorial: bool = False
+    # İstemcinin tanıdığı eğitim betiği sürümü (game/tutorial.py). Alanı
+    # göndermeyen eski istemci sürüm 1 sayılır ve savaşı yönetilmez.
+    tutorial_script: int = 1
 
 
 class AuthSessionRequest(BaseModel):
@@ -2484,7 +2495,8 @@ async def matchmaking_join(
         profile = await asyncio.to_thread(_matchmaking_player_details, request.player_id)
         # Yönetmenli savaş her zaman AI rakiple oynanır. İlk maç mı, eğitim
         # maçı mı olduğuna oturum kurulurken karar verilir.
-        tutorial_match = bool(request.tutorial)
+        # 0: eğitim istenmedi; aksi halde istemcinin betik sürümü (en az 1).
+        tutorial_match = max(1, int(request.tutorial_script)) if request.tutorial else 0
         queue_entry = await _matchmaking_enqueue(
             request.player_id,
             rating=profile["rating"],
@@ -4620,7 +4632,7 @@ def create_team_module_request(team_id: str, request: TeamModuleRequest) -> dict
     profile = _team_member_profile(request.player_id)
     module = MODULES.get(request.module_id)
     if module is None or request.module_id not in unlocked_module_ids(
-        max(profile.rating, profile.highest_rating)
+        max(profile.rating, profile.highest_rating), profile.legacy_module_unlocks
     ):
         raise HTTPException(
             status_code=422,
@@ -6631,7 +6643,9 @@ def _create_matchmaking_ai_session(
     softened = first_match or training
     # İlk oyun deneyimi: istemci istediyse ilk maç ve eğitim maçı sahne sahne
     # yönetilir. Betiğin rakibe kurduğu kartlar rakip destesinde bulunmalıdır.
-    directed = bool(tutorial) and softened
+    directed = (
+        bool(tutorial) and softened and int(tutorial) >= TUTORIAL_SCRIPT_VERSION
+    )
     if directed:
         bot.update(
             battle_pool_ids=list(TUTORIAL_ENEMY_DECK),

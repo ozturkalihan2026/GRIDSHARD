@@ -26,7 +26,8 @@ assert.ok(app.includes("function renderTeamFixtures"));
 assert.ok(app.includes("destroyedCore.hp = 0"));
 assert.ok(app.includes("mockEnemyCoreHp = 0"));
 assert.match(css, /#team-hub \.team-tabs \{[\s\S]*?position:fixed !important;/);
-assert.match(css, /\.profile-terminal-tabs \{[\s\S]*?grid-template-columns:repeat\(5,minmax\(0,1fr\)\) !important;/);
+// Profil sekme çubuğu kalktı (üç çizgi menüsü: tests/lobby-menu.test.js).
+assert.ok(!css.includes("profile-terminal-tabs"));
 assert.match(css, /\.reward-preview-panel \{/);
 
 console.log("beta59 social and event contract passed");

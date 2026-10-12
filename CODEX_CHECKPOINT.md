@@ -1,6 +1,297 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 11 Ekim 2026
+Güncelleme tarihi: 12 Ekim 2026
+
+## Aktif adım — 12 Ekim: mağaza kabul edildi, kapalı test sürüyor, gerçek cihaz geri bildirimi
+
+Kullanıcı **mağaza içeriği gerçekleşmiş olarak devam edelim, şimdi ne yapacağız**
+talimatıyla ek mağaza testi yerine yayın/kapalı test hazırlığına dönülmesini
+istedi. Mevcut başarılı manuel iade ve yeniden alım sonuçları aşağıda korunur.
+Bu aşama kabulü tüm SKU'lar, harcanmış-kaynak açığı veya teknik defter/dedup
+testlerinin yapılmış/PASS olduğu anlamına gelmez; yapılmayan kapsamlar dürüstçe
+ayrı kalır. Yeni satın alma/iade/oyuncu bakiye write veya zorunlu test yok.
+Son manuel Uç durumu1249Akı/1041kredi/19Onarım/seviye5/geçişaktif.
+
+Sıradaki dar insan panel adımı **Play Console → GRIDSHARD → Kontrol paneli**
+üzerinde üretim erişimi/kapalı test koşulları kartının güncel ekranını almak.
+10 Ekim tarihli eski12tester/1gün kanıtı bugün için kullanılmaz; katılım sayısı,
+kesintisiz süre, açık eksikler/başvuru düğmesi yeniden yalnız gözlemle okunacak.
+Üretime başvur, yayını durdur veya yeni kanal oluştur talimatı yok. Alpha ve
+mevcut tester listesi korunur; v8'in Alpha'da yayımlanıp telefona geldiği insan
+teyidi mevcut. Kullanıcı son yanıtında **12 test kullanıcısı3 gündür kayıtlı**
+bildirdi; güncel sayım insan teyididir. Eklediği ekran Kontrol paneli/süre
+kartı değil, **Google Play ile korunanlar** özetidir. Başvuru düğmesi veya
+eksik üretim beyanları bu görüntüden okunmaz.12 kişinin kesintisiz katılımı
+korunursa14gün hedefine yaklaşık11gün daha gerekir; kesin bitiş tarihi veya
+otomatik üretim onayı vaat edilmez. Tester listesi/kanalı sıfırlama yok.
+Resmi yeni kişisel hesap koşulu12tester/en az14kesintisiz gün:
+https://support.google.com/googleplay/android-developer/answer/14151465?hl=tr
+
+**Son ekran — Google Play ile korunanlar:** Screenshot'ta **İyi koruma**,
+Otomatik koruma1/1 etkin,Play Integrity API0/7,Play Store koruması6/7 ve
+Play Faturalandırma koruması3/4 görülüyor. Bu güvenlik özelliklerinin kullanım
+özetidir; tüm sayaçların tamamlanması yayın/kapalı test zorunluluğu olarak
+yorumlanmaz. Otomatik koruma korunur; önceki sideload uyarısıyla uyumludur.
+Play Integrity API ek istemci/sunucu entegrasyonudur, mevcut kapalı test
+şartı diye yeni Cloud/API ayarı veya kod değişikliği başlatılmaz.
+Sonraki genişletilmiş insan ekranı **Ekran görüntüsü_12-10-2026_14018** ile
+eksik iki madde artık görüldü: Store'da **Mağaza girişi cihaz kontrolleri
+devre dışı** (riskli cihazlara yüklemeleri engelleme); Billing'de **Teklif
+kullanım sınırları devre dışı** (abonelik tekliflerinin kötüye kullanımını
+önleme). Önceki kapalı görünümden olası RTDN eksikliği çıkarımı yapılmaz.
+Play app signing/Play Protect/SDK/spam/anormallik/adalet korumaları ve
+satın alma sahtekarlığı/hediye kartı/konuma yönelik adres sahteciliği
+korumaları ekranda etkin gösteriliyor; bu oyun uygulamasının tüm güvenlik
+testleri geçti demek değildir.
+Mevcut üründe sezon geçişi dahil10 ürün tek seferliktir, otomatik yenilenen
+abonelik yok; abonelik teklif sınırını sırf4/4 için açma. Mağaza cihaz
+kontrolleri seçimlik ek filtre olup root/emülatör/bütünlük şartını karşılamayan
+cihazların Store görünürlüğünü/kurulumunu azaltabilir; bu kontroller için
+ayrı Play Integrity API entegrasyonu gerekmez. Şimdilik her ikisi değişmeden
+kalır, yeni ayar/Cloud/API/SDK/AAB/yayın işi yok; bu iki madde kapalı test
+başvuru koşulunu karşılamak için zorunlu checklist diye yorumlanmaz.
+Koruma ekranı için bekleyen genişletme/ayar yok. Sonraki dar kalite kontrolü
+**Ön lansman raporu → Genel bakış** için kullanıcı **lansman öncesi rapor boş**
+bildirdi.12 Ekim güncel boşluk insan teyididir; rapor yokluğu0hata/PASS değildir.
+Yeni ekran/rapor/sürüm8 eşleşmesi okunmadı.10 Ekim önceki boş rapor kanıtı
+korunur fakat bugünle aynı ölçüm diye birleştirilmez. Google'ın resmi belgesi
+rapor üretiminin cihaz laboratuvarı kapasitesine bağlı olduğunu belirtir;
+bu yalnız olası açıklamadır, bu uygulamanın kesin nedeni olarak yazılmaz.
+Boş rapor yüzünden test kanalı/protection/lisans kontrolü değiştirme, yeni
+AAB upload,Cloud/FirebaseTestLab,credential veya robot script başlatma yok.
+Kaynak: https://support.google.com/googleplay/android-developer/answer/9842757
+
+Sıradaki dar insan kontrolü **İzleyin ve geliştirin → Android vitals →
+Genel bakış**, son7gün: mevcut çökme/ANR verisi ve kritik uyarı varsa ekranı
+almak. Kullanıcı son yanıtında **veri yok** bildirdi. Bu Android vitals için
+güncel insan teyididir; görüntü, sürüm filtresi veya cihaz örneklemi bağımsız
+okunmadı. Yeni entegrasyon/SDK/API/rapor oluşturma veya bildirim ayarı yok.
+Google, veri yoksa seçili filtrelerde sorun tespiti için yeterli veri noktası
+olmadığını belirtir; bu da0hata/PASS sayılmaz. Ön lansman ve vitals ikisi de
+sonuç yok olarak korunur; tekrar boş ekran isteme/kanal veya güvenlik ayarı
+değiştirme yok. Gerçek tester geri bildirimi ve manuel kritik giriş/maç/
+yeniden açma akışı sırayla değerlendirilecek.
+https://support.google.com/googleplay/android-developer/answer/9844486
+
+**Son ücretsiz gerçek cihaz testi — arkadaş maçı:** Kullanıcı **arkadaş
+maçı yapıldı,sorun yok; geri sayım oluyor; maç sonucu iki ekrana da yansıyor**
+bildirdi. Maçın oynanması/tamamlanması, geri sayım ve iki taraflı sonuç görünümü
+dar **manuel arkadaş maçı senaryosunda PASS** olarak kaydedilir. Yeni görüntü,
+cihaz/Android/sürüm8 veya sunucu maç kaydı bağımsız okunmadı; yeni kurulumda
+PGS login, bütün PvP/reconnect/kalıcılık/performance senaryolarına genellenmez.
+
+**Açık takip — önce bildirilen donma:** Aynı kullanıcı daha önce bildirilen
+donma sorununu **tekrar test edeceğini** belirtti. Bu henüz retest sonucu
+değildir; başarılı arkadaş maçı donmanın çözüldüğü kanıtı yapılmaz. Mevcut
+v8/Alpha/kod düzenlemeleri korunur; yeni düzeltme/deploy/AAB veya koruma ayarı
+başlatılmaz. Donma tekrarlanırsa hangi ekran/maç anı,tek/iki cihazda olması,
+kendi kendine düzelme/uygulama yeniden açma gereği,cihaz modeli/Android ve
+yaklaşık maç saati gibi dar insan gözlemi istenecek. Varsa kısa kayıt kişisel
+bilgiler gizlenerek paylaşılabilir; parola/e-posta/token/ham log istenmez.
+Para/mağaza alımı,hesap değiştirme/silme veya yeniden kurulum yok.12 kişinin
+kesintisiz test katılımı korunur,gerçek geri bildirimler sürümle kaydedilir.
+Mağaza aşaması yeniden açılmaz; yeni sunucu/AAB/CI işi ancak somut geri
+bildirim veya ayrıca kararlaştırılan release kapsamıyla sırayla ele alınır.
+Resmi özet ve ayrı entegrasyon dokümanları:
+https://support.google.com/googleplay/android-developer/answer/13857328?hl=tr
+https://developer.android.com/google/play/integrity/setup
+Bu gözlem mağaza aşamasını veya eski başarılı iade testlerini yeniden açmaz.
+
+Önceki yayın kayıtları PGS'nin altı credential ile yayımlandığını ve10 Ekim
+OAuth External/In production + doğrulanmış markanın yayımlandığını gösterir
+(docs/PLAY_PUBLISHING_READINESS_20261009.md). Bu tamamlanan panel işlemlerini
+tekrarlama; yeni client/key/scopes/Billing/PubSub/Cloud satın alma yok. Kapalı
+test veya Play üretim dağıtımı bu iki yayından ayrıdır. Yalnız güncel tester
+erişim sorunu görülürse giriş hesabı/kanal erişimi dar kontrol edilir.
+Bu durum kontrolü yeni AAB üretmeyi gerektirmez; Claude'un devam eden kod
+düzenlemeleri v8 frozen pakete karıştırılmaz. Geri bildirim sonrası yeni
+release kapsamı/CI/sunucu geçişi/AAB ayrı sırayla kararlaştırılır.
+Agent UI otomasyonu, yayın, deploy, commit/push veya yeni ücretli işlem yapmadı.
+
+## Tamamlanan manuel adım — 12 Ekim: harcanmamış ödül iadesi ve yeniden alım PASS
+
+Kullanıcı mağaza satın alımındaki **Öğe bulunamadı** hatasının kalktığını
+bildirdi ve iade politikasını denemek istedi. Bu cihaz teyididir; yeni
+satın alma teslimi, consume, politika damgası veya sunucu iade defteri henüz
+bağımsız doğrulanmadı. Aşağıdaki son insan teyidi manuel iade gözlemidir.
+Kullanıcı mevcut oyuncuyu **Uç**, Ücretli Sezon Geçişini **pasif**, ödeme
+penceresini **Test kartı/her zaman onaylar ve ücret alınmaz uyarısı var**
+olarak teyit etti. Ekran paylaşmadı; agent cihaz/UI/Google checkout okumadı.
+Önce yeni satın alma/iade tamamlanmadan beklemesi istendi. Ardından kullanıcı
+kendi terminalinin de başarısız olduğunu ve **manuel devam** istediğini
+bildirdi; başlangıç bakiyeleri insan teyidiyle **1184 Akı / 996 Devre Kredisi**.
+Bu yeni talimat SSH'yi satın alma ön koşulu yapmayı kaldırır; sonuçlar manuel
+ekran/insan gözlemi olarak sınanır, sunucu makbuz/defteri PASS sayılmaz.
+
+**Son manuel alım teyidi:** Kullanıcı önce günlük devre emirlerinden ödül
+aldığını, **1239 Akı / 1041 Devre Kredisi ile Ücretli Sezon Geçişini aktif
+ettiğini** bildirdi; ardından **henüz geçiş ödülü toplamadığını** açıkça
+teyit etti. İade karşılaştırmasının yeni başlangıcı 1239/1041'dir, ilk
+1184/996 değildir. Net +55 Akı/+45 kredi günlük/ücretsiz kazanım olarak
+insan tarafından açıklandı; bunlar premium kaynağına atfedilmez ve beklenen
+iade davranışında korunmalıdır. Mevcut alımın Google siparişi, test ortamı,
+consume veya politika damgası agent tarafından doğrulanmadı; yalnız hak
+aktifliği/alım sonucu insan teyididir.
+
+**Toplanan tek premium ödül ve yapılan iade:** Kullanıcı ücretli hat
+18. kademe ödülünü topladığını, önce bildirdiği2 Onarım parçasının yanlış
+olduğunu ve gerçek ödülün **10 Akı +12 Onarım parçası** olduğunu düzeltti
+(kullanıcının ifadesi: sandıkta+12). Alım öncesi Onarım **seviye5, 7 parça**;
+alım sonrası **1249 Akı /19 Onarım parçası** insan teyididir. Kredi son
+bilinen1041, Onarım seviyesi son bilinen5; tekrar teyit edilmedi. Sandığın
+teslim/açılış adımları veya kaynak defteri bağımsız okunmadı.
+
+Kullanıcı **geri ödemeyi yaptığını ve30 dakikalık sunucu taramasını
+beklediğini** bildirdi. Tekrar iade/alım yaptırma. Seçili siparişin eşleşmesi,
+iade saati, Google durumu ve **revoke/hakları iptal et** seçimi henüz
+bağımsız doğrulanmadı; revoke seçimi kullanıcıya soruldu, henüz cevap yok.
+Sonraki cihaz sonucu bu seçimin bağımsız kanıtı sayılmaz. Google, geliştirici
+iadesinde revoke seçilmemişse siparişi Voided Purchases API'ye dahil etmez:
+https://developers.google.com/android-publisher/voided-purchases
+
+Başka kazanım/harcama yoksa işlenmiş iade için beklenen **1239 Akı /1041
+Devre Kredisi /7 Onarım parçası, seviye5, Ücretli Sezon Geçişi pasif**.
+**Son manuel iade sonucu:** Kullanıcı **1239 Akı,7 Onarım parçası,seviye5,
+Ücretli Sezon Geçişi pasif** bildirdi. Böylece gözlenen10Akı+12Onarım
+premium delta'sı başlangıca dönmüş, modül seviyesi korunmuş ve geçiş
+pasifleşmiştir; bu dört değer manuel gözlemde beklenenle eşleşir.
+Son soruya kullanıcı **duruyor** yanıtıyla iade sonrası Devre Kredisi
+bakiyesinin de **1041** kaldığını teyit etti. Böylece bu dar kapsamlı
+**harcanmamış premium ödül iadesi manuel senaryosu PASS**:1239Akı,
+1041DevreKredisi,7Onarımparçası,seviye5,geçişpasif; gözlenen premium
+10Akı+12Onarım geri alınmış ve bildirilen günlük/ücretsiz bakiyeler korunmuş.
+Diğer eski kaynaklar/17 kademe ve sunucu refund kaynağı/policy/ledger/dedup
+bağımsız okunmadı; bu sonuç tam teknik veya tüm iade senaryoları PASS değildir.
+Bu senaryoda bekleyen bakiye teyidi kalmadı. Yeni ödül/alım/iade veya harcama
+başlatılmadı. Kullanıcı ardından **ne yapıyorum şuanda** diye sonraki adımı
+istedi; aynı sezonda kontrollü ücretsiz yeniden alım testi tarif edildi.
+
+**Tarif edilen manuel adım — yeniden alım:** Aynı Uç hesabında
+aynı Ücretli Sezon Geçişi bir kez daha alınacak; checkout'ta yeniden **Test
+kartı/her zaman onaylar** ve **ücret alınmayacak** uyarısı görülmesi şart.
+Gerçek kart/tahsilat veya test uyarısı yoksa kullanıcı iptal edecek. Yeni
+ödül TOPLA/AL, sandık AÇ, harcama/geliştirme/maç yok. Beklenen mevcut
+1239Akı/1041kredi/7Onarım/seviye5/geçişpasif → **1249Akı/1041kredi/
+19Onarım/seviye5/geçişaktif**; yalnız geri alınan10Akı+12Onarım geri
+yüklenmeli. Alınmış18. kademe yeniden AL olarak açılmamalı; yeni sandık
+üretimi/zar atımı yok. Kullanıcı bakiyeleri/hak durumunu ve18. kademe
+görünümü istendi. Ardından kullanıcı **18. kademe alındı yazıyor, yeniden
+toplama yapılmadı, ödüller otomatik geri geldi,1249 Akı19 Onarım parçası**
+bildirdi. Bu yeniden alım adımı sonrası insan teyididir: geri alınan
+10Akı+12Onarım başlangıca otomatik eklenmiş;18. kademe yeniden toplamaya
+açılmamış. Bu dar geri-yükleme ve claimed-tier görünümü beklenenle eşleşir.
+Kullanıcı ardından **son teyit geçerli** yanıtıyla yeniden alım sonrası
+**1041 Devre Kredisi,Onarım seviye5,geçişaktif** değerlerini de teyit etti.
+**Aynı sezonda yeniden alım/otomatik kaynak geri yükleme/18. kademenin
+alındı kalması manuel senaryosu PASS**:1249Akı,1041kredi,19Onarım,seviye5,
+geçişaktif; ödül tekrar toplanmadı. Bu senaryoda bekleyen insan teyidi yok.
+Yeni sipariş/test ödeme yöntemi/consume/policy/defter,
+tekrarlanan provider makbuzu veya kalıcı dedup bağımsız doğrulanmadı;
+manuel gözlem genel idempotency/teknik PASS yerine yazılmaz. Başka ödül,
+harcama,ikinci iade veya yeni satın alma başlatılmadı.
+Agent checkout/iade/Google write/sunucu write yapmaz. Eski bekleme aşamasındaki
+tekrar-alım yasağı yalnız bu kontrollü ücretsiz insan testi için sonraki
+talimatla aşılmıştır; başka alım/iade başlatılmaz.
+
+Son doğrulanmış tarama
+aralığı1800sn; bugünkü SSH yokluğunda güncel tarama fazı/son başarılı çalışma
+bilinmiyor. Google kaydının görünmesi, sonraki başarılı tarama ve mevcut
+iki dakikalık uç payı/retry nedeniyle iade tıklamasından itibaren kesin30dk
+garantisi yok. Sonuç kullanıcı tarafından bildirildi; taramanın kendisi
+bugün okunmadı. Kontrollü yeniden alım testi dışındaki kazanım/harcama/
+geliştirme/tekrar alımı karıştırma;
+veri silme/yeniden kurulum yok. Bu adım harcanmamış ödülün geri alınmasını sınar;
+harcanmış kaynak açığı, oynayarak kapatma veya teknik ledger/dedup henüz
+sınanmış sayılmaz. İade ve yeniden alımın dar manuel senaryoları yukarıdaki
+insan teyitleriyle tamamlandı; bekleyen bakiye/seviye/hak teyidi yok. Yeni
+harcanmış-kaynak/açık testi, satın alma/iade/harcama başlatılmadı.
+Otomatik izleme/hatırlatıcı kurulmadı.
+
+- İstenen test yeni `season-rewards-v1` damgalı Ücretli Sezon Geçişi içindir.
+  Yürürlük 11 Ekim 08:20 TR aynen korunur. Savaş Premium ayrı kapsam; eski
+  Uç alımı/17 premium kademe geriye dönük yeni kurala taşınmaz veya silinmez.
+- Manuel yeni-alım başlangıcı Uç/geçiş aktif/**1239 Akı/1041 kredi**,
+  Onarım seviyesi5/parçası7. Sonrasında18. kademe ödülü insan tarafından
+  toplandı; gerçek delta10Akı+12Onarım ve son insan teyidi1249Akı/19Onarım.
+  Kullanıcı iadeyi yaptı ve1239Akı/7Onarım/seviye5/geçişpasif sonucu bildirdi;
+  bunlar beklenenle eşleşir. İade sonrası1041kredi de kullanıcı tarafından
+  teyit edildi; harcanmamış premium ödül iadesi manuel gözlemde PASS.
+  Yeniden alım adımı sonrası1249Akı/19Onarım otomatik dönmüş,18. kademe
+  alındı kalmış ve yeniden toplama yapılmamış insan teyidi vardır; kredi1041/
+  seviye5/geçişaktif de son insan yanıtıyla teyit edildi. Dar yeniden alım
+  manuel senaryosu PASS; teknik defter/dedup ve harcanmış kaynak ayrı açıktır.
+  Diğer parça türleri, stok, güncel claimed tier ve eski alım/defter bağımsız
+  okunmadı; eski17 kademe tarihsel koruma yükümlülüğü olarak kalır.
+  Yeniden alım yalnız yukarıdaki ücretsiz kontrollü testtir; yeni iade yok.
+  Frozen v8 istemci gerçek kodu
+  bağımsız `data-premium-tier-claim`/kademe seçimini destekliyor. Ücretsiz
+  hat, başka emir/hediye, maç, sandık ve harcamayı karıştırma. Sonraki
+  premium kaynak, iade ve oynayarak açık kapatma
+  adımları gözlenen delta'lara göre sırayla ilerler. Eski siparişlere/refundlara/
+  oyuncu bakiyesine operatör write yok; agent ödeme/iade onayı yapmaz.
+- İş bilgisayarında mevcut pinli SSH anahtarı ve known_hosts bulundu; pin
+  kontrolü geçti. Sandbox izin hatası sonrası izinli Windows OpenSSH denemeleri
+  banner aşamasında 8 ve20sn timeout; ayrı TCP22 bağlantısı başarılı ama SSH
+  banner alınmadı. Sunucudaki başlangıç/ayarlar **henüz okunamadı**. Güncel
+  kaynak IPv4 Windows HTTP istemcisi/TLS doğrulaması ile belirlendi. Kullanıcı
+  ardından genel IPv4'ün doğru ve SSH /32 kuralının ekli olduğunu teyit etti;
+  aynı kuralı tekrar ekletme/genişletme. Teyit sonrası Windows SSH ve kurulu
+  Git SSH ayrı 15sn denemede yine banner timeout verdi; auth aşamasına
+  gelinmedi. Paramiko ve yerel AWS CLI credential/config yok; yeni kurulum/
+  hesap/izin oluşturulmadı. Başlangıç SQL hâlâ okunamadı. Public HTTPS
+  `/health` HTTP200 (bu akıştaki önceki taze ölçüm); SQL/konfig kanıtı değil.
+- Curl önce Windows CRYPT_E_NO_REVOCATION_CHECK verdi; TLS/revocation kontrolü
+  devre dışı bırakılmadı. Windows HTTP istemcisiyle doğrulanmış kontrol geçti.
+- Agent ödeme/iade, sahte makbuz, manuel iade taraması, restart, deploy,
+  Cloud/IAM/Billing/security-group write veya telefon müdahalesi yapmadı.
+  Claude'un devam eden oyun düzenlemeleri aynen korunur; code/test/commit/push yok.
+- Kullanıcının kendi PowerShell SSH kontrolü de başarısız. Manuel devam
+  açıkça istendi; bağlantıyı tekrar tekrar deneme veya aynı kuralı yeniden
+  ekletme. Agent henüz satın alma/Google siparişi/politika damgası/consume/
+  ledger/dedup/gerçek refund doğrulamadı. Manuel sonuç teknik sunucu doğrulaması
+  yerine yazılmaz. Bağlantı ileride onaylı ortamda gelirse dar salt-okunur
+  defter/policy/idempotency ayrıca kontrol edilir.
+
+## Son kullanıcı bildirimi — 12 Ekim, iş bilgisayarı: v8 yeniden kurulum/APK
+
+**Sonraki kullanıcı sonucu:** APK ile açarken "Play'den yüklemediğiniz için
+açamazsınız" uyarısı geldi. Uyarının ekranı/APK dosyası henüz incelenmedi;
+Google otomatik korumanın yükleyici kontrolüyle uyumlu. Önceki evrensel APK
+önerisi bu kısıtı hesaba katmadı; korumalı Console APK'sının sideload ile
+açılacağı garanti edilmez. Mevcut korumayı/Play yayını/sunucu kodunu
+değiştirme. Sıradaki güvenli yol Alpha kapalı testin aktif kullanıcı listesini,
+telefondaki aynı Google hesabını ve opt-in bağlantısını doğrulayıp Play'den
+yeniden kurulumdur. Bu liste Lisans testi veya PGS tester listesi değildir.
+Katılım/kurulum/hesap geri dönüşü henüz gerçekleşmiş sayılmaz.
+Kaynak: https://support.google.com/googleplay/android-developer/answer/10183279?hl=tr
+
+Kullanıcı v8'i kapalı testte yayımlayıp telefonunda güncellediğini bildirdi.
+Ardından uygulamayı kendisi kaldırmış; test grubunda olmadığı için Play'den
+yeniden yükleyemediğini söylüyor ve aynı v8 APK'sını istiyor. Yayın/önceki
+telefon güncellemesi insan teyididir; güncel Console/cihaz kurulumu bağımsız
+okunmadı. Mevcut profile ulaşma ve tester üyeliği ayrıca doğrulanacak.
+
+- Exact v8 kaynak `12524b8a17941be991becf16fa965cfabb5196ee`; güncel checkout
+  HEAD `2d59f8f` ve Claude'un commit edilmemiş G7/G8 istemci/menü düzenlemeleri
+  korunur. Bunlar istenen v8 APK'sına karıştırılmayacak; reset/restore yok.
+- İş bilgisayarında beklenen upload keystore/DPAPI dosyaları, Android SDK36
+  ve Gradle cache yok; yalnız sistem Java8 görüldü. Hazır v8 APK/AAB, teslim
+  artifact dizininde veya kontrol edilen Downloads/Desktop/release output
+  yollarında bulunamadı. Yeni signer/anahtar oluşturulmadı, bağımlılık/SDK
+  kurulmadı, build/install/deploy/Play üyeliği değişikliği yapılmadı.
+- Güvenli alternatif: Play Console Test ve sürüm → En son sürümler ve paketler
+  → sürüm kodu8 → İndirilenler → **İmzalı, evrensel APK**. Google'ın mevcut
+  Play imzasıyla hazırlanmış APK'sı indirilebilir; yeni kaynak derlemesi veya
+  upload anahtarının başka bilgisayara taşınması gerekmez. Kullanıcının mevcut
+  Console oturumuyla indirmesi/ekran paylaşması beklenir; agent indirdi diye
+  varsaymayın. Alınırsa package/versionCode/sertifika ve SHA kontrolü yapılır.
+- APK indirmek/kurmak kapalı test kayıt/katılım erişimini kendiliğinden açmaz.
+  Play'den kurulum için aynı Google hesabı mevcut tester listesine ve katılım
+  bağlantısına geri alınabilir; bu ayrı insan panel adımıdır. Ücretsiz lisans
+  Billing cihaz testi ve mevcut oyuncu hesabının geri gelmesi tamamlanmış
+  sayılmaz. Sunucu/ödeme/oyuncu verilerine yeni write yapılmadı.
+- Resmî APK indirme yolu:
+  https://support.google.com/googleplay/android-developer/answer/9842756?hl=tr
 
 ## Son teslim — 11 Ekim 23:03 TR: r16 sunucu canlı, imzalı v8 AAB hazır
 

@@ -23,7 +23,7 @@
     currentCost: item.current_cost,
     category: item.category === "sistem" ? "enerji" : item.category,
     strategicRole: item.name_tr, rarity: item.rarity,
-    unlockTrophies: Math.max(0, (Number(item.unlock_arena || 1) - 1) * 300),
+    unlockTrophies: Math.max(0, Number(item.unlock_trophies ?? (Number(item.unlock_arena || 1) - 1) * 300)),
     status: item.id === "core" ? "active" : "reserve",
     position: item.id === "core" ? {x: 2, y: 1} : null,
     isDeckTemplate: item.id !== "core",
@@ -81,7 +81,7 @@
   const STARTER_BATTLE_POOL_PRESET = Object.freeze({
     name: "Başlangıç Devresi",
     module_definition_ids: Object.freeze([
-      "laser", "shield", "repair", "cooler", "battery", "amplifier",
+      "laser", "shield", "battery", "cooler", "emp", "amplifier",
     ]),
     favorite: true,
     last_used_at_ms: null,
@@ -511,17 +511,6 @@
   let accountPlatformState = null;
   let activeWeeklyEventTab = "overview";
   let activeTeamEventTab = "overview";
-  for (const nav of document.querySelectorAll(".profile-terminal-tabs")) {
-    const cosmeticButton = nav.querySelector('[data-open-screen="avatar"]');
-    if (cosmeticButton) cosmeticButton.textContent = "KOZMETİK";
-    if (nav.querySelector('[data-open-screen="friends"]')) continue;
-    const button = document.createElement("button");
-    button.type = "button";
-    button.dataset.openScreen = "friends";
-    button.textContent = "ARKADAŞ";
-    const settingsButton = nav.querySelector('[data-open-screen="settings"]');
-    nav.insertBefore(button, settingsButton || null);
-  }
   const PROFILE_AVATARS = Object.freeze([
     { id: "default", nameTr: "Devre Operatörü", glyph: "◇" },
     { id: "circuit_scout", nameTr: "Devre Kaşifi", glyph: "⌁" },
@@ -531,6 +520,8 @@
     { id: "weekly_champion", nameTr: "Haftalık Şampiyon", glyph: "✹" },
     { id: "weekly_finalist", nameTr: "Haftalık Finalist", glyph: "✧" },
     { id: "rank_spark", nameTr: "Kıvılcım Operatörü", glyph: "ϟ" },
+    // Yalnız Devre Yolu'nun sonundaki GRIDSHARD Sandığı ile açılan set.
+    { id: "gridshard_apex", nameTr: "Zirve Pilotu", glyph: "❖" },
   ]);
   const PROFILE_AVATAR_FRAMES = Object.freeze([
     { id: "none", nameTr: "Standart" },
@@ -541,6 +532,7 @@
     { id: "weekly_gold", nameTr: "Haftalık Altın" },
     { id: "weekly_silver", nameTr: "Haftalık Gümüş" },
     { id: "frequency_cyan", nameTr: "Frekans Akımı" },
+    { id: "gridshard_apex", nameTr: "Zirve Halkası" },
   ]);
   const BATTLE_EMOJIS = Object.freeze([
     { id:"none", nameTr:"Kapalı", glyph:"—" },
@@ -561,6 +553,7 @@
     { id:"core_burst", nameTr:"Çekirdek Patlaması", glyph:"✹", motion:"burst" },
     { id:"glitch_wave", nameTr:"Glitch Dalgası", glyph:"▧", motion:"glitch" },
     { id:"overload_flash", nameTr:"Aşırı Yük", glyph:"ϟ", motion:"pulse" },
+    { id:"gridshard_apex", nameTr:"Zirve Işığı", glyph:"❖", motion:"burst" },
   ]);
   const PROFILE_BACKGROUNDS = Object.freeze([
     { id:"default", nameTr:"Standart Terminal", colors:["#0c2944", "#173f5d"] },
@@ -568,6 +561,7 @@
     { id:"rank_prism", nameTr:"Prizma Akımı", colors:["#34265c", "#126a74"] },
     { id:"rank_frequency", nameTr:"Frekans Hattı", colors:["#153b58", "#176b72"] },
     { id:"rank_relay", nameTr:"Röle Akımı", colors:["#1b3159", "#174d64"] },
+    { id:"gridshard_apex", nameTr:"Zirve Devresi", colors:["#5a3a10", "#3b1f63"] },
   ]);
   const ACCOUNT_ONBOARDING_DISMISSED_KEY = `gridshard.account-onboarding.dismissed:${participantPlayerId}`;
 
@@ -601,31 +595,16 @@
     return available.find((emoji) => emoji.id === cosmetics?.selected_battle_emoji_id) || available[0] || null;
   }
 
-  // Kilitli kozmetiğin nereden açıldığı: sunucunun unlock_sources listesinden.
-  function cosmeticUnlockLabels(kind, id, cosmetics) {
-    const sources = cosmetics?.unlock_sources?.[kind]?.[id] || [];
-    const labels = sources.map((source) => {
-      if (source.kind === "season_road") return `SEZON YOLU ${source.tier}`;
-      if (source.kind === "leaderboard") return `LİDER PANOSU ${source.position}.`;
-      if (source.kind === "weekly_tournament") return `HAFTALIK TURNUVA ${source.position}.`;
-      if (source.kind === "team_tournament") return `TAKIM TURNUVASI ${source.position}.`;
-      return "";
-    }).filter(Boolean);
-    return labels.length ? [...new Set(labels)] : ["REKABET ÖDÜLÜ"];
-  }
-
-  function cosmeticStateLabel({ unlocked, selected, kind, id, cosmetics }) {
+  // Kilitli kozmetiğin altında nereden kazanıldığı yazmaz: ödüller dönemden
+  // döneme değişeceği için yalnız kilitli olduğu gösterilir.
+  function cosmeticStateLabel({ unlocked, selected }) {
     const state = document.createElement("small");
     if (unlocked) {
       state.textContent = selected ? "SEÇİLİ" : "SEÇ";
       return state;
     }
-    state.className = "cosmetic-lock-source";
-    for (const text of cosmeticUnlockLabels(kind, id, cosmetics)) {
-      const part = document.createElement("span");
-      part.textContent = text;
-      state.appendChild(part);
-    }
+    state.className = "cosmetic-locked-label";
+    state.textContent = "KİLİTLİ";
     return state;
   }
 
@@ -869,6 +848,61 @@
     return requestOwnedAudioState("view_sync");
   }
 
+  // Açılır menü (üç çizgi düğmesi): düğme listeyi açar ve kapatır; listenin
+  // dışına dokunmak, Escape, bir seçeneğe dokunmak ve ekran değişimi kapatır.
+  const dropdownMenus = [];
+
+  function setDropdownMenuOpen(entry, open, { restoreFocus=false }={}) {
+    entry.menu.hidden = !open;
+    entry.button.setAttribute("aria-expanded", String(open));
+    // Açık menünün kabı alt çubuğun üstüne çıkar (stil: .has-open-dropdown).
+    entry.menu.parentElement?.classList.toggle("has-open-dropdown", open);
+    if (!open && restoreFocus) entry.button.focus();
+  }
+
+  function closeDropdownMenus({ except=null, restoreFocus=false }={}) {
+    for (const entry of dropdownMenus) {
+      if (entry === except || entry.menu.hidden) continue;
+      setDropdownMenuOpen(entry, false, { restoreFocus });
+    }
+  }
+
+  function bindDropdownMenu(button, menu) {
+    if (!button || !menu) return;
+    const entry = { button, menu };
+    dropdownMenus.push(entry);
+    button.addEventListener("click", () => {
+      closeDropdownMenus({ except:entry });
+      setDropdownMenuOpen(entry, menu.hidden);
+    });
+    menu.addEventListener("click", (event) => {
+      if (event.target.closest("button")) setDropdownMenuOpen(entry, false);
+    });
+  }
+
+  // Dışarıya dokunmak yalnız menüyü kapatır; aynı dokunuş alttaki düğmeyi
+  // (ör. SAVAŞ) çalıştırmaz.
+  let swallowDropdownDismissClick = false;
+  document.addEventListener("pointerdown", (event) => {
+    swallowDropdownDismissClick = false;
+    for (const entry of dropdownMenus) {
+      if (entry.menu.hidden) continue;
+      if (entry.menu.contains(event.target) || entry.button.contains(event.target)) continue;
+      setDropdownMenuOpen(entry, false);
+      swallowDropdownDismissClick = true;
+    }
+  }, true);
+  document.addEventListener("click", (event) => {
+    if (!swallowDropdownDismissClick) return;
+    swallowDropdownDismissClick = false;
+    event.preventDefault();
+    event.stopPropagation();
+  }, true);
+  document.addEventListener("keydown", (event) => {
+    swallowDropdownDismissClick = false;
+    if (event.key === "Escape") closeDropdownMenus({ restoreFocus:true });
+  });
+
   function renderAppScreen() {
     const current = screenController.render();
     syncAudioStateForCurrentView();
@@ -893,6 +927,7 @@
       logClientMessage(result.reason);
       return result;
     }
+    closeDropdownMenus();
     if (!keepSubTab) resetScreenSubTabs(screen, previousScreen);
 
     if (
@@ -1102,6 +1137,166 @@
     ) || null;
   }
 
+  // Bilgi ekranının başındaki değer kutuları. Bir sonraki seviyede değişen
+  // değerin yanında fark yeşil yazar: artan değerde "+değer", kısalan bekleme
+  // süresinde "-değer". Değişmeyen değerde bir şey yazmaz.
+  function renderDetailStatRow(host, entries) {
+    if (!host) return;
+    host.replaceChildren();
+    for (const { label, value, current, next } of entries) {
+      const box = document.createElement("div");
+      const name = document.createElement("span");
+      name.textContent = label;
+      const amount = document.createElement("strong");
+      amount.textContent = String(value);
+      const change = Math.round((Number(next) - Number(current)) * 100) / 100;
+      if (next !== undefined && next !== null && Number.isFinite(change) && change !== 0) {
+        const changeLabel = document.createElement("em");
+        changeLabel.className = "stat-next-gain";
+        changeLabel.textContent = `${change > 0 ? "+" : "-"}${Math.abs(change).toLocaleString(uiLocale(), { maximumFractionDigits:2 })}`;
+        changeLabel.title = localizedUiText("Sonraki seviye");
+        amount.append(" ", changeLabel);
+      }
+      box.append(name, amount);
+      host.appendChild(box);
+    }
+  }
+
+  // --- Yükseltme göstergeleri -------------------------------------------------
+  // Yükseltme ve yetenek koşulları tek yerdedir: bilgi ekranındaki düğmeler,
+  // kartlardaki yeşil ok, Yetenekler sekmesindeki ok ve alt çubuktaki Kartlar
+  // ışığı aynı kurala bakar.
+  function moduleUpgradeBlockReason(item) {
+    const cost = item?.next_upgrade_cost;
+    const required = Number(cost?.shards || 1);
+    const usableShards = Number(item?.shards || 0) + Number(metaProgressionState?.universal_module_shards || 0);
+    if (!item?.unlocked) return `${item?.unlock_trophies ?? 0} kupada açılır.`;
+    if (!cost) return "Azami seviye.";
+    if (usableShards < required) return `Gerekli parça: ${usableShards}/${required}`;
+    if (Number(metaProgressionState?.circuit_credits || 0) < Number(cost.circuit_credits)) return `Gerekli Devre Kredisi: ${cost.circuit_credits}`;
+    // Efsanevi modül seviye 8'den sonra Akı da ister.
+    if (Number(metaProgressionState?.flux_shards || 0) < Number(cost.flux_shards || 0)) return `Gerekli Akı: ${cost.flux_shards}`;
+    return "";
+  }
+
+  // Modülü açan aşama: arena numarası ya da (sıra 12'den büyükse) lige giriş.
+  const LEAGUE_NAME_BY_UNLOCK_ORDER = Object.freeze({
+    13:"Kıvılcım Ligi", 14:"Voltaj Ligi", 15:"Reaktör Ligi", 16:"Kuantum Ligi",
+    17:"Nexus Ligi", 18:"Şampiyonlar Ligi", 19:"Efsanevi Lig", 20:"GRIDSHARD Ligi",
+  });
+
+  function moduleUnlockStage(item, definitionId = item?.definition_id) {
+    const canon = globalThis.GRIDSHARD_CANON_MODULES?.find((module) => module.id === definitionId);
+    const order = Number(item?.unlock_arena || canon?.unlock_arena || 0);
+    const league = item?.unlock_stage_kind === "league" || order > 12;
+    return {
+      order,
+      league,
+      trophies: Number(item?.unlock_trophies ?? canon?.unlock_trophies ?? 0),
+      leagueNameTr: league ? (item?.unlock_stage_name_tr || LEAGUE_NAME_BY_UNLOCK_ORDER[order] || "") : "",
+    };
+  }
+
+  // Kart rozeti dardır ("ARENA 12" kadar); ligin kısa adı yazılır.
+  const LEAGUE_BADGE_KEY_BY_UNLOCK_ORDER = Object.freeze({
+    13:"spark", 14:"volt", 15:"reactor", 16:"quantum", 17:"nexus", 18:"champions", 19:"legendary", 20:"gridshard",
+  });
+
+  function moduleUnlockBadge(item, definitionId) {
+    const stage = moduleUnlockStage(item, definitionId);
+    const leagueKey = stage.league ? LEAGUE_BADGE_KEY_BY_UNLOCK_ORDER[stage.order] : "";
+    if (leagueKey) return localizedMessage(`league.badge.${leagueKey}`);
+    return stage.order ? `ARENA ${stage.order}` : "KİLİTLİ";
+  }
+
+  function moduleUnlockRequirement(item) {
+    const stage = moduleUnlockStage(item);
+    return stage.league && stage.leagueNameTr
+      ? localizedMessage("module.unlock_requirement_league", {
+        league:localizedUiText(stage.leagueNameTr), trophies:stage.trophies,
+      })
+      : `Arena ${item.unlock_arena} · ${item.unlock_trophies} Kupa`;
+  }
+
+  function moduleTalentSelectable(item, node) {
+    return Boolean(item?.unlocked)
+      && !node.selected
+      && Number(item.level) + 1 >= node.level
+      && Number(metaProgressionState?.flux_shards || 0) >= node.flux_cost;
+  }
+
+  function coreUpgradeAvailable(core) {
+    const cost = core?.next_upgrade_cost;
+    const owned = Number(core?.shards || 0) + Number(core?.legacy_shards || 0);
+    return Boolean(core?.unlocked && cost && owned >= Number(cost.shards)
+      && Number(metaProgressionState?.flux_shards || 0) >= Number(cost.flux_shards));
+  }
+
+  function coreSkillLearnable(core, skill) {
+    return Boolean(core?.unlocked) && !skill.learned && !skill.tier_selected
+      && core.level >= skill.level
+      && Number(metaProgressionState?.flux_shards || 0) >= Number(skill.flux_cost || 0);
+  }
+
+  // Göstergeler yalnız sunucudan gelen gerçek durumla yanar (yerel önizlemede değil).
+  function metaIndicatorsLive() {
+    return Boolean(metaProgressionState) && !metaProgressionState.unavailable;
+  }
+  function moduleUpgradeAvailable(item) {
+    return metaIndicatorsLive() && Boolean(item) && !moduleUpgradeBlockReason(item);
+  }
+  function moduleTalentAvailable(item) {
+    return metaIndicatorsLive() && (item?.talents || []).some((node) => moduleTalentSelectable(item, node));
+  }
+  function coreSkillAvailable(core) {
+    return metaIndicatorsLive() && (core?.skills || []).some((skill) => coreSkillLearnable(core, skill));
+  }
+  function cardNeedsAttention(kind, item) {
+    return kind === "core"
+      ? (metaIndicatorsLive() && coreUpgradeAvailable(item)) || coreSkillAvailable(item)
+      : moduleUpgradeAvailable(item) || moduleTalentAvailable(item);
+  }
+
+  function createUpgradeArrow() {
+    const arrow = document.createElement("span");
+    arrow.className = "upgrade-arrow";
+    arrow.setAttribute("aria-hidden", "true");
+    arrow.innerHTML = '<svg viewBox="0 0 12 12" focusable="false"><path d="M6 1.3 1.7 6h2.5v4.7h3.6V6h2.5Z"/></svg>';
+    return arrow;
+  }
+
+  // Bilgi ekranındaki Yetenekler sekmesinde, seçilebilir yetenek varken yeşil ok.
+  function setDetailTabUpgradeArrow(button, available) {
+    if (!button) return;
+    button.querySelector(".upgrade-arrow")?.remove();
+    button.classList.toggle("has-upgrade-arrow", Boolean(available));
+    if (available) button.appendChild(createUpgradeArrow());
+  }
+
+  // Alt çubuk: yükseltilebilir kart ya da seçilebilir yetenek varken Kartlar
+  // düğmesinde yeşil ışık; sandık indirimi günü Mağaza düğmesinde indirim oranı.
+  function renderDockIndicators() {
+    const state = metaProgressionState;
+    const cardsButton = document.querySelector('#app-bottom-dock [data-open-screen="modules"]');
+    if (cardsButton) {
+      const ready = (state?.module_collection || []).some((item) => cardNeedsAttention("module", item))
+        || (state?.cores?.types || []).some((core) => cardNeedsAttention("core", core));
+      cardsButton.classList.toggle("has-upgrade-notification", ready);
+      cardsButton.setAttribute("aria-label", ready ? "Kartlar · Yükseltme mevcut" : "Kartlar");
+    }
+    const shopButton = document.querySelector('#app-bottom-dock [data-open-screen="shop"]');
+    const badge = document.getElementById("dock-shop-sale");
+    if (shopButton && badge) {
+      const store = state?.shop?.chest_store || null;
+      const percent = Math.round(Number(store?.discount_percent || 0));
+      const onSale = Boolean(store?.sale_active) && percent > 0;
+      badge.hidden = !onSale;
+      badge.textContent = onSale ? `-%${percent}` : "";
+      shopButton.classList.toggle("has-sale-badge", onSale);
+      shopButton.setAttribute("aria-label", onSale ? `Mağaza · %${percent} indirim` : "Mağaza");
+    }
+  }
+
   function unifiedModuleTile(item, { collection = false, selected = false } = {}) {
     const definition = metaModuleDefinition(item) || item;
     const tile = document.createElement("button");
@@ -1141,9 +1336,8 @@
       if (unlocked) {
         levelBadge.textContent = `SV ${level}`;
       } else {
-        const unlockArena = globalThis.GRIDSHARD_CANON_MODULES
-          ?.find((module) => module.id === tile.dataset.moduleDefinitionId)?.unlock_arena;
-        levelBadge.textContent = unlockArena ? `ARENA ${unlockArena}` : "KİLİTLİ";
+        levelBadge.textContent = moduleUnlockBadge(item, tile.dataset.moduleDefinitionId);
+        if (moduleUnlockStage(item, tile.dataset.moduleDefinitionId).league) levelBadge.dataset.leagueLock = "true";
         levelBadge.dataset.locked = "true";
       }
       const name = document.createElement("span");
@@ -1169,13 +1363,17 @@
       );
       footer.append(count, bar);
       tile.append(levelBadge, name, footer);
+      // Yükseltilebilir kart ya da seçilebilir yetenek: sağ üstte yeşil ok.
+      const needsAttention = cardNeedsAttention("module", item);
+      tile.dataset.upgradeAvailable = String(needsAttention);
+      if (needsAttention) tile.appendChild(createUpgradeArrow());
       tile.setAttribute(
         "aria-label",
         localizedUiText(
           unlocked
             ? `${moduleName} · Seviye ${level} · ${maxed ? "Azami seviye" : `Parça ${shards} / ${required}`}`
             : `${moduleName} · Kilitli`
-        )
+        ) + (needsAttention ? ` · ${localizedUiText("Yükseltme mevcut")}` : "")
       );
     }
     return tile;
@@ -1755,7 +1953,13 @@
       lock.textContent = "🔒";
       button.appendChild(lock);
     }
-    const options = { title, reward, note };
+    bindRewardPreview(button, { title, reward, note });
+    return button;
+  }
+
+  // Sandık düğmesinin önizleme davranışı: fareyle üzerine gelince, klavyeyle
+  // odaklanınca ya da dokununca içerik paneli açılır; dokunuş paneli sabitler.
+  function bindRewardPreview(button, options) {
     button.addEventListener("pointerenter", (event) => {
       if (event.pointerType === "mouse") showRewardPreview(button, options);
     });
@@ -1780,7 +1984,6 @@
       showRewardPreview(button, options);
       if (rewardPreviewState) rewardPreviewState.pinned = true;
     });
-    return button;
   }
 
   document.addEventListener("pointerdown", (event) => {
@@ -1794,6 +1997,46 @@
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") hideRewardPreview();
   });
+
+  // Lig amblemleri: her ligin kendi simgesi ve rengi vardır; kademe, simgenin
+  // altındaki beş çentikten okunur. Lig bilgisini göndermeyen eski sunucuda
+  // bütün ligler eskisi gibi taç simgesiyle görünür.
+  const LEAGUE_EMBLEMS = Object.freeze({
+    spark:'<path d="M12 2.5 13.8 9l6.7-1.6-4.9 4.6 4.9 4.6-6.7-1.6L12 21.5 10.2 15l-6.7 1.6L8.4 12 3.5 7.4 10.2 9Z"/>',
+    volt:'<path d="M13.5 2 5 13.5h5.5L9 22l9-12.5h-5.8Z"/>',
+    reactor:'<path d="M12 3 19.8 7.5v9L12 21 4.2 16.5v-9Z"/><circle cx="12" cy="12" r="3.2"/><path d="M12 3v5.8M19.8 16.5l-5-2.9M4.2 16.5l5-2.9"/>',
+    quantum:'<ellipse cx="12" cy="12" rx="9.5" ry="3.8"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(120 12 12)"/><circle cx="12" cy="12" r="1.7"/>',
+    nexus:'<path d="M12 3.2 20 12l-8 8.8L4 12Z"/><path d="M12 3.2v17.6M4 12h16"/><circle cx="12" cy="12" r="2.3"/>',
+    champions:'<path d="M7 4h10v4.5a5 5 0 0 1-10 0Z"/><path d="M7 5.5H4.2c0 3 1.2 4.6 3.3 4.9M17 5.5h2.8c0 3-1.2 4.6-3.3 4.9M12 13.5V17M8.5 20h7M9.5 17h5v3h-5Z"/>',
+    legendary:'<path d="M4 17.5 5.5 8l4 3.6L12 5l2.5 6.6 4-3.6 1.5 9.5Z"/><path d="M4.5 20.2h15"/><circle cx="12" cy="14.2" r="1.3"/>',
+    gridshard:'<path d="M12 2 21 12 12 22 3 12Z"/><path d="M12 6.5 16.9 12 12 17.5 7.1 12Z"/><path d="M12 2v4.5M12 17.5V22M3 12h4.1M16.9 12H21"/>',
+  });
+
+  function leagueEmblemMarkup(stage) {
+    const paths = LEAGUE_EMBLEMS[stage?.league];
+    if (!paths) return "♛";
+    const tiers = Number(stage.league_tiers || 1);
+    const tier = Number(stage.league_tier || 1);
+    const pips = tiers > 1
+      ? `<span class="league-emblem-tier">${Array.from({ length:tiers }, (_, index) => `<i${index < tier ? ' class="is-on"' : ""}></i>`).join("")}</span>`
+      : "";
+    return `<svg class="league-emblem" viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>${pips}`;
+  }
+
+  // Lig sandığı mağazadaki sandıklara benzemez: köşeli bir kasa, kilidinde ligin
+  // amblemi, rengi ligin rengi. Çizim ortak; rengi CSS'teki --league-accent verir.
+  function leagueChestMarkup(league) {
+    const emblem = LEAGUE_EMBLEMS[league] || LEAGUE_EMBLEMS.gridshard;
+    return `<svg class="league-chest" data-league-chest="${String(league || "").replace(/[^a-z]/g, "")}" viewBox="0 0 64 60" aria-hidden="true">`
+      + '<path class="league-chest-lid" d="M9 24 17 7h30l8 17Z"/>'
+      + '<path class="league-chest-shine" d="M21 11.5h22"/>'
+      + '<path class="league-chest-body" d="M7 26h50v20l-8 9H15l-8-9Z"/>'
+      + '<path class="league-chest-strap" d="M22 7v17M42 7v17M22 26v29M42 26v29"/>'
+      + '<path class="league-chest-seam" d="M9 25h46"/>'
+      + '<circle class="league-chest-lock" cx="32" cy="39" r="10.5"/>'
+      + `<g class="league-chest-emblem" transform="translate(24.2 31.2) scale(.65)">${emblem}</g>`
+      + "</svg>";
+  }
 
   // Maçta yeni açılan Devre Yolu ödülü; yol yeniden çizilse de vurgulu kalır.
   let highlightedArenaNodeId = "";
@@ -1809,7 +2052,8 @@
       : arenaPath;
     const currentStageId = metaProgressionState?.rank?.id;
     const rewardIcon = (rewards = {}) => {
-      if (rewards.chest_id) return resourceSymbolMarkup("chest");
+      // GRIDSHARD Sandığı kozmetik seti taşır; o da sandık simgesiyle görünür.
+      if (rewards.chest_id || rewards.profile_background_id) return resourceSymbolMarkup("chest");
       if (rewards.core_shards) {
         const identity = coreRewardIdentity(rewards);
         const visual = CORE_VISUALS[identity.id] || CORE_VISUALS.core_resonance;
@@ -1828,11 +2072,15 @@
       const unlocked = arena ? Boolean(arena.unlocked) : Number(arenaViewModel().rating) >= Number(stage.minimum_rating || 0);
       const section = document.createElement("section");
       section.className = `arena-path-stage${unlocked ? " is-unlocked" : ""}${isLeagueStage ? " is-league" : ""}${stage.id === currentStageId ? " is-current" : ""}`;
+      // Yol boyunca renk değişir: arenalar camgöbeğinden mora, ligler kendi rengine.
+      if (isLeagueStage && stage.league) section.dataset.league = stage.league;
+      else if (!isLeagueStage) section.style.setProperty("--stage-hue", String(178 + (Number(stage.index || 1) - 1) * 9));
       const head = document.createElement("header");
       head.className = "arena-path-stage-head";
       const marker = document.createElement("span");
       marker.className = "arena-path-marker";
-      marker.textContent = isLeagueStage ? "♛" : String(stage.index || "◇");
+      if (isLeagueStage) marker.innerHTML = leagueEmblemMarkup(stage);
+      else marker.textContent = String(stage.index || "◇");
       const copy = document.createElement("div");
       copy.className = "arena-path-stage-copy";
       const title = document.createElement("h3");
@@ -1888,6 +2136,34 @@
           unlockArea.append(label, cards);
           section.appendChild(unlockArea);
         }
+        // Bu arenada açılan çekirdek, modüllerden ayrı bir satırda durur.
+        if (arena.core_unlock?.id) {
+          const core = arena.core_unlock;
+          const visual = CORE_VISUALS[core.id] || CORE_VISUALS.core_resonance;
+          const coreArea = document.createElement("div");
+          coreArea.className = "arena-module-unlocks arena-core-unlocks";
+          const label = document.createElement("span");
+          label.textContent = localizedUiText("BU ARENADA AÇILAN ÇEKİRDEK");
+          const row = document.createElement("div");
+          const card = document.createElement("button");
+          card.type = "button";
+          card.dataset.coreType = core.id;
+          card.style.setProperty("--arena-module", visual.accent);
+          card.setAttribute("aria-label", localizedUiText(core.name_tr || visual.nameTr));
+          const glyph = document.createElement("i");
+          glyph.setAttribute("aria-hidden", "true");
+          glyph.textContent = visual.glyph;
+          const name = document.createElement("strong");
+          name.textContent = localizedUiText(core.name_tr || visual.nameTr);
+          card.append(glyph, name);
+          card.addEventListener("click", () => {
+            selectedCollectionCoreId = core.id;
+            openCoreDetail();
+          });
+          row.appendChild(card);
+          coreArea.append(label, row);
+          section.appendChild(coreArea);
+        }
 
         const nodes = (arena.nodes || []).filter((node) => Object.keys(node.rewards || {}).length && Number(node.trophies) >= Number(stage.minimum_rating || 0));
         const road = document.createElement("div");
@@ -1926,19 +2202,98 @@
         }
         section.appendChild(road);
       } else {
+        // Lige girişte açılan modül (yalnız ligin ilk kademesinde).
+        const leagueUnlocks = (metaProgressionState?.module_collection || [])
+          .filter((item) => item.unlock_stage_id && item.unlock_stage_id === stage.id);
+        if (leagueUnlocks.length) {
+          const unlockArea = document.createElement("div");
+          unlockArea.className = "arena-module-unlocks arena-league-module-unlocks";
+          const label = document.createElement("span");
+          label.textContent = localizedUiText(leagueUnlocks.length > 1 ? "BU LİGDE AÇILAN MODÜLLER" : "BU LİGDE AÇILAN MODÜL");
+          const cards = document.createElement("div");
+          for (const item of leagueUnlocks) {
+            const card = document.createElement("button");
+            card.type = "button";
+            card.dataset.category = item.category || "";
+            card.title = localizedUiText(item.name_tr);
+            card.setAttribute("aria-label", localizedUiText(item.name_tr));
+            card.textContent = moduleIconFor({ nameTr: item.name_tr });
+            card.addEventListener("click", () => {
+              selectedCollectionModuleId = item.definition_id;
+              openModuleDetail();
+            });
+            cards.appendChild(card);
+          }
+          unlockArea.append(label, cards);
+          section.appendChild(unlockArea);
+        }
         const leagueRoad = document.createElement("div");
         leagueRoad.className = "arena-reward-road arena-league-reward-road";
+        let chestStop = null;
+        const claimLeagueNode = async (node, control) => {
+          control.disabled = true;
+          const status = document.getElementById("arena-reward-status");
+          try {
+            await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/arena/${encodeURIComponent(node.id)}/claim`);
+            if (status) status.textContent = "";
+            renderArenaPath();
+          } catch (error) {
+            if (status) status.textContent = error.message;
+            control.disabled = false;
+          }
+        };
         for (const node of stage.nodes || []) {
           const rewardDescription = localizedArenaRewardDescription(node);
-          const reward = document.createElement("button");
-          reward.type = "button";
-          reward.className = `arena-reward-node${node.claimed ? " is-claimed" : ""}${node.claimable ? " is-claimable" : ""}`;
-          reward.disabled = !node.claimable;
-          reward.dataset.arenaNodeId = String(node.id);
-          reward.classList.toggle("is-new-reward", Boolean(node.claimable) && String(node.id) === highlightedArenaNodeId);
+          // Lig geçişindeki sandık ve modül ana ödüldür; kademe içindekiler ara ödül.
+          const stateClass = `${node.claimed ? " is-claimed" : ""}${node.claimable ? " is-claimable" : ""}${node.is_main_reward || node.is_final_reward ? " is-main-reward" : ""}${node.is_final_reward ? " is-final-reward" : ""}`;
+          const isNewReward = Boolean(node.claimable) && String(node.id) === highlightedArenaNodeId;
           const trophy = document.createElement("span");
           trophy.className = "arena-reward-trophy";
           trophy.textContent = localizedMessage("arena.trophy_icon", {count:localizedNumber(node.trophies)});
+          // Lig sandığı hücre içinde durmaz; yolun ucunda, ulaşılacak hedef olarak
+          // havada bekler. İçeriği diğer sandıklardaki gibi üzerine gelince ya da
+          // dokununca açılan önizlemede görünür; almak için ayrı düğme vardır.
+          if (node.league_chest || node.is_final_reward) {
+            const stop = document.createElement("div");
+            stop.className = `arena-reward-node is-floating-chest${stateClass}`;
+            stop.dataset.arenaNodeId = String(node.id);
+            stop.tabIndex = -1;
+            stop.classList.toggle("is-new-reward", isNewReward);
+            const chest = document.createElement("button");
+            chest.type = "button";
+            chest.className = "league-chest-button";
+            chest.setAttribute("aria-expanded", "false");
+            chest.setAttribute("aria-label", localizedMessage("reward.chest_preview_aria", {name:rewardDescription}));
+            chest.innerHTML = leagueChestMarkup(node.league_chest || stage.league || "gridshard");
+            bindRewardPreview(chest, { title:rewardDescription, reward:node.rewards || {} });
+            const name = document.createElement("strong");
+            name.textContent = rewardDescription;
+            stop.append(chest, name, trophy);
+            if (node.claimable) {
+              const claim = document.createElement("button");
+              claim.type = "button";
+              claim.className = "arena-league-chest-claim";
+              claim.textContent = localizedMessage("reward.claim_upper");
+              claim.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
+              claim.addEventListener("click", () => claimLeagueNode(node, claim));
+              stop.appendChild(claim);
+            } else if (node.claimed) {
+              const state = document.createElement("small");
+              state.className = "arena-league-chest-state";
+              state.textContent = localizedMessage("reward.claimed");
+              stop.appendChild(state);
+            }
+            chestStop = document.createElement("div");
+            chestStop.className = "arena-league-chest-stop";
+            chestStop.appendChild(stop);
+            continue;
+          }
+          const reward = document.createElement("button");
+          reward.type = "button";
+          reward.className = `arena-reward-node${stateClass}`;
+          reward.disabled = !node.claimable;
+          reward.dataset.arenaNodeId = String(node.id);
+          reward.classList.toggle("is-new-reward", isNewReward);
           const glyph = document.createElement("i");
           glyph.setAttribute("aria-hidden", "true");
           glyph.innerHTML = rewardIcon(node.rewards);
@@ -1946,21 +2301,11 @@
           caption.textContent = node.claimed ? localizedMessage("reward.claimed") : rewardDescription;
           reward.append(trophy, glyph, caption);
           if (node.claimable) reward.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
-          reward.addEventListener("click", async () => {
-            reward.disabled = true;
-            const status = document.getElementById("arena-reward-status");
-            try {
-              await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/arena/${encodeURIComponent(node.id)}/claim`);
-              if (status) status.textContent = "";
-              renderArenaPath();
-            } catch (error) {
-              if (status) status.textContent = error.message;
-              reward.disabled = false;
-            }
-          });
+          reward.addEventListener("click", () => claimLeagueNode(node, reward));
           leagueRoad.appendChild(reward);
         }
-        section.appendChild(leagueRoad);
+        if (leagueRoad.childElementCount) section.appendChild(leagueRoad);
+        if (chestStop) section.appendChild(chestStop);
       }
       host.appendChild(section);
     }
@@ -2106,6 +2451,13 @@
       check.textContent = "✓";
       tile.appendChild(check);
     }
+    // Yükseltilebilir çekirdek ya da seçilebilir yetenek: sağ üstte yeşil ok.
+    const needsAttention = cardNeedsAttention("core", core);
+    tile.dataset.upgradeAvailable = String(needsAttention);
+    if (needsAttention) {
+      tile.appendChild(createUpgradeArrow());
+      tile.setAttribute("aria-label", `${tile.getAttribute("aria-label")} · ${localizedUiText("Yükseltme mevcut")}`);
+    }
     return tile;
   }
 
@@ -2219,6 +2571,7 @@
     const core = activeMetaCore();
     const host = document.getElementById("core-detail-tab-content");
     if (!core || !host) return;
+    setDetailTabUpgradeArrow(document.querySelector('[data-core-detail-tab="skills"]'), coreSkillAvailable(core));
     host.replaceChildren();
     host.dataset.tab = tabName;
     const intro = document.createElement("p");
@@ -2250,7 +2603,7 @@
         button.className = skill.learned ? "is-selected" : "";
         const state = skill.learned ? "SEÇİLDİ" : skill.tier_selected ? "DİĞER DAL SEÇİLDİ" : core.level < skill.level ? `SV ${skill.level} GEREKLİ` : `${skill.flux_cost} AKI`;
         button.innerHTML = `<strong>${skill.name_tr}</strong><small>SV ${skill.level} · ${state}</small>`;
-        button.disabled = !core.unlocked || skill.learned || skill.tier_selected || core.level < skill.level || Number(metaProgressionState?.flux_shards || 0) < Number(skill.flux_cost || 0);
+        button.disabled = !coreSkillLearnable(core, skill);
         button.addEventListener("click", async () => {
           button.disabled = true;
           try { await mutateSelectedCore(`skills/${skill.id}`); }
@@ -2272,7 +2625,6 @@
         ["İMZA", core.signature_name_tr || "—"],
         ["AÇILIŞ", `Arena ${core.unlock_arena}`],
         ["ENERJİ", `${core.energy_per_second}/sn`],
-        ["SONRAKİ SEVİYE", core.next_upgrade_cost ? `${core.next_upgrade_cost.shards} parça · ${core.next_upgrade_cost.flux_shards} Akı` : "Azami seviye"],
       ]) {
         const card = document.createElement("div");
         card.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
@@ -2304,12 +2656,16 @@
     if (progress) { progress.max = required; progress.value = cost ? Math.min(required, owned) : required; }
     const art = document.getElementById("core-detail-art");
     if (art) { art.textContent = visual.glyph; applyCoreVisualIdentity(art, core.id); }
-    const stats = document.getElementById("core-detail-stats");
-    if (stats) stats.innerHTML = `<div><span>ENERJİ</span><strong>${core.energy_per_second}/sn</strong></div><div><span>DEPO</span><strong>${core.energy_capacity}</strong></div><div><span>YETENEK</span><strong>${(core.skills || []).filter((skill) => skill.learned).length}</strong></div>`;
+    const nextStats = core.unlocked ? core.next_stats : null;
+    renderDetailStatRow(document.getElementById("core-detail-stats"), [
+      { label:"ENERJİ", value:`${core.energy_per_second}/sn`, current:core.energy_per_second, next:nextStats?.energy_per_second },
+      { label:"DEPO", value:core.energy_capacity, current:core.energy_capacity, next:nextStats?.energy_capacity },
+      { label:"YETENEK", value:(core.skills || []).filter((skill) => skill.learned).length },
+    ]);
     const select = document.getElementById("core-detail-select");
     if (select) { select.disabled = !core.unlocked || core.selected; select.textContent = core.selected ? "SEÇİLDİ" : core.unlocked ? "SEÇ" : "KİLİTLİ"; }
     const upgrade = document.getElementById("core-detail-upgrade");
-    const canUpgrade = core.unlocked && cost && owned >= Number(cost.shards) && Number(metaProgressionState?.flux_shards || 0) >= Number(cost.flux_shards);
+    const canUpgrade = coreUpgradeAvailable(core);
     if (upgrade) { upgrade.disabled = !canUpgrade; upgrade.textContent = cost ? `YÜKSELT · ${cost.flux_shards} AKI` : "AZAMİ SEVİYE"; }
     setText("core-detail-status", !core.unlocked ? `Arena ${core.unlock_arena} seviyesinde açılır.` : cost && !canUpgrade ? `${cost.shards} parça ve ${cost.flux_shards} Akı gerekli.` : "");
     for (const button of document.querySelectorAll("[data-core-detail-tab]")) button.classList.toggle("is-active", button.dataset.coreDetailTab === "overview");
@@ -3774,6 +4130,7 @@
     const item = activeMetaModule();
     const host = document.getElementById("module-detail-tab-content");
     if (!item || !host) return;
+    setDetailTabUpgradeArrow(document.querySelector('[data-module-detail-tab="talents"]'), moduleTalentAvailable(item));
     host.replaceChildren();
     host.dataset.tab = tabName;
     host.dataset.category = item.category || "";
@@ -3828,10 +4185,7 @@
         node.choices.forEach((choice, choiceIndex) => {
           const button = document.createElement("button");
           button.type = "button";
-          const canChoose = item.unlocked
-            && !node.selected
-            && Number(item.level) + 1 >= node.level
-            && Number(metaProgressionState?.flux_shards || 0) >= node.flux_cost;
+          const canChoose = moduleTalentSelectable(item, node);
           button.className = `${choiceIndex === 0 ? "is-left-choice" : "is-right-choice"}${node.selected === choice.id ? " is-selected" : ""}${canChoose ? "" : " is-unavailable"}`;
           const choiceState = node.selected === choice.id
             ? "SEÇİLDİ"
@@ -3895,7 +4249,7 @@
       text.textContent = item.description_tr || item.strategic_role || item.name_tr;
       const overview = document.createElement("div");
       overview.className = "module-overview-grid";
-      for (const [label, rawValue] of [["SAVAŞ ROLÜ", item.strategic_role || "—"], ["SINIF", poolCategoryLabel(item.category)], ["AÇILIŞ", `Arena ${item.unlock_arena} · ${item.unlock_trophies} Kupa`], ["SONRAKİ SEVİYE", item.next_stats ? `CAN ${item.next_stats.max_hp} · HASAR ${item.next_stats.base_damage}` : "Azami seviye"]]) {
+      for (const [label, rawValue] of [["SAVAŞ ROLÜ", item.strategic_role || "—"], ["SINIF", poolCategoryLabel(item.category)], ["AÇILIŞ", moduleUnlockRequirement(item)]]) {
         const card = document.createElement("div");
         const name = document.createElement("span");
         const value = document.createElement("strong");
@@ -3940,13 +4294,29 @@
       art.textContent = moduleIconFor(definition);
       art.setAttribute("aria-label", `${item.name_tr} görseli`);
     }
-    const stats = document.getElementById("module-detail-stats");
-    if (stats) stats.innerHTML = `<div><span>CAN</span><strong>${item.stats?.max_hp ?? definition.maxHp}</strong></div><div><span>AKIM</span><strong>ϟ ${item.current_cost ?? definition.currentCost}</strong></div><div><span>HASAR</span><strong>${item.stats?.base_damage || 0}</strong></div>`;
+    const nextStats = item.unlocked ? item.next_stats : null;
+    // Ortadaki kutu modülün bekleme (atış) süresidir; Akım maliyeti İstatistik sekmesindedir.
+    const cooldownSeconds = (stats) => (stats?.cooldown_ms === undefined || stats?.cooldown_ms === null
+      ? undefined
+      : Number(stats.cooldown_ms) / 1000);
+    const cooldown = cooldownSeconds(item.stats);
+    renderDetailStatRow(document.getElementById("module-detail-stats"), [
+      { label:"CAN", value:item.stats?.max_hp ?? definition.maxHp, current:item.stats?.max_hp, next:nextStats?.max_hp },
+      {
+        label:"BEKLEME",
+        value:cooldown === undefined ? "—" : `${cooldown.toLocaleString(uiLocale(), { maximumFractionDigits:2 })} sn`,
+        current:cooldown,
+        next:cooldownSeconds(nextStats),
+      },
+      { label:"HASAR", value:item.stats?.base_damage || 0, current:item.stats?.base_damage, next:nextStats?.base_damage },
+    ]);
     const upgrade = document.getElementById("module-detail-upgrade");
-    const reason = !item.unlocked ? `${item.unlock_trophies ?? 0} kupada açılır.` : !cost ? "Azami seviye." : totalUsableShards < required ? `Gerekli parça: ${totalUsableShards}/${required}` : Number(metaProgressionState?.circuit_credits || 0) < Number(cost.circuit_credits) ? `Gerekli Devre Kredisi: ${cost.circuit_credits}` : "";
+    const reason = moduleUpgradeBlockReason(item);
     if (upgrade) {
       upgrade.disabled = Boolean(reason || metaProgressionState?.unavailable);
-      upgrade.textContent = cost ? `YÜKSELT · ${cost.circuit_credits} DK` : "AZAMİ SEVİYE";
+      upgrade.textContent = cost
+        ? `YÜKSELT · ${cost.circuit_credits} DK${Number(cost.flux_shards) > 0 ? ` · ${cost.flux_shards} AKI` : ""}`
+        : "AZAMİ SEVİYE";
     }
     setText("module-detail-status", reason);
     for (const button of document.querySelectorAll("[data-module-detail-tab]")) button.classList.toggle("is-active", button.dataset.moduleDetailTab === "overview");
@@ -3989,9 +4359,27 @@
     return `team:${kind}:${participantPlayerId}:${Date.now()}:${Math.random().toString(16).slice(2)}`;
   }
 
+  // Takım durumu sunucudan gelene kadar ne takım sayfası ne de "katıl /
+  // oluştur" ekranı gösterilir; ilk yükleme başarısız olursa yeniden deneme
+  // düğmesi çıkar.
+  function renderTeamSections({ failed=false }={}) {
+    const loaded = Boolean(teamState);
+    const joined = Boolean(teamState?.joined);
+    const setHidden = (id, hidden) => {
+      const element = document.getElementById(id);
+      if (element) element.hidden = hidden;
+    };
+    setHidden("team-loading", loaded);
+    setHidden("team-loading-text", failed);
+    setHidden("team-loading-retry", !failed);
+    setHidden("team-onboarding", !loaded || joined);
+    setHidden("team-hub", !joined);
+  }
+
   async function loadTeamView() {
     const connection = document.getElementById("team-connection-state");
     if (connection) connection.textContent = "Yükleniyor…";
+    renderTeamSections();
     try {
       teamState = await requestJsonWithDeadline(
         `/teams/player/${encodeURIComponent(participantPlayerId)}`,
@@ -4008,6 +4396,7 @@
     } catch (error) {
       if (connection) connection.textContent = "BAĞLANTI HATASI";
       setTeamActionStatus(error instanceof Error ? error.message : String(error), "error");
+      renderTeamSections({ failed:true });
       return { ok:false, error };
     }
   }
@@ -4808,10 +5197,10 @@
   function renderSocialNotificationDots() {
     const counts = socialNotificationCounts();
     const hasSocial = counts.incoming + counts.messages + counts.battle > 0;
-    for (const button of document.querySelectorAll('.profile-terminal-tabs [data-open-screen="friends"]')) {
+    for (const button of document.querySelectorAll('#lobby-menu [data-open-screen="friends"]')) {
       button.classList.toggle("has-persistent-notification", hasSocial);
     }
-    document.getElementById("lobby-profile-button")?.classList.toggle("has-social-notification", hasSocial);
+    document.getElementById("lobby-menu-button")?.classList.toggle("has-social-notification", hasSocial);
     for (const button of document.querySelectorAll("[data-friends-tab]")) {
       const tab = button.dataset.friendsTab;
       button.classList.toggle("is-active", tab === activeFriendsTab);
@@ -5987,9 +6376,9 @@
       if (!host) continue;
       host.replaceChildren();
       const allowed = teamState?.appearance_options?.[field] || Object.keys(catalog);
-      // Varsayılanlar dışındaki seçenekler takım turnuvasında kazanılır.
+      // Varsayılanlar dışındaki seçenekler takım turnuvasında kazanılır;
+      // kilitli seçeneğin altında nereden kazanıldığı yazmaz.
       const unlocked = teamState?.appearance_unlocked?.[field] || null;
-      const sources = teamState?.appearance_unlock_sources?.[field] || {};
       for (const id of allowed) {
         const item = catalog[id];
         if (!item) continue;
@@ -6006,9 +6395,7 @@
         const label = document.createElement("strong");
         label.textContent = item.nameTr;
         const state = document.createElement("small");
-        state.textContent = locked
-          ? (sources[id] ? `TURNUVA ${sources[id]}.` : "TURNUVA ÖDÜLÜ")
-          : selected ? "SEÇİLİ" : "SEÇ";
+        state.textContent = locked ? "KİLİTLİ" : selected ? "SEÇİLİ" : "SEÇ";
         option.append(visualFor(item, id), label, state);
         if (locked) {
           const lock = document.createElement("i");
@@ -6125,11 +6512,6 @@
   function renderTeamManagement() {
     const panel = document.querySelector('[data-team-panel="management"]');
     if (!panel || !teamState?.joined || !teamState.is_owner) return;
-    for (const button of panel.querySelectorAll("[data-team-management-tab]")) {
-      const active = button.dataset.teamManagementTab === activeTeamManagementTab;
-      button.classList.toggle("is-active", active);
-      button.setAttribute("aria-pressed", String(active));
-    }
     for (const section of panel.querySelectorAll("[data-team-management-panel]")) {
       section.hidden = section.dataset.teamManagementPanel !== activeTeamManagementTab;
     }
@@ -6513,7 +6895,7 @@
   }
 
   // Takım liderine bekleyen başvuru ışığı: alt gezinmedeki TAKIM düğmesi,
-  // takım amblemi (yönetim girişi) ve Üye Yönetimi sekmesi. Sayı takım
+  // takım başlığındaki üç çizgi düğmesi ve menüdeki Üye Yönetimi satırı. Sayı takım
   // ekranı açıkken takım durumundan, diğer ekranlarda mesaj kutusu
   // tazelemesinden gelir.
   let pendingTeamApplications = 0;
@@ -6537,7 +6919,7 @@
     for (const button of document.querySelectorAll('#app-bottom-dock [data-open-screen="team"]')) {
       button.classList.toggle("has-persistent-notification", has);
     }
-    document.getElementById("team-management-open")?.classList.toggle("has-team-application", has);
+    document.getElementById("team-menu-button")?.classList.toggle("has-team-application", has);
     const badge = document.getElementById("team-application-badge");
     if (badge) {
       badge.hidden = !has;
@@ -6545,12 +6927,20 @@
     }
   }
 
+  // Takım başlığındaki üç çizgi menüsü (Kozmetik, Üye Yönetimi) yalnız liderde
+  // görünür. Liderliği devreden oyuncu yönetim bölümündeyse profile döner.
+  function renderTeamMenu() {
+    const owner = Boolean(teamState?.is_owner);
+    if (activeTeamTab === "management" && !owner) activeTeamTab = "profile";
+    const button = document.getElementById("team-menu-button");
+    if (button) button.hidden = !owner;
+  }
+
   function renderTeamHub() {
     const onboarding = document.getElementById("team-onboarding");
     const hub = document.getElementById("team-hub");
     if (!onboarding || !hub || !teamState) return;
-    onboarding.hidden = Boolean(teamState.joined);
-    hub.hidden = !teamState.joined;
+    renderTeamSections();
 
     noteTeamApplicationsFromTeamState();
     renderTeamNotificationLights();
@@ -6570,8 +6960,7 @@
       teamDescription.textContent = descriptionText;
       teamDescription.hidden = !descriptionText;
     }
-    setText("team-member-count", `${teamState.member_count || 0} / ${teamState.member_limit || 30} ÜYE`);
-    renderTrophyValue("team-total-trophies", Number(teamState.total_trophies || 0));
+    setText("team-member-count", `${teamState.member_count || 0} / ${teamState.member_limit || 30}`);
     const statistics = teamState.statistics || {};
     const tournament = teamState.tournament || {};
     setText("team-profile-total-trophies", Number(teamState.total_trophies || 0).toLocaleString(uiLocale()));
@@ -6582,10 +6971,9 @@
     setText("team-profile-tournament-points", `${Number(tournament.points || 0).toLocaleString(uiLocale())} P`);
     const teamIdentity = document.getElementById("team-identity-card");
     const teamAvatar = document.getElementById("team-avatar-glyph");
-    const managementOpen = document.getElementById("team-management-open");
     const teamNameNode = document.getElementById("team-name");
     applyTeamAppearance(teamIdentity, teamState.appearance, { emblemHost:teamAvatar, nameHost:teamNameNode });
-    if (managementOpen) managementOpen.disabled = !teamState.is_owner;
+    renderTeamMenu();
     renderTeamManagement();
 
     for (const button of document.querySelectorAll("[data-team-tab]")) {
@@ -6795,6 +7183,7 @@
       const flux = document.getElementById("lobby-flux-shards");
       if (flux) flux.textContent = String(state.flux_shards || 0);
     }
+    renderDockIndicators();
     scheduleMetaHubFlush();
   }
 
@@ -7113,20 +7502,21 @@
   document.querySelectorAll("[data-team-lobby-tab]").forEach((button) => {
     button.addEventListener("click", () => openTeamLobbyTab(button.dataset.teamLobbyTab));
   });
-  document.getElementById("team-management-open")?.addEventListener("click", () => {
-    if (!teamState?.is_owner) return;
-    activeTeamTab = "management";
-    renderTeamHub();
+  document.getElementById("team-loading-retry")?.addEventListener("click", () => {
+    void loadTeamView();
+  });
+  // Takım menüsü: satır, takım yönetiminin ilgili sayfasını açar.
+  document.querySelectorAll("#team-menu [data-team-management-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (!teamState?.is_owner) return;
+      activeTeamManagementTab = button.dataset.teamManagementTab || "cosmetics";
+      activeTeamTab = "management";
+      renderTeamHub();
+    });
   });
   document.getElementById("team-management-back")?.addEventListener("click", () => {
     activeTeamTab = "profile";
     renderTeamHub();
-  });
-  document.querySelectorAll("[data-team-management-tab]").forEach((button) => {
-    button.addEventListener("click", () => {
-      activeTeamManagementTab = button.dataset.teamManagementTab || "cosmetics";
-      renderTeamManagement();
-    });
   });
   document.getElementById("team-appearance-save")?.addEventListener("click", async () => {
     if (!teamState?.team_id || !teamAppearanceDraft) return;
@@ -8399,6 +8789,7 @@
     if (status === "battle") {
       if (appRouter.currentScreen !== RelayAppScreen.PLAY) {
         appRouter.go(RelayAppScreen.PLAY);
+        closeDropdownMenus();
         screenController.render();
       }
       if (battleJustStarted) {
@@ -16774,7 +17165,7 @@
         button.dataset.state = !unlocked.has(avatar.id) ? "locked" : avatar.id === avatarId ? "selected" : "available";
         button.disabled = !unlocked.has(avatar.id);
         button.innerHTML = `<span>${avatar.glyph}</span><strong>${avatar.nameTr}</strong>`;
-        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(avatar.id), selected:avatar.id === avatarId, kind:"avatar", id:avatar.id, cosmetics }));
+        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(avatar.id), selected:avatar.id === avatarId }));
         button.addEventListener("click", () => selectProfileCosmetic("avatar", avatar.id));
         avatarHost.appendChild(button);
       }
@@ -16792,7 +17183,7 @@
         button.dataset.state = !unlocked.has(frame.id) ? "locked" : frame.id === frameId ? "selected" : "available";
         button.disabled = !unlocked.has(frame.id);
         button.innerHTML = `<span>◇</span><strong>${frame.nameTr}</strong>`;
-        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(frame.id), selected:frame.id === frameId, kind:"avatar_frame", id:frame.id, cosmetics }));
+        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(frame.id), selected:frame.id === frameId }));
         button.addEventListener("click", () => selectProfileCosmetic("frame", frame.id));
         frameHost.appendChild(button);
       }
@@ -16814,7 +17205,7 @@
         button.append(
           createBattleEmojiVisual(emoji),
           name,
-          cosmeticStateLabel({ unlocked:unlocked.has(emoji.id), selected:emoji.id === quickEmojiId, kind:"battle_emoji", id:emoji.id, cosmetics })
+          cosmeticStateLabel({ unlocked:unlocked.has(emoji.id), selected:emoji.id === quickEmojiId })
         );
         button.addEventListener("click", () => selectProfileCosmetic("emoji", emoji.id));
         emojiHost.appendChild(button);
@@ -16834,7 +17225,7 @@
         button.dataset.state = !unlocked.has(background.id) ? "locked" : background.id === backgroundId ? "selected" : "available";
         button.disabled = !unlocked.has(background.id);
         button.innerHTML = `<span>▰</span><strong>${background.nameTr}</strong>`;
-        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(background.id), selected:background.id === backgroundId, kind:"profile_background", id:background.id, cosmetics }));
+        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(background.id), selected:background.id === backgroundId }));
         button.addEventListener("click", () => selectProfileCosmetic("background", background.id));
         backgroundHost.appendChild(button);
       }
@@ -17920,8 +18311,8 @@
 
     const notificationByScreen = {
       profile: false,
-      // Profile terminalinde okunmamış durum tek bir hedefte görünür:
-      // Ödüller sekmesi. Avatar açılır ekranı kendi başına nokta taşımaz.
+      // Menüde okunmamış durum tek bir hedefte görünür: Ödüller satırı.
+      // Kozmetik satırı kendi başına nokta taşımaz.
       avatar: false,
       daily: notifications.rewards ?? (dailyHasNotification || seasonHasNotification),
       "daily-rewards": Boolean(loginHasNotification),
@@ -17936,8 +18327,9 @@
         Boolean(notificationByScreen[target])
       );
     }
-    const lobbyProfileButton = document.getElementById("lobby-profile-button");
-    lobbyProfileButton?.classList.toggle(
+    // Işık, bu sayfalara götüren üç çizgi düğmesinde yanar.
+    const lobbyMenuButton = document.getElementById("lobby-menu-button");
+    lobbyMenuButton?.classList.toggle(
       "has-avatar-notification",
       Boolean(dailyHasNotification || seasonHasNotification || notifications.avatar)
     );
@@ -18027,12 +18419,6 @@
       rewards.replaceChildren();
       const premiumPass = engagement.premium_pass || {};
       const premiumTrack = engagement.premiumRewardTrack || engagement.premium_reward_track || [];
-      const premiumStatus = document.getElementById("season-premium-status");
-      if (premiumStatus) {
-        premiumStatus.textContent = localizedUiText(premiumPass.status_tr || "");
-        premiumStatus.dataset.active = String(Boolean(premiumPass.active));
-        premiumStatus.hidden = !premiumPass.status_tr;
-      }
       renderSeasonPremiumPurchase();
       const seasonXp = Number(engagement.season_xp || 0);
       for (const reward of engagement.rewardTrack || []) {
@@ -19645,7 +20031,7 @@
     renderPlayModeUi();
     void loadSocialView();
     void loadTeamView();
-    void presentArenaRewardEarnedInMatch(progression);
+    void presentRoadNewsEarnedInMatch(progression);
   }
 
   document.getElementById("post-match-continue")?.addEventListener(
@@ -19937,6 +20323,90 @@
     highlightedArenaNodeId = "";
   });
 
+  // Lige girişte açılan modül ekrana gelerek tanıtılır. Pencere kapanınca,
+  // varsa aynı maçta kazanılan ödül durağı gösterilir.
+  const moduleUnlockDialog = document.getElementById("module-unlock-dialog");
+  let moduleUnlockAfterClose = null;
+
+  function closeModuleUnlockDialog() {
+    if (moduleUnlockDialog?.close) moduleUnlockDialog.close();
+    else {
+      moduleUnlockDialog?.removeAttribute("open");
+      moduleUnlockDialog?.dispatchEvent(new Event("close"));
+    }
+  }
+
+  function presentModuleUnlocks(moduleIds, { onClose = null } = {}) {
+    const collection = metaProgressionState?.module_collection || [];
+    const items = (moduleIds || [])
+      .map((id) => collection.find((item) => item.definition_id === id))
+      .filter((item) => item && item.unlock_stage_kind === "league");
+    const host = document.getElementById("module-unlock-list");
+    if (!items.length || !host || !moduleUnlockDialog || moduleUnlockDialog.open) return false;
+    host.replaceChildren();
+    for (const item of items) {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "module-unlock-card";
+      card.dataset.category = item.category || "";
+      card.dataset.rarity = item.rarity || "";
+      card.dataset.moduleDefinitionId = item.definition_id;
+      const art = document.createElement("i");
+      art.setAttribute("aria-hidden", "true");
+      art.textContent = moduleIconFor({ nameTr: item.name_tr });
+      const name = document.createElement("strong");
+      name.textContent = localizedUiText(item.name_tr);
+      const kind = document.createElement("span");
+      kind.textContent = `${localizedUiText(moduleRarityLabel(item.rarity))} · ${localizedUiText(poolCategoryLabel(item.category))}`;
+      const description = document.createElement("p");
+      description.textContent = localizedUiText(item.description_tr || item.strategic_role || "");
+      const more = document.createElement("small");
+      more.textContent = localizedUiText("KARTA BAK");
+      card.append(art, name, kind, description, more);
+      card.addEventListener("click", () => {
+        // Kart ayrıntısına geçen oyuncuya ayrıca ödül durağı açılmaz.
+        moduleUnlockAfterClose = null;
+        closeModuleUnlockDialog();
+        selectedCollectionModuleId = item.definition_id;
+        openModuleDetail();
+      });
+      host.appendChild(card);
+    }
+    const title = document.getElementById("module-unlock-title");
+    if (title) {
+      title.textContent = items.length === 1
+        ? localizedUiText(items[0].name_tr)
+        : localizedMessage("unlock.module_count", {count:localizedNumber(items.length)});
+    }
+    const stage = document.getElementById("module-unlock-stage");
+    if (stage) {
+      stage.textContent = localizedMessage("unlock.league_reached", {
+        league:localizedUiText(items[0].unlock_stage_name_tr || ""),
+      });
+    }
+    moduleUnlockAfterClose = onClose;
+    if (moduleUnlockDialog.showModal) moduleUnlockDialog.showModal();
+    else moduleUnlockDialog.setAttribute("open", "");
+    return true;
+  }
+  document.getElementById("module-unlock-close")?.addEventListener("click", closeModuleUnlockDialog);
+  moduleUnlockDialog?.addEventListener("close", () => {
+    const next = moduleUnlockAfterClose;
+    moduleUnlockAfterClose = null;
+    if (typeof next === "function") next();
+  });
+
+  async function presentRoadNewsEarnedInMatch(progression) {
+    const unlockedIds = progression?.newlyUnlockedModuleIds || [];
+    if (unlockedIds.length) {
+      await loadMetaProgression();
+      if (document.body.dataset.appScreen === "menu" && presentModuleUnlocks(unlockedIds, {
+        onClose:() => { void presentArenaRewardEarnedInMatch(progression); },
+      })) return;
+    }
+    await presentArenaRewardEarnedInMatch(progression);
+  }
+
   // PvP'de kazanılan kupalar Devre Yolu'nda yeni bir ödül durağı açtıysa ana
   // ekrana dönüşte önce o durak gösterilir. Bilgi notu yazılmaz; kazanılan
   // durak kendi parıltısıyla öne çıkar (canon.css .is-new-reward).
@@ -20047,6 +20517,8 @@
     }
   });
   document.getElementById("reward-inbox-button")?.addEventListener("click", () => loadRewardInbox({ open:true }));
+  bindDropdownMenu(document.getElementById("lobby-menu-button"), document.getElementById("lobby-menu"));
+  bindDropdownMenu(document.getElementById("team-menu-button"), document.getElementById("team-menu"));
   document.getElementById("season-premium-buy")?.addEventListener("click", () => {
     void purchasePaidProduct("season_pass_premium", { status:document.getElementById("season-action-status") });
   });
@@ -20340,9 +20812,14 @@
     },
     type_support:{
       title:"Destek modülleri",
-      body:"Onarım hasarlı modülleri onarır, Soğutucu ısınan modülleri soğutur, Güçlendirici saldırı gücünü artırır. Bunlar DESTEK modülleridir.",
+      body:"Soğutucu ısınan modülleri soğutur, Güçlendirici saldırı gücünü artırır. Bunlar DESTEK modülleridir.",
       target:() => document.getElementById("module-shelf"),
-      emphasize:() => ["repair", "cooler", "amplifier"].map(onboardingShelfCard),
+      emphasize:() => ["cooler", "amplifier"].map(onboardingShelfCard),
+    },
+    type_sabotage:{
+      title:"Sabotaj modülleri",
+      body:"EMP bir SABOTAJ modülüdür: rakibin enerji ve destek hatlarını kısa süre aksatır.",
+      target:() => onboardingShelfCard("emp"),
     },
     type_system:{
       title:"Sistem modülleri",
@@ -20378,13 +20855,13 @@
       title:"Rakip saldırıyor!",
       body:"Rakip bir Lazer kurdu ve modüllerine ateş ediyor.",
     },
-    deploy_repair:{
-      title:"Onarım",
-      body:"Soğutucunun canı azaldı. Onarım kartına dokun; hasarlı modüllerini onarır.",
+    deploy_shield:{
+      title:"Kalkan",
+      body:"Soğutucunun canı azaldı. Kalkan kartına dokun; rakibin ateşini üstüne çeker.",
     },
-    watch_repair:{
-      title:"Onarılıyor",
-      body:"Onarım modülü, canı en az olan modülünü onarıyor.",
+    watch_shield:{
+      title:"Kalkan koruyor",
+      body:"Rakip artık Kalkana ateş ediyor. Kalkan hasarı emiyor; Soğutucun güvende.",
     },
     energy_low:{
       title:"Enerji azaldı",
@@ -20659,7 +21136,7 @@
       when:(c) => c.screen === "menu" && !c.inMatchFlow,
       target:"#app-progress-ribbon",
       title:"Profilin",
-      body:"Adın, unvanın ve kupaların burada. Sağdaki mesaj kutusuna ödüller ve duyurular gelir.",
+      body:"Adın, unvanın ve kupaların burada. Mesaj kutusuna ödüller ve duyurular gelir; yanındaki menüden kozmetik, ödül, arkadaş ve ayar sayfaları açılır.",
     },
     {
       id:"battle",

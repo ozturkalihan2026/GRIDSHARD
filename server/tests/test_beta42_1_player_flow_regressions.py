@@ -179,9 +179,9 @@ def test_arena_road_uses_targeted_module_pieces_instead_of_card_claims():
     profile = PlayerProfileService().get_or_create("targeted-road-pieces")
     profile.rating = 300
     profile.highest_rating = 300
-    before = profile.module_shards.get("pulse_cannon", 0)
+    before = profile.module_shards.get("laser", 0)
 
     receipt = MetaProgressionService().claim_arena_reward(profile, "arena_1_50")
 
-    assert receipt["module_shards"] == {"pulse_cannon": 4}
-    assert profile.module_shards["pulse_cannon"] == before + 4
+    assert receipt["module_shards"] == {"laser": 4}
+    assert profile.module_shards["laser"] == before + 4

@@ -22,7 +22,7 @@ DAILY_META_DEFINITIONS: tuple[dict, ...] = (
     {"id": "sabotage", "meta_name_tr": "Sabotaj Metası", "category_tr": "Sabotaj", "glyph": "◉", "accent": "#c783ff", "description_tr": "Kesinti ve bozucu etkiler bugün daha kuvvetlidir.", "effect_tr": "Sabotaj etkisi +%10", "modifier": {"category": "sabotaj", "stat": "sabotage", "multiplier": 1.10}},
     {"id": "system", "meta_name_tr": "Sistem Metası", "category_tr": "Sistem", "glyph": "▣", "accent": "#57e8d9", "description_tr": "Sistem modülleri bugün daha verimli çalışır.", "effect_tr": "Sistem etkisi +%10", "modifier": {"category": "sistem", "stat": "system", "multiplier": 1.10}},
     {"id": "core", "meta_name_tr": "Çekirdek Metası", "category_tr": "Çekirdek", "glyph": "◇", "accent": "#ffe06d", "description_tr": "Çekirdek bugün daha yüksek dayanıklılıkla savaşa girer.", "effect_tr": "Çekirdek CAN +%10", "modifier": {"category": "çekirdek", "stat": "core_hp", "multiplier": 1.10}},
-    {"id": "current_support", "meta_name_tr": "Akım Desteği Metası", "category_tr": "Akım Desteği", "glyph": "ϟ", "accent": "#67f5ee", "description_tr": "Akım üretimi ve depolama bugün daha verimlidir.", "effect_tr": "Akım modülü etkisi +%15", "modifier": {"category": "sistem", "stat": "current", "multiplier": 1.15}},
+    {"id": "current_support", "meta_name_tr": "Akım Desteği Metası", "category_tr": "Akım Desteği", "glyph": "ϟ", "accent": "#67f5ee", "description_tr": "Akım üretimi ve depolama bugün daha verimlidir.", "effect_tr": "Akım üretimi +%15", "modifier": {"category": "sistem", "stat": "current", "multiplier": 1.15}},
 )
 
 

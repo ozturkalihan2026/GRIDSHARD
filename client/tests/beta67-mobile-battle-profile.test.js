@@ -26,12 +26,10 @@ assert.ok(!app.includes("mobileBattleController"));
 
 assert.ok(css.includes("Beta.67 — one portrait battle surface"));
 assert.ok(!css.includes("data-mobile-battle-panel"));
-assert.ok(css.includes("padding-bottom:calc(76px + env(safe-area-inset-bottom))"));
-assert.ok(css.includes("bottom:calc(67px + max(5px,env(safe-area-inset-bottom)))"));
-
-for (const navigation of html.matchAll(/<nav class="profile-terminal-tabs"[^>]*>([\s\S]*?)<\/nav>/gu)) {
-  assert.strictEqual((navigation[1].match(/<button\b/gu) || []).length, 5);
-}
+// Profil sayfalarının altındaki sabit sekme çubuğu ve ona ayrılan alt boşluk
+// kalktı (üç çizgi menüsü: tests/lobby-menu.test.js).
+assert.ok(!css.includes("padding-bottom:calc(76px + env(safe-area-inset-bottom))"));
+assert.ok(!html.includes("profile-terminal-tabs"));
 
 const commands = [];
 const client = new RelayBattleClient({

@@ -18,7 +18,7 @@ const css = read("src", "canon.css");
 const server = read("..", "server", "app", "main.py");
 
 // Ayar, Hesap ve Gizlilik sekmesindedir; şifre alanları gizli yazılır.
-const account = html.slice(html.indexOf('id="settings-panel-account"'), html.indexOf('class="profile-terminal-tabs"', html.indexOf('id="settings-panel-account"')));
+const account = html.slice(html.indexOf('id="settings-panel-account"'), html.indexOf('data-screen-panel="play"', html.indexOf('id="settings-panel-account"')));
 assert.ok(account.includes('id="parental-controls-panel"'));
 for (const id of ["parental-controls-pin", "parental-controls-pin-repeat"]) {
   assert.match(account, new RegExp(`<input id="${id}" type="password" inputmode="numeric" maxlength="4" autocomplete="off"`));

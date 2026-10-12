@@ -61,10 +61,10 @@ def test_september_2026_season_hands_over_to_the_first_cycle():
     assert first["ends_at"] == "2026-10-25T23:59:59Z"
 
 
-def test_every_league_stage_has_three_claimable_intermediate_rewards():
+def test_every_league_stage_has_claimable_intermediate_rewards():
     league_stages = [stage for stage in RANK_STAGES if stage["kind"] != "arena"]
-    assert len(league_stages) == 11
-    assert all(len(stage["nodes"]) == 3 for stage in league_stages)
+    assert len(league_stages) == 36
+    assert all(len(stage["nodes"]) >= 1 for stage in league_stages)
 
     profiles = PlayerProfileService()
     profile = profiles.get_or_create("league-reward-player")
@@ -72,15 +72,18 @@ def test_every_league_stage_has_three_claimable_intermediate_rewards():
     profile.highest_rating = 3650
     service = MetaProgressionService()
     view = service.view(profile)
-    first_stage = next(stage for stage in view["rank_stages"] if stage["id"] == "league_1")
-    first_node = first_stage["nodes"][0]
+    first_stage = next(stage for stage in view["rank_stages"] if stage["id"] == "league_spark_1")
+    first_node = next(node for node in first_stage["nodes"] if node["rewards"].get("circuit_credits"))
 
     assert first_node["claimable"] is True
     before = profile.circuit_credits
     receipt = service.claim_arena_reward(profile, first_node["id"])
     assert receipt["node_id"] == first_node["id"]
     assert profile.circuit_credits > before
-    assert service.view(profile)["rank_stages"][12]["nodes"][0]["claimed"] is True
+    assert next(
+        node for node in service.view(profile)["rank_stages"][12]["nodes"]
+        if node["id"] == first_node["id"]
+    )["claimed"] is True
 
 
 def test_core_damage_is_recorded_from_authoritative_damage_events():

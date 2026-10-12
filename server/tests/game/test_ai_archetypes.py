@@ -88,6 +88,11 @@ def test_arena_defense_bots_carry_a_second_attack_card():
     assert len(defense) == 24
     for bot in defense:
         categories = [get_module_definition(module).category for module in bot["battle_pool_ids"]]
-        assert categories.count("saldırı") >= 2, bot["id"]
-        assert categories.count("savunma") >= 2, bot["id"]
+        # İkinci saldırı kartı Arena 3'te açılır (Darbe Topu, Füze Fırlatıcı);
+        # Arena 1-2 botu yalnız o arenada açık kartlarla oynar.
+        if bot["arena"] >= 3:
+            assert categories.count("saldırı") >= 2, bot["id"]
+            assert categories.count("savunma") >= 2, bot["id"]
+        else:
+            assert categories.count("saldırı") >= 1, bot["id"]
         assert len(set(bot["battle_pool_ids"])) == 6, bot["id"]

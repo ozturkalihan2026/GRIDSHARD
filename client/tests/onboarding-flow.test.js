@@ -330,7 +330,8 @@ test("uygulama adımları: atlama düğmesi yoktur ve savaş sunucudan yönetmen
     assert.ok(app.includes(`id:"${id}"`), `adım eksik: ${id}`);
   }
   assert.match(app, /tutorial:\s*onboardingWantsDirectedBattle\(\)/);
-  assert.match(relay, /tutorial \? \{ tutorial: true \} : \{\}/);
+  // İstemci tanıdığı sahne sürümünü de bildirir; sunucu eski istemciye yeni sahne göndermez.
+  assert.match(relay, /tutorial \? \{ tutorial: true, tutorial_script: 2 \} : \{\}/);
   assert.match(app, /kind:"tutorial_ack"/);
 });
 

@@ -22,6 +22,7 @@ assert.match(app, /await persistBattlePoolDefinitionIds\(\s*preset\.module_defin
 assert.ok(audio.includes('audio.preload="none"'));
 assert.ok(!audio.includes("this._preloadAudioAssets(["));
 assert.ok(css.includes(".module-preset-strip button.is-empty"));
-assert.ok(css.includes('.season-rewards-screen > .profile-terminal-tabs'));
+// Profil sekme çubuğu kalktı (üç çizgi menüsü: tests/lobby-menu.test.js).
+assert.ok(!css.includes("profile-terminal-tabs"));
 
 console.log("beta43.3 runtime resilience contract passed");

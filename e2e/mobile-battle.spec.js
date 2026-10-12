@@ -65,8 +65,8 @@ test("mobil güvenli viewport'ta dock savaş düğmesini örtmez ve titreşim ya
     return {separate:battle.bottom <= dock.top + 1, dockFits:dock.bottom <= innerHeight + 1, topFits:top.top >= 0};
   });
   expect(layout).toEqual({separate:true, dockFits:true, topFits:true});
-  await page.locator("#lobby-profile-button").click();
-  await page.locator("#profile-summary-panel [data-open-screen=settings]").click();
+  await page.locator("#lobby-menu-button").click();
+  await page.locator("#lobby-menu [data-open-screen=settings]").click();
   const row = page.locator("label.settings-toggle").filter({has:page.locator("#settings-vibration")});
   await row.scrollIntoViewIfNeeded();
   const alignment = await row.evaluate(label => {

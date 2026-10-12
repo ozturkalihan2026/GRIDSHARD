@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from .arena_canon import trophy_delta
+from .arena_canon import trophy_delta, unlocked_module_ids
 from .game.models import BattleState, BattleStatus
 from .meta_progression import (
     MetaProgressionService,
@@ -98,6 +98,7 @@ class ProgressionResult:
     team_tournament_points_awarded: int
     team_tournament_points_after: int
     battle_premium_applied: bool = False
+    newly_unlocked_module_ids: tuple[str, ...] = ()
 
     def to_dict(self) -> dict:
         return {
@@ -124,6 +125,7 @@ class ProgressionResult:
             "team_tournament_points_awarded": self.team_tournament_points_awarded,
             "team_tournament_points_after": self.team_tournament_points_after,
             "battle_premium_applied": self.battle_premium_applied,
+            "newly_unlocked_module_ids": list(self.newly_unlocked_module_ids),
         }
 
 
@@ -183,6 +185,7 @@ class PlayerProgressionService:
             )
             rating_before = profile.rating
             rank_before = rank_stage_for_rating(rating_before)
+            peak_before = max(int(rating_before), int(profile.highest_rating))
             tier_before = int(profile.engagement_view()["current_tier"])
 
             opponent_id = next(
@@ -369,6 +372,17 @@ class PlayerProgressionService:
                     rank_after=rank_stage_for_rating(updated.rating),
                     chest_awarded=chest_awarded,
                     profile_progression_applied=profile_progression_applied,
+                    # Bu maçla ilk kez açılan modüller (istemci lige girişte tanıtır).
+                    newly_unlocked_module_ids=tuple(
+                        module_id
+                        for module_id in unlocked_module_ids(
+                            max(peak_before, int(updated.rating)),
+                            updated.legacy_module_unlocks,
+                        )
+                        if module_id not in unlocked_module_ids(
+                            peak_before, updated.legacy_module_unlocks
+                        )
+                    ) if profile_progression_applied else (),
                     team_tournament_points_awarded=(
                         team_tournament_points_awarded
                     ),

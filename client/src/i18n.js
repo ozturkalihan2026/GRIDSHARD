@@ -627,6 +627,8 @@
     "Destek etkisi +%12":"Support effect +12%",
     "Sabotaj etkisi +%10":"Sabotage effect +10%",
     "Sistem etkisi +%10":"System effect +10%",
+    "Akım üretimi +%15":"Current generation +15%",
+    // Güncellenmemiş sunucu eski metni gönderebilir.
     "Akım modülü etkisi +%15":"Current module effect +15%",
     "Çekirdek bugün daha yüksek dayanıklılıkla savaşa girer.":"Today the Core enters battle with higher durability.",
     "Saldırı modülleri bugün daha yüksek baskı kurar.":"Attack modules apply more pressure today.",
@@ -2261,6 +2263,9 @@
     // --- Beta.72 tur 3: canlı denetimde bulunan metinler ---
     "KARTLAR":"CARDS",
     "Kartlar":"Cards",
+    "Kartlar · Yükseltme mevcut":"Cards · Upgrade available",
+    "Yükseltme mevcut":"Upgrade available",
+    "Sonraki seviye":"Next level",
     "Çekirdekler":"Cores",
     "SIRADAN":"COMMON",
     "SEZONLAR":"SEASONS",
@@ -2476,6 +2481,7 @@
     [/^ÜCRETLİ GEÇİŞİ AÇ · (.+) TL$/u, "UNLOCK PAID PASS · $1 TL"],
     [/^SAVAŞ PREMIUM · (.+) TL$/u, "BATTLE PREMIUM · $1 TL"],
     [/^BUGÜN %(\d+) İNDİRİM$/u, "$1% OFF TODAY"],
+    [/^Mağaza · %(\d+) indirim$/u, "Store · $1% off"],
     [/^Envanter (\d+) \/ (\d+) açılabilir$/u, "Inventory $1 / $2 openable"],
     [/^Günlük alım hakkı (\d+) \/ (\d+)$/u, "Daily purchases left $1 / $2"],
     [/^SANDIK AÇ \((\d+)\)$/u, "OPEN CHEST ($1)"],
@@ -2579,6 +2585,7 @@
     [/^([\d.,]+) \+ ([\d.,]+) evrensel \/ ([\d.,]+)$/u, "$1 + $2 universal / $3"],
     [/^Gerekli parça: (\d+)\/(\d+)$/u, "Shards required: $1/$2"],
     [/^Gerekli Devre Kredisi: ([\d.,]+)$/u, "Circuit Credits required: $1"],
+    [/^Gerekli Akı: ([\d.,]+)$/u, "Flux required: $1"],
     [/^Arena (\d+) seviyesinde açılır\.$/u, "Unlocks at Arena $1."],
     [/^([\d.,]+) parça ve ([\d.,]+) Akı gerekli\.$/u, "Requires $1 shards and $2 Flux."],
     [/^([\d.,]+) kupada açılır\.$/u, "Unlocks at $1 trophies."],
@@ -2804,6 +2811,7 @@
     [/^UNLOCK PAID PASS · (.+) TL$/u, "ÜCRETLİ GEÇİŞİ AÇ · $1 TL"],
     [/^BATTLE PREMIUM · (.+) TL$/u, "SAVAŞ PREMIUM · $1 TL"],
     [/^(\d+)% OFF TODAY$/u, "BUGÜN %$1 İNDİRİM"],
+    [/^Store · (\d+)% off$/u, "Mağaza · %$1 indirim"],
     [/^Inventory (\d+) \/ (\d+) openable$/u, "Envanter $1 / $2 açılabilir"],
     [/^Daily purchases left (\d+) \/ (\d+)$/u, "Günlük alım hakkı $1 / $2"],
     [/^OPEN CHEST \((\d+)\)$/u, "SANDIK AÇ ($1)"],
@@ -2936,7 +2944,8 @@
   }
 
   function toEnglish(value) {
-    if (/^%[\d.,]+$/u.test(value)) return `${value.slice(1)}%`;
+    // Harfsiz yüzde yazıları: "%40" → "40%", indirim rozeti "-%40" → "-40%".
+    if (/^-?%[\d.,]+$/u.test(value)) return `${value.replace("%", "")}%`;
     if (!value || !/\p{L}/u.test(value)) return value;
     const direct = EN[value] || global.GridshardI18nCatalog?.translations?.[value];
     if (direct) {

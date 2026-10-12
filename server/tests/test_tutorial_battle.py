@@ -129,7 +129,7 @@ def test_directed_battle_walks_every_stage_and_the_player_wins():
         stage = view["stage"]
         if stage == "heat_bar":
             seen["laser_overheated"] = is_overheated(player_modules(session, "laser")[0])
-        elif stage == "deploy_repair":
+        elif stage == "deploy_shield":
             cooler = player_modules(session, "cooler")[0]
             seen["cooler_ratio"] = cooler.hp / cooler.definition.max_hp
         elif stage == "deploy_battery":
@@ -276,7 +276,7 @@ def test_new_player_gets_a_directed_battle_when_the_client_asks(monkeypatch, ai_
 
     response = TestClient(gateway.app).post(
         "/matchmaking/join",
-        json={"player_id": "tutorial-new-player", "tutorial": True},
+        json={"player_id": "tutorial-new-player", "tutorial": True, "tutorial_script": 2},
     )
 
     assert response.status_code == 200
@@ -294,6 +294,80 @@ def test_new_player_gets_a_directed_battle_when_the_client_asks(monkeypatch, ai_
     assert session.engine.state.match_type == "arena_ai"
     assert session.engine.state.ranked_eligible is True
     assert "tutorial_deck" not in payload
+
+
+def test_older_client_is_not_sent_stages_it_cannot_show(monkeypatch):
+    """v8 ve öncesi paket betik sürümü bildirmez; yeni sahneleri tanımaz."""
+    from fastapi.testclient import TestClient
+
+    gateway = _reset_gateway(monkeypatch, ai_only=True)
+    client = TestClient(gateway.app)
+
+    first = client.post(
+        "/matchmaking/join",
+        json={"player_id": "old-package-new-player", "tutorial": True},
+    ).json()
+    session = gateway.pvp_service.get_session(first["session_id"])
+    # Savaş yönetilmez; ilk maç yine yumuşatılmış, kupalı Arena maçıdır.
+    assert session.tutorial is None
+    assert session.engine.state.match_type == "arena_ai"
+    assert session.engine.state.ranked_eligible is True
+    assert gateway.pvp_service.snapshot(first["session_id"], "old-package-new-player")["tutorial"] is None
+    ai_player_id = next(iter(session.ai_player_ids))
+    assert session.ai_profile_options[ai_player_id]["archetype_tr"] == "Dengeli"
+
+    # Eğitimi yeniden başlatan eski istemci: hesaba işlenmeyen maç, yönetmensiz.
+    gateway.player_statistics_service.get_or_create("old-package-veteran").total_matches = 3
+    replay = client.post(
+        "/matchmaking/join",
+        json={"player_id": "old-package-veteran", "tutorial": True},
+    ).json()
+    replay_session = gateway.pvp_service.get_session(replay["session_id"])
+    assert replay_session.tutorial is None
+    assert replay_session.engine.state.match_type == TUTORIAL_TRAINING_MATCH_TYPE
+    assert "tutorial_deck" not in replay
+
+
+def test_new_account_can_enter_battle_with_the_starter_deck_of_the_older_package(monkeypatch):
+    """Eski paketin gömülü destesinde Onarım Modülü vardır (yeni dağıtımda Arena 2)."""
+    from fastapi.testclient import TestClient
+
+    from app.arena_canon import LEGACY_STARTER_DECK_IDS, unlocked_module_ids
+    from app.game.pvp_session import PvPSessionError
+
+    assert "repair" not in unlocked_module_ids(0)
+    gateway = _reset_gateway(monkeypatch, ai_only=True)
+    payload = TestClient(gateway.app).post(
+        "/matchmaking/join", json={"player_id": "old-deck-player"},
+    ).json()
+    session_id = payload["session_id"]
+    core = (InitialModulePlacement("core-1", "core", 2, 1),)
+
+    # Başka bir kilitli kart (Zırh) hâlâ reddedilir.
+    with pytest.raises(PvPSessionError, match="açılmamış kart"):
+        gateway.pvp_service.submit_setup(
+            session_id, "old-deck-player",
+            PvPSetupPayload(
+                battle_pool_ids=("laser", "shield", "armor", "cooler", "battery", "amplifier"),
+                initial_modules=core,
+            ),
+        )
+    gateway.pvp_service.submit_setup(
+        session_id, "old-deck-player",
+        PvPSetupPayload(battle_pool_ids=LEGACY_STARTER_DECK_IDS, initial_modules=core),
+    )
+    session = gateway.pvp_service.get_session(session_id)
+    assert (
+        session.engine.state.players["old-deck-player"].battle_pool.module_definition_ids
+        == LEGACY_STARTER_DECK_IDS
+    )
+    # Koleksiyonda modül kilitli kalır; ödül havuzuna da girmez.
+    profile = gateway.player_profile_service.get_or_create("old-deck-player")
+    view = {
+        item["definition_id"]: item
+        for item in gateway.meta_progression_service.view(profile)["module_collection"]
+    }
+    assert view["repair"]["unlocked"] is False
 
 
 def test_plain_join_keeps_the_softened_first_match(monkeypatch):
@@ -328,7 +402,7 @@ def test_replaying_player_gets_a_directed_training_match(monkeypatch, ai_only):
 
     payload = client.post(
         "/matchmaking/join",
-        json={"player_id": "veteran-player", "tutorial": True},
+        json={"player_id": "veteran-player", "tutorial": True, "tutorial_script": 2},
     ).json()
 
     assert payload["matched"] is True and payload["opponent_type"] == "ai"
@@ -395,7 +469,7 @@ def test_training_match_is_won_and_leaves_the_account_untouched(monkeypatch):
 
     payload = TestClient(gateway.app).post(
         "/matchmaking/join",
-        json={"player_id": player_id, "tutorial": True},
+        json={"player_id": player_id, "tutorial": True, "tutorial_script": 2},
     ).json()
     session_id = payload["session_id"]
     session = gateway.pvp_service.get_session(session_id)
