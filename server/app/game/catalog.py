@@ -1,6 +1,7 @@
 from dataclasses import replace
 from ..arena_canon import MODULES
 from .models import ModuleDefinition
+from .module_cycles import CYCLE_COOLDOWN_MS
 
 
 BASIC_MODULE_DEFINITIONS: dict[str, ModuleDefinition] = {
@@ -12,7 +13,7 @@ BASIC_MODULE_DEFINITIONS: dict[str, ModuleDefinition] = {
         energy_generation=4.5,
         synergy_with=("pulse_cannon","shield")),
     "capacitor": ModuleDefinition(id="capacitor", name_tr="Kapasitör", category="enerji", max_hp=90,
-        strategic_role="Kısa süreli güç boşaltımı", description_tr="Ani enerji desteği sağlar.", cooldown_ms=2500,
+        strategic_role="Kısa süreli güç boşaltımı", description_tr="Ani enerji desteği sağlar.", cooldown_ms=1000,
         synergy_with=("pulse_cannon","railgun")),
 
     "laser": ModuleDefinition(id="laser", name_tr="Lazer", category="saldırı", max_hp=100,
@@ -29,30 +30,37 @@ BASIC_MODULE_DEFINITIONS: dict[str, ModuleDefinition] = {
         synergy_with=("capacitor","cooler","targeting_computer")),
 
     "shield": ModuleDefinition(id="shield", name_tr="Kalkan", category="savunma", max_hp=140,
-        strategic_role="Aktif hasar emme", description_tr="Enerji kullanarak hasarı emer.", energy_consumption=2.0,
+        strategic_role="Aralıklı saldırı bloğu", description_tr="Başlangıç seviyesinde 1,2 saniyede bir, kendisine gelen bir saldırıyı karşılar ve hasarının %60'ını engeller. Seviye yükseldikçe blok aralığı kısalır, engellenen pay artar.", energy_consumption=2.0,
+        cooldown_ms=1200,
         strong_against=("laser",), weak_against=("pulse_cannon","emp"), synergy_with=("battery","repair")),
     "armor": ModuleDefinition(id="armor", name_tr="Zırh", category="savunma", max_hp=180,
-        strategic_role="Pasif dayanıklılık", description_tr="Enerji tüketmeden dayanıklılık sağlar.",
+        strategic_role="Sürekli dayanıklılık", description_tr="Başlangıç seviyesinde kendisine gelen hasarı sürekli %25 azaltır; 3 saniyede bir zırh plakasını onarır ve 5 CAN geri kazanır. Seviye yükseldikçe azaltma ve onarım artar, aralık kısalır.",
+        cooldown_ms=3000,
         strong_against=("pulse_cannon",), weak_against=("railgun","laser"), synergy_with=("repair",)),
     "reflector": ModuleDefinition(id="reflector", name_tr="Yansıtıcı", category="savunma", max_hp=110,
-        strategic_role="Enerji saldırısını geri çevirme", description_tr="Enerji tabanlı saldırıları kısmen geri yönlendirir.",
-        energy_consumption=2.0, cooldown_ms=1800, strong_against=("laser",), weak_against=("railgun","emp"),
+        strategic_role="Saldırıyı üzerine çekip yansıtma", description_tr="Başlangıç seviyesinde 1 saniyede bir, devreye gelen bir saldırıyı üzerine çeker ve hasarının %30'unu saldırana yansıtır; kendisine gelen hasarı ayrıca %25 azaltır. Seviye yükseldikçe yansıtma artar, aralık kısalır.",
+        energy_consumption=2.0, cooldown_ms=1000, strong_against=("laser",), weak_against=("railgun","emp"),
         synergy_with=("cooler",)),
     "barrier": ModuleDefinition(id="barrier", name_tr="Bariyer", category="savunma", max_hp=165,
-        strategic_role="Savunma hattını koruma", description_tr="Kritik devre hücrelerini korur.", energy_consumption=1.0,
+        strategic_role="Savunma hattını koruma", description_tr="Saldırıları üzerine çeker. Başlangıç seviyesinde hasarı %20 azaltır ve 4 saniyede bir, devreye uygulanan bir sabotajın süresini %35 kısaltır. Seviye yükseldikçe sabotaj direnci artar, aralık kısalır.", energy_consumption=1.0,
+        cooldown_ms=4000,
         strong_against=("emp",), weak_against=("railgun",), synergy_with=("repair",)),
 
     "repair": ModuleDefinition(id="repair", name_tr="Onarım", category="destek", max_hp=100,
         strategic_role="Can onarımı", description_tr="En düşük CAN oranındaki tek modülü onarır.", energy_consumption=2.0, cooldown_ms=2000,
         strong_against=("virus",), weak_against=("jammer",), synergy_with=("shield","armor","barrier")),
     "cooler": ModuleDefinition(id="cooler", name_tr="Soğutucu", category="destek", max_hp=100,
-        strategic_role="Isı kontrolü", description_tr="Devredeki en sıcak üç modülü, önce susmuş olanları soğutur; aşırı ısınıp susmuş modülü hızla toparlar.", energy_consumption=1.0,
+        strategic_role="Isı kontrolü", description_tr="Başlangıç seviyesinde 1 saniyede bir devredeki en sıcak üç modülü, önce susmuş olanları %4,5 soğutur; aşırı ısınıp susmuş modülü hızla toparlar. Seviye yükseldikçe soğutma artar, aralık kısalır.", energy_consumption=1.0,
+        cooldown_ms=1000,
         synergy_with=("railgun","reflector")),
     "amplifier": ModuleDefinition(id="amplifier", name_tr="Güçlendirici", category="destek", max_hp=90,
-        strategic_role="Saldırı hattını güçlendirme", description_tr="Devredeki saldırı modüllerinin hasarını artırır; toplam %30 pay saldırılar arasında bölünür, tek saldırıya en fazla %15.", energy_consumption=1.0,
+        strategic_role="Saldırı hattını güçlendirme", description_tr="Başlangıç seviyesinde 2 saniyede bir devredeki saldırı modüllerini yükler; yüklü modülün sıradaki atışı daha çok hasar verir. Toplam %36 pay saldırılar arasında bölünür, tek saldırıya en fazla %18. Seviye yükseldikçe yükleme aralığı kısalır.", energy_consumption=1.0,
+        # Destek çevrimi (12 Ekim 2026): bilgi ekranındaki BEKLEME bu süredir.
+        cooldown_ms=2000,
         weak_against=("jammer",), synergy_with=("laser","pulse_cannon")),
     "targeting_computer": ModuleDefinition(id="targeting_computer", name_tr="Hedefleme Bilgisayarı", category="destek", max_hp=85,
-        strategic_role="Hedefleme desteği", description_tr="Devredeki saldırı modüllerinin bekleme süresini kısaltır; toplam %30 pay saldırılar arasında bölünür, tek saldırıya en fazla %15.", energy_consumption=1.0,
+        strategic_role="Hedefleme desteği", description_tr="Başlangıç seviyesinde 2 saniyede bir devredeki saldırı modüllerine kilit verir; kilitli modülün sıradaki atışından sonraki beklemesi kısalır. Toplam %36 pay saldırılar arasında bölünür, tek saldırıya en fazla %18. Seviye yükseldikçe kilit aralığı kısalır.", energy_consumption=1.0,
+        cooldown_ms=2000,
         weak_against=("jammer",), synergy_with=("laser","pulse_cannon","railgun")),
 
     "emp": ModuleDefinition(id="emp", name_tr="EMP", category="sabotaj", max_hp=80,
@@ -93,8 +101,8 @@ BASIC_MODULE_DEFINITIONS: dict[str, ModuleDefinition] = {
     id="overclock_unit", name_tr="Aşırı Hızlandırıcı", category="destek",
     max_hp=80,
     strategic_role="Yüksek performans karşılığında ısı riski",
-    description_tr="Devredeki en ağır saldırı modülünü hızlandırır ve güçlendirir; karşılığında o modül daha hızlı ısınır.",
-    energy_consumption=2.0,
+    description_tr="Başlangıç seviyesinde 2,5 saniyede bir devredeki en ağır saldırı modülüne aşırı yük verir: sıradaki atışı %20 daha çok hasar verir ve beklemesi %20 kısalır; karşılığında o modül her yüklemede ısınır. Seviye yükseldikçe yükleme aralığı kısalır.",
+    energy_consumption=2.0, cooldown_ms=2500,
     weak_against=("cooler","emp"), synergy_with=("laser","railgun","repair"),
 ),
 "virus": ModuleDefinition(
@@ -141,23 +149,23 @@ SIGNATURE_MECHANICS = {
     "ion_spear": "Savunmanın %60'ını delme, %55 arka hedef",
     "swarm_fabricator": "Dron biriktirip üç hedefe sürü salma",
     "quantum_cannon": "Boşa giden enerjiyi kuantum yüküne çevirme",
-    "shield": "Enerjiyle hasar emme",
-    "armor": "Pasif dayanıklılık",
-    "reflector": "Hasarın bir kısmını geri yansıtma",
-    "barrier": "Saldırıları kendine çekme",
-    "guardian_dome": "Tüm devreye koruma kubbesi",
+    "shield": "Aralıklı blok: bir saldırının çoğunu engelleme",
+    "armor": "Sürekli azaltma ve plaka onarımı",
+    "reflector": "Saldırıyı üzerine çekip bir kısmını yansıtma",
+    "barrier": "Saldırıları kendine çekme, sabotajı kısaltma",
+    "guardian_dome": "Başka modüle gelen saldırıyı kubbeyle karşılama",
     "phase_armor": "Periyodik faz: saldırıyı tamamen boşa çıkarma",
-    "prism_shield": "Engellenen hasarı enerjiye çevirme",
+    "prism_shield": "Blokladığı hasarı enerjiye çevirme",
     "repair": "En yaralı modülü onarma",
     "nano_medic": "İki modüle dağıtılmış onarım",
     "phoenix_repair": "Yok edilen modülü yeniden devreye alma",
-    "cooler": "Devredeki en sıcak üç modülü soğutma",
+    "cooler": "Aralıklı soğutma darbesi: en sıcak üç modül",
     "amplifier": "Tüm saldırılara paylaşılan hasar desteği",
-    "targeting_computer": "Tüm saldırılara paylaşılan hız desteği",
-    "overclock_unit": "En ağır saldırıya ısı karşılığında hız ve hasar",
+    "targeting_computer": "Tüm saldırılara paylaşılan hız kilidi",
+    "overclock_unit": "En ağır saldırıya ısı karşılığında aşırı yük",
     "chrono_relay": "Hızlanma penceresi ve zaman borcu",
-    "precision_matrix": "Aynı hedefte odak yığını",
-    "omega_amplifier": "Sınıf çeşitliliğiyle büyüyen rezonans",
+    "precision_matrix": "Aynı hedefte zamanla biriken odak",
+    "omega_amplifier": "Sınıf çeşitliliğiyle büyüyen rezonans darbesi",
     "emp": "Hedef sistemi susturma",
     "jammer": "Destek ve kontrol kartını bozma",
     "virus": "Her tikte artan enfeksiyon hasarı",
@@ -180,16 +188,21 @@ COUNTERPLAY_TR = {
     "ion_spear": "Enerji ve ısı maliyeti çok yüksektir; Sinyal Bozucu ile susturulur.",
     "swarm_fabricator": "Birikim sürerken susturmak sürüyü geciktirir; Zırh sürü hasarını azaltır.",
     "quantum_cannon": "Devresinde enerji fazlası yoksa yük birikmez; Zırh ve Sinyal Bozucu etkilidir.",
-    "guardian_dome": "Kubbenin kendisini yok etmek devre korumasını kaldırır; Darbe Topu ve EMP etkilidir.",
-    "phase_armor": "Faz penceresi dışındaki 5 saniyede vurulur; Ray Topu ve Lazer etkilidir.",
-    "prism_shield": "Darbe Topu ve EMP etkilidir; susturulmuş Prizma enerji üretmez.",
+    "shield": "Blok tek saldırıyı karşılar; aynı anda birkaç modülle vurmak ya da EMP ile susturmak bloğu aşar.",
+    "armor": "Plaka onarımı küçüktür; yoğun ateş ve delici silahlar (Ray Topu) onu aşar.",
+    "reflector": "Saniyede yalnız bir saldırıyı çeker; ucuz ve sık atışla yükünü harcatıp ağır atışı arkadan geçirin.",
+    "barrier": "Sabotaj direnci tek sabotajı kısaltır; art arda gelen sabotajların ikincisi tam süre işler.",
+    "cooler": "Soğutma darbeleri arasında ısı yeniden birikir; Soğutucu'yu susturmak ağır silahları ısıtır.",
+    "guardian_dome": "Kubbe darbesi tek saldırıyı karşılar; kubbenin kendisini yok etmek devre korumasını kaldırır. Darbe Topu ve EMP etkilidir.",
+    "phase_armor": "Faz penceresi dışındaki sürede vurulur; Ray Topu ve Lazer etkilidir.",
+    "prism_shield": "Blok tek saldırıyı karşılar; Darbe Topu ve EMP etkilidir. Susturulmuş Prizma enerji üretmez.",
     "nano_medic": "Tek hedefe yoğun ateş, iki modüle yayılan küçük onarımı aşar; Sinyal Bozucu keser.",
     "phoenix_repair": "Anka'yı önce yok etmek ya da susturmak diriltmeyi engeller; her modül yalnız bir kez dirilir.",
     "amplifier": "Sahibi çok saldırı modülü kullandıkça payı düşer; Sinyal Bozucu keser.",
-    "targeting_computer": "Sahibi çok saldırı modülü kullandıkça payı düşer; Sinyal Bozucu keser.",
-    "overclock_unit": "Hedefi hızla ısınır; Soğutucu yoksa susar. EMP ile kesilir.",
+    "targeting_computer": "Sahibi çok saldırı modülü kullandıkça payı düşer; kilit aralığından sık ateş eden silah her atışta kilit bulamaz. Sinyal Bozucu keser.",
+    "overclock_unit": "Hedefi her yüklemede ısınır; Soğutucu yoksa susar. EMP ile kesilir.",
     "chrono_relay": "Zaman borcu penceresinde sahibinin saldırıları yavaşlar; baskıyı o anda kurun.",
-    "precision_matrix": "Hedef değişimi odağı sıfırlar; Sinyal Bozucu keser.",
+    "precision_matrix": "Hedef değişimi odağı sıfırlar (Yansıtıcı saldırıyı üzerine çekerek bunu yapar); Sinyal Bozucu keser.",
     "omega_amplifier": "Tek sınıfa dayalı destede rezonans zayıftır; Sinyal Bozucu keser.",
     "virus": "Onarım virüsü temizler; Bariyer süreyi kısaltır.",
     "disruptor": "Enerjili Bariyer süreyi kısaltır ve yankıyı engelleyebilir.",
@@ -199,9 +212,9 @@ COUNTERPLAY_TR = {
 # Temel kartın davranışını devralıp üzerine imza mekaniği ekleyen kartların
 # kendi rol ve açıklamaları.
 CARD_COPY = {
-    "guardian_dome": ("Devre koruması", "Kendisine gelen hasarı %32 azaltır; yaşadığı sürece devredeki diğer modüllere gelen hasarı ayrıca %12 azaltır."),
-    "prism_shield": ("Prizmatik dönüşüm", "Kendisine gelen hasarı %30 azaltır; engellediği hasarın dörtte birini Çekirdek rezervine enerji olarak ekler."),
-    "phase_armor": ("Periyodik faz", "Her 6 saniyenin ilk saniyesinde saldırıları tamamen boşa çıkarır; diğer anlarda hasarı %18 azaltır."),
+    "guardian_dome": ("Devre koruması", "Başlangıç seviyesinde kendisine gelen hasarı %32 azaltır ve 1,5 saniyede bir, devredeki başka bir modüle gelen bir saldırının hasarını %30 azaltır. Seviye yükseldikçe koruma artar, aralık kısalır."),
+    "prism_shield": ("Prizmatik dönüşüm", "Başlangıç seviyesinde 1,3 saniyede bir, kendisine gelen bir saldırıyı karşılar ve hasarının %55'ini engeller; engellediği hasarın dörtte birini Çekirdek rezervine enerji olarak ekler. Seviye yükseldikçe blok ve dönüşüm artar, aralık kısalır."),
+    "phase_armor": ("Periyodik faz", "Başlangıç seviyesinde her 6 saniyelik çevrimin ilk saniyesinde saldırıları tamamen boşa çıkarır; diğer anlarda hasarı %18 azaltır. Seviye yükseldikçe çevrim kısalır, faz daha sık gelir."),
     "nano_medic": ("Dağıtık onarım", "En yaralı iki modülü aynı anda, her birini temel onarımın %62'si kadar onarır."),
     "phoenix_repair": ("Yeniden devreye alma", "30 saniyede bir, sınıf sınırlarına uyarak yok edilmiş bir modülü %30 CAN ile geri getirir (10 enerji); her modül maçta yalnız bir kez dirilir. Diriltecek modül yoksa güçlü bir tek hedef onarımı yapar."),
     "quantum_repeater": ("Kuantum tekrar", "Aynı hedefe dördüncü ardışık vuruşta, son hasarın %65'i kadar kuantum yankısı üretir."),
@@ -209,9 +222,9 @@ CARD_COPY = {
     "ion_spear": ("İyonik deliş", "Savunma azaltımının %60'ını yok sayar; arkadaki hedefe %55 hasar taşar."),
     "swarm_fabricator": ("Sürü birikimi", "Her atışta bir dron biriktirir; dördüncü atışta üç hedefe sürü salar."),
     "quantum_cannon": ("Kuantum yük", "Devrenin boşa giden enerjisini yük olarak toplar; dolu yük sıradaki atışa %80'e kadar hasar ekler."),
-    "chrono_relay": ("Zaman borcu", "4 sn boyunca tüm saldırıları hızlandırır; ardından 2,5 sn zaman borcu saldırıları yavaşlatır."),
-    "precision_matrix": ("Odak yığını", "Aynı hedefe art arda vuran saldırılar 4 kademeye kadar hasar ve hız kazanır."),
-    "omega_amplifier": ("Uyarlanabilir rezonans", "Devredeki her farklı sınıf, saldırılara paylaşılan hasar desteğini büyütür."),
+    "chrono_relay": ("Zaman borcu", "4 sn boyunca tüm saldırıları hızlandırır; ardından başlangıç seviyesinde 2,5 sn süren zaman borcu saldırıları yavaşlatır. Seviye yükseldikçe zaman borcu kısalır."),
+    "precision_matrix": ("Odak yığını", "Başlangıç seviyesinde 1,5 saniyede bir, hedefini değiştirmemiş saldırı modüllerine bir odak kademesi verir; kademe başına hasar ve hız artar (en çok 4 kademe). Hedef değişince odak sıfırlanır. Seviye yükseldikçe odak daha hızlı birikir."),
+    "omega_amplifier": ("Uyarlanabilir rezonans", "Başlangıç seviyesinde 2 saniyede bir devredeki saldırı modüllerini rezonansla yükler; devredeki her farklı sınıf, yüklü atışa paylaşılan hasar desteğini büyütür. Seviye yükseldikçe yükleme aralığı kısalır."),
     "singularity_projector": ("Tekillik alanı", "Hedef sistemi 4,5 sn keser; ikinci bir sisteme %65 süreli yankı uygular."),
 }
 
@@ -235,11 +248,14 @@ PASSIVE_UPKEEP = {
     "cooler": .25, "amplifier": .4, "targeting_computer": .4,
     "overclock_unit": .8, "precision_matrix": .6, "chrono_relay": .7,
     "omega_amplifier": .8, "current_balancer": .4,
+    # Kapasitör de küçük bir bakım öder: enerji tüketmeyen modül kalmaz
+    # (Batarya üreticidir; tüketmez).
+    "capacitor": .2,
 }
 
 SYSTEM_COPY = {
-    "battery": ("Enerji besleme ve rezervi", "Devreye saniyede 4,5 enerji verir; ayrıca 20 enerji depolayarak ani yükleri karşılar."),
-    "capacitor": ("Ani enerji rezervi", "Enerji üretmez; 10 enerjilik, çok hızlı dolup boşalan bir rezervdir ve açıkta Bataryadan önce boşalır."),
+    "battery": ("Enerji besleme ve rezervi", "Başlangıç seviyesinde devreye saniyede 4,5 enerji verir; ayrıca 20 enerji depolayarak ani yükleri karşılar. Boş deposu 4 saniyede dolar; seviye yükseldikçe üretim ve depo artar, dolum kısalır."),
+    "capacitor": ("Ani enerji rezervi", "Enerji üretmez; başlangıç seviyesinde 10 enerjilik, 1 saniyede dolan bir rezervdir ve açıkta Bataryadan önce boşalır. Seviye yükseldikçe depo büyür, dolum kısalır."),
     "current_balancer": ("Devre verimliliği", "Aksiyon ve bakım enerjisi maliyetlerini %8 azaltır. Çoklu kopyalar en fazla %24 azaltım sağlar."),
 }
 for _module_id, _spec in MODULES.items():
@@ -256,6 +272,8 @@ for _module_id, _spec in MODULES.items():
         # Tekillik Projektörü gibi kartları gizlice saldırı döngüsüne de sokardı.
         base_damage=0.0 if _spec["category"] == "sabotaj" else _spec["base_damage"],
         behavior_id=CANON_MECHANICS.get(_module_id, _module_id),
+        # Çevrim modüle özeldir; türetilen kart temel kartın çevrimini devralmaz.
+        cooldown_ms=CYCLE_COOLDOWN_MS.get(_module_id, _base.cooldown_ms),
         current_cost=_spec["current_cost"],
         category="enerji" if _spec["category"] == "sistem" else _spec["category"],
         strategic_role=_role,

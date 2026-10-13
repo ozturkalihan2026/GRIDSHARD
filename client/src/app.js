@@ -23,7 +23,7 @@
     currentCost: item.current_cost,
     category: item.category === "sistem" ? "enerji" : item.category,
     strategicRole: item.name_tr, rarity: item.rarity,
-    unlockTrophies: Math.max(0, Number(item.unlock_trophies ?? (Number(item.unlock_arena || 1) - 1) * 300)),
+    unlockTrophies: Math.max(0, Number(item.unlock_trophies ?? 0)),
     status: item.id === "core" ? "active" : "reserve",
     position: item.id === "core" ? {x: 2, y: 1} : null,
     isDeckTemplate: item.id !== "core",
@@ -1143,7 +1143,7 @@
   function renderDetailStatRow(host, entries) {
     if (!host) return;
     host.replaceChildren();
-    for (const { label, value, current, next } of entries) {
+    for (const { label, value, current, next, icon, tone } of entries) {
       const box = document.createElement("div");
       const name = document.createElement("span");
       name.textContent = label;
@@ -1158,6 +1158,11 @@
         amount.append(" ", changeLabel);
       }
       box.append(name, amount);
+      // Simge kutunun köşesinde durur; değer ve fark eskisi gibi okunur.
+      if (icon) {
+        box.dataset.tone = tone || "";
+        box.appendChild(createUiIcon(icon, tone));
+      }
       host.appendChild(box);
     }
   }
@@ -1502,24 +1507,149 @@
     }
   }
 
+  // Arenaların giriş kupaları; son değer liglerin başladığı kupadır. Yalnız
+  // sunucudan aşama bilgisi gelmediğinde yedek olarak kullanılır.
+  const ARENA_FLOOR_RATINGS = Object.freeze([0, 300, 600, 950, 1300, 1700, 2150, 2650, 3150, 3650, 4200, 4800, 5400]);
+
   function arenaViewModel() {
     const state = metaProgressionState || fallbackMetaProgression();
     const profileRating = Number(profileState.profile?.rating || 0);
-    const fallbackFloor = Math.max(0, Math.floor(profileRating / 300) * 300);
-    const fallbackIndex = Math.floor(fallbackFloor / 300) + 1;
+    const fallbackIndex = Math.max(1, ARENA_FLOOR_RATINGS.slice(0, 12).filter((floor) => profileRating >= floor).length);
+    const fallbackFloor = ARENA_FLOOR_RATINGS[fallbackIndex - 1];
+    const fallbackCeiling = ARENA_FLOOR_RATINGS[fallbackIndex];
     const rank = state.rank || {
       kind: "arena",
       index: fallbackIndex,
       name_tr: `Arena ${fallbackIndex}`,
       minimum_rating: fallbackFloor,
       rating: profileRating,
-      next_stage: { name_tr: `Arena ${fallbackIndex + 1}`, minimum_rating: fallbackFloor + 300 },
+      next_stage: { name_tr: `Arena ${fallbackIndex + 1}`, minimum_rating: fallbackCeiling },
     };
     const rating = Number(rank.rating ?? profileState.profile?.rating ?? 0);
     const floor = Number(rank.minimum_rating || 0);
     const ceiling = Number(rank.next_stage?.minimum_rating ?? Math.max(floor + 300, rating));
     const progress = ceiling <= floor ? 100 : Math.max(0, Math.min(100, ((rating - floor) / (ceiling - floor)) * 100));
     return { rank, rating, floor, ceiling, progress };
+  }
+
+  // --- Renkli arayüz simgeleri ---------------------------------------------------
+  // Değer karoları, sekmeler, menü satırları ve maliyet rozetleri aynı simge
+  // takımını kullanır: renkli zeminli küçük karo, içinde beyaz çizgi simge.
+  // Çizimler 24×24'tür; "f" sınıflı yol dolu, diğerleri çizgidir.
+  const UI_ICON_PATHS = Object.freeze({
+    hp:'<path class="f" d="M12 20.6 4.7 13.5a4.7 4.7 0 0 1 6.6-6.7l.7.7.7-.7a4.7 4.7 0 0 1 6.6 6.7Z"/>',
+    damage:'<path class="f" d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5Z"/>',
+    cycle:'<circle cx="12" cy="13.5" r="7.3"/><path d="M12 9.6v4l2.7 1.7M9.6 2.9h4.8M12 2.9v3.2"/>',
+    shield:'<path d="M12 2.8 19.3 5.2v6c0 4.5-2.9 8-7.3 10-4.4-2-7.3-5.5-7.3-10v-6Z"/><path d="m8.8 12 2.3 2.3 4.2-4.6"/>',
+    reduction:'<path d="M12 2.8 19.3 5.2v6c0 4.5-2.9 8-7.3 10-4.4-2-7.3-5.5-7.3-10v-6Z"/><path d="M8.5 12h7"/>',
+    reflect:'<path d="M20 5.5h-9a5.2 5.2 0 0 0 0 10.4h8.5"/><path d="m16.5 12.5 3.4 3.4-3.4 3.4"/><path d="M4 3.5v17"/>',
+    wrench:'<path d="M14.8 6.2a4.1 4.1 0 0 0-5.3 5.3l-6 6 3 3 6-6a4.1 4.1 0 0 0 5.3-5.3l-2.6 2.6-2.4-.6-.6-2.4Z"/>',
+    dome:'<path d="M3.6 18a8.4 8.4 0 0 1 16.8 0Z"/><path d="M2 18h20M12 9.6V18M7 13.2 12 18l5-4.8"/>',
+    phase:'<circle cx="12" cy="12" r="8.2" stroke-dasharray="3.3 3"/><circle class="f" cx="12" cy="12" r="2.8"/>',
+    convert:'<path d="M5 9.2a7.4 7.4 0 0 1 13-2.4M19 4v3.4h-3.4M19 14.8a7.4 7.4 0 0 1-13 2.4M5 20v-3.4h3.4"/><path class="f" d="M12.8 8.5 9.6 12.6h2.2l-.6 3.4 3.2-4.1h-2.2Z"/>',
+    guard:'<path d="M12 2.8 19.3 5.2v6c0 4.5-2.9 8-7.3 10-4.4-2-7.3-5.5-7.3-10v-6Z"/><path class="f" d="M12.9 6.8 8.8 12.4h2.6l-.8 4.8 4.4-5.9h-2.7Z"/>',
+    snow:'<path d="M12 2.5v19M3.8 7.2l16.4 9.6M20.2 7.2 3.8 16.8M9.6 4.4 12 6.6l2.4-2.2M9.6 19.6l2.4-2.2 2.4 2.2"/>',
+    boost:'<path class="f" d="M12 3 4.6 11h4.2v10h6.4V11h4.2Z"/>',
+    speed:'<path class="f" d="M3 5.6 11 12l-8 6.4ZM12.4 5.6l8 6.4-8 6.4Z"/>',
+    flame:'<path class="f" d="M12 2.5c.9 3.4 5.4 5.3 5.4 10.3a5.4 5.4 0 0 1-10.8 0c0-1.9.9-3.4 1.9-4.4.3 1.6 1 2.4 2 2.8-.4-3 .3-6.3 1.5-8.7Z"/>',
+    hourglass:'<path d="M6.6 3h10.8v3.3L13.6 12l3.8 5.7V21H6.6v-3.3L10.4 12 6.6 6.3Z"/><path d="M9.5 18.5h5"/>',
+    battery:'<rect x="3.2" y="7" width="15.2" height="10" rx="2.2"/><path d="M20.8 10.2v3.6M7 10.4v3.2M10.4 10.4v3.2M13.8 10.4v3.2"/>',
+    bolt:'<path class="f" d="M13.6 2 5 13.4h5.4L9 22l9-12.4h-5.7Z"/>',
+    energy:'<circle cx="12" cy="12" r="9"/><path class="f" d="M12.9 6.4 8.6 12.5h2.8l-.7 5.1 4.6-6.4h-2.9Z"/>',
+    gauge:'<path d="M4 16.5a8 8 0 1 1 16 0"/><path d="m12 16.5 4.4-5.8"/><circle class="f" cx="12" cy="16.5" r="1.7"/>',
+    pierce:'<path d="M2.5 12h14M13 8l4 4-4 4M20.5 4v16"/>',
+    lock:'<circle cx="12" cy="12" r="6.4"/><path d="M12 2v4.6M12 17.4V22M2 12h4.6M17.4 12H22"/><circle class="f" cx="12" cy="12" r="1.8"/>',
+    branch:'<path d="M3.5 12h6l5.5-6h5.5M9.5 12l5.5 6h5.5"/><path d="m18 3.6 2.5 2.4L18 8.4M18 15.6l2.5 2.4-2.5 2.4"/>',
+    echo:'<circle class="f" cx="12" cy="12" r="2.6"/><path d="M7.2 7.2a6.8 6.8 0 0 0 0 9.6M16.8 7.2a6.8 6.8 0 0 1 0 9.6M4 4a11.3 11.3 0 0 0 0 16M20 4a11.3 11.3 0 0 1 0 16"/>',
+    swarm:'<circle class="f" cx="12" cy="6" r="2.6"/><circle class="f" cx="6" cy="16.5" r="2.6"/><circle class="f" cx="18" cy="16.5" r="2.6"/><path d="M12 8.6v3.4M10.4 13.6 8 15M13.6 13.6 16 15"/>',
+    percent:'<path d="M6 18.5 18 5.5"/><circle cx="7.4" cy="7.4" r="2.6"/><circle cx="16.6" cy="16.6" r="2.6"/>',
+    revive:'<path d="M19.5 12a7.5 7.5 0 1 1-2.6-5.7M19.5 3.5v4h-4"/><path d="M12 8.6v6.8M8.6 12h6.8"/>',
+    bug:'<ellipse cx="12" cy="13" rx="4.6" ry="5.8"/><path d="M9 6.4 7.4 4M15 6.4 16.6 4M7.4 11 3.6 9.6M7.4 15l-3.8 1.4M16.6 11l3.8-1.4M16.6 15l3.8 1.4M12 8.6v9"/>',
+    rings:'<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.4"/><circle cx="12" cy="12" r="9.6" stroke-dasharray="2.6 2.6"/>',
+    info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle class="f" cx="12" cy="7.6" r="1.3"/>',
+    bars:'<path d="M5 20V11M12 20V4M19 20v-6"/>',
+    star:'<path class="f" d="m12 2.6 2.8 6 6.5.8-4.8 4.5 1.3 6.5-5.8-3.3-5.8 3.3 1.3-6.5-4.8-4.5 6.5-.8Z"/>',
+    gem:'<path d="M7 4h10l4 5.4L12 21 3 9.4Z"/><path d="M3 9.4h18M9.2 9.4 12 21l2.8-11.6M7 4l2.2 5.4L12 4l2.8 5.4L17 4"/>',
+    eye:'<path d="M2.2 12S5.8 5.6 12 5.6 21.8 12 21.8 12 18.2 18.4 12 18.4 2.2 12 2.2 12Z"/><circle class="f" cx="12" cy="12" r="2.8"/>',
+    swords:'<path d="M4 4l10.5 10.5M4 4v3.4L13 16.4M20 4 9.5 14.5M20 4v3.4L11 16.4M6.4 14l3.6 3.6M17.6 14 14 17.6M5 19l2.4-2.4M19 19l-2.4-2.4"/>',
+    target:'<circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="12" r="4.6"/><circle class="f" cx="12" cy="12" r="1.5"/>',
+    grid:'<rect x="3.6" y="3.6" width="7" height="7" rx="1.6"/><rect x="13.4" y="3.6" width="7" height="7" rx="1.6"/><rect x="3.6" y="13.4" width="7" height="7" rx="1.6"/><rect x="13.4" y="13.4" width="7" height="7" rx="1.6"/>',
+    key:'<circle cx="8" cy="15.5" r="4.4"/><path d="m11.2 12.4 8.6-8.6M16.4 7.2l2.8 2.8M13.6 10l2.2 2.2"/>',
+    trophy:'<path d="M7.5 3.6h9v5a4.5 4.5 0 0 1-9 0Z"/><path d="M7.5 5H4.4c0 3.2 1.3 4.8 3.4 5M16.5 5h3.1c0 3.2-1.3 4.8-3.4 5M12 13v3.6M8.4 20h7.2M9.6 16.6h4.8V20H9.6Z"/>',
+    palette:'<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2.2-1 2.2-2 0-1.4-1.2-1.8-1.2-3 0-1 .8-1.8 1.8-1.8h2A4.2 4.2 0 0 0 21 10c0-3.9-4-7-9-7Z"/><circle class="f" cx="7.6" cy="11" r="1.4"/><circle class="f" cx="10.4" cy="7.2" r="1.4"/><circle class="f" cx="15" cy="7.4" r="1.4"/>',
+    gift:'<rect x="3.6" y="9" width="16.8" height="4.2" rx="1"/><path d="M5.2 13.2V20h13.6v-6.8M12 9v11M12 9S9.6 3.6 7.4 5.2C5.4 6.8 8.4 9 12 9ZM12 9s2.4-5.4 4.6-3.8C18.6 6.8 15.6 9 12 9Z"/>',
+    people:'<circle cx="9" cy="8.2" r="3.3"/><circle cx="17.2" cy="9.4" r="2.6"/><path d="M2.8 20c.5-4.1 2.6-6.2 6.2-6.2s5.7 2.1 6.2 6.2M14.8 14.6c3.4-.6 5.6 1.2 6.4 5.4"/>',
+    gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2.6v3M12 18.4v3M2.6 12h3M18.4 12h3M5.4 5.4l2.1 2.1M16.5 16.5l2.1 2.1M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1"/>',
+    mail:'<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m4 7.6 8 6 8-6"/>',
+    chest:'<path d="M4 10.2h16v9.4H4Z"/><path d="M4 10.2 5.6 5.6Q12 3.2 18.4 5.6L20 10.2"/><path class="f" d="M10.3 9h3.4v4.6h-3.4Z"/>',
+    chat:'<path d="M4 5h16v10.6h-9.4L6 19.6v-4H4Z"/><path d="M8 9h8M8 12.2h5"/>',
+    core:'<path d="M12 2.8 21.2 12 12 21.2 2.8 12Z"/><path class="f" d="M12 7.8 16.2 12 12 16.2 7.8 12Z"/>',
+    credit:'<circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/>',
+    flux:'<path d="m12 2 4 6 6 4-6 4-4 6-4-6-6-4 6-4Z"/><circle class="f" cx="12" cy="12" r="2.2"/>',
+    current:'<path class="f" d="M13.5 2 5 13h6l-1 9 9-12h-6Z"/>',
+    card:'<rect x="5" y="3" width="14" height="18" rx="2.6"/><path d="M9 8h6M9 12h6M9 16h3.4"/>',
+    shop:'<path d="M4 9h16l-1.2 11H5.2Z"/><path d="M8 9V6.6a4 4 0 0 1 8 0V9M9.4 13.4h5.2"/>',
+    home:'<path d="M4 11.4 12 4l8 7.4V20h-5.2v-5.4H9.2V20H4Z"/>',
+    calendar:'<rect x="3.6" y="5" width="16.8" height="15.4" rx="2.4"/><path d="M3.6 9.6h16.8M8 3v4M16 3v4"/><path class="f" d="m12 11.4 1.1 2.2 2.4.3-1.8 1.7.5 2.4-2.2-1.2-2.2 1.2.5-2.4-1.8-1.7 2.4-.3Z"/>',
+  });
+  // Değer anahtarı → simge ve renk tonu.
+  const STAT_ICONS = Object.freeze({
+    hp:["hp", "green"], damage:["damage", "red"], cycle:["cycle", "blue"], dps:["gauge", "red"],
+    energy:["energy", "cyan"], current:["current", "gold"],
+    block:["shield", "blue"], reduction:["reduction", "steel"], reflect:["reflect", "violet"],
+    regen:["wrench", "green"], sabotage_guard:["guard", "violet"], dome_guard:["dome", "cyan"],
+    phase:["phase", "violet"], conversion:["convert", "cyan"],
+    repair:["wrench", "green"], revive:["revive", "orange"], revive_hp:["hp", "orange"],
+    cooling:["snow", "cyan"], damage_boost:["boost", "red"], speed_boost:["speed", "gold"],
+    heat:["flame", "orange"], boost:["hourglass", "gold"], debt:["hourglass", "steel"],
+    resonance:["rings", "pink"], duration:["hourglass", "violet"], virus_damage:["bug", "green"],
+    echo:["echo", "violet"], storage:["battery", "cyan"], saving:["percent", "green"],
+    pierce:["pierce", "orange"], lock:["lock", "gold"], secondary:["branch", "orange"],
+    swarm:["swarm", "orange"], charge_bonus:["bolt", "violet"],
+  });
+
+  function uiIconMarkup(name, tone = "") {
+    const paths = UI_ICON_PATHS[name] || UI_ICON_PATHS.star;
+    return `<i class="ui-icon" data-icon="${name}"${tone ? ` data-tone="${tone}"` : ""} aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false">${paths}</svg></i>`;
+  }
+
+  function createUiIcon(name, tone = "") {
+    const template = document.createElement("template");
+    template.innerHTML = uiIconMarkup(name, tone);
+    return template.content.firstElementChild;
+  }
+
+  // Maliyet rozeti: para biriminin adı yerine kendi simgesi ("100 DK" → ◎ 100).
+  const COST_CHIP_LABELS = Object.freeze({ credit:"Devre Kredisi", flux:"Akı", current:"Akım" });
+  function createCostChip(kind, amount) {
+    const chip = document.createElement("span");
+    chip.className = "cost-chip";
+    chip.dataset.kind = kind;
+    const label = localizedUiText(COST_CHIP_LABELS[kind] || "");
+    chip.setAttribute("role", "img");
+    chip.setAttribute("aria-label", `${Number(amount || 0).toLocaleString(uiLocale())} ${label}`.trim());
+    const icon = document.createElement("i");
+    icon.className = "cost-chip-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.innerHTML = `<svg viewBox="0 0 24 24" focusable="false">${UI_ICON_PATHS[kind] || ""}</svg>`;
+    const value = document.createElement("b");
+    value.textContent = Number(amount || 0).toLocaleString(uiLocale());
+    chip.append(icon, value);
+    return chip;
+  }
+
+  // Düğme yazısı + maliyet rozetleri ("YÜKSELT" ◎ 100 ◈ 20).
+  function setCostButtonLabel(button, label, costs = []) {
+    if (!button) return;
+    button.replaceChildren();
+    button.classList.toggle("has-cost-chips", costs.length > 0);
+    const text = document.createElement("span");
+    text.className = "cost-button-label";
+    text.textContent = label;
+    button.appendChild(text);
+    for (const [kind, amount] of costs) button.appendChild(createCostChip(kind, amount));
+    const spoken = costs.map(([kind, amount]) => `${amount} ${localizedUiText(COST_CHIP_LABELS[kind] || "")}`).join(" · ");
+    button.setAttribute("aria-label", spoken ? `${label} · ${spoken}` : label);
   }
 
   function resourceSymbolMarkup(kind) {
@@ -2023,19 +2153,107 @@
     return `<svg class="league-emblem" viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>${pips}`;
   }
 
-  // Lig sandığı mağazadaki sandıklara benzemez: köşeli bir kasa, kilidinde ligin
-  // amblemi, rengi ligin rengi. Çizim ortak; rengi CSS'teki --league-accent verir.
-  function leagueChestMarkup(league) {
-    const emblem = LEAGUE_EMBLEMS[league] || LEAGUE_EMBLEMS.gridshard;
-    return `<svg class="league-chest" data-league-chest="${String(league || "").replace(/[^a-z]/g, "")}" viewBox="0 0 64 60" aria-hidden="true">`
-      + '<path class="league-chest-lid" d="M9 24 17 7h30l8 17Z"/>'
-      + '<path class="league-chest-shine" d="M21 11.5h22"/>'
-      + '<path class="league-chest-body" d="M7 26h50v20l-8 9H15l-8-9Z"/>'
-      + '<path class="league-chest-strap" d="M22 7v17M42 7v17M22 26v29M42 26v29"/>'
-      + '<path class="league-chest-seam" d="M9 25h46"/>'
-      + '<circle class="league-chest-lock" cx="32" cy="39" r="10.5"/>'
-      + `<g class="league-chest-emblem" transform="translate(24.2 31.2) scale(.65)">${emblem}</g>`
+  // Lig sandığı fiziksel bir kasadır: dolu gövde, metal köşebentler, perçinler,
+  // kapak ve kilidinde ligin amblemi. Rengi ligin rengidir (canon.css,
+  // data-league-chest). Kapak ayrı bir gruptur: sandık açılınca kalkar, içinden
+  // ışık çıkar. Çizim ortak; açık hali `open` ile verilir.
+  function leagueChestMarkup(league, { open = false } = {}) {
+    const safeLeague = String(league || "").replace(/[^a-z]/g, "");
+    const emblem = LEAGUE_EMBLEMS[safeLeague] || LEAGUE_EMBLEMS.gridshard;
+    return `<svg class="league-chest${open ? " is-open" : ""}" data-league-chest="${safeLeague}" viewBox="0 0 100 96" aria-hidden="true">`
+      + '<ellipse class="lc-ground" cx="50" cy="87.5" rx="39" ry="6.2"/>'
+      + '<ellipse class="lc-pad" cx="50" cy="86" rx="33" ry="4.4"/>'
+      + '<g class="lc-rays"><path d="M50 46 31 2h10ZM50 46 45 0h10ZM50 46 59 2h10ZM50 46 14 12l8-6ZM50 46 78 6l8 6Z"/></g>'
+      + '<path class="lc-inside" d="M15 48 20 31h60l5 17Z"/>'
+      + '<path class="lc-inside-glow" d="M20 48 24 35h52l4 13Z"/>'
+      + '<g class="lc-body">'
+      + '<path class="lc-box" d="M12 47h76v32a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6Z"/>'
+      + '<path class="lc-box-shade" d="M12 70h76v9a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6Z"/>'
+      + '<path class="lc-box-light" d="M22 50.5h56v3.6H22Z"/>'
+      + '<rect class="lc-panel" x="24" y="58" width="17" height="19" rx="3"/>'
+      + '<rect class="lc-panel" x="59" y="58" width="17" height="19" rx="3"/>'
+      + '<path class="lc-trim" d="M8 46h13v40h-7a6 6 0 0 1-6-6Z"/>'
+      + '<path class="lc-trim" d="M79 46h13v34a6 6 0 0 1-6 6h-7Z"/>'
+      + '<path class="lc-trim-light" d="M10.6 49h3v32h-3ZM81.6 49h3v32h-3Z"/>'
+      + '<path class="lc-trim-dark" d="M8 79h13v7h-7a6 6 0 0 1-6-6ZM79 79h13v1a6 6 0 0 1-6 6h-7Z"/>'
+      + '<circle class="lc-rivet" cx="14.5" cy="54" r="1.9"/><circle class="lc-rivet" cx="14.5" cy="74" r="1.9"/>'
+      + '<circle class="lc-rivet" cx="85.5" cy="54" r="1.9"/><circle class="lc-rivet" cx="85.5" cy="74" r="1.9"/>'
+      + "</g>"
+      + '<g class="lc-lid">'
+      + '<path class="lc-lid-top" d="M11 46 17 24Q50 10 83 24l6 22Z"/>'
+      + '<path class="lc-lid-shade" d="M11 46l2.6-9.6h72.8L89 46Z"/>'
+      + '<path class="lc-lid-light" d="M25 24.5Q50 14.8 75 24.5"/>'
+      + '<path class="lc-trim" d="M27.5 19.6 36 16.9 34.4 46H23.6Z"/>'
+      + '<path class="lc-trim" d="M72.5 19.6 64 16.9 65.6 46H76.4Z"/>'
+      + '<path class="lc-lip" d="M6.5 39.5h87V49a3.4 3.4 0 0 1-3.4 3.4H9.9A3.4 3.4 0 0 1 6.5 49Z"/>'
+      + '<path class="lc-lip-light" d="M10 42h80v2.2H10Z"/>'
+      + '<path class="lc-lock-plate" d="M38 36.5h24v15.5l-12 10-12-10Z"/>'
+      + '<circle class="lc-gem" cx="50" cy="47.2" r="7.6"/>'
+      + '<path class="lc-gem-light" d="M45.2 44.4a5.6 5.6 0 0 1 5-2.9"/>'
+      + `<g class="lc-emblem" transform="translate(44.3 41.5) scale(.475)">${emblem}</g>`
+      + "</g>"
       + "</svg>";
+  }
+
+  // Lig sandığının açılışı: sandık ortada büyür ve titrer, sunucu ödülü
+  // onaylayınca kapak kalkar, ışık patlar ve ödüller sırayla belirir. Lig
+  // sandığının içeriği sabittir (şansa bağlı değildir); gösterilen ödül
+  // durağın kendi ödülüdür.
+  const LEAGUE_CHEST_OPENING_MIN_MS = 950;
+
+  function setChestRevealVisual({ tier = "bronze", league = "" } = {}) {
+    const card = document.getElementById("chest-reveal-card");
+    const visual = document.getElementById("chest-reveal-visual");
+    if (card) {
+      card.dataset.tier = tier;
+      if (league) card.dataset.league = league;
+      else delete card.dataset.league;
+    }
+    if (!visual) return;
+    if (league) {
+      visual.className = "chest-reveal-league";
+      visual.innerHTML = `${leagueChestMarkup(league)}<span class="chest-reveal-sparks" aria-hidden="true">${"<i></i>".repeat(10)}</span>`;
+    } else {
+      visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
+      visual.innerHTML = "<i></i><b></b><em>◆</em>";
+    }
+  }
+
+  function showLeagueChestOpening(league, title) {
+    setChestRevealVisual({ tier:"gold", league });
+    const dialog = document.getElementById("chest-reveal-dialog");
+    const card = document.getElementById("chest-reveal-card");
+    const host = document.getElementById("chest-reveal-rewards");
+    const close = document.getElementById("chest-reveal-close");
+    const kicker = document.getElementById("chest-reveal-kicker");
+    const titleEl = document.getElementById("chest-reveal-title");
+    if (card) card.dataset.state = "opening";
+    if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
+    if (titleEl) titleEl.textContent = title;
+    if (host) host.innerHTML = '<div class="chest-opening-progress" aria-label="Sandık açılıyor"><strong>•••</strong></div>';
+    if (close) { close.disabled = true; close.textContent = "AÇILIYOR…"; }
+    if (dialog?.showModal && !dialog.open) dialog.showModal();
+    else dialog?.setAttribute("open", "");
+  }
+
+  function showLeagueChestReveal(rewards = {}) {
+    const card = document.getElementById("chest-reveal-card");
+    const host = document.getElementById("chest-reveal-rewards");
+    const close = document.getElementById("chest-reveal-close");
+    const kicker = document.getElementById("chest-reveal-kicker");
+    if (card) card.dataset.state = "revealed";
+    document.querySelector("#chest-reveal-visual .league-chest")?.classList.add("is-open");
+    if (kicker) { kicker.hidden = false; kicker.textContent = "SANDIK AÇILDI"; }
+    if (host) {
+      host.replaceChildren();
+      const rows = createRewardRows(rewards);
+      appendChestCosmeticRows(rows, rewards);
+      // Ödüller sırayla belirir.
+      [...rows.children].forEach((row, index) => row.style.setProperty("--reveal-index", String(index)));
+      host.appendChild(rows);
+    }
+    if (close) { close.disabled = false; close.textContent = "DEVAM"; }
+    triggerGridshardCue("energy_transfer");
   }
 
   // Maçta yeni açılan Devre Yolu ödülü; yol yeniden çizilse de vurgulu kalır.
@@ -2233,13 +2451,22 @@
         const claimLeagueNode = async (node, control) => {
           control.disabled = true;
           const status = document.getElementById("arena-reward-status");
+          // Lig sandığı açılış penceresiyle alınır; ara ödüller yerinde alınır.
+          const chestLeague = node.league_chest || (node.is_final_reward ? (stage.league || "gridshard") : "");
+          const startedAt = performance.now();
+          if (chestLeague) showLeagueChestOpening(chestLeague, localizedArenaRewardDescription(node));
           try {
             await metaProgressionMutation(`/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/arena/${encodeURIComponent(node.id)}/claim`);
             if (status) status.textContent = "";
             renderArenaPath();
+            if (chestLeague) {
+              const wait = Math.max(0, LEAGUE_CHEST_OPENING_MIN_MS - (performance.now() - startedAt));
+              window.setTimeout(() => showLeagueChestReveal(node.rewards || {}), wait);
+            }
           } catch (error) {
             if (status) status.textContent = error.message;
             control.disabled = false;
+            if (chestLeague) showChestFailure(error);
           }
         };
         for (const node of stage.nodes || []) {
@@ -2264,7 +2491,8 @@
             chest.className = "league-chest-button";
             chest.setAttribute("aria-expanded", "false");
             chest.setAttribute("aria-label", localizedMessage("reward.chest_preview_aria", {name:rewardDescription}));
-            chest.innerHTML = leagueChestMarkup(node.league_chest || stage.league || "gridshard");
+            // Alınmış sandık açık durur: kapağı kalkmış, içi boş.
+            chest.innerHTML = leagueChestMarkup(node.league_chest || stage.league || "gridshard", { open:Boolean(node.claimed) });
             bindRewardPreview(chest, { title:rewardDescription, reward:node.rewards || {} });
             const name = document.createElement("strong");
             name.textContent = rewardDescription;
@@ -2580,16 +2808,21 @@
       intro.textContent = "Çekirdeğin savaş alanına sağladığı kalıcı enerji ve dayanıklılık değerleri.";
       const list = document.createElement("dl");
       list.className = "module-stat-tiles core-stat-tiles";
-      for (const [label, value] of [
-        ["Nadirlik", moduleRarityLabel(core.rarity)],
-        ["Savaş rolü", core.role_tr],
-        ["İmza", core.signature_name_tr || "—"],
-        ["Enerji üretimi", `${core.energy_per_second}/sn`],
-        ["Enerji deposu", core.energy_capacity],
-        ["Seviye", `${core.level} / 15`],
+      for (const [label, value, icon, tone] of [
+        ["Nadirlik", moduleRarityLabel(core.rarity), "gem", "gold"],
+        ["Savaş rolü", core.role_tr, "target", "red"],
+        ["İmza", core.signature_name_tr || "—", "bolt", "cyan"],
+        ["Enerji üretimi", `${core.energy_per_second}/sn`, "energy", "cyan"],
+        ["Enerji deposu", core.energy_capacity, "battery", "blue"],
+        ["Seviye", `${core.level} / 15`, "boost", "green"],
       ]) {
         const row = document.createElement("div");
-        row.innerHTML = `<dt>${label}</dt><dd>${value}</dd>`;
+        row.dataset.tone = tone;
+        const name = document.createElement("dt");
+        name.append(createUiIcon(icon, tone), document.createTextNode(label));
+        const amount = document.createElement("dd");
+        amount.textContent = String(value);
+        row.append(name, amount);
         list.appendChild(row);
       }
       host.appendChild(list);
@@ -2602,7 +2835,18 @@
         button.type = "button";
         button.className = skill.learned ? "is-selected" : "";
         const state = skill.learned ? "SEÇİLDİ" : skill.tier_selected ? "DİĞER DAL SEÇİLDİ" : core.level < skill.level ? `SV ${skill.level} GEREKLİ` : `${skill.flux_cost} AKI`;
-        button.innerHTML = `<strong>${skill.name_tr}</strong><small>SV ${skill.level} · ${state}</small>`;
+        // Çekirdek yeteneği çekirdeğe özel bir kuraldır; açıklaması düğmede yazar.
+        const skillName = document.createElement("strong");
+        skillName.textContent = talentDisplayName(skill);
+        const skillState = document.createElement("small");
+        skillState.textContent = `SV ${skill.level} · ${state}`;
+        button.append(skillName, skillState);
+        if (skill.description_tr) {
+          const skillDescription = document.createElement("em");
+          skillDescription.textContent = talentDisplayDescription(skill);
+          button.appendChild(skillDescription);
+        }
+        button.setAttribute("aria-label", `${talentDisplayName(skill)} · ${state} · ${talentDisplayDescription(skill)}`);
         button.disabled = !coreSkillLearnable(core, skill);
         button.addEventListener("click", async () => {
           button.disabled = true;
@@ -2619,15 +2863,19 @@
       }));
       const overview = document.createElement("div");
       overview.className = "module-overview-grid";
-      for (const [label, value] of [
-        ["NADİRLİK", moduleRarityLabel(core.rarity)],
-        ["SAVAŞ ROLÜ", core.role_tr],
-        ["İMZA", core.signature_name_tr || "—"],
-        ["AÇILIŞ", `Arena ${core.unlock_arena}`],
-        ["ENERJİ", `${core.energy_per_second}/sn`],
+      for (const [label, value, icon, tone] of [
+        ["NADİRLİK", moduleRarityLabel(core.rarity), "gem", "gold"],
+        ["SAVAŞ ROLÜ", core.role_tr, "target", "red"],
+        ["İMZA", core.signature_name_tr || "—", "bolt", "cyan"],
+        ["AÇILIŞ", `Arena ${core.unlock_arena}`, "key", "gold"],
+        ["ENERJİ", `${core.energy_per_second}/sn`, "energy", "cyan"],
       ]) {
         const card = document.createElement("div");
-        card.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
+        const name = document.createElement("span");
+        name.textContent = label;
+        const amount = document.createElement("strong");
+        amount.textContent = String(value);
+        card.append(createUiIcon(icon, tone), name, amount);
         overview.appendChild(card);
       }
       host.appendChild(overview);
@@ -2658,15 +2906,18 @@
     if (art) { art.textContent = visual.glyph; applyCoreVisualIdentity(art, core.id); }
     const nextStats = core.unlocked ? core.next_stats : null;
     renderDetailStatRow(document.getElementById("core-detail-stats"), [
-      { label:"ENERJİ", value:`${core.energy_per_second}/sn`, current:core.energy_per_second, next:nextStats?.energy_per_second },
-      { label:"DEPO", value:core.energy_capacity, current:core.energy_capacity, next:nextStats?.energy_capacity },
-      { label:"YETENEK", value:(core.skills || []).filter((skill) => skill.learned).length },
+      { label:"ENERJİ", value:`${core.energy_per_second}/sn`, current:core.energy_per_second, next:nextStats?.energy_per_second, icon:"energy", tone:"cyan" },
+      { label:"DEPO", value:core.energy_capacity, current:core.energy_capacity, next:nextStats?.energy_capacity, icon:"battery", tone:"blue" },
+      { label:"YETENEK", value:(core.skills || []).filter((skill) => skill.learned).length, icon:"star", tone:"gold" },
     ]);
     const select = document.getElementById("core-detail-select");
     if (select) { select.disabled = !core.unlocked || core.selected; select.textContent = core.selected ? "SEÇİLDİ" : core.unlocked ? "SEÇ" : "KİLİTLİ"; }
     const upgrade = document.getElementById("core-detail-upgrade");
     const canUpgrade = coreUpgradeAvailable(core);
-    if (upgrade) { upgrade.disabled = !canUpgrade; upgrade.textContent = cost ? `YÜKSELT · ${cost.flux_shards} AKI` : "AZAMİ SEVİYE"; }
+    if (upgrade) {
+      upgrade.disabled = !canUpgrade;
+      setCostButtonLabel(upgrade, localizedUiText(cost ? "YÜKSELT" : "AZAMİ SEVİYE"), cost ? [["flux", cost.flux_shards]] : []);
+    }
     setText("core-detail-status", !core.unlocked ? `Arena ${core.unlock_arena} seviyesinde açılır.` : cost && !canUpgrade ? `${cost.shards} parça ve ${cost.flux_shards} Akı gerekli.` : "");
     for (const button of document.querySelectorAll("[data-core-detail-tab]")) button.classList.toggle("is-active", button.dataset.coreDetailTab === "overview");
     renderCoreDetailTab("overview");
@@ -3131,8 +3382,8 @@
     const host = document.getElementById("chest-reveal-rewards");
     const kicker = document.getElementById("chest-reveal-kicker");
     const close = document.getElementById("chest-reveal-close");
+    setChestRevealVisual({ tier });
     if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
-    if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
     if (title) title.textContent = definition?.name_tr || storeItem?.name_tr || "Sandık";
     if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
@@ -3158,8 +3409,8 @@
     const host = document.getElementById("chest-reveal-rewards");
     const kicker = document.getElementById("chest-reveal-kicker");
     const close = document.getElementById("chest-reveal-close");
+    setChestRevealVisual({ tier });
     if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
-    if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
     if (title) title.textContent = `${definition?.name_tr || "Sandık"} · ${receipts.length} açıldı`;
     if (kicker) {
       kicker.hidden = false;
@@ -3188,8 +3439,8 @@
     const visual = document.getElementById("chest-reveal-visual");
     const host = document.getElementById("chest-reveal-rewards");
     const close = document.getElementById("chest-reveal-close");
+    setChestRevealVisual({ tier });
     if (card) { card.dataset.tier = tier; card.dataset.state = "opening"; }
-    if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
     const kicker = document.getElementById("chest-reveal-kicker");
     if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
     const titleEl = document.getElementById("chest-reveal-title");
@@ -3246,8 +3497,8 @@
     const kicker = document.getElementById("chest-reveal-kicker");
     const host = document.getElementById("chest-reveal-rewards");
     const close = document.getElementById("chest-reveal-close");
+    setChestRevealVisual({ tier });
     if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
-    if (visual) visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
     if (title) title.textContent = chest.name_tr || definition?.name_tr || "Hediye Sandık";
     if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
     if (host) {
@@ -4026,12 +4277,12 @@
     const signature = item.signature_mechanic
       || (item.shared_behavior_tr ? `Şimdilik ${item.shared_behavior_tr} ile aynı temel davranışı kullanır.` : "");
     const rows = [
-      [`ENDERLİK · ${moduleRarityLabel(rarity).toLocaleUpperCase("tr-TR")}`, `${MODULE_RARITY_RULE_TR[rarity] || MODULE_RARITY_RULE_TR.common} ${noAdvantageTr}`, "is-rarity"],
-      ["İMZA MEKANİĞİ", signature, ""],
-      ["SAVAŞTA NASIL GÖRÜLÜR", item.telegraph_tr, ""],
-      ["KARŞI OYUN", item.counterplay_tr, ""],
+      [`ENDERLİK · ${moduleRarityLabel(rarity).toLocaleUpperCase("tr-TR")}`, `${MODULE_RARITY_RULE_TR[rarity] || MODULE_RARITY_RULE_TR.common} ${noAdvantageTr}`, "is-rarity", "gem", "gold"],
+      ["İMZA MEKANİĞİ", signature, "is-signature", "bolt", "cyan"],
+      ["SAVAŞTA NASIL GÖRÜLÜR", item.telegraph_tr, "is-telegraph", "eye", "blue"],
+      ["KARŞI OYUN", item.counterplay_tr, "is-counter", "swords", "red"],
     ];
-    for (const [label, value, className] of rows) {
+    for (const [label, value, className, icon, tone] of rows) {
       if (!value) continue;
       const row = document.createElement("div");
       row.className = `module-identity-row${className ? ` ${className}` : ""}`;
@@ -4040,38 +4291,124 @@
       name.textContent = label;
       const copy = document.createElement("strong");
       copy.textContent = localizedUiText(value);
-      row.append(name, copy);
+      row.append(createUiIcon(icon, tone), name, copy);
       panel.appendChild(row);
     }
     return panel;
   }
 
+  // Sunucudan iki dilde gelen metin; İngilizcesi yoksa çeviri sözlüğünden geçer.
+  function serverCopy(turkish, english) {
+    return document.documentElement.lang === "en" && english ? english : localizedUiText(turkish || "");
+  }
+
+  // Modüle özgü değerin yazımı: "%60", "1,2 sn", "2×9", "12/sn".
+  function specialDisplayValue(special) {
+    const english = document.documentElement.lang === "en";
+    const unit = special?.unit;
+    const number = Number(special?.value || 0).toLocaleString(uiLocale(), {
+      maximumFractionDigits:unit === "percent" || unit === "hp" || unit === "energy" || unit === "damage" ? 1 : 2,
+    });
+    const times = Number(special?.times) > 1 ? `${special.times}×` : "";
+    if (unit === "percent" || unit === "heat") return `${times}${english ? `${number}%` : `%${number}`}`;
+    if (unit === "seconds") return `${times}${number} ${english ? "sec" : "sn"}`;
+    if (unit === "per_second") return `${times}${number}/${english ? "sec" : "sn"}`;
+    return `${times}${number}`;
+  }
+
+  function specialLabel(special) {
+    return serverCopy(special?.label_tr, special?.label_en);
+  }
+
+  // Çevrim karosu: adı modüle özeldir ("BLOK ARALIĞI", "SALDIRI ARALIĞI" …).
+  function moduleCycleEntry(stats, nextStats) {
+    const seconds = (source) => (source?.cooldown_ms === undefined || source?.cooldown_ms === null
+      ? undefined
+      : Number(source.cooldown_ms) / 1000);
+    const current = seconds(stats);
+    const label = serverCopy(stats?.cycle_label_tr, stats?.cycle_label_en) || localizedUiText("BEKLEME");
+    if (!(current > 0)) {
+      // Çevrimi olmayan modül sürekli çalışır (eski sunucuda "0 sn" yazardı).
+      return { label:localizedUiText("ÇALIŞMA"), value:current === undefined ? "—" : localizedUiText("SÜREKLİ") };
+    }
+    return {
+      label,
+      value:`${current.toLocaleString(uiLocale(), { maximumFractionDigits:2 })} ${document.documentElement.lang === "en" ? "sec" : "sn"}`,
+      current,
+      next:seconds(nextStats),
+    };
+  }
+
+  function specialEntries(stats, nextStats) {
+    const upcoming = new Map((nextStats?.specials || []).map((special) => [special.key, special]));
+    return (stats?.specials || []).map((special) => ({
+      key:special.key,
+      label:specialLabel(special),
+      value:specialDisplayValue(special),
+      current:Number(special.value),
+      next:upcoming.has(special.key) ? Number(upcoming.get(special.key).value) : undefined,
+      icon:(STAT_ICONS[special.key] || ["star", "cyan"])[0],
+      tone:(STAT_ICONS[special.key] || ["star", "cyan"])[1],
+    }));
+  }
+
+  // Bir sonraki seviyenin farkı: artan değerde "+", kısalan sürede "-".
+  function createStatGain(current, next) {
+    const change = Math.round((Number(next) - Number(current)) * 100) / 100;
+    if (next === undefined || next === null || !Number.isFinite(change) || change === 0) return null;
+    const gain = document.createElement("em");
+    gain.className = "stat-next-gain";
+    gain.textContent = `${change > 0 ? "+" : "-"}${Math.abs(change).toLocaleString(uiLocale(), { maximumFractionDigits:2 })}`;
+    gain.title = localizedUiText("Sonraki seviye");
+    return gain;
+  }
+
   // İstatistik sekmesinin değer karoları. CAN, hasar ve etki çubukları
   // koleksiyondaki en yüksek değere oranlanır; enderlik bu değerleri artırmaz.
+  const TALENT_KIND_LABELS = Object.freeze({
+    basic:"TEMEL", signature:"İMZA", tuning:"İNCE AYAR", mastery:"USTALIK",
+  });
+  const TALENT_KIND_ICONS = Object.freeze({
+    basic:["boost", "green"], signature:["star", "gold"], tuning:["gear", "blue"], mastery:["gem", "violet"],
+  });
+
   function createModuleStatTiles(item) {
     const stats = item.stats || {};
+    const nextStats = item.unlocked ? item.next_stats : null;
     const collection = metaProgressionState?.module_collection || [];
     const peak = (key) => Math.max(1, ...collection.map((module) => Number(module.stats?.[key] || 0)));
     const number = (value, digits = 0) => Number(value || 0).toLocaleString(uiLocale(), { maximumFractionDigits:digits });
     const list = document.createElement("dl");
     list.className = "module-stat-tiles";
+    const cycle = moduleCycleEntry(stats, nextStats);
+    // Modüle özgü değerler sunucudan gelir (seviye ve yetenek dahil); eski
+    // sunucu göndermezse soyut etki çarpanı yazılır.
+    const specials = specialEntries(stats, nextStats);
     for (const tile of [
-      { key:"hp", glyph:"✚", label:"CAN", value:number(stats.max_hp), meter:Number(stats.max_hp || 0) / peak("max_hp") },
-      { key:"damage", glyph:"✹", label:"HASAR", value:number(stats.base_damage), meter:Number(stats.base_damage || 0) / peak("base_damage") },
-      { key:"cooldown", glyph:"◷", label:"BEKLEME", value:`${number(Number(stats.cooldown_ms || 0) / 1000, 1)} sn` },
-      { key:"effect", glyph:"✦", label:"ETKİ ÇARPANI", value:`×${number(stats.effect_multiplier, 2)}`, meter:Number(stats.effect_multiplier || 0) / peak("effect_multiplier") },
-      { key:"energy", glyph:"◌", label:"ENERJİ TÜKETİMİ", value:`${number(stats.energy_consumption, 1)}/sn` },
-      { key:"current", glyph:"ϟ", label:"AKIM MALİYETİ", value:number(item.current_cost) },
+      { key:"hp", icon:"hp", tone:"green", label:"CAN", value:number(stats.max_hp), current:stats.max_hp, next:nextStats?.max_hp, meter:Number(stats.max_hp || 0) / peak("max_hp") },
+      ...(Number(stats.base_damage) > 0
+        ? [{ key:"damage", icon:"damage", tone:"red", label:"HASAR", value:number(stats.base_damage, 1), current:stats.base_damage, next:nextStats?.base_damage, meter:Number(stats.base_damage || 0) / peak("base_damage") }]
+        : []),
+      { key:"cooldown", icon:"cycle", tone:"blue", ...cycle },
+      ...(specials.length
+        ? specials.map((special) => ({ ...special, key:`special-${special.key}` }))
+        : [{ key:"effect", icon:"star", tone:"violet", label:"ETKİ ÇARPANI", value:`×${number(stats.effect_multiplier, 2)}`, meter:Number(stats.effect_multiplier || 0) / peak("effect_multiplier") }]),
+      // Tüketim, bakım ile aksiyon bedelinin saniyeye düşen payının toplamıdır;
+      // üretici modül (Batarya) tüketim yerine üretimini gösterir.
+      Number(stats.energy_generation) > 0
+        ? { key:"energy", icon:"energy", tone:"cyan", label:"ENERJİ ÜRETİMİ", value:`+${number(stats.energy_generation, 1)}/sn`, current:stats.energy_generation, next:nextStats?.energy_generation }
+        : { key:"energy", icon:"energy", tone:"cyan", label:"ENERJİ TÜKETİMİ", value:`${number(stats.energy_per_second ?? stats.energy_consumption, 1)}/sn`, current:stats.energy_per_second, next:nextStats?.energy_per_second },
+      { key:"current", icon:"current", tone:"gold", label:"AKIM MALİYETİ", value:number(item.current_cost) },
     ]) {
       const row = document.createElement("div");
       row.dataset.stat = tile.key;
+      row.dataset.tone = tile.tone || "";
       const name = document.createElement("dt");
-      const glyph = document.createElement("i");
-      glyph.setAttribute("aria-hidden", "true");
-      glyph.textContent = tile.glyph;
-      name.append(glyph, document.createTextNode(tile.label));
+      name.append(createUiIcon(tile.icon, tile.tone), document.createTextNode(tile.label));
       const value = document.createElement("dd");
       value.textContent = tile.value;
+      const gain = createStatGain(tile.current, tile.next);
+      if (gain) value.append(" ", gain);
       row.append(name, value);
       if (tile.meter !== undefined) {
         const meter = document.createElement("span");
@@ -4141,9 +4478,9 @@
       text.textContent = "Savaş değerleri seviye ve yeteneklerden gelir; enderlik bu değerleri artırmaz.";
       const chips = document.createElement("div");
       chips.className = "module-stat-chips";
-      for (const [label, value, kind] of [
-        ["SINIF", poolCategoryLabel(item.category), "category"],
-        ["ENDERLİK", moduleRarityLabel(item.rarity), "rarity"],
+      for (const [label, value, kind, icon, tone] of [
+        ["SINIF", poolCategoryLabel(item.category), "category", "grid", "blue"],
+        ["ENDERLİK", moduleRarityLabel(item.rarity), "rarity", "gem", "gold"],
       ]) {
         const chip = document.createElement("span");
         chip.dataset.chip = kind;
@@ -4153,17 +4490,22 @@
         name.textContent = label;
         const valueNode = document.createElement("strong");
         valueNode.textContent = value;
-        chip.append(name, valueNode);
+        chip.append(createUiIcon(icon, tone), name, valueNode);
         chips.appendChild(chip);
       }
       host.appendChild(chips);
       host.appendChild(createModuleStatTiles(item));
       host.appendChild(createModuleCounterGrid(item));
     } else if (tabName === "talents") {
-      const selectedTalent = (item.talents || [])
-        .flatMap((node) => node.choices || [])
-        .find((choice) => (item.talents || []).some((node) => node.selected === choice.id));
-      text.textContent = selectedTalent?.description_tr || "Yetenekler seviye ilerlemesidir, enderlik bonusu değildir. Açıklamasını görmek için bir yeteneğe dokun.";
+      // Açılışta seçilmiş imza yeteneğinin, o yoksa en ileri seçilmiş eşiğin
+      // açıklaması yazar (dal kimlikleri her eşikte aynıdır; eşiğe göre aranır).
+      const selectedNodes = (item.talents || []).filter((node) => node.selected);
+      const describedNode = selectedNodes.find((node) => node.kind === "signature")
+        || selectedNodes[selectedNodes.length - 1];
+      const selectedTalent = describedNode?.choices?.find((choice) => choice.id === describedNode.selected);
+      text.textContent = selectedTalent
+        ? talentDisplayDescription(selectedTalent)
+        : "Yetenekler seviye ilerlemesidir, enderlik bonusu değildir. Açıklamasını görmek için bir yeteneğe dokun.";
       const tree = document.createElement("div");
       tree.className = "module-talent-path";
       for (const node of item.talents || []) {
@@ -4171,16 +4513,26 @@
         row.className = "module-talent-node";
         row.dataset.selected = node.selected || "";
         row.dataset.reachable = String(Number(item.level) + 1 >= node.level);
+        // Eşiğin türü: temel uzmanlık, imza yeteneği, ince ayar ya da ustalık.
+        if (node.kind) row.dataset.kind = node.kind;
         // Seviye rozeti iki dalın ortasında durur: sol dal · rozet · sağ dal.
         const level = document.createElement("span");
         level.className = "module-talent-level";
         const levelValue = document.createElement("strong");
         levelValue.textContent = `SV ${node.level}`;
-        const levelCost = document.createElement("small");
-        levelCost.textContent = `${node.flux_cost} Akı`;
-        level.append(levelValue, levelCost);
+        // Akı bedeli yazıyla değil simgesiyle gösterilir.
+        level.append(levelValue, createCostChip("flux", node.flux_cost));
         const choices = document.createElement("div");
         choices.className = "module-talent-choices";
+        const kindLabel = TALENT_KIND_LABELS[node.kind];
+        if (kindLabel) {
+          const kind = document.createElement("em");
+          kind.className = "module-talent-kind";
+          kind.textContent = localizedUiText(kindLabel);
+          const [kindIcon, kindTone] = TALENT_KIND_ICONS[node.kind] || ["star", "cyan"];
+          kind.prepend(createUiIcon(kindIcon, kindTone));
+          row.appendChild(kind);
+        }
         row.appendChild(choices);
         node.choices.forEach((choice, choiceIndex) => {
           const button = document.createElement("button");
@@ -4193,12 +4545,17 @@
               : Number(item.level) + 1 < node.level ? `SV ${node.level} GEREKLİ`
                 : Number(metaProgressionState?.flux_shards || 0) < node.flux_cost ? `${node.flux_cost} AKI GEREKLİ`
                   : "SEÇ";
-          button.innerHTML = `<strong>${choice.name_tr}</strong><small>${choiceState}</small>`;
+          const choiceName = talentDisplayName(choice);
+          const choiceTitle = document.createElement("strong");
+          choiceTitle.textContent = choiceName;
+          const choiceStatus = document.createElement("small");
+          choiceStatus.textContent = choiceState;
+          button.append(choiceTitle, choiceStatus);
           button.dataset.selectable = String(canChoose);
-          button.setAttribute("aria-label", `${choice.name_tr} · ${choiceState} · Açıklamayı göster`);
-          button.title = choice.description_tr || choice.name_tr;
+          button.setAttribute("aria-label", `${choiceName} · ${choiceState} · Açıklamayı göster`);
+          button.title = talentDisplayDescription(choice);
           button.addEventListener("click", async () => {
-            text.textContent = choice.description_tr || choice.name_tr;
+            text.textContent = talentDisplayDescription(choice);
             choices.querySelectorAll("button").forEach((candidate) => candidate.classList.toggle("is-previewed", candidate === button));
             if (!canChoose) return;
             button.disabled = true;
@@ -4227,7 +4584,7 @@
         const resetButton = document.createElement("button");
         resetButton.type = "button";
         resetButton.className = "module-talent-reset";
-        resetButton.textContent = `YETENEKLERİ SIFIRLA · ${resetCost} AKI`;
+        setCostButtonLabel(resetButton, localizedUiText("YETENEKLERİ SIFIRLA"), [["flux", resetCost]]);
         resetButton.disabled = Number(metaProgressionState?.flux_shards || 0) < resetCost;
         resetButton.addEventListener("click", async () => {
           resetButton.disabled = true;
@@ -4246,21 +4603,28 @@
         host.appendChild(resetPanel);
       }
     } else {
-      text.textContent = item.description_tr || item.strategic_role || item.name_tr;
+      text.textContent = serverCopy(item.description_tr, item.description_en) || item.strategic_role || item.name_tr;
       const overview = document.createElement("div");
       overview.className = "module-overview-grid";
-      for (const [label, rawValue] of [["SAVAŞ ROLÜ", item.strategic_role || "—"], ["SINIF", poolCategoryLabel(item.category)], ["AÇILIŞ", moduleUnlockRequirement(item)]]) {
+      for (const [label, rawValue, icon, tone] of [
+        ["SAVAŞ ROLÜ", serverCopy(item.strategic_role, item.strategic_role_en) || "—", "target", "red"],
+        ["SINIF", poolCategoryLabel(item.category), "grid", "blue"],
+        ["AÇILIŞ", moduleUnlockRequirement(item), "key", "gold"],
+      ]) {
         const card = document.createElement("div");
         const name = document.createElement("span");
         const value = document.createElement("strong");
         name.textContent = label;
         value.textContent = rawValue;
-        card.append(name, value);
+        card.append(createUiIcon(icon, tone), name, value);
         overview.appendChild(card);
       }
       host.appendChild(createModuleIdentityPanel(item));
       host.appendChild(overview);
-      host.appendChild(createModuleEffectList(item.effect_lines));
+      // İngilizce arayüzde sunucunun İngilizce etki satırları yazılır.
+      host.appendChild(createModuleEffectList(
+        document.documentElement.lang === "en" && item.effect_lines_en?.length ? item.effect_lines_en : item.effect_lines
+      ));
     }
     host.prepend(text);
   }
@@ -4295,28 +4659,26 @@
       art.setAttribute("aria-label", `${item.name_tr} görseli`);
     }
     const nextStats = item.unlocked ? item.next_stats : null;
-    // Ortadaki kutu modülün bekleme (atış) süresidir; Akım maliyeti İstatistik sekmesindedir.
-    const cooldownSeconds = (stats) => (stats?.cooldown_ms === undefined || stats?.cooldown_ms === null
-      ? undefined
-      : Number(stats.cooldown_ms) / 1000);
-    const cooldown = cooldownSeconds(item.stats);
+    // Üç kutu: CAN, modülün kendi çevrimi ve asıl işi. Saldırı modülünde asıl iş
+    // hasardır; diğerlerinde modüle özgü ilk değer (blok, onarım, soğutma …).
+    // Akım maliyeti İstatistik sekmesindedir.
+    const headline = Number(item.stats?.base_damage) > 0
+      ? { label:"HASAR", value:Number(item.stats.base_damage).toLocaleString(uiLocale(), { maximumFractionDigits:1 }), current:item.stats.base_damage, next:nextStats?.base_damage, icon:"damage", tone:"red" }
+      : specialEntries(item.stats, nextStats)[0]
+        || { label:"HASAR", value:item.stats?.base_damage || 0, icon:"damage", tone:"red" };
     renderDetailStatRow(document.getElementById("module-detail-stats"), [
-      { label:"CAN", value:item.stats?.max_hp ?? definition.maxHp, current:item.stats?.max_hp, next:nextStats?.max_hp },
-      {
-        label:"BEKLEME",
-        value:cooldown === undefined ? "—" : `${cooldown.toLocaleString(uiLocale(), { maximumFractionDigits:2 })} sn`,
-        current:cooldown,
-        next:cooldownSeconds(nextStats),
-      },
-      { label:"HASAR", value:item.stats?.base_damage || 0, current:item.stats?.base_damage, next:nextStats?.base_damage },
+      { label:"CAN", value:item.stats?.max_hp ?? definition.maxHp, current:item.stats?.max_hp, next:nextStats?.max_hp, icon:"hp", tone:"green" },
+      { ...moduleCycleEntry(item.stats, nextStats), icon:"cycle", tone:"blue" },
+      headline,
     ]);
     const upgrade = document.getElementById("module-detail-upgrade");
     const reason = moduleUpgradeBlockReason(item);
     if (upgrade) {
       upgrade.disabled = Boolean(reason || metaProgressionState?.unavailable);
-      upgrade.textContent = cost
-        ? `YÜKSELT · ${cost.circuit_credits} DK${Number(cost.flux_shards) > 0 ? ` · ${cost.flux_shards} AKI` : ""}`
-        : "AZAMİ SEVİYE";
+      // Bedel "DK" ve "AKI" yazısıyla değil, kaynakların simgesiyle gösterilir.
+      setCostButtonLabel(upgrade, localizedUiText(cost ? "YÜKSELT" : "AZAMİ SEVİYE"), cost
+        ? [["credit", cost.circuit_credits], ...(Number(cost.flux_shards) > 0 ? [["flux", cost.flux_shards]] : [])]
+        : []);
     }
     setText("module-detail-status", reason);
     for (const button of document.querySelectorAll("[data-module-detail-tab]")) button.classList.toggle("is-active", button.dataset.moduleDetailTab === "overview");
@@ -10768,6 +11130,20 @@
     window.setTimeout(() => bubble.remove(), 1900);
   }
 
+  // Yetenek adı ve açıklaması sunucudan iki dilde gelir; İngilizce yoksa
+  // (eski sunucu) Türkçe metin çeviri sözlüğünden geçer.
+  function talentDisplayName(choice) {
+    return document.documentElement.lang === "en" && choice?.name_en
+      ? choice.name_en
+      : localizedUiText(choice?.name_tr || "");
+  }
+
+  function talentDisplayDescription(choice) {
+    return document.documentElement.lang === "en" && choice?.description_en
+      ? choice.description_en
+      : localizedUiText(choice?.description_tr || choice?.name_tr || "");
+  }
+
   // Beta.72 imza mekaniklerinin yalnız görsel/ses karşılığı olan olayları.
   const SIGNATURE_EVENT_TYPES = new Set([
     "quantum_repeat",
@@ -10782,7 +11158,21 @@
     "chrono_debt_started",
     "attack_windup_started",
     "core_signature_triggered",
+    "module_talent_triggered",
+    "core_talent_triggered",
+    "module_cycle_pulse",
+    "amplifier_pulse",
   ]);
+
+  // Modül çevrimi iş yaptığında savaşta görünen karşılık. Savunma tepkileri
+  // (blok, ayna, kubbe, sabotaj direnci) adıyla; destek darbeleri yalnız bir
+  // halkayla gösterilir.
+  const CYCLE_PULSE_PRESENTATION = Object.freeze({
+    block:{ effect:"cycle_block", label:"BLOK" },
+    mirror:{ effect:"cycle_mirror", label:"AYNA" },
+    dome_guard:{ effect:"cycle_dome", label:"KUBBE" },
+    sabotage_guard:{ effect:"cycle_guard", label:"DİRENÇ" },
+  });
 
   // Çekirdek imzası → efekt türü, etiket ve (varsa) canlı şerit metni.
   const CORE_SIGNATURE_PRESENTATION = Object.freeze({
@@ -10944,6 +11334,33 @@
           setBattleLiveTicker(ticker, ownerId === participantPlayerId ? "heal" : "danger");
         }
       }
+    } else if (type === "module_cycle_pulse" || type === "amplifier_pulse") {
+      const sourceId = own(data.module_id);
+      const presentation = CYCLE_PULSE_PRESENTATION[data.kind];
+      if (!presentation) {
+        // Destek darbesi: kaynağın üstünde halka, yüklenen modüllere ince bağ.
+        emitSignatureBattleEffect("cycle_pulse", sourceId, {
+          links:(data.charged_module_ids || []).slice(0, 4).map((moduleId) => [sourceId, own(moduleId)]),
+        });
+      } else {
+        const links = [];
+        if (data.kind === "mirror" && data.attacker_module_id) links.push([sourceId, rival(data.attacker_module_id)]);
+        if (data.kind === "dome_guard" && data.target_module_id) links.push([sourceId, own(data.target_module_id)]);
+        emitSignatureBattleEffect(presentation.effect, sourceId, {
+          links,
+          label:localizedUiText(presentation.label),
+        });
+      }
+    } else if (type === "module_talent_triggered") {
+      emitSignatureBattleEffect("talent", own(data.module_id), {
+        label:talentDisplayName(data).toLocaleUpperCase(uiLocale()),
+      });
+    } else if (type === "core_talent_triggered") {
+      const coreId = own(data.module_id)
+        || (ownerId === participantPlayerId ? "core-1" : "enemy-core");
+      emitSignatureBattleEffect("talent", coreId, {
+        label:talentDisplayName(data).toLocaleUpperCase(uiLocale()),
+      });
     } else if (type === "attack_windup_started") {
       const sourceId = own(data.module_id);
       const targetId = rival(data.target_module_id);
@@ -13062,6 +13479,14 @@
     repeat_echo:{ priority:1, lifetimeMs:860, particles:6, cue:"repeat_echo", arena:"light" },
     chrono_debt:{ priority:1, lifetimeMs:900, particles:0, cue:null },
     secondary_hit:{ priority:1, lifetimeMs:760, particles:0, cue:null },
+    // Modül imza yeteneği tetiklendi: modülün üstünde yeteneğin adı belirir.
+    talent:{ priority:2, lifetimeMs:1100, particles:6, cue:null, minRepeatMs:900 },
+    // Modül çevrimleri: savunma tepkileri ve destek darbeleri.
+    cycle_block:{ priority:2, lifetimeMs:760, particles:4, cue:null, minRepeatMs:500 },
+    cycle_mirror:{ priority:2, lifetimeMs:820, particles:4, cue:null, minRepeatMs:500 },
+    cycle_dome:{ priority:2, lifetimeMs:820, particles:4, cue:null, minRepeatMs:600 },
+    cycle_guard:{ priority:2, lifetimeMs:900, particles:4, cue:null, minRepeatMs:600 },
+    cycle_pulse:{ priority:1, lifetimeMs:680, particles:0, cue:null, minRepeatMs:900 },
     // Çekirdek imzaları. Güç kullanımının zaten sesi olduğu için yalnız güç
     // dışında tetiklenen Doğuş ve Zincir kendi sesini çalar.
     core_rebirth:{ priority:4, lifetimeMs:1400, particles:14, cue:"core_rebirth", arena:"heavy" },
@@ -20323,8 +20748,8 @@
     highlightedArenaNodeId = "";
   });
 
-  // Lige girişte açılan modül ekrana gelerek tanıtılır. Pencere kapanınca,
-  // varsa aynı maçta kazanılan ödül durağı gösterilir.
+  // Yeni arenaya ya da lige girişte açılan modül ekrana gelerek tanıtılır.
+  // Pencere kapanınca, varsa aynı maçta kazanılan ödül durağı gösterilir.
   const moduleUnlockDialog = document.getElementById("module-unlock-dialog");
   let moduleUnlockAfterClose = null;
 
@@ -20340,10 +20765,12 @@
     const collection = metaProgressionState?.module_collection || [];
     const items = (moduleIds || [])
       .map((id) => collection.find((item) => item.definition_id === id))
-      .filter((item) => item && item.unlock_stage_kind === "league");
+      .filter(Boolean);
     const host = document.getElementById("module-unlock-list");
     if (!items.length || !host || !moduleUnlockDialog || moduleUnlockDialog.open) return false;
     host.replaceChildren();
+    // İkiden çok kart (Arena 12: üç, ilk lig: yedi) sıkışık satırlarla dizilir.
+    host.dataset.layout = items.length > 2 ? "compact" : "full";
     for (const item of items) {
       const card = document.createElement("button");
       card.type = "button";
@@ -20359,7 +20786,8 @@
       const kind = document.createElement("span");
       kind.textContent = `${localizedUiText(moduleRarityLabel(item.rarity))} · ${localizedUiText(poolCategoryLabel(item.category))}`;
       const description = document.createElement("p");
-      description.textContent = localizedUiText(item.description_tr || item.strategic_role || "");
+      description.textContent = serverCopy(item.description_tr, item.description_en)
+        || localizedUiText(item.strategic_role || "");
       const more = document.createElement("small");
       more.textContent = localizedUiText("KARTA BAK");
       card.append(art, name, kind, description, more);
@@ -20380,9 +20808,13 @@
     }
     const stage = document.getElementById("module-unlock-stage");
     if (stage) {
-      stage.textContent = localizedMessage("unlock.league_reached", {
-        league:localizedUiText(items[0].unlock_stage_name_tr || ""),
-      });
+      // Aynı maçta açılan modüller aynı aşamaya aittir; ilki yeterlidir.
+      const arena = items[0].unlock_stage_kind === "arena" ? Number(items[0].unlock_arena || 0) : 0;
+      stage.textContent = arena
+        ? localizedMessage("unlock.arena_reached", {arena:localizedNumber(arena)})
+        : localizedMessage("unlock.league_reached", {
+          league:localizedUiText(items[0].unlock_stage_name_tr || ""),
+        });
     }
     moduleUnlockAfterClose = onClose;
     if (moduleUnlockDialog.showModal) moduleUnlockDialog.showModal();
@@ -20518,6 +20950,50 @@
   });
   document.getElementById("reward-inbox-button")?.addEventListener("click", () => loadRewardInbox({ open:true }));
   bindDropdownMenu(document.getElementById("lobby-menu-button"), document.getElementById("lobby-menu"));
+
+  // Sabit sayfadaki yazıların yanına eşleşen renkli simgeler: bilgi penceresi
+  // sekmeleri, üç çizgi menüsü ve takım menüsü. Sayfa kaynağı yalın kalır;
+  // simgeler tek takımdan (UI_ICON_PATHS) gelir.
+  function decorateStaticIcons() {
+    for (const [selector, icon, tone] of [
+      ['[data-module-detail-tab="overview"], [data-core-detail-tab="overview"]', "info", "cyan"],
+      ['[data-module-detail-tab="stats"], [data-core-detail-tab="stats"]', "bars", "gold"],
+      ['[data-module-detail-tab="talents"], [data-core-detail-tab="skills"]', "star", "violet"],
+      ['#lobby-menu [data-open-screen="avatar"]', "palette", "pink"],
+      ['#lobby-menu [data-open-screen="daily"]', "gift", "gold"],
+      ['#lobby-menu [data-open-screen="friends"]', "people", "green"],
+      ['#lobby-menu [data-open-screen="settings"]', "gear", "steel"],
+      ['#team-menu [data-team-management-tab="cosmetics"]', "palette", "pink"],
+      ['#team-menu [data-team-management-tab="members"]', "people", "green"],
+    ]) {
+      for (const button of document.querySelectorAll(selector)) {
+        if (button.querySelector(".ui-icon")) continue;
+        const glyph = button.querySelector(":scope > span");
+        const symbol = createUiIcon(icon, tone);
+        if (glyph) glyph.replaceWith(symbol);
+        else button.prepend(symbol);
+        button.dataset.tone = tone;
+        button.classList.add("has-ui-icon");
+      }
+    }
+    // Sayfa kaynağında işaretli başlıklar: data-ui-icon="simge:ton".
+    for (const element of document.querySelectorAll("[data-ui-icon]")) {
+      if (element.querySelector(":scope > .ui-icon")) continue;
+      const [icon, tone] = String(element.dataset.uiIcon).split(":");
+      element.prepend(createUiIcon(icon, tone || ""));
+      element.classList.add("has-ui-icon");
+    }
+    // Düğme yazısının solundaki yalın simge (zemini düğmenin kendisidir).
+    for (const element of document.querySelectorAll("[data-ui-glyph]")) {
+      if (element.querySelector(":scope > .ui-glyph")) continue;
+      const glyph = document.createElement("i");
+      glyph.className = "ui-glyph";
+      glyph.setAttribute("aria-hidden", "true");
+      glyph.innerHTML = `<svg viewBox="0 0 24 24" focusable="false">${UI_ICON_PATHS[element.dataset.uiGlyph] || ""}</svg>`;
+      element.prepend(glyph);
+    }
+  }
+  decorateStaticIcons();
   bindDropdownMenu(document.getElementById("team-menu-button"), document.getElementById("team-menu"));
   document.getElementById("season-premium-buy")?.addEventListener("click", () => {
     void purchasePaidProduct("season_pass_premium", { status:document.getElementById("season-action-status") });

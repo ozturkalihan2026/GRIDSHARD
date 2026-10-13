@@ -22,7 +22,7 @@ DAILY_META_DEFINITIONS: tuple[dict, ...] = (
     {"id": "sabotage", "meta_name_tr": "Sabotaj Metası", "category_tr": "Sabotaj", "glyph": "◉", "accent": "#c783ff", "description_tr": "Kesinti ve bozucu etkiler bugün daha kuvvetlidir.", "effect_tr": "Sabotaj etkisi +%10", "modifier": {"category": "sabotaj", "stat": "sabotage", "multiplier": 1.10}},
     {"id": "system", "meta_name_tr": "Sistem Metası", "category_tr": "Sistem", "glyph": "▣", "accent": "#57e8d9", "description_tr": "Sistem modülleri bugün daha verimli çalışır.", "effect_tr": "Sistem etkisi +%10", "modifier": {"category": "sistem", "stat": "system", "multiplier": 1.10}},
     {"id": "core", "meta_name_tr": "Çekirdek Metası", "category_tr": "Çekirdek", "glyph": "◇", "accent": "#ffe06d", "description_tr": "Çekirdek bugün daha yüksek dayanıklılıkla savaşa girer.", "effect_tr": "Çekirdek CAN +%10", "modifier": {"category": "çekirdek", "stat": "core_hp", "multiplier": 1.10}},
-    {"id": "current_support", "meta_name_tr": "Akım Desteği Metası", "category_tr": "Akım Desteği", "glyph": "ϟ", "accent": "#67f5ee", "description_tr": "Akım üretimi ve depolama bugün daha verimlidir.", "effect_tr": "Akım üretimi +%15", "modifier": {"category": "sistem", "stat": "current", "multiplier": 1.15}},
+    {"id": "current_support", "meta_name_tr": "Akım Desteği Metası", "category_tr": "Akım Desteği", "glyph": "ϟ", "accent": "#67f5ee", "description_tr": "Savaşta Akım bugün daha hızlı yenilenir.", "effect_tr": "Akım üretimi +%15", "modifier": {"category": "sistem", "stat": "current", "multiplier": 1.15}},
 )
 
 
@@ -59,8 +59,11 @@ def _clean_legacy_name(value: str) -> str:
     return clean
 
 
-def build_ai_population(base_bots: list[dict]) -> list[dict]:
-    """Return 120 cleaned legacy bots plus 120 new, team-backed bots."""
+def build_ai_population(base_bots: list[dict], arena_bounds: dict[int, tuple[int, int]]) -> list[dict]:
+    """Return 120 cleaned legacy bots plus 120 new, team-backed bots.
+
+    ``arena_bounds`` arena numarasından (en düşük, en yüksek) kupaya gider.
+    """
     legacy: list[dict] = []
     for bot in base_bots:
         row = dict(bot)
@@ -83,8 +86,7 @@ def build_ai_population(base_bots: list[dict]) -> list[dict]:
         arena = int(source.get("arena", (index // 10) + 1))
         slot = (index % 10) + 1
         team = AI_TEAM_DEFINITIONS[index // 20]
-        minimum = (arena - 1) * 300
-        maximum = minimum + 299
+        minimum, maximum = arena_bounds[arena]
         rating = min(maximum, max(minimum, int(source.get("rating", minimum)) + ((slot % 3) - 1) * 9))
         source.update({
             "id": f"bot_b{arena:02d}_{slot:02d}",

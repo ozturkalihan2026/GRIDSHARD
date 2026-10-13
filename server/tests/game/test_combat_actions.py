@@ -132,7 +132,11 @@ def test_laser_can_attack_again_when_cooldown_finishes():
     engine.state.elapsed_ms = 1000
     engine._process_combat_actions()
 
-    assert shield.hp == hp_after_first - first_damage
+    # İlk atışı Kalkan'ın bloğu karşıladı; ikinci atış blok yeniden hazır
+    # olmadan (1,2 sn) geldiği için tam hasar verir.
+    second_damage = hp_after_first - shield.hp
+    assert first_damage == 4
+    assert second_damage == 10
 
 
 def test_damage_destroys_module_and_removes_position():

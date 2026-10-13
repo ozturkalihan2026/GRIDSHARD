@@ -118,7 +118,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 3,
     "max_hp": 85,
     "base_damage": 0,
-    "unlock_trophies": 900
+    "unlock_trophies": 950
   },
   {
     "id": "barrier",
@@ -129,7 +129,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 3,
     "max_hp": 165,
     "base_damage": 0,
-    "unlock_trophies": 900
+    "unlock_trophies": 950
   },
   {
     "id": "arc_cannon",
@@ -140,7 +140,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 4,
     "max_hp": 100,
     "base_damage": 20,
-    "unlock_trophies": 1200
+    "unlock_trophies": 1300
   },
   {
     "id": "capacitor",
@@ -151,7 +151,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 2,
     "max_hp": 90,
     "base_damage": 0,
-    "unlock_trophies": 1200
+    "unlock_trophies": 1300
   },
   {
     "id": "drone_bay",
@@ -162,7 +162,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 3,
     "max_hp": 110,
     "base_damage": 8,
-    "unlock_trophies": 1500
+    "unlock_trophies": 1700
   },
   {
     "id": "jammer",
@@ -173,7 +173,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 3,
     "max_hp": 85,
     "base_damage": 0,
-    "unlock_trophies": 1500
+    "unlock_trophies": 1700
   },
   {
     "id": "railgun",
@@ -184,7 +184,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 4,
     "max_hp": 95,
     "base_damage": 40,
-    "unlock_trophies": 1800
+    "unlock_trophies": 2150
   },
   {
     "id": "current_balancer",
@@ -195,7 +195,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 3,
     "max_hp": 100,
     "base_damage": 0,
-    "unlock_trophies": 1800
+    "unlock_trophies": 2150
   },
   {
     "id": "reflector",
@@ -206,7 +206,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 3,
     "max_hp": 110,
     "base_damage": 0,
-    "unlock_trophies": 2100
+    "unlock_trophies": 2650
   },
   {
     "id": "nano_medic",
@@ -217,7 +217,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 3,
     "max_hp": 95,
     "base_damage": 0,
-    "unlock_trophies": 2100
+    "unlock_trophies": 2650
   },
   {
     "id": "virus",
@@ -228,7 +228,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 4,
     "max_hp": 70,
     "base_damage": 0,
-    "unlock_trophies": 2400
+    "unlock_trophies": 3150
   },
   {
     "id": "overclock_unit",
@@ -239,7 +239,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 3,
     "max_hp": 80,
     "base_damage": 0,
-    "unlock_trophies": 2400
+    "unlock_trophies": 3150
   },
   {
     "id": "plasma_mortar",
@@ -250,7 +250,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 4,
     "max_hp": 100,
     "base_damage": 30,
-    "unlock_trophies": 2700
+    "unlock_trophies": 3650
   },
   {
     "id": "guardian_dome",
@@ -261,7 +261,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 4,
     "max_hp": 155,
     "base_damage": 0,
-    "unlock_trophies": 2700
+    "unlock_trophies": 3650
   },
   {
     "id": "quantum_repeater",
@@ -272,7 +272,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 5,
     "max_hp": 92,
     "base_damage": 24,
-    "unlock_trophies": 3000
+    "unlock_trophies": 4200
   },
   {
     "id": "chrono_relay",
@@ -283,7 +283,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 3,
     "max_hp": 88,
     "base_damage": 0,
-    "unlock_trophies": 3000
+    "unlock_trophies": 4200
   },
   {
     "id": "phase_armor",
@@ -294,7 +294,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 4,
     "max_hp": 150,
     "base_damage": 0,
-    "unlock_trophies": 3300
+    "unlock_trophies": 4800
   },
   {
     "id": "swarm_fabricator",
@@ -305,7 +305,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 3,
     "max_hp": 105,
     "base_damage": 6,
-    "unlock_trophies": 3300
+    "unlock_trophies": 4800
   },
   {
     "id": "precision_matrix",
@@ -316,7 +316,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 3,
     "max_hp": 90,
     "base_damage": 0,
-    "unlock_trophies": 3300
+    "unlock_trophies": 4800
   },
   {
     "id": "ion_spear",
@@ -327,7 +327,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "current_cost": 6,
     "max_hp": 100,
     "base_damage": 48,
-    "unlock_trophies": 3600,
+    "unlock_trophies": 5400,
     "unlock_league": "spark"
   },
   {
@@ -335,71 +335,71 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "name_tr": "Prizma Kalkanı",
     "category": "savunma",
     "rarity": "legendary",
-    "unlock_arena": 14,
+    "unlock_arena": 13,
     "current_cost": 4,
     "max_hp": 165,
     "base_damage": 0,
-    "unlock_trophies": 4100,
-    "unlock_league": "volt"
+    "unlock_trophies": 5400,
+    "unlock_league": "spark"
   },
   {
     "id": "disruptor",
     "name_tr": "Kesici",
     "category": "sabotaj",
     "rarity": "legendary",
-    "unlock_arena": 15,
+    "unlock_arena": 13,
     "current_cost": 3,
     "max_hp": 80,
     "base_damage": 0,
-    "unlock_trophies": 4600,
-    "unlock_league": "reactor"
+    "unlock_trophies": 5400,
+    "unlock_league": "spark"
   },
   {
     "id": "phoenix_repair",
     "name_tr": "Anka Onarım",
     "category": "destek",
     "rarity": "legendary",
-    "unlock_arena": 16,
+    "unlock_arena": 13,
     "current_cost": 4,
     "max_hp": 100,
     "base_damage": 0,
-    "unlock_trophies": 5100,
-    "unlock_league": "quantum"
+    "unlock_trophies": 5400,
+    "unlock_league": "spark"
   },
   {
     "id": "quantum_cannon",
     "name_tr": "Kuantum Topu",
     "category": "saldırı",
     "rarity": "legendary",
-    "unlock_arena": 17,
+    "unlock_arena": 13,
     "current_cost": 6,
     "max_hp": 105,
     "base_damage": 58,
-    "unlock_trophies": 5600,
-    "unlock_league": "nexus"
+    "unlock_trophies": 5400,
+    "unlock_league": "spark"
   },
   {
     "id": "omega_amplifier",
     "name_tr": "Omega Güçlendirici",
     "category": "destek",
     "rarity": "legendary",
-    "unlock_arena": 18,
+    "unlock_arena": 13,
     "current_cost": 3,
     "max_hp": 95,
     "base_damage": 0,
-    "unlock_trophies": 6100,
-    "unlock_league": "champions"
+    "unlock_trophies": 5400,
+    "unlock_league": "spark"
   },
   {
     "id": "singularity_projector",
     "name_tr": "Tekillik Projektörü",
     "category": "sabotaj",
     "rarity": "legendary",
-    "unlock_arena": 19,
+    "unlock_arena": 13,
     "current_cost": 3,
     "max_hp": 90,
     "base_damage": 25,
-    "unlock_trophies": 7100,
-    "unlock_league": "legendary"
+    "unlock_trophies": 5400,
+    "unlock_league": "spark"
   }
 ]);

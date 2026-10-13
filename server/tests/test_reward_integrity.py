@@ -101,17 +101,17 @@ def test_arena_chest_and_shop_receipts_carry_actual_module_and_core_ids():
     profiles = PlayerProfileService(now_func=lambda: now)
 
     arena_profile = profiles.get_or_create("arena-receipt-player")
-    arena_profile.rating = 1800
-    arena_profile.highest_rating = 1800
+    arena_profile.rating = 2150
+    arena_profile.highest_rating = 2150
     arena = meta.claim_arena_reward(arena_profile, "arena_6_finish")
     assert arena["core_type_id"]
     assert arena["rewards"]["core_type_id"] == arena["core_type_id"]
 
     league_profile = profiles.get_or_create("league-receipt-player")
-    league_profile.rating = 3700
-    league_profile.highest_rating = 3700
-    league = meta.claim_arena_reward(league_profile, "league_spark_1_3700")
-    assert league["module_definition_id"] in unlocked_module_ids(3700)
+    league_profile.rating = 5480
+    league_profile.highest_rating = 5480
+    league = meta.claim_arena_reward(league_profile, "league_spark_1_5480")
+    assert league["module_definition_id"] in unlocked_module_ids(5480)
     assert league["rewards"]["module_definition_id"] == league["module_definition_id"]
 
     chest_profile = profiles.get_or_create("chest-receipt-player")

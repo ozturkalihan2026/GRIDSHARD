@@ -366,7 +366,7 @@
       "id": "bot_a03_01",
       "display_name": "KeremNova",
       "archetype_tr": "Dengeli",
-      "rating": 670,
+      "rating": 682,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -384,7 +384,7 @@
       "id": "bot_a03_02",
       "display_name": "EceNova",
       "archetype_tr": "Hızlı Baskı",
-      "rating": 687,
+      "rating": 702,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
@@ -402,7 +402,7 @@
       "id": "bot_a03_03",
       "display_name": "TunaNova",
       "archetype_tr": "Ağır Hasar",
-      "rating": 704,
+      "rating": 722,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -420,7 +420,7 @@
       "id": "bot_a03_04",
       "display_name": "LaraNova",
       "archetype_tr": "Savunma",
-      "rating": 721,
+      "rating": 742,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "shield",
@@ -438,7 +438,7 @@
       "id": "bot_a03_05",
       "display_name": "YiğitNova",
       "archetype_tr": "Sürdürülebilirlik",
-      "rating": 738,
+      "rating": 761,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "cooler",
@@ -456,7 +456,7 @@
       "id": "bot_a03_06",
       "display_name": "NehirNova",
       "archetype_tr": "Kontrol",
-      "rating": 755,
+      "rating": 781,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "emp",
@@ -474,7 +474,7 @@
       "id": "bot_a03_07",
       "display_name": "UmutNova",
       "archetype_tr": "Destek Zinciri",
-      "rating": 772,
+      "rating": 801,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "cooler",
@@ -492,7 +492,7 @@
       "id": "bot_a03_08",
       "display_name": "MayaNova",
       "archetype_tr": "Akım Ekonomisi",
-      "rating": 789,
+      "rating": 821,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "battery",
@@ -510,7 +510,7 @@
       "id": "bot_a03_09",
       "display_name": "AtlasNova",
       "archetype_tr": "Alan Hasarı",
-      "rating": 806,
+      "rating": 841,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "missile_launcher",
@@ -528,7 +528,7 @@
       "id": "bot_a03_10",
       "display_name": "ZeynepNova",
       "archetype_tr": "Karşı Meta",
-      "rating": 823,
+      "rating": 861,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "emp",
@@ -546,7 +546,7 @@
       "id": "bot_a04_01",
       "display_name": "BerkNova",
       "archetype_tr": "Dengeli",
-      "rating": 970,
+      "rating": 1032,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "missile_launcher",
@@ -564,7 +564,7 @@
       "id": "bot_a04_02",
       "display_name": "SudeNova",
       "archetype_tr": "Hızlı Baskı",
-      "rating": 987,
+      "rating": 1052,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "laser",
@@ -582,7 +582,7 @@
       "id": "bot_a04_03",
       "display_name": "OnurNova",
       "archetype_tr": "Ağır Hasar",
-      "rating": 1004,
+      "rating": 1072,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -600,7 +600,7 @@
       "id": "bot_a04_04",
       "display_name": "İremNova",
       "archetype_tr": "Savunma",
-      "rating": 1021,
+      "rating": 1092,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "armor",
@@ -618,7 +618,7 @@
       "id": "bot_a04_05",
       "display_name": "DorukNova",
       "archetype_tr": "Sürdürülebilirlik",
-      "rating": 1038,
+      "rating": 1111,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "repair",
@@ -636,7 +636,7 @@
       "id": "bot_a04_06",
       "display_name": "AlinNova",
       "archetype_tr": "Kontrol",
-      "rating": 1055,
+      "rating": 1131,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "barrier",
@@ -654,7 +654,7 @@
       "id": "bot_a04_07",
       "display_name": "MertcanNova",
       "archetype_tr": "Destek Zinciri",
-      "rating": 1072,
+      "rating": 1151,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "amplifier",
@@ -672,7 +672,7 @@
       "id": "bot_a04_08",
       "display_name": "CerenNova",
       "archetype_tr": "Akım Ekonomisi",
-      "rating": 1089,
+      "rating": 1171,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "barrier",
@@ -690,7 +690,7 @@
       "id": "bot_a04_09",
       "display_name": "RüzgarNova",
       "archetype_tr": "Alan Hasarı",
-      "rating": 1106,
+      "rating": 1191,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "missile_launcher",
@@ -708,7 +708,7 @@
       "id": "bot_a04_10",
       "display_name": "MelisNova",
       "archetype_tr": "Karşı Meta",
-      "rating": 1123,
+      "rating": 1211,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "targeting_computer",
@@ -726,7 +726,7 @@
       "id": "bot_a05_01",
       "display_name": "MertVolt",
       "archetype_tr": "Dengeli",
-      "rating": 1270,
+      "rating": 1394,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "arc_cannon",
@@ -744,7 +744,7 @@
       "id": "bot_a05_02",
       "display_name": "ElifVolt",
       "archetype_tr": "Hızlı Baskı",
-      "rating": 1287,
+      "rating": 1416,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
@@ -762,7 +762,7 @@
       "id": "bot_a05_03",
       "display_name": "BoraVolt",
       "archetype_tr": "Ağır Hasar",
-      "rating": 1304,
+      "rating": 1439,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -780,7 +780,7 @@
       "id": "bot_a05_04",
       "display_name": "NisaVolt",
       "archetype_tr": "Savunma",
-      "rating": 1321,
+      "rating": 1462,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "shield",
@@ -798,7 +798,7 @@
       "id": "bot_a05_05",
       "display_name": "OzanVolt",
       "archetype_tr": "Sürdürülebilirlik",
-      "rating": 1338,
+      "rating": 1484,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "cooler",
@@ -816,7 +816,7 @@
       "id": "bot_a05_06",
       "display_name": "DerinVolt",
       "archetype_tr": "Kontrol",
-      "rating": 1355,
+      "rating": 1507,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "emp",
@@ -834,7 +834,7 @@
       "id": "bot_a05_07",
       "display_name": "EgeVolt",
       "archetype_tr": "Destek Zinciri",
-      "rating": 1372,
+      "rating": 1530,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "targeting_computer",
@@ -852,7 +852,7 @@
       "id": "bot_a05_08",
       "display_name": "LinaVolt",
       "archetype_tr": "Akım Ekonomisi",
-      "rating": 1389,
+      "rating": 1552,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "battery",
@@ -870,7 +870,7 @@
       "id": "bot_a05_09",
       "display_name": "ArdaVolt",
       "archetype_tr": "Alan Hasarı",
-      "rating": 1406,
+      "rating": 1575,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -888,7 +888,7 @@
       "id": "bot_a05_10",
       "display_name": "DuruVolt",
       "archetype_tr": "Karşı Meta",
-      "rating": 1423,
+      "rating": 1598,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "emp",
@@ -906,7 +906,7 @@
       "id": "bot_a06_01",
       "display_name": "EmirVolt",
       "archetype_tr": "Dengeli",
-      "rating": 1570,
+      "rating": 1805,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
@@ -924,7 +924,7 @@
       "id": "bot_a06_02",
       "display_name": "AdaVolt",
       "archetype_tr": "Hızlı Baskı",
-      "rating": 1587,
+      "rating": 1831,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -942,7 +942,7 @@
       "id": "bot_a06_03",
       "display_name": "CanVolt",
       "archetype_tr": "Ağır Hasar",
-      "rating": 1604,
+      "rating": 1856,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "missile_launcher",
@@ -960,7 +960,7 @@
       "id": "bot_a06_04",
       "display_name": "MinaVolt",
       "archetype_tr": "Savunma",
-      "rating": 1621,
+      "rating": 1882,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "armor",
@@ -978,7 +978,7 @@
       "id": "bot_a06_05",
       "display_name": "KaanVolt",
       "archetype_tr": "Sürdürülebilirlik",
-      "rating": 1638,
+      "rating": 1907,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "repair",
@@ -996,7 +996,7 @@
       "id": "bot_a06_06",
       "display_name": "İlayVolt",
       "archetype_tr": "Kontrol",
-      "rating": 1655,
+      "rating": 1933,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "emp",
@@ -1014,7 +1014,7 @@
       "id": "bot_a06_07",
       "display_name": "DenizVolt",
       "archetype_tr": "Destek Zinciri",
-      "rating": 1672,
+      "rating": 1958,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "amplifier",
@@ -1032,7 +1032,7 @@
       "id": "bot_a06_08",
       "display_name": "SelinVolt",
       "archetype_tr": "Akım Ekonomisi",
-      "rating": 1689,
+      "rating": 1984,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "capacitor",
@@ -1050,7 +1050,7 @@
       "id": "bot_a06_09",
       "display_name": "BaranVolt",
       "archetype_tr": "Alan Hasarı",
-      "rating": 1706,
+      "rating": 2009,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "missile_launcher",
@@ -1068,7 +1068,7 @@
       "id": "bot_a06_10",
       "display_name": "AsyaVolt",
       "archetype_tr": "Karşı Meta",
-      "rating": 1723,
+      "rating": 2035,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "battery",
@@ -1086,7 +1086,7 @@
       "id": "bot_a07_01",
       "display_name": "KeremVolt",
       "archetype_tr": "Dengeli",
-      "rating": 1870,
+      "rating": 2267,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "laser",
@@ -1104,7 +1104,7 @@
       "id": "bot_a07_02",
       "display_name": "EceVolt",
       "archetype_tr": "Hızlı Baskı",
-      "rating": 1887,
+      "rating": 2295,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -1122,7 +1122,7 @@
       "id": "bot_a07_03",
       "display_name": "TunaVolt",
       "archetype_tr": "Ağır Hasar",
-      "rating": 1904,
+      "rating": 2324,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "missile_launcher",
@@ -1140,7 +1140,7 @@
       "id": "bot_a07_04",
       "display_name": "LaraVolt",
       "archetype_tr": "Savunma",
-      "rating": 1921,
+      "rating": 2352,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "shield",
@@ -1158,7 +1158,7 @@
       "id": "bot_a07_05",
       "display_name": "YiğitVolt",
       "archetype_tr": "Sürdürülebilirlik",
-      "rating": 1938,
+      "rating": 2380,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "targeting_computer",
@@ -1176,7 +1176,7 @@
       "id": "bot_a07_06",
       "display_name": "NehirVolt",
       "archetype_tr": "Kontrol",
-      "rating": 1955,
+      "rating": 2409,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "emp",
@@ -1194,7 +1194,7 @@
       "id": "bot_a07_07",
       "display_name": "UmutVolt",
       "archetype_tr": "Destek Zinciri",
-      "rating": 1972,
+      "rating": 2437,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "cooler",
@@ -1212,7 +1212,7 @@
       "id": "bot_a07_08",
       "display_name": "MayaVolt",
       "archetype_tr": "Akım Ekonomisi",
-      "rating": 1989,
+      "rating": 2465,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "current_balancer",
@@ -1230,7 +1230,7 @@
       "id": "bot_a07_09",
       "display_name": "AtlasVolt",
       "archetype_tr": "Alan Hasarı",
-      "rating": 2006,
+      "rating": 2494,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -1248,7 +1248,7 @@
       "id": "bot_a07_10",
       "display_name": "ZeynepVolt",
       "archetype_tr": "Karşı Meta",
-      "rating": 2023,
+      "rating": 2522,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "jammer",
@@ -1266,7 +1266,7 @@
       "id": "bot_a08_01",
       "display_name": "BerkVolt",
       "archetype_tr": "Dengeli",
-      "rating": 2170,
+      "rating": 2767,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
@@ -1284,7 +1284,7 @@
       "id": "bot_a08_02",
       "display_name": "SudeVolt",
       "archetype_tr": "Hızlı Baskı",
-      "rating": 2187,
+      "rating": 2795,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -1302,7 +1302,7 @@
       "id": "bot_a08_03",
       "display_name": "OnurVolt",
       "archetype_tr": "Ağır Hasar",
-      "rating": 2204,
+      "rating": 2824,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "missile_launcher",
@@ -1320,7 +1320,7 @@
       "id": "bot_a08_04",
       "display_name": "İremVolt",
       "archetype_tr": "Savunma",
-      "rating": 2221,
+      "rating": 2852,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "armor",
@@ -1338,7 +1338,7 @@
       "id": "bot_a08_05",
       "display_name": "DorukVolt",
       "archetype_tr": "Sürdürülebilirlik",
-      "rating": 2238,
+      "rating": 2880,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "cooler",
@@ -1356,7 +1356,7 @@
       "id": "bot_a08_06",
       "display_name": "AlinVolt",
       "archetype_tr": "Kontrol",
-      "rating": 2255,
+      "rating": 2909,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "jammer",
@@ -1374,7 +1374,7 @@
       "id": "bot_a08_07",
       "display_name": "MertcanVolt",
       "archetype_tr": "Destek Zinciri",
-      "rating": 2272,
+      "rating": 2937,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "repair",
@@ -1392,7 +1392,7 @@
       "id": "bot_a08_08",
       "display_name": "CerenVolt",
       "archetype_tr": "Akım Ekonomisi",
-      "rating": 2289,
+      "rating": 2965,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "battery",
@@ -1410,7 +1410,7 @@
       "id": "bot_a08_09",
       "display_name": "RüzgarVolt",
       "archetype_tr": "Alan Hasarı",
-      "rating": 2306,
+      "rating": 2994,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
@@ -1428,7 +1428,7 @@
       "id": "bot_a08_10",
       "display_name": "MelisVolt",
       "archetype_tr": "Karşı Meta",
-      "rating": 2323,
+      "rating": 3022,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "jammer",
@@ -1446,7 +1446,7 @@
       "id": "bot_a09_01",
       "display_name": "MertArc",
       "archetype_tr": "Dengeli",
-      "rating": 2470,
+      "rating": 3267,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
         "drone_bay",
@@ -1464,7 +1464,7 @@
       "id": "bot_a09_02",
       "display_name": "ElifArc",
       "archetype_tr": "Hızlı Baskı",
-      "rating": 2487,
+      "rating": 3295,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
@@ -1482,7 +1482,7 @@
       "id": "bot_a09_03",
       "display_name": "BoraArc",
       "archetype_tr": "Ağır Hasar",
-      "rating": 2504,
+      "rating": 3324,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -1500,7 +1500,7 @@
       "id": "bot_a09_04",
       "display_name": "NisaArc",
       "archetype_tr": "Savunma",
-      "rating": 2521,
+      "rating": 3352,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "shield",
@@ -1518,7 +1518,7 @@
       "id": "bot_a09_05",
       "display_name": "OzanArc",
       "archetype_tr": "Sürdürülebilirlik",
-      "rating": 2538,
+      "rating": 3380,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "overclock_unit",
@@ -1536,7 +1536,7 @@
       "id": "bot_a09_06",
       "display_name": "DerinArc",
       "archetype_tr": "Kontrol",
-      "rating": 2555,
+      "rating": 3409,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
         "virus",
@@ -1554,7 +1554,7 @@
       "id": "bot_a09_07",
       "display_name": "EgeArc",
       "archetype_tr": "Destek Zinciri",
-      "rating": 2572,
+      "rating": 3437,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "cooler",
@@ -1572,7 +1572,7 @@
       "id": "bot_a09_08",
       "display_name": "LinaArc",
       "archetype_tr": "Akım Ekonomisi",
-      "rating": 2589,
+      "rating": 3465,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "capacitor",
@@ -1590,7 +1590,7 @@
       "id": "bot_a09_09",
       "display_name": "ArdaArc",
       "archetype_tr": "Alan Hasarı",
-      "rating": 2606,
+      "rating": 3494,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "railgun",
@@ -1608,7 +1608,7 @@
       "id": "bot_a09_10",
       "display_name": "DuruArc",
       "archetype_tr": "Karşı Meta",
-      "rating": 2623,
+      "rating": 3522,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "emp",
@@ -1626,7 +1626,7 @@
       "id": "bot_a10_01",
       "display_name": "EmirArc",
       "archetype_tr": "Dengeli",
-      "rating": 2770,
+      "rating": 3779,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
@@ -1644,7 +1644,7 @@
       "id": "bot_a10_02",
       "display_name": "AdaArc",
       "archetype_tr": "Hızlı Baskı",
-      "rating": 2787,
+      "rating": 3810,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -1662,7 +1662,7 @@
       "id": "bot_a10_03",
       "display_name": "CanArc",
       "archetype_tr": "Ağır Hasar",
-      "rating": 2804,
+      "rating": 3841,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "missile_launcher",
@@ -1680,7 +1680,7 @@
       "id": "bot_a10_04",
       "display_name": "MinaArc",
       "archetype_tr": "Savunma",
-      "rating": 2821,
+      "rating": 3872,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "armor",
@@ -1698,7 +1698,7 @@
       "id": "bot_a10_05",
       "display_name": "KaanArc",
       "archetype_tr": "Sürdürülebilirlik",
-      "rating": 2838,
+      "rating": 3903,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
         "nano_medic",
@@ -1716,7 +1716,7 @@
       "id": "bot_a10_06",
       "display_name": "İlayArc",
       "archetype_tr": "Kontrol",
-      "rating": 2855,
+      "rating": 3935,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "virus",
@@ -1734,7 +1734,7 @@
       "id": "bot_a10_07",
       "display_name": "DenizArc",
       "archetype_tr": "Destek Zinciri",
-      "rating": 2872,
+      "rating": 3966,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "cooler",
@@ -1752,7 +1752,7 @@
       "id": "bot_a10_08",
       "display_name": "SelinArc",
       "archetype_tr": "Akım Ekonomisi",
-      "rating": 2889,
+      "rating": 3997,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "current_balancer",
@@ -1770,7 +1770,7 @@
       "id": "bot_a10_09",
       "display_name": "BaranArc",
       "archetype_tr": "Alan Hasarı",
-      "rating": 2906,
+      "rating": 4028,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "plasma_mortar",
@@ -1788,7 +1788,7 @@
       "id": "bot_a10_10",
       "display_name": "AsyaArc",
       "archetype_tr": "Karşı Meta",
-      "rating": 2923,
+      "rating": 4059,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
         "virus",
@@ -1806,7 +1806,7 @@
       "id": "bot_a11_01",
       "display_name": "KeremArc",
       "archetype_tr": "Dengeli",
-      "rating": 3070,
+      "rating": 4340,
       "core_type": "core_phoenix",
       "battle_pool_ids": [
         "laser",
@@ -1824,7 +1824,7 @@
       "id": "bot_a11_02",
       "display_name": "EceArc",
       "archetype_tr": "Hızlı Baskı",
-      "rating": 3087,
+      "rating": 4374,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -1842,7 +1842,7 @@
       "id": "bot_a11_03",
       "display_name": "TunaArc",
       "archetype_tr": "Ağır Hasar",
-      "rating": 3104,
+      "rating": 4408,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "missile_launcher",
@@ -1860,7 +1860,7 @@
       "id": "bot_a11_04",
       "display_name": "LaraArc",
       "archetype_tr": "Savunma",
-      "rating": 3121,
+      "rating": 4442,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "shield",
@@ -1878,7 +1878,7 @@
       "id": "bot_a11_05",
       "display_name": "YiğitArc",
       "archetype_tr": "Sürdürülebilirlik",
-      "rating": 3138,
+      "rating": 4476,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "chrono_relay",
@@ -1896,7 +1896,7 @@
       "id": "bot_a11_06",
       "display_name": "NehirArc",
       "archetype_tr": "Kontrol",
-      "rating": 3155,
+      "rating": 4510,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
         "emp",
@@ -1914,7 +1914,7 @@
       "id": "bot_a11_07",
       "display_name": "UmutArc",
       "archetype_tr": "Destek Zinciri",
-      "rating": 3172,
+      "rating": 4544,
       "core_type": "core_phoenix",
       "battle_pool_ids": [
         "chrono_relay",
@@ -1932,7 +1932,7 @@
       "id": "bot_a11_08",
       "display_name": "MayaArc",
       "archetype_tr": "Akım Ekonomisi",
-      "rating": 3189,
+      "rating": 4578,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "battery",
@@ -1950,7 +1950,7 @@
       "id": "bot_a11_09",
       "display_name": "AtlasArc",
       "archetype_tr": "Alan Hasarı",
-      "rating": 3206,
+      "rating": 4612,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "plasma_mortar",
@@ -1968,7 +1968,7 @@
       "id": "bot_a11_10",
       "display_name": "ZeynepArc",
       "archetype_tr": "Karşı Meta",
-      "rating": 3223,
+      "rating": 4646,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "emp",
@@ -1986,7 +1986,7 @@
       "id": "bot_a12_01",
       "display_name": "BerkArc",
       "archetype_tr": "Dengeli",
-      "rating": 3370,
+      "rating": 4940,
       "core_type": "core_phoenix",
       "battle_pool_ids": [
         "pulse_cannon",
@@ -2004,7 +2004,7 @@
       "id": "bot_a12_02",
       "display_name": "SudeArc",
       "archetype_tr": "Hızlı Baskı",
-      "rating": 3387,
+      "rating": 4974,
       "core_type": "core_quantum",
       "battle_pool_ids": [
         "missile_launcher",
@@ -2022,7 +2022,7 @@
       "id": "bot_a12_03",
       "display_name": "OnurArc",
       "archetype_tr": "Ağır Hasar",
-      "rating": 3404,
+      "rating": 5008,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "arc_cannon",
@@ -2040,7 +2040,7 @@
       "id": "bot_a12_04",
       "display_name": "İremArc",
       "archetype_tr": "Savunma",
-      "rating": 3421,
+      "rating": 5042,
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "laser",
@@ -2058,7 +2058,7 @@
       "id": "bot_a12_05",
       "display_name": "DorukArc",
       "archetype_tr": "Sürdürülebilirlik",
-      "rating": 3438,
+      "rating": 5076,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
         "chrono_relay",
@@ -2076,7 +2076,7 @@
       "id": "bot_a12_06",
       "display_name": "AlinArc",
       "archetype_tr": "Kontrol",
-      "rating": 3455,
+      "rating": 5110,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "virus",
@@ -2094,7 +2094,7 @@
       "id": "bot_a12_07",
       "display_name": "MertcanArc",
       "archetype_tr": "Destek Zinciri",
-      "rating": 3472,
+      "rating": 5144,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
         "precision_matrix",
@@ -2112,7 +2112,7 @@
       "id": "bot_a12_08",
       "display_name": "CerenArc",
       "archetype_tr": "Akım Ekonomisi",
-      "rating": 3489,
+      "rating": 5178,
       "core_type": "core_phoenix",
       "battle_pool_ids": [
         "capacitor",
@@ -2130,7 +2130,7 @@
       "id": "bot_a12_09",
       "display_name": "RüzgarArc",
       "archetype_tr": "Alan Hasarı",
-      "rating": 3506,
+      "rating": 5212,
       "core_type": "core_quantum",
       "battle_pool_ids": [
         "swarm_fabricator",
@@ -2148,7 +2148,7 @@
       "id": "bot_a12_10",
       "display_name": "MelisArc",
       "archetype_tr": "Karşı Meta",
-      "rating": 3523,
+      "rating": 5246,
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "jammer",

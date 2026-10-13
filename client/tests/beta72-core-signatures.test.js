@@ -8,7 +8,7 @@ const i18n = fs.readFileSync("./src/i18n.js", "utf8");
 // Çekirdek enderliği güç eğrisi değildir; bilgi ekranı imzayı gösterir.
 assert.ok(app.includes('"Enderlik CAN, enerji üretimi, dolum hızı veya güç etkisi avantajı vermez."'));
 assert.ok(app.includes("host.appendChild(createModuleIdentityPanel(core, {"));
-assert.ok(app.includes('["İMZA", core.signature_name_tr || "—"]'));
+assert.ok(app.includes('["İMZA", core.signature_name_tr || "—", "bolt", "cyan"]'));
 
 // Motorun çekirdek imza olayı sahnede ve şeritte görünür.
 assert.ok(app.includes('"core_signature_triggered"'));

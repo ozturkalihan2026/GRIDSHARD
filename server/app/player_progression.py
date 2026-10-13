@@ -372,7 +372,7 @@ class PlayerProgressionService:
                     rank_after=rank_stage_for_rating(updated.rating),
                     chest_awarded=chest_awarded,
                     profile_progression_applied=profile_progression_applied,
-                    # Bu maçla ilk kez açılan modüller (istemci lige girişte tanıtır).
+                    # Bu maçla ilk kez açılan modüller (istemci pencereyle tanıtır).
                     newly_unlocked_module_ids=tuple(
                         module_id
                         for module_id in unlocked_module_ids(

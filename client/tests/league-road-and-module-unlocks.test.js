@@ -56,11 +56,36 @@ test("istemci modül tablosu sunucunun açılış sırasını taşır", () => {
   }
   const leagueModules = canonModules.filter((item) => item.unlock_arena > 12);
   assert.equal(leagueModules.length, 7);
-  assert.ok(leagueModules.every((item) => item.rarity === "legendary" && item.unlock_league));
-  assert.deepEqual(leagueModules.map((item) => item.unlock_trophies), [3600, 4100, 4600, 5100, 5600, 6100, 7100]);
+  // Efsanevi modüllerin yedisi de ilk lige (Kıvılcım Ligi I) girişte açılır.
+  assert.ok(leagueModules.every((item) => item.rarity === "legendary"
+    && item.unlock_arena === 13 && item.unlock_league === "spark"));
+  assert.deepEqual([...new Set(leagueModules.map((item) => item.unlock_trophies))], [5400]);
+  // Açılış kupası, modülün açıldığı arenanın (ya da ilk ligin) giriş kupasıdır.
+  const floors = new Map(serverCanon.arenas.map((arena) => [arena.index, arena.minimum_rating]));
+  for (const item of canonModules.filter((module) => module.unlock_arena <= 12)) {
+    assert.equal(item.unlock_trophies, floors.get(item.unlock_arena), item.id);
+  }
   // Tablo açılış sırasına göre dizilidir; koleksiyon bu sırayı kullanır.
   const order = canonModules.map((item) => item.unlock_arena);
   assert.deepEqual(order, [...order].sort((left, right) => left - right));
+});
+
+test("yedek arena eşikleri sunucunun kupa ölçeğiyle aynıdır", () => {
+  const table = JSON.parse(app.match(/const ARENA_FLOOR_RATINGS = Object\.freeze\((\[[^\]]+\])\);/)[1]);
+  const arenas = serverCanon.arenas;
+  assert.deepEqual(table.slice(0, 12), arenas.map((arena) => arena.minimum_rating));
+  assert.equal(table[12], arenas[11].maximum_rating + 1);
+  assert.deepEqual(table, [0, 300, 600, 950, 1300, 1700, 2150, 2650, 3150, 3650, 4200, 4800, 5400]);
+  arenas.slice(1).forEach((arena, index) => {
+    assert.equal(arena.minimum_rating, arenas[index].maximum_rating + 1, arena.id);
+  });
+  // Durakların kimliği değişmedi; kupası arenasının yeni aralığındadır.
+  for (const arena of arenas) {
+    for (const node of arena.nodes.filter((item) => Object.keys(item.rewards || {}).length)) {
+      assert.ok(node.trophies > arena.minimum_rating && node.trophies <= arena.maximum_rating + 1, node.id);
+    }
+  }
+  assert.ok(!/profileRating \/ 300/.test(app));
 });
 
 test("başlangıç destesi Arena 1'in altı modülüdür", () => {
@@ -87,23 +112,24 @@ Object.assign(this, { moduleUpgradeBlockReason, moduleUnlockStage, moduleUnlockB
 test("kilitli kart arenada arena numarasını, ligde ligin adını yazar", () => {
   const repair = { definition_id:"repair", unlock_arena:2, unlock_trophies:300, unlock_stage_kind:"arena" };
   const spear = {
-    definition_id:"ion_spear", unlock_arena:13, unlock_trophies:3600,
+    definition_id:"ion_spear", unlock_arena:13, unlock_trophies:5400,
     unlock_stage_kind:"league", unlock_stage_name_tr:"Kıvılcım Ligi",
   };
   assert.equal(rules.moduleUnlockBadge(repair, "repair"), "ARENA 2");
   assert.equal(rules.moduleUnlockBadge(spear, "ion_spear"), "KIVILCIM");
   assert.equal(rules.moduleUnlockRequirement(repair), "Arena 2 · 300 Kupa");
-  assert.equal(rules.moduleUnlockRequirement(spear), "Kıvılcım Ligi · 3600 Kupa");
+  assert.equal(rules.moduleUnlockRequirement(spear), "Kıvılcım Ligi · 5400 Kupa");
   rules.document.documentElement.lang = "en";
   assert.equal(rules.moduleUnlockBadge(spear, "ion_spear"), "SPARK");
-  assert.equal(rules.moduleUnlockRequirement(spear), "Spark League · 3600 trophies");
+  assert.equal(rules.moduleUnlockRequirement(spear), "Spark League · 5400 trophies");
   rules.document.documentElement.lang = "tr";
 });
 
 test("sunucu aşama adını göndermese de lig modülü tablodan tanınır", () => {
   // Eski kayıtlı görünüm: yalnız kimlik var; sıra ve kupa istemci tablosundan gelir.
-  assert.equal(rules.moduleUnlockBadge({ definition_id:"omega_amplifier" }, "omega_amplifier"), "ŞAMPİYON");
-  assert.equal(rules.moduleUnlockStage({ definition_id:"omega_amplifier" }).trophies, 6100);
+  assert.equal(rules.moduleUnlockBadge({ definition_id:"omega_amplifier" }, "omega_amplifier"), "KIVILCIM");
+  assert.equal(rules.moduleUnlockStage({ definition_id:"omega_amplifier" }).trophies, 5400);
+  assert.equal(rules.moduleUnlockRequirement({ definition_id:"omega_amplifier" }), "Kıvılcım Ligi · 5400 Kupa");
   assert.equal(rules.moduleUnlockBadge({ definition_id:"barrier" }, "barrier"), "ARENA 4");
 });
 
@@ -123,10 +149,12 @@ test("efsanevi modülde Akı yetmezse yükseltme kapalıdır ve nedeni yazar", (
   assert.equal(rules.moduleUpgradeBlockReason(common), "");
 });
 
-test("yükselt düğmesi Akı bedelini de yazar ve İngilizceye çevrilir", () => {
-  assert.match(app, /`YÜKSELT · \$\{cost\.circuit_credits\} DK\$\{Number\(cost\.flux_shards\) > 0 \? ` · \$\{cost\.flux_shards\} AKI` : ""\}`/);
-  assert.equal(en("6600 DK"), "6600 CC");
-  assert.equal(en("20 AKI"), "20 FLUX");
+test("yükselt düğmesi bedeli simgeyle gösterir; Akı bedeli de yazar", () => {
+  // "DK" ve "AKI" yazısı yerine kaynakların simgesi (13 Ekim 2026).
+  assert.match(app, /setCostButtonLabel\(upgrade, localizedUiText\(cost \? "YÜKSELT" : "AZAMİ SEVİYE"\), cost\s*\? \[\["credit", cost\.circuit_credits\], \.\.\.\(Number\(cost\.flux_shards\) > 0 \? \[\["flux", cost\.flux_shards\]\] : \[\]\)\]\s*: \[\]\);/);
+  assert.ok(!/YÜKSELT · \$\{cost\.circuit_credits\} DK/.test(app));
+  assert.equal(en("YÜKSELT"), "UPGRADE");
+  assert.equal(en("AZAMİ SEVİYE"), "MAX LEVEL");
 });
 
 // --- Çeviriler -------------------------------------------------------------
@@ -159,7 +187,7 @@ test("yol ekranı lige girişte açılan modülü ve ana ödülleri ayırır", (
   assert.equal(en("BU LİGDE AÇILAN MODÜL"), "MODULE UNLOCKED IN THIS LEAGUE");
 });
 
-// --- Lige girişte modül tanıtımı -------------------------------------------
+// --- Arenaya ve lige girişte modül tanıtımı --------------------------------
 function fakeElement(tag) {
   const listeners = {};
   const element = {
@@ -196,9 +224,15 @@ function unlockSandbox() {
     selectedCollectionModuleId: null,
     metaProgressionState: { module_collection: [
       { definition_id:"ion_spear", name_tr:"İyon Mızrağı", rarity:"legendary", category:"saldırı",
-        description_tr:"Delici ışın.", unlock_stage_kind:"league", unlock_stage_name_tr:"Kıvılcım Ligi" },
+        description_tr:"Delici ışın.", unlock_arena:13, unlock_stage_kind:"league", unlock_stage_name_tr:"Kıvılcım Ligi" },
+      { definition_id:"prism_shield", name_tr:"Prizma Kalkanı", rarity:"legendary", category:"savunma",
+        description_tr:"Yansıtır.", unlock_arena:13, unlock_stage_kind:"league", unlock_stage_name_tr:"Kıvılcım Ligi" },
+      { definition_id:"disruptor", name_tr:"Kesici", rarity:"legendary", category:"sabotaj",
+        description_tr:"Keser.", unlock_arena:13, unlock_stage_kind:"league", unlock_stage_name_tr:"Kıvılcım Ligi" },
       { definition_id:"repair", name_tr:"Onarım", rarity:"common", category:"destek",
-        description_tr:"Onarır.", unlock_stage_kind:"arena", unlock_stage_name_tr:"Röle Sokakları" },
+        description_tr:"Onarır.", unlock_arena:2, unlock_stage_kind:"arena", unlock_stage_name_tr:"Röle Sokakları" },
+      { definition_id:"armor", name_tr:"Zırh", rarity:"common", category:"savunma",
+        description_tr:"Korur.", unlock_arena:2, unlock_stage_kind:"arena", unlock_stage_name_tr:"Röle Sokakları" },
     ] },
     document: {
       body: { dataset: { appScreen:"menu" } },
@@ -208,23 +242,24 @@ function unlockSandbox() {
     },
     Event: function Event(type) { this.type = type; },
     localizedUiText: (value) => value,
+    serverCopy: (turkish) => turkish || "",
     localizedMessage: (key, params) => i18n.t(key, params, "tr"),
     localizedNumber: (value) => String(value),
     moduleIconFor: () => "◆",
     moduleRarityLabel: (rarity) => (rarity === "legendary" ? "Efsanevi" : "Sıradan"),
-    poolCategoryLabel: (category) => (category === "saldırı" ? "Saldırı" : "Destek"),
+    poolCategoryLabel: (category) => ({ "saldırı":"Saldırı", savunma:"Savunma" }[category] || "Destek"),
     openModuleDetail: () => sandbox.opened.push(sandbox.selectedCollectionModuleId),
     loadMetaProgression: async () => { sandbox.loads += 1; },
     presentArenaRewardEarnedInMatch: async (progression) => { sandbox.presented.push(progression); return false; },
   };
-  vm.runInNewContext(`${slice("  // Lige girişte açılan modül ekrana gelerek tanıtılır.", "  // PvP'de kazanılan kupalar Devre Yolu'nda yeni bir ödül durağı açtıysa ana")}
+  vm.runInNewContext(`${slice("  // Yeni arenaya ya da lige girişte açılan modül ekrana gelerek tanıtılır.", "  // PvP'de kazanılan kupalar Devre Yolu'nda yeni bir ödül durağı açtıysa ana")}
 Object.assign(this, { presentModuleUnlocks, presentRoadNewsEarnedInMatch });`, sandbox);
   return sandbox;
 }
 
 test("lige girişte açılan modül pencerede tanıtılır; kapanınca ödül durağına geçilir", async () => {
   const sandbox = unlockSandbox();
-  const progression = { ratingBefore:3590, ratingAfter:3615, newlyUnlockedModuleIds:["ion_spear"] };
+  const progression = { ratingBefore:5390, ratingAfter:5415, newlyUnlockedModuleIds:["ion_spear"] };
   await sandbox.presentRoadNewsEarnedInMatch(progression);
 
   const { elements } = sandbox;
@@ -253,8 +288,43 @@ test("tanıtılan karta dokunan oyuncu kart ayrıntısına gider, ödül durağ�
   assert.equal(sandbox.presented.length, 0);
 });
 
-test("arenada açılan modül ya da yeni modül yoksa pencere açılmaz, ödül durağı akışı sürer", async () => {
-  for (const ids of [["repair"], [], undefined]) {
+test("arenada açılan modüller de pencerede tanıtılır; alt yazı arenayı söyler", async () => {
+  const sandbox = unlockSandbox();
+  const progression = { ratingBefore:290, ratingAfter:315, newlyUnlockedModuleIds:["repair", "armor"] };
+  await sandbox.presentRoadNewsEarnedInMatch(progression);
+
+  const { elements } = sandbox;
+  assert.equal(elements["module-unlock-dialog"].open, true);
+  assert.equal(elements["module-unlock-title"].textContent, "2 yeni modül");
+  assert.equal(elements["module-unlock-stage"].textContent, "Arena 2 açıldı");
+  assert.equal(elements["module-unlock-list"].dataset.layout, "full");
+  const cards = elements["module-unlock-list"].children;
+  assert.deepEqual(cards.map((card) => card.dataset.moduleDefinitionId), ["repair", "armor"]);
+  assert.deepEqual(cards[1].children.map((child) => child.textContent),
+    ["◆", "Zırh", "Sıradan · Savunma", "Korur.", "KARTA BAK"]);
+  assert.equal(sandbox.presented.length, 0, "pencere açıkken ödül durağı açılmaz");
+
+  elements["module-unlock-close"].click();
+  assert.deepEqual(sandbox.presented, [progression]);
+});
+
+test("ilk lige girişte açılan efsanevi modüller tek pencerede, sıkışık satırlarla tanıtılır", async () => {
+  const sandbox = unlockSandbox();
+  await sandbox.presentRoadNewsEarnedInMatch({ newlyUnlockedModuleIds:["ion_spear", "prism_shield", "disruptor"] });
+  const { elements } = sandbox;
+  assert.equal(elements["module-unlock-dialog"].open, true);
+  assert.equal(elements["module-unlock-title"].textContent, "3 yeni modül");
+  assert.equal(elements["module-unlock-stage"].textContent, "Kıvılcım Ligi açıldı");
+  assert.equal(elements["module-unlock-list"].children.length, 3);
+  assert.equal(elements["module-unlock-list"].dataset.layout, "compact");
+  // Başlık ve TAMAM düğmesi yerinde durur; yalnız kart listesi kayar.
+  assert.match(css, /\.module-unlock-dialog\[open\] \{ display:flex;flex-direction:column; \}/);
+  assert.match(css, /\.module-unlock-list \{[^}]*min-height:0;overflow-y:auto/);
+  assert.match(css, /\.module-unlock-list\[data-layout="compact"\] \.module-unlock-card \{/);
+});
+
+test("yeni modül yoksa ya da koleksiyonda bulunmuyorsa pencere açılmaz, ödül durağı akışı sürer", async () => {
+  for (const ids of [["bilinmeyen_modul"], [], undefined]) {
     const sandbox = unlockSandbox();
     const progression = { ratingBefore:290, ratingAfter:315, newlyUnlockedModuleIds:ids };
     await sandbox.presentRoadNewsEarnedInMatch(progression);
@@ -281,6 +351,7 @@ test("maç sonucu yeni açılan modülleri taşır ve pencere sayfada tanımlıd
   assert.equal(en("YENİ MODÜL AÇILDI"), "NEW MODULE UNLOCKED");
   assert.equal(en("KARTA BAK"), "VIEW CARD");
   assert.equal(i18n.t("unlock.league_reached", { league:"Spark League" }, "en"), "Spark League reached");
+  assert.equal(i18n.t("unlock.arena_reached", { arena:"12" }, "en"), "Arena 12 reached");
 });
 
 // --- Eğitim savaşı ---------------------------------------------------------
@@ -364,9 +435,10 @@ test("yol ekranı çekirdeği ayrı satırda, lig sonu sandığını hücresiz �
   assert.match(road, /if \(isLeagueStage\) marker\.innerHTML = leagueEmblemMarkup\(stage\);/);
   assert.match(road, /section\.dataset\.league = stage\.league;/);
   assert.match(road, /section\.style\.setProperty\("--stage-hue"/);
-  // Havada duran sandık: yalnız lig sandığı ve son durak; yol çizgisinin dışında durur.
+  // Hücresiz sandık: yalnız lig sandığı ve son durak; yol çizgisinin dışında durur.
   assert.match(road, /if \(node\.league_chest \|\| node\.is_final_reward\) \{\s*const stop = document\.createElement\("div"\);\s*stop\.className = `arena-reward-node is-floating-chest\$\{stateClass\}`;/);
-  assert.match(road, /chest\.innerHTML = leagueChestMarkup\(node\.league_chest \|\| stage\.league \|\| "gridshard"\);/);
+  // Alınmış sandık açık (kapağı kalkmış) çizilir.
+  assert.match(road, /chest\.innerHTML = leagueChestMarkup\(node\.league_chest \|\| stage\.league \|\| "gridshard", \{ open:Boolean\(node\.claimed\) \}\);/);
   // İçerik sandığın altında yazmaz; diğer sandıklardaki önizleme paneliyle görünür.
   assert.match(road, /bindRewardPreview\(chest, \{ title:rewardDescription, reward:node\.rewards \|\| \{\} \}\);/);
   assert.ok(!road.includes("arena-chest-contents") && !app.includes("leagueChestContents"));
@@ -381,9 +453,13 @@ test("yol ekranı çekirdeği ayrı satırda, lig sonu sandığını hücresiz �
   assert.match(floating, /border:0;/);
   assert.match(floating, /background:none;/);
   assert.match(floating, /box-shadow:none;/);
-  assert.match(css, /\.arena-reward-node\.is-floating-chest > \.league-chest-button \{[^}]*animation:arena-chest-float/);
-  assert.match(css, /body\[data-graphics="dusuk"\] \.arena-reward-node\.is-floating-chest > \.league-chest-button,/);
-  assert.match(css, /@media \(prefers-reduced-motion:reduce\) \{\s*\.arena-reward-node\.is-floating-chest > \.league-chest-button,/);
+  // Sandık havada süzülmez (13 Ekim 2026): yerinde durur, yalnız alınabilir olan zıplar.
+  assert.ok(!css.includes("arena-chest-float"));
+  assert.match(css, /\.arena-reward-node\.is-floating-chest\.is-claimable > \.league-chest-button \{ animation:arena-chest-hop/);
+  assert.match(css, /body\[data-graphics="dusuk"\] \.arena-reward-node\.is-floating-chest\.is-claimable > \.league-chest-button,/);
+  assert.match(css, /@media \(prefers-reduced-motion:reduce\) \{\s*\.arena-reward-node\.is-floating-chest\.is-claimable > \.league-chest-button,/);
+  // Ulaşılmamış aşamada sandık rengini korur.
+  assert.match(css, /\.arena-path-stage:not\(\.is-unlocked\) > \.arena-league-chest-stop \{ filter:saturate\(\.72\) brightness\(\.84\); \}/);
   // Desenli arka plan ve opak kalan kilitli aşama kartı
   assert.match(css, /\.arena-detail-dialog\[open\] > \.arena-path \{\s*background:\s*radial-gradient/);
   assert.match(css, /\.arena-path-stage:not\(\.is-unlocked\) \{ opacity:1 !important; \}/);
@@ -402,8 +478,22 @@ Object.assign(this, { LEAGUE_EMBLEMS, leagueChestMarkup });`, sandbox);
   assert.notEqual(spark, volt);
   // Mağaza sandığının çizim sınıfı (chest-visual) kullanılmaz.
   assert.ok(!spark.includes("chest-visual"));
-  assert.match(css, /\.league-chest \{[^}]*color:var\(--league-accent,#ffd36b\);/);
-  assert.match(css, /\.league-chest\[data-league-chest="gridshard"\] \{/);
+  // Sandık dolu çizilir: gövde, metal köşebent ve kapak ayrı ayrı boyanır; çizgi
+  // resim (yalnız kenar çizgisi) değildir.
+  for (const part of ["lc-box", "lc-trim", "lc-lid", "lc-lock-plate", "lc-gem", "lc-rivet", "lc-inside"]) {
+    assert.ok(spark.includes(`class="${part}"`), `${part} parçası yok`);
+  }
+  // color-mix tanımayan eski WebView için ilk dolgu ligin düz rengidir.
+  assert.match(css, /\.league-chest \.lc-box \{ fill:var\(--lc-main\);fill:color-mix\(in srgb,var\(--lc-main\) 80%,#160d2c\); \}/);
+  assert.match(css, /\.league-chest \.lc-trim \{ fill:var\(--lc-trim\); \}/);
+  const colors = ["spark", "volt", "reactor", "quantum", "nexus", "champions", "legendary", "gridshard"]
+    .map((league) => css.match(new RegExp(`\\.league-chest\\[data-league-chest="${league}"\\] \\{ --lc-main:(#[0-9a-f]{6});`))?.[1]);
+  assert.ok(colors.every(Boolean), "her ligin sandık rengi tanımlı olmalı");
+  assert.equal(new Set(colors).size, 8);
+  // Açık sandık: kapak kalkar.
+  const opened = sandbox.leagueChestMarkup("spark", { open:true });
+  assert.match(opened, /^<svg class="league-chest is-open" data-league-chest="spark"/);
+  assert.match(css, /\.league-chest\.is-open \.lc-lid \{ transform:translateY\(-23px\) rotate\(-7deg\) scaleY\(\.74\); \}/);
 
   // Önizleme davranışı mağaza ve sezon sandıklarıyla ortaktır.
   const shared = slice("  function createRewardChestButton({", "  document.addEventListener(\"pointerdown\", (event) => {");

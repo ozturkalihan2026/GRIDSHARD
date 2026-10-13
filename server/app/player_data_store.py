@@ -12,7 +12,13 @@ from threading import RLock, get_ident
 import time
 from typing import Protocol
 
-from .arena_canon import MODULES, legacy_module_unlocks
+from .arena_canon import (
+    MODULES,
+    TROPHY_SCALE_VERSION,
+    legacy_module_unlocks,
+    rank_stage_for_rating,
+    rating_on_current_scale,
+)
 from .display_names import ensure_display_name_available
 from .game.battle_pool import migrate_battle_pool
 from .player_profile import (
@@ -31,6 +37,18 @@ from .player_statistics import (
     PlayerStatistics,
     PlayerStatisticsService,
 )
+
+
+def _season_archive_on_current_scale(archive: dict, scale_version: int) -> dict:
+    """Eski ölçekte arşivlenmiş sezon sonu kupasını ve aşamasını taşır."""
+    if scale_version >= TROPHY_SCALE_VERSION or "final_rating" not in archive:
+        return archive
+    final_rating = rating_on_current_scale(int(archive.get("final_rating") or 0), scale_version)
+    return {
+        **archive,
+        "final_rating": final_rating,
+        "final_rank": rank_stage_for_rating(final_rating),
+    }
 
 
 @dataclass(slots=True, frozen=True)
@@ -635,6 +653,8 @@ class PlayerDataStoreService:
         profile_data["meta_progression_state"] = {
             "progression_version": profile.progression_version,
             "highest_rating": max(profile.rating, profile.highest_rating),
+            # Bellekteki profil her zaman güncel kupa ölçeğindedir.
+            "trophy_scale_version": TROPHY_SCALE_VERSION,
             "arena_reward_claims": list(profile.arena_reward_claims),
             "operator_title_claims": list(profile.operator_title_claims),
             "legacy_module_unlocks": list(profile.legacy_module_unlocks),
@@ -780,6 +800,10 @@ class PlayerDataStoreService:
         player_id=data["player_id"]
         engagement = dict(data.get("engagement") or {})
         meta = dict(data.get("meta_progression_state") or {})
+        # Ölçek sürümü olmayan kayıt 12 Ekim 2026 öncesinin kupa ölçeğindedir:
+        # kupa, en yüksek kupa ve sezon arşivleri bir kez yeni ölçeğe taşınır.
+        trophy_scale = int(meta.get("trophy_scale_version", 1))
+        stored_peak = max(int(data["rating"]), int(meta.get("highest_rating", 0)))
         default_shards = {
             module_id: 0
             for module_id in MODULES
@@ -807,7 +831,7 @@ class PlayerDataStoreService:
             experience=int(
                 data["experience"]
             ),
-            rating=int(data["rating"]),
+            rating=rating_on_current_scale(int(data["rating"]), trophy_scale),
             preferred_battle_pool_ids=(
                 migrate_battle_pool(
                     data.get("preferred_battle_pool_ids")
@@ -909,13 +933,13 @@ class PlayerDataStoreService:
                 meta.get("active_season_id", CURRENT_SEASON_ID)
             ),
             season_archives=[
-                dict(item)
+                _season_archive_on_current_scale(dict(item), trophy_scale)
                 for item in meta.get("season_archives", [])
                 if isinstance(item, dict)
             ],
             coins=0,
             progression_version=2,
-            highest_rating=max(int(data["rating"]), int(meta.get("highest_rating", 0))),
+            highest_rating=rating_on_current_scale(stored_peak, trophy_scale),
             arena_reward_claims=tuple(meta.get("arena_reward_claims", ())),
             operator_title_claims=tuple(meta.get("operator_title_claims", ())),
             # Alanı olmayan kayıt eski dağıtımdan kalmadır: o günkü en yüksek
@@ -927,8 +951,10 @@ class PlayerDataStoreService:
                     if str(module_id) in MODULES
                 )
                 if "legacy_module_unlocks" in meta
-                else legacy_module_unlocks(
-                    max(int(data["rating"]), int(meta.get("highest_rating", 0)))
+                else (
+                    legacy_module_unlocks(stored_peak)
+                    if trophy_scale < TROPHY_SCALE_VERSION
+                    else ()
                 )
             ),
             circuit_credits=int(meta.get("circuit_credits", 350)) + (

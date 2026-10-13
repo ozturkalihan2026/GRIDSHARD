@@ -107,7 +107,12 @@ from .meta_progression import (
     MetaProgressionError,
     MetaProgressionService,
 )
-from .arena_canon import BOTS, rank_stage_for_rating
+from .arena_canon import (
+    BOTS,
+    LEAGUE_FLOOR_RATING,
+    rank_stage_for_rating,
+    rating_on_current_scale,
+)
 from .season_competition import (
     DAILY_META_DEFINITIONS,
     LEADERBOARD_PRIZES,
@@ -2855,9 +2860,12 @@ def _leaderboard_profile_rows() -> list[dict]:
     for snapshot in player_data_repository.list_snapshots():
         profile = dict(snapshot.profile)
         meta = dict(profile.get("meta_progression_state") or {})
-        rating = max(0, int(profile.get("rating", 0)))
-        if meta.get("active_season_id") != current_season["id"] and rating >= 3600:
-            rating = 3600
+        # Güncellemeden beri oturum açmamış oyuncunun kaydı eski ölçekte durur.
+        rating = rating_on_current_scale(
+            int(profile.get("rating", 0)), meta.get("trophy_scale_version", 1)
+        )
+        if meta.get("active_season_id") != current_season["id"] and rating >= LEAGUE_FLOOR_RATING:
+            rating = LEAGUE_FLOOR_RATING
         players[snapshot.player_id] = {
             "player_id": snapshot.player_id,
             "display_name": str(profile.get("display_name") or snapshot.player_id),

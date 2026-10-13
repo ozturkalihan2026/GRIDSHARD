@@ -59,7 +59,6 @@ def test_seeded_ai_meta_is_stable_for_identity_and_day():
         ("sabotage", "emp", "effect_multiplier"),
         ("system", "battery", "effect_multiplier"),
         ("core", "core", "max_hp"),
-        ("current_support", "battery", "effect_multiplier"),
     ),
 )
 def test_each_daily_meta_improves_its_real_battle_axis(
@@ -76,7 +75,34 @@ def test_each_daily_meta_improves_its_real_battle_axis(
     )
 
 
-@pytest.mark.parametrize("meta_id", ("system", "current_support"))
+def test_current_support_meta_speeds_up_current_regeneration_only():
+    # Etki satırı "Akım üretimi +%15" der; kural da budur (kullanıcı kararı,
+    # 12 Ekim 2026): savaştaki Akım %15 daha hızlı yenilenir. Batarya,
+    # Kapasitör ve Akım Dengeleyici'nin etkisi artık değişmez.
+    def current_after(active_meta_id: str, ticks: int) -> int:
+        engine = BattleEngine(BattleState(battle_id=f"d16-current-{active_meta_id}"))
+        player = engine.add_player("p1")
+        engine.state.player_daily_meta_ids["p1"] = active_meta_id
+        player.circuit_credits = 0
+        for _ in range(ticks):
+            engine._apply_passive_circuit_credit_income()
+        return player.circuit_credits
+
+    base_interval = BattleEngine(BattleState(battle_id="d16-interval")).circuit_credit_config.current_regen_interval_ms
+    engine = BattleEngine(BattleState(battle_id="d16-interval-meta"))
+    engine.add_player("p1")
+    engine.state.player_daily_meta_ids["p1"] = "current_support"
+    assert engine._current_regen_interval_ms("p1") == round(base_interval / 1.15)
+    engine.state.player_daily_meta_ids["p1"] = "system"
+    assert engine._current_regen_interval_ms("p1") == base_interval
+    assert current_after("current_support", 200) > current_after("", 200)
+    for definition_id in ("battery", "capacitor", "current_balancer"):
+        assert _grant("current_support", definition_id).definition.effect_multiplier == pytest.approx(
+            _grant("", definition_id).definition.effect_multiplier
+        )
+
+
+@pytest.mark.parametrize("meta_id", ("system",))
 def test_energy_daily_metas_increase_real_circuit_generation(meta_id):
     def generated(active_meta_id: str) -> float:
         engine = BattleEngine(BattleState(battle_id=f"beta58-energy-{active_meta_id}"))

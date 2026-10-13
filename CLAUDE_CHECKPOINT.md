@@ -1,16 +1,120 @@
-# Claude devir notu — 12 Ekim 2026 (iş bilgisayarı)
+# Claude devir notu — 13 Ekim 2026 (ev bilgisayarı, ikinci oturum)
 
-Bu not iş bilgisayarında yazıldı; iş **ev bilgisayarında** sürecek. Yazıldığı anda depo `2d59f8f` (`main` = `origin/main`) ve üstünde commit edilmemiş değişikliklerdi; kullanıcı 12 Ekim akşamı hepsini commit edip push edeceğini söyledi ("Commit push edeceğim"). **Evde ilk iş `git pull`, `git log` ve `git status`:** Faz 1 ve Faz 2 dosyaları gelmiş mi bak. Codex'in kaydına göre canlıda sunucu **r16**, kapalı testte **v8** paketi var ve gerçek test kullanıcıları oynuyor (`CODEX_CHECKPOINT.md`; Claude doğrulamadı). Aynı ağaçta Codex de çalışıyor; `CODEX_CHECKPOINT.md` dosyasına ve Codex'in değişikliklerine dokunulmaz. Aşağıdaki 6–8 Ekim bölümleri geçmiş kayıttır.
+Bu not ev bilgisayarında, 13 Ekim'deki ikinci oturumun sonunda yazıldı (ilki 12 Ekim akşamından 13 Ekim'e uzanan Faz 2 düzeltmeleri + Faz 3 oturumuydu). Depo `5fa10ed` (`main` = `origin/main`; kalite denetimi o commit için yeşil) ve **üstünde commit edilmemiş büyük bir değişiklik var** (44 değişen dosya, 9 yeni dosya; iki oturumun toplamı). Commit ve push'u kullanıcı yapar. Canlıda sunucu r16 ve kapalı testte v8 paketi var (Codex'in kaydı, `CODEX_CHECKPOINT.md`; Claude doğrulamadı); gerçek test kullanıcıları oynuyor. `CODEX_CHECKPOINT.md` dosyasına ve Codex'in değişikliklerine dokunulmaz.
 
-**Sıra (kullanıcı kararı, 12 Ekim akşamı):** "iş bilgisayarındaki işimiz bitti. faz 3 ü evde başlarız. Sunucu ve paketi faz 3 ten sonra yaparız." ve "ev bilgisayarında önce bunları sonra faz 3 ü tamamlayacağız." Yani: **(1) aşağıdaki dört düzeltme, (2) Faz 3, (3) yayın (sunucu r17 + paket, sürüm kodu 9).** Faz 1 ve Faz 2 o zamana kadar yayınlanmaz.
+**Sıra (kullanıcı kararı, 12 Ekim akşamı):** "iş bilgisayarındaki işimiz bitti. faz 3 ü evde başlarız. Sunucu ve paketi faz 3 ten sonra yaparız." İlk oturumda Faz 2 düzeltmeleri (R1–R6) ve Faz 3, ikinci oturumda kullanıcının yeni isteği (modül çevrimleri ve görsel tur, aşağıda) yapıldı. **Sıradaki: kullanıcının Faz 3'ü ve bu oturumun işini görmesi → commit + push → kalite denetimi → yayın (sunucu r17 + paket, sürüm kodu 9), kullanıcının açık onayıyla.** Faz 4 (kozmetik içerik) başlamadı.
 
-## EVDE İLK İŞ — Faz 3'ten önce dört düzeltme (kullanıcı, 12 Ekim akşamı; **hiçbiri uygulanmadı**)
+## İkinci oturum (13 Ekim): modül çevrimleri ve görsel tur — commit bekliyor, yayınlanmadı, gerçek cihazda görülmedi
+
+Kullanıcının isteği altı parçaydı (özgün cümleler `docs/OYUN_DUZENLEMELERI_PLANI.md` içinde, "Modül çevrimleri ve görsel tur" başlığında, kelimesi kelimesine): (1) "Güçlendiricide yaptığımız gibi tüm modüllerde düzenleme yapmalıyız" (örnekler: Kalkan 1,2 sn'de bir saldırı engeller; Yansıtıcı 1 sn aralıkla hasarı üzerine çeker, %30 yansıtır), (2) Devre Yolu'ndaki lig sandıkları "şeffaf olmasın … fiziksel olarak orada olsunlar", sandık açma efekti, (3) yazılarla eşleşen görseller, desenli düz zemin, ayrık ve renkli alt çubuk, (4) Yükselt düğmesinde "dk ve akı yerine simgeleri", (5) bilgi/istatistik/yetenek sekmeleri "daha renkli ve simgeli", (6) Çekirdek gücü düğmesi "daha dikkat çekici". Ekinde üç görsel vardı (Rush Royale menüsü, Clash Royale sandıkları ve ana ekranı). Oturum ortasında kullanıcı yalnız "devam et" dedi. **Tasarım kararlarını Claude verdi; kullanıcı Kalkan ve Yansıtıcı örneklerinin dışındaki sayıları ve hiçbir çizimi görmedi.**
+
+### Yapılanlar
+
+- **Modül çevrimleri (D13'ün tamamı).** Her modülün kendi çevrimi var ve seviyeyle kısalıyor; modüle özgü değerler seviyeyle büyüyor. Çevrimi olmayan tek modül Akım Dengeleyici. Tam tablo üretilir: `docs/MODUL_CEVRIM_KANONU.md` (`python tools/generate_arena_canon_docs.py`). Yeni dosyalar: `server/app/game/module_cycles.py` (veri ve saf hesap), `server/app/game/module_sheet.py` (bilgi ekranı değerleri), `server/tests/game/test_module_cycles.py` (27 test).
+  - Savunma **yük**le çalışır: çevrim dolunca yük hazır olur, tek olayda harcanır, sonra çevrim yeniden başlar. Kalkan 1,2 sn / blok %60 (seviye 15: 1,07 sn / %80; sürekli %35 azaltım kalktı); Prizma Kalkanı 1,3 sn / %55 + dönüşüm; Yansıtıcı 1 sn: devreye ateşlenen bir saldırıyı üzerine çeker, gelen hasarın %30'unu yansıtır (sürekli %25 azaltım duruyor); Koruyucu Kubbe 1,5 sn: başka modüle gelen bir saldırıyı %30 azaltır (eski sürekli %12 kalktı); Bariyer 4 sn: uygulanan bir sabotajı %35 kısaltır (eski sürekli %25 kalktı); Zırh sürekli %25 + 3 sn'de bir 5 CAN plaka onarımı; Faz Zırhı'nın 6 sn'lik çevrimi seviyeyle kısalır.
+  - Destek **darbe**yle çalışır: Soğutucu 1 sn'de bir %4,5 (üç modül); Hedefleme Bilgisayarı 2 sn'de bir kilit (pay %15 → %18, toplam %30 → %36); Aşırı Hızlandırıcı 2,5 sn'de bir aşırı yük (ısı yüklemede, %3,75); Hassas Matris'te odak atışla değil 1,5 sn'lik darbeyle birikir; Omega Güçlendirici 2 sn'de bir rezonans yükü; Kronos Rölesi'nin borcu seviyeyle kısalır. Bir atış bütün destek yüklerini harcar, en güçlü tek destek uygulanır.
+  - Batarya ve Kapasitör'de çevrim, boş deponun dolma süresi (4 sn / 1 sn). Saldırı, onarım ve sabotaj modüllerinin kuralı **değişmedi**.
+  - Bilgi ekranı: "ETKİ ÇARPANI" yerine modülün kendi değerleri ve bir sonraki seviyedeki farkı; çevrim karosunun adı modüle özel ("BLOK ARALIĞI" …). Açıklamalar sayıların seviye 1'e ait olduğunu söyler ("Başlangıç seviyesinde …"). Batarya'nın üretimi artık seviyesiyle yazıyor (eskiden hep 4,5 yazıyordu; kural değişmedi).
+  - Savaşta blok, ayna, kubbe ve sabotaj direnci modülün üstünde adıyla, destek darbeleri halkayla görünür (yeni olay: `module_cycle_pulse`).
+- **Lig sandıkları** dolu çizilir, her ligin rengi ayrı; havada süzülmez, alınabilir olan zıplar, alınmış olan açık durur, ulaşılmamış aşamada rengini korur. AL: sandık açılış penceresinde titrer, sunucu onaylayınca kapağı kalkar, ödüller sırayla belirir. Mağaza sandıklarının çizimi değişmedi.
+- **Simgeler ve zemin:** tek simge takımı (`UI_ICON_PATHS`, `client/src/app.js`); üç çizgi menüsü ve takım menüsü satırları, 30 bölüm başlığı (`data-ui-icon`, `client/index.html`), SAVAŞ düğmesi; alt çubuk ayrık hücreli, renkli, adlar hep görünür; ev ekranı ve sayfalarda desenli düz zemin; posta ve menü düğmeleri renkli.
+- **Yükselt düğmesi** (modül ve çekirdek) ile yetenek bedeli "DK" / "AKI" yazısı yerine kaynak simgesi gösterir.
+- **Bilgi penceresi:** renkli simgeli sekmeler, simgeli değer kutuları ve karolar, renkli kimlik satırları, eşik türü rozetleri.
+- **Çekirdek gücü düğmesi:** dolum halkası; hazır olunca dönen altın halka, nabız, yayılan ışık, "HAZIR" etiketi.
+
+### Kullanıcının görmediği seçimler (Claude)
+
+Kalkan bloğunun tam engelleme değil %60 olması (kullanıcı "saldırı engeller" dedi; tek ağır silaha karşı hasarsız kalmasın diye); Yansıtıcı'nın sürekli azaltımının kalması ve yansımanın azaltılmamış hasardan hesaplanması; Zırh'a plaka onarımı, Bariyer'e sabotaj direnci yükü, Kubbe'ye darbe verilmesi; Hedefleme payının %18'e çıkması; yüksek oranların seviyeyle azalan hızla büyümesi (üs 0,6) ve tavanları; saldırı imza değerlerinin (zincir, delme, kilit) seviyeyle büyümemesi; bütün simge çizimleri, renkler, sandık renkleri, desenin biçimi; açık sayfanın alt çubuk hücresinin yükselmesi; mağaza sandıklarının eski çizimde kalması; İngilizce etiket kısaltmaları (REFLECT, ARMOR, CONVERT).
+
+### Doğrulama (son kodla, 13 Ekim)
+
+- Sunucu: 1491 geçti, 44 atlandı, 33 başarısız; 33'ün hepsi `tests/test_google_play_aws_wif.py` (bu makinede `google-auth` kurulu değil). PostgreSQL ve gerçek Redis testleri burada koşmadı.
+- İstemci 347/347 (yeni dosya `client/tests/visual-pass-icons-chests.test.js`, 12 test; güncellenenler: `card-upgrade-indicators`, `league-road-and-module-unlocks`, `beta72-core-signatures`, `checkpoint-ui-pass`). Araçlar 36/36 ve 18/18; `tools/release_guard.py` geçti. Yeni stil ve betik dosyaları derleme hedefleriyle (chrome109, safari15) küçültülebiliyor (`esbuild` ile denendi; `dist/` yeniden üretilmedi).
+- Uçtan uca (kurulu Chrome): Android öykünmesi 9/9 (`onboarding`, `mobile-battle`, `settings-layout`, `startup-loading`); masaüstü 10/10 (`menu-navigation`, `beta33-season`, `battle-density`, `beta381-battle-events`, `startup-loading`).
+- **`two-client-pvp` bu makinede kararsız:** "arkadaş savaşı" testi `freeze_count` (1 saniyeden uzun kare boşluğu) 0 bekliyor ve ara sıra 1 görüyor. Çalışma ağacında 15 koşunun 5'inde, son commit'in (`5fa10ed`) ayrı bir kopyasında 6 koşunun 1'inde düştü; son kodla art arda 3 koşu geçti. Tek sayfalı savaşta kare ölçümü temiz (3 ölçüm: en uzun kare 39 ms, 50 ms'yi aşan kare yok; `artifacts/ui-pass-20261012/perf.js`). Nedeni bulunmadı; iki sayfalı başsız tarayıcıya özgü görünüyor ama bu ağaçta daha sık çıkması tesadüf olmayabilir. Kalite denetiminde bu test bir kez yeniden denenir.
+- Telefon boyutunda Chrome'da, yalıtılmış yerel sunucuyla (`artifacts/ui-pass-20261012/verify.js`): 360×640, 320×568 (Android'in en küçük yazı boyu taklidiyle), 393×852, İngilizce 360×640 ve İngilizce 320×568 (en küçük yazı boyu); beşinde de 55 denetimin hepsi geçti (alt çubuk, menü, başlık simgeleri, bilgi penceresinin kutuları, karoları, sekmeleri ve düğmesi, yetenek rozetleri, çekirdek penceresi, sekiz sandık, sandık açılışı ve gerçekten alınması, taşma, konsol hatası). Tarayıcı denemesi iki kusur yakaladı ve düzeltildi: 320×568'de bilgi penceresinde sekme içeriğine 86 piksel kalıyordu; İngilizce'de üç etiket kutuya sığmıyordu.
+- Savaş tarayıcıda görüldü (ikinci, gerçek rakipli maç): Çekirdek gücü düğmesi dolarken ve hazırken; bir maçta 25 "BLOK" ve 25 destek darbesi efekti. Bu sırada önceki oturumun yetenek adı gösterimi de görüldü (rakipte "ÜÇÜNCÜ DARBE").
+- Denge: depodaki matris (360 maç, seviye 1 desteler, yeteneksiz) önce ve sonra koşuldu; kart galibiyet oranları ±6 puan içinde, ortalama maç süresi 78,3 → 78,1 sn. **Yüksek seviyede ve yeteneklerle ölçülmedi; gerçek cihazda hiçbir şey görülmedi.**
+- Düzenek (git'te izlenmez): `artifacts/ui-pass-20261012/` (`lib.js`, `verify.js`, `shots*.js`, `perf.js`, `balance.py`, `shots/`). Yerel sunucu yine `artifacts/r-verify-20261012/probe_server.py` (8881); modül seviyesini değiştiren bir deneme ucu eklendi.
+
+### Yayın için ek notlar
+
+- Yeni sunucu savaş kurallarını değiştirir; eski paket (v8) yeni olayı (`module_cycle_pulse`) tanımaz ve göstermez, bilgi ekranında çevrimi "BEKLEME", değerleri eski "ETKİ ÇARPANI" karosuyla gösterir (istemci koduna bakarak çıkarım; v8 kaynağıyla denenmedi).
+- Yeni istemci eski sunucuyla (r16) denenmedi; kod, sunucu yeni alanları göndermezse eski görünüme döner (çevrim adı "BEKLEME", karo "ETKİ ÇARPANI").
+- Veritabanı biçimi bu oturumda değişmedi.
+- Commit'te bu oturumun dosyaları: yeni `server/app/game/module_cycles.py`, `module_sheet.py`, `server/tests/game/test_module_cycles.py`, `client/tests/visual-pass-icons-chests.test.js`, `docs/MODUL_CEVRIM_KANONU.md`; ilk kez değişen `client/index.html`, `server/app/game/sabotage.py`, `client/tests/beta72-core-signatures.test.js`, `card-upgrade-indicators.test.js`, `checkpoint-ui-pass.test.js`, `server/tests/game/test_combat_actions.py`, `test_defense_resolution.py`; önceki oturumdan beri zaten değişmiş olup yeniden değişenler `client/src/app.js`, `canon.css`, `i18n-catalog.js`, `client/tests/league-road-and-module-unlocks.test.js`, `server/app/arena_canon.py`, `meta_progression.py`, `game/catalog.py`, `catalog_view.py`, `combat.py`, `energy.py`, `engine.py`, `pvp_session.py`, `support.py`, `server/tests/game/test_faz3_battle_mechanics.py`, `test_support_modules.py`, `tools/generate_arena_canon_docs.py`, belgeler. Bu oturumda Codex çalışmadı.
+
+## İlk oturumda (12–13 Ekim gecesi) yapılanlar — hepsi commit bekliyor, yayınlanmadı, gerçek cihazda görülmedi
+
+Ayrıntı ve madde durumları `docs/OYUN_DUZENLEMELERI_PLANI.md` içinde ("Faz 2 düzeltmeleri" ve "Faz 3 uygulaması"). Güncel sayılar üretilen belgelerde: `docs/ARENA_MODUL_ODUL_KANONU.md`, `docs/BOT_HAVUZU_120.md`, `docs/YETENEK_KANONU.md` (`python tools/generate_arena_canon_docs.py`).
+
+### Faz 2 düzeltmeleri (R1–R6) — kullanıcı sorulara yanıt verdi
+
+Kullanıcının yanıtları aşağıdaki "Kararlar" başlığında ve R5/R6 için bu bölümün sonunda.
+
+- **R1:** arenada açılan modüller de pencereyle tanıtılır ("Arena N açıldı").
+- **R2:** arenalar 300, 300, 350, 350, 400, 450, 500, 500, 500, 550, 600, 600 kupa (5400'de biter); lig kademeleri 80 / 100 / 140; ligler 5400–8600; sezon değişiminde lig oyuncusu 5400'e döner. Unvan koşulları aşamaların başlangıcından türetilir. Arena duraklarının kimliği değişmedi; kupası aynı oranda taşındı ve 25'in katına aşağı yuvarlandı. Eşleştirme kuşağı arenalarda arena, liglerde 200 kupa, 7400 üstü tek; Redis betiği eşikleri `matchmaking_band_lua()` ile aynı tablodan alır (**Redis'e karşı koşulmadı**).
+- **R2, mevcut oyuncular:** kayda `trophy_scale_version` (2) yazılır. Alanı olmayan kayıt eski ölçektedir; ilk yüklemede kupa, en yüksek kupa ve sezon arşivindeki sezon sonu kupası `rating_from_legacy_scale` ile taşınır (aynı arena, aynı oran; `server/app/arena_canon.py`, `player_data_store.py`). Lider panosu saklı kayıtları doğrudan okuduğu için aynı taşımayı uygular (`main.py`); takım turnuvası kaydındaki kadro kupası okunurken taşınır (`team_service.py`). Canlıdaki eski lig ölçeği (3600'den 200'er kupa, Efsanevi 5600+) yeni liglere eşlenir.
+- **R3:** yedi efsanevi modül Kıvılcım Ligi I'de açılır; lige girişteki "6 parça" durakları kalktı. Tanıtım penceresi ikiden çok kartta sıkışık satır düzenine geçer; başlık ve TAMAM sabit, liste kayar.
+- **R4:** lig sandıkları evrensel parça verir (5, 7, 9, 12, 15, 20, 25); GRIDSHARD Sandığı 40 evrensel parça.
+- **R5 (yol görünümü).** Kullanıcı: "Her arenanın içine yerleştiği dikdörtgen alan şeffaf olursa devre yolu arka plan net görünür. Yada her arenanın dikdörtgen hücresine de arka plan tasarlayabiliriz. eşik ödülleri havada asılı duruyormuş gibi olur hem." İki örnek gösterildi; kullanıcı **"A: şeffaf hücre"**yi seçti ("şeffaf yaptığında her arena ve ligin renklerini koruman da lazım"). Sonra: "devre yolunda ulaşılamayan aşamalar soluk renkte, ilerledikçe aktifleşsin. sandıklar şeffaf olmasın.." — ulaşılmamış aşama saydamlıkla değil renkle soluklaşır (`filter:saturate(.22) brightness(.62)`), sandıklar opak.
+- **R6 (GRIDSHARD 10000).** Kullanıcı: "GRIDSHARD LIGI ile efsanevi lig V aynı kupa sayısına sahip olmaz. Gridshard ligi ödülün olduğu alan 10000+ yaparsak daha güzel olur." Üç seçenekten "Lig 8600, unvan da 10000"i seçti: GRIDSHARD Ligi 8600'de başlar; GRIDSHARD Sandığı ve "GRIDSHARD Efsanesi" unvanı 10000 kupada (`GRIDSHARD_SUMMIT_RATING`). Efsane Sandığı 8600'de kaldı.
+- **Kullanıcının görmediği seçimler (Claude):** durakların 25'e yuvarlanması; lig botunun taşıdığı efsanevi modül sayısının lig sırasıyla sınırlanması (Kıvılcım 1 … Efsanevi 7); eşleştirme kuşağının 7400 üstünde tek olması; eski lig ölçeğinin eşlenmesi; sezon arşivinin de taşınması; tanıtım penceresinin sıkışık düzeni; "Arena N açıldı" sözcükleri.
+
+### Faz 3 (savaş mekaniği) — kullanıcı "durmadan faz 3 e devam et" dedi; **tasarım kararlarını Claude verdi, kullanıcı hiçbirini görmedi**
+
+Özgün cümleler plan dosyasının sonundaki ekte. Yeni dosyalar: `server/app/game/talents.py` (veri ve saf hesap), `server/tests/game/test_faz3_battle_mechanics.py` (34 test), `client/tests/faz3-talents-and-energy.test.js` (7 test), `docs/YETENEK_KANONU.md` (üretilir).
+
+- **D16:** Akım Desteği metası savaştaki Akım yenilenmesini %15 hızlandırır (2500 → 2174 ms; `BattleEngine._current_regen_interval_ms`). Eski gizli etki (Batarya, Kapasitör, Akım Dengeleyici +%15) kalktı.
+- **D14:** enerji kuralı zaten vardı (sürekli bakım + aksiyon başına bedel); bilgi ekranı yalnız bakımı gösterdiği için saldırı, onarım ve sabotaj kartlarında 0 yazıyordu. "ENERJİ TÜKETİMİ" artık bakım + aksiyon bedeli / bekleme (`module_stats`: `energy_per_second`). Batarya "ENERJİ ÜRETİMİ" gösterir. Kapasitör'e 0,2/sn bakım eklendi. **Enerji ekonomisinin başka sayısı değişmedi.**
+- **D13 (yalnız Güçlendirici):** 2 saniyede bir saldırı modüllerini yükler; yük sıradaki atışta harcanır; çevrim seviyeyle kısalır (BEKLEME 2,0 sn → seviye 15'te 1,78 sn). Pay %15 → %18, toplam %30 → %36 (Claude'un sayıları). Diğer 35 modül ikinci oturumda yapıldı (yukarıda).
+- **D11 (denetlendi, kod değişmedi):** seviye zaten ikinci değerleri geliştiriyor (bekleme seviye başına %0,8 kısalır; Darbe Topu'nda tam 0,02 sn).
+- **D10:** her modülde dört eşik; dal kimlikleri eskisi gibi (`power` sol, `resilience` sağ), anlamları eşiğe göre değişti: 1. temel (güç +%3 / CAN +%5), 2. **imza yeteneği** (modüle özel iki yetenek), 3. ince ayar (bekleme −%4 ya da etki +%4 / enerji −%12), 4. ustalık (imzayı ×1,5 güçlendirir / CAN +%8). 72 imza yeteneği, 18 kanca; kancalar `engine.py` içinde (saldırı döngüsü, `apply_damage`, sabotaj uygulaması, `_process_talent_ticks`). Kullanıcının Lazer örneği aynen var ("Yayılım Işını"). AI rakip eşlendiği seviyede açılan eşikleri kullanır (`default_ai_talents`).
+- **D12:** her çekirdekte üç eşikte altı ayrı yetenek (kimlikler eskisi gibi `<eşik>_energy` / `<eşik>_charge`); eski "enerji +%3 / dolum +%3" kalktı. Dokuz kanca: açılış dolumu, yok edilen / kaybedilen modülden dolum, güçten sonra dolum yankısı, güçle Akım, acil kalkan, dikenli çekirdek, CAN yüksekken fazla enerji, uzatmada dayanıklılık.
+- **İstemci:** yetenek ekranında eşik türü etiketi (TEMEL / İMZA / İNCE AYAR / USTALIK), iki dilde ad ve açıklama; çekirdek yetenek düğmesinde açıklama; savaşta tetiklenen yeteneğin adı modülün üstünde belirir (`module_talent_triggered`, `core_talent_triggered`).
+- **Kayıtlı seçimlerin anlamı değişti:** canlıda 2. ya da 4. eşikte "+%3 / +%5" seçmiş oyuncu, güncellemeden sonra o eşiğin yeni dalına (imza yeteneği ya da ustalık) sahip olur; 3. eşikte "güç" seçmiş olan bekleme −%4 alır. Çekirdekte de aynı. Akı iadesi yapılmaz; modülde sıfırlama zaten var.
+- **Yapılmayan / sınırlar:**
+  - Yeteneklerle denge **ölçülmedi**. Depodaki matris (`tools/beta43_module_balance_matrix.py`, 360 maç, seviye 1 desteler, yeteneksiz) D13/D14/D16 öncesi ve sonrası aynı kart galibiyet oranlarını verdi. Kanon belgesindeki "%41–59" bandını üreten araç depoda yok; bu matriste aralık zaten %0–71 ve Faz 2'deki deste eşlemesinden sonra hiç ölçülmemişti. Yetenek sayıları (oran, süre) başlangıç değeridir.
+  - Savaşın içinde bir yeteneğin tetiklendiği **tarayıcıda görülmedi** (her kanca sunucu testiyle sınandı).
+  - Eski paket (v8) yeni sunucuyla: yetenek adlarını Türkçe gösterir, çekirdek yeteneğinin açıklamasını göstermez, enerji karosunda yine yalnız bakımı yazar; yeni olayları tanımadığı için göstermez (istemcinin olay kümesine bakarak çıkarım; v8 kaynağıyla denenmedi).
+  - Plan dosyasındaki "Faz 2 tasarımı" tabloları 12 Ekim sabahının sayılarıdır ve eskidir (dosyada not var); kanon belgesinin ilgili paragrafları güncellendi.
+
+### Doğrulama (ilk oturumun sonundaki kodla; güncel sayılar yukarıda)
+
+- Sunucu: 1464 geçti, 44 atlandı, 33 başarısız; 33'ün hepsi `tests/test_google_play_aws_wif.py` (bu makinede `google-auth` kurulu değil). PostgreSQL ve gerçek Redis testleri burada koşmadı (push sonrası kalite denetiminde koşar).
+- İstemci 335/335; araçlar 36/36 ve 18/18; `tools/release_guard.py` geçti. İki yeni istemci test dosyası LF satır sonuyla da geçti (kalite denetimi Linux'ta koşar).
+- Uçtan uca (kurulu Chrome): `onboarding`, `mobile-battle` 2/2, `settings-layout` (Android öykünmesi); `menu-navigation` 2/2, `beta33-season` (masaüstü); `two-client-pvp` 3/3 (`GRIDSHARD_E2E_HUMAN_MATCHMAKING=1`).
+- Telefon boyutunda Chrome'da, yalıtılmış yerel sunucuyla: yol ve tanıtım penceresi 360×640, 320×568, 393×852 ve en küçük yazı boyu taklidiyle (boyut başına 51–52 denetim); Faz 3 ekranları 360×640, 320×568 (en küçük yazı boyu), 393×852 ve İngilizce 360×640 (25'er denetim). Hepsi geçti. Tarayıcı denemesi bir hatayı yakaladı (Yetenekler sekmesi boş açılıyordu; düzeltildi).
+- Düzenek evde, git'te izlenmez: `artifacts/r-verify-20261012/` (`probe_server.py` 8881 kapısında, kupa ve ilerleme veren deneme uçlarıyla; `verify.js`, `verify-faz3.js`, `shots/`). Ekranlar deneme kancasıyla açıldı; kupa ve seviye deneme ucuyla verildi.
+
+### Yayın için bilinmesi gerekenler (r17 + sürüm kodu 9)
+
+- **Geri dönüş uyarısı:** yeni sunucu, giriş yapan oyuncunun kupasını yeni ölçekle yazar. r16'ya dönülürse o kayıtlar eski sunucuda şişkin kupayla okunur; geri dönüş planına yazılmalı.
+- Veritabanı biçimi değişmedi; yeni alanlar mevcut belge kayıtlarının içine yazılır (`trophy_scale_version`, `legacy_module_unlocks`).
+- Sunucu önce çıkar. Yeni istemci eski sunucuyla (r16) denenmedi.
+- Commit'te Claude'un dosyaları: `git status` çıktısındaki değişen 44 dosya ve dokuz yeni dosya (iki oturumun toplamı). İki oturumda da Codex çalışmadı; ağaçta Codex'e ait bekleyen değişiklik görülmedi.
+
+## Geçmiş kayıt — Faz 3'ten önceki dört düzeltmenin planı ve kararları (12 Ekim akşamı; hepsi uygulandı)
 
 Kullanıcı Faz 2'yi ve "görmediği seçimler" listesini okuduktan sonra şunları istedi. Tırnak içindekiler kullanıcının kendi cümleleridir; **okuma, öneri ve sayılar Claude'undur ve kullanıcı görmedi.** Uygulamadan önce her maddenin "sorulacak" satırı kullanıcıya sorulur (G10'un dersi: özet değil özgün cümle; kapsam iki türlü okunabiliyorsa önce sor).
 
-### R1. Arenada açılan modüller de tanıtılsın
+### Kararlar (12 Ekim gecesi, ev bilgisayarı)
+
+Aşağıdaki "sorulacak" satırlarının hepsi soruldu; kullanıcı Claude'un yazdığı seçeneklerden seçti (kendi cümlesi değil, seçimidir):
+
+- **R2 eşikler:** aşağıdaki öneri tablosu aynen (arenalar 300 … 600, toplam 5400; lig kademeleri 80 / 100 / 140; GRIDSHARD Ligi 8600).
+- **R2 mevcut oyuncuların kupası:** yeni ölçeğe taşınır (oyuncu aynı arenada, arenanın aynı oranında kalır).
+- **R2 unvanlar:** kupa koşulları aynı aşamalara taşınır: 300, 950, 2150, 4200, 5400, 7000, 7400, 7900, 8600 (galibiyet koşulları değişmez).
+- **R2 sezon değişimi:** lig oyuncusu 5400'e döner.
+- **R3 lige girişteki "6 parça" durakları:** yedisi de kalkar.
+- **R4 lig sandıkları:** evrensel parça 5, 7, 9, 12, 15, 20, 25; Devre Kredisi ve Akı aynı.
+- **R4 GRIDSHARD Sandığı:** 100 rastgele modül parçası yerine **40 evrensel parça** (Claude "olduğu gibi kalsın" önermişti; kullanıcı bunu seçti).
+
+### R1. Arenada açılan modüller de tanıtılsın — **uygulandı (12 Ekim gecesi, ev bilgisayarı), commit bekliyor**
 
 > "arenalarda açılan modüller içinde tanıtım penceresi açılsın."
+
+- **Yapılan:** `presentModuleUnlocks` içindeki lig süzgeci kalktı; arenada alt yazı "Arena N açıldı" (`unlock.arena_reached`; İngilizce "Arena N reached"; sözcükleri Claude seçti). Dosyalar: `client/src/app.js`, `client/src/i18n-catalog.js`, `client/tests/league-road-and-module-unlocks.test.js` (arena beklentisi tersine döndü, bir test eklendi), `server/app/player_progression.py` (yalnız yorum satırı), `docs/OYUN_DUZENLEMELERI_PLANI.md`, `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md`. İstemci 326/326. **Tarayıcıda ve cihazda görülmedi**; pencerenin çok kartlı boyu R3'ten sonra birlikte bakılacak. Aşağıdaki satırlar uygulamadan önceki plandır.
 
 - **Bugün:** tanıtım penceresi yalnız lige girişte açılıyor (Claude'un seçimiydi).
 - **Yapılacak:** `presentModuleUnlocks` (`client/src/app.js`) içindeki `item.unlock_stage_kind === "league"` süzgeci kalkar. Pencerenin alt yazısı ligde "{lig} açıldı" (`unlock.league_reached`); arena için yeni ileti gerekir ("Arena N açıldı"). Sunucu tarafı hazır: maç sonucu her yeni açılan modülü zaten bildiriyor (`newly_unlocked_module_ids`, `server/app/player_progression.py`).
@@ -65,7 +169,7 @@ R3 + R4 (veri ve lig sandığı) → R2 (eşikler; en geniş etki, ayrı adım) 
 - Playwright `route.fetch()` yerel sunucuda ara sıra `ECONNRESET` verir; bir kez yeniden denenir.
 - Yeni hesap 0 kupadadır; lig ekranları için sunucunun koleksiyon yanıtı gerçek haliyle alınıp yalnız kupa ve durak bilgisi değiştirilir.
 
-## Faz 2 (12 Ekim, iş bilgisayarı) — bitti, commit ve yayın bekliyor
+## Faz 2 (12 Ekim, iş bilgisayarı) — geçmiş kayıt; `5fa10ed` ile commit edildi, yayın bekliyor
 
 Kullanıcının 31 maddelik belgesinin tamamı, madde durumları, tasarım tabloları, kullanıcının kararları ve Claude'un seçimleri **`docs/OYUN_DUZENLEMELERI_PLANI.md`** içinde. Bu bölüm özet ve devirdir.
 

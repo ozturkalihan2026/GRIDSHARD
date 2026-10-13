@@ -19,8 +19,8 @@ def test_four_week_rollover_preserves_arena_and_resets_league_to_first_level():
     arena.highest_rating = 1400
     arena.season_xp = 500
     league = profiles.get_or_create("league-player")
-    league.rating = 4875
-    league.highest_rating = 5100
+    league.rating = 6875
+    league.highest_rating = 7100
 
     clock["now"] = datetime(2026, 10, 26, 0, 0, tzinfo=timezone.utc)
     profiles.get_or_create(arena.player_id)
@@ -29,12 +29,12 @@ def test_four_week_rollover_preserves_arena_and_resets_league_to_first_level():
     assert arena.rating == 1250
     assert arena.highest_rating == 1400
     assert arena.season_xp == 0
-    assert league.rating == 3600
-    assert league.highest_rating == 5100
+    assert league.rating == 5400
+    assert league.highest_rating == 7100
     assert arena.active_meta_season_id == "gridshard_2026_10_26"
     assert league.active_meta_season_id == "gridshard_2026_10_26"
     assert arena.season_archives[-1]["final_rating"] == 1250
-    assert league.season_archives[-1]["final_rating"] == 4875
+    assert league.season_archives[-1]["final_rating"] == 6875
 
 
 def test_season_descriptor_uses_monday_four_week_cycles():
@@ -68,8 +68,8 @@ def test_every_league_stage_has_claimable_intermediate_rewards():
 
     profiles = PlayerProfileService()
     profile = profiles.get_or_create("league-reward-player")
-    profile.rating = 3650
-    profile.highest_rating = 3650
+    profile.rating = 5450
+    profile.highest_rating = 5450
     service = MetaProgressionService()
     view = service.view(profile)
     first_stage = next(stage for stage in view["rank_stages"] if stage["id"] == "league_spark_1")

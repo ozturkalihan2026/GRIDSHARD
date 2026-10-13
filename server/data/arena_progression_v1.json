@@ -120,7 +120,7 @@
       "current_cost": 3,
       "max_hp": 85,
       "base_damage": 0,
-      "unlock_trophies": 900
+      "unlock_trophies": 950
     },
     {
       "id": "barrier",
@@ -131,7 +131,7 @@
       "current_cost": 3,
       "max_hp": 165,
       "base_damage": 0,
-      "unlock_trophies": 900
+      "unlock_trophies": 950
     },
     {
       "id": "arc_cannon",
@@ -142,7 +142,7 @@
       "current_cost": 4,
       "max_hp": 100,
       "base_damage": 20,
-      "unlock_trophies": 1200
+      "unlock_trophies": 1300
     },
     {
       "id": "capacitor",
@@ -153,7 +153,7 @@
       "current_cost": 2,
       "max_hp": 90,
       "base_damage": 0,
-      "unlock_trophies": 1200
+      "unlock_trophies": 1300
     },
     {
       "id": "drone_bay",
@@ -164,7 +164,7 @@
       "current_cost": 3,
       "max_hp": 110,
       "base_damage": 8,
-      "unlock_trophies": 1500
+      "unlock_trophies": 1700
     },
     {
       "id": "jammer",
@@ -175,7 +175,7 @@
       "current_cost": 3,
       "max_hp": 85,
       "base_damage": 0,
-      "unlock_trophies": 1500
+      "unlock_trophies": 1700
     },
     {
       "id": "railgun",
@@ -186,7 +186,7 @@
       "current_cost": 4,
       "max_hp": 95,
       "base_damage": 40,
-      "unlock_trophies": 1800
+      "unlock_trophies": 2150
     },
     {
       "id": "current_balancer",
@@ -197,7 +197,7 @@
       "current_cost": 3,
       "max_hp": 100,
       "base_damage": 0,
-      "unlock_trophies": 1800
+      "unlock_trophies": 2150
     },
     {
       "id": "reflector",
@@ -208,7 +208,7 @@
       "current_cost": 3,
       "max_hp": 110,
       "base_damage": 0,
-      "unlock_trophies": 2100
+      "unlock_trophies": 2650
     },
     {
       "id": "nano_medic",
@@ -219,7 +219,7 @@
       "current_cost": 3,
       "max_hp": 95,
       "base_damage": 0,
-      "unlock_trophies": 2100
+      "unlock_trophies": 2650
     },
     {
       "id": "virus",
@@ -230,7 +230,7 @@
       "current_cost": 4,
       "max_hp": 70,
       "base_damage": 0,
-      "unlock_trophies": 2400
+      "unlock_trophies": 3150
     },
     {
       "id": "overclock_unit",
@@ -241,7 +241,7 @@
       "current_cost": 3,
       "max_hp": 80,
       "base_damage": 0,
-      "unlock_trophies": 2400
+      "unlock_trophies": 3150
     },
     {
       "id": "plasma_mortar",
@@ -252,7 +252,7 @@
       "current_cost": 4,
       "max_hp": 100,
       "base_damage": 30,
-      "unlock_trophies": 2700
+      "unlock_trophies": 3650
     },
     {
       "id": "guardian_dome",
@@ -263,7 +263,7 @@
       "current_cost": 4,
       "max_hp": 155,
       "base_damage": 0,
-      "unlock_trophies": 2700
+      "unlock_trophies": 3650
     },
     {
       "id": "quantum_repeater",
@@ -274,7 +274,7 @@
       "current_cost": 5,
       "max_hp": 92,
       "base_damage": 24,
-      "unlock_trophies": 3000
+      "unlock_trophies": 4200
     },
     {
       "id": "chrono_relay",
@@ -285,7 +285,7 @@
       "current_cost": 3,
       "max_hp": 88,
       "base_damage": 0,
-      "unlock_trophies": 3000
+      "unlock_trophies": 4200
     },
     {
       "id": "phase_armor",
@@ -296,7 +296,7 @@
       "current_cost": 4,
       "max_hp": 150,
       "base_damage": 0,
-      "unlock_trophies": 3300
+      "unlock_trophies": 4800
     },
     {
       "id": "swarm_fabricator",
@@ -307,7 +307,7 @@
       "current_cost": 3,
       "max_hp": 105,
       "base_damage": 6,
-      "unlock_trophies": 3300
+      "unlock_trophies": 4800
     },
     {
       "id": "precision_matrix",
@@ -318,7 +318,7 @@
       "current_cost": 3,
       "max_hp": 90,
       "base_damage": 0,
-      "unlock_trophies": 3300
+      "unlock_trophies": 4800
     },
     {
       "id": "ion_spear",
@@ -329,7 +329,7 @@
       "current_cost": 6,
       "max_hp": 100,
       "base_damage": 48,
-      "unlock_trophies": 3600,
+      "unlock_trophies": 5400,
       "unlock_league": "spark"
     },
     {
@@ -337,72 +337,72 @@
       "name_tr": "Prizma Kalkanı",
       "category": "savunma",
       "rarity": "legendary",
-      "unlock_arena": 14,
+      "unlock_arena": 13,
       "current_cost": 4,
       "max_hp": 165,
       "base_damage": 0,
-      "unlock_trophies": 4100,
-      "unlock_league": "volt"
+      "unlock_trophies": 5400,
+      "unlock_league": "spark"
     },
     {
       "id": "disruptor",
       "name_tr": "Kesici",
       "category": "sabotaj",
       "rarity": "legendary",
-      "unlock_arena": 15,
+      "unlock_arena": 13,
       "current_cost": 3,
       "max_hp": 80,
       "base_damage": 0,
-      "unlock_trophies": 4600,
-      "unlock_league": "reactor"
+      "unlock_trophies": 5400,
+      "unlock_league": "spark"
     },
     {
       "id": "phoenix_repair",
       "name_tr": "Anka Onarım",
       "category": "destek",
       "rarity": "legendary",
-      "unlock_arena": 16,
+      "unlock_arena": 13,
       "current_cost": 4,
       "max_hp": 100,
       "base_damage": 0,
-      "unlock_trophies": 5100,
-      "unlock_league": "quantum"
+      "unlock_trophies": 5400,
+      "unlock_league": "spark"
     },
     {
       "id": "quantum_cannon",
       "name_tr": "Kuantum Topu",
       "category": "saldırı",
       "rarity": "legendary",
-      "unlock_arena": 17,
+      "unlock_arena": 13,
       "current_cost": 6,
       "max_hp": 105,
       "base_damage": 58,
-      "unlock_trophies": 5600,
-      "unlock_league": "nexus"
+      "unlock_trophies": 5400,
+      "unlock_league": "spark"
     },
     {
       "id": "omega_amplifier",
       "name_tr": "Omega Güçlendirici",
       "category": "destek",
       "rarity": "legendary",
-      "unlock_arena": 18,
+      "unlock_arena": 13,
       "current_cost": 3,
       "max_hp": 95,
       "base_damage": 0,
-      "unlock_trophies": 6100,
-      "unlock_league": "champions"
+      "unlock_trophies": 5400,
+      "unlock_league": "spark"
     },
     {
       "id": "singularity_projector",
       "name_tr": "Tekillik Projektörü",
       "category": "sabotaj",
       "rarity": "legendary",
-      "unlock_arena": 19,
+      "unlock_arena": 13,
       "current_cost": 3,
       "max_hp": 90,
       "base_damage": 25,
-      "unlock_trophies": 7100,
-      "unlock_league": "legendary"
+      "unlock_trophies": 5400,
+      "unlock_league": "spark"
     }
   ],
   "arenas": [
@@ -537,7 +537,7 @@
       "index": 3,
       "name_tr": "Akım Kavşağı",
       "minimum_rating": 600,
-      "maximum_rating": 899,
+      "maximum_rating": 949,
       "nodes": [
         {
           "id": "arena_3_650",
@@ -557,7 +557,7 @@
         },
         {
           "id": "arena_3_750",
-          "trophies": 750,
+          "trophies": 775,
           "description_tr": "Füze Fırlatıcı (rare, saldırı, 3 Akım)",
           "rewards": {
             "module_id": "missile_launcher"
@@ -565,7 +565,7 @@
         },
         {
           "id": "arena_3_800",
-          "trophies": 800,
+          "trophies": 825,
           "description_tr": "24 Akı",
           "rewards": {
             "flux_shards": 24
@@ -573,7 +573,7 @@
         },
         {
           "id": "arena_3_850",
-          "trophies": 850,
+          "trophies": 875,
           "description_tr": "8 Modül Parçası",
           "rewards": {
             "module_shards": 8
@@ -581,7 +581,7 @@
         },
         {
           "id": "arena_3_900",
-          "trophies": 900,
+          "trophies": 950,
           "description_tr": "Bronz Sandık",
           "rewards": {
             "chest_id": "field_3h"
@@ -589,7 +589,7 @@
         },
         {
           "id": "arena_3_finish",
-          "trophies": 900,
+          "trophies": 950,
           "description_tr": "660 Devre Kredisi + 36 Akı + 30 Modül Parçası",
           "rewards": {
             "circuit_credits": 660,
@@ -603,12 +603,12 @@
       "id": "arena_4",
       "index": 4,
       "name_tr": "İletken Dökümhane",
-      "minimum_rating": 900,
-      "maximum_rating": 1199,
+      "minimum_rating": 950,
+      "maximum_rating": 1299,
       "nodes": [
         {
           "id": "arena_4_975",
-          "trophies": 975,
+          "trophies": 1025,
           "description_tr": "Hedefleme Bilgisayarı (rare, destek, 3 Akım)",
           "rewards": {
             "module_id": "targeting_computer"
@@ -616,7 +616,7 @@
         },
         {
           "id": "arena_4_1000",
-          "trophies": 1000,
+          "trophies": 1050,
           "description_tr": "450 Devre Kredisi",
           "rewards": {
             "circuit_credits": 450
@@ -624,7 +624,7 @@
         },
         {
           "id": "arena_4_1075",
-          "trophies": 1075,
+          "trophies": 1150,
           "description_tr": "30 Akı",
           "rewards": {
             "flux_shards": 30
@@ -632,7 +632,7 @@
         },
         {
           "id": "arena_4_1125",
-          "trophies": 1125,
+          "trophies": 1200,
           "description_tr": "Bariyer (rare, savunma, 3 Akım)",
           "rewards": {
             "module_id": "barrier"
@@ -640,7 +640,7 @@
         },
         {
           "id": "arena_4_1200",
-          "trophies": 1200,
+          "trophies": 1300,
           "description_tr": "Gümüş Sandık",
           "rewards": {
             "chest_id": "circuit_8h"
@@ -648,7 +648,7 @@
         },
         {
           "id": "arena_4_finish",
-          "trophies": 1200,
+          "trophies": 1300,
           "description_tr": "840 Devre Kredisi + 44 Akı + 35 Modül Parçası",
           "rewards": {
             "circuit_credits": 840,
@@ -662,12 +662,12 @@
       "id": "arena_5",
       "index": 5,
       "name_tr": "Neon Omurga",
-      "minimum_rating": 1200,
-      "maximum_rating": 1499,
+      "minimum_rating": 1300,
+      "maximum_rating": 1699,
       "nodes": [
         {
           "id": "arena_5_1250",
-          "trophies": 1250,
+          "trophies": 1350,
           "description_tr": "Ark Topu (rare, saldırı, 4 Akım)",
           "rewards": {
             "module_id": "arc_cannon"
@@ -675,7 +675,7 @@
         },
         {
           "id": "arena_5_1300",
-          "trophies": 1300,
+          "trophies": 1425,
           "description_tr": "540 Devre Kredisi",
           "rewards": {
             "circuit_credits": 540
@@ -683,7 +683,7 @@
         },
         {
           "id": "arena_5_1350",
-          "trophies": 1350,
+          "trophies": 1500,
           "description_tr": "Kapasitör (rare, ekonomi, 2 Akım)",
           "rewards": {
             "module_id": "capacitor"
@@ -691,7 +691,7 @@
         },
         {
           "id": "arena_5_1400",
-          "trophies": 1400,
+          "trophies": 1550,
           "description_tr": "36 Akı",
           "rewards": {
             "flux_shards": 36
@@ -699,7 +699,7 @@
         },
         {
           "id": "arena_5_1450",
-          "trophies": 1450,
+          "trophies": 1625,
           "description_tr": "12 Modül Parçası",
           "rewards": {
             "module_shards": 12
@@ -707,7 +707,7 @@
         },
         {
           "id": "arena_5_1500",
-          "trophies": 1500,
+          "trophies": 1700,
           "description_tr": "Gümüş Sandık",
           "rewards": {
             "chest_id": "circuit_8h"
@@ -715,7 +715,7 @@
         },
         {
           "id": "arena_5_finish",
-          "trophies": 1500,
+          "trophies": 1700,
           "description_tr": "1020 Devre Kredisi + 52 Akı + 40 Modül Parçası",
           "rewards": {
             "circuit_credits": 1020,
@@ -729,12 +729,12 @@
       "id": "arena_6",
       "index": 6,
       "name_tr": "Plazma Kanalları",
-      "minimum_rating": 1500,
-      "maximum_rating": 1799,
+      "minimum_rating": 1700,
+      "maximum_rating": 2149,
       "nodes": [
         {
           "id": "arena_6_1575",
-          "trophies": 1575,
+          "trophies": 1800,
           "description_tr": "Dron Üssü (rare, saldırı, 3 Akım)",
           "rewards": {
             "module_id": "drone_bay"
@@ -742,7 +742,7 @@
         },
         {
           "id": "arena_6_1600",
-          "trophies": 1600,
+          "trophies": 1850,
           "description_tr": "630 Devre Kredisi",
           "rewards": {
             "circuit_credits": 630
@@ -750,7 +750,7 @@
         },
         {
           "id": "arena_6_1675",
-          "trophies": 1675,
+          "trophies": 1950,
           "description_tr": "42 Akı",
           "rewards": {
             "flux_shards": 42
@@ -758,7 +758,7 @@
         },
         {
           "id": "arena_6_1725",
-          "trophies": 1725,
+          "trophies": 2025,
           "description_tr": "Sinyal Bozucu (rare, kontrol, 3 Akım)",
           "rewards": {
             "module_id": "jammer"
@@ -766,7 +766,7 @@
         },
         {
           "id": "arena_6_1800",
-          "trophies": 1800,
+          "trophies": 2150,
           "description_tr": "Gümüş Sandık",
           "rewards": {
             "chest_id": "circuit_8h"
@@ -774,7 +774,7 @@
         },
         {
           "id": "arena_6_finish",
-          "trophies": 1800,
+          "trophies": 2150,
           "description_tr": "1200 Devre Kredisi + 60 Akı + 45 Modül Parçası + 1 Çekirdek Parçası",
           "rewards": {
             "circuit_credits": 1200,
@@ -789,12 +789,12 @@
       "id": "arena_7",
       "index": 7,
       "name_tr": "Darbe Surları",
-      "minimum_rating": 1800,
-      "maximum_rating": 2099,
+      "minimum_rating": 2150,
+      "maximum_rating": 2649,
       "nodes": [
         {
           "id": "arena_7_1850",
-          "trophies": 1850,
+          "trophies": 2225,
           "description_tr": "Ray Topu (epic, saldırı, 4 Akım)",
           "rewards": {
             "module_id": "railgun"
@@ -802,7 +802,7 @@
         },
         {
           "id": "arena_7_1900",
-          "trophies": 1900,
+          "trophies": 2300,
           "description_tr": "720 Devre Kredisi",
           "rewards": {
             "circuit_credits": 720
@@ -810,7 +810,7 @@
         },
         {
           "id": "arena_7_1950",
-          "trophies": 1950,
+          "trophies": 2400,
           "description_tr": "Akım Dengeleyici (rare, ekonomi, 3 Akım)",
           "rewards": {
             "module_id": "current_balancer"
@@ -818,7 +818,7 @@
         },
         {
           "id": "arena_7_2000",
-          "trophies": 2000,
+          "trophies": 2475,
           "description_tr": "48 Akı",
           "rewards": {
             "flux_shards": 48
@@ -826,7 +826,7 @@
         },
         {
           "id": "arena_7_2050",
-          "trophies": 2050,
+          "trophies": 2550,
           "description_tr": "16 Modül Parçası",
           "rewards": {
             "module_shards": 16
@@ -834,7 +834,7 @@
         },
         {
           "id": "arena_7_2100",
-          "trophies": 2100,
+          "trophies": 2650,
           "description_tr": "Gümüş Sandık",
           "rewards": {
             "chest_id": "circuit_8h"
@@ -842,7 +842,7 @@
         },
         {
           "id": "arena_7_finish",
-          "trophies": 2100,
+          "trophies": 2650,
           "description_tr": "1380 Devre Kredisi + 68 Akı + 50 Modül Parçası + 1 Çekirdek Parçası",
           "rewards": {
             "circuit_credits": 1380,
@@ -857,12 +857,12 @@
       "id": "arena_8",
       "index": 8,
       "name_tr": "Kuantum Hattı",
-      "minimum_rating": 2100,
-      "maximum_rating": 2399,
+      "minimum_rating": 2650,
+      "maximum_rating": 3149,
       "nodes": [
         {
           "id": "arena_8_2175",
-          "trophies": 2175,
+          "trophies": 2775,
           "description_tr": "Yansıtıcı (epic, savunma, 3 Akım)",
           "rewards": {
             "module_id": "reflector"
@@ -870,7 +870,7 @@
         },
         {
           "id": "arena_8_2200",
-          "trophies": 2200,
+          "trophies": 2800,
           "description_tr": "810 Devre Kredisi",
           "rewards": {
             "circuit_credits": 810
@@ -878,7 +878,7 @@
         },
         {
           "id": "arena_8_2275",
-          "trophies": 2275,
+          "trophies": 2925,
           "description_tr": "54 Akı",
           "rewards": {
             "flux_shards": 54
@@ -886,7 +886,7 @@
         },
         {
           "id": "arena_8_2325",
-          "trophies": 2325,
+          "trophies": 3025,
           "description_tr": "Nano Sağlıkçı (rare, destek, 3 Akım)",
           "rewards": {
             "module_id": "nano_medic"
@@ -894,7 +894,7 @@
         },
         {
           "id": "arena_8_2400",
-          "trophies": 2400,
+          "trophies": 3150,
           "description_tr": "Gümüş Sandık",
           "rewards": {
             "chest_id": "circuit_8h"
@@ -902,7 +902,7 @@
         },
         {
           "id": "arena_8_finish",
-          "trophies": 2400,
+          "trophies": 3150,
           "description_tr": "1560 Devre Kredisi + 76 Akı + 55 Modül Parçası + 2 Çekirdek Parçası",
           "rewards": {
             "circuit_credits": 1560,
@@ -917,12 +917,12 @@
       "id": "arena_9",
       "index": 9,
       "name_tr": "İyon Kalesi",
-      "minimum_rating": 2400,
-      "maximum_rating": 2699,
+      "minimum_rating": 3150,
+      "maximum_rating": 3649,
       "nodes": [
         {
           "id": "arena_9_2450",
-          "trophies": 2450,
+          "trophies": 3225,
           "description_tr": "Virüs (epic, kontrol, 4 Akım)",
           "rewards": {
             "module_id": "virus"
@@ -930,7 +930,7 @@
         },
         {
           "id": "arena_9_2500",
-          "trophies": 2500,
+          "trophies": 3300,
           "description_tr": "900 Devre Kredisi",
           "rewards": {
             "circuit_credits": 900
@@ -938,7 +938,7 @@
         },
         {
           "id": "arena_9_2550",
-          "trophies": 2550,
+          "trophies": 3400,
           "description_tr": "Aşırı Hızlandırıcı (epic, destek, 3 Akım)",
           "rewards": {
             "module_id": "overclock_unit"
@@ -946,7 +946,7 @@
         },
         {
           "id": "arena_9_2600",
-          "trophies": 2600,
+          "trophies": 3475,
           "description_tr": "60 Akı",
           "rewards": {
             "flux_shards": 60
@@ -954,7 +954,7 @@
         },
         {
           "id": "arena_9_2650",
-          "trophies": 2650,
+          "trophies": 3550,
           "description_tr": "20 Modül Parçası",
           "rewards": {
             "module_shards": 20
@@ -962,7 +962,7 @@
         },
         {
           "id": "arena_9_2700",
-          "trophies": 2700,
+          "trophies": 3650,
           "description_tr": "Altın Sandık",
           "rewards": {
             "chest_id": "core_24h"
@@ -970,7 +970,7 @@
         },
         {
           "id": "arena_9_finish",
-          "trophies": 2700,
+          "trophies": 3650,
           "description_tr": "1740 Devre Kredisi + 84 Akı + 60 Modül Parçası + 2 Çekirdek Parçası",
           "rewards": {
             "circuit_credits": 1740,
@@ -985,12 +985,12 @@
       "id": "arena_10",
       "index": 10,
       "name_tr": "Çekirdek Sınırı",
-      "minimum_rating": 2700,
-      "maximum_rating": 2999,
+      "minimum_rating": 3650,
+      "maximum_rating": 4199,
       "nodes": [
         {
           "id": "arena_10_2775",
-          "trophies": 2775,
+          "trophies": 3775,
           "description_tr": "Plazma Havanı (epic, saldırı, 4 Akım)",
           "rewards": {
             "module_id": "plasma_mortar"
@@ -998,7 +998,7 @@
         },
         {
           "id": "arena_10_2800",
-          "trophies": 2800,
+          "trophies": 3825,
           "description_tr": "990 Devre Kredisi",
           "rewards": {
             "circuit_credits": 990
@@ -1006,7 +1006,7 @@
         },
         {
           "id": "arena_10_2875",
-          "trophies": 2875,
+          "trophies": 3950,
           "description_tr": "66 Akı",
           "rewards": {
             "flux_shards": 66
@@ -1014,7 +1014,7 @@
         },
         {
           "id": "arena_10_2925",
-          "trophies": 2925,
+          "trophies": 4050,
           "description_tr": "Muhafız Kubbesi (epic, savunma, 4 Akım)",
           "rewards": {
             "module_id": "guardian_dome"
@@ -1022,7 +1022,7 @@
         },
         {
           "id": "arena_10_3000",
-          "trophies": 3000,
+          "trophies": 4200,
           "description_tr": "Altın Sandık",
           "rewards": {
             "chest_id": "core_24h"
@@ -1030,7 +1030,7 @@
         },
         {
           "id": "arena_10_finish",
-          "trophies": 3000,
+          "trophies": 4200,
           "description_tr": "1920 Devre Kredisi + 92 Akı + 65 Modül Parçası + 3 Çekirdek Parçası",
           "rewards": {
             "circuit_credits": 1920,
@@ -1045,12 +1045,12 @@
       "id": "arena_11",
       "index": 11,
       "name_tr": "Shard Nexus",
-      "minimum_rating": 3000,
-      "maximum_rating": 3299,
+      "minimum_rating": 4200,
+      "maximum_rating": 4799,
       "nodes": [
         {
           "id": "arena_11_3050",
-          "trophies": 3050,
+          "trophies": 4300,
           "description_tr": "Kuantum Tekrarlayıcı (epic, saldırı, 5 Akım)",
           "rewards": {
             "module_id": "quantum_repeater"
@@ -1058,7 +1058,7 @@
         },
         {
           "id": "arena_11_3100",
-          "trophies": 3100,
+          "trophies": 4400,
           "description_tr": "1080 Devre Kredisi",
           "rewards": {
             "circuit_credits": 1080
@@ -1066,7 +1066,7 @@
         },
         {
           "id": "arena_11_3150",
-          "trophies": 3150,
+          "trophies": 4500,
           "description_tr": "Krono Rölesi (epic, destek, 3 Akım)",
           "rewards": {
             "module_id": "chrono_relay"
@@ -1074,7 +1074,7 @@
         },
         {
           "id": "arena_11_3200",
-          "trophies": 3200,
+          "trophies": 4600,
           "description_tr": "72 Akı",
           "rewards": {
             "flux_shards": 72
@@ -1082,7 +1082,7 @@
         },
         {
           "id": "arena_11_3250",
-          "trophies": 3250,
+          "trophies": 4700,
           "description_tr": "24 Modül Parçası",
           "rewards": {
             "module_shards": 24
@@ -1090,7 +1090,7 @@
         },
         {
           "id": "arena_11_3300",
-          "trophies": 3300,
+          "trophies": 4800,
           "description_tr": "Altın Sandık",
           "rewards": {
             "chest_id": "core_24h"
@@ -1098,7 +1098,7 @@
         },
         {
           "id": "arena_11_finish",
-          "trophies": 3300,
+          "trophies": 4800,
           "description_tr": "2100 Devre Kredisi + 100 Akı + 70 Modül Parçası + 3 Çekirdek Parçası",
           "rewards": {
             "circuit_credits": 2100,
@@ -1113,12 +1113,12 @@
       "id": "arena_12",
       "index": 12,
       "name_tr": "Apex Devre",
-      "minimum_rating": 3300,
-      "maximum_rating": 3599,
+      "minimum_rating": 4800,
+      "maximum_rating": 5399,
       "nodes": [
         {
           "id": "arena_12_3375",
-          "trophies": 3375,
+          "trophies": 4950,
           "description_tr": "Faz Zırhı (epic, savunma, 4 Akım)",
           "rewards": {
             "module_id": "phase_armor"
@@ -1126,7 +1126,7 @@
         },
         {
           "id": "arena_12_3400",
-          "trophies": 3400,
+          "trophies": 5000,
           "description_tr": "1170 Devre Kredisi",
           "rewards": {
             "circuit_credits": 1170
@@ -1134,7 +1134,7 @@
         },
         {
           "id": "arena_12_3475",
-          "trophies": 3475,
+          "trophies": 5150,
           "description_tr": "78 Akı",
           "rewards": {
             "flux_shards": 78
@@ -1142,7 +1142,7 @@
         },
         {
           "id": "arena_12_3525",
-          "trophies": 3525,
+          "trophies": 5250,
           "description_tr": "Sürü Fabrikatörü (epic, saldırı, 3 Akım)",
           "rewards": {
             "module_id": "swarm_fabricator"
@@ -1150,7 +1150,7 @@
         },
         {
           "id": "arena_12_3600",
-          "trophies": 3600,
+          "trophies": 5400,
           "description_tr": "Altın Sandık",
           "rewards": {
             "chest_id": "core_24h"
@@ -1158,7 +1158,7 @@
         },
         {
           "id": "arena_12_finish",
-          "trophies": 3600,
+          "trophies": 5400,
           "description_tr": "2280 Devre Kredisi + 108 Akı + 75 Modül Parçası + 4 Çekirdek Parçası",
           "rewards": {
             "circuit_credits": 2280,

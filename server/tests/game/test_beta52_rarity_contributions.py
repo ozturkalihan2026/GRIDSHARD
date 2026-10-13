@@ -91,8 +91,8 @@ def test_attack_support_publishes_real_source_and_percentage():
     assert contribution["category"] == "destek"
     assert contribution["contribution_kind"] == "attack_boost"
     assert contribution["unit"] == "percent"
-    # Tek saldırı modülünde Güçlendirici tam payını (%15) verir.
-    assert contribution["value"] == pytest.approx(15)
+    # Tek saldırı modülünde Güçlendirici tam payını (%18) verir.
+    assert contribution["value"] == pytest.approx(18)
 
 
 def test_defense_publishes_the_real_prevented_damage_value():

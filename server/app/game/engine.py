@@ -1,4 +1,5 @@
 from collections import deque
+from dataclasses import replace
 import hashlib
 from typing import Deque
 
@@ -15,7 +16,6 @@ from .combat import (
     has_living_attack_module,
     is_attack_module,
     ATTACK_WINDUP_MS,
-    PRISM_ENERGY_CONVERSION,
     QUANTUM_CHARGE_DAMAGE_BONUS,
     QUANTUM_REPEAT_ECHO_RATIO,
     QUANTUM_REPEAT_HITS,
@@ -23,12 +23,25 @@ from .combat import (
     SWARM_RELEASE_DRONES,
     SWARM_RELEASE_RATIO_PER_TARGET,
     SWARM_RELEASE_TARGETS,
-    circuit_guard_multiplier,
+    AttackResolution,
+    adjacent_targets,
+    circuit_guard,
+    mirror_interceptor,
     resolve_attack,
     secondary_targets,
     select_target,
 )
 from .composition import deployment_rejection_reason
+from .module_cycles import (
+    CYCLE_READY_KEY,
+    DEFENSE_CHARGE_KEYS,
+    OVERCLOCK_CHARGE_KEY,
+    armor_regen_amount,
+    charged,
+    cycle_ms,
+    prism_conversion_ratio,
+)
+from .talents import CURRENT_TAP_PLAYER_GAP_MS, core_talents, module_signature
 from .energy import (
     QUANTUM_CHARGE_MAX,
     core_reserve_capacity,
@@ -64,6 +77,7 @@ from .heat import (
     add_module_heat,
     apply_passive_cooling,
     generates_heat,
+    heat_efficiency,
     heat_penalty_percent,
     heat_tempo_multiplier,
     is_overheated,
@@ -91,8 +105,10 @@ from .sabotage import (
     sabotage_resistance,
 )
 from .support import (
+    AMPLIFIER_CHARGE_KEY,
+    AMPLIFIER_PULSE_COOLDOWN_ID,
+    _operational_supports,
     CHRONO_BOOST_MS,
-    CHRONO_DEBT_MS,
     NANO_MEDIC_REPAIR_RATIO,
     NANO_MEDIC_TARGETS,
     PHOENIX_COOLDOWN_ID,
@@ -101,12 +117,15 @@ from .support import (
     PHOENIX_REVIVE_ENERGY,
     PHOENIX_REVIVE_HP_RATIO,
     PRECISION_MAX_STACKS,
-    COOLER_HEAT_REDUCTION_PER_TICK,
+    COOLER_HEAT_REDUCTION_PER_PULSE,
     COOLER_OVERHEAT_MULTIPLIER,
-    OVERCLOCK_HEAT_PER_TICK,
+    OVERCLOCK_HEAT_PER_PULSE,
     REPAIR_COOLDOWN_ID,
+    SUPPORT_CHARGE_KEYS,
+    SUPPORT_PULSE_CHARGES,
     attack_support_modifiers,
-    COOLER_DEBUFF_REDUCTION_MS_PER_TICK,
+    chrono_debt_ms,
+    COOLER_DEBUFF_REDUCTION_MS_PER_PULSE,
     cooler_reducible_debuff_targets,
     cooler_targets,
     overclock_targets,
@@ -199,6 +218,11 @@ class BattleEngine:
             tuple[str, str, str],
             float,
         ] = {}
+        # Akım kazandıran yeteneklerin oyuncu başına son verdiği an.
+        self._talent_last_tap_ms: dict[str, int] = {}
+        self._talent_reflecting = False
+        # Oyuncunun çekirdek yetenekleri (kanca → değerler); savaş boyunca sabittir.
+        self._core_talent_cache: dict[str, tuple[tuple, dict]] = {}
 
         if circuit_credit_config.current_regen_interval_ms <= 0:
             raise ValueError("Akım yenilenme aralığı pozitif olmalıdır.")
@@ -258,10 +282,10 @@ class BattleEngine:
             raise ValueError(f"Modül örneği zaten mevcut: {instance_id}")
 
         definition = get_module_definition(definition_id)
-        from dataclasses import replace
         from ..arena_canon import module_stats
+        talents = self.state.player_module_talents.get(player_id, {}).get(definition_id, {})
         stats = module_stats(definition, self.state.player_upgrade_levels.get(player_id, {}).get(definition_id, 0),
-                             self.state.player_module_talents.get(player_id, {}).get(definition_id, {}))
+                             talents)
         daily_meta = daily_meta_by_id(
             self.state.player_daily_meta_ids.get(player_id, "")
         )
@@ -285,17 +309,18 @@ class BattleEngine:
             effect_multiplier *= meta_multiplier
         elif meta_id == "core" and definition_id == "core":
             max_hp = round(max_hp * meta_multiplier)
-        elif meta_id == "current_support" and definition_id in {
-            "battery", "capacitor", "current_balancer"
-        }:
-            effect_multiplier *= meta_multiplier
         definition = replace(definition, max_hp=max_hp, base_damage=base_damage,
                              cooldown_ms=stats["cooldown_ms"], effect_multiplier=effect_multiplier,
-                             energy_consumption=stats["energy_consumption"])
+                             energy_consumption=stats["energy_consumption"],
+                             action_energy_cost=stats["action_energy_cost"])
         module = BattleModule.create(
             instance_id=instance_id,
             definition=definition,
         )
+        # Seçilmiş imza yeteneği (talents.py); kancalar savaş boyunca buradan okunur.
+        signature = module_signature(definition_id, talents)
+        if signature is not None:
+            module.mechanic_state["talent"] = signature
         player.modules[instance_id] = module
         return module
 
@@ -401,6 +426,12 @@ class BattleEngine:
         if module.status == ModuleStatus.DESTROYED:
             return 0
 
+        hostile = bool(source_player_id) and source_player_id != player_id
+        if hostile and amount > 0:
+            amount = self._talent_reduce_incoming(player_id, module, amount, source_module_id)
+            if module.definition.id == "core":
+                amount = self._core_talent_reduce_incoming(player_id, amount)
+
         shield = module.persistent_effects.get("core_guardian")
         if shield is not None and shield.expires_at_ms > self.state.elapsed_ms:
             absorbed = min(amount, int(shield.data.get("shield_hp", 0)))
@@ -471,8 +502,357 @@ class BattleEngine:
                 and source_player_id != player_id
             ):
                 self._extend_overdrive_chain(source_player_id)
+            self._talent_on_destroyed(player_id, module)
+            if module.definition.id != "core":
+                self._core_talent_on_module_destroyed(player_id, source_player_id)
+
+        if hostile and applied_damage > 0:
+            self._talent_return_damage(player_id, module, applied_damage, source_player_id, source_module_id)
+            if module.definition.id == "core":
+                self._core_talent_after_core_hit(player_id, module, source_player_id, source_module_id)
 
         return applied_damage
+
+    # --- Çekirdek yetenekleri (talents.py) -----------------------------------
+    def _core_talent(self, player: PlayerBattleState, hook: str) -> dict | None:
+        key = (player.core_type, tuple(player.core_skills))
+        cached = self._core_talent_cache.get(player.player_id)
+        if cached is None or cached[0] != key:
+            cached = (key, core_talents(player.core_type, player.core_skills))
+            self._core_talent_cache[player.player_id] = cached
+        return cached[1].get(hook)
+
+    def _emit_core_talent(self, player: PlayerBattleState, hook: str, data: dict | None = None) -> None:
+        core = self._core_module(player)
+        talent = self._core_talent(player, hook) or {}
+        self._emit(
+            "core_talent_triggered",
+            {
+                "player_id": player.player_id,
+                "module_id": core.instance_id if core is not None else None,
+                "core_type": player.core_type,
+                "hook": hook,
+                "name_tr": talent.get("name_tr"),
+                "name_en": talent.get("name_en"),
+                **(data or {}),
+            },
+        )
+
+    def _add_core_charge(self, player: PlayerBattleState, amount: float) -> None:
+        if amount <= 0 or player.core_power_charge >= CORE_POWER_MAX_CHARGE:
+            return
+        player.core_power_charge = min(CORE_POWER_MAX_CHARGE, player.core_power_charge + float(amount))
+        if player.core_power_charge >= CORE_POWER_MAX_CHARGE and not player.core_power_ready_emitted:
+            player.core_power_ready_emitted = True
+            self._emit(
+                "core_power_ready",
+                {"player_id": player.player_id, "power_id": player.core_type, "charge": 100},
+            )
+
+    def _core_talent_on_module_destroyed(self, owner_player_id: str, source_player_id: str | None) -> None:
+        owner = self._require_player(owner_player_id)
+        loss = self._core_talent(owner, "loss_charge")
+        if loss:
+            self._add_core_charge(owner, float(loss["amount"]))
+            self._emit_core_talent(owner, "loss_charge", {"charge": float(loss["amount"])})
+        if source_player_id and source_player_id != owner_player_id and source_player_id in self.state.players:
+            killer = self.state.players[source_player_id]
+            kill = self._core_talent(killer, "kill_charge")
+            if kill:
+                self._add_core_charge(killer, float(kill["amount"]))
+                self._emit_core_talent(killer, "kill_charge", {"charge": float(kill["amount"])})
+
+    def _core_talent_reduce_incoming(self, player_id: str, amount: int) -> int:
+        resolve = self._core_talent(self._require_player(player_id), "overtime_resolve")
+        if resolve and self.state.elapsed_ms >= OVERTIME_START_MS:
+            return max(0, int(round(amount * (1 - float(resolve["reduction"])))))
+        return amount
+
+    def _core_talent_after_core_hit(
+        self,
+        player_id: str,
+        core: BattleModule,
+        source_player_id: str,
+        source_module_id: str | None,
+    ) -> None:
+        player = self._require_player(player_id)
+        shield = self._core_talent(player, "emergency_shield")
+        if (
+            shield
+            and core.hp > 0
+            and not player.core_signature_state.get("talent_emergency_used")
+            and core.hp / max(1, core.definition.max_hp) < float(shield["threshold"])
+        ):
+            player.core_signature_state["talent_emergency_used"] = True
+            active = core.persistent_effects.get("core_guardian")
+            # Daha güçlü bir Muhafız kalkanı sürüyorsa üstüne yazılmaz.
+            if (
+                active is None
+                or active.expires_at_ms is None
+                or active.expires_at_ms <= self.state.elapsed_ms
+                or int(active.data.get("shield_hp", 0)) < int(shield["amount"])
+            ):
+                self.add_persistent_effect(
+                    player_id, core.instance_id, "core_guardian", "Acil Kalkan",
+                    int(shield["duration_ms"]), {"shield_hp": int(shield["amount"])},
+                )
+            self._emit_core_talent(player, "emergency_shield", {"shield_hp": int(shield["amount"])})
+        thorns = self._core_talent(player, "thorned_core")
+        if thorns and source_module_id and not self._talent_reflecting:
+            source_player = self.state.players.get(source_player_id)
+            if source_player is not None and source_module_id in source_player.modules:
+                self._talent_reflecting = True
+                try:
+                    self.apply_damage(
+                        source_player_id, source_module_id, int(thorns["amount"]),
+                        source_player_id=player_id, source_module_id=core.instance_id,
+                    )
+                finally:
+                    self._talent_reflecting = False
+
+    # --- Modül imza yetenekleri (talents.py) ---------------------------------
+    @staticmethod
+    def _talent(module: BattleModule, hook: str) -> dict | None:
+        talent = module.mechanic_state.get("talent")
+        return talent if talent and talent.get("hook") == hook else None
+
+    def _emit_talent(self, player_id: str, module: BattleModule, data: dict | None = None) -> None:
+        talent = module.mechanic_state.get("talent") or {}
+        self._emit(
+            "module_talent_triggered",
+            {
+                "player_id": player_id,
+                "module_id": module.instance_id,
+                "definition_id": module.definition.id,
+                "hook": talent.get("hook"),
+                "name_tr": talent.get("name_tr"),
+                "name_en": talent.get("name_en"),
+                **(data or {}),
+            },
+        )
+
+    def _talent_window_active(self, module: BattleModule, talent: dict) -> bool:
+        """Dönemsel pencere: yerleşmeden bir dönem sonra başlar, her dönemde yinelenir."""
+        anchor = module.mechanic_state.get("talent_anchor_ms")
+        if anchor is None:
+            return False
+        since = self.state.elapsed_ms - int(anchor)
+        period = int(talent["period_ms"])
+        return since >= period and since % period < int(talent["window_ms"])
+
+    def _talent_repair_allies(self, player_id: str, source: BattleModule, amount: int) -> None:
+        player = self._require_player(player_id)
+        repaired = 0
+        for ally in sorted(player.modules.values(), key=lambda item: item.instance_id):
+            if (
+                ally.instance_id == source.instance_id
+                or ally.definition.id == "core"
+                or ally.status != ModuleStatus.ACTIVE
+                or ally.hp <= 0
+            ):
+                continue
+            before = ally.hp
+            ally.hp = min(ally.definition.max_hp, ally.hp + amount)
+            if ally.hp > before:
+                repaired += ally.hp - before
+                self._emit(
+                    "module_repaired",
+                    {
+                        "player_id": player_id,
+                        "source_module_id": source.instance_id,
+                        "target_module_id": ally.instance_id,
+                        "module_id": ally.instance_id,
+                        "repair": ally.hp - before,
+                        "hp_before": before,
+                        "hp_after": ally.hp,
+                    },
+                )
+        self._emit_talent(player_id, source, {"repair": repaired})
+
+    def _talent_reduce_incoming(
+        self,
+        player_id: str,
+        module: BattleModule,
+        amount: int,
+        source_module_id: str | None,
+    ) -> int:
+        talent = module.mechanic_state.get("talent")
+        if not talent or module.status != ModuleStatus.ACTIVE:
+            return amount
+        hook = talent["hook"]
+        state = module.mechanic_state
+        if hook == "last_stand":
+            if module.hp / max(1, module.definition.max_hp) < float(talent["threshold"]):
+                return max(0, int(round(amount * (1 - float(talent["reduction"])))))
+        elif hook == "fortify":
+            anchor = state.get("talent_anchor_ms")
+            if anchor is None or self.state.elapsed_ms - int(anchor) < int(talent["window_ms"]):
+                return max(0, int(round(amount * (1 - float(talent["reduction"])))))
+        elif hook == "periodic_block" and source_module_id:
+            # İlk blok yerleşir yerleşmez hazırdır; sonra her dönemde bir yenilenir.
+            if self.state.elapsed_ms >= int(state.get("talent_block_ready_ms", 0)):
+                state["talent_block_ready_ms"] = self.state.elapsed_ms + int(talent["period_ms"])
+                self._emit_talent(player_id, module, {"blocked_damage": amount})
+                return 0
+        return amount
+
+    def _talent_return_damage(
+        self,
+        player_id: str,
+        module: BattleModule,
+        applied_damage: int,
+        source_player_id: str,
+        source_module_id: str | None,
+    ) -> None:
+        thorns = self._talent(module, "thorns")
+        if thorns is None or self._talent_reflecting or not source_module_id:
+            return
+        source_player = self.state.players.get(source_player_id)
+        if source_player is None or source_module_id not in source_player.modules:
+            return
+        # Diken hasarı geri dikenlenmez.
+        self._talent_reflecting = True
+        try:
+            self.apply_damage(
+                source_player_id,
+                source_module_id,
+                max(1, int(round(applied_damage * float(thorns["ratio"])))),
+                source_player_id=player_id,
+                source_module_id=module.instance_id,
+            )
+        finally:
+            self._talent_reflecting = False
+
+    def _talent_on_destroyed(self, player_id: str, module: BattleModule) -> None:
+        talent = module.mechanic_state.get("talent")
+        if not talent:
+            return
+        if talent["hook"] == "death_ward":
+            self._talent_repair_allies(player_id, module, int(talent["amount"]))
+        elif talent["hook"] == "death_current":
+            self._emit_talent(player_id, module, {"current": int(talent["amount"])})
+            self.award_circuit_credits(player_id, int(talent["amount"]), "module_talent")
+
+    def _talent_attack_context(self, attacker: BattleModule, target: BattleModule) -> dict:
+        """Bu atışa uygulanacak yetenek etkisi; sayaçlar atış gerçekleşince ilerler."""
+        context = {"free_shot": False, "damage_multiplier": 1.0, "armor_break": 0.0,
+                   "splash_ratio": 0.0, "notable": False, "used_reload_bonus": False}
+        talent = attacker.mechanic_state.get("talent")
+        if not talent:
+            return context
+        hook = talent["hook"]
+        state = attacker.mechanic_state
+        shot = int(state.get("talent_shots", 0)) + 1
+        if hook == "free_shot":
+            # Enerji sırasında bekleyen modül sırasını bozmadan normal öder.
+            if shot % int(talent["every"]) == 0 and not attacker.energy_waiting:
+                context["free_shot"] = context["notable"] = True
+        elif hook == "nth_shot":
+            if shot % int(talent["every"]) == 0:
+                context["damage_multiplier"] = 1 + float(talent["bonus"])
+                context["notable"] = True
+        elif hook == "execute":
+            if target.hp / max(1, target.definition.max_hp) < float(talent["threshold"]):
+                context["damage_multiplier"] = 1 + float(talent["bonus"])
+        elif hook == "core_breaker":
+            if target.definition.mechanic_id == "core":
+                context["damage_multiplier"] = 1 + float(talent["bonus"])
+        elif hook == "first_strike":
+            if state.get("talent_first_strike", True):
+                context["damage_multiplier"] = 1 + float(talent["bonus"])
+                context["notable"] = True
+        elif hook == "armor_break":
+            context["armor_break"] = float(talent["ratio"])
+        elif hook == "splash_window":
+            if self._talent_window_active(attacker, talent):
+                context["splash_ratio"] = float(talent["ratio"])
+        elif hook == "kill_reload":
+            if state.get("talent_reload_bonus"):
+                context["damage_multiplier"] = 1 + float(state["talent_reload_bonus"])
+                context["used_reload_bonus"] = True
+        return context
+
+    def _talent_after_attack(
+        self,
+        attacker_player_id: str,
+        attacker: BattleModule,
+        target: BattleModule,
+        context: dict,
+        cooldown_ms: int,
+    ) -> int:
+        """Atıştan sonra sayaçları ilerletir; gerekirse beklemeyi kısaltır."""
+        talent = attacker.mechanic_state.get("talent")
+        if not talent:
+            return cooldown_ms
+        state = attacker.mechanic_state
+        state["talent_shots"] = int(state.get("talent_shots", 0)) + 1
+        hook = talent["hook"]
+        killed = target.status == ModuleStatus.DESTROYED
+        if context["used_reload_bonus"]:
+            state.pop("talent_reload_bonus", None)
+        if hook == "first_strike":
+            state["talent_first_strike"] = killed
+        elif hook == "kill_reload" and killed:
+            cooldown_ms = TICK_MS
+            if talent.get("bonus"):
+                state["talent_reload_bonus"] = float(talent["bonus"])
+            context["notable"] = True
+        if context["notable"]:
+            self._emit_talent(attacker_player_id, attacker, {"target_module_id": target.instance_id})
+        return cooldown_ms
+
+    def _process_talent_ticks(self) -> None:
+        """Dönemsel yetenekler: etki penceresi, Akım kazancı ve yerleşme anı."""
+        for player_id in sorted(self.state.players):
+            player = self.state.players[player_id]
+            for module in sorted(player.modules.values(), key=lambda item: item.instance_id):
+                talent = module.mechanic_state.get("talent")
+                if not talent or module.status != ModuleStatus.ACTIVE:
+                    continue
+                state = module.mechanic_state
+                hook = talent["hook"]
+                if "talent_anchor_ms" not in state:
+                    state["talent_anchor_ms"] = self.state.elapsed_ms
+                    if hook == "deploy_repair":
+                        self._talent_repair_allies(player_id, module, int(talent["amount"]))
+                if hook == "pulse_window":
+                    active = module_is_operational(module) and self._talent_window_active(module, talent)
+                    if active == bool(state.get("talent_window_on")):
+                        continue
+                    state["talent_window_on"] = active
+                    if active:
+                        state["talent_base_effect"] = module.definition.effect_multiplier
+                        module.definition = replace(
+                            module.definition,
+                            effect_multiplier=module.definition.effect_multiplier * (1 + float(talent["bonus"])),
+                        )
+                        self._emit_talent(player_id, module, {"window_ms": int(talent["window_ms"])})
+                    else:
+                        module.definition = replace(
+                            module.definition,
+                            effect_multiplier=float(state.pop("talent_base_effect", module.definition.effect_multiplier)),
+                        )
+                elif hook == "splash_window":
+                    active = self._talent_window_active(module, talent)
+                    if active and not state.get("talent_window_on"):
+                        self._emit_talent(player_id, module, {"window_ms": int(talent["window_ms"])})
+                    state["talent_window_on"] = active
+                elif hook == "current_tap":
+                    if not module_is_operational(module):
+                        continue
+                    next_at = int(state.setdefault(
+                        "talent_next_tap_ms", int(state["talent_anchor_ms"]) + int(talent["period_ms"])
+                    ))
+                    if self.state.elapsed_ms < next_at:
+                        continue
+                    last = self._talent_last_tap_ms.get(player_id)
+                    if last is not None and self.state.elapsed_ms - last < CURRENT_TAP_PLAYER_GAP_MS:
+                        continue
+                    state["talent_next_tap_ms"] = self.state.elapsed_ms + int(talent["period_ms"])
+                    if player.circuit_credits < self.circuit_credit_config.maximum_current:
+                        self._talent_last_tap_ms[player_id] = self.state.elapsed_ms
+                        self._emit_talent(player_id, module, {"current": 1})
+                        self.award_circuit_credits(player_id, 1, "module_talent")
 
     def _core_module(self, player: PlayerBattleState) -> BattleModule | None:
         return next(
@@ -611,11 +991,20 @@ class BattleEngine:
                 player.current_regen_remainder_ms = 0
                 continue
             player.current_regen_remainder_ms += TICK_MS
-            interval = self.circuit_credit_config.current_regen_interval_ms
+            interval = self._current_regen_interval_ms(player.player_id)
             amount, player.current_regen_remainder_ms = divmod(player.current_regen_remainder_ms, interval)
             granted = min(amount, self.circuit_credit_config.maximum_current - player.circuit_credits)
             player.circuit_credits += granted
             player.total_circuit_credits_earned += granted
+
+    def _current_regen_interval_ms(self, player_id: str) -> int:
+        """Akım yenilenme aralığı; Akım Desteği metası üretimi hızlandırır."""
+        interval = self.circuit_credit_config.current_regen_interval_ms
+        daily_meta = daily_meta_by_id(self.state.player_daily_meta_ids.get(player_id, ""))
+        if daily_meta and daily_meta.get("id") == "current_support":
+            multiplier = float(daily_meta.get("modifier", {}).get("multiplier", 1.0))
+            interval = max(TICK_MS, round(interval / max(1.0, multiplier)))
+        return interval
 
     def max_active_modules(self) -> int:
         return MAX_ACTIVE_MODULES
@@ -1144,6 +1533,7 @@ class BattleEngine:
                     attacker_player, module, reason="sabotage"
                 ):
                     continue
+                self._spend_sabotage_guard(target_player_id, resistance)
 
                 planned_actions.append((
                     attacker_player_id, target_player_id, module, plan,
@@ -1168,6 +1558,7 @@ class BattleEngine:
                             module, echo_target, target_player
                         )
                         if not echo_resistance.blocked:
+                            self._spend_sabotage_guard(target_player_id, echo_resistance)
                             echo_duration_ms = max(
                                 500,
                                 round(
@@ -1293,6 +1684,17 @@ class BattleEngine:
                     "unit": "seconds",
                 },
             )
+            # Şok yeteneği: sabotaj hedefe ayrıca hasar verir (yankıda değil).
+            shock = self._talent(module, "shock")
+            if shock is not None and not is_echo:
+                self._emit_talent(attacker_player_id, module, {"target_module_id": plan.target_module_id})
+                self.apply_damage(
+                    target_player_id,
+                    plan.target_module_id,
+                    int(shock["amount"]),
+                    source_player_id=attacker_player_id,
+                    source_module_id=module.instance_id,
+                )
 
             if effective_duration_ms != plan.duration_ms:
                 self._emit(
@@ -1444,6 +1846,10 @@ class BattleEngine:
                     self._finish_support_action(player, module)
 
                 elif module.definition.mechanic_id == "cooler":
+                    # Soğutucu çevrimi dolunca tek bir soğutma darbesi verir.
+                    if not self._cycle_ready(module):
+                        continue
+                    pulsed = False
                     for target, effect_id in cooler_reducible_debuff_targets(
                         player,
                         module,
@@ -1459,7 +1865,7 @@ class BattleEngine:
                         reduction_ms = max(
                             1,
                             round(
-                                COOLER_DEBUFF_REDUCTION_MS_PER_TICK
+                                COOLER_DEBUFF_REDUCTION_MS_PER_PULSE
                                 * module.definition.effect_multiplier
                                 * player.energy_support_multiplier
                             ),
@@ -1470,6 +1876,7 @@ class BattleEngine:
                             - reduction_ms,
                         )
                         cooled_target_ids.add(target.instance_id)
+                        pulsed = True
 
                         self._emit(
                             "sabotage_duration_reduced",
@@ -1512,7 +1919,7 @@ class BattleEngine:
                             continue
                         before = target.heat
                         cooling = (
-                            COOLER_HEAT_REDUCTION_PER_TICK
+                            COOLER_HEAT_REDUCTION_PER_PULSE
                             * module.definition.effect_multiplier
                             * player.energy_support_multiplier
                         )
@@ -1522,6 +1929,7 @@ class BattleEngine:
                         target.heat = max(0.0, target.heat - cooling)
                         if target.heat != before:
                             cooled_target_ids.add(target.instance_id)
+                            pulsed = True
                             self._emit(
                                 "module_cooled",
                                 {
@@ -1543,8 +1951,15 @@ class BattleEngine:
                                         "heat_after": target.heat,
                                     },
                                 )
+                    if pulsed:
+                        self._restart_cycle(module)
+                        self._emit_cycle_pulse(player.player_id, module, "cooler")
 
                 elif module.definition.id == "overclock_unit":
+                    # Aşırı Hızlandırıcı çevrimi dolunca en ağır saldırıya yük verir;
+                    # yük sıradaki atışta harcanır, ısı yüklemede eklenir.
+                    if not self._cycle_ready(module):
+                        continue
                     for target in overclock_targets(
                         player,
                         module,
@@ -1553,7 +1968,9 @@ class BattleEngine:
                         if target.instance_id in overclocked_target_ids:
                             continue
                         overclocked_target_ids.add(target.instance_id)
-                        add_module_heat(target, OVERCLOCK_HEAT_PER_TICK)
+                        target.mechanic_state[OVERCLOCK_CHARGE_KEY] = True
+                        self._restart_cycle(module)
+                        add_module_heat(target, OVERCLOCK_HEAT_PER_PULSE)
                         self._emit(
                             "module_overclocked",
                             {
@@ -1750,7 +2167,7 @@ class BattleEngine:
         debt_until = int(module.mechanic_state.get("chrono_debt_until_ms", 0))
         if now >= debt_until:
             boost_until = now + CHRONO_BOOST_MS
-            debt_until = boost_until + CHRONO_DEBT_MS
+            debt_until = boost_until + chrono_debt_ms(module)
             module.mechanic_state["chrono_boost_until_ms"] = boost_until
             module.mechanic_state["chrono_debt_until_ms"] = debt_until
             module.mechanic_state["chrono_debt_emitted"] = False
@@ -1813,7 +2230,10 @@ class BattleEngine:
             return
         target_player = self.state.players[target_player_id]
         room = max(0.0, core_reserve_capacity(target_player) - target_player.energy_stock)
-        converted = min(resolution.reduced_damage * PRISM_ENERGY_CONVERSION, room)
+        conversion = prism_conversion_ratio(
+            target.definition.effect_multiplier, heat_efficiency(target)
+        )
+        converted = min(resolution.reduced_damage * conversion, room)
         if converted <= 0:
             return
         target_player.energy_stock += converted
@@ -1889,10 +2309,11 @@ class BattleEngine:
             module.definition.id == "precision_matrix" and module_is_operational(module)
             for module in attacker_player.modules.values()
         ):
-            stacks = int(state.get("precision_focus_stacks", 0))
-            stacks = min(PRECISION_MAX_STACKS, stacks + 1) if state.get("precision_focus_target") == target.instance_id else 1
-            state["precision_focus_target"] = target.instance_id
-            state["precision_focus_stacks"] = stacks
+            # Odak kademesi atışla değil Matris'in darbesiyle birikir; hedef
+            # değişince (Yansıtıcı saldırıyı çekse de) sıfırlanır.
+            if state.get("precision_focus_target") != target.instance_id:
+                state["precision_focus_target"] = target.instance_id
+                state["precision_focus_stacks"] = 0
         else:
             state.pop("precision_focus_target", None)
             state.pop("precision_focus_stacks", None)
@@ -1946,14 +2367,12 @@ class BattleEngine:
                     else []
                 )
                 for burst_target in burst_targets:
-                    burst = resolve_attack(
+                    burst = self._resolve_hit(
                         attacker_player_id,
                         attacker,
                         target_player_id,
                         burst_target,
-                        support_damage_multiplier=damage_multiplier * SWARM_RELEASE_RATIO_PER_TARGET,
-                        defense_effectiveness=target_player.energy_support_multiplier,
-                        circuit_guard=circuit_guard_multiplier(target_player, burst_target),
+                        damage_multiplier=damage_multiplier * SWARM_RELEASE_RATIO_PER_TARGET,
                         elapsed_ms=self.state.elapsed_ms,
                     )
                     self._heat_defense_from_block(
@@ -2073,7 +2492,13 @@ class BattleEngine:
                 ):
                     continue
 
-                if not self._try_spend_action_energy(
+                # Yüklü Yansıtıcı ateşlenen saldırıyı üzerine çeker. Kilit doğal
+                # hedefe kurulur; çekim atış anında olur ki kilit baştan başlamasın.
+                natural_target = target
+                target = mirror_interceptor(target_player, natural_target) or natural_target
+
+                talent_context = self._talent_attack_context(attacker, target)
+                if not talent_context["free_shot"] and not self._try_spend_action_energy(
                     attacker_player, attacker, reason="attack"
                 ):
                     # Kilit enerji beklerken korunur; enerji gelince atış
@@ -2096,27 +2521,26 @@ class BattleEngine:
                         effective_elapsed_ms
                     )
                     * self._consume_quantum_charge(attacker)
+                    * talent_context["damage_multiplier"]
                 )
-                resolution = resolve_attack(
+                resolution = self._resolve_hit(
                     attacker_player_id,
                     attacker,
                     target_player_id,
                     target,
-                    support_damage_multiplier=damage_multiplier,
-                    defense_effectiveness=target_player.energy_support_multiplier,
-                    circuit_guard=circuit_guard_multiplier(target_player, target),
+                    damage_multiplier=damage_multiplier,
                     elapsed_ms=effective_elapsed_ms,
+                    armor_break=talent_context["armor_break"],
+                    pulled_from=natural_target if target is not natural_target else None,
                 )
                 # İkincil vuruşlar da savunma, Kubbe ve karşılık kurallarından geçer.
                 secondary_resolutions = tuple(
-                    resolve_attack(
+                    self._resolve_hit(
                         attacker_player_id,
                         attacker,
                         target_player_id,
                         extra,
-                        support_damage_multiplier=damage_multiplier * secondary_ratio,
-                        defense_effectiveness=target_player.energy_support_multiplier,
-                        circuit_guard=circuit_guard_multiplier(target_player, extra),
+                        damage_multiplier=damage_multiplier * secondary_ratio,
                         elapsed_ms=effective_elapsed_ms,
                     )
                     for secondary_ratio in (
@@ -2126,6 +2550,19 @@ class BattleEngine:
                     )
                     for extra in secondary_targets(target_player, target)
                 )
+                if talent_context["splash_ratio"] > 0:
+                    # Yayılım penceresi: atış hedefin yanındaki modüllere de vurur.
+                    secondary_resolutions += tuple(
+                        self._resolve_hit(
+                            attacker_player_id,
+                            attacker,
+                            target_player_id,
+                            extra,
+                            damage_multiplier=damage_multiplier * talent_context["splash_ratio"],
+                            elapsed_ms=effective_elapsed_ms,
+                        )
+                        for extra in adjacent_targets(target_player, target)
+                    )
                 effective_cooldown_ms = max(
                     TICK_MS,
                     int(
@@ -2150,6 +2587,7 @@ class BattleEngine:
                         effective_cooldown_ms,
                         secondary_resolutions,
                         damage_multiplier,
+                        talent_context,
                     )
                 )
 
@@ -2163,6 +2601,7 @@ class BattleEngine:
             effective_cooldown_ms,
             secondary_resolutions,
             damage_multiplier,
+            talent_context,
         ) in planned_attacks:
             self._emit(
                 "attack_performed",
@@ -2241,6 +2680,9 @@ class BattleEngine:
                 damage_multiplier,
             )
 
+            effective_cooldown_ms = self._talent_after_attack(
+                attacker_player_id, attacker, target, talent_context, effective_cooldown_ms
+            )
             self.start_cooldown(
                 attacker_player_id,
                 attacker.instance_id,
@@ -2277,9 +2719,227 @@ class BattleEngine:
                     },
                 )
 
+            # Atış destek yüklerinin hepsini harcar (en güçlü tek destek
+            # uygulandı); modül sıradaki darbeleri bekler.
+            for charge_key in SUPPORT_CHARGE_KEYS:
+                attacker.mechanic_state[charge_key] = False
+
             # Her atış ısıtır; %100'de modül susar (süresiz: ısısı %70'in
-            # altına inene kadar).
-            self._add_action_heat(attacker_player_id, attacker)
+            # altına inene kadar). Enerjisiz atış yeteneği ısıtmaz.
+            if not talent_context["free_shot"]:
+                self._add_action_heat(attacker_player_id, attacker)
+
+    def _process_amplifier_pulses(self) -> None:
+        """Güçlendirici çevrimi dolunca devredeki saldırı modüllerini yükler."""
+        for player_id in sorted(self.state.players):
+            player = self.state.players[player_id]
+            for amplifier in _operational_supports(player, "amplifier"):
+                if not amplifier.is_powered or not self.is_cooldown_ready(
+                    player_id, amplifier.instance_id, AMPLIFIER_PULSE_COOLDOWN_ID
+                ):
+                    continue
+                loaded = self._operational_attack_modules(player)
+                for module in loaded:
+                    module.mechanic_state[AMPLIFIER_CHARGE_KEY] = True
+                self.start_cooldown(
+                    player_id, amplifier.instance_id, AMPLIFIER_PULSE_COOLDOWN_ID,
+                    max(TICK_MS, amplifier.definition.cooldown_ms),
+                )
+                if loaded:
+                    self._emit("amplifier_pulse", {
+                        "player_id": player_id,
+                        "module_id": amplifier.instance_id,
+                        "charged_module_ids": sorted(module.instance_id for module in loaded),
+                    })
+                # Tek darbe bütün saldırıları yükler; ikinci Güçlendirici beklemez.
+                break
+
+    # --- Modül çevrimleri (module_cycles.py) -----------------------------------
+    @staticmethod
+    def _operational_attack_modules(player: PlayerBattleState) -> list[BattleModule]:
+        return [
+            module for module in player.modules.values()
+            if module.definition.category == "saldırı"
+            and module.definition.base_damage > 0
+            and module_is_operational(module)
+        ]
+
+    def _cycle_ready(self, module: BattleModule) -> bool:
+        return self.state.elapsed_ms >= int(module.mechanic_state.get(CYCLE_READY_KEY, 0))
+
+    def _restart_cycle(self, module: BattleModule) -> None:
+        duration = cycle_ms(module.definition)
+        if duration > 0:
+            module.mechanic_state[CYCLE_READY_KEY] = self.state.elapsed_ms + max(TICK_MS, duration)
+
+    def _emit_cycle_pulse(
+        self, player_id: str, module: BattleModule, kind: str, data: dict | None = None
+    ) -> None:
+        """Bir modülün çevriminde iş yaptığı an (istemci modülün üstünde gösterir)."""
+        self._emit(
+            "module_cycle_pulse",
+            {
+                "player_id": player_id,
+                "module_id": module.instance_id,
+                "definition_id": module.definition.id,
+                "kind": kind,
+                **(data or {}),
+            },
+        )
+
+    def _spend_defense_charge(
+        self, player_id: str, module: BattleModule, kind: str, data: dict | None = None
+    ) -> None:
+        """Savunma yükü harcandı; çevrim bu andan başlar."""
+        module.mechanic_state[DEFENSE_CHARGE_KEYS[module.definition.id]] = False
+        self._restart_cycle(module)
+        self._emit_cycle_pulse(player_id, module, kind, data)
+
+    def _spend_sabotage_guard(self, player_id: str, resistance: SabotageResistance) -> None:
+        if resistance.blocked or not resistance.guard_module_id:
+            return
+        guard = self._require_module(player_id, resistance.guard_module_id)
+        self._spend_defense_charge(player_id, guard, "sabotage_guard")
+
+    def _resolve_hit(
+        self,
+        attacker_player_id: str,
+        attacker: BattleModule,
+        target_player_id: str,
+        target: BattleModule,
+        *,
+        damage_multiplier: float,
+        elapsed_ms: int,
+        armor_break: float = 0.0,
+        pulled_from: BattleModule | None = None,
+    ) -> AttackResolution:
+        """Bir vuruşu çözer ve harcanan savunma yüklerinin çevrimini başlatır.
+
+        Yük çözüm anında harcanır: aynı adımda gelen ikinci saldırı yükü bulamaz.
+        """
+        target_player = self.state.players[target_player_id]
+        guard, dome = circuit_guard(target_player, target)
+        resolution = resolve_attack(
+            attacker_player_id,
+            attacker,
+            target_player_id,
+            target,
+            support_damage_multiplier=damage_multiplier,
+            defense_effectiveness=target_player.energy_support_multiplier,
+            circuit_guard=guard,
+            elapsed_ms=elapsed_ms,
+            armor_break=armor_break,
+        )
+        if resolution.raw_damage <= 0:
+            return resolution
+        if dome is not None:
+            self._spend_defense_charge(
+                target_player_id, dome, "dome_guard", {"target_module_id": target.instance_id}
+            )
+        if resolution.block_charge_used:
+            self._spend_defense_charge(
+                target_player_id, target, "block", {"blocked_damage": resolution.reduced_damage}
+            )
+        if resolution.mirror_charge_used:
+            self._spend_defense_charge(
+                target_player_id,
+                target,
+                "mirror",
+                {
+                    "attacker_module_id": attacker.instance_id,
+                    "reflected_damage": resolution.reflected_damage,
+                    "pulled_from_module_id": pulled_from.instance_id if pulled_from is not None else None,
+                },
+            )
+        return resolution
+
+    def _process_module_cycles(self) -> None:
+        """Çevrimi dolan modüller: savunma yükleri, plaka onarımı, destek darbeleri."""
+        for player_id in sorted(self.state.players):
+            player = self.state.players[player_id]
+            for module in sorted(player.modules.values(), key=lambda item: item.instance_id):
+                if not module_is_operational(module) or is_overheated(module):
+                    continue
+                definition_id = module.definition.id
+                charge_key = DEFENSE_CHARGE_KEYS.get(definition_id)
+                if charge_key is not None:
+                    if not charged(module, charge_key) and self._cycle_ready(module):
+                        module.mechanic_state[charge_key] = True
+                elif definition_id == "armor":
+                    self._process_armor_regen(player, module)
+            for definition_id, charge_key in SUPPORT_PULSE_CHARGES.items():
+                if definition_id == "amplifier":
+                    continue  # Güçlendirici kendi darbesini verir (_process_amplifier_pulses).
+                for support in _operational_supports(player, definition_id):
+                    if not support.is_powered or not self._cycle_ready(support):
+                        continue
+                    loaded = self._operational_attack_modules(player)
+                    for module in loaded:
+                        module.mechanic_state[charge_key] = True
+                    self._restart_cycle(support)
+                    if loaded:
+                        self._emit_cycle_pulse(player_id, support, definition_id, {
+                            "charged_module_ids": sorted(module.instance_id for module in loaded),
+                        })
+                    # Tek darbe bütün saldırıları yükler; aynı türden ikincisi beklemez.
+                    break
+            self._process_precision_pulse(player)
+
+    def _process_armor_regen(self, player: PlayerBattleState, module: BattleModule) -> None:
+        """Zırh çevriminde bir plakasını onarır; hasarsızken çevrim hazır bekler."""
+        if module.hp >= module.definition.max_hp or not self._cycle_ready(module):
+            return
+        amount = max(
+            1,
+            round(
+                armor_regen_amount(module.definition.effect_multiplier, heat_efficiency(module))
+                * player.energy_support_multiplier
+                * overtime_repair_multiplier_for_elapsed_ms(self.state.elapsed_ms + TICK_MS)
+            ),
+        )
+        before = module.hp
+        module.hp = min(module.definition.max_hp, module.hp + amount)
+        self._restart_cycle(module)
+        self._emit(
+            "module_repaired",
+            {
+                "player_id": player.player_id,
+                "source_module_id": module.instance_id,
+                "target_module_id": module.instance_id,
+                "module_id": module.instance_id,
+                "repair": module.hp - before,
+                "hp_before": before,
+                "hp_after": module.hp,
+                "mechanic": "armor_regen",
+            },
+        )
+
+    def _process_precision_pulse(self, player: PlayerBattleState) -> None:
+        """Hassas Matris çevriminde bir, hedefini koruyan saldırılara odak kademesi verir."""
+        matrices = [
+            module for module in _operational_supports(player, "precision_matrix")
+            if module.is_powered and self._cycle_ready(module)
+        ]
+        if not matrices:
+            return
+        opponent = next(
+            (other for other_id, other in self.state.players.items() if other_id != player.player_id),
+            None,
+        )
+        focused = []
+        for attack in self._operational_attack_modules(player):
+            state = attack.mechanic_state
+            focus_target = opponent.modules.get(state.get("precision_focus_target")) if opponent else None
+            stacks = int(state.get("precision_focus_stacks", 0))
+            if focus_target is None or focus_target.status != ModuleStatus.ACTIVE or stacks >= PRECISION_MAX_STACKS:
+                continue
+            state["precision_focus_stacks"] = stacks + 1
+            focused.append(attack.instance_id)
+        if focused:
+            self._restart_cycle(matrices[0])
+            self._emit_cycle_pulse(player.player_id, matrices[0], "precision", {
+                "charged_module_ids": sorted(focused),
+            })
 
     def _finish_battle(
         self,
@@ -2805,6 +3465,15 @@ class BattleEngine:
         player.core_power_ready_emitted = False
         signature_state["held_ms"] = 0
         player.core_power_uses += 1
+        # Çekirdek yetenekleri: güçten sonra dolum yankısı ve Akım kazancı.
+        echo = self._core_talent(player, "power_echo")
+        if echo:
+            player.core_power_charge = min(CORE_POWER_MAX_CHARGE, float(echo["amount"]))
+            self._emit_core_talent(player, "power_echo", {"charge": float(echo["amount"])})
+        bonus_current = self._core_talent(player, "power_current")
+        if bonus_current:
+            self._emit_core_talent(player, "power_current", {"current": int(bonus_current["amount"])})
+            self.award_circuit_credits(player_id, int(bonus_current["amount"]), "core_talent")
         player.consumed_core_power_request_ids.add(request_id)
         self._emit(
             "core_power_used",
@@ -2976,6 +3645,7 @@ class BattleEngine:
         if self.state.status == BattleStatus.FINISHED:
             return
         self._process_energy_flow()
+        self._process_talent_ticks()
         self._process_sabotage_actions()
         self._process_virus_effects()
         self._process_support_actions()
@@ -2983,6 +3653,8 @@ class BattleEngine:
         self._evaluate_battle_end()
         if self.state.status == BattleStatus.FINISHED:
             return
+        self._process_amplifier_pulses()
+        self._process_module_cycles()
         self._process_combat_actions()
         self._process_passive_heat()
         self._expire_timed_module_state()
@@ -2995,6 +3667,12 @@ class BattleEngine:
             / CORE_POWER_CHARGE_DURATION_MS
         )
         for player in self.state.players.values():
+            if not player.core_signature_state.get("talent_opening_applied"):
+                player.core_signature_state["talent_opening_applied"] = True
+                opening = self._core_talent(player, "opening_charge")
+                if opening:
+                    self._add_core_charge(player, float(opening["amount"]))
+                    self._emit_core_talent(player, "opening_charge", {"charge": float(opening["amount"])})
             if player.core_power_charge >= CORE_POWER_MAX_CHARGE:
                 # Dolu bekleme süresi Kesinti'nin Statik Birikimini ve AI kararını besler.
                 held_ms = int(player.core_signature_state.get("held_ms", 0)) + TICK_MS
@@ -3002,9 +3680,7 @@ class BattleEngine:
                 continue
             player.core_power_charge = min(
                 CORE_POWER_MAX_CHARGE,
-                player.core_power_charge
-                + charge_per_tick
-                * (1 + .03 * sum(s.endswith("_charge") for s in player.core_skills)),
+                player.core_power_charge + charge_per_tick,
             )
             if (
                 player.core_power_charge >= CORE_POWER_MAX_CHARGE

@@ -4,7 +4,7 @@
 // çubuktaki Kartlar düğmesinde yeşil ışık, seçilebilir yetenek varken bilgi
 // ekranındaki Yetenekler sekmesinde ok. Ok yalın ve hareketlidir (yeşil daire
 // içinde değil). Bilgi ekranında bir sonraki seviyenin farkı değerin yanında
-// yeşil yazar; CAN ile HASAR arasında modülün bekleme süresi durur. Sandık
+// yeşil yazar; CAN ile modülün asıl işi arasında kendi çevrimi durur. Sandık
 // indirimi günü alt çubuktaki Mağaza düğmesinde indirim oranı görünür.
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
@@ -242,19 +242,56 @@ assert.match(app, /function renderMetaHubScreens\(\) \{[\s\S]*?renderDockIndicat
 
 // "Sonraki seviye" kutusu bilgi ekranından kalktı; değerler baştaki satırda.
 assert.ok(!app.includes('"SONRAKİ SEVİYE"'));
-assert.ok(app.includes('{ label:"CAN", value:item.stats?.max_hp ?? definition.maxHp, current:item.stats?.max_hp, next:nextStats?.max_hp },'));
-assert.ok(app.includes('{ label:"HASAR", value:item.stats?.base_damage || 0, current:item.stats?.base_damage, next:nextStats?.base_damage },'));
-// Modül bilgi ekranında CAN ile HASAR arasında bekleme süresi durur; Akım maliyeti orada yazmaz.
+assert.ok(app.includes('{ label:"CAN", value:item.stats?.max_hp ?? definition.maxHp, current:item.stats?.max_hp, next:nextStats?.max_hp, icon:"hp", tone:"green" },'));
+// Modül bilgi ekranında üç kutu: CAN, modülün kendi çevrimi ve asıl işi (saldırıda
+// HASAR, diğerlerinde modüle özgü ilk değer). Akım maliyeti orada yazmaz.
 const moduleHeader = app.slice(app.indexOf('renderDetailStatRow(document.getElementById("module-detail-stats"), ['), app.indexOf('const upgrade = document.getElementById("module-detail-upgrade");'));
-assert.deepEqual([...moduleHeader.matchAll(/label:"([^"]+)"/g)].map((match) => match[1]), ["CAN", "BEKLEME", "HASAR"]);
+assert.ok(moduleHeader.includes('{ ...moduleCycleEntry(item.stats, nextStats), icon:"cycle", tone:"blue" },'));
+assert.match(moduleHeader, /headline,\r?\n\s*\]\);\s*$/);
 assert.ok(!moduleHeader.includes("current_cost"));
-assert.ok(moduleHeader.includes("current:cooldown,") && moduleHeader.includes("next:cooldownSeconds(nextStats),"));
-assert.ok(app.includes("Number(stats.cooldown_ms) / 1000"));
+const headline = app.slice(app.indexOf("    const headline = Number(item.stats?.base_damage) > 0"), app.indexOf('renderDetailStatRow(document.getElementById("module-detail-stats"), ['));
+assert.ok(headline.includes('{ label:"HASAR", value:Number(item.stats.base_damage).toLocaleString(uiLocale(), { maximumFractionDigits:1 }), current:item.stats.base_damage, next:nextStats?.base_damage, icon:"damage", tone:"red" }'));
+assert.ok(headline.includes(": specialEntries(item.stats, nextStats)[0]"));
 // Akım maliyeti İstatistik sekmesinde durmaya devam eder.
-assert.ok(app.includes('{ key:"current", glyph:"ϟ", label:"AKIM MALİYETİ", value:number(item.current_cost) },'));
+assert.ok(app.includes('{ key:"current", icon:"current", tone:"gold", label:"AKIM MALİYETİ", value:number(item.current_cost) },'));
 assert.equal(i18n.translateText("BEKLEME", "en"), "COOLDOWN");
-assert.ok(app.includes('{ label:"ENERJİ", value:`${core.energy_per_second}/sn`, current:core.energy_per_second, next:nextStats?.energy_per_second },'));
-assert.ok(app.includes('{ label:"DEPO", value:core.energy_capacity, current:core.energy_capacity, next:nextStats?.energy_capacity },'));
+assert.ok(app.includes('{ label:"ENERJİ", value:`${core.energy_per_second}/sn`, current:core.energy_per_second, next:nextStats?.energy_per_second, icon:"energy", tone:"cyan" },'));
+assert.ok(app.includes('{ label:"DEPO", value:core.energy_capacity, current:core.energy_capacity, next:nextStats?.energy_capacity, icon:"battery", tone:"blue" },'));
+
+// Çevrim kutusu: adı sunucudan gelir, çevrimi olmayan modül "SÜREKLİ" yazar.
+{
+  const cycleSandbox = {
+    document: { documentElement: { lang:"tr" } },
+    uiLocale: () => "tr-TR",
+    localizedUiText: (value) => value,
+  };
+  const helpers = app.slice(app.indexOf("  // Sunucudan iki dilde gelen metin;"), app.indexOf("  // İstatistik sekmesinin değer karoları."));
+  assert.ok(helpers.length > 0, "değer yardımcıları bulunamadı");
+  vm.runInNewContext(`const STAT_ICONS = { block:["shield", "blue"] };
+${helpers}
+Object.assign(this, { serverCopy, specialDisplayValue, moduleCycleEntry, specialEntries });`, cycleSandbox);
+  assert.deepEqual(
+    { ...cycleSandbox.moduleCycleEntry({ cooldown_ms:1200, cycle_label_tr:"BLOK ARALIĞI", cycle_label_en:"BLOCK INTERVAL" }, { cooldown_ms:1190 }) },
+    { label:"BLOK ARALIĞI", value:"1,2 sn", current:1.2, next:1.19 },
+  );
+  assert.equal(cycleSandbox.moduleCycleEntry({ cooldown_ms:0 }, null).value, "SÜREKLİ");
+  // Eski sunucu çevrim adını göndermez: "BEKLEME" yazılır.
+  assert.equal(cycleSandbox.moduleCycleEntry({ cooldown_ms:1000 }, null).label, "BEKLEME");
+  assert.equal(cycleSandbox.specialDisplayValue({ value:60, unit:"percent" }), "%60");
+  assert.equal(cycleSandbox.specialDisplayValue({ value:9, unit:"hp", times:2 }), "2×9");
+  assert.equal(cycleSandbox.specialDisplayValue({ value:2.5, unit:"seconds" }), "2,5 sn");
+  assert.equal(cycleSandbox.specialDisplayValue({ value:12.8, unit:"per_second" }), "12,8/sn");
+  const [block, unknown] = cycleSandbox.specialEntries(
+    { specials:[{ key:"block", label_tr:"BLOK", label_en:"BLOCK", value:60, unit:"percent" }, { key:"yeni", label_tr:"YENİ", value:1, unit:"hp" }] },
+    { specials:[{ key:"block", value:61.24, unit:"percent" }] },
+  );
+  assert.deepEqual({ ...block }, { key:"block", label:"BLOK", value:"%60", current:60, next:61.24, icon:"shield", tone:"blue" });
+  assert.equal(unknown.icon, "star");
+  cycleSandbox.document.documentElement.lang = "en";
+  assert.equal(cycleSandbox.moduleCycleEntry({ cooldown_ms:1200, cycle_label_tr:"BLOK ARALIĞI", cycle_label_en:"BLOCK INTERVAL" }, null).label, "BLOCK INTERVAL");
+  assert.equal(cycleSandbox.specialDisplayValue({ value:60, unit:"percent" }), "60%");
+  assert.equal(cycleSandbox.specialEntries({ specials:[{ key:"block", label_tr:"BLOK", label_en:"BLOCK", value:60, unit:"percent" }] }, null)[0].label, "BLOCK");
+}
 // Kilitli kartta fark yazmaz.
 assert.ok(app.includes("const nextStats = item.unlocked ? item.next_stats : null;"));
 assert.ok(app.includes("const nextStats = core.unlocked ? core.next_stats : null;"));

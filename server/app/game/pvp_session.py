@@ -6,6 +6,7 @@ from typing import Callable
 
 from .combat import (
     ATTACK_WINDUP_MS,
+    PHASE_ARMOR_CYCLE_MS,
     QUANTUM_REPEAT_HITS,
     SWARM_RELEASE_DRONES,
     phase_armor_active,
@@ -23,12 +24,15 @@ from .engine import INACTIVITY_FORFEIT_MS, BattleEngine
 from .heat import OVERHEAT_DEBUFF_ID, heat_penalty_percent
 from .ai_archetypes import normalize_ai_archetype_id
 from .models import BattleCommand, BattleState, BattleStatus, ModuleStatus
+from .module_cycles import cycle_ms
 from .pvp_setup import (
     PvPSetupPayload,
     PvPSetupValidationError,
     validate_setup_payload,
 )
 from .support import PRECISION_MAX_STACKS, chrono_phase, circuit_category_diversity
+from .talents import default_ai_talents
+from ..arena_canon import MODULES
 from .tutorial import ACK_COMMAND as TUTORIAL_ACK_COMMAND, deck_supports_tutorial
 
 
@@ -92,7 +96,7 @@ def module_signature_badges(player, module, elapsed_ms: int) -> list[dict]:
         if phase != "idle":
             badges.append({"kind": "chrono", "phase": phase})
     elif definition_id == "phase_armor":
-        if phase_armor_active(elapsed_ms):
+        if phase_armor_active(elapsed_ms, cycle_ms(module.definition, PHASE_ARMOR_CYCLE_MS)):
             badges.append({"kind": "phase"})
     elif definition_id == "omega_amplifier":
         categories = circuit_category_diversity(player)
@@ -486,6 +490,12 @@ class PvPSessionService:
                 module_id: matched_level
                 for module_id in ai_player.battle_pool.module_definition_ids
             }
+            # AI rakip, eşlendiği seviyede açılan yetenek eşiklerini de kullanır.
+            state.player_module_talents[ai_player_id] = {
+                module_id: default_ai_talents(module_id, MODULES[module_id]["rarity"], matched_level)
+                for module_id in ai_player.battle_pool.module_definition_ids
+                if module_id in MODULES
+            }
             ai_player.core_level = reference.core_level
 
     def submit_command(
@@ -765,7 +775,7 @@ class PvPSessionService:
                         "current": player.circuit_credits,
                         "discounted_deployments": player.discounted_deployments,
                         "current_cap": session.engine.circuit_credit_config.maximum_current,
-                        "current_regen_ms": session.engine.circuit_credit_config.current_regen_interval_ms - player.current_regen_remainder_ms,
+                        "current_regen_ms": session.engine._current_regen_interval_ms(player_id) - player.current_regen_remainder_ms,
                         "energy_load_ratio": player.energy_load_ratio,
                         "energy_stock": round(player.energy_stock, 1),
                         "total_circuit_credits_earned": player.total_circuit_credits_earned,

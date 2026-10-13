@@ -5,7 +5,7 @@ from app.game.engine import BattleEngine
 from app.game.models import BattleState, ModuleStatus, Position
 from app.game.support import (
     AMPLIFIER_DAMAGE_MULTIPLIER,
-    COOLER_HEAT_REDUCTION_PER_TICK,
+    COOLER_HEAT_REDUCTION_PER_PULSE,
     OVERCLOCK_COOLDOWN_MULTIPLIER,
     OVERCLOCK_DAMAGE_MULTIPLIER,
     TARGETING_COOLDOWN_MULTIPLIER,
@@ -88,7 +88,7 @@ def test_cooler_reduces_circuit_heat():
     rail.heat=10
     e._process_support_actions()
     assert cooler.is_powered is True
-    assert rail.heat==10-COOLER_HEAT_REDUCTION_PER_TICK
+    assert rail.heat==10-COOLER_HEAT_REDUCTION_PER_PULSE
 
 def test_amplifier_increases_damage():
     e=make_engine()
@@ -134,9 +134,9 @@ def test_amplifier_reaches_every_attack_and_shares_its_budget():
     e._process_energy_flow()
     player=e.state.players["p1"]
     mods=[attack_support_modifiers(player,laser,Position(2,2)) for laser in lasers]
-    # Yerleşim önemsizdir; dört saldırıda %30 pay dörde bölünür.
+    # Yerleşim önemsizdir; dört saldırıda %36 pay dörde bölünür.
     assert all(item.amplifier_active for item in mods)
-    assert all(item.damage_multiplier==pytest.approx(1 + 0.30 / 4 * amp.definition.effect_multiplier) for item in mods)
+    assert all(item.damage_multiplier==pytest.approx(1 + 0.36 / 4 * amp.definition.effect_multiplier) for item in mods)
 
 def test_support_processing_never_pauses():
     e=make_engine()

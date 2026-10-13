@@ -28,16 +28,20 @@ class MetaProgressionError(ValueError):
 
 
 from .arena_canon import (
-    ARENAS, MODULES, RANK_STAGES, rank_stage_for_rating, trophy_delta as trophy_delta,
+    ARENAS, ARENA_FLOOR_RATINGS, ARENA_MINIMUM_RATING_BY_INDEX, LEAGUE_FLOOR_RATING,
+    MODULES, RANK_STAGES, arena_index_for_rating, rank_stage_for_rating,
+    trophy_delta as trophy_delta,
     module_stats, unlocked_module_ids, unlocked_reward_module_ids,
     module_talent_options, unlock_stage_for_module,
 )
 from threading import RLock
+from .game.talents import core_skill_tree
 
 MODULE_RARITY = {key: item["rarity"] for key, item in MODULES.items()}
+MODULE_CATALOG_VIEW = {item["id"]: item for item in build_module_catalog_view()["modules"]}
 MODULE_EFFECT_LINES = {
-    item["id"]: tuple(item.get("effect_lines", ()))
-    for item in build_module_catalog_view()["modules"]
+    module_id: tuple(item.get("effect_lines", ()))
+    for module_id, item in MODULE_CATALOG_VIEW.items()
 }
 RARITY_UNLOCK_ARENA = {"common": 1, "rare": 1, "epic": 5, "legendary": 9}
 
@@ -166,11 +170,12 @@ CORE_ROLES = (
     "Tüm dost modüllere %20 CAN iyileştirmesi.",
     "İyileştirme ve kısa takım kalkanını birleştirir.",
 )
-CORE_TYPES = tuple({**core, "role_tr": CORE_ROLES[i], "skills": tuple(
-    {"id": f"{tier}_{choice}", "tier": str(tier), "level": level, "flux_cost": 25 * (tier + 1),
-     "name_tr": "Enerji üretimi +%3" if choice == "energy" else "Aktif güç dolumu +%3"}
-    for tier, level in enumerate((5, 9, 13)) for choice in ("energy", "charge")
-)} for i, core in enumerate(CORE_TYPES))
+# Çekirdek yetenekleri çekirdeğe özeldir (game/talents.py); kimlikler eskisi
+# gibi "<eşik>_energy" ve "<eşik>_charge" olduğu için kayıtlı seçimler geçerlidir.
+CORE_TYPES = tuple(
+    {**core, "role_tr": CORE_ROLES[i], "skills": core_skill_tree(core["id"])}
+    for i, core in enumerate(CORE_TYPES)
+)
 
 CHEST_DEFINITIONS: dict[str, dict] = {
     "field_3h": {
@@ -358,7 +363,16 @@ def parse_utc(value: str) -> datetime:
 
 
 def arena_floor_for_rating(rating: int) -> int:
-    return min(3600, (max(0, int(rating)) // 300) * 300)
+    """Kupanın düşemeyeceği taban: bulunulan arenanın başı; liglerde lig tabanı."""
+    rating = max(0, int(rating))
+    if rating >= LEAGUE_FLOOR_RATING:
+        return LEAGUE_FLOOR_RATING
+    return ARENA_FLOOR_RATINGS[arena_index_for_rating(rating) - 1]
+
+
+def core_unlock_rating(core_type: dict) -> int:
+    """Çekirdeğin açıldığı arenanın giriş kupası."""
+    return ARENA_MINIMUM_RATING_BY_INDEX[int(core_type["unlock_arena"])]
 
 
 def module_upgrade_cost(module_definition_id: str, current_level: int) -> dict:
@@ -478,7 +492,7 @@ def unlocked_core_type_ids(profile) -> tuple[str, ...]:
     return tuple(
         core["id"]
         for core in CORE_TYPES
-        if peak >= (int(core["unlock_arena"]) - 1) * 300
+        if peak >= core_unlock_rating(core)
     )
 
 
@@ -540,6 +554,8 @@ class MetaProgressionService:
             rewards = dict(node["rewards"])
             profile.circuit_credits += rewards.get("circuit_credits", 0)
             profile.flux_shards += rewards.get("flux_shards", 0)
+            # Lig sandıkları ve GRIDSHARD Sandığı evrensel parça verir.
+            profile.universal_module_shards += max(0, int(rewards.get("universal_module_shards", 0)))
             core_count = int(rewards.get("core_shards", 0))
             # Keep a stable identity in receipts for older clients; the count
             # is zero on every road node, so no fragments are awarded here.
@@ -624,7 +640,7 @@ class MetaProgressionService:
                 "unlocked_modules": len(unlocked_module_ids(profile.highest_rating, profile.legacy_module_unlocks)),
                 "upgraded_modules": sum(v > 0 for v in profile.module_upgrade_levels.values()),
                 "highest_module_level": 1 + max(profile.module_upgrade_levels.values(), default=0),
-                "unlocked_cores": sum(profile.highest_rating >= (c["unlock_arena"] - 1) * 300 for c in CORE_TYPES),
+                "unlocked_cores": sum(profile.highest_rating >= core_unlock_rating(c) for c in CORE_TYPES),
                 "opened_chests": len(profile.chest_receipts) + len(profile.shop_receipts),
                 "most_used_decks": [{"module_ids": key.split("|"), "matches": count} for key, count in sorted(profile.lifetime_stats.get("decks", {}).items(), key=lambda p: -p[1])[:3]],
             },
@@ -850,6 +866,10 @@ class MetaProgressionService:
             "description_tr": definition.description_tr,
             "strategic_role": definition.strategic_role,
             "effect_lines": list(MODULE_EFFECT_LINES.get(module_id, ())),
+            # İngilizce arayüz bu alanları kullanır; yoksa istemci sözlükten çevirir.
+            "description_en": MODULE_CATALOG_VIEW.get(module_id, {}).get("description_en", ""),
+            "strategic_role_en": MODULE_CATALOG_VIEW.get(module_id, {}).get("strategic_role_en", ""),
+            "effect_lines_en": list(MODULE_CATALOG_VIEW.get(module_id, {}).get("effect_lines_en", ())),
             "strong_against": list(definition.strong_against),
             "weak_against": list(definition.weak_against),
             "synergy_with": list(definition.synergy_with),
@@ -877,19 +897,14 @@ class MetaProgressionService:
         }
 
     def _core_view(self, profile, core_type: dict, current_rank: dict) -> dict:
-        unlocked = max(profile.highest_rating, profile.rating) >= (core_type["unlock_arena"] - 1) * 300
+        unlocked = max(profile.highest_rating, profile.rating) >= core_unlock_rating(core_type)
         counter = max(0, min(14, profile.core_upgrade_levels.get(core_type["id"], 0)))
         signature = core_signature(core_type["id"])
-        energy_skill_multiplier = 1 + .03 * sum(
-            s.endswith("_energy") for s in profile.core_skills.get(core_type["id"], ())
-        )
-
         def energy_stats(level_counter: int) -> dict:
             return {
                 "energy_per_second": round(
                     BASE_CORE_GENERATION_PER_SECOND
-                    * CORE_LEVEL_GENERATION_MULTIPLIER ** level_counter
-                    * energy_skill_multiplier,
+                    * CORE_LEVEL_GENERATION_MULTIPLIER ** level_counter,
                     2,
                 ),
                 "energy_capacity": round(
@@ -1528,8 +1543,8 @@ def archive_and_soft_reset_season(profile, next_season_id: str, archived_at: str
     }
     profile.season_archives.append(archive)
     # Arena progress is permanent. League players return to League 1.
-    if profile.rating >= 3600:
-        profile.rating = 3600
+    if profile.rating >= LEAGUE_FLOOR_RATING:
+        profile.rating = LEAGUE_FLOOR_RATING
     profile.season_xp = 0
     profile.claimed_season_tiers = ()
     profile.claimed_premium_season_tiers = ()

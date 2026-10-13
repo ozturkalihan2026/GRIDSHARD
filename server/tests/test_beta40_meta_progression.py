@@ -21,9 +21,14 @@ def test_rank_model_contains_all_planned_stages_and_arena_floor():
     assert len([item for item in RANK_STAGES if item["kind"] == "champions_league"]) == 5
     assert len([item for item in RANK_STAGES if item["kind"] == "legendary_league"]) == 5
     assert len([item for item in RANK_STAGES if item["kind"] == "gridshard_league"]) == 1
-    assert rank_stage_for_rating(5600)["id"] == "league_nexus_1"
+    assert rank_stage_for_rating(7000)["id"] == "league_nexus_1"
     assert rank_stage_for_rating(8600)["id"] == "gridshard"
-    assert arena_floor_for_rating(3700) == 3600
+    # Kupa bulunulan arenanın başının altına düşmez; liglerde taban lig girişidir.
+    assert arena_floor_for_rating(5500) == 5400
+    assert arena_floor_for_rating(8600) == 5400
+    assert [arena_floor_for_rating(rating) for rating in (0, 299, 300, 949, 950, 1299, 5399)] == [
+        0, 0, 300, 600, 950, 950, 4800,
+    ]
 
 
 def test_trophy_delta_uses_opponent_strength_and_respects_direction():
@@ -142,7 +147,7 @@ def test_core_tree_is_normalized_and_season_result_is_archived_before_soft_reset
         archived_at="2026-10-01T00:00:00Z",
     )
     assert archive["final_rating"] == 5600
-    assert profile.rating == 3600
+    assert profile.rating == 5400
     assert profile.active_meta_season_id == "core_awakening_s1"
     assert len(profile.season_archives) == 1
 

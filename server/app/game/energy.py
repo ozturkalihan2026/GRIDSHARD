@@ -9,6 +9,7 @@ from .heat import (
 )
 from .models import BattleModule, ModuleDefinition, ModuleStatus, PlayerBattleState, Position
 from .operations import has_disabling_sabotage, module_is_operational
+from .talents import core_generation_multiplier
 
 EMP_DEBUFF_ID = "emp_disabled"
 
@@ -104,12 +105,23 @@ def _storage_capacity(module: BattleModule) -> float:
     return 0.0
 
 
+def storage_charge_rate_per_second(module: BattleModule) -> float:
+    """Deponun saniyelik dolum hızı.
+
+    Deponun çevrimi boşken tam dolma süresidir (seviye 1: Batarya 4 sn,
+    Kapasitör 1 sn); seviye depoyu büyütür ve çevrimi kısaltır, dolum hızlanır.
+    """
+    definition_id = module.definition.id
+    if definition_id not in {"battery", "capacitor"}:
+        return 0.0
+    cycle_ms = int(module.definition.cooldown_ms or 0)
+    if cycle_ms <= 0:
+        return BATTERY_CHARGE_RATE_PER_SECOND if definition_id == "battery" else CAPACITOR_CHARGE_RATE_PER_SECOND
+    return _storage_capacity(module) * 1000.0 / cycle_ms
+
+
 def _charge_rate_per_tick(module: BattleModule) -> float:
-    if module.definition.id == "battery":
-        return BATTERY_CHARGE_RATE_PER_SECOND * TICK_SECONDS
-    if module.definition.id == "capacitor":
-        return CAPACITOR_CHARGE_RATE_PER_SECOND * TICK_SECONDS
-    return 0.0
+    return storage_charge_rate_per_second(module) * TICK_SECONDS
 
 
 def _discharge_rate_per_tick(module: BattleModule) -> float:
@@ -317,7 +329,11 @@ def process_energy_tick(player: PlayerBattleState, core_position: Position | Non
         if core
         else 0.0
     )
-    core_generation *= 1 + .03 * sum(s.endswith("_energy") for s in player.core_skills)
+    if core:
+        # Çekirdek yeteneği (talents.py): CAN yüksekken enerji üretimi artar.
+        core_generation *= core_generation_multiplier(
+            player.core_type, player.core_skills, core.hp / max(1, core.definition.max_hp)
+        )
     battery_generation_by_module = {
         module.instance_id: (
             (module.definition.energy_generation or BATTERY_SUPPLY_PER_SECOND)

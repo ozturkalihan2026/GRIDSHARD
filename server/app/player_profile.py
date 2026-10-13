@@ -9,7 +9,14 @@ from .display_names import (
     default_operator_name, is_automatic_player_id,
 )
 
-from .arena_canon import GRIDSHARD_CHEST_REWARDS, MODULES, unlocked_reward_module_ids
+from .arena_canon import (
+    ARENA_MINIMUM_RATING_BY_INDEX,
+    GRIDSHARD_CHEST_REWARDS,
+    GRIDSHARD_SUMMIT_RATING,
+    LEAGUE_ENTRY_RATING,
+    MODULES,
+    unlocked_reward_module_ids,
+)
 from .text_safety import public_name_rejection
 from .competition_cycle import CYCLE_EPOCH, CYCLE_LENGTH, competition_cycle, cycle_for_id
 from .season_competition import LEADERBOARD_PRIZES, TEAM_PRIZES, WEEKLY_PRIZES
@@ -127,20 +134,22 @@ DAILY_MISSIONS = (
     },
 )
 
-# 12 Ekim 2026: kupa koşulları ilk beş unvanda aynı; galibiyet koşulları, yüzde
-# 65 kazanan oyuncunun o kupaya vardığındaki galibiyet sayısına göre yükseltildi.
-# Son unvan yalnız GRIDSHARD Ligi'ne (8600 kupa) çıkan oyuncunundur.
+# 12 Ekim 2026: galibiyet koşulları, yüzde 65 kazanan oyuncunun o aşamaya
+# vardığındaki galibiyet sayısına göre yükseltildi. Kupa koşulu bir aşamanın
+# başlangıcıdır (Arena 2, 4, 7, 11; Kıvılcım, Nexus, Şampiyonlar, Efsanevi ve
+# GRIDSHARD ligleri) ve kupa ölçeği değişince aşamayla birlikte taşınır.
+# Son unvan GRIDSHARD Ligi'nin zirvesine (10000 kupa) çıkan oyuncunundur.
 OPERATOR_TITLE_STAGES = (
     {"id": "devre_ciragi", "title_tr": "Devre Çırağı", "required_trophies": 0, "required_wins": 0, "reward_circuit_credits": 0},
-    {"id": "devre_teknisyeni", "title_tr": "Devre Teknisyeni", "required_trophies": 300, "required_wins": 20, "reward_circuit_credits": 150},
-    {"id": "iletken_ustasi", "title_tr": "İletken Ustası", "required_trophies": 900, "required_wins": 60, "reward_circuit_credits": 300},
-    {"id": "cekirdek_muhafizi", "title_tr": "Çekirdek Muhafızı", "required_trophies": 1800, "required_wins": 130, "reward_circuit_credits": 500},
-    {"id": "arena_mimari", "title_tr": "Arena Mimarı", "required_trophies": 3000, "required_wins": 220, "reward_circuit_credits": 800},
-    {"id": "lig_oncusu", "title_tr": "Lig Öncüsü", "required_trophies": 3600, "required_wins": 280, "reward_circuit_credits": 1000},
-    {"id": "nexus_stratejisti", "title_tr": "Nexus Stratejisti", "required_trophies": 5600, "required_wins": 450, "reward_circuit_credits": 1500},
-    {"id": "sampiyon_operator", "title_tr": "Şampiyon Operatör", "required_trophies": 6100, "required_wins": 550, "reward_circuit_credits": 2000},
-    {"id": "efsane_muhendisi", "title_tr": "Efsane Mühendisi", "required_trophies": 7100, "required_wins": 750, "reward_circuit_credits": 3000},
-    {"id": "gridshard_efsanesi", "title_tr": "GRIDSHARD Efsanesi", "required_trophies": 8600, "required_wins": 1000, "reward_circuit_credits": 5000},
+    {"id": "devre_teknisyeni", "title_tr": "Devre Teknisyeni", "required_trophies": ARENA_MINIMUM_RATING_BY_INDEX[2], "required_wins": 20, "reward_circuit_credits": 150},
+    {"id": "iletken_ustasi", "title_tr": "İletken Ustası", "required_trophies": ARENA_MINIMUM_RATING_BY_INDEX[4], "required_wins": 60, "reward_circuit_credits": 300},
+    {"id": "cekirdek_muhafizi", "title_tr": "Çekirdek Muhafızı", "required_trophies": ARENA_MINIMUM_RATING_BY_INDEX[7], "required_wins": 130, "reward_circuit_credits": 500},
+    {"id": "arena_mimari", "title_tr": "Arena Mimarı", "required_trophies": ARENA_MINIMUM_RATING_BY_INDEX[11], "required_wins": 220, "reward_circuit_credits": 800},
+    {"id": "lig_oncusu", "title_tr": "Lig Öncüsü", "required_trophies": LEAGUE_ENTRY_RATING["spark"], "required_wins": 280, "reward_circuit_credits": 1000},
+    {"id": "nexus_stratejisti", "title_tr": "Nexus Stratejisti", "required_trophies": LEAGUE_ENTRY_RATING["nexus"], "required_wins": 450, "reward_circuit_credits": 1500},
+    {"id": "sampiyon_operator", "title_tr": "Şampiyon Operatör", "required_trophies": LEAGUE_ENTRY_RATING["champions"], "required_wins": 550, "reward_circuit_credits": 2000},
+    {"id": "efsane_muhendisi", "title_tr": "Efsane Mühendisi", "required_trophies": LEAGUE_ENTRY_RATING["legendary"], "required_wins": 750, "reward_circuit_credits": 3000},
+    {"id": "gridshard_efsanesi", "title_tr": "GRIDSHARD Efsanesi", "required_trophies": GRIDSHARD_SUMMIT_RATING, "required_wins": 1000, "reward_circuit_credits": 5000},
 )
 FINAL_OPERATOR_TITLE_ID = OPERATOR_TITLE_STAGES[-1]["id"]
 

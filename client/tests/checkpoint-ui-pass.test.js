@@ -59,7 +59,8 @@ assert.ok(app.includes("function showBulkChestReveal"));
 assert.match(css, /\[data-open-screen\]\.has-persistent-notification::after/);
 assert.match(css, /\.bulk-chest-reward/);
 assert.ok(app.includes("function createModuleEffectList"));
-assert.ok(app.includes("createModuleEffectList(item.effect_lines)"));
+// İngilizce arayüzde sunucunun İngilizce satırları, yoksa Türkçe satırlar yazılır.
+assert.match(app, /host\.appendChild\(createModuleEffectList\(\s*document\.documentElement\.lang === "en" && item\.effect_lines_en\?\.length \? item\.effect_lines_en : item\.effect_lines\s*\)\);/);
 assert.match(css, /\.module-effect-panel/);
 assert.ok(html.includes('id="team-onboarding"'));
 assert.ok(html.includes('data-team-tab="profile" class="is-active"'));

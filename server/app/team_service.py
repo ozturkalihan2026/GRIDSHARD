@@ -16,6 +16,7 @@ import shutil
 from threading import RLock
 from uuid import uuid4
 
+from .arena_canon import TROPHY_SCALE_VERSION, rating_on_current_scale
 from .safe_chat import (
     FREE_DESCRIPTION_CLOSED_MESSAGE,
     SafeChatError,
@@ -638,10 +639,17 @@ class TeamService:
     def tournament_state(self, period_id: str) -> dict:
         payload = self.repository.load()
         period = dict((payload.get("tournaments") or {}).get(str(period_id)) or {})
-        return json.loads(json.dumps({
+        state = json.loads(json.dumps({
             "registrations": dict(period.get("registrations") or {}),
             "legs": dict(period.get("legs") or {}),
         }))
+        # Kadro kupası kayıt anında sabitlenir. Ölçek sürümü olmayan kayıt 12 Ekim
+        # 2026 öncesinin kupa ölçeğindedir; eşleşme hesabı güncel ölçekle yapılır.
+        for record in state["registrations"].values():
+            scale = record.get("trophy_scale_version", 1)
+            for member in record.get("roster") or []:
+                member["rating"] = rating_on_current_scale(member.get("rating", 0) or 0, scale)
+        return state
 
     def register_tournament(
         self,
@@ -664,6 +672,7 @@ class TeamService:
                 "registered_at": previous.get("registered_at") or self._timestamp(),
                 "updated_at": self._timestamp(),
                 "registered_by": str(registered_by),
+                "trophy_scale_version": TROPHY_SCALE_VERSION,
                 "roster": [
                     {
                         "player_id": str(member.get("player_id")),

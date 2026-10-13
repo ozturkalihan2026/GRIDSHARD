@@ -11,21 +11,35 @@ ARENA_MINIMUM_RATING_BY_INDEX = {
     for arena in CANON["arenas"]
 }
 
-# Lig aşaması (12 Ekim 2026): beş kademeli yedi lig ve tek kademeli GRIDSHARD
-# Ligi. Sıra: anahtar, ad, İngilizce ad, kademe sayısı, kademe genişliği (kupa).
-LEAGUE_FLOOR_RATING = 3600
+# Kupa ölçeği (12 Ekim 2026, kullanıcı kararı): arenalar ileride genişler
+# (300 … 600 kupa) ve 5400 kupada biter; ligler oradan başlar ve GRIDSHARD
+# Ligi 8600'dedir. Sezon değişiminde lig oyuncusu lig tabanına döner; en üst
+# lig için bir sezonda 3200 kupa gerekir.
+ARENA_COUNT = len(CANON["arenas"])
+ARENA_FLOOR_RATINGS = tuple(int(arena["minimum_rating"]) for arena in CANON["arenas"])
+LEAGUE_FLOOR_RATING = int(CANON["arenas"][-1]["maximum_rating"]) + 1
+# Lig aşaması: beş kademeli yedi lig ve tek kademeli GRIDSHARD Ligi.
+# Sıra: anahtar, ad, İngilizce ad, kademe sayısı, kademe genişliği (kupa).
 LEAGUE_GROUPS = (
-    ("spark", "Kıvılcım Ligi", "Spark League", 5, 100),
-    ("volt", "Voltaj Ligi", "Voltage League", 5, 100),
-    ("reactor", "Reaktör Ligi", "Reactor League", 5, 100),
-    ("quantum", "Kuantum Ligi", "Quantum League", 5, 100),
-    ("nexus", "Nexus Ligi", "Nexus League", 5, 100),
-    ("champions", "Şampiyonlar Ligi", "Champions League", 5, 200),
-    ("legendary", "Efsanevi Lig", "Legendary League", 5, 300),
+    ("spark", "Kıvılcım Ligi", "Spark League", 5, 80),
+    ("volt", "Voltaj Ligi", "Voltage League", 5, 80),
+    ("reactor", "Reaktör Ligi", "Reactor League", 5, 80),
+    ("quantum", "Kuantum Ligi", "Quantum League", 5, 80),
+    ("nexus", "Nexus Ligi", "Nexus League", 5, 80),
+    ("champions", "Şampiyonlar Ligi", "Champions League", 5, 100),
+    ("legendary", "Efsanevi Lig", "Legendary League", 5, 140),
     ("gridshard", "GRIDSHARD Ligi", "GRIDSHARD League", 1, 0),
 )
 LEAGUE_TIER_NUMERALS = ("I", "II", "III", "IV", "V")
-ARENA_COUNT = len(CANON["arenas"])
+# Eşleştirme kuşağı liglerde 200 kupadır; on kuşaktan sonrası tek kuşaktır.
+MATCHMAKING_LEAGUE_BAND_WIDTH = 200
+MATCHMAKING_LEAGUE_BAND_LIMIT = 10
+
+
+def arena_index_for_rating(rating: int) -> int:
+    """Kupanın düştüğü arena (1-12); lig oyuncusu için 12."""
+    rating = max(0, int(rating))
+    return max(index for index, floor in enumerate(ARENA_FLOOR_RATINGS, start=1) if rating >= floor)
 
 
 def _league_stage_outline() -> tuple[dict, ...]:
@@ -83,8 +97,52 @@ MODULES = {
     }
     for item in CANON["modules"]
 }
-# 12 Ekim 2026 öncesinin açılış eşikleri (değişmez kayıt). O güne kadar açılmış
-# modül, yeni dağıtımda ileri bir arenaya ya da lige taşınsa da hesapta açık kalır.
+# 12 Ekim 2026 öncesinin kupa ölçeği (değişmez kayıt): 12 arena 300'er kupa;
+# 3600'den sonra 200'er kupalık beş lig, Şampiyonlar I-V ve 5600'den itibaren
+# Efsanevi Lig. O günün kayıtları bu ölçektedir; ilk yüklemede yeni ölçeğe
+# taşınır ve kayda ölçek sürümü yazılır (bkz. player_data_store).
+TROPHY_SCALE_VERSION = 2
+LEGACY_ARENA_WIDTH = 300
+LEGACY_LEAGUE_WIDTH = 200
+LEGACY_LEAGUE_FLOOR_RATING = LEGACY_ARENA_WIDTH * ARENA_COUNT
+
+
+def rating_from_legacy_scale(rating: int) -> int:
+    """Eski ölçekteki kupayı yeni ölçeğe taşır.
+
+    Oyuncu aynı aşamada ve aşamanın aynı oranında kalır; sıralama değişmez.
+    Arenalarda yukarı yuvarlanır: ulaşılmış bir ödül durağı taşıma sonrasında
+    geride kalmaz.
+    """
+    rating = max(0, int(rating))
+    if rating < LEGACY_LEAGUE_FLOOR_RATING:
+        index, offset = divmod(rating, LEGACY_ARENA_WIDTH)
+        arena = CANON["arenas"][index]
+        width = int(arena["maximum_rating"]) - int(arena["minimum_rating"]) + 1
+        return int(arena["minimum_rating"]) + -(-offset * width // LEGACY_ARENA_WIDTH)
+    offset = rating - LEGACY_LEAGUE_FLOOR_RATING
+    plain_span = 5 * LEGACY_LEAGUE_WIDTH
+    if offset < plain_span:  # Kıvılcım … Nexus: lig başına 200 kupa
+        league, inside = divmod(offset, LEGACY_LEAGUE_WIDTH)
+        key, _name_tr, _name_en, tiers, width = LEAGUE_GROUPS[league]
+        return LEAGUE_ENTRY_RATING[key] + inside * tiers * width // LEGACY_LEAGUE_WIDTH
+    if offset < 2 * plain_span:  # Şampiyonlar I-V: kademe başına 200 kupa
+        _key, _name_tr, _name_en, tiers, width = LEAGUE_GROUPS[5]
+        return LEAGUE_ENTRY_RATING["champions"] + (offset - plain_span) * tiers * width // plain_span
+    # Efsanevi Lig'in üst sınırı yoktu; fark aynen taşınır.
+    return LEAGUE_ENTRY_RATING["legendary"] + (offset - 2 * plain_span)
+
+
+def rating_on_current_scale(rating: int, scale_version) -> int:
+    """Kayıttaki kupayı güncel ölçekte verir; ölçek sürümü olmayan kayıt eskidir."""
+    if int(scale_version or 1) >= TROPHY_SCALE_VERSION:
+        return max(0, int(rating))
+    return rating_from_legacy_scale(rating)
+
+
+# 12 Ekim 2026 öncesinin açılış eşikleri (eski ölçekte; değişmez kayıt). O güne
+# kadar açılmış modül, yeni dağıtımda ileri bir arenaya ya da lige taşınsa da
+# hesapta açık kalır.
 LEGACY_MODULE_UNLOCK_TROPHIES = {
     "laser": 0, "shield": 0, "repair": 0, "cooler": 0, "battery": 0, "amplifier": 0,
     "pulse_cannon": 0, "armor": 0, "emp": 0,
@@ -108,13 +166,19 @@ LEGACY_MODULE_UNLOCK_TROPHIES = {
 LEGACY_STARTER_DECK_IDS = ("laser", "shield", "repair", "cooler", "battery", "amplifier")
 
 
-def legacy_module_unlocks(peak_rating: int) -> tuple[str, ...]:
-    """Eski eşiklerle açık olup yeni eşikle kilitlenecek modüller."""
-    peak = max(0, int(peak_rating))
+def legacy_module_unlocks(legacy_peak_rating: int) -> tuple[str, ...]:
+    """Eski eşiklerle açık olup yeni eşikle kilitlenecek modüller.
+
+    Kupa eski ölçekte verilir; yeni eşikle karşılaştırma, aynı kupanın yeni
+    ölçeğe taşınmış değeriyle yapılır.
+    """
+    legacy_peak = max(0, int(legacy_peak_rating))
+    peak = rating_from_legacy_scale(legacy_peak)
     return tuple(
         module_id
         for module_id, item in MODULES.items()
-        if peak >= LEGACY_MODULE_UNLOCK_TROPHIES.get(module_id, item["unlock_trophies"])
+        if module_id in LEGACY_MODULE_UNLOCK_TROPHIES
+        and legacy_peak >= LEGACY_MODULE_UNLOCK_TROPHIES[module_id]
         and peak < item["unlock_trophies"]
     )
 
@@ -165,49 +229,50 @@ from .season_competition import build_ai_population
 _BASE_BOTS = json.loads(
     (DATA_DIR / "arena_bot_profiles_v1.json").read_text(encoding="utf-8")
 )["bots"]
-BOTS = build_ai_population(_BASE_BOTS)
+BOTS = build_ai_population(
+    _BASE_BOTS,
+    {int(arena["index"]): (int(arena["minimum_rating"]), int(arena["maximum_rating"])) for arena in ARENAS},
+)
 STARTER_IDS = tuple(item["id"] for item in CANON["modules"] if int(item["unlock_arena"]) == 1)
-TALENT_LEVELS = {"common": (5, 8, 11, 14), "rare": (6, 9, 12, 15),
-                 "epic": (7, 10, 13, 15), "legendary": (8, 11, 14, 15)}
+from .game.talents import TALENT_LEVELS, module_talent_tree, stat_modifiers
+
 
 def module_talent_options(module_id: str) -> tuple[dict, ...]:
-    category = MODULES[module_id]["category"]
-    first = {"saldırı": "Hasar +%3", "savunma": "Savunma etkisi +%3", "destek": "Destek etkisi +%3",
-             "sabotaj": "Kontrol etkisi +%3", "sistem": "Sistem etkisi +%3"}[category]
-    power_description = {
-        "saldırı": "Bu modülün verdiği hasarı kalıcı olarak %3 artırır.",
-        "savunma": "Bu modülün savunma etkisini kalıcı olarak %3 artırır.",
-        "destek": "Bu modülün destek etkisini kalıcı olarak %3 artırır.",
-        "sabotaj": "Bu modülün kontrol etkisini kalıcı olarak %3 artırır.",
-        "sistem": "Bu modülün sistem etkisini kalıcı olarak %3 artırır.",
-    }[category]
-    return tuple({"tier": str(i), "level": level, "flux_cost": 15 * (i + 1),
-                  "choices": [
-                      {"id": "power", "name_tr": first, "description_tr": power_description},
-                      {"id": "resilience", "name_tr": "CAN +%5", "description_tr": "Bu modülün azami CAN değerini kalıcı olarak %5 artırır."},
-                  ]}
-                 for i, level in enumerate(TALENT_LEVELS[MODULES[module_id]["rarity"]]))
+    """Modülün dört yetenek eşiği: temel uzmanlık, imza yeteneği, ince ayar, ustalık."""
+    # Katalog bu dosyayı içe aktarır; bekleme bilgisi çağrı anında okunur.
+    from .game.catalog import BASIC_MODULE_DEFINITIONS
+
+    return module_talent_tree(
+        module_id,
+        MODULES[module_id]["category"],
+        MODULES[module_id]["rarity"],
+        BASIC_MODULE_DEFINITIONS[module_id].cooldown_ms > 0,
+    )
 LEAGUE_NAMES = tuple(stage["name_tr"] for stage in _LEAGUE_OUTLINE)
 # Lig sandıkları (12 Ekim 2026, kullanıcı kararı): lig sonundaki sandık mağazada
-# ya da başka bir yerde bulunmaz. Adı, içeriği ve görünümü lige özeldir; içinden
-# şansa bağlı olmadan o ligde açılan efsanevi modülün parçaları çıkar.
-# Sıra: ad, İngilizce ad, Devre Kredisi, Akı, ligin modülünden parça.
+# ya da başka bir yerde bulunmaz. Adı, içeriği ve görünümü lige özeldir; içeriği
+# şansa bağlı değildir ve belirli bir modüle değil, her modülde harcanabilen
+# evrensel parçaya dayanır.
+# Sıra: ad, İngilizce ad, Devre Kredisi, Akı, evrensel modül parçası.
 LEAGUE_CHESTS = {
-    "spark": ("Kıvılcım Sandığı", "Spark Chest", 1500, 60, 6),
+    "spark": ("Kıvılcım Sandığı", "Spark Chest", 1500, 60, 5),
     "volt": ("Voltaj Sandığı", "Voltage Chest", 2500, 90, 7),
-    "reactor": ("Reaktör Sandığı", "Reactor Chest", 4000, 130, 8),
-    "quantum": ("Kuantum Sandığı", "Quantum Chest", 6000, 180, 9),
-    "nexus": ("Nexus Sandığı", "Nexus Chest", 9000, 250, 10),
-    "champions": ("Şampiyonlar Sandığı", "Champions Chest", 14000, 350, 12),
-    "legendary": ("Efsane Sandığı", "Legend Chest", 20000, 500, 15),
+    "reactor": ("Reaktör Sandığı", "Reactor Chest", 4000, 130, 9),
+    "quantum": ("Kuantum Sandığı", "Quantum Chest", 6000, 180, 12),
+    "nexus": ("Nexus Sandığı", "Nexus Chest", 9000, 250, 15),
+    "champions": ("Şampiyonlar Sandığı", "Champions Chest", 14000, 350, 20),
+    "legendary": ("Efsane Sandığı", "Legend Chest", 20000, 500, 25),
 }
-LEAGUE_ENTRY_MODULE_SHARDS = 6
 GRIDSHARD_CHEST_NODE_ID = "gridshard_chest"
+# GRIDSHARD Ligi 8600'de başlar; sandığı ve son unvan ligin içinde, 10000
+# kupadadır (kullanıcı kararı, 12 Ekim 2026): Efsane Sandığı ile aynı kupada
+# durmaz ve en üst lige çıkan oyuncunun önünde bir hedef kalır.
+GRIDSHARD_SUMMIT_RATING = 10000
 # Devre Yolu'nun son ödülü: içindeki kozmetikler yalnız bu duraktan kazanılır.
 GRIDSHARD_CHEST_REWARDS = {
     "circuit_credits": 25000,
     "flux_shards": 1000,
-    "module_shards": 100,
+    "universal_module_shards": 40,
     "avatar_id": "gridshard_apex",
     "avatar_frame_id": "gridshard_apex",
     "profile_background_id": "gridshard_apex",
@@ -223,7 +288,7 @@ def _league_reward_nodes(stage: dict) -> tuple[dict, ...]:
     if league == "gridshard":
         return ({
             "id": GRIDSHARD_CHEST_NODE_ID,
-            "trophies": minimum,
+            "trophies": max(minimum, GRIDSHARD_SUMMIT_RATING),
             "description_tr": "GRIDSHARD Sandığı",
             "description_en": "GRIDSHARD Chest",
             "rewards": dict(GRIDSHARD_CHEST_REWARDS),
@@ -242,15 +307,11 @@ def _league_reward_nodes(stage: dict) -> tuple[dict, ...]:
 
     def league_chest(offset: int) -> dict:
         name_tr, name_en, chest_credits, chest_flux, chest_shards = LEAGUE_CHESTS[league]
-        module_id = next(
-            key for key, item in MODULES.items() if item.get("unlock_league") == league
-        )
         return {
             **node(offset, name_tr, {
                 "circuit_credits": chest_credits,
                 "flux_shards": chest_flux,
-                "module_shards": chest_shards,
-                "module_shard_target": module_id,
+                "universal_module_shards": chest_shards,
             }),
             "description_en": name_en,
             "league_chest": league,
@@ -258,17 +319,6 @@ def _league_reward_nodes(stage: dict) -> tuple[dict, ...]:
         }
 
     nodes: list[dict] = []
-    if tier == 1:
-        # Lige girişte açılan modülün hedefli parçası (ana ödül).
-        for module_id, item in MODULES.items():
-            if item.get("unlock_league") == league:
-                nodes.append({
-                    **node(25, f"{item['name_tr']} · {LEAGUE_ENTRY_MODULE_SHARDS} Modül Parçası", {
-                        "module_shards": LEAGUE_ENTRY_MODULE_SHARDS,
-                        "module_shard_target": module_id,
-                    }),
-                    "is_main_reward": True,
-                })
     credit_node = lambda offset: node(offset, f"{credits} Devre Kredisi", {"circuit_credits": credits})
     shard_node = lambda offset: node(offset, f"{shards} Modül Parçası", {"module_shards": shards})
     flux_node = lambda offset: node(offset, f"{flux} Akı", {"flux_shards": flux})
@@ -277,20 +327,21 @@ def _league_reward_nodes(stage: dict) -> tuple[dict, ...]:
         offset, f"{credits * 2} Devre Kredisi", {"circuit_credits": credits * 2}
     )
     last_tier = tier == int(stage["league_tiers"])
-    if league == "champions":
-        nodes += [credit_node(50), shard_node(100), flux_node(150),
-                  league_chest(200) if last_tier else tier_end(200)]
-    elif league == "legendary":
-        nodes += [credit_node(75), shard_node(150), flux_node(225),
-                  league_chest(300) if last_tier else tier_end(300)]
+    # Duraklar kademe genişliğine göre yerleşir: üst liglerde dörtte bir
+    # aralıklarla dört durak, diğerlerinde kademenin ortası ve sonu.
+    width = int(stage["tier_width"])
+    if league in ("champions", "legendary"):
+        quarter = width // 4
+        nodes += [credit_node(quarter), shard_node(2 * quarter), flux_node(3 * quarter),
+                  league_chest(width) if last_tier else tier_end(width)]
     else:
-        nodes.append(credit_node(50))
+        nodes.append(credit_node(width // 2))
         if last_tier:
-            nodes.append(league_chest(100))
+            nodes.append(league_chest(width))
         elif tier % 2:
-            nodes.append(shard_node(100))
+            nodes.append(shard_node(width))
         else:
-            nodes.append(flux_node(100))
+            nodes.append(flux_node(width))
     return tuple(nodes)
 
 
@@ -316,14 +367,36 @@ def unlock_stage_for_module(module_id: str) -> dict:
 def matchmaking_band(rating: int) -> int:
     """Eşleştirme kuşağı; Redis betiğindeki ``stage`` işleviyle aynı olmalıdır.
 
-    Arenalarda kuşak arenanın kendisidir. Liglerde kuşak 200 kupadır ve 5600
-    üstü tek kuşaktır: lig kademeleri 100 kupaya indiğinde eşleşme havuzu
-    daralmasın diye kuşak görünen kademeden ayrıdır.
+    Arenalarda kuşak arenanın kendisidir. Liglerde kuşak 200 kupadır ve onuncu
+    kuşaktan (Şampiyonlar Ligi) sonrası tek kuşaktır: lig kademeleri dar olduğu
+    için eşleşme havuzu daralmasın diye kuşak görünen kademeden ayrıdır.
     """
     rating = max(0, int(rating))
     if rating < LEAGUE_FLOOR_RATING:
-        return rating // 300
-    return 12 + min(10, (rating - LEAGUE_FLOOR_RATING) // 200)
+        return arena_index_for_rating(rating) - 1
+    return ARENA_COUNT + min(
+        MATCHMAKING_LEAGUE_BAND_LIMIT,
+        (rating - LEAGUE_FLOOR_RATING) // MATCHMAKING_LEAGUE_BAND_WIDTH,
+    )
+
+
+def matchmaking_band_lua() -> str:
+    """Redis eşleştirme betiğinin ``stage`` işlevi; eşikler bu dosyadan gelir."""
+    floors = ", ".join(str(floor) for floor in ARENA_FLOOR_RATINGS)
+    return (
+        f"local arena_floors = {{{floors}}}\n"
+        "local function stage(rating)\n"
+        f"    if rating >= {LEAGUE_FLOOR_RATING} then\n"
+        f"        return {ARENA_COUNT} + math.min({MATCHMAKING_LEAGUE_BAND_LIMIT}, "
+        f"math.floor((rating - {LEAGUE_FLOOR_RATING}) / {MATCHMAKING_LEAGUE_BAND_WIDTH}))\n"
+        "    end\n"
+        "    local band = 0\n"
+        "    for index, floor in ipairs(arena_floors) do\n"
+        "        if rating >= floor then band = index - 1 end\n"
+        "    end\n"
+        "    return band\n"
+        "end\n"
+    )
 
 
 def rank_stage_for_rating(rating: int) -> dict:
@@ -440,20 +513,45 @@ RARITY_STAT_MULTIPLIER = {
 def module_stats(definition, upgrade_level: int, talents: dict | None = None) -> dict:
     # Legacy storage counts upgrades from zero; the user-facing level is 1..15.
     level = max(0, min(14, int(upgrade_level)))
-    learned = (talents or {}).values()
-    power = 1 + .03 * sum(choice == "power" for choice in learned)
-    resilience = 1 + .05 * sum(choice == "resilience" for choice in learned)
+    # Yetenek dallarının sayısal etkisi; imza yeteneği savaşta ayrıca çalışır.
+    talent = stat_modifiers(talents, definition.cooldown_ms > 0)
+    power = talent["power"]
+    resilience = talent["hp"]
     rarity = str(getattr(definition, "rarity", "common") or "common").lower()
     rarity_profile = RARITY_STAT_PROFILES.get(
         rarity,
         RARITY_STAT_PROFILES["common"],
     )
-    return {"level": level + 1, "rarity": rarity,
+    cooldown_ms = round(
+        definition.cooldown_ms * rarity_profile["cooldown"] * max(.88, .992 ** level) * talent["cooldown"]
+    )
+    upkeep = round(
+        definition.energy_consumption * rarity_profile["energy"] * max(.92, .996 ** level) * talent["energy"], 2
+    )
+    # Bilgi ekranındaki "enerji tüketimi" modülün saniyede gerçekten harcadığı
+    # enerjidir: sürekli bakım ve (saldırı, onarım, sabotaj gibi iş yaptıkça
+    # ödeyen kartlarda) aksiyon bedelinin bekleme süresine bölümü. Yalnız bakım
+    # gösterilince bu kartlarda 0 yazıyordu.
+    action_cost = float(getattr(definition, "action_energy_cost", 0.0) or 0.0) * talent["energy"]
+    action_rate = action_cost / (cooldown_ms / 1000) if action_cost > 0 and cooldown_ms > 0 else 0.0
+    stats = {"level": level + 1, "rarity": rarity,
             "max_hp": round(definition.max_hp * rarity_profile["hp"] * 1.03 ** level * resilience),
             "base_damage": round(definition.base_damage * rarity_profile["attack"] * 1.05 ** level * power, 2),
-            "cooldown_ms": round(definition.cooldown_ms * rarity_profile["cooldown"] * max(.88, .992 ** level)),
-            "effect_multiplier": rarity_profile["effect"] * (1.03 if definition.category == "sabotaj" else 1.035) ** level * power,
-            "energy_consumption": round(definition.energy_consumption * rarity_profile["energy"] * max(.92, .996 ** level), 2)}
+            "cooldown_ms": cooldown_ms,
+            "effect_multiplier": rarity_profile["effect"] * (1.03 if definition.category == "sabotaj" else 1.035) ** level * power * talent["effect"],
+            "energy_consumption": upkeep,
+            "action_energy_cost": round(action_cost, 2),
+            "energy_per_second": round(upkeep + action_rate, 2),
+            "energy_generation": round(float(getattr(definition, "energy_generation", 0.0) or 0.0), 2)}
+    # Modüle özgü değerler ve çevrimin adı (bilgi ekranı); motorla aynı
+    # sabitlerden hesaplanır. İçe aktarım döngüsü olmasın diye burada yapılır.
+    from .game.module_sheet import cycle_label, module_specials
+    if stats["energy_generation"] > 0:
+        # Batarya üretimi etki çarpanıyla büyür (energy.py).
+        stats["energy_generation"] = round(stats["energy_generation"] * stats["effect_multiplier"], 2)
+    stats["cycle_label_tr"], stats["cycle_label_en"] = cycle_label(definition)
+    stats["specials"] = module_specials(definition, stats)
+    return stats
 
 def select_bot(rating: int, session_id: str) -> dict:
     stage = rank_stage_for_rating(rating)
@@ -474,16 +572,22 @@ def select_bot(rating: int, session_id: str) -> dict:
 
 
 def league_bot_battle_pool(battle_pool_ids, stage: dict, session_id: str) -> list[str]:
-    """Lig botu, oyuncunun liginde açılmış modüllerle güçlenir.
+    """Lig botu efsanevi modüllerle güçlenir; ilerideki liglerde daha çok taşır.
 
-    Arena 12 destesindeki aynı sınıftan kart lig modülüyle değişir; oyuncunun
-    henüz açamadığı modül bota verilmez. Seçim maç kimliğine bağlı ve kararlıdır.
+    Efsanevi modüllerin hepsi ilk lige girişte açılır. Zorluk yine lig lig
+    artsın diye bot, liginin sırası kadar (Kıvılcım 1 … Efsanevi 7) modül
+    arasından seçer; Arena 12 destesindeki aynı sınıftan kart onunla değişir.
+    Oyuncunun henüz açamadığı modül bota verilmez. Seçim maç kimliğine bağlı ve
+    kararlıdır.
     """
     deck = list(battle_pool_ids)
-    league_modules = [
-        module_id for module_id, item in MODULES.items()
-        if item.get("unlock_league") and int(stage["minimum_rating"]) >= item["unlock_trophies"]
-    ]
+    league_modules = sorted(
+        (
+            module_id for module_id, item in MODULES.items()
+            if item.get("unlock_league") and int(stage["minimum_rating"]) >= item["unlock_trophies"]
+        ),
+        key=lambda module_id: hashlib.sha256(f"{session_id}:order:{module_id}".encode()).hexdigest(),
+    )[:max(1, int(stage.get("league_order", 1)))]
     for module_id in league_modules:
         if module_id in deck:
             continue

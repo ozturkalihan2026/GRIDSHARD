@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass
 from typing import Callable
 from uuid import uuid4
-from .arena_canon import matchmaking_band
+from .arena_canon import matchmaking_band, matchmaking_band_lua
 
 
 BASE_RATING_WINDOW = 100
@@ -459,10 +459,7 @@ local function accepted_window(joined_at_ms)
     )
 end
 
-local function stage(rating)
-    if rating < 3600 then return math.floor(rating / 300) end
-    return 12 + math.min(10, math.floor((rating - 3600) / 200))
-end
+""" + matchmaking_band_lua() + r"""
 local source_window = accepted_window(source.joined_at_ms)
 local candidate_ids = redis.call(
     'ZRANGEBYSCORE',

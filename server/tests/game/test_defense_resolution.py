@@ -21,8 +21,10 @@ def test_powered_shield_reduces_damage():
     r=resolve_attack("p1",laser,"p2",shield)
     assert r.raw_damage==10
     assert r.defense_type=="Kalkan"
-    assert r.final_damage==6
-    assert r.reduced_damage==4
+    # Hazır blok saldırının %60'ını engeller.
+    assert r.final_damage==4
+    assert r.reduced_damage==6
+    assert r.block_charge_used is True
 
 def test_unpowered_shield_does_not_reduce_damage():
     e=make_engine()

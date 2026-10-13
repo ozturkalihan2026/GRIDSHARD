@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from .heat import heat_efficiency, is_overheated
 from .models import BattleModule, ModuleStatus, PlayerBattleState
+from .module_cycles import SABOTAGE_GUARD_KEY, charged, sabotage_guard_ratio
 from .operations import module_is_operational
 
 
@@ -42,9 +43,13 @@ class SabotageResistance:
     effect_strength_multiplier: float = 1.0
     blocked: bool = False
     reasons: tuple[str, ...] = ()
+    # Sabotaj direnci yükünü bu etkiye harcayan Bariyer (motor çevrimini başlatır).
+    guard_module_id: str | None = None
 
 
-BARRIER_DURATION_MULTIPLIER = 0.75
+# Seviye 1 değeri: yüklü Bariyer devreye uygulanan bir sabotajın süresini
+# %35 kısaltır (module_cycles.sabotage_guard_ratio; seviyeyle büyür).
+BARRIER_DURATION_MULTIPLIER = 0.65
 ARMOR_DISRUPTOR_DURATION_MULTIPLIER = 0.60
 STRONG_AGAINST_DURATION_MULTIPLIER = 1.25
 WEAK_AGAINST_DURATION_MULTIPLIER = 0.75
@@ -175,25 +180,32 @@ def sabotage_resistance(
         duration_multiplier *= WEAK_AGAINST_DURATION_MULTIPLIER
         reasons.append("zayıf-karşılaşma")
 
-    powered_barriers = [
-        module
-        for module in target_player.modules.values()
-        if module.status == ModuleStatus.ACTIVE
-        and module.definition.mechanic_id == "barrier"
-        and module.is_powered
-        and module.hp > 0
-        and not is_overheated(module)
-    ]
+    # Sabotaj direnci bir yüktür: Bariyer'in çevrimi dolunca hazır olur ve
+    # devreye uygulanan tek bir sabotajda harcanır.
+    powered_barriers = sorted(
+        (
+            module
+            for module in target_player.modules.values()
+            if module.status == ModuleStatus.ACTIVE
+            and module.definition.mechanic_id == "barrier"
+            and module.is_powered
+            and module.hp > 0
+            and not is_overheated(module)
+            and charged(module, SABOTAGE_GUARD_KEY)
+        ),
+        key=lambda module: (
+            -module.definition.effect_multiplier * heat_efficiency(module),
+            module.instance_id,
+        ),
+    )
+    guard_module_id = None
 
     if powered_barriers:
-        barrier_effect = max(
-            module.definition.effect_multiplier * heat_efficiency(module)
-            for module in powered_barriers
+        guard = powered_barriers[0]
+        duration_multiplier *= 1 - sabotage_guard_ratio(
+            guard.definition.effect_multiplier, heat_efficiency(guard)
         )
-        duration_multiplier *= max(
-            0.35,
-            1 - (1 - BARRIER_DURATION_MULTIPLIER) * barrier_effect,
-        )
+        guard_module_id = guard.instance_id
         reasons.append("enerjili-bariyer")
 
     if (
@@ -225,6 +237,7 @@ def sabotage_resistance(
         effect_strength_multiplier=effect_strength_multiplier,
         blocked=blocked,
         reasons=tuple(reasons),
+        guard_module_id=guard_module_id,
     )
 
 

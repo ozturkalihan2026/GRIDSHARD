@@ -14,13 +14,20 @@ from .energy import (
     CAPACITOR_CHARGE_RATE_PER_SECOND,
     CAPACITOR_DISCHARGE_RATE_PER_SECOND,
 )
+from .module_cycles import (
+    ARMOR_REGEN_BASE,
+    BLOCK_BASE_RATIO,
+    MIRROR_REFLECT_BASE,
+    PASSIVE_REDUCTION_BASE,
+    SABOTAGE_GUARD_BASE,
+)
 from .support import (
     BASE_REPAIR_AMOUNT,
     OVERCLOCK_DAMAGE_MULTIPLIER,
     OVERCLOCK_COOLDOWN_MULTIPLIER,
-    OVERCLOCK_HEAT_PER_TICK,
-    COOLER_HEAT_REDUCTION_PER_TICK,
-    COOLER_DEBUFF_REDUCTION_MS_PER_TICK,
+    OVERCLOCK_HEAT_PER_PULSE,
+    COOLER_HEAT_REDUCTION_PER_PULSE,
+    COOLER_DEBUFF_REDUCTION_MS_PER_PULSE,
     COOLER_MAX_TARGETS,
     COOLER_OVERHEAT_MULTIPLIER,
     AMPLIFIER_PER_ATTACK_CAP,
@@ -80,8 +87,8 @@ CATEGORY_LABELS_EN = {
 }
 
 MODULE_COPY_EN: dict[str, tuple[str, str]] = {
-    "battery": ("Energy feed and reserve", "Supplies 4.5 energy per second and stores 20 energy for sudden loads."),
-    "capacitor": ("Burst energy reserve", "Generates no energy; a 10-energy reserve that charges and discharges very fast, before the Battery."),
+    "battery": ("Energy feed and reserve", "At the starting level it supplies 4.5 energy per second and stores 20 energy for sudden loads. An empty store refills in 4 sec; leveling up raises output and storage and shortens the refill."),
+    "capacitor": ("Burst energy reserve", "Generates no energy; at the starting level a 10-energy reserve that refills in 1 sec and discharges before the Battery. Leveling up grows the reserve and shortens the refill."),
     "current_balancer": ("Circuit efficiency", "Reduces action and upkeep energy costs by 8%; repeated copies are capped at 24%."),
     "laser": ("Sustained single-target damage", "Deals steady damage to one target."),
     "pulse_cannon": ("High burst damage", "Fires slower, powerful pulses."),
@@ -89,22 +96,22 @@ MODULE_COPY_EN: dict[str, tuple[str, str]] = {
     "missile_launcher": ("Delayed area pressure", "Trades preparation time for heavy area pressure."),
     "drone_bay": ("Distributed sustained pressure", "Wears down defenses with multiple small attacks."),
     "arc_cannon": ("Chained multi-target damage", "Produces chained energy attacks that jump onto the next target."),
-    "shield": ("Active damage absorption", "Consumes energy to absorb part of incoming damage."),
-    "armor": ("Durability", "Reduces incoming damage while contributing to the circuit's energy demand."),
-    "reflector": ("Energy-attack reflection", "Redirects part of incoming energy-based damage."),
-    "barrier": ("Defense-line protection", "Draws attacks onto itself and protects critical circuit cells."),
+    "shield": ("Periodic attack block", "At the starting level, every 1.2 sec it meets one incoming attack and blocks 60% of its damage. Leveling up shortens the block interval and raises the blocked share."),
+    "armor": ("Constant durability", "At the starting level it always reduces incoming damage by 25%; every 3 sec it mends its plating and regains 5 HP. Leveling up raises the reduction and the repair and shortens the interval."),
+    "reflector": ("Draw and reflect", "At the starting level, every 1 sec it draws one attack aimed at the circuit onto itself and reflects 30% of its damage back to the attacker; it also reduces incoming damage by 25%. Leveling up raises the reflection and shortens the interval."),
+    "barrier": ("Defense-line protection", "Draws attacks onto itself. At the starting level it reduces damage by 20% and every 4 sec shortens one sabotage applied to the circuit by 35%. Leveling up raises the sabotage resistance and shortens the interval."),
     "repair": ("Health repair", "Repairs damaged modules."),
-    "cooler": ("Heat control", "Cools the three hottest modules in the circuit, overheated ones first, and quickly brings a silenced module back."),
-    "amplifier": ("Attack-line amplification", "Increases the damage of attack modules in the circuit; a 30% budget is shared among attacks, at most 15% each."),
-    "targeting_computer": ("Targeting support", "Shortens the cooldown of attack modules in the circuit; a 30% budget is shared among attacks, at most 15% each."),
-    "overclock_unit": ("Performance at a heat cost", "Accelerates and strengthens the heaviest attack module; that module heats up faster."),
+    "cooler": ("Heat control", "At the starting level, every 1 sec it cools the three hottest modules in the circuit by 4.5%, overheated ones first, and quickly brings a silenced module back. Leveling up raises the cooling and shortens the interval."),
+    "amplifier": ("Attack-line amplification", "At the starting level, every 2 sec it charges the attack modules in the circuit; a charged module's next shot deals more damage. A 36% budget is shared among attacks, at most 18% each. Leveling up shortens the charge interval."),
+    "targeting_computer": ("Targeting support", "At the starting level, every 2 sec it locks the attack modules in the circuit; the cooldown after a locked module's next shot is shorter. A 36% budget is shared among attacks, at most 18% each. Leveling up shortens the lock interval."),
+    "overclock_unit": ("Performance at a heat cost", "At the starting level, every 2.5 sec it overcharges the heaviest attack module: its next shot deals 20% more damage and its cooldown is 20% shorter; that module heats up with every charge. Leveling up shortens the charge interval."),
     "emp": ("Temporary system disruption", "Temporarily disrupts energy and support lines."),
     "jammer": ("Support-line disruption", "Weakens targeting and support modules."),
     "virus": ("Escalating system debuff", "Applies a weakening effect that grows across support and control lines."),
     "disruptor": ("Temporary system cut", "Temporarily cuts a target system and echoes a shorter cut onto a second system."),
-    "guardian_dome": ("Circuit protection", "Reduces its own incoming damage by 32%; while alive, other modules in the circuit take 12% less damage."),
-    "prism_shield": ("Prismatic conversion", "Reduces its own incoming damage by 30% and converts a quarter of the prevented damage into Core reserve energy."),
-    "phase_armor": ("Periodic phase", "Voids every attack during the first second of each 6-second cycle; otherwise reduces damage by 18%."),
+    "guardian_dome": ("Circuit protection", "At the starting level it reduces its own incoming damage by 32% and every 1.5 sec reduces one attack on another module in the circuit by 30%. Leveling up raises the protection and shortens the interval."),
+    "prism_shield": ("Prismatic conversion", "At the starting level, every 1.3 sec it meets one incoming attack and blocks 55% of its damage; a quarter of the blocked damage becomes Core reserve energy. Leveling up raises the block and the conversion and shortens the interval."),
+    "phase_armor": ("Periodic phase", "At the starting level it voids every attack during the first second of each 6-second cycle; otherwise it reduces damage by 18%. Leveling up shortens the cycle, so the phase comes more often."),
     "nano_medic": ("Distributed repair", "Repairs the two most damaged modules at once, each for 62% of a base repair."),
     "phoenix_repair": ("Return to service", "Every 30 seconds, within class limits, brings a destroyed module back at 30% HP (10 energy); each module can return only once per match. Without a candidate it performs a strong single repair."),
     "quantum_repeater": ("Quantum repeat", "On the fourth consecutive hit on the same target, echoes 65% of the last damage."),
@@ -112,9 +119,9 @@ MODULE_COPY_EN: dict[str, tuple[str, str]] = {
     "ion_spear": ("Ionic pierce", "Ignores 60% of defensive reduction; 55% damage carries onto the target behind."),
     "swarm_fabricator": ("Swarm build-up", "Stores a drone on every shot; the fourth shot releases a swarm onto three targets."),
     "quantum_cannon": ("Quantum charge", "Collects the circuit's wasted energy as charge; a full charge adds up to 80% damage to the next shot."),
-    "chrono_relay": ("Time debt", "Speeds up every attack for 4 sec, then a 2.5-sec time debt slows them down."),
-    "precision_matrix": ("Focus stacks", "Attacks that keep hitting the same target gain damage and speed for up to 4 stacks."),
-    "omega_amplifier": ("Adaptive resonance", "Each distinct class in the circuit grows its shared damage support."),
+    "chrono_relay": ("Time debt", "Speeds up every attack for 4 sec, then a time debt (2.5 sec at the starting level) slows them down. Leveling up shortens the time debt."),
+    "precision_matrix": ("Focus stacks", "At the starting level, every 1.5 sec it gives one focus stack to attack modules that kept their target; each stack adds damage and speed (up to 4 stacks). Changing target resets the focus. Leveling up builds focus faster."),
+    "omega_amplifier": ("Adaptive resonance", "At the starting level, every 2 sec it charges the attack modules in the circuit with resonance; each distinct class in the circuit grows the shared damage support of a charged shot. Leveling up shortens the charge interval."),
     "singularity_projector": ("Singularity field", "Cuts the target system for 4.5 sec and echoes a 65%-duration cut onto a second system."),
 }
 
@@ -128,6 +135,10 @@ def _name(definition_id: str) -> str:
         if definition is not None
         else definition_id
     )
+
+
+def _seconds_tr(milliseconds: float) -> str:
+    return f"{float(milliseconds) / 1000:g}".replace(".", ",")
 
 
 def _percent(multiplier: float) -> int:
@@ -367,27 +378,47 @@ def _mechanic_effect_lines(definition_id: str) -> list[str]:
 
     if definition_id == "shield":
         return [
-            "Enerjiliyken kendisine gelen hasarı %35 azaltır; %65 hasar geçirir.",
+            (
+                f"Başlangıç seviyesinde her {_seconds_tr(definition.cooldown_ms)} saniyede bir blok hazırlar; enerjiliyken kendisine gelen "
+                f"sıradaki saldırıyı karşılar ve hasarının %{_percent(BLOCK_BASE_RATIO['shield'])} kadarını engeller."
+            ),
+            "Blok tek saldırıda harcanır; sıradaki blok hazır olana kadar gelen saldırılar tam hasar verir.",
+            "Seviye yükseldikçe blok aralığı kısalır, engellenen pay ve CAN artar.",
             f"Saniyede {definition.energy_consumption:g} enerji tüketir.",
         ]
 
     if definition_id == "armor":
         return [
-            "Pasif savunmadır; kendisine gelen hasarı %25 azaltır.",
+            f"Başlangıç seviyesinde kendisine gelen hasarı sürekli %{_percent(PASSIVE_REDUCTION_BASE['armor'])} azaltır.",
+            (
+                f"Başlangıç seviyesinde her {_seconds_tr(definition.cooldown_ms)} saniyede bir zırh plakasını onarır: "
+                f"kendine {ARMOR_REGEN_BASE} CAN geri kazandırır. Hasarsızken onarım hazır bekler."
+            ),
+            "Seviye yükseldikçe azaltma, onarım ve CAN artar; onarım aralığı kısalır.",
             f"Saniyede {definition.energy_consumption:g} bakım enerjisi harcar.",
         ]
 
     if definition_id == "reflector":
         return [
-            "Enerjiliyken kendisine gelen hasarı %25 azaltır.",
-            "Aldığı son hasarın %20'sini saldırana geri yansıtır.",
+            f"Enerjiliyken kendisine gelen hasarı sürekli azaltır (başlangıç seviyesinde %{_percent(PASSIVE_REDUCTION_BASE['reflector'])}).",
+            (
+                f"Başlangıç seviyesinde her {_seconds_tr(definition.cooldown_ms)} saniyede bir ayna hazırlar: devredeki başka bir modüle "
+                "ateşlenen sıradaki saldırıyı üzerine çeker ve o saldırının hasarının "
+                f"%{_percent(MIRROR_REFLECT_BASE)} kadarını saldıran modüle yansıtır."
+            ),
+            "Ayna tek saldırıda harcanır; sıradaki ayna hazır olana kadar saldırı çekmez ve yansıtmaz.",
+            "Seviye yükseldikçe yansıtma ve CAN artar, ayna aralığı kısalır.",
         ]
 
     if definition_id == "barrier":
         return [
-            "Enerjiliyken kendisine gelen hasarı %20 azaltır.",
+            f"Enerjiliyken kendisine gelen hasarı sürekli azaltır (başlangıç seviyesinde %{_percent(PASSIVE_REDUCTION_BASE['barrier'])}).",
             "Aktif normal hedefler varken saldırılarda öncelikli hedef olur.",
-            "Enerjili Bariyer sabotaj sürelerini ayrıca %25 kısaltabilir.",
+            (
+                f"Başlangıç seviyesinde her {_seconds_tr(definition.cooldown_ms)} saniyede bir sabotaj direnci hazırlar: devreye uygulanan "
+                f"sıradaki sabotajın süresini %{_percent(SABOTAGE_GUARD_BASE)} kısaltır."
+            ),
+            "Seviye yükseldikçe sabotaj direnci ve CAN artar, direnç aralığı kısalır.",
         ]
 
     if definition_id == "repair":
@@ -404,9 +435,9 @@ def _mechanic_effect_lines(definition_id: str) -> list[str]:
     if definition_id == "cooler":
         return [
             (
-                "Önce aşırı ısınıp susmuş modülleri, sonra devredeki en sıcak "
-                f"{COOLER_MAX_TARGETS} modülü seçer; her birinin ısısını saniyede "
-                f"%{COOLER_HEAT_REDUCTION_PER_TICK * 10:g} azaltır."
+                f"Başlangıç seviyesinde her {_seconds_tr(definition.cooldown_ms)} saniyede bir soğutma darbesi verir: önce aşırı ısınıp "
+                f"susmuş modülleri, sonra devredeki en sıcak {COOLER_MAX_TARGETS} modülü seçer ve her birinin "
+                f"ısısını %{COOLER_HEAT_REDUCTION_PER_PULSE:g} azaltır."
             ),
             (
                 f"Susmuş modülde soğutma {COOLER_OVERHEAT_MULTIPLIER:g} katına çıkar; modül ısısı "
@@ -414,42 +445,49 @@ def _mechanic_effect_lines(definition_id: str) -> list[str]:
                 "Soğutucu bunu birkaç saniyeye indirir."
             ),
             (
-                f"EMP ve hat kesintisi yaşayan en fazla {COOLER_MAX_TARGETS} modülün "
-                f"kalan süresini saniyede {COOLER_DEBUFF_REDUCTION_MS_PER_TICK * 10 / 1000:g} sn kısaltır."
+                f"Aynı darbe EMP ve hat kesintisi yaşayan en fazla {COOLER_MAX_TARGETS} modülün "
+                f"kalan süresini {COOLER_DEBUFF_REDUCTION_MS_PER_PULSE / 1000:g} sn kısaltır."
             ),
+            "Seviye yükseldikçe soğutma artar, darbe aralığı kısalır.",
         ]
 
     if definition_id == "amplifier":
         return [
             (
-                "Yerleşimden bağımsız olarak devredeki her saldırı modülünün hasarını artırır: "
+                f"Başlangıç seviyesinde her {_seconds_tr(definition.cooldown_ms)} saniyede bir, yerleşimden bağımsız olarak devredeki "
+                "bütün saldırı modüllerini yükler; yüklü modülün sıradaki atışı daha çok hasar verir: "
                 f"toplam %{_percent(AMPLIFIER_TOTAL_BUDGET)} pay saldırı modülü sayısına bölünür, "
                 f"tek saldırıya en fazla %{_percent(AMPLIFIER_PER_ATTACK_CAP)}."
             ),
-            "Örnek: 1–2 saldırıda her biri %15, 3 saldırıda %10, 4 saldırıda %7,5, 6 saldırıda %5.",
+            "Yük atışla harcanır ve sıradaki yüklemeyi bekler; yükleme aralığından sık ateş eden silah her atışında yük bulamaz.",
+            "Seviye yükseldikçe yükleme aralığı kısalır.",
+            "Örnek: 1–2 saldırıda her biri %18, 3 saldırıda %12, 4 saldırıda %9, 6 saldırıda %6.",
         ]
 
     if definition_id == "targeting_computer":
         return [
             (
-                "Yerleşimden bağımsız olarak devredeki her saldırı modülünün bekleme süresini kısaltır: "
+                f"Başlangıç seviyesinde her {_seconds_tr(definition.cooldown_ms)} saniyede bir, yerleşimden bağımsız olarak devredeki "
+                "bütün saldırı modüllerine kilit verir; kilitli modülün sıradaki atışından sonraki beklemesi kısalır: "
                 f"toplam %{_percent(TARGETING_TOTAL_BUDGET)} pay saldırı modülü sayısına bölünür, "
                 f"tek saldırıya en fazla %{_percent(TARGETING_PER_ATTACK_CAP)}."
             ),
+            "Kilit atışla harcanır ve sıradaki kilidi bekler; kilit aralığından sık ateş eden silah her atışında kilit bulamaz.",
+            "Seviye yükseldikçe kilit aralığı kısalır.",
         ]
 
     if definition_id == "overclock_unit":
         return [
             (
-                "Devredeki en ağır saldırı modülünü seçer; hasarını "
-                f"%{_percent(OVERCLOCK_DAMAGE_MULTIPLIER)} seviyesine çıkarır "
-                f"ve bekleme süresini %{_percent(OVERCLOCK_COOLDOWN_MULTIPLIER)} seviyesine indirir."
+                f"Başlangıç seviyesinde her {_seconds_tr(definition.cooldown_ms)} saniyede bir devredeki en ağır saldırı modülüne aşırı yük "
+                f"verir: sıradaki atışının hasarı %{_percent(OVERCLOCK_DAMAGE_MULTIPLIER)} seviyesine çıkar "
+                f"ve o atıştan sonraki beklemesi %{_percent(OVERCLOCK_COOLDOWN_MULTIPLIER)} seviyesine iner."
             ),
             (
-                "Karşılığında hedef daha sık ateşlediği için hızlı ısınır ve saniyede "
-                f"%{OVERCLOCK_HEAT_PER_TICK * 10:g} ek ısı alır. Hedef aşırı ısınırsa "
-                "sıradaki ağır saldırı modülüne geçer."
+                f"Karşılığında hedef her yüklemede %{OVERCLOCK_HEAT_PER_PULSE:g} ek ısı alır ve daha sık "
+                "ateşlediği için hızlı ısınır. Hedef aşırı ısınırsa sıradaki ağır saldırı modülüne geçer."
             ),
+            "Seviye yükseldikçe yükleme aralığı kısalır.",
         ]
 
     if definition_id == "emp":
@@ -527,23 +565,42 @@ def _mechanic_effect_lines_en(definition_id: str) -> list[str]:
             "Discharges before the Battery when the circuit lacks energy.",
         ]
     if definition_id == "shield":
-        return ["Reduces incoming damage by 35% while powered.", f"Consumes {definition.energy_consumption:g} energy per second."]
+        return [
+            f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it readies a block; while powered it meets the next attack on itself and blocks {_percent(BLOCK_BASE_RATIO['shield'])}% of its damage.",
+            "The block is spent by one attack; attacks that arrive before the next block is ready deal full damage.",
+            "Leveling up shortens the block interval and raises the blocked share and HP.",
+            f"Consumes {definition.energy_consumption:g} energy per second.",
+        ]
     if definition_id == "armor":
-        return ["Reduces incoming damage by 25%.", f"Upkeep: {definition.energy_consumption:g} energy/sec."]
+        return [
+            f"At the starting level it always reduces incoming damage by {_percent(PASSIVE_REDUCTION_BASE['armor'])}%.",
+            f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it mends its plating and regains {ARMOR_REGEN_BASE} HP; the repair waits ready while it is undamaged.",
+            "Leveling up raises the reduction, the repair and HP, and shortens the repair interval.",
+            f"Upkeep: {definition.energy_consumption:g} energy/sec.",
+        ]
     if definition_id == "reflector":
-        return ["Reduces incoming damage by 25% while powered.", "Reflects 20% of the last incoming damage to the attacker."]
+        return [
+            f"Always reduces incoming damage while powered ({_percent(PASSIVE_REDUCTION_BASE['reflector'])}% at the starting level).",
+            f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it readies a mirror: it draws the next attack fired at another module in the circuit onto itself and reflects {_percent(MIRROR_REFLECT_BASE)}% of that attack's damage to the attacking module.",
+            "The mirror is spent by one attack; until the next one is ready it neither draws nor reflects.",
+            "Leveling up raises the reflection and HP and shortens the mirror interval.",
+        ]
     if definition_id == "barrier":
-        return ["Reduces incoming damage by 20% while powered.", "Takes target priority and can shorten sabotage duration by 25%."]
+        return [
+            f"Always reduces incoming damage while powered ({_percent(PASSIVE_REDUCTION_BASE['barrier'])}% at the starting level) and takes target priority.",
+            f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it readies sabotage resistance: the next sabotage applied to the circuit is {_percent(SABOTAGE_GUARD_BASE)}% shorter.",
+            "Leveling up raises the sabotage resistance and HP and shortens the interval.",
+        ]
     if definition_id == "repair":
         return [f"Restores {BASE_REPAIR_AMOUNT} HP to one lowest-health-ratio living module with a base cooldown of {definition.cooldown_ms / 1000:g} sec.", "A target can be repaired only once per support step.", "Can cleanse selected sabotage effects."]
     if definition_id == "cooler":
-        return [f"Picks overheated modules first, then the {COOLER_MAX_TARGETS} hottest modules in the circuit, and cools each by {COOLER_HEAT_REDUCTION_PER_TICK * 10:g}% heat per second.", f"Cooling is {COOLER_OVERHEAT_MULTIPLIER:g}x on a silenced module; it works again once its heat drops below {OVERHEAT_RECOVERY_THRESHOLD:g}%, which the Cooler cuts to a few seconds.", f"Shortens EMP and line-cut effects on up to {COOLER_MAX_TARGETS} modules."]
+        return [f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it sends a cooling pulse: it picks overheated modules first, then the {COOLER_MAX_TARGETS} hottest modules in the circuit, and cools each by {COOLER_HEAT_REDUCTION_PER_PULSE:g}% heat.", f"Cooling is {COOLER_OVERHEAT_MULTIPLIER:g}x on a silenced module; it works again once its heat drops below {OVERHEAT_RECOVERY_THRESHOLD:g}%, which the Cooler cuts to a few seconds.", f"The same pulse shortens EMP and line-cut effects on up to {COOLER_MAX_TARGETS} modules by {COOLER_DEBUFF_REDUCTION_MS_PER_PULSE / 1000:g} sec.", "Leveling up raises the cooling and shortens the pulse interval."]
     if definition_id == "amplifier":
-        return [f"Boosts every attack module in the circuit regardless of placement: a {_percent(AMPLIFIER_TOTAL_BUDGET)}% damage budget is shared across attack modules, at most {_percent(AMPLIFIER_PER_ATTACK_CAP)}% each."]
+        return [f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it charges every attack module in the circuit regardless of placement; a charged module's next shot deals more damage: a {_percent(AMPLIFIER_TOTAL_BUDGET)}% damage budget is shared across attack modules, at most {_percent(AMPLIFIER_PER_ATTACK_CAP)}% each.", "The charge is spent by the shot and waits for the next pulse; weapons that fire faster than the pulse do not find a charge on every shot.", "The pulse interval shortens as the module levels up."]
     if definition_id == "targeting_computer":
-        return [f"Shortens every attack module's cooldown regardless of placement: a {_percent(TARGETING_TOTAL_BUDGET)}% budget is shared across attack modules, at most {_percent(TARGETING_PER_ATTACK_CAP)}% each."]
+        return [f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it locks every attack module in the circuit regardless of placement; the cooldown after a locked module's next shot is shorter: a {_percent(TARGETING_TOTAL_BUDGET)}% budget is shared across attack modules, at most {_percent(TARGETING_PER_ATTACK_CAP)}% each.", "The lock is spent by the shot and waits for the next pulse; weapons that fire faster than the pulse do not find a lock on every shot.", "The lock interval shortens as the module levels up."]
     if definition_id == "overclock_unit":
-        return [f"Picks the heaviest attack module; raises its damage to {_percent(OVERCLOCK_DAMAGE_MULTIPLIER)}% and reduces its cooldown to {_percent(OVERCLOCK_COOLDOWN_MULTIPLIER)}%.", f"The target heats faster and gains {OVERCLOCK_HEAT_PER_TICK * 10:g}% extra heat per second; an overheated target is swapped for the next heaviest attack."]
+        return [f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it overcharges the heaviest attack module: its next shot's damage rises to {_percent(OVERCLOCK_DAMAGE_MULTIPLIER)}% and the cooldown after it drops to {_percent(OVERCLOCK_COOLDOWN_MULTIPLIER)}%.", f"The target gains {OVERCLOCK_HEAT_PER_PULSE:g}% extra heat with every charge and heats faster; an overheated target is swapped for the next heaviest attack.", "The charge interval shortens as the module levels up."]
     sabotage = {
         "emp": [f"Disables the target system for {EMP_DURATION_MS / 1000:g} sec.", f"Base sabotage cooldown is {definition.cooldown_ms / 1000:g} sec."],
         "jammer": [f"Disrupts a target support or control module for {JAMMER_DURATION_MS / 1000:g} sec.", f"Base sabotage cooldown is {definition.cooldown_ms / 1000:g} sec."],
