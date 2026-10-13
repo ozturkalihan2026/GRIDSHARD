@@ -7120,7 +7120,8 @@ body[data-app-screen="menu"] .app-bottom-dock .menu-action.is-active .menu-actio
 
 /* GRIDSHARD visual pass — display type, clean dock and neon circuit seals. */
 :root {
-  --gs-font-display:"Orbitron","Russo One","Bahnschrift SemiBold","Arial Black",sans-serif;
+  --gs-font-display:"Oxanium","Bahnschrift SemiBold","Segoe UI Semibold","Arial Black",sans-serif;
+  --gs-font-brand:"Orbitron","Oxanium","Bahnschrift SemiBold","Arial Black",sans-serif;
   --gs-font-copy:"Rajdhani","Bahnschrift","Segoe UI",sans-serif;
 }
 
@@ -8232,7 +8233,7 @@ body[data-app-screen="menu"] .lobby-backdrop {
   display:block;
   margin:0 0 9dvh;
   color:#f5fbff;
-  font-family:var(--gs-font-display);
+  font-family:var(--gs-font-brand);
   font-size:clamp(1.6rem,8vw,2.35rem);
   font-weight:900;
   letter-spacing:.04em;

@@ -305,6 +305,282 @@ Kullanıcının isteği (kelimesi kelimesine; ekinde üç görsel vardı: Rush R
 - **Kullanıcının görmediği seçimler (Claude):** bütün sayılar (Kalkan ve Yansıtıcı'nın aralığı ile yansıtma oranı dışında); Kalkan'ın bloğunun %60 olması; Yansıtıcı'nın sürekli azaltımının kalması ve yansımanın azaltılmamış hasardan hesaplanması; Zırh'a plaka onarımı ve Bariyer'e sabotaj direnci yükü verilmesi; Kubbe korumasının darbeye çevrilmesi; Hedefleme payının %18'e çıkması; yüksek oranların seviyeyle azalan hızla büyümesi (üs 0,6) ve tavanları; saldırı imza değerlerinin seviyeyle büyümemesi; simge çizimleri ve renkleri; sandık renkleri; desenin biçimi; alt çubukta açık hücrenin yükselmesi; mağaza sandıklarının eski çizimde kalması.
 - **Eski paketle (v8) uyum:** eski paket yeni olayı (`module_cycle_pulse`) tanımaz ve göstermez; bilgi ekranında yeni çevrimi "BEKLEME" adıyla, eski "ETKİ ÇARPANI" karosuyla gösterir; açıklamaları Türkçe gösterir (çıkarım; v8 kaynağıyla denenmedi).
 
+### Gelir hesabı, çekirdek parçası kaynakları ve enderliğe göre parça (13 Ekim 2026, iş bilgisayarı; yayınlanmadı, gerçek cihazda görülmedi)
+
+Kullanıcı D9 tablosunun sonucunu sordu ve gelirin tamamıyla hesaplanmasını istedi. Kendi cümleleri (kelimesi kelimesine):
+
+> "günlük devre emirleri, günlük giriş ödülleri ve maç sayısına göre göre kazanılan deneyimlerin toplamı ile elde edilecek akı, devre kredisi hesabı ve tüm bunların hepsinden elde edilecek deneyim ile alınabilecek sezon ödüllerinden elde edilecek tüm gelirleri hesaplayarak çekirdek ve enderlik türüne göre modül maliyetleri bu kadar kısa sürede yükseliyormu?"
+
+Hesap gösterildikten sonra kararı:
+
+> "Çekirdek için devre yolunda arena ve lig  son ödüllere rastgele, günlük giriş ödüllerinin 1-2 tanesine, bronz, gümüş, altın sandıklara % 1-3-5 oranında çekirdek parçası, elmas sandık oranını 10 a çekebiliriz.
+> Efsanevini parçada da ekonomide de daha yavaş olmalı.
+> Sıradan, nadir, epik, efsanevi yükseltmeler bu sırayla zorlaşmalı ve uzun sürmeli.
+> Deste dışında bulunan kartlarında yükselmesi lazım.
+> Kriter destede bulunması değil enderlik sırası ve modülün açılıp açılmadığı."
+
+İlk sayıları (çekirdek başına son seviye yaklaşık 4,7 yıl) görünce ikinci kararı:
+
+> "Senin seçtiklerinden rastgele çekirdek tanımında açık olan rastgele çekirdek olacak. Çekirdeğin yükselmesi yine çok uzun sürüyor. Çekirdek ödül oranını değil ama ödüldeki çekirdek parçası sayısını artıralım."
+
+**Hesap (koddan, beklenen değer; simülasyon ya da oyuncu verisi değil).** Ücretsiz oyuncu, günde 10 maç, %55 galibiyet, orta arena, bütün devre emirleri, günde 3 hediye sandık: Devre Kredisi günde 1.487 (maç 411, galibiyet sandığı 542, hediye sandık 180, giriş takvimi 96, sezon yolu 258), Akı günde 128 (devre emirleri 75), sezon deneyimi günde 468 (28 günde 13.090; son kademe 12.240). Reklam bonusu, Savaş Premium, ücretli geçiş, turnuva ödülleri ve Devre Yolu'nun tek seferlik ödülleri (136.960 kredi, 4.270 Akı, 1.412 modül parçası, 133 evrensel parça) hesaba girmedi.
+
+**Bulgular (değişiklikten önce).**
+- Çekirdek parçasının tek kaynağı Elmas Sandık'taki %6'ydı: 83 günde bir parça, bir çekirdeğin son seviyesi yaklaşık 25 yıl. D9'da parça toplamını 1.376'dan 109'a indirmek bunu çözmemişti.
+- Giriş takvimi ve sezon yolu parçaları (günde 16) enderliğe bakmadan destedeki altı karta gidiyordu: efsanevi kartın parçası 107 günde, sıradan kartınki 269 günde doluyordu.
+- Deste dışındaki kart yalnız sandıklardan parça alıyordu (ender kart günde 0,045).
+
+**Uygulanan.**
+- **Çekirdek parçası.** Sandıklar: Bronz %1, Gümüş %3, Altın %5, Elmas %10 (kullanıcının sayıları; `CHEST_DEFINITIONS`, `server/app/meta_progression.py`). Şans çıkınca verilen parça sayısı kademeyle artar: 1, 2, 3, 5 (`core_drop_shards`; mağazanın ödül listesi bu sayıyı gösterir). Giriş takvimi: 14. gün 10, 28. gün 15 parça (`LOGIN_CORE_SHARDS_BY_DAY`, `server/app/player_profile.py`). Devre Yolu: her arenanın son ödülü 3 parça; lig sandıkları 5, 5, 6, 6, 8, 8, 10; GRIDSHARD Sandığı 20 (toplam 104, tek seferlik; `server/app/arena_canon.py`). Parça, oyuncunun açık çekirdeklerinden rastgele birine gider (kullanıcı onayladı). İlk uygulamadaki sayılar (sandıkta hep 1; takvimde 3 ve 5; yolda 1, 2–5 ve 10) kullanıcının ikinci kararıyla büyütüldü; şanslar değişmedi.
+- **Parça ödüllerinde ölçüt deste değil, enderlik ve açık olmak.** Giriş takvimi ve sezon yolu parçaları açık modüllerden rastgele birine gider; kartın enderliğine göre miktar küçülür: sıradan %100, ender %75, destansı %35, efsanevi %15 (`REWARD_SHARD_PERCENT_BY_RARITY`). Takvimde ve sezon yolunda görünen sayı o kartın gerçekten alacağı sayıdır (sunucu görünümü hesaplar). Devre Yolu'nun hedefsiz parça duraklarında miktar yazıldığı gibi kalır; ender kartın seçilme ağırlığı aynı oranlarla düşer. Sandıklar zaten enderliğe göre çekiyordu; değişmedi.
+- **Giriş takvimi ve sezon yolu parça miktarları üç katına çıktı** (`REWARD_MODULE_SHARD_SCALE`): parça artık altı karta değil açık bütün modüllere bölünüyor; üç kat olmadan sıradan bir kartın son seviyesi 13 aydan 2 yıla, efsanevininki 11 yıla çıkıyordu.
+- Yükseltme maliyetleri (D9 tablosu) **değişmedi**; Devre Kredisi sırası zaten sıradan < ender < destansı < efsanevi.
+
+**Sonuç (aynı oyuncu, parça bakımından bir kartın süresi; gün).** Devre Kredisi ayrıca sınırlar: tek kart için 67 / 101 / 134 / 202 gün, 36 modülün tamamı için yaklaşık 12 yıl.
+
+| Açık modül | Enderlik | Seviye 5 | Seviye 8 | Seviye 10 | Seviye 12 | Seviye 15 |
+|---|---|---:|---:|---:|---:|---:|
+| 6 (Arena 1) | Sıradan | 3 | 13 | 27 | 49 | 102 |
+| 6 (Arena 1) | Ender | 3 | 15 | 31 | 55 | 113 |
+| 16 (Arena 6) | Sıradan | 7 | 32 | 66 | 118 | 245 |
+| 16 (Arena 6) | Ender | 9 | 41 | 83 | 149 | 308 |
+| 36 (ligler) | Sıradan | 13 | 57 | 116 | 208 | 433 |
+| 36 (ligler) | Ender | 21 | 90 | 184 | 328 | 680 |
+| 36 (ligler) | Destansı | 34 | 140 | 284 | 500 | 1.030 |
+| 36 (ligler) | Efsanevi | 49 | 196 | 392 | 695 | 1.430 |
+
+Çekirdek: günde 1,23 parça (sandıklar 0,34, giriş takvimi 0,89). Tek çekirdek açıkken seviye 5 için 5, seviye 15 için 88 gün; yedi çekirdek açıkken çekirdek başına seviye 5 için 34, seviye 8 için 102, seviye 10 için 182, seviye 12 için 306, seviye 15 için 618 gün (Devre Yolu'nun 104 parçası hariç). İlk uygulamada günde 0,44 parçaydı (seviye 15 için 1.719 gün).
+
+**Kullanıcının görmediği seçimler (Claude).** Giriş takviminde hangi günler ve kaç parça (14. gün 10, 28. gün 15); sandıktan çıkan parça sayısı (1, 2, 3, 5); arena son ödülünde 3, lig sandıklarında 5–10, GRIDSHARD Sandığı'nda 20 çekirdek parçası ve bunların hedefi (çekirdek başına son seviye yaklaşık 20 ay, ender bir modüle yakın); enderlik oranları (%100 / 75 / 35 / 15); giriş ve sezon parçalarının üç katına çıkması ve bunun hedefi (ligde sıradan kart yaklaşık 14 ay, ender 22 ay, destansı 34 ay, efsanevi 47 ay); Devre Yolu'nun hedefsiz duraklarında miktar yerine seçilme ağırlığının kullanılması; sandıklardaki modül parçası oranlarına ve Devre Kredisi tarafına dokunulmaması.
+
+**Sınırlar.**
+- Sayılar beklenen değerdir. İlk arenalarda parça birkaç karta yoğunlaştığı için süreyi Devre Kredisi belirler; 36 modülün tamamı için darboğaz yine Devre Kredisidir (6,7 milyon).
+- Ücretli geçiş sezon yolu parçalarını iki katına çıkarır; hesaba girmedi.
+- Alınmamış giriş ve sezon ödüllerinde görünen kart değişir (deste yerine açık bütün modüller); alınmış ödüller makbuzdaki kartı ve miktarı gösterir.
+- Eski paket (v8) yeni sunucuyla: sandık oranlarını sunucudan okur, çekirdek parçasını ödül satırı olarak gösterir (istemci koduna bakarak çıkarım; v8 kaynağıyla denenmedi). İstemci kodu değişmedi.
+- Sandıktan çıkan çekirdek parçası iade edilince kayıt silinmez, sıfıra iner; iade testlerinin üç düzeneğinde kayıt baştan açıldı (iade kuralı değişmedi).
+- Telefon boyutunda Chrome'da görüldü: giriş takviminde çekirdek satırı ve mağazanın ödül listesinde çekirdek şansı ile parça sayısı. Sandıktan çekirdek parçasının çıktığı ve Devre Yolu ödülünün alındığı tarayıcıda, hiçbir şey gerçek cihazda görülmedi.
+
+## Görsel tur 2: mağaza sandıkları, kaynak simgeleri, ödül görselleri, alt çubuk (13 Ekim 2026, iş bilgisayarı)
+
+Kullanıcının isteği (kelimesi kelimesine):
+
+> Şimdi sırada mağaza içeriklerinin de yeni görsel simge setine uydurulması var. Mağazada bulunan sandıklar yenilensin. Ancak devre yolundaki sanıkların aynısı olmasın. Aynı görsel dil olsun ama birebir aynısı olmasın. Akı ve Devre Kredisi görselleri aynı şekilde güncellenmeli. Ödül ekranındaki görseller, sezon ödüllerinin sandıkları da aynı şekilde güncellensin. Alt dock ta tıklanan butonun ismi yazsın ve buton biraz büyüsün. Kart puzzle parça şekilleri de aynı şekilde güncellenmeli. Savaş alanında yine bir güncelleme olacaksa yeni görsel dil ve tasarıma göre düzenlensin.
+> Bunlardan sonra faz4 e geç.
+
+Alt çubuk cümlesi iki türlü okunuyordu: (a) adı yalnız açık sayfanın düğmesi yazar, diğerleri yalnız simgedir; (b) adlar hep kalır. Kullanıcıya soruldu; yanıtı: **"sorunun cevabı a"**.
+
+### Yapılanlar
+
+- **Mağaza sandıkları** (Bronz, Gümüş, Altın, Elmas): lig sandıklarının diliyle (dolu gövde, metal, koyu kontur) ama ayrı bir sandık olarak yeniden çizildi. Kapağı kubbe değil pahlı düz kapak; ortasında tek geniş kuşak ve baklava kilit var. Kademe yükseldikçe süs artar: Bronz'da tahta oluklar, Gümüş'te köşebent ve perçin, Altın'da kapakta taç, Elmas'ta kapaktan çıkan kristaller. Çizim tek yerde (`shopChestSvg`, `client/src/app.js`); mağaza, posta kutusu, sezon yolu, ödül önizlemesi, turnuva ödülleri ve sandık açılışı aynı çizimi kullanır. Haftalık ve takım turnuvası sandıkları kendi renklerini korur; kilit taşı haftalıkta yıldız, takımda altıgendir.
+- **Sandık açılışı:** mağaza sandığı açılırken kapağı tıkırdar, sunucu onaylayınca kalkar, içi aydınlanır ve ışınlar çıkar (eskiden üç kutudan oluşan çizimin kapağı dönüyordu). Hareket azaltma ve düşük grafik ayarında animasyonsuzdur.
+- **Kaynak simgeleri:** Akı mor kristal, Devre Kredisi üstünde devre darbesi olan altın para oldu; halka ve ince çizgi kalktı. Aynı takımda Akım (şimşek), deneyim (mavi yıldız), kupa, çekirdek parçası, takım puanı, sandık ve ücretli ürün simgesi de yeniden çizildi (`RESOURCE_TOKEN_SVG`). Üst bar, ödül satırları, Yükselt düğmesindeki bedel, mağaza paketleri, günlük emirler, Devre Yolu durakları ve maç sonu ödülleri aynı çizimi gösterir.
+- **Mağaza fiyatları:** sandık satın alma düğmesinde "2000 DK" / "500 Akı" yazısı yerine kaynağın simgesi ve sayı var; adı ekran okuyucu etiketinde durur.
+- **Ödül sayfaları:** Günlük Ödüller, Günlük Devre Emirleri ve Sezon Ödülleri yukarıdaki simgeleri ve sandıkları kullanır. Ödül bölümleri sayfasındaki üç satırın solunda kendi simgesi var (takvim, hedef, kupa).
+- **Alt çubuk (a):** adı yalnız açık sayfanın düğmesi yazar; o düğme genişler, yukarı doğru uzar ve simgesi büyür. Diğer dört düğme yalnız simgedir; adları `aria-label` ve `title` ile durur. Devre Yolu ya da ödül sayfaları gibi alt çubukta karşılığı olmayan bir sayfa açıkken hiçbir düğme ad yazmaz.
+- **Yapboz parçası:** modül ve evrensel parça dolu çizilir (sınıf renginde gövde, altta gölge, üstte ışık, koyu kontur, beyaz simge); eskiden koyu zeminde renkli çizgiydi.
+- **Savaş alanı:** Akım göstergesinin simgesi ve maç sonu ödül ekranındaki dört simge (kupa, Devre Kredisi, deneyim, takım puanı) ile Savaş Premium rozeti yeni takıma çekildi. Savaş kuralına, yerleşime ve karttaki "ϟ" bedel işaretine dokunulmadı.
+
+### Kullanıcının görmediği seçimler (Claude)
+
+Sandığın biçimi ve her kademenin süsü; sandık, simge ve parça renkleri; Akı'nın kristal, Devre Kredisi'nin para olarak çizilmesi; açık düğmenin ne kadar büyüdüğü (genişlik 1,62 kat, yükseklik 50 → 60 piksel, simge 33 → 36 piksel); mağaza fiyatının simgeyle yazılması; ödül bölümleri satırlarına simge eklenmesi; maç sonundaki kupa emojisinin çizime çevrilmesi; karttaki "ϟ" işaretinin olduğu gibi bırakılması. Kullanıcı yalnız ilk ekran görüntüsünü (mağaza ve alt çubuk, 360×640) gördü.
+
+### Doğrulama (13 Ekim, iş bilgisayarı)
+
+- İstemci 354 geçti, 2 atlandı (yeni dosya `client/tests/visual-pass-2-tokens-chests.test.js`, 9 test; `visual-pass-icons-chests.test.js` içinde üç test yeni görünüme göre güncellendi). `tools/release_guard.py` geçti. Sunucu kodu bu turda değişmedi; sunucu testleri yeniden koşulmadı.
+- Telefon boyutunda Chrome'da, yerel sunucuyla (`artifacts/gorsel-tur2-20261013/verify-tur2.js`, git'te izlenmez): 360×640, 320×568 (Android'in en küçük yazı boyu taklidiyle), 393×852, İngilizce 360×640 ve İngilizce 320×568 (en küçük yazı boyu); beşinde de 79 denetimin hepsi geçti (alt çubuğun beş sayfası, üst bar, dört sandık ve fiyat düğmeleri, hediye sandığın gerçekten açılması, yapboz parçaları, ödül bölümleri, 28 günlük takvim, emirler, sezon yolu ve önizlemesi, yatay taşma, konsol hatası).
+- Ayrıca tarayıcıda bakıldı: Devre Yolu durakları, haftalık turnuva sıralamasındaki ödül sandıkları, savaş ekranındaki Akım göstergesi, maç sonu ödül ekranı (maç teslim olunarak bitirildi).
+- **Gerçek cihazda hiçbir şey görülmedi.** Takım turnuvası sandıkları, posta kutusundaki sandık ve indirim günündeki üstü çizili fiyat tarayıcıda görülmedi (ilki yalnız stil ölçümüyle, diğerleri yalnız kod ve testle).
+
+## Görsel tur 3: mağaza, sayfalar, pencereler, ilk oyun deneyimi, ev ekranı (13 Ekim 2026, iş bilgisayarı, beşinci oturum)
+
+Kullanıcının isteği (kelimesi kelimesine; ekinde mağazanın 360×640 ekran görüntüsü vardı):
+
+> Mağazada arka plan açık mavi ve desen, sandıkların yerleştiği düz koyu mavi alan var vs. aşağı doğru kaydırdıkça bu düz renkler devam ediyor. Mağaza tasarımını düzenlemek lazım gibi.
+> İlk Oyun Deneyimi ekranlarında da yeni görsel dile göre güncellenecek bir şeyler varsa onu da yapalım.
+> Mesaj kutusu yanında bulunan üç çizgi içerisindeki sekmelerde de yeni görsel dile göre güncelleme varsa kontrol et.
+> Gerekirse yazı tipinde de güncelleme yapabilirsin.
+> Oyunda bulunan geri butonlar ve diğer buna benzer buton, hücre alan vs. yeni görsel dille hazırlanmalı.
+> Diğer yapay zeka aracının önerileri;
+> Renklerin anlamını tutarlılaştıralım. Yansıtıcı'nın üstteki "EPİK" etiketi altın, aşağıdaki enderlik göstergesi mor. Epik mor, efsanevi altın olarak aynı dili kullansın. Devre Yolu'nda da "Lider Panosu" düğmesi biraz daha sakin olabilir; asıl vurgu ödülün AL düğmesinde kalsın.
+> Ana ekrandaki orta boşluğu biraz kısaltalım. Lig kartı ile deste arasında geniş bir alan var. Merkezdeki Çekirdek görseli de büyük panelin içinde oldukça sade kalıyor; burada biraz daha karakterli bir simge iyi çalışır.
+> Sayısal bilgileri daha kolay okutalım. "500 + 0 evrensel / 28" ilk bakışta zor çözülüyor. Parça ve evrensel stoklarını ayrı göstermek; stat değişimlerini de "−0,01 sn" gibi birimleriyle yazmak daha net olur.
+
+### Yüzey dili (bu turda adı kondu)
+
+Zemin desenlidir; üstünde duran her şey dolu bir nesnedir. Dört yapı taşı var (`client/src/canon.css` sonunda "Görsel tur 3" bloğu):
+
+- **Levha:** yükseltilmiş panel (mavi geçişli gövde, açık üst kenar, koyu kontur, altta dudak). Kartlar, satırlar, pencereler.
+- **Yuva:** levhanın içine gömük hücre (koyu, iç gölgeli). Değer kutuları, giriş alanları, etkin olmayan sekme ve düğme.
+- **Düğme:** kalın gövde, alt dudak; basınca iner. Rengi işini söyler: **altın** ana eylem ve hazır ödül (BAŞLA, İLERİ, DEVAM, hediye sandık), **yeşil** satın alma ve ödül alma, **mavi** gezinme (geri, Lider Panosu), **turkuaz** seçili sekme ve ikincil eylem, **kırmızı** kapatma ve silme.
+- **Şerit:** bölüm başlığı (renkli bant, solunda simge).
+
+Düz koyu bölüm kutuları kalktı; renk nesnelerden geliyor.
+
+### Yapılanlar
+
+- **Mağaza:** iki bölümün düz koyu kutusu kalktı, başlıklar şerit oldu (sandıklar mavi, premium mor). Sandık kartı kademe renginde levha: üstte ad plakası, ortada büyüyen sandık çizimi (84×72), altında günlük hak rozeti ve düğme. Satın alma düğmesi yeşil, hediye altın; bakiye yetmeyince düğme gömük görünür. Paket kartlarında simge ortada ve büyük pakette daha büyük; bonus altın rozet; fiyat düğmesi yeşil. Sezon geçişi ve Savaş Premium mor gövdeli, altın çerçeveli geniş kart; fiyat düğmesi kartın altında tam genişlikte. Alt başlıklara (Akı Paketleri, Devre Kredisi Paketleri) simge eklendi. ÖDÜL LİSTESİ sekmesi şeridin sağ ucunda küçük düğme oldu. İndirim etiketi kartın köşesinde kırmızı rozet.
+- **Üç çizgi menüsünün sayfaları:** Kozmetik (sekmeler, seçenek karoları; seçili altın çerçeveli), Ödüller (üç bölüm düğmesi; Günlük Giriş Ödülleri, Günlük Devre Emirleri ve Sezon Ödülleri sayfalarında şerit başlık, levha kartlar, yuva hücreler), Arkadaşlar (şerit başlık, sekmeler, arama alanı), Ayarlar (dört sekme, form levhaları, giriş alanları; Hesap ve Gizlilik bölümü dahil; silme düğmesi kırmızı). Profil sayfası ve içindeki istatistikler de aynı dile çekildi.
+- **Geri düğmesi:** "← ÖDÜL BÖLÜMLERİ" mavi düğme oldu ve liste kayarken sayfanın sol altında sabit durur (eskiden 28 günlük takvimin en sonundaydı). Devre Yolu'ndaki geri düğmesi de aynı.
+- **Günlük giriş takvimi:** ödül satırlarının yazısı büyüdü (yaklaşık 6 pikselden 10 piksele), satırlar yuva oldu.
+- **Kartlar sayfası:** deste paneli levha; sınıf sekmeleri ve MODÜLLER / ÇEKİRDEK düğmeleri yeni sekme görünümünde; Bilgi mavi, Seç yeşil. Kart karolarına dokunulmadı.
+- **Etkinlik sayfası:** günlük meta kartı ve iki turnuva düğmesi levha; ok işareti altın rozet.
+- **Pencereler:** hesap (ilk açılış), günlük meta, mesaj kutusu, ödül listesi, sandık açılışı, unvanlar ve modül tanıtımı pencereleri levha gövdeli; düğmeleri yukarıdaki renk kuralıyla.
+- **İlk oyun deneyimi:** rehber kartı altın çerçeveli levha, İLERİ / BAŞLA altın düğme, ilerleme çubuğu kalın ve yeşil, "GÖSTERİLEN YERE DOKUN" turkuaz rozet, ok ve hedef halkası koyu konturlu. Savaş sırasındaki eski ipucu kartı da aynı görünümde.
+- **Yazı:** yazı tipi ailesi değişmedi. En küçük düğme yazıları 8 piksele çıkarıldı (sekmeler, emir ve sezon düğmeleri, hesap düğmeleri); Kartlar'daki altı sınıf sekmesi dar ekranda sığması için gövde yazı tipiyle (Rajdhani) yazılıyor.
+
+### Diğer aracın önerileri
+
+- **Enderlik rengi tek dil:** sıradan çelik, ender mavi, destansı mor, efsanevi altın. Bilgi penceresinde adın altındaki etiket rozet oldu ve enderliğin renginde (eskiden hep altındı); kimlik satırındaki simge de aynı renkte (eskiden hep altındı). Çekirdek penceresinde de aynı.
+- **Devre Yolu:** Lider Panosu altından sakin maviye çekildi; geri düğmesi mavi.
+- **Ev ekranı:** lig kartı ile deste arasındaki boş satır kalktı (360×640'ta 98 pikselden 12 piksele, 393×852'de 269 pikselden 12 piksele); artan yükseklik deste paneline gitti. Panelin ortasında artık çizilmiş bir Çekirdek amblemi var: altıgen metal yuva, içinde çekirdeğin renginde kristal ve çekirdeğe özgü işaret (yedi çekirdek için ayrı); arkasında dönen iki yörünge. Hareket azaltma ve düşük grafik ayarında durur. Seviye etiketi altın rozet.
+- **Sayılar:** bilgi penceresinde kartın parçası "500 / 28" diye yalın yazılıyor, evrensel parça yanında ayrı rozette (simgesi ve sayısı). Bir sonraki seviyenin farkı değerin birimiyle yazılıyor: "−0,01 sn", "+%0,63", "+0,4/sn"; azalan değerde eksi işareti (−).
+- Ayrıca düzeltildi (denetimde çıktı): 320 piksel genişlikte ev ekranındaki altıncı deste kartı panelden 5 piksel taşıyordu (bu turdan önce de öyleydi); sütunlar artık esniyor.
+
+### Kullanıcının görmediği seçimler (Claude)
+
+Bütün renkler ve biçimler; düğme renklerinin anlamı; şerit renkleri (sandık mavi, premium mor, günlük ödül turuncu, emirler kırmızı, arkadaş yeşil); premium kartların mor gövdesi ve düğmenin alta inmesi; "Temel paket" etiketinin yalın, bonusun rozet olması; geri düğmesinin sol altta sabit durması; Çekirdek ambleminin çizimi ve işaretleri; ev ekranında artan yüksekliğin deste paneline verilmesi; Lider Panosu'nun mavi olması; evrensel parçanın rozet olarak gösterilmesi ve ilerleme çubuğunun iki stoğun toplamını göstermeye devam etmesi; yazı tipi ailesinin değiştirilmemesi. **Kullanıcı bu turdan hiçbir ekran görüntüsü görmedi.**
+
+### Yapılmayanlar ve açık noktalar
+
+- **Yazı tipi ailesi:** başlık yazı tipi Orbitron'da ğ, ş ve İ yok; bu harfler yedek yazı tipiyle çiziliyor (`client/src/fonts.css` başındaki not). Türkçe harfleri olan bir başlık yazı tipine geçmek yeni dosya indirmeyi gerektirir (lisans okunur, kullanıcı onayı alınır) ve bütün ekranların yeniden ölçülmesini ister; bu turda yapılmadı.
+- Savaş ekranına, kart karolarına, takım sayfasının içine (takımı olan hesap), haftalık ve takım turnuvası ayrıntı sayfalarına, lider panosu ve oyuncu profili pencerelerinin içine dokunulmadı. Devre Yolu duraklarındaki AL düğmesi değişmedi.
+
+### Doğrulama (13 Ekim, iş bilgisayarı)
+
+- İstemci 366 geçti, 2 atlandı (yeni dosya `client/tests/visual-pass-3-surfaces.test.js`, 12 test; `card-upgrade-indicators.test.js` ve `visual-pass-icons-chests.test.js` farkın birimiyle yazılmasına göre güncellendi). `tools/release_guard.py` geçti. Sunucu kodu bu turda değişmedi; sunucu testleri yeniden koşulmadı.
+- Uçtan uca (yerel sunucu, kurulu Chrome): Android öykünmesi 9/9 (`onboarding`, `settings-layout`, `mobile-battle` 2/2, `startup-loading` 5/5); masaüstü 4/4 (`menu-navigation` 2/2, `beta33-season`, `battle-density`). `two-client-pvp` koşulmadı. Android koşusunun ilk testleri son iki küçük stil düzeltmesinden önce koştu (ev ekranı kuralının 600 pikselden geniş ekranlara da açılması; 340 pikselden dar ekranda deste sütunlarının esnemesi); ikisi de o testlerin ekran genişliğinde görünümü değiştirmez (Claude'un değerlendirmesi), Android koşusu yinelenmedi.
+- Telefon boyutunda Chrome'da (`artifacts/gorsel-tur3-20261013/verify-tur3.js`, git'te izlenmez): 360×640, 320×568 (Android'in en küçük yazı boyu taklidiyle), 393×852, İngilizce 360×640 ve İngilizce 320×568 (en küçük yazı boyu); beşinde de 85 denetimin hepsi geçti. Kapsam: ev ekranının ölçüleri ve amblem; Devre Yolu düğmeleri; mağazanın kartları ve düğmeleri (bakiyesi yeten hesapla); bilgi penceresinde enderlik rozeti, parça ve evrensel parça, birimli fark (Lazer ve Yansıtıcı); on bir sayfada yatay taşma, düğme yazılarının kırpılmaması ve en az 8 piksel olması; takvimde alınabilir ödülün altın düğmesi; geri düğmesinin liste ortasında görünmesi; mesaj kutusu; hesap ve günlük meta pencereleri; rehberin ilk beş adımı; konsol hatası. Bakiye ve parça sayıları yalnız görüntüde değiştirildi (sunucunun yanıtı tarayıcıda düzenlendi; sunucu kaydı aynı kaldı).
+- Denetimin yakaladığı ve düzeltilen kusurlar: 320 pikselde Kartlar'daki "Savunma" sekmesinin yazısı sığmıyordu; aynı genişlikte ev ekranında altıncı deste kartı panelden taşıyordu (bu turdan önce de); masaüstü genişliğinde amblem destenin üstüne biniyordu (ev ekranı kuralı yalnız dar ekrana yazılmıştı).
+- Ayrıca bakıldı: masaüstü boyutunda (1280×800) beş sayfa, taşma yok; yedi Çekirdek amblemi yan yana (`sheet-emblems.png`).
+- Tarayıcıda görülmeyenler: indirim günü rozeti ve üstü çizili fiyat; alınabilir emir ve alınabilir sezon ödülü düğmeleri; dolu mesaj kutusu kartı; takımı olan hesabın takım sayfası; modül tanıtımı ve unvanlar pencereleri; hesabı bağlı oyuncunun Ayarlar bölümleri; savaş sırasındaki eski ipucu kartı; ender ve efsanevi enderlik rozeti (sıradan ve destansı görüldü); ev ekranında Rezonans dışındaki altı amblem (yalnız yan yana çizimde görüldü). `dist/` derlemesi yeniden üretilmedi.
+- **Gerçek cihazda hiçbir şey görülmedi.** Ekran görüntüleri: `artifacts/gorsel-tur3-20261013/shots/` (beş yapılandırma), özet sayfalar aynı klasörde `sheet-final.png`, `sheet-v1.png` (yalnız iş bilgisayarında).
+
+## Görsel tur 4: tur 3'e kullanıcının yanıtı (13 Ekim 2026, iş bilgisayarı, altıncı oturum; uygulandı, yayınlanmadı, gerçek cihazda görülmedi)
+
+Kullanıcı görsel tur 3'ün dört özet görüntüsünü gördü ve şunu yazdı (kelimesi kelimesine):
+
+> Ev butonu ile takım butonu aynı renk olmuş onu düzeltelim.
+> Ana ekran çekirdek tasarımı çok büyümüş, pixselini düşürelim bir kısmı modül kartlarının arkasına inebilir. devre yolu ile savaş destesi arasında bir kısım boşluk kalabilir. arka plan tasarımını güzelleştirebilirsin. Eğer yazı tipi indirmen gerekiyorsa lisansı olan ve kullanımında skkıntı olmayan bir yazı tipi indirebilirsin.
+> Yapmadıklarım alanında saydıklarınıda yap. profilde yer alan devre koleksiyonu alanında da düzenleme gerekli gibi. Çokta çocuksu görüntüye düşmeyelim profesyonel dokunuşunu yap. Bunlardan sonra yeni bir sayfada faz 4 e geçeceğiz
+
+"Yapmadıklarım alanında saydıkların" şu listedir (Claude'un tur 3 sonundaki yanıtından, kelimesi kelimesine): **Dokunmadığım yerler:** Savaş ekranı, kart karoları, takımı olan hesabın takım sayfası, turnuva ayrıntı sayfaları, Devre Yolu'ndaki AL düğmesi. **Tarayıcıda göremediklerim:** İndirim günü rozeti, alınabilir emir ve sezon ödülü düğmeleri, ender ve efsanevi rozet.
+
+**Neden beşinci oturumda başlanmadı:** yanıt geldiğinde bağlam 462 bin belirteçti, haftalık hak %65 (tur 3, 75 bin belirteçlik bağlamdan başlayıp hakkın %5'ini kullandı). Bu tur tur 3'ten büyük (savaş ekranı ve yazı tipi değişimi bütün ekranların yeniden ölçülmesini ister) ve bu bağlamda her adım taze oturumdakinin katlarına mal olur. Hiçbir kod değişmedi; iş aşağıdaki planla yeni oturumda yapılır.
+
+### Plan (Claude'un okuması; her maddede önce yukarıdaki cümleye bakılır)
+
+1. **Alt çubuk:** Ev ve Takım düğmeleri bugün ikisi de yeşil-turkuaz. Biri ayrılır (öneri: Ev markanın turkuazında kalır, Takım başka bir renge geçer; ilk ekran görüntüsünde gösterilir). Yer: `client/src/canon.css`, "Alt çubuk: ayrık hücreler, renkli simgeler" bölümü.
+2. **Ev ekranı:** amblem küçülür (bugün 360×640'ta 126, 393×852'de 210 piksel; kural "Görsel tur 3" bloğunda, `.home-core-hero-glyph.is-emblem` ve `.home-core-hero` dolgusu). Bir kısmı deste kartlarının arkasına inebilir. Lig kartı ile deste paneli arasına boşluk geri gelir (bugün ızgaranın üçüncü satırı `0`). Panelin arka planı güzelleştirilir (kullanıcı serbest bıraktı).
+3. **Profil, Devre Koleksiyonu:** `.profile-honor-showcase` (Sıralama Kupaları ve Rozetler) yeniden düzenlenir; bugün iki küçük kutu ve çok küçük yazı var. Veri: `PROFILE_RANK_TROPHIES`, `PROFILE_BADGES` (`client/src/app.js`).
+4. **Dokunulmayan yerler:**
+   - Savaş ekranı. Okuma: yalnız yüzey (renk, kontur, gölge, düğme görünümü); yerleşim, ölçü ve savaş kuralı değişmez (`e2e/battle-density.spec.js` ve `e2e/mobile-battle.spec.js` ölçü sınar). Önce bir ekran görüntüsü gösterilir.
+   - Kart karoları (`.collection-module-tile`, `unifiedModuleTile`).
+   - Takımı olan hesabın takım sayfası (düzenek: `gridshard-team-probe-server`, kapı 8882; iskelet `artifacts/oyun-duzenlemeleri-20261012/tools/verify-g9-g10.js`, yalnız iş bilgisayarında).
+   - Turnuva ayrıntı sayfaları (`#weekly-event-screen`, `#team-event-screen`), lider panosu ve oyuncu profili pencereleri.
+   - Devre Yolu'ndaki AL düğmesi (`.arena-reward-node`, alınabilir durak).
+5. **Görülmeyen durumlar tarayıcıda görülür:** indirim günü rozeti ve üstü çizili fiyat, alınabilir emir ve alınabilir sezon ödülü düğmeleri, ender ve efsanevi enderlik rozeti, dolu mesaj kutusu kartı (sunucu yanıtı tarayıcıda düzenlenerek; `verify-tur3.js` içindeki `context.route` örneği).
+6. **Yazı tipi:** başlık yazı tipi Orbitron'da ğ, ş ve İ yok. Öneri: Oxanium (Google Fonts, SIL Open Font License 1.1; Latin ve genişletilmiş Latin). İndirmeden önce lisans metni okunur ve Türkçe harflerin gerçekten bulunduğu doğrulanır; dosya adı, kaynak ve boyut kullanıcıya söylenir. **İndirme izni bu oturumun sohbetinde verildi; yeni oturumda kullanıcı sohbette yinelemeden indirme yapılmaz** (yanıtta kullanıcıdan açılış cümlesine eklemesi istendi). Dokunulacak yerler: `client/assets/fonts/` (dosyalar ve `OFL-*.txt`), `client/src/fonts.css`, `--gs-font-display` (`client/src/styles.css`), Ayarlar → Hesap ve Gizlilik → Açık kaynak lisansları, yazı tipi dosyalarını sayan testler ve derleme listeleri (aranacak: `orbitron`). Değişimden sonra bütün ekranlar yeniden ölçülür (`verify-tur2.js`, `verify-tur3.js`, uçtan uca testler; savaş ekranı dahil).
+7. **"Çokta çocuksu görüntüye düşmeyelim profesyonel dokunuşunu yap":** okuma: bu turun bütün işleri için ölçü, ayrıca tur 3'ün kalın konturu, alt dudağı ve parlak geçişleri bir kademe sakinleştirilir. Yaygınlaştırmadan önce tek ekranda (mağaza) önce-sonra görüntüsü kullanıcıya gösterilir. Faz 4 çizimleri için de geçerli sayılır (Claude'un yorumu).
+8. Doğrulama, belgeler, devir notu. **Faz 4 bundan sonra, ayrı bir yeni oturumda** (kullanıcı: "Bunlardan sonra yeni bir sayfada faz 4 e geçeceğiz").
+
+### Altıncı oturumda gelen ek istekler (kullanıcı, kelimesi kelimesine)
+
+Oturumun açılış mesajı:
+
+> checkpoint oku, yazı tipini indirebilirsin.
+> Ana ekrandaki çekirdekler için yaptığın yeni tasarımlar kartlar/çekirdekler alanında da aynı olması. hatta savaş alanında da aynı görüntü ve efektleri kullanmalı. Ona göre profesyonel dokunuşu yapalım.
+
+İş sürerken (önizleme penceresinden ara halleri görerek):
+
+> kartlar/çekirdek alanında rezonans çekirdeği ile diğer çekirdeklerin kutuları farklı boyutlarda rezonans çekirdeği de aynı boyuta taşınsın.
+> Savaş alanında ortadaki çekirdek hücresinde ortalanmamış görünüyor. bu tür hataları görüp teslim etmeden tamamlamalısın
+
+> savaş alanındaki emoji yuvarlağını savaş alanı içine sağ alt köşeye taşısak daha mı güzel olur.
+
+### Yapılanlar
+
+- **Tek Çekirdek amblemi.** Ev ekranındaki çizim artık çekirdeğin göründüğü her yerde: Kartlar → Çekirdek (seçili çekirdek ve yedi karo), çekirdek bilgi penceresi (amblem solda, ad ve enderlik sağında), savaş alanı (iki tarafın çekirdek hücresi; rakibin çekirdeği kendi türünün amblemiyle, tür sunucunun zaten gönderdiği `core_type` alanından), Çekirdek gücü düğmesinin ortası, maç sonu kartı, profildeki deste kartı, Devre Yolu'nda "bu arenada açılan çekirdek", ödül satırlarındaki çekirdek parçası (yalnız gövde). Hareket de aynı: dönen iki yörünge ve yanıp sönen parıltı. Amblem üç katman oldu (yörünge, gövde, parıltı; `coreEmblemMarkup`, `mountCoreEmblem`): hareket ayrı katmanda döner, gövde yeniden çizilmez; hareket azaltma ve düşük grafik ayarında durur. Kilitli çekirdeğin ve yok edilmiş çekirdeğin amblemi dönmez. Eski tek harfli simgeler (◈ ⬡ ϟ …) çekirdek için kalmadı.
+- **Savaşta çekirdek hücresi.** Amblem hücrenin tam ortasında (iki eksende, ölçülerek; ilk halinde 2 piksel sağdaydı, kullanıcı gördü). Neden: kart bir ızgara ve simge sütun 1'e bağlıydı; amblem ızgara yerleşiminden çıkarıldı ve dört kenardan %12 içeri çekildi.
+- **Kartlar → Çekirdek karoları aynı boyda.** Tek çekirdekli enderlik grubunda karo yarım genişlikte ve ortadaydı (Rezonans); artık diğerleriyle aynı.
+- **Emoji düğmesi** savaş alanının içine, sağ alt köşeye taşındı (`#duel-arena` içinde; 29 → 34 piksel). Akım satırının üstünden kalktı. Tepsi yine düğmenin üstünde açılır.
+- **Profesyonel dokunuş.** Tur 3'ün yüzey dili bir kademe sakinleşti ve tur 3 stil bloğu bu ölçülerle yeniden yazıldı: kontur 1,5–2 → 1 piksel; alt dudak 3–6 → 2 piksel ve çevresindeki koyu halka kalktı; üst parlama ve iç gölge hafifledi; geçişlerde üst renk alta yaklaştı ve doygunluk biraz indi (parlak "şeker" görünümü gitti); köşe yarıçapları yaklaşık %80; renkli çerçeve 2 → 1,5 piksel; düğme basınca 2 yerine 1 piksel iner. Üst bar, alt çubuk, ev ekranındaki lig kartı ve SAVAŞ düğmesi de aynı ölçülere çekildi.
+- **Yazı tipi: Oxanium.** Başlık ve düğme yazısı Orbitron'dan Oxanium'a geçti (SIL Open Font License 1.1; Google Fonts'tan iki dosya: `oxanium-200-800-latin.woff2` 14.044 bayt, `oxanium-200-800-latin-ext.woff2` 7.824 bayt; lisans metni `OFL-Oxanium.txt` 4.384 bayt, kaynak `github.com/google/fonts`). Türkçe harflerin hepsi (ğ, ş, İ, ı dahil) kendi çiziminde; indirmeden sonra Chrome'da ölçülerek doğrulandı. Oxanium dar olduğu için `size-adjust:%109` ile çizilir; böylece yüzlerce yazı boyu yeniden yazılmadı. Orbitron yalnız GRIDSHARD marka yazısında kaldı (açılış ekranı ve ev ekranının başlığı; `--gs-font-brand`). Lisans metni oyunun içinde de var (Ayarlar → Hesap ve Gizlilik → Açık kaynak lisansları).
+- **Alt çubuk:** Takım düğmesi mor (Ev ile aynı yeşil-turkuazdaydı). Beş düğme: altın, mavi, turkuaz, mor, pembe.
+- **Ev ekranı:** amblem küçüldü (360×640'ta 126 → 93 piksel; 393×852'de 210 → 124 piksel; en çok 132) ve alt kısmı deste tepsisinin arkasına iniyor; lig kartı ile panel arasında boşluk var (360×640'ta yaklaşık 50 piksel); ekran uzadıkça yükseklik boşluk ile panel arasında paylaşılır, panel 290 pikselde durur. Panelin zemini: çekirdeğin renginde ışık ve kenarlara doğru sönen ince altıgen ızgara. Uzun ekranda (700 piksel ve üstü) amblemin üstünde çekirdeğin adı yazar.
+- **Profil, Devre Koleksiyonu:** iki küçük kutu ve "henüz kazanılmadı" satırı yerine yedi yuva: üç sıralama kupası ve dört rozet. Kazanılan kendi renginde (altın, gümüş, bronz, turkuaz) ve çerçeveli, kazanılmayan soluk. Simgeler çizim (emoji ve yıldız karakteri yerine). Başka oyuncunun profilinde de aynı.
+- **Dokunulmayan yerler:**
+  - Savaş ekranı (yalnız yüzey; yerleşim, ölçü, kural aynı): raf levha, Akım satırı yuva, raf kartları ve devredeki modüller levha karo, rakip destesi ve VS rozeti aynı dilde; maç sonu kartları ve ödül ekranı levha, DEVAM altın.
+  - Kart karoları: levha gövde, üst kenarda sınıf renginde bant, simge neon parlamasız.
+  - Takımı olan hesabın takım sayfası: desenli zemin, kimlik kartı ve bölümler levha, değerler iki sütunlu yuva ızgarası (eskiden her değer ayrı uzun satırdı), üye ve istek satırları yuva, sekmeler ve düğmeler renk kuralıyla (kur / başvur / iste yeşil, ayrıl / reddet kırmızı, kaydet / davet turkuaz). Takımsız hesabın liste ve kurma ekranları da.
+  - Turnuva ayrıntı sayfaları: başlık şerit (haftalık mavi, takım mor), kurallar ve takvim levha, değer kutuları ve sıralama satırları yuva, ilk üç sıra altın / gümüş / bronz, katılma düğmesi altın, sekmeler eşit bölünür.
+  - Devre Yolu: lig sandığının AL düğmesi yeşil; alınabilir durak altın çerçeveli levha ve üstünde yeşil AL rozeti.
+- **Görülmeyen durumlar görüldü:** indirim günü (köşe rozeti, üstü çizili fiyat), alınabilir emir (gerçek: iki kısa savaşla "2 savaş tamamla" emri tamamlandı), alınabilir sezon ödülü (yalnız görüntüde taklit; aşağıda), ender ve efsanevi enderlik rozeti, alınabilir Devre Yolu durağı ve lig sandığı.
+
+### Kullanıcının görmediği seçimler (Claude)
+
+Sakinleştirmenin bütün ölçüleri (kontur, dudak, yarıçap, renk); Oxanium'un seçimi (beşinci oturumda önerildi, kullanıcı indirme izni verdi), %109 büyütme ve marka yazısının Orbitron'da kalması; Takım düğmesinin moru; ev ekranındaki ölçüler, panelin altıgen zemini ve çekirdek adının eklenmesi; amblemin maç sonu, profil, Devre Yolu ve ödül satırlarına da konması (kullanıcı Kartlar → Çekirdek ve savaş alanını saydı); Devre Koleksiyonu'nda kazanılmamış kupa ve rozetlerin de soluk gösterilmesi ve çizimleri; takım istatistiklerinin iki sütuna alınması; Devre Yolu durağına AL rozeti eklenmesi; emoji düğmesinin 34 piksel olması. Kullanıcı oturum ortasında iki ilk bakış görüntüsü gördü (ev, mağaza önce-sonra, çekirdekler, savaş) ve ayrıca önizleme penceresinden ara halleri izledi; takım, turnuva, profil ve Devre Yolu'nun son halini görmedi.
+
+### Yapılmayanlar ve açık noktalar
+
+- **Dolu mesaj kutusu kartı** yine görülmedi (yanıtın biçimi okunmadı).
+- **Alınabilir sezon ödülü** gerçek veriyle görülmedi: emirler ve sezon canlı bağlantıdan geldiği için yanıt düzenlenerek taklit edilemedi; ilk kilitli hücre tarayıcıda "alınabilir" yapılıp düğmenin görünümü ölçüldü (sunucuya istek gitmedi).
+- İndirim günü, alınabilir Devre Yolu durağı ve lig sandığı, kazanılmış kupa ve rozetler, bakiye ve parça sayıları yalnız görüntüde değiştirildi (sunucunun yanıtı tarayıcıda düzenlendi; sunucu kaydı aynı kaldı).
+- Lider panosu ve oyuncu profili pencerelerinin içi ayrıca ele alınmadı (profil penceresindeki koleksiyon ve çekirdek amblemi ortak koddan geliyor; pencere tarayıcıda açılıp bakılmadı).
+- Savaşta yedi çekirdekten yalnız Rezonans görüldü (yeni hesap); diğer altısının amblemi savaşta ve karolarda kilitli halde görüldü.
+- `dist/` derlemesi yeniden üretilmedi. **Gerçek cihazda hiçbir şey görülmedi.**
+
+### Doğrulama (13 Ekim, iş bilgisayarı)
+
+- İstemci 379 geçti, 2 atlandı (yeni dosya `client/tests/visual-pass-4-emblem-surfaces.test.js`, 13 test; `visual-pass-3-surfaces.test.js` ve `embedded-fonts.test.js` yeni değerlere göre güncellendi). `tools/release_guard.py` geçti. Sunucu kodu bu turda değişmedi; sunucu testleri yeniden koşulmadı.
+- Uçtan uca (yerel sunucu, kurulu Chrome): Android öykünmesi 9/9 (`onboarding`, `settings-layout`, `mobile-battle` 2/2, `startup-loading` 5/5); masaüstü 5/5 (`menu-navigation` 2/2, `beta33-season`, `battle-density`, `beta381-battle-events`). `two-client-pvp` koşulmadı. Masaüstü boyutunda (1280×800) savaş ekranına da bakıldı: iki çekirdek amblemi hücrenin ortasında, emoji düğmesi alanın sağ alt köşesinde.
+- Telefon boyutunda Chrome'da (`artifacts/gorsel-tur4-20261013/run-all.sh`, git'te izlenmez): 360×640, 320×568 (Android'in en küçük yazı boyu taklidiyle), 393×852, İngilizce 360×640 ve İngilizce 320×568 (en küçük yazı boyu); her birinde 84 denetim (ev 14, çekirdek ve savaş 16, diğerleri 54), beşinde de hepsi geçti. Kapsam: ev ekranının ölçüleri (boşluk, amblemin boyu ve tepsinin arkasına inmesi, ad), alt çubuk renkleri, Oxanium'un yüklenmesi; çekirdek karolarının aynı boyda olması; savaşta iki çekirdek ambleminin hücrenin ortasında olması (0,75 piksel), güç düğmesindeki amblem, emoji düğmesinin yeri ve tepsisi; mağazada indirim günü; alınabilir emir ve sezon düğmesi; Devre Yolu'nda AL rozeti ve lig sandığı düğmesi; kart karoları; ender ve efsanevi rozet; profil koleksiyonu ve çekirdek; iki turnuva sayfası (bütün sekmeler); on dört sayfada yatay taşma, düğme yazılarının kırpılmaması ve en az 8 piksel olması; konsol hatası.
+- Takımı olan hesap (yalnız takım kurma bedeli sıfır olan deneme sunucusu, 360×640): lider ve bir üyeyle takım sayfasının bütün bölümleri, yönetim sayfaları ve takım turnuvası; 9 denetim geçti (taşma ve kırpılma).
+- Denetimin ve gözün yakaladığı, düzeltilen kusurlar: savaşta amblem ilk yazımda hiç görünmüyordu (yeni tarayıcılar hizalamayı mutlak konumlu kutuya da uyguluyor), sonra 2 piksel sağdaydı; ev ekranında uzun ekranda amblem tepsiye değil panelin ortasına oturuyordu; çekirdek bilgi penceresinde amblem adın üstüne biniyordu; takım ve turnuva sekmelerinin yazısı 6 pikseldi.
+
+## Görsel tur 5: modül amblemleri, ev ekranında uzun ekran, mağaza ölçüleri (13 Ekim 2026, iş bilgisayarı, yedinci oturum; uygulandı, yayınlanmadı, gerçek cihazda görülmedi)
+
+Kullanıcı görsel tur 4'ün özet görüntülerini gördü ve oturumu şöyle açtı (kelimesi kelimesine):
+
+> Son olarak modüller kaldı yeni tasarım diline göre dokunmadığımız. Modülleride yeni tasarım dili ile güncelleyelim. Ev Uzun Ekran görüntüsünde savaş destesinin üst kenarı uzamış ona gerek yok aynı korunsun. Devre yolu ile savaş destesi arasındaki mesafe artsın uzun ekranda yeterli. Mağaza içeriklerinin boyutları fazla ve gereksiz büyütülmesini azaltarak tamamlayalım ve faz 4 e geçelim.
+
+İş sürerken, önizleme penceresinden ara halleri görerek iki mesaj daha yazdı:
+
+> Bilgi penceresinde amblemler eskisi gibi arka planda renklerini arkaya yayarak duracak şekilde ayarla. Gerekirse yazı boyutunu bir punto küçültürsün. Ama yerleşim eskisi gibi olsun.
+> Yapboz parçaları içindeki amblemler ortalanmış değil.
+> Çekirdeklerinde enderlik rozetlerini ayarla.
+
+> çekirdeklerin bilgi ekranlarını da aynı şekilde isim üstte amblemler modüller gibi arka planda aşağıda.
+> bronz sandık hediyesi bilgi yazısı ve sandık yenileme bilgi yazısı da ödül listesine alınsın. orada durmasın
+
+### Yapılanlar
+
+- **Modül amblemleri.** 36 modülün ve Çekirdek'in tek harfli yazı işareti (↯ ⬡ ❄ …) yerine çizilmiş amblemi var: sandıklar, kaynak simgeleri ve Çekirdek amblemiyle aynı dil (dolu gövde, aydınlık ve gölge yüz, koyu kontur), renk modülün sınıfından (saldırı kırmızı, savunma mavi, destek yeşil, sistem turkuaz, sabotaj mor). Çizimler `client/src/battle/module-card-view.js` içinde (`emblemFor`), bağlama `mountModuleEmblem` ile (`client/src/app.js`, 18 yer): ev ekranındaki deste, Kartlar (deste ve 36 karo), bilgi penceresi, yapboz parçası, Devre Yolu'nda açılan modüller, profil ve istatistik destesi, modül tanıtım penceresi, takım istek kartı, savaşta raf, devre ve rakip destesi, maç sonu hasar satırları. Tanınan işaretler korundu (Lazer şimşek, Kalkan kalkan, Soğutucu kar tanesi, EMP yasak işareti, Güçlendirici artı); keyfi olanlar nesneye döndü (Onarım hilal yerine anahtar, Füze roket, Krono kronometre, Batarya pil …). Kilitli modülün amblemi gri. Eski yazı işareti yalnız yedek yolda duruyor.
+- **Bilgi penceresi (modül ve çekirdek).** Yerleşim eskisi gibi: ad ve enderlik rozeti üstte ortada, amblem arkada aşağıda ortada ve rengini arkaya yayıyor (ışık halesi; modülde ayrıca renkli gölge). Amblem artık karartma katmanının üstünde. Ad bir punto küçüldü (1,05 → 0,96 rem): 360 genişlikte rozet amblemin üstüne binmiyor, kısa ekranda en çok 8 piksel arkasında kalıyor. Çekirdek penceresi tur 4'te amblemi solda gösteriyordu; kullanıcının ikinci mesajıyla modüldeki yerleşime döndü. İlk yazımda modül penceresini de sola almıştım; kullanıcı düzeltti.
+- **Yapboz parçasındaki amblem.** Parçanın solunda ve altında girinti var; amblem gövde karesinin ortasında durunca girintilere taşıyordu. Artık girintilerin dışında kalan dolu alanın ortasında (%46,6 / %53,2), girintilere taşmayacak boyda ve beyaz (parça zaten sınıf renginde).
+- **Çekirdeklerde enderlik rozeti.** Kartlar → Çekirdek karolarındaki düz "Yaygın" yazısı, bilgi penceresindeki rozetle aynı oldu (büyük harf, enderlik renginde hap); çekirdek bilgi penceresindeki rozet de büyük harf (modüldekiyle aynı).
+- **Ev ekranı, uzun ekran.** Deste paneli her ekranda aynı boyda (150–161 piksel; 360×640'takiyle aynı); üst kenarı uzamıyor. Ekran uzadıkça artan yükseklik lig kartı ile panel arasına gidiyor (393×852'de 107 → 258 piksel), panel ile SAVAŞ düğmesi arası en çok 48 piksel. 360×640 ve 320×568 ölçüleri değişmedi (boşluk 63,6 / 27,2; panel 160,4 / 150). Uzun ekranda panelde yazan çekirdek adı kalktı (tur 4'te Claude eklemişti; panel kısa ekrandakiyle aynı olsun diye).
+- **Mağaza ölçüleri.** Sandık kartı 206 → 155 piksel (sandık çizimi 84×72 → 63×54, düğme 36 → 30), paket kartı 159–167 → yaklaşık 125, premium kart 117 → yaklaşık 95, bölüm şeridi 42 → 34 piksel, aralıklar ve yazılar bir kademe küçük (en küçük yazı 8 piksel). 360×640'ta mağazanın boyu 1805 → 1371 piksel (3,5 → 2,7 ekran); dört sandık kartı ilk ekranda.
+- **Ödül Listesi.** "Bronz Sandık hediyesi 8 saatte bir yenilenir." ve "Alım hakları her gün yenilenir (saat …)." yazıları mağaza sayfasından kalktı, ÖDÜL LİSTESİ penceresinin başına (başlığın altına) alındı.
+
+### Kullanıcının görmediği seçimler (Claude)
+
+Bütün amblem çizimleri ve hangi modülün hangi nesneyle çizildiği; sınıf renklerinin tonları; yapboz parçasında amblemin beyaz çizilmesi; her yerdeki amblem boyutları; Kartlar → Çekirdek karolarına rozet konması (kullanıcı "çekirdeklerinde enderlik rozetlerini ayarla" dedi; karo ve pencere birlikte ele alındı); ev ekranında alt boşluğun 48 pikselde durması ve çekirdek adının kalkması; mağazadaki bütün yeni ölçüler; notların Ödül Listesi'nde listenin üstüne konması. Kullanıcı ara halleri önizleme penceresinden izledi; son hali özet görüntülerle gönderildi.
+
+### Yapılmayanlar ve açık noktalar
+
+- **Faz 4 başlamadı** (kullanıcı "tamamlayalım ve faz 4 e geçelim" dedi): bu tur bittiğinde 5 saatlik kullanım hakkı dolmak üzereydi ve bağlam 350 bin belirteci geçmişti; Faz 4 yeni oturumda başlar.
+- Modül tanıtım penceresi (arena açılışı), takım istek kartı, sayaç yongaları ve masaüstü havuz ekranındaki amblemler tarayıcıda açılıp görülmedi (stil kuralı var, ölçülmedi).
+- Eski stil dosyalarında artık kullanılmayan `.shop-gift-note` / `.shop-limit-note` kuralları duruyor (tur 3 bloğundakiler kaldırıldı).
+- `dist/` derlemesi yeniden üretilmedi. **Gerçek cihazda hiçbir şey görülmedi.**
+
+### Doğrulama (13 Ekim, iş bilgisayarı; `artifacts/gorsel-tur5-20261013/run-all.sh`, depoda izlenmez)
+
+- Yeni test dosyası `client/tests/visual-pass-5-module-emblems.test.js` (9 test); güncellenenler: `visual-pass-2-tokens-chests`, `visual-pass-3-surfaces`, `visual-pass-4-emblem-surfaces`, `league-road-and-module-unlocks`, `shop-gift-on-bronze-card`, `store-chest-daily-limit`. Sunucu kodu bu turda değişmedi; sunucu testleri koşulmadı.
+- Telefon boyutunda Chrome'da 360×640, 320×568 (en küçük yazı boyu taklidiyle), 393×852 ve İngilizce 360×640: ev ekranı ölçüleri, mağaza (kart boyu, dört sandığın ilk ekranda olması, düğme yazıları), amblemlerin her ekranda kare ve kabının ortasında olması, iki bilgi penceresinin yerleşimi, yapboz parçası, çekirdek rozetleri, Ödül Listesi notları, taşma ve konsol hatası. Ayrıca 412×915 ve 360×800'de ev ekranı; tur 4'ün çekirdek ve yüzey denetimleri 360×640'ta; uçtan uca testler (yerel sunucu, kurulu Chrome).
+- Ham sonuç: istemci 390 test: 388 geçti, 2 atlandı, başarısız yok; `tools/release_guard.py` geçti; telefon boyutunda dört yapılandırmanın (360×640, 320×568 en küçük yazı boyu, 393×852, İngilizce 360×640) her birinde mağaza 6/6 ve amblem / pencere denetimleri 27/27 geçti; ev ekranı 360×640, 320×568 ve İngilizce 360×640'ta 7/7, uzun ekranlarda (360×640 + 412×915 + 360×800 birlikte) 23/23 geçti; 393×852 tek başına koşulduğunda "panel 360×640'takiyle aynı boyda" denetimi karşılaştıracak ölçü bulamadığı için düştü (denetimin kusuru), bu yüzden 360×640 ile birlikte yeniden koşuldu: 15/15 denetim geçti; tur 4 denetimleri 360×640'ta 16/16 ve 54/54 geçti; uçtan uca masaüstü 5/5 geçti (`menu-navigation`, `beta33-season`, `battle-density`, `beta381-battle-events`); Android öykünmesinde projenin tamamı koşuldu: 10 geçti, 2 düştü. Düşen ikisi `two-client-pvp` testleri; bu koşu yalnız yapay zeka eşleşmeli yerel sunucuya karşıydı ve o testler insan eşleşmesi isteyen kendi sunucusuyla koşulur (önceki oturumlarda da bu kipte koşulmadı). Nedenin bu olduğu Claude'un çıkarımıdır; `two-client-pvp` kendi sunucusuyla bu oturumda koşulmadı.
+- Denetimin ve ölçümün yakaladığı, düzeltilen kusurlar: bilgi penceresinde amblem karartma katmanının altında kalıyordu; Devre Yolu'ndaki "açılan modül" düğmesinde amblem 9 piksel soldaydı; yapboz parçasında amblem girintilere taşıyordu; ev ekranında alt boşluk ilk yazımda 12 piksel fazlaydı (ızgara aralığı hesaba katılmamıştı).
+
 ## Faz 4 — kozmetik içerik
 
 - [ ] **G1. Arka planın gerçekten değiştiğini görmek için "Uç" oyuncusuna bir arka plan açılması.** Canlı veriye dokunur: yayın oturumunda, kullanıcının o anki onayıyla, küçük bir betikle yapılır. Öncesinde arka plan değişiminin çalıştığı yerel sunucuda doğrulanır. Arka plan çeşidi artırılabilir.
@@ -327,6 +603,10 @@ Varsayılan yol: desenler, karakterler ve hareketli emojiler oyunun kendi çizim
 
 | Tarih | Ne yapıldı |
 |---|---|
+| 13 Ekim 2026 (iş bilgisayarı, yedinci oturum) | **Görsel tur 5 uygulandı:** 36 modülün çizilmiş amblemi (oyunda modülün göründüğü her yerde); bilgi pencerelerinde eski yerleşim (ad üstte, amblem arkada aşağıda; çekirdek penceresi de); yapboz parçasında ortalanmış amblem; çekirdeklerde enderlik rozeti; ev ekranında uzun ekranda aynı boyda panel ve büyüyen üst boşluk; küçülen mağaza ölçüleri; yenilenme notları Ödül Listesi'nde. Ayrıntı yukarıda, "Görsel tur 5" başlığında. Sunucu değişmedi. Yayınlanmadı, gerçek cihazda görülmedi. Faz 4 başlamadı. |
+| 13 Ekim 2026 (iş bilgisayarı, altıncı oturum) | **Görsel tur 4 uygulandı:** tek Çekirdek amblemi (ev, Kartlar → Çekirdek, bilgi penceresi, savaş alanı, güç düğmesi, maç sonu, profil, Devre Yolu); yüzey dilinin sakinleştirilmesi (ince kontur, alçak dudak, daha az parlak geçiş); başlık yazı tipi Oxanium; Takım düğmesi mor; ev ekranında küçülen ve destenin arkasına inen amblem; profilde Devre Koleksiyonu yuvaları; savaş ekranı, kart karoları, takım sayfası, turnuva ayrıntı sayfaları ve Devre Yolu AL düğmesi; emoji düğmesi savaş alanının sağ alt köşesinde. Ayrıntı yukarıda, "Görsel tur 4" başlığında. Yayınlanmadı, gerçek cihazda görülmedi. |
+| 13 Ekim 2026 (iş bilgisayarı, beşinci oturum) | **Görsel tur 3 uygulandı:** mağazanın yeniden tasarımı (şerit başlıklar, kademe renginde sandık kartları, yeşil fiyat düğmeleri), üç çizgi menüsünün sayfaları, profil, kartlar ve etkinlik sayfaları, pencereler ve ilk oyun deneyimi katmanı yeni yüzey dilinde (levha, yuva, düğme, şerit); geri düğmesi sabit; ev ekranında orta boşluk kalktı ve çizilmiş Çekirdek amblemi geldi; enderlik rengi tek dil; parça ve evrensel parça ayrı; değer farkları birimiyle. İstemci 366 test geçti, 2 atlandı; uçtan uca Android öykünmesi 9/9, masaüstü 4/4; telefon boyutunda beş yapılandırmada 85 denetimin hepsi geçti. Yazı tipi ailesi değişmedi. Sunucu değişmedi. Yayınlanmadı; gerçek cihazda görülmedi; kullanıcı bu turdan ekran görüntüsü görmedi. |
+| 13 Ekim 2026 (iş bilgisayarı, dördüncü oturum) | **Görsel tur 2 uygulandı:** yeni mağaza sandıkları (lig sandıklarının diliyle, ayrı çizim) ve açılışı; dolu çizilen Akı, Devre Kredisi ve diğer kaynak simgeleri; simgeli mağaza fiyatı; dolu yapboz parçası; ödül bölümleri simgeleri; alt çubukta yalnız açık sayfanın adı ve büyüyen düğme (kullanıcının yanıtı: "a"); savaşta Akım ve maç sonu simgeleri. İstemci 354 test geçti; telefon boyutunda beş kipte 79'ar denetim geçti. Sunucu değişmedi. Yayınlanmadı; gerçek cihazda görülmedi. Faz 4 başlamadı. |
 | 13 Ekim 2026 (ev bilgisayarı) | **Modül çevrimleri (D13'ün tamamı) ve görsel tur uygulandı:** 36 modülün çevrimi ve modüle özgü değerleri; dolu çizilen lig sandıkları ve açılışı; yazılarla eşleşen simgeler, ayrık hücreli alt çubuk, desenli zemin; simgeli Yükselt düğmesi; renkli bilgi penceresi; Çekirdek gücü düğmesi. Sunucu 1491, istemci 347 test geçti. Yayınlanmadı; gerçek cihazda görülmedi; denge yalnız seviye 1 desteleriyle ölçüldü. |
 | 12–13 Ekim 2026 (gece, ev bilgisayarı) | R1–R6 uygulandı (arenada modül tanıtımı; yeni kupa ölçeği ve mevcut oyuncuların kupasının taşınması; efsanevi modüller ilk ligde; evrensel parçalı lig sandıkları; şeffaf yol hücresi, renkle soluklaşan aşamalar; GRIDSHARD Sandığı ve son unvan 10000 kupada). **Faz 3 uygulandı** (D16, D14, D13'te Güçlendirici, D10 modül yetenekleri, D12 çekirdek yetenekleri; D11 denetlendi). Sunucu 1424, istemci 335 test geçti; uçtan uca ve telefon boyutunda tarayıcı denemeleri geçti. Yayınlanmadı; gerçek cihazda görülmedi; yeteneklerle denge ölçülmedi. |
 | 12 Ekim 2026 (akşam) | Kullanıcı Faz 2'yi inceledi ve dört düzeltme istedi (R1–R4: arenada da modül tanıtımı; arenalar 5400 kupada bitsin; efsanevi modüller ilk ligde açılsın; lig sandığı evrensel parça versin). **Uygulanmadı**; ev bilgisayarında Faz 3'ten önce yapılacak. Karar: sunucu ve paket Faz 3'ten sonra. Özgün belgenin Faz 3 ve Faz 4 cümleleri bu dosyanın sonuna eklendi. |

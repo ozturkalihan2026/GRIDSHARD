@@ -738,6 +738,8 @@
     "Henüz favori hazır havuzun yok.":"You have no favorite preset pools yet.",
     "Henüz maç yok":"No matches yet",
     "Henüz modül parçası isteği yok.":"No module shard requests yet.",
+    "Henüz kazanılmadı":"Not earned yet",
+    "Kazanıldı":"Earned",
     "Henüz sıralama kupası kazanılmadı.":"No ranked trophies earned yet.",
     "Henüz sıralama rozeti kazanılmadı.":"No ranking badges earned yet.",
     "Henüz yok":"None yet",
@@ -1408,7 +1410,7 @@
     "İÇERİK VE OLASILIKLAR":"CONTENTS AND ODDS",
     "Yüzde, sandığın o ödülü içerme olasılığıdır. Modül parçası, açılmış modüllerinden rastgele birine verilir; o enderlikte açılmış modülün yoksa başka enderlikteki bir modülüne verilir.":"The percentage is the chance that the chest contains that reward. Module shards go to a random module you have unlocked; if you have no unlocked module of that rarity, they go to one of your modules of another rarity.",
     "Açık kaynak lisansları":"Open-source licenses",
-    "Oyun, SIL Open Font License 1.1 ile dağıtılan Orbitron ve Rajdhani yazı tiplerini kullanır.":"The game uses the Orbitron and Rajdhani typefaces, distributed under the SIL Open Font License 1.1.",
+    "Oyun, SIL Open Font License 1.1 ile dağıtılan Oxanium, Rajdhani ve Orbitron yazı tiplerini kullanır.":"The game uses the Oxanium, Rajdhani and Orbitron typefaces, distributed under the SIL Open Font License 1.1.",
     "Sosyal özellikler açık.":"Social features are on.",
     "Sosyal özellikler kapalı.":"Social features are off.",
     "Bu bölüm ebeveynler içindir. Kapatınca bu hesapta takım sohbeti, özel mesaj ve arkadaşlık istekleri çalışmaz. Yeniden açmak için belirlediğin 4 haneli şifre gerekir; şifreyi unutma.":"This section is for parents. When turned off, team chat, direct messages and friend requests stop working on this account. Turning them back on needs the 4-digit passcode you set; don't forget it.",
@@ -2387,7 +2389,7 @@
     "store.odds_guaranteed": {tr:"{label}: %100 · {range}", en:"{label}: 100% · {range}"},
     "store.odds_module": {tr:"Modül parçası: %{chance}", en:"Module shards: {chance}%"},
     "store.odds_rarity": {tr:"{rarity}: %{chance} · {range} parça", en:{one:"{rarity}: {chance}% · {range} shard", other:"{rarity}: {chance}% · {range} shards"}},
-    "store.odds_core": {tr:"Çekirdek parçası: %{chance} · 1 parça", en:"Core shard: {chance}% · 1 shard"},
+    "store.odds_core": {tr:"Çekirdek parçası: %{chance} · {amount} parça", en:{one:"Core shard: {chance}% · {amount} shard", other:"Core shards: {chance}% · {amount} shards"}},
   });
 
   const catalog = Object.freeze({translations, messages});

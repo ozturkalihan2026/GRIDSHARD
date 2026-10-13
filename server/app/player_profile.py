@@ -15,6 +15,7 @@ from .arena_canon import (
     GRIDSHARD_SUMMIT_RATING,
     LEAGUE_ENTRY_RATING,
     MODULES,
+    reward_shards_for_rarity,
     unlocked_reward_module_ids,
 )
 from .text_safety import public_name_rejection
@@ -216,6 +217,15 @@ SEASON_ROAD_EMOJI_REWARDS: dict[int, str] = {
 }
 
 
+# Giriş takvimi ve sezon yolu parçaları yalnız destedeki kartlara değil, açık
+# bütün modüllere dağılır ve ender kart daha az parça alır (13 Ekim 2026,
+# kullanıcı kararı). Parça artık çok daha fazla karta bölündüğü için bu iki
+# kaynağın miktarı üç katıdır; yazılan sayı sıradan kartın aldığıdır.
+REWARD_MODULE_SHARD_SCALE = 3
+# Giriş takviminde çekirdek parçası veren günler (ikisi de Pazar, büyük ödül).
+LOGIN_CORE_SHARDS_BY_DAY = {14: 10, 28: 15}
+
+
 def _season_reward_for_tier(tier: int) -> dict:
     # A full four-week path: three battles plus completed daily orders unlock
     # the final tier close to the season end instead of exhausting the path in
@@ -265,6 +275,7 @@ def _season_reward_for_tier(tier: int) -> dict:
         reward.update(circuit_credits=50 + (tier * 5), flux_shards=4)
     else:
         reward.update(circuit_credits=35 + (tier * 5), module_shards=2 + (tier // 8))
+    reward["module_shards"] *= REWARD_MODULE_SHARD_SCALE
 
     reward["reward_label_tr"] = (
         f"Büyük {reward['chest_tier'].title()} Sandık + Kozmetik"
@@ -363,7 +374,8 @@ def _login_period_reward(day: int) -> dict:
         "day": day,
         "circuit_credits": (120 + (day * 5)) if weekly_bonus else (35 + (day * 3)),
         "flux_shards": (10 + (day // 7)) if weekly_bonus else (2 + (day % 4)),
-        "module_shards": (14 + day) if weekly_bonus else (3 + (day % 5)),
+        "module_shards": REWARD_MODULE_SHARD_SCALE * ((14 + day) if weekly_bonus else (3 + (day % 5))),
+        "core_shards": LOGIN_CORE_SHARDS_BY_DAY.get(day, 0),
         "is_major": weekly_bonus,
     }
 
@@ -376,17 +388,25 @@ LOGIN_PERIOD_REWARDS = tuple(
 
 
 def _profile_reward_identity(profile, reward: dict, seed: str) -> dict:
-    """Attach deterministic, unlocked module/core identities to a reward."""
+    """Attach deterministic, unlocked module/core identities to a reward.
+
+    Parça, açık modüllerden birine gider (deste ölçüt değildir); miktar kartın
+    enderliğine göre küçülür.
+    """
     enriched = dict(reward)
     if int(enriched.get("module_shards", 0)):
         pool = unlocked_reward_module_ids(
             profile.rating,
             profile.highest_rating,
-            profile.preferred_battle_pool_ids,
+            (),
             profile.legacy_module_unlocks,
         )
         roll = int(hashlib.sha256(f"{seed}:module".encode("utf-8")).hexdigest()[:12], 16)
-        enriched["module_definition_id"] = pool[roll % len(pool)]
+        module_id = pool[roll % len(pool)]
+        enriched["module_definition_id"] = module_id
+        enriched["module_shards"] = reward_shards_for_rarity(
+            enriched["module_shards"], MODULES[module_id]["rarity"]
+        )
     if "core_shards" in enriched:
         # Imported lazily because meta progression also imports the season
         # constants in this module during application startup.
@@ -714,7 +734,8 @@ class PlayerProfile:
                 None,
             )
             if previous:
-                for key in ("module_definition_id", "core_type_id"):
+                # Alınmış ödül, alındığı andaki kartı ve miktarı gösterir.
+                for key in ("module_definition_id", "core_type_id", "module_shards"):
                     if previous.get(key):
                         result[key] = previous[key]
             return result
@@ -1168,6 +1189,12 @@ class PlayerProfileService:
             int(profile.module_shards.get(module_id, 0))
             + int(reward["module_shards"])
         )
+        core_shards = int(reward.get("core_shards", 0))
+        core_type_id = reward.get("core_type_id")
+        if core_shards and core_type_id:
+            profile.core_shards_by_type[core_type_id] = (
+                int(profile.core_shards_by_type.get(core_type_id, 0)) + core_shards
+            )
         profile.claimed_login_period_days = tuple(
             sorted({*profile.claimed_login_period_days, day})
         )

@@ -33,6 +33,7 @@ from .arena_canon import (
     trophy_delta as trophy_delta,
     module_stats, unlocked_module_ids, unlocked_reward_module_ids,
     module_talent_options, unlock_stage_for_module,
+    REWARD_SHARD_PERCENT_BY_RARITY,
 )
 from threading import RLock
 from .game.talents import core_skill_tree
@@ -190,12 +191,16 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "flux": (2, 4),
         # Credits and Flux are guaranteed. Module and Core pieces use separate
         # absolute rolls so the public probabilities match the actual receipt.
+        # Çekirdek parçası şansı (13 Ekim 2026, kullanıcı kararı): Bronz %1,
+        # Gümüş %3, Altın %5, Elmas %10. Şans çıkınca verilen parça sayısı
+        # kademeyle artar (1, 2, 3, 5): şans değil, ödüldeki sayı büyütüldü.
         "shards": (1, 2),
         "shards_by_rarity": {"common": (1, 2)},
         "module_drop_chance": 0.35,
         "module_rarity_drop_odds": {"common": 0.35},
-        "core_drop_chance": 0.0,
-        "reward_odds": {"circuit_credits": 1.0, "flux_shards": 1.0, "module_shards": 0.35, "core_shards": 0.0},
+        "core_drop_chance": 0.01,
+        "core_drop_shards": 1,
+        "reward_odds": {"circuit_credits": 1.0, "flux_shards": 1.0, "module_shards": 0.35, "core_shards": 0.01},
         "allowed_rarities": ("common",),
         "rarity_odds": {
             "common": 1.0,
@@ -214,8 +219,9 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "shards_by_rarity": {"common": (2, 3), "rare": (1, 2)},
         "module_drop_chance": 0.35,
         "module_rarity_drop_odds": {"common": 0.25, "rare": 0.10},
-        "core_drop_chance": 0.0,
-        "reward_odds": {"circuit_credits": 1.0, "flux_shards": 1.0, "module_shards": 0.35, "core_shards": 0.0},
+        "core_drop_chance": 0.03,
+        "core_drop_shards": 2,
+        "reward_odds": {"circuit_credits": 1.0, "flux_shards": 1.0, "module_shards": 0.35, "core_shards": 0.03},
         "allowed_rarities": ("common", "rare"),
         "rarity_odds": {
             # Absolute table: 25% common + 10% rare = 35% module drop.
@@ -236,8 +242,9 @@ CHEST_DEFINITIONS: dict[str, dict] = {
         "shards_by_rarity": {"common": (3, 4), "rare": (2, 3), "epic": (1, 2)},
         "module_drop_chance": 0.50,
         "module_rarity_drop_odds": {"common": 0.30, "rare": 0.15, "epic": 0.05},
-        "core_drop_chance": 0.0,
-        "reward_odds": {"circuit_credits": 1.0, "flux_shards": 1.0, "module_shards": 0.50, "core_shards": 0.0},
+        "core_drop_chance": 0.05,
+        "core_drop_shards": 3,
+        "reward_odds": {"circuit_credits": 1.0, "flux_shards": 1.0, "module_shards": 0.50, "core_shards": 0.05},
         "allowed_rarities": ("common", "rare", "epic"),
         "rarity_odds": {
             "common": 0.60,
@@ -268,8 +275,9 @@ CHEST_DEFINITIONS: dict[str, dict] = {
             "epic": 0.10,
             "legendary": 0.03,
         },
-        "core_drop_chance": 0.06,
-        "reward_odds": {"circuit_credits": 1.0, "flux_shards": 1.0, "module_shards": 0.53, "core_shards": 0.06},
+        "core_drop_chance": 0.10,
+        "core_drop_shards": 5,
+        "reward_odds": {"circuit_credits": 1.0, "flux_shards": 1.0, "module_shards": 0.53, "core_shards": 0.10},
         "allowed_rarities": ("common", "rare", "epic", "legendary"),
         "rarity_odds": {
             # Absolute table: 25/15/10/3 points inside a 53% module roll.
@@ -440,7 +448,20 @@ def _select_reward_module(
     candidates = _module_ids_for_rarity(rarity, eligible) if rarity else list(eligible)
     if not candidates:
         candidates = list(eligible)
-    module_id = candidates[_hash_range(seed, 0, len(candidates) - 1)]
+    if rarity:
+        module_id = candidates[_hash_range(seed, 0, len(candidates) - 1)]
+        return module_id, MODULE_RARITY.get(module_id, "common")
+    # Hedefsiz ödül: açık her modül enderlik ağırlığıyla çekilir, ender kart
+    # daha seyrek gelir (ölçüt deste değil, enderlik ve açık olmak).
+    weights = [
+        REWARD_SHARD_PERCENT_BY_RARITY.get(MODULE_RARITY.get(module_id, "common"), 100)
+        for module_id in candidates
+    ]
+    ticket = _hash_range(seed, 0, sum(weights) - 1)
+    for module_id, weight in zip(candidates, weights):
+        if ticket < weight:
+            break
+        ticket -= weight
     return module_id, MODULE_RARITY.get(module_id, "common")
 
 
@@ -557,8 +578,8 @@ class MetaProgressionService:
             # Lig sandıkları ve GRIDSHARD Sandığı evrensel parça verir.
             profile.universal_module_shards += max(0, int(rewards.get("universal_module_shards", 0)))
             core_count = int(rewards.get("core_shards", 0))
-            # Keep a stable identity in receipts for older clients; the count
-            # is zero on every road node, so no fragments are awarded here.
+            # Arena finish rewards and league chests carry core fragments;
+            # every receipt keeps a stable identity for older clients.
             core_type_id = core_reward_type_id(profile, node_id)
             self.award_core_pieces(profile, core_count, node_id)
             shard_rewards = {}
@@ -732,6 +753,7 @@ class MetaProgressionService:
                 },
                 "module_drop_chance": definition["module_drop_chance"],
                 "core_drop_chance": definition.get("core_drop_chance", 0.0),
+                "core_drop_shards": int(definition.get("core_drop_shards", 1)),
                 "rarity_odds": dict(definition["rarity_odds"]),
                 # Mağazada satın almadan önce gösterilen olasılık tablosu
                 # (Google Play ödeme politikası): enderliğe göre mutlak
@@ -1388,14 +1410,12 @@ class MetaProgressionService:
         )
         profile.circuit_credits += coins
         flux = _hash_range(f"{seed}:flux", *definition["flux"])
-        # Core fragments are an endgame chase item and only come from the
-        # highest tier chest.  Other reward paths deliberately return zero.
+        # Every chest tier rolls its own published core-fragment chance.
         core_drop = (
-            definition["id"] == "diamond_24h"
-            and _hash_unit(f"{seed}:core-drop")
+            _hash_unit(f"{seed}:core-drop")
             < float(definition.get("core_drop_chance", 0.0))
         )
-        core_pieces = 1 if core_drop else 0
+        core_pieces = int(definition.get("core_drop_shards", 1)) if core_drop else 0
         core_type = core_reward_type_id(profile, seed)
         self.award_core_pieces(profile, core_pieces, seed)
         profile.flux_shards += flux

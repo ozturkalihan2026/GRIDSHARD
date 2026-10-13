@@ -23,7 +23,7 @@ assert.match(block, /^<!-- build:styles -->\s*<link rel="stylesheet" href="\.\/s
 
 // Her kural var olan, gerçek bir woff2 dosyasını gösterir.
 const faces = [...fonts.matchAll(/@font-face \{([^}]+)\}/g)].map((match) => match[1]);
-assert.equal(faces.length, 9);
+assert.equal(faces.length, 11);
 for (const face of faces) {
   const file = /src:url\("\.\.\/assets\/fonts\/([a-z0-9-]+\.woff2)"\) format\("woff2"\);/.exec(face)?.[1];
   assert.ok(file, face);
@@ -32,8 +32,9 @@ for (const face of faces) {
   assert.match(face, /font-display:swap;/);
   assert.match(face, /unicode-range:U\+/);
 }
-// Oyunun kullandığı iki aile ve ağırlıklar karşılanır; Türkçe harfler için
-// Rajdhani'nin genişletilmiş Latin dosyaları da vardır.
+// Oyunun kullandığı üç aile ve ağırlıklar karşılanır. Başlık yazı tipi Oxanium'dur ve
+// Türkçe harfleri (ğ, ş, İ) kendi genişletilmiş Latin dosyasından çizer; Rajdhani'nin de
+// genişletilmiş Latin dosyaları vardır. Orbitron yalnız GRIDSHARD marka yazısındadır.
 const families = (name) => faces.filter((face) => face.includes(`font-family:"${name}"`));
 assert.equal(families("Orbitron").length, 1);
 assert.match(families("Orbitron")[0], /font-weight:600 900;/);
@@ -42,13 +43,19 @@ assert.deepEqual(
   ["400", "400", "500", "500", "600", "600", "700", "700"]
 );
 assert.equal(families("Rajdhani").filter((face) => /latin-ext\.woff2/.test(face)).length, 4);
-assert.match(styles, /--gs-font-display:"Orbitron"/);
+assert.equal(families("Oxanium").length, 2);
+for (const face of families("Oxanium")) assert.match(face, /font-weight:200 800;/);
+assert.equal(families("Oxanium").filter((face) => /latin-ext\.woff2/.test(face)).length, 1);
+assert.match(families("Oxanium").find((face) => /latin-ext\.woff2/.test(face)), /unicode-range:U\+0100-02BA/);
+assert.match(styles, /--gs-font-display:"Oxanium"/);
+assert.match(styles, /--gs-font-brand:"Orbitron","Oxanium"/);
+assert.ok(!/font-family:"Orbitron"/.test(styles + fs.readFileSync(path.join(CLIENT_ROOT, "src", "canon.css"), "utf8")));
 assert.match(styles, /--gs-font-copy:"Rajdhani"/);
 
 // Lisans metni pakete giren sayfada da vardır ve dosyalardakinin aynısıdır
 // (SIL OFL 1.1: her kopya telif bildirimini ve lisans metnini taşır).
 const unescape = (text) => text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-for (const name of ["OFL-Orbitron.txt", "OFL-Rajdhani.txt"]) {
+for (const name of ["OFL-Orbitron.txt", "OFL-Rajdhani.txt", "OFL-Oxanium.txt"]) {
   const license = fs.readFileSync(path.join(CLIENT_ROOT, "assets", "fonts", name), "utf8").replace(/\r\n/g, "\n").trim();
   assert.match(license, /^Copyright /);
   assert.match(license, /SIL OPEN FONT LICENSE Version 1\.1 - 26 February 2007/);

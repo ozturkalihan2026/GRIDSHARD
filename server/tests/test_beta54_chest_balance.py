@@ -44,12 +44,13 @@ def test_module_piece_ranges_shrink_as_module_rarity_rises():
     assert STORE_CHEST_PRICES["core_24h"][1] < STORE_CHEST_PRICES["diamond_24h"][1]
 
 
-def test_only_diamond_chests_can_award_core_pieces_and_only_occasionally():
-    assert [
-        definition_id
-        for definition_id, definition in CHEST_DEFINITIONS.items()
-        if definition["core_drop_chance"] > 0
-    ] == ["diamond_24h"]
+def test_core_piece_chance_rises_with_chest_tier_and_stays_occasional():
+    # 13 Ekim 2026: bütün sandıklar çekirdek parçası verebilir; şans kademeyle artar.
+    chances = [
+        CHEST_DEFINITIONS[definition_id]["core_drop_chance"]
+        for definition_id in ("field_3h", "circuit_8h", "core_24h", "diamond_24h")
+    ]
+    assert chances == [0.01, 0.03, 0.05, 0.10]
 
     now = datetime(2026, 9, 13, tzinfo=timezone.utc)
     service = MetaProgressionService(now_func=lambda: now)
@@ -67,9 +68,10 @@ def test_only_diamond_chests_can_award_core_pieces_and_only_occasionally():
         }]
         receipt = service.open_chest(profile, chest_id, f"open-{index}")
         core_drop_count += int(receipt["rewards"]["core_drop"])
-        assert receipt["rewards"]["core_shards"] in (0, 1)
+        assert receipt["rewards"]["core_shards"] in (0, 5)
 
-    assert 5 <= core_drop_count <= 35
+    # Yüzde 10: 300 sandıkta beklenen 30.
+    assert 14 <= core_drop_count <= 50
 
 
 def test_arena_road_uses_canonical_chest_names_only():

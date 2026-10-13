@@ -44,7 +44,7 @@ assert.ok(odds.includes("close.onclick = () => dialog.close();"));
 
 // İstemcinin gösterdiği her alan sunucunun mağaza görünümünde vardır.
 const storeView = server.slice(server.indexOf("def _chest_store_view"), server.indexOf("def _owned_chest_inventory_view"));
-for (const field of ["reward_preview", "module_drop_chance", "core_drop_chance", "module_rarity_drop_odds", "shards_by_rarity"]) {
+for (const field of ["reward_preview", "module_drop_chance", "core_drop_chance", "core_drop_shards", "module_rarity_drop_odds", "shards_by_rarity"]) {
   assert.ok(storeView.includes(`"${field}"`), `sunucu görünümünde yok: ${field}`);
   assert.ok(app.includes(field), `istemci kullanmıyor: ${field}`);
 }
@@ -64,8 +64,9 @@ assert.equal(line("store.odds_rarity", { rarity:"Rare", chance:"15", range:"2–
 assert.equal(line("store.odds_rarity", { rarity:"Efsanevi", chance:"3", range:"1", count:1 }, "tr"), "Efsanevi: %3 · 1 parça");
 assert.equal(line("store.odds_rarity", { rarity:"Legendary", chance:"3", range:"1", count:1 }, "en"), "Legendary: 3% · 1 shard");
 assert.ok(app.includes("return low === high ? localizedNumber(low)"));
-assert.equal(line("store.odds_core", { chance:"6" }, "tr"), "Çekirdek parçası: %6 · 1 parça");
-assert.equal(line("store.odds_core", { chance:"6" }, "en"), "Core shard: 6% · 1 shard");
+assert.equal(line("store.odds_core", { chance:"10", amount:"5", count:5 }, "tr"), "Çekirdek parçası: %10 · 5 parça");
+assert.equal(line("store.odds_core", { chance:"10", amount:"5", count:5 }, "en"), "Core shards: 10% · 5 shards");
+assert.equal(line("store.odds_core", { chance:"1", amount:"1", count:1 }, "en"), "Core shard: 1% · 1 shard");
 
 for (const text of [
   "ÖDÜL LİSTESİ",

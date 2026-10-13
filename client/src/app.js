@@ -1139,11 +1139,11 @@
 
   // Bilgi ekranının başındaki değer kutuları. Bir sonraki seviyede değişen
   // değerin yanında fark yeşil yazar: artan değerde "+değer", kısalan bekleme
-  // süresinde "-değer". Değişmeyen değerde bir şey yazmaz.
+  // süresinde "−değer sn". Değişmeyen değerde bir şey yazmaz.
   function renderDetailStatRow(host, entries) {
     if (!host) return;
     host.replaceChildren();
-    for (const { label, value, current, next, icon, tone } of entries) {
+    for (const { label, value, current, next, icon, tone, unit } of entries) {
       const box = document.createElement("div");
       const name = document.createElement("span");
       name.textContent = label;
@@ -1153,7 +1153,7 @@
       if (next !== undefined && next !== null && Number.isFinite(change) && change !== 0) {
         const changeLabel = document.createElement("em");
         changeLabel.className = "stat-next-gain";
-        changeLabel.textContent = `${change > 0 ? "+" : "-"}${Math.abs(change).toLocaleString(uiLocale(), { maximumFractionDigits:2 })}`;
+        changeLabel.textContent = statGainText(change, unit);
         changeLabel.title = localizedUiText("Sonraki seviye");
         amount.append(" ", changeLabel);
       }
@@ -1165,6 +1165,18 @@
       }
       host.appendChild(box);
     }
+  }
+
+  // Bir sonraki seviyenin farkı değerin kendi birimiyle yazılır: "+3",
+  // "−0,01 sn", "+%2", "+0,4/sn". Azalan değerde eksi işareti (−) kullanılır.
+  function statGainText(change, unit = "") {
+    const english = document.documentElement.lang === "en";
+    const number = Math.abs(change).toLocaleString(uiLocale(), { maximumFractionDigits:2 });
+    const sign = change > 0 ? "+" : "−";
+    if (unit === "percent" || unit === "heat") return english ? `${sign}${number}%` : `${sign}%${number}`;
+    if (unit === "seconds") return `${sign}${number} ${english ? "sec" : "sn"}`;
+    if (unit === "per_second") return `${sign}${number}/${english ? "sec" : "sn"}`;
+    return `${sign}${number}`;
   }
 
   // --- Yükseltme göstergeleri -------------------------------------------------
@@ -1317,7 +1329,7 @@
     }
     const art = document.createElement("span");
     art.className = "unified-module-art";
-    art.textContent = moduleIconFor({ nameTr: item.name_tr || definition.nameTr });
+    mountModuleEmblem(art, { nameTr: item.name_tr || definition.nameTr });
     art.setAttribute("aria-hidden", "true");
     tile.appendChild(art);
     if (selected) {
@@ -1619,6 +1631,73 @@
     return template.content.firstElementChild;
   }
 
+  // --- Kaynak simgeleri ------------------------------------------------------------
+  // Akı, Devre Kredisi, Akım ve diğer ödül kaynakları dolu çizilir: gövde,
+  // aydınlık ve gölge yüzey, koyu kontur (lig ve mağaza sandıklarıyla aynı dil).
+  // Çizimler 24×24'tür; renkleri canon.css `data-token` ile verir.
+  const tokenFacets = (body, light, dark, extra = "") =>
+    `<path class="tk-m" d="${body}"/><path class="tk-l" d="${light}"/><path class="tk-d" d="${dark}"/>${extra}<path class="tk-o" d="${body}"/>`;
+  const RESOURCE_TOKEN_SVG = Object.freeze({
+    // Akı: mor kristal.
+    flux:tokenFacets(
+      "M12 1.5 16.2 7.8 22.5 12 16.2 16.2 12 22.5 7.8 16.2 1.5 12 7.8 7.8Z",
+      "M12 1.5 7.8 7.8 1.5 12H12Z",
+      "M22.5 12 16.2 16.2 12 22.5V12Z",
+      '<path class="tk-w" d="m12 8.4 1.1 2.5 2.5 1.1-2.5 1.1-1.1 2.5-1.1-2.5-2.5-1.1 2.5-1.1Z"/>'
+    ),
+    // Devre Kredisi: üstünde devre darbesi olan altın para.
+    credit:'<circle class="tk-d tk-ink" cx="12" cy="13.2" r="9.5"/><circle class="tk-m tk-ink" cx="12" cy="10.9" r="9.5"/>'
+      + '<circle class="tk-l" cx="12" cy="10.9" r="6.8"/><path class="tk-mark" d="M7 10.9h2.6l1.6-3.4 1.8 6.8 1.6-3.4H17"/>'
+      + '<path class="tk-shine" d="M4.6 8.6a7.8 7.8 0 0 1 3.6-4.2"/>',
+    // Akım: şimşek.
+    current:tokenFacets(
+      "M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z",
+      "M13.9 1.5 4.3 13.5h3.4L13.85 5.6Z",
+      "M19.7 10.1 8.5 22.5 9.3 18 16.4 10.1Z"
+    ),
+    // Çekirdek parçası: altıgen kristal.
+    core:tokenFacets(
+      "M12 1.8 20.6 6.6v10.8L12 22.2 3.4 17.4V6.6Z",
+      "M12 1.8 3.4 6.6v10.8L12 12Z",
+      "M20.6 6.6v10.8L12 22.2V12Z",
+      '<path class="tk-w" d="m12 8 3.2 4-3.2 4-3.2-4Z"/>'
+    ),
+    chest:'<path class="tk-m" d="M3.5 10.5h17v8.2a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"/><path class="tk-l" d="M3.5 10.5 5.6 5.2h12.8l2.1 5.3Z"/>'
+      + '<path class="tk-d" d="M3.5 16.6h17v2.1a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"/>'
+      + '<path class="tk-o" d="M3.5 10.5 5.6 5.2h12.8l2.1 5.3v8.2a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2ZM3.5 10.5h17"/>'
+      + '<path class="tk-w tk-ink" d="M12 8.2 14.8 11 12 13.8 9.2 11Z"/>',
+    // Deneyim: mavi yıldız.
+    experience:tokenFacets(
+      "M12 1.6 15.1 8.1 22.2 9 17 14l1.3 7.1L12 17.6 5.7 21.1 7 14 1.8 9 8.9 8.1Z",
+      "M12 1.6 8.9 8.1 1.8 9 12 12Z",
+      "M22.2 9 17 14l1.3 7.1L12 17.6V12Z"
+    ),
+    trophy:'<path class="tk-handle" d="M7.2 5H4c0 3.3 1.4 5 3.6 5.3M16.8 5H20c0 3.3-1.4 5-3.6 5.3"/>'
+      + '<path class="tk-d tk-ink" d="M10.3 12.6h3.4v4h-3.4Z"/><path class="tk-m tk-ink" d="M7.4 16.4h9.2l1.2 4.6H6.2Z"/>'
+      + '<path class="tk-m tk-ink" d="M6.8 2.6h10.4v5.8a5.2 5.2 0 0 1-10.4 0Z"/>'
+      + '<path class="tk-l" d="M8.6 4.2h2.2v4.6a3.4 3.4 0 0 0 1 2.4 3.6 3.6 0 0 1-3.2-3.6Z"/>',
+    // Takım puanı: baklava taş.
+    team_point:tokenFacets("M12 1.8 21.4 12 12 22.2 2.6 12Z", "M12 1.8 2.6 12H12Z", "M21.4 12 12 22.2V12Z"),
+    // Ücretli ürün: yıldızlı madalya.
+    premium:'<circle class="tk-d tk-ink" cx="12" cy="13" r="9.6"/><circle class="tk-m tk-ink" cx="12" cy="11" r="9.6"/>'
+      + '<circle class="tk-l" cx="12" cy="11" r="7"/>'
+      + '<path class="tk-k" d="m12 5.4 1.7 3.6 3.9.5-2.9 2.7.8 3.9-3.5-2-3.5 2 .8-3.9-2.9-2.7 3.9-.5Z"/>',
+  });
+  const RESOURCE_TOKEN_CLASS = Object.freeze({
+    flux:"resource-symbol-flux", credit:"resource-symbol-credit", current:"resource-symbol-current",
+    core:"resource-symbol-core-shard", chest:"resource-symbol-chest", experience:"resource-symbol-experience",
+    trophy:"resource-symbol-trophy", team_point:"resource-symbol-team-point", premium:"resource-symbol-premium",
+  });
+
+  function resourceTokenSvg(kind) {
+    return `<svg viewBox="0 0 24 24" focusable="false">${RESOURCE_TOKEN_SVG[kind] || RESOURCE_TOKEN_SVG.credit}</svg>`;
+  }
+
+  function resourceTokenMarkup(kind, tag = "span") {
+    const token = RESOURCE_TOKEN_SVG[kind] ? kind : "credit";
+    return `<${tag} class="resource-symbol ${RESOURCE_TOKEN_CLASS[token]} is-token" data-token="${token}" aria-hidden="true">${resourceTokenSvg(token)}</${tag}>`;
+  }
+
   // Maliyet rozeti: para biriminin adı yerine kendi simgesi ("100 DK" → ◎ 100).
   const COST_CHIP_LABELS = Object.freeze({ credit:"Devre Kredisi", flux:"Akı", current:"Akım" });
   function createCostChip(kind, amount) {
@@ -1629,9 +1708,10 @@
     chip.setAttribute("role", "img");
     chip.setAttribute("aria-label", `${Number(amount || 0).toLocaleString(uiLocale())} ${label}`.trim());
     const icon = document.createElement("i");
-    icon.className = "cost-chip-icon";
+    icon.className = "cost-chip-icon is-token";
+    icon.dataset.token = kind;
     icon.setAttribute("aria-hidden", "true");
-    icon.innerHTML = `<svg viewBox="0 0 24 24" focusable="false">${UI_ICON_PATHS[kind] || ""}</svg>`;
+    icon.innerHTML = resourceTokenSvg(kind);
     const value = document.createElement("b");
     value.textContent = Number(amount || 0).toLocaleString(uiLocale());
     chip.append(icon, value);
@@ -1653,35 +1733,46 @@
   }
 
   function resourceSymbolMarkup(kind) {
-    const symbols = {
-      flux_shards: '<span class="resource-symbol resource-symbol-flux" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 4 6 6 4-6 4-4 6-4-6-6-4 6-4Z"/><circle cx="12" cy="12" r="2.3"/></svg></span>',
-      circuit_credits: '<span class="resource-symbol resource-symbol-credit" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/></svg></span>',
-      core_shards: '<span class="resource-symbol resource-symbol-core-shard" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7 4v10l-7 4-7-4V7Z"/><path d="m12 7 4 5-4 5-4-5Z"/></svg></span>',
-      chest: '<span class="resource-symbol resource-symbol-chest" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 9h16v11H4Z"/><path d="M3 5h18v5H3ZM12 9v11"/></svg></span>',
-      experience: '<span class="resource-symbol resource-symbol-experience" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 2.4 5.4L20 8l-4.2 3.8 1.2 5.7-5-2.9-5 2.9 1.2-5.7L4 8l5.6-.6Z"/><circle cx="12" cy="11" r="2.3"/></svg></span>',
+    const tokens = {
+      flux_shards:"flux", circuit_credits:"credit", core_shards:"core", chest:"chest", experience:"experience",
     };
-    return symbols[kind] || createModulePuzzlePiece().outerHTML;
+    return tokens[kind] ? resourceTokenMarkup(tokens[kind]) : createModulePuzzlePiece().outerHTML;
   }
 
-  // Modül kartı parçaları her yerde yapboz parçası olarak görünür. Parça,
-  // modülün sınıf rengini ve simgesini taşır; evrensel parça yıldızlıdır.
+  // Modül kartı parçaları her yerde yapboz parçası olarak görünür. Parça dolu
+  // çizilir: modülün sınıf renginde gövde, altta gölge, üstte ışık, koyu kontur;
+  // ortasında modülün simgesi durur. Evrensel parça altın rengi ve yıldızlıdır.
+  // Gövde 8..48 × 16..56; üstte ve sağda çıkıntı, altta ve solda girinti.
+  const MODULE_PIECE_OUTLINE = "M8 16H22A7 7 0 1 1 34 16H48V30A7 7 0 1 1 48 42V56H34A7 7 0 1 0 22 56H8V42A7 7 0 1 0 8 30Z";
+  const MODULE_PIECE_PATHS = Object.freeze([
+    ["mp-body", MODULE_PIECE_OUTLINE],
+    ["mp-shade", "M8 46H25.14A7 7 0 0 0 22 56H8ZM30.86 46H48V56H34A7 7 0 0 0 30.86 46Z"],
+    ["mp-shine", "M12.5 20.5H21M35 20.5H43.5M24.6 10.2A4.6 4.6 0 0 1 30.4 8.2"],
+    ["mp-outline", MODULE_PIECE_OUTLINE],
+  ]);
   function createModulePuzzlePiece({ category = "", glyph = "", universal = false } = {}) {
-    // Gövde 8..48 × 16..56; üstte ve sağda çıkıntı, altta ve solda girinti.
-    const outline = "M8 16H22A7 7 0 1 1 34 16H48V30A7 7 0 1 1 48 42V56H34A7 7 0 1 0 22 56H8V42A7 7 0 1 0 8 30Z";
     const piece = document.createElement("span");
     piece.className = "resource-symbol resource-symbol-module-piece";
     piece.dataset.category = universal ? "universal" : category;
     piece.setAttribute("aria-hidden", "true");
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("viewBox", "7 4.4 52.6 52.6");
-    const shape = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    shape.setAttribute("d", outline);
-    svg.appendChild(shape);
+    for (const [name, d] of MODULE_PIECE_PATHS) {
+      const shape = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      shape.setAttribute("class", name);
+      shape.setAttribute("d", d);
+      svg.appendChild(shape);
+    }
     piece.appendChild(svg);
-    const mark = universal ? "✦" : glyph;
-    if (mark) {
+    // Evrensel parçada yıldız, modül parçasında modülün amblemi (`glyph`: SVG) durur.
+    if (universal || glyph) {
       const symbol = document.createElement("b");
-      symbol.textContent = mark;
+      if (universal) {
+        symbol.textContent = "✦";
+      } else {
+        symbol.className = "mp-emblem";
+        symbol.innerHTML = glyph;
+      }
       piece.appendChild(symbol);
     }
     return piece;
@@ -1700,7 +1791,7 @@
     if (!module) return resourceSymbolMarkup("module_shards");
     return createModulePuzzlePiece({
       category:module.category || "",
-      glyph:moduleIconFor(module),
+      glyph:moduleEmblemMarkup(module),
     }).outerHTML;
   }
 
@@ -1721,7 +1812,7 @@
       id: definitionId,
       nameTr: collectionItem?.name_tr || definition?.nameTr || "Modül",
       category: collectionItem?.category || definition?.category || "",
-      glyph: moduleIconFor(definition || { nameTr: collectionItem?.name_tr || "Modül" }),
+      glyph: moduleEmblemMarkup(definition || { nameTr: collectionItem?.name_tr || "Modül" }),
     };
   }
 
@@ -1751,9 +1842,10 @@
     if (kind === "core_shards") {
       const identity = coreRewardIdentity(rewards);
       const icon = document.createElement("span");
-      icon.className = "resource-symbol resource-symbol-core-card";
+      // Ödül satırında amblemin yalnız gövdesi çizilir (küçük boyda yörünge okunmaz).
+      icon.className = "resource-symbol resource-symbol-core-card is-emblem";
       icon.setAttribute("aria-hidden", "true");
-      icon.textContent = identity.glyph;
+      icon.innerHTML = coreEmblemSvg(identity.id);
       applyCoreVisualIdentity(icon, identity.id);
       return icon;
     }
@@ -2153,6 +2245,75 @@
     return `<svg class="league-emblem" viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>${pips}`;
   }
 
+  // Mağaza sandığı (Bronz, Gümüş, Altın, Elmas) lig sandıklarıyla aynı dildedir
+  // (dolu gövde, metal, koyu kontur) ama aynı sandık değildir: kapağı kubbe değil
+  // pahlı düz kapaktır, ortasında tek geniş kuşak ve baklava kilit vardır. Kademe
+  // yükseldikçe süsü artar: Bronz'da tahta oluklar, Gümüş'te köşebent ve perçin,
+  // Altın'da kapakta taç, Elmas'ta kapaktan çıkan kristaller. Renkleri canon.css
+  // `.chest-visual-<kademe>` ile verir. Aynı çizim mağazada, posta kutusunda,
+  // sezon yolunda, turnuva ödüllerinde ve sandık açılışında kullanılır.
+  const SHOP_CHEST_GROOVES = '<path class="sc-groove" d="M14 54.5h28M58 54.5h28M14 66h28M58 66h28"/>';
+  const SHOP_CHEST_CAPS = '<path class="sc-cap" d="M14 62v11a6 6 0 0 0 6 6h11ZM86 62v11a6 6 0 0 1-6 6H69Z"/>'
+    + '<circle class="sc-rivet" cx="18.6" cy="74.4" r="1.5"/><circle class="sc-rivet" cx="81.4" cy="74.4" r="1.5"/>';
+  const SHOP_CHEST_RIVETS = '<circle class="sc-rivet" cx="18" cy="43" r="1.6"/><circle class="sc-rivet" cx="30" cy="43" r="1.6"/>'
+    + '<circle class="sc-rivet" cx="70" cy="43" r="1.6"/><circle class="sc-rivet" cx="82" cy="43" r="1.6"/>';
+  const SHOP_CHEST_ORNAMENTS = Object.freeze({
+    bronze:{ body:SHOP_CHEST_GROOVES, lid:"", top:"" },
+    silver:{ body:SHOP_CHEST_GROOVES + SHOP_CHEST_CAPS, lid:SHOP_CHEST_RIVETS, top:"" },
+    gold:{
+      body:SHOP_CHEST_CAPS,
+      lid:SHOP_CHEST_RIVETS,
+      top:'<path class="sc-crest" d="M38 16 36 5 44 10 50 2 56 10 64 5 62 16Z"/><circle class="sc-crest-gem" cx="50" cy="10.6" r="2.2"/>',
+    },
+    diamond:{
+      body:SHOP_CHEST_CAPS,
+      lid:SHOP_CHEST_RIVETS,
+      top:'<path class="sc-crystal" d="M27 16 31 6 36 16ZM64 16 69 6 73 16ZM43 16 50 1 57 16Z"/>'
+        + '<path class="sc-crystal-light" d="M43 16 50 1V16ZM27 16 31 6V16ZM64 16 69 6V16Z"/>'
+        + '<path class="sc-spark" d="m84 9 1.3 3.2 3.2 1.3-3.2 1.3L84 18l-1.3-3.2-3.2-1.3 3.2-1.3ZM15 20l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1L12 23l2.1-.9Z"/>',
+    },
+  });
+  // Kilit taşı: mağaza sandığında baklava, haftalık turnuva sandığında yıldız,
+  // takım turnuvası sandığında altıgen.
+  const SHOP_CHEST_GEMS = Object.freeze({
+    diamond:'<path class="sc-gem" d="M50 36.5 57.5 44 50 51.5 42.5 44Z"/><path class="sc-gem-light" d="M46.4 43.4 50 39.8"/>',
+    star:'<path class="sc-gem" d="m50 35.4 2.5 6.1 6.1 2.5-6.1 2.5-2.5 6.1-2.5-6.1-6.1-2.5 6.1-2.5Z"/>',
+    hex:'<path class="sc-gem" d="M50 36 57 40v8l-7 4-7-4v-8Z"/><path class="sc-gem-light" d="M45.6 41.4 50 38.9"/>',
+  });
+
+  function shopChestSvg(tier, mark = "diamond") {
+    const ornament = SHOP_CHEST_ORNAMENTS[tier] || SHOP_CHEST_ORNAMENTS.bronze;
+    return '<svg class="shop-chest" viewBox="0 0 100 86" focusable="false">'
+      + '<ellipse class="sc-ground" cx="50" cy="80.5" rx="39" ry="4.8"/>'
+      + '<g class="sc-rays"><path d="M50 44 27-24h12ZM50 44 44-30h12ZM50 44 61-24h12ZM50 44 0 2l7-9ZM50 44 93-7l7 9Z"/></g>'
+      + '<path class="sc-inside" d="M16 44 20 30h60l4 14Z"/>'
+      + '<path class="sc-inside-glow" d="M21 44 24 33h52l3 11Z"/>'
+      + '<g class="sc-body">'
+      + '<path class="sc-box" d="M14 42h72v31a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6Z"/>'
+      + '<path class="sc-box-shade" d="M14 68h72v5a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6Z"/>'
+      + '<path class="sc-box-light" d="M17 49.5h66v2.6H17Z"/>'
+      + '<path class="sc-outline" d="M14 42h72v31a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6Z"/>'
+      + ornament.body
+      + '<path class="sc-band" d="M42 42h16v37H42Z"/>'
+      + '<path class="sc-band-light" d="M44.2 46h2.6v31h-2.6Z"/>'
+      + "</g>"
+      + '<g class="sc-lid">'
+      + ornament.top
+      + '<path class="sc-lid-top" d="M12 44V29L23 15h54l11 14v15Z"/>'
+      + '<path class="sc-lid-light" d="M23 15h54l6 7.6H17Z"/>'
+      + '<path class="sc-lid-shade" d="M12 34h76v10H12Z"/>'
+      + '<path class="sc-outline" d="M12 44V29L23 15h54l11 14v15Z"/>'
+      + '<path class="sc-band" d="M42 15h16v29H42Z"/>'
+      + '<path class="sc-band-light" d="M44.2 17h2.6v22h-2.6Z"/>'
+      + '<path class="sc-rim" d="M9 38h82v8a3.4 3.4 0 0 1-3.4 3.4H12.4A3.4 3.4 0 0 1 9 46Z"/>'
+      + '<path class="sc-rim-light" d="M12 40.2h76v1.9H12Z"/>'
+      + ornament.lid
+      + '<path class="sc-lock" d="M50 30.5 63.5 44 50 57.5 36.5 44Z"/>'
+      + (SHOP_CHEST_GEMS[mark] || SHOP_CHEST_GEMS.diamond)
+      + "</g>"
+      + "</svg>";
+  }
+
   // Lig sandığı fiziksel bir kasadır: dolu gövde, metal köşebentler, perçinler,
   // kapak ve kilidinde ligin amblemi. Rengi ligin rengidir (canon.css,
   // data-league-chest). Kapak ayrı bir gruptur: sandık açılınca kalkar, içinden
@@ -2215,7 +2376,7 @@
       visual.innerHTML = `${leagueChestMarkup(league)}<span class="chest-reveal-sparks" aria-hidden="true">${"<i></i>".repeat(10)}</span>`;
     } else {
       visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
-      visual.innerHTML = "<i></i><b></b><em>◆</em>";
+      visual.innerHTML = shopChestSvg(tier);
     }
   }
 
@@ -2275,7 +2436,7 @@
       if (rewards.core_shards) {
         const identity = coreRewardIdentity(rewards);
         const visual = CORE_VISUALS[identity.id] || CORE_VISUALS.core_resonance;
-        return `<span class="resource-symbol resource-symbol-core-card" data-core-type="${identity.id}" style="--core-accent:${visual.accent}" aria-hidden="true">${visual.glyph}</span>`;
+        return `<span class="resource-symbol resource-symbol-core-card is-emblem" data-core-type="${identity.id}" style="--core-accent:${visual.accent}" aria-hidden="true">${coreEmblemSvg(identity.id)}</span>`;
       }
       if (rewards.module_shards || rewards.module_id || rewards.module_shard_target) return moduleShardSymbolMarkup(rewards);
       if (rewards.flux_shards) return resourceSymbolMarkup("flux_shards");
@@ -2344,7 +2505,7 @@
             card.dataset.category = item.category || "";
             card.title = localizedUiText(item.name_tr);
             card.setAttribute("aria-label", localizedUiText(item.name_tr));
-            card.textContent = moduleIconFor({ nameTr: item.name_tr });
+            mountModuleEmblem(card, { nameTr: item.name_tr });
             card.addEventListener("click", () => {
               selectedCollectionModuleId = item.definition_id;
               openModuleDetail();
@@ -2370,7 +2531,7 @@
           card.setAttribute("aria-label", localizedUiText(core.name_tr || visual.nameTr));
           const glyph = document.createElement("i");
           glyph.setAttribute("aria-hidden", "true");
-          glyph.textContent = visual.glyph;
+          mountCoreEmblem(glyph, core.id);
           const name = document.createElement("strong");
           name.textContent = localizedUiText(core.name_tr || visual.nameTr);
           card.append(glyph, name);
@@ -2403,7 +2564,15 @@
           const caption = document.createElement("strong");
           caption.textContent = node.claimed ? localizedMessage("reward.claimed") : rewardDescription;
           reward.append(trophy, glyph, caption);
-          if (node.claimable) reward.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
+          if (node.claimable) {
+            reward.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
+            // Alınabilir durak bir düğmedir; üstünde lig sandığındakiyle aynı "AL" rozeti durur.
+            const chip = document.createElement("b");
+            chip.className = "arena-reward-claim-chip";
+            chip.setAttribute("aria-hidden", "true");
+            chip.textContent = localizedMessage("reward.claim_upper");
+            reward.appendChild(chip);
+          }
           reward.addEventListener("click", async () => {
             reward.disabled = true;
             const status = document.getElementById("arena-reward-status");
@@ -2435,7 +2604,7 @@
             card.dataset.category = item.category || "";
             card.title = localizedUiText(item.name_tr);
             card.setAttribute("aria-label", localizedUiText(item.name_tr));
-            card.textContent = moduleIconFor({ nameTr: item.name_tr });
+            mountModuleEmblem(card, { nameTr: item.name_tr });
             card.addEventListener("click", () => {
               selectedCollectionModuleId = item.definition_id;
               openModuleDetail();
@@ -2528,7 +2697,15 @@
           const caption = document.createElement("strong");
           caption.textContent = node.claimed ? localizedMessage("reward.claimed") : rewardDescription;
           reward.append(trophy, glyph, caption);
-          if (node.claimable) reward.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
+          if (node.claimable) {
+            reward.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
+            // Alınabilir durak bir düğmedir; üstünde lig sandığındakiyle aynı "AL" rozeti durur.
+            const chip = document.createElement("b");
+            chip.className = "arena-reward-claim-chip";
+            chip.setAttribute("aria-hidden", "true");
+            chip.textContent = localizedMessage("reward.claim_upper");
+            reward.appendChild(chip);
+          }
           reward.addEventListener("click", () => claimLeagueNode(node, reward));
           leagueRoad.appendChild(reward);
         }
@@ -2563,6 +2740,60 @@
     return visual;
   }
 
+  // Çekirdek amblemi: altıgen metal yuva, içinde çekirdeğin renginde kristal ve
+  // çekirdeğe özgü işaret. Kaynak simgeleri ve sandıklarla aynı dildedir (dolu gövde,
+  // aydınlık ve gölge yüzey, koyu kontur); rengi `--core-accent` verir. Oyunda
+  // çekirdeğin göründüğü her yerde aynı çizim kullanılır: ev ekranı, Kartlar →
+  // Çekirdek, bilgi penceresi, savaş alanı (iki çekirdek ve güç düğmesi), maç sonu,
+  // profil ve Devre Yolu (`mountCoreEmblem`).
+  const CORE_EMBLEM_MARKS = Object.freeze({
+    core_resonance:'<path class="ce-mark" d="M60 44 76 60 60 76 44 60Z"/><path class="ce-mark-cut" d="M60 53 67 60 60 67 53 60Z"/>',
+    core_guardian:'<path class="ce-mark" d="M60 43 74 48v11c0 9-6 15-14 18-8-3-14-9-14-18V48Z"/><path class="ce-mark-cut" d="M60 51v18"/>',
+    core_overdrive:'<path class="ce-mark" d="M65 41 48 62h10l-3 17 17-22H62Z"/>',
+    core_disruptor:'<path class="ce-mark-line" d="M43 65 52 51l8 16 8-16 9 14"/>',
+    core_capacitor:'<path class="ce-mark" d="M45 49h26v6h4v10h-4v6H45Z"/><path class="ce-mark-cut" d="M51 55v10M58 55v10M65 55v10"/>',
+    core_phoenix:'<path class="ce-mark" d="M60 41c2 8 13 12 13 23a13 13 0 0 1-26 0c0-5 2-8 5-10 0 4 2 6 4 7-1-7 1-14 4-20Z"/>',
+    core_quantum:'<path class="ce-mark" d="M60 41 65 55 79 60 65 65 60 79 55 65 41 60 55 55Z"/><circle class="ce-mark" cx="77" cy="44" r="3.4"/>',
+  });
+  function coreEmblemSvg(coreId) {
+    const mark = CORE_EMBLEM_MARKS[coreId] || CORE_EMBLEM_MARKS.core_resonance;
+    return '<svg class="core-emblem" viewBox="0 0 120 120" focusable="false" aria-hidden="true">'
+      + '<path class="ce-frame" d="M60 9 104 34.500v51L60 111 16 85.500v-51Z"/>'
+      + '<path class="ce-frame-light" d="M60 9 16 34.500v51L60 60Z"/>'
+      + '<path class="ce-frame-dark" d="M104 34.500v51L60 111V60Z"/>'
+      + '<path class="ce-ink" d="M60 9 104 34.500v51L60 111 16 85.500v-51Z"/>'
+      + '<path class="ce-well" d="M60 21 93.500 40.500v39L60 99 26.500 79.500v-39Z"/>'
+      + '<path class="ce-gem" d="M60 26 89 60 60 94 31 60Z"/>'
+      + '<path class="ce-gem-light" d="M60 26 31 60H60Z"/>'
+      + '<path class="ce-gem-dark" d="M89 60 60 94V60Z"/>'
+      + '<path class="ce-ink" d="M60 26 89 60 60 94 31 60Z"/>'
+      + mark
+      + '<circle class="ce-bolt" cx="60" cy="15" r="2.400"/><circle class="ce-bolt" cx="98.500" cy="37.500" r="2.400"/><circle class="ce-bolt" cx="98.500" cy="82.500" r="2.400"/>'
+      + '<circle class="ce-bolt" cx="60" cy="105" r="2.400"/><circle class="ce-bolt" cx="21.500" cy="82.500" r="2.400"/><circle class="ce-bolt" cx="21.500" cy="37.500" r="2.400"/>'
+      + '</svg>';
+  }
+  // Hareketli iki parça (dönen yörünge, yanıp sönen parıltı) gövdeden ayrı
+  // katmandadır: tarayıcı yalnız o katmanı döndürür, gövdeyi yeniden çizmez. Savaşta
+  // üç amblem aynı anda döner; hareket azaltma ve düşük grafik ayarında durur.
+  const CORE_EMBLEM_ORBITS = '<svg class="core-emblem-orbits" viewBox="0 0 120 120" focusable="false" aria-hidden="true">'
+    + '<ellipse cx="60" cy="60" rx="57" ry="19" transform="rotate(-30 60 60)"/><ellipse cx="60" cy="60" rx="57" ry="19" transform="rotate(30 60 60)"/></svg>';
+  const CORE_EMBLEM_SPARK = '<svg class="core-emblem-spark" viewBox="0 0 120 120" focusable="false" aria-hidden="true">'
+    + '<path d="m42 40 1.800 4.200 4.200 1.800-4.200 1.800L42 52l-1.800-4.200L36 46l4.200-1.800Z"/></svg>';
+  function coreEmblemMarkup(coreId) {
+    return `<span class="core-emblem-set">${CORE_EMBLEM_ORBITS}${coreEmblemSvg(coreId)}${CORE_EMBLEM_SPARK}</span>`;
+  }
+  // Bir öğeyi çekirdek amblemine çevirir. Aynı çekirdek zaten çiziliyse dokunmaz
+  // (savaşta her sunucu mesajında çağrılır).
+  function mountCoreEmblem(element, coreId) {
+    if (!element) return;
+    const normalizedId = CORE_VISUALS[coreId] ? coreId : "core_resonance";
+    if (element.dataset.coreEmblem === normalizedId && element.firstElementChild) return;
+    element.innerHTML = coreEmblemMarkup(normalizedId);
+    element.dataset.coreEmblem = normalizedId;
+    element.classList.add("is-emblem");
+    applyCoreVisualIdentity(element, normalizedId);
+  }
+
   function renderHomeCoreHero() {
     const core = metaProgressionState?.cores?.types?.find((item) => item.selected)
       || metaProgressionState?.cores?.types?.[0]
@@ -2571,8 +2802,8 @@
     const glyph = document.getElementById("home-core-hero-glyph");
     const level = document.getElementById("home-core-hero-level");
     const coreId = core?.id || "core_resonance";
-    const visual = applyCoreVisualIdentity(button, coreId);
-    if (glyph) glyph.textContent = visual.glyph;
+    applyCoreVisualIdentity(button, coreId);
+    mountCoreEmblem(glyph, coreId);
     if (level) level.textContent = `SV ${Number(core?.level || 1)}`;
     if (button) {
       button.setAttribute("aria-label", `${core?.name_tr || "Çekirdek"} · Seviye ${Number(core?.level || 1)} · Çekirdek seçimini aç`);
@@ -2655,17 +2886,21 @@
     tile.dataset.selected = String(selected);
     tile.dataset.locked = String(!core.unlocked);
     tile.setAttribute("aria-label", `${core.name_tr} · ${moduleRarityLabel(core.rarity)} · Seviye ${core.level}${core.selected ? " · seçili" : ""}`);
-    const visual = applyCoreVisualIdentity(tile, core.id);
+    applyCoreVisualIdentity(tile, core.id);
     const glyph = document.createElement("span");
     glyph.className = "core-collection-glyph";
-    glyph.textContent = visual.glyph;
+    mountCoreEmblem(glyph, core.id);
     glyph.setAttribute("aria-hidden", "true");
     const copy = document.createElement("span");
     copy.className = "core-collection-copy";
     const name = document.createElement("strong");
     name.textContent = core.name_tr;
+    // Enderlik, bilgi penceresindeki rozetle aynı dilde yazar (renk enderlikten).
     const rarity = document.createElement("em");
-    rarity.textContent = moduleRarityLabel(core.rarity);
+    const rarityId = String(core.rarity || "common").toLowerCase();
+    rarity.className = "rarity-chip";
+    rarity.dataset.rarity = RARITY_ICON_TONES[rarityId] ? rarityId : "common";
+    rarity.textContent = moduleRarityLabel(core.rarity).toLocaleUpperCase("tr-TR");
     const state = document.createElement("small");
     state.textContent = core.unlocked ? `SV ${core.level}` : `ARENA ${core.unlock_arena}`;
     copy.append(name, rarity, state);
@@ -2890,10 +3125,10 @@
     if (!core) return;
     selectedCollectionCoreId = core.id;
     const dialog = document.getElementById("core-detail-dialog");
-    const visual = applyCoreVisualIdentity(dialog, core.id);
+    applyCoreVisualIdentity(dialog, core.id);
     const setText = (id, value) => { const target = document.getElementById(id); if (target) target.textContent = String(value); };
     setText("core-detail-name", core.name_tr);
-    setText("core-detail-rarity", moduleRarityLabel(core.rarity));
+    setRarityBadge("core-detail-rarity", String(core.rarity || "common").toLowerCase(), moduleRarityLabel(core.rarity).toLocaleUpperCase("tr-TR"));
     setText("core-detail-level", `SEVİYE ${core.level}`);
     setText("core-detail-selected-state", core.selected ? "SEÇİLDİ" : core.unlocked ? "HAZIR" : "KİLİTLİ");
     const cost = core.next_upgrade_cost;
@@ -2903,10 +3138,10 @@
     const progress = document.getElementById("core-detail-progress");
     if (progress) { progress.max = required; progress.value = cost ? Math.min(required, owned) : required; }
     const art = document.getElementById("core-detail-art");
-    if (art) { art.textContent = visual.glyph; applyCoreVisualIdentity(art, core.id); }
+    mountCoreEmblem(art, core.id);
     const nextStats = core.unlocked ? core.next_stats : null;
     renderDetailStatRow(document.getElementById("core-detail-stats"), [
-      { label:"ENERJİ", value:`${core.energy_per_second}/sn`, current:core.energy_per_second, next:nextStats?.energy_per_second, icon:"energy", tone:"cyan" },
+      { label:"ENERJİ", value:`${core.energy_per_second}/sn`, current:core.energy_per_second, next:nextStats?.energy_per_second, unit:"per_second", icon:"energy", tone:"cyan" },
       { label:"DEPO", value:core.energy_capacity, current:core.energy_capacity, next:nextStats?.energy_capacity, icon:"battery", tone:"blue" },
       { label:"YETENEK", value:(core.skills || []).filter((skill) => skill.learned).length, icon:"star", tone:"gold" },
     ]);
@@ -3076,7 +3311,8 @@
     }[tier];
     const safeTier = ["bronze", "silver", "gold", "diamond"].includes(tier) ? tier : customBase || "bronze";
     const safeVisual = String(visualId || "").replace(/[^a-z0-9_-]/gi, "");
-    return `<span class="chest-visual chest-visual-${safeTier}${safeVisual ? ` chest-visual-event chest-visual-${safeVisual}` : ""}${large ? " chest-visual-large" : ""}" aria-hidden="true"><i></i><b></b><em>${safeVisual.startsWith("team_") ? "⬡" : safeVisual.startsWith("weekly_") ? "✦" : "◆"}</em></span>`;
+    const mark = safeVisual.startsWith("team_") ? "hex" : safeVisual.startsWith("weekly_") ? "star" : "diamond";
+    return `<span class="chest-visual chest-visual-${safeTier}${safeVisual ? ` chest-visual-event chest-visual-${safeVisual}` : ""}${large ? " chest-visual-large" : ""}" aria-hidden="true">${shopChestSvg(safeTier, mark)}</span>`;
   }
 
   function shopChestAction({ gift, ownedCount, openableCount, item, state }) {
@@ -3168,10 +3404,18 @@
         action.textContent = selectedAction.label;
         action.dataset.limitReached = String(limitReached);
         action.disabled = selectedAction.disabled;
-        if (selectedAction.kind === "buy" && !limitReached && Number(item.cost) < Number(item.base_cost)) {
-          const base = document.createElement("s");
-          base.textContent = `${item.base_cost} ${currency}`;
-          action.prepend(base, document.createTextNode(" "));
+        if (selectedAction.kind === "buy" && !limitReached) {
+          // Fiyat "DK" / "Akı" yazısıyla değil, kaynağın simgesiyle gösterilir;
+          // adı ekran okuyucu için etikette durur.
+          action.replaceChildren(createCostChip(item.currency === "flux_shards" ? "flux" : "credit", item.cost));
+          action.classList.add("has-cost-chips");
+          action.setAttribute("aria-label", `${item.name_tr} · ${selectedAction.label}`);
+          if (Number(item.cost) < Number(item.base_cost)) {
+            const base = document.createElement("s");
+            base.textContent = Number(item.base_cost).toLocaleString(uiLocale());
+            base.setAttribute("aria-label", `${item.base_cost} ${currency}`);
+            action.prepend(base);
+          }
         }
         action.addEventListener("click", () => {
           action.disabled = true;
@@ -3252,7 +3496,10 @@
       });
     }
     if (Number(item.core_drop_chance || 0) > 0) {
-      lines.push({ text:localizedMessage("store.odds_core", { chance:chestOddsPercent(item.core_drop_chance) }) });
+      const corePieces = Math.max(1, Number(item.core_drop_shards || 1));
+      lines.push({ text:localizedMessage("store.odds_core", {
+        chance:chestOddsPercent(item.core_drop_chance), amount:localizedNumber(corePieces), count:corePieces,
+      }) });
     }
     return lines;
   }
@@ -3528,10 +3775,7 @@
     }
   }
 
-  const PAID_ICON_MARKUP = {
-    flux_shards: '<svg viewBox="0 0 24 24"><path d="m12 2 4 6 6 4-6 4-4 6-4-6-6-4 6-4Z"/><circle cx="12" cy="12" r="2.3"/></svg>',
-    circuit_credits: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/></svg>',
-  };
+  const PAID_ICON_TOKENS = Object.freeze({ flux_shards:"flux", circuit_credits:"credit" });
 
   async function loadStoreState() {
     try {
@@ -3553,17 +3797,23 @@
     return { ok:true, state:storeState };
   }
 
-  function createPaidProductCard(product, { premium = false, provider = null } = {}) {
+  function createPaidProductCard(product, { premium = false, provider = null, rank = 0 } = {}) {
     const card = document.createElement("article");
     card.className = `paid-product-card${premium ? " is-premium" : ""}`;
     card.dataset.productId = product.id;
     card.dataset.active = String(Boolean(product.active));
     if (product.currency) card.dataset.currency = product.currency;
+    // Bonuslu paketin etiketi rozet olarak çizilir; büyük pakette simge büyür.
+    if (!premium) {
+      card.dataset.bonus = String(Boolean(product.bonus_percent));
+      card.dataset.packRank = String(Math.max(0, Math.min(3, Number(rank) || 0)));
+    }
     const icon = document.createElement("i");
-    icon.className = `resource-symbol ${product.currency === "flux_shards" ? "resource-symbol-flux" : product.currency === "circuit_credits" ? "resource-symbol-credit" : "resource-symbol-premium"}`;
+    const token = PAID_ICON_TOKENS[product.currency] || "premium";
+    icon.className = `resource-symbol ${RESOURCE_TOKEN_CLASS[token]} is-token`;
+    icon.dataset.token = token;
     icon.setAttribute("aria-hidden", "true");
-    if (PAID_ICON_MARKUP[product.currency]) icon.innerHTML = PAID_ICON_MARKUP[product.currency];
-    else icon.textContent = "★";
+    icon.innerHTML = resourceTokenSvg(token);
     const copy = document.createElement("div");
     const name = document.createElement("strong");
     name.textContent = product.name_tr;
@@ -3794,7 +4044,7 @@
     for (const [host, packs] of [[fluxHost, storeState?.flux_packs], [creditHost, storeState?.credit_packs]]) {
       if (!host) continue;
       host.replaceChildren();
-      for (const pack of packs || []) host.appendChild(createPaidProductCard(pack, { provider }));
+      for (const [rank, pack] of (packs || []).entries()) host.appendChild(createPaidProductCard(pack, { provider, rank }));
     }
   }
 
@@ -4260,6 +4510,16 @@
     return section;
   }
 
+  // Enderliğin rengi her yerde aynıdır: sıradan çelik, ender mavi, destansı mor,
+  // efsanevi altın (bilgi penceresinin başlığı, kimlik satırı ve değer rozetleri).
+  const RARITY_ICON_TONES = Object.freeze({ common:"steel", rare:"blue", epic:"violet", legendary:"gold" });
+  function setRarityBadge(id, rarity, label) {
+    const badge = document.getElementById(id);
+    if (!badge) return;
+    badge.textContent = String(label);
+    badge.dataset.rarity = RARITY_ICON_TONES[rarity] ? rarity : "common";
+  }
+
   const MODULE_RARITY_RULE_TR = {
     common: "Tek ve net davranış.",
     rare: "Temel davranışa oyuncunun kurduğu bir koşul ekler.",
@@ -4277,7 +4537,7 @@
     const signature = item.signature_mechanic
       || (item.shared_behavior_tr ? `Şimdilik ${item.shared_behavior_tr} ile aynı temel davranışı kullanır.` : "");
     const rows = [
-      [`ENDERLİK · ${moduleRarityLabel(rarity).toLocaleUpperCase("tr-TR")}`, `${MODULE_RARITY_RULE_TR[rarity] || MODULE_RARITY_RULE_TR.common} ${noAdvantageTr}`, "is-rarity", "gem", "gold"],
+      [`ENDERLİK · ${moduleRarityLabel(rarity).toLocaleUpperCase("tr-TR")}`, `${MODULE_RARITY_RULE_TR[rarity] || MODULE_RARITY_RULE_TR.common} ${noAdvantageTr}`, "is-rarity", "gem", RARITY_ICON_TONES[rarity] || "steel"],
       ["İMZA MEKANİĞİ", signature, "is-signature", "bolt", "cyan"],
       ["SAVAŞTA NASIL GÖRÜLÜR", item.telegraph_tr, "is-telegraph", "eye", "blue"],
       ["KARŞI OYUN", item.counterplay_tr, "is-counter", "swords", "red"],
@@ -4336,6 +4596,7 @@
       value:`${current.toLocaleString(uiLocale(), { maximumFractionDigits:2 })} ${document.documentElement.lang === "en" ? "sec" : "sn"}`,
       current,
       next:seconds(nextStats),
+      unit:"seconds",
     };
   }
 
@@ -4347,18 +4608,19 @@
       value:specialDisplayValue(special),
       current:Number(special.value),
       next:upcoming.has(special.key) ? Number(upcoming.get(special.key).value) : undefined,
+      unit:special.unit || "",
       icon:(STAT_ICONS[special.key] || ["star", "cyan"])[0],
       tone:(STAT_ICONS[special.key] || ["star", "cyan"])[1],
     }));
   }
 
-  // Bir sonraki seviyenin farkı: artan değerde "+", kısalan sürede "-".
-  function createStatGain(current, next) {
+  // Bir sonraki seviyenin farkı: artan değerde "+", kısalan sürede "−"; birimiyle.
+  function createStatGain(current, next, unit = "") {
     const change = Math.round((Number(next) - Number(current)) * 100) / 100;
     if (next === undefined || next === null || !Number.isFinite(change) || change === 0) return null;
     const gain = document.createElement("em");
     gain.className = "stat-next-gain";
-    gain.textContent = `${change > 0 ? "+" : "-"}${Math.abs(change).toLocaleString(uiLocale(), { maximumFractionDigits:2 })}`;
+    gain.textContent = statGainText(change, unit);
     gain.title = localizedUiText("Sonraki seviye");
     return gain;
   }
@@ -4396,8 +4658,8 @@
       // Tüketim, bakım ile aksiyon bedelinin saniyeye düşen payının toplamıdır;
       // üretici modül (Batarya) tüketim yerine üretimini gösterir.
       Number(stats.energy_generation) > 0
-        ? { key:"energy", icon:"energy", tone:"cyan", label:"ENERJİ ÜRETİMİ", value:`+${number(stats.energy_generation, 1)}/sn`, current:stats.energy_generation, next:nextStats?.energy_generation }
-        : { key:"energy", icon:"energy", tone:"cyan", label:"ENERJİ TÜKETİMİ", value:`${number(stats.energy_per_second ?? stats.energy_consumption, 1)}/sn`, current:stats.energy_per_second, next:nextStats?.energy_per_second },
+        ? { key:"energy", icon:"energy", tone:"cyan", label:"ENERJİ ÜRETİMİ", value:`+${number(stats.energy_generation, 1)}/sn`, current:stats.energy_generation, next:nextStats?.energy_generation, unit:"per_second" }
+        : { key:"energy", icon:"energy", tone:"cyan", label:"ENERJİ TÜKETİMİ", value:`${number(stats.energy_per_second ?? stats.energy_consumption, 1)}/sn`, current:stats.energy_per_second, next:nextStats?.energy_per_second, unit:"per_second" },
       { key:"current", icon:"current", tone:"gold", label:"AKIM MALİYETİ", value:number(item.current_cost) },
     ]) {
       const row = document.createElement("div");
@@ -4407,7 +4669,7 @@
       name.append(createUiIcon(tile.icon, tile.tone), document.createTextNode(tile.label));
       const value = document.createElement("dd");
       value.textContent = tile.value;
-      const gain = createStatGain(tile.current, tile.next);
+      const gain = createStatGain(tile.current, tile.next, tile.unit);
       if (gain) value.append(" ", gain);
       row.append(name, value);
       if (tile.meter !== undefined) {
@@ -4442,7 +4704,7 @@
         chip.dataset.category = collectionItem?.category || definition?.category || "";
         const glyph = document.createElement("b");
         glyph.setAttribute("aria-hidden", "true");
-        glyph.textContent = moduleIconFor(definition || { nameTr:collectionItem?.name_tr || id });
+        mountModuleEmblem(glyph, definition || { nameTr:collectionItem?.name_tr || id });
         const name = document.createElement("em");
         name.textContent = collectionItem?.name_tr || definition?.nameTr || id;
         chip.append(glyph, name);
@@ -4638,16 +4900,28 @@
       if (element) element.textContent = String(value);
     };
     setText("module-detail-name", localizedUiText(item.name_tr));
-    setText("module-detail-rarity", moduleRarityLabel(item.rarity).toLocaleUpperCase("tr-TR"));
+    setRarityBadge("module-detail-rarity", String(item.rarity || "common").toLowerCase(), moduleRarityLabel(item.rarity).toLocaleUpperCase("tr-TR"));
     setText("module-detail-level", `SEVİYE ${Number(item.level || 0) + 1}`);
     setText("module-detail-selected-state", deckEditorSlots.filter(Boolean).map(clientDefinitionId).includes(item.definition_id) ? "DESTEDE" : "DESTE DIŞI");
     const cost = item.next_upgrade_cost;
     const required = Number(cost?.shards || 1);
     const universalShards = Number(metaProgressionState?.universal_module_shards || 0);
     const totalUsableShards = Number(item.shards || 0) + universalShards;
-    setText("module-detail-shards", cost ? `${item.shards || 0} + ${universalShards} evrensel / ${required}` : "AZAMİ SEVİYE");
+    // Kartın kendi parçası ile evrensel parça stoğu ayrı yazılır ("500 / 28" ve
+    // yanında evrensel parça rozeti); ilerleme çubuğu ikisinin toplamını gösterir.
+    setText("module-detail-shards", cost ? `${Number(item.shards || 0).toLocaleString(uiLocale())} / ${required.toLocaleString(uiLocale())}` : "AZAMİ SEVİYE");
+    const universalBadge = document.getElementById("module-detail-universal");
+    if (universalBadge) {
+      universalBadge.hidden = !cost;
+      const universalLabel = `${localizedUiText("Evrensel parça")}: ${universalShards.toLocaleString(uiLocale())}`;
+      universalBadge.title = universalLabel;
+      universalBadge.setAttribute("aria-label", universalLabel);
+      const count = document.createElement("b");
+      count.textContent = universalShards.toLocaleString(uiLocale());
+      universalBadge.replaceChildren(createModulePuzzlePiece({ universal:true }), count);
+    }
     document.getElementById("module-detail-shard-icon")?.replaceChildren(
-      createModulePuzzlePiece({ category:item.category || "", glyph:moduleIconFor(definition) })
+      createModulePuzzlePiece({ category:item.category || "", glyph:moduleEmblemMarkup(definition) })
     );
     const progress = document.getElementById("module-detail-progress");
     if (progress) { progress.max = required; progress.value = cost ? Math.min(required, totalUsableShards) : required; }
@@ -4655,7 +4929,7 @@
     if (art) {
       art.dataset.category = item.category || "";
       art.dataset.module = item.definition_id || "";
-      art.textContent = moduleIconFor(definition);
+      mountModuleEmblem(art, definition);
       art.setAttribute("aria-label", `${item.name_tr} görseli`);
     }
     const nextStats = item.unlocked ? item.next_stats : null;
@@ -6905,7 +7179,7 @@
     art.setAttribute("aria-hidden", "true");
     const glyph = document.createElement("span");
     glyph.className = "unified-module-art";
-    glyph.textContent = moduleIconFor({ nameTr: item?.name_tr });
+    mountModuleEmblem(glyph, { nameTr: item?.name_tr });
     art.appendChild(glyph);
     return art;
   }
@@ -8376,7 +8650,7 @@
       const coreType = summary.core_type || player.core_type || "core_resonance";
       const coreVisual = applyCoreVisualIdentity(coreCard, coreType);
       const coreGlyph = document.createElement("i");
-      coreGlyph.textContent = coreVisual.glyph;
+      mountCoreEmblem(coreGlyph, coreType);
       const coreCopy = document.createElement("div");
       const coreName = document.createElement("strong");
       coreName.textContent = coreVisual.nameTr || "Çekirdek";
@@ -8437,7 +8711,7 @@
         row.className = "post-match-damage-row";
         const icon = document.createElement("span");
         icon.className = "post-match-damage-icon";
-        icon.textContent = moduleIconFor({ nameTr: item.name_tr });
+        mountModuleEmblem(icon, { nameTr: item.name_tr });
         const copy = document.createElement("div");
         const rowName = document.createElement("strong");
         rowName.textContent = item.name_tr || item.definition_id;
@@ -9311,10 +9585,8 @@
     renderedCorePowerSignature = signature;
     corePowerButtonEl.style.setProperty("--core-charge",`${charge}%`);
     corePowerButtonEl.dataset.ready=String(corePowerReady);
-    const coreVisual = applyCoreVisualIdentity(corePowerButtonEl, selectedCore);
-    const glyph = coreVisual.glyph;
-    const buttonArt = corePowerButtonEl.querySelector(".core-power-glyph");
-    if (buttonArt) buttonArt.textContent = glyph;
+    applyCoreVisualIdentity(corePowerButtonEl, selectedCore);
+    mountCoreEmblem(corePowerButtonEl.querySelector(".core-power-glyph"), selectedCore);
     const coreCard = document.getElementById("core-1");
     if (coreCard) {
       applyCoreVisualIdentity(coreCard, selectedCore);
@@ -9322,8 +9594,7 @@
       coreCard.classList.toggle("core-power-ready", corePowerReady);
       coreCard.classList.add("core-charge-card");
       coreCard.setAttribute("aria-label", `Çekirdek gücü · ${corePowerReady ? "Hazır" : "%" + charge}`);
-      const icon = coreCard.querySelector(".module-icon");
-      if (icon) icon.textContent = glyph;
+      mountCoreEmblem(coreCard.querySelector(".module-icon"), selectedCore);
     }
     applyCoreVisualIdentity(board, selectedCore);
     corePowerButtonEl.dataset.targeting=String(corePowerTargeting);
@@ -10015,6 +10286,7 @@
   let mockEnemyCoreHp = 300;
   let mockEnemyCoreMaxHp = 300;
   let mockEnemyCoreBadges = [];
+  let mockEnemyCoreType = "core_resonance";
   let mockEnemyModules = [];
   let enemyBattlePlayerId = null;
   let enemyBattleDisplayName = "";
@@ -11876,6 +12148,7 @@
     );
     mockEnemyCoreMaxHp=Number(enemyCore?.max_hp || 300);
     mockEnemyCoreBadges=normalizeSignatureBadges(enemyCore?.signature_badges);
+    mockEnemyCoreType=CORE_VISUALS[enemy.core_type] ? enemy.core_type : "core_resonance";
     mockEnemyModules=(
       enemy.modules || []
     )
@@ -12428,6 +12701,8 @@
       300;
     mockEnemyCoreBadges =
       [];
+    mockEnemyCoreType =
+      "core_resonance";
     mockEnemyModules =
       [];
 
@@ -15443,8 +15718,7 @@
           );
         icon.className=
           "module-icon pool-module-icon";
-        icon.textContent=
-          moduleIconFor(module);
+        mountModuleEmblem(icon, module);
         icon.setAttribute(
           "aria-hidden",
           "true"
@@ -15650,8 +15924,7 @@
           );
         chipIcon.className=
           "module-icon pool-module-icon";
-        chipIcon.textContent=
-          moduleIconFor(module);
+        mountModuleEmblem(chipIcon, module);
         chipIcon.setAttribute(
           "aria-hidden",
           "true"
@@ -15790,7 +16063,7 @@
 
     const icon = document.createElement("span");
     icon.className = "module-icon pool-detail-preview-icon";
-    icon.textContent = moduleIconFor(module);
+    mountModuleEmblem(icon, module);
     icon.setAttribute("aria-hidden", "true");
 
     card.append(icon);
@@ -16439,7 +16712,9 @@
       `${name} · HP ${Math.max(0,Math.round(hp))}/${maxHp}`;
     const icon=document.createElement("span");
     icon.className="module-icon";
-    icon.textContent=moduleIconFor({nameTr:name});
+    // Rakibin çekirdeği kendi türünün amblemiyle çizilir (tür anlık görüntüde gelir).
+    if (kind === "core") mountCoreEmblem(icon, mockEnemyCoreType);
+    else mountModuleEmblem(icon, {nameTr:name});
     icon.setAttribute("aria-label",name);
     card.appendChild(icon);
     const label=document.createElement("span");
@@ -16519,7 +16794,7 @@
     const cardByCell = new Map();
     cardByCell.set("2,1", {
       id:"enemy-core",
-      signature:JSON.stringify([mockEnemyCoreHp, mockEnemyCoreMaxHp, mockEnemyCoreBadges]),
+      signature:JSON.stringify([mockEnemyCoreHp, mockEnemyCoreMaxHp, mockEnemyCoreBadges, mockEnemyCoreType]),
       build:() => enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,mockEnemyCoreMaxHp,"core",{ signatureBadges:mockEnemyCoreBadges }),
     });
     for (const module of mockEnemyModules) {
@@ -16633,7 +16908,7 @@
       const card=document.createElement("span");
       card.className="enemy-deck-card";
       card.dataset.category=module.category || "";
-      card.textContent=moduleIconFor(module);
+      mountModuleEmblem(card, module);
       card.title=localizedUiText(module.nameTr);
       card.setAttribute("aria-label",localizedUiText(module.nameTr));
       enemyDeckPreviewEl.appendChild(card);
@@ -17437,14 +17712,12 @@
         ids:cosmetics.unlockedRankTrophyIds || [],
         definitions:PROFILE_RANK_TROPHIES,
         kind:"trophy",
-        emptyCopy:"Henüz sıralama kupası kazanılmadı.",
       },
       {
         hostId:"profile-badge-collection",
         ids:cosmetics.unlockedBadgeIds || [],
         definitions:PROFILE_BADGES,
         kind:"badge",
-        emptyCopy:"Henüz sıralama rozeti kazanılmadı.",
       },
     ];
 
@@ -17453,34 +17726,49 @@
     }
   }
 
+  // Devre Koleksiyonu simgeleri: kaynak simgeleriyle aynı dilde (dolu gövde, aydınlık
+  // ve gölge yüzey, koyu kontur); rengi `--honor-color` verir.
+  const PROFILE_HONOR_ICONS = Object.freeze({
+    trophy:'<svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">'
+      + '<path class="hn-handle" d="M7.200 5H4.300v1.400a3.300 3.300 0 0 0 3.500 3.300M16.800 5h2.900v1.400a3.300 3.300 0 0 1-3.500 3.300"/>'
+      + '<path class="hn-m" d="M6.800 2.800h10.400v5.400a5.200 5.200 0 0 1-10.400 0Z"/><path class="hn-l" d="M6.800 2.800H12v10.600a5.200 5.200 0 0 1-5.200-5.200Z"/>'
+      + '<path class="hn-m" d="M10.500 13h3v3.400h-3Z"/><path class="hn-m" d="M7.400 16.200h9.200l1.100 4.600H6.300Z"/><path class="hn-s" d="M7.400 16.200h9.200l1.100 4.600H6.300Z"/>'
+      + '<path class="hn-o" d="M6.800 2.800h10.400v5.400a5.200 5.200 0 0 1-10.400 0ZM10.500 13.200v3M13.500 13.200v3M7.400 16.200h9.200l1.100 4.600H6.300Z"/>'
+      + '<path class="hn-w" d="m12 4.800.900 1.900 2.100.300-1.500 1.400.400 2-1.900-1-1.900 1 .400-2L9 7l2.100-.300Z"/></svg>',
+    badge:'<svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">'
+      + '<path class="hn-m" d="M6.400 2.200h4.300l2.300 6.400-3.900 1.700Z"/><path class="hn-s" d="M6.400 2.200h4.300l2.300 6.400-3.900 1.700Z"/>'
+      + '<path class="hn-m" d="M17.600 2.200h-4.300L11 8.600l3.900 1.700Z"/><path class="hn-s" d="M17.600 2.200h-4.300L11 8.600l3.900 1.700Z"/>'
+      + '<path class="hn-o" d="M6.400 2.200h4.300l2.300 6.400-3.900 1.700ZM17.600 2.200h-4.300L11 8.600l3.900 1.700Z"/>'
+      + '<circle class="hn-m" cx="12" cy="14.900" r="6.700"/><path class="hn-l" d="M12 8.200a6.700 6.700 0 0 0 0 13.400Z"/><circle class="hn-o" cx="12" cy="14.900" r="6.700"/>'
+      + '<path class="hn-w" d="m12 10.800 1.300 2.700 2.900.400-2.100 2 .500 2.900-2.600-1.400-2.600 1.400.500-2.900-2.100-2 2.900-.400Z"/></svg>',
+  });
+
+  // Koleksiyon: tanımlı bütün kupa ve rozetler birer yuvada durur; kazanılan renkli,
+  // kazanılmayan soluktur. Tanımı olmayan (yeni) bir kimlik kazanılmış olarak eklenir.
   function fillHonorCollection(host, group) {
     if (!host) return;
     host.replaceChildren();
-    const ids = [...new Set(group.ids.map((id) => String(id || "")).filter(Boolean))];
-    if (!ids.length) {
-      const empty = document.createElement("span");
-      empty.className = "profile-honor-empty";
-      empty.textContent = group.emptyCopy;
-      host.appendChild(empty);
-      return;
-    }
-    for (const id of ids) {
-      const definition = group.definitions.find((item) => item.id === id) || {
-        id,
-        nameTr:id.replaceAll("_", " "),
-        shortNameTr:id.replaceAll("_", " "),
-        glyph:group.kind === "trophy" ? "🏆" : "✦",
-        tone:"cyan",
-      };
+    const earned = new Set(group.ids.map((id) => String(id || "")).filter(Boolean));
+    const known = new Set(group.definitions.map((item) => item.id));
+    const extra = [...earned].filter((id) => !known.has(id)).map((id) => ({
+      id,
+      nameTr:id.replaceAll("_", " "),
+      shortNameTr:id.replaceAll("_", " "),
+      tone:"cyan",
+    }));
+    host.dataset.kind = group.kind;
+    for (const definition of [...group.definitions, ...extra]) {
+      const has = earned.has(definition.id);
       const item = document.createElement("article");
       item.className = "profile-honor-item";
       item.dataset.kind = group.kind;
       item.dataset.tone = definition.tone;
-      item.title = definition.nameTr;
-      item.setAttribute("aria-label", definition.nameTr);
+      item.dataset.earned = String(has);
+      item.title = localizedUiText(definition.nameTr);
+      item.setAttribute("aria-label", `${localizedUiText(definition.nameTr)} · ${localizedUiText(has ? "Kazanıldı" : "Henüz kazanılmadı")}`);
       const glyph = document.createElement("span");
       glyph.setAttribute("aria-hidden", "true");
-      glyph.textContent = definition.glyph;
+      glyph.innerHTML = PROFILE_HONOR_ICONS[group.kind] || PROFILE_HONOR_ICONS.badge;
       const label = document.createElement("small");
       label.textContent = definition.shortNameTr;
       item.append(glyph, label);
@@ -17509,7 +17797,7 @@
         const tile = document.createElement("span");
         tile.className = "profile-deck-module";
         tile.dataset.category = module?.category || "";
-        tile.textContent = moduleIconFor(module || null);
+        mountModuleEmblem(tile, module || null);
         tile.title = localizedUiText(module?.nameTr || definitionId);
         deckHost.appendChild(tile);
       }
@@ -17521,11 +17809,10 @@
     if (coreHost) {
       const core = metaProgressionState?.cores?.types?.find((item) => item.selected)
         || metaProgressionState?.cores?.types?.[0];
-      const visual = applyCoreVisualIdentity(coreHost, core?.id || "core_resonance");
-      const icon = document.getElementById("profile-featured-core-glyph");
+      applyCoreVisualIdentity(coreHost, core?.id || "core_resonance");
       const label = document.getElementById("profile-featured-core-name");
       const level = document.getElementById("profile-featured-core-level");
-      if (icon) icon.textContent = visual.glyph;
+      mountCoreEmblem(document.getElementById("profile-featured-core-glyph"), core?.id || "core_resonance");
       if (label) label.textContent = core?.name_tr || "Rezonans Çekirdeği";
       if (level) level.textContent = `SEVİYE ${Number(core?.level || 1)}`;
     }
@@ -17767,14 +18054,12 @@
         ids:payload.honors?.rank_trophy_ids || [],
         definitions:PROFILE_RANK_TROPHIES,
         kind:"trophy",
-        emptyCopy:"Henüz sıralama kupası kazanılmadı.",
       },
       {
         label:"ROZETLER",
         ids:payload.honors?.badge_ids || [],
         definitions:PROFILE_BADGES,
         kind:"badge",
-        emptyCopy:"Henüz sıralama rozeti kazanılmadı.",
       },
     ]) {
       const section = document.createElement("section");
@@ -17808,8 +18093,8 @@
     coreName.textContent = payload.selected_core?.name_tr || "Rezonans Çekirdeği";
     const coreLevel = document.createElement("em");
     coreLevel.textContent = `SEVİYE ${Number(payload.selected_core?.level || 1)}`;
-    const coreVisual = applyCoreVisualIdentity(core, payload.selected_core?.id || "core_resonance");
-    coreGlyph.textContent = coreVisual.glyph;
+    applyCoreVisualIdentity(core, payload.selected_core?.id || "core_resonance");
+    mountCoreEmblem(coreGlyph, payload.selected_core?.id || "core_resonance");
     coreCopy.append(coreName, coreLevel);
     core.append(coreGlyph, coreCopy);
     const modules = document.createElement("div");
@@ -17819,7 +18104,7 @@
       const tile = document.createElement("span");
       tile.className = "profile-deck-module";
       tile.dataset.category = definition?.category || "";
-      tile.textContent = moduleIconFor(definition || null);
+      mountModuleEmblem(tile, definition || null);
       tile.title = localizedUiText(definition?.nameTr || definitionId);
       modules.appendChild(tile);
     }
@@ -19062,7 +19347,7 @@
         const tile = document.createElement("span");
         tile.className = "statistics-deck-module";
         tile.dataset.category = module?.category || "";
-        tile.textContent = moduleIconFor(module || null);
+        mountModuleEmblem(tile, module || null);
         tile.title = localizedUiText(module?.nameTr || definitionId);
         strip.appendChild(tile);
       }
@@ -19191,7 +19476,7 @@
 
     const icon = document.createElement("span");
     icon.className = "module-icon";
-    icon.textContent = moduleIconFor(module);
+    mountModuleEmblem(icon, module);
     const name = document.createElement("span");
     name.className = "name";
     fillBattleCardName(name, module);
@@ -19310,6 +19595,22 @@
     return GridshardModuleCardView.iconFor(module);
   }
 
+  // Modülün amblemi: sandıklar ve Çekirdek amblemiyle aynı dilde çizilmiş simge
+  // (bkz. module-card-view.js). Oyunda modülün göründüğü her yerde aynı çizim durur.
+  function moduleEmblemMarkup(module) {
+    return GridshardModuleCardView.emblemFor(module);
+  }
+
+  function mountModuleEmblem(element, module) {
+    if (!element) return;
+    if (typeof GridshardModuleCardView.emblemFor !== "function") {
+      element.textContent = moduleIconFor(module);
+      return;
+    }
+    element.innerHTML = moduleEmblemMarkup(module);
+    element.classList.add("has-module-emblem");
+  }
+
   // Savaş kartına sığan kısa ad (bkz. module-card-view.js).
   function moduleShortNameFor(module) {
     return typeof GridshardModuleCardView.shortNameFor === "function"
@@ -19364,8 +19665,12 @@
       );
     icon.className=
       "module-icon";
-    icon.textContent=
-      moduleIconFor(module);
+    // Çekirdek, oyunun her yerindeki amblemiyle çizilir; diğer modüller simgeyle.
+    if (module.definitionId === "core") {
+      mountCoreEmblem(icon, metaProgressionState?.cores?.selected_core_type || "core_resonance");
+    } else {
+      mountModuleEmblem(icon, module);
+    }
     icon.setAttribute(
       "aria-label",
       module.nameTr
@@ -20780,7 +21085,7 @@
       card.dataset.moduleDefinitionId = item.definition_id;
       const art = document.createElement("i");
       art.setAttribute("aria-hidden", "true");
-      art.textContent = moduleIconFor({ nameTr: item.name_tr });
+      mountModuleEmblem(art, { nameTr: item.name_tr });
       const name = document.createElement("strong");
       name.textContent = localizedUiText(item.name_tr);
       const kind = document.createElement("span");

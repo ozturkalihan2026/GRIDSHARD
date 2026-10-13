@@ -214,7 +214,7 @@ Yukarıdaki "Kullanıcı kararı bekleyenler" ve "Açık kalanlar" 1. madde içi
 
 ### Yazı tipleri
 
-- Orbitron ve Rajdhani oyuna gömüldü: 9 dosya, 121 KB, kaynak `fonts.gstatic.com` (`client/assets/fonts/`, `client/src/fonts.css`). Sayfadaki Google bağlantıları kaldırıldı.
+- Orbitron ve Rajdhani oyuna gömüldü: 9 dosya, 121 KB, kaynak `fonts.gstatic.com` (`client/assets/fonts/`, `client/src/fonts.css`). Sayfadaki Google bağlantıları kaldırıldı. **13 Ekim 2026:** başlık yazı tipi Oxanium oldu (kullanıcı izniyle indirildi; iki dosya, 22 KB, aynı kaynak; SIL OFL 1.1, lisans metni `OFL-Oxanium.txt` ve oyunun içinde). Toplam 11 dosya; açılışta yine dış adrese istek gitmez.
 - Ölçüm (web istemcisi, soğuk açılış): dış adrese giden istek **0**; yazı tipleri kendi sunucudan yükleniyor. Android paketinde ölçülmedi.
 - **Lisans:** iki aile de SIL Open Font License 1.1 ile dağıtılır; lisans her kopyanın telif bildirimini ve lisans metnini taşımasını ister. Kullanıcı izniyle resmî lisans dosyaları indirildi (`client/assets/fonts/OFL-Orbitron.txt`, `OFL-Rajdhani.txt`; kaynak `github.com/google/fonts`). Aynı metinler oyunun içinde de var: Ayarlar → Hesap ve Gizlilik → "Açık kaynak lisansları". Test, oyundaki metnin dosyalarla aynı olduğunu denetler.
 

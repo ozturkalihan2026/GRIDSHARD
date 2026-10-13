@@ -416,8 +416,9 @@ def test_league_chests_differ_from_every_other_chest_in_name_and_content():
     previous = (0, 0, 0)
     for stage, node in chest_nodes:
         rewards = node["rewards"]
-        # İçerik şansa ve belirli bir modüle bağlı değildir: evrensel parça.
-        assert set(rewards) == {"circuit_credits", "flux_shards", "universal_module_shards"}
+        # Miktarlar şansa ve belirli bir modüle bağlı değildir: evrensel parça.
+        # Çekirdek parçasının sayısı sabittir, hangi çekirdeğe gideceği rastgeledir.
+        assert set(rewards) == {"circuit_credits", "flux_shards", "universal_module_shards", "core_shards"}
         amounts = (rewards["circuit_credits"], rewards["flux_shards"], rewards["universal_module_shards"])
         assert all(now > before for now, before in zip(amounts, previous)), stage["league"]
         previous = amounts

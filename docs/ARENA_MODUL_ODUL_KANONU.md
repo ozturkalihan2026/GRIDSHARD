@@ -50,7 +50,7 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 | 200 | 12 Akı |
 | 250 | EMP · 4 Modül Parçası |
 | 300 | Bronz Sandık |
-| 300 | 300 Devre Kredisi + 20 Akı + 20 Modül Parçası |
+| 300 | 300 Devre Kredisi + 20 Akı + 20 Modül Parçası + 3 Çekirdek Parçası |
 
 ### Arena 2 — Röle Sokakları (300–599 Kupa)
 
@@ -63,7 +63,7 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 | 475 | 18 Akı |
 | 525 | Zırh · 6 Modül Parçası |
 | 600 | Bronz Sandık |
-| 600 | 480 Devre Kredisi + 28 Akı + 25 Modül Parçası |
+| 600 | 480 Devre Kredisi + 28 Akı + 25 Modül Parçası + 3 Çekirdek Parçası |
 
 ### Arena 3 — Akım Kavşağı (600–949 Kupa)
 
@@ -79,7 +79,7 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 | 825 | 24 Akı |
 | 875 | 8 Modül Parçası |
 | 950 | Bronz Sandık |
-| 950 | 660 Devre Kredisi + 36 Akı + 30 Modül Parçası |
+| 950 | 660 Devre Kredisi + 36 Akı + 30 Modül Parçası + 3 Çekirdek Parçası |
 
 ### Arena 4 — İletken Dökümhane (950–1.299 Kupa)
 
@@ -92,7 +92,7 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 | 1.150 | 30 Akı |
 | 1.200 | Bariyer · 10 Modül Parçası |
 | 1.300 | Gümüş Sandık |
-| 1.300 | 840 Devre Kredisi + 44 Akı + 35 Modül Parçası |
+| 1.300 | 840 Devre Kredisi + 44 Akı + 35 Modül Parçası + 3 Çekirdek Parçası |
 
 ### Arena 5 — Neon Omurga (1.300–1.699 Kupa)
 
@@ -108,7 +108,7 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 | 1.550 | 36 Akı |
 | 1.625 | 12 Modül Parçası |
 | 1.700 | Gümüş Sandık |
-| 1.700 | 1020 Devre Kredisi + 52 Akı + 40 Modül Parçası |
+| 1.700 | 1020 Devre Kredisi + 52 Akı + 40 Modül Parçası + 3 Çekirdek Parçası |
 
 ### Arena 6 — Plazma Kanalları (1.700–2.149 Kupa)
 
@@ -121,7 +121,7 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 | 1.950 | 42 Akı |
 | 2.025 | Sinyal Bozucu · 14 Modül Parçası |
 | 2.150 | Gümüş Sandık |
-| 2.150 | 1200 Devre Kredisi + 60 Akı + 45 Modül Parçası |
+| 2.150 | 1200 Devre Kredisi + 60 Akı + 45 Modül Parçası + 3 Çekirdek Parçası |
 
 ### Arena 7 — Darbe Surları (2.150–2.649 Kupa)
 
@@ -137,7 +137,7 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 | 2.475 | 48 Akı |
 | 2.550 | 16 Modül Parçası |
 | 2.650 | Gümüş Sandık |
-| 2.650 | 1380 Devre Kredisi + 68 Akı + 50 Modül Parçası |
+| 2.650 | 1380 Devre Kredisi + 68 Akı + 50 Modül Parçası + 3 Çekirdek Parçası |
 
 ### Arena 8 — Kuantum Hattı (2.650–3.149 Kupa)
 
@@ -150,7 +150,7 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 | 2.925 | 54 Akı |
 | 3.025 | Nano Sağlıkçı · 18 Modül Parçası |
 | 3.150 | Gümüş Sandık |
-| 3.150 | 1560 Devre Kredisi + 76 Akı + 55 Modül Parçası |
+| 3.150 | 1560 Devre Kredisi + 76 Akı + 55 Modül Parçası + 3 Çekirdek Parçası |
 
 ### Arena 9 — İyon Kalesi (3.150–3.649 Kupa)
 
@@ -166,7 +166,7 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 | 3.475 | 60 Akı |
 | 3.550 | 20 Modül Parçası |
 | 3.650 | Altın Sandık |
-| 3.650 | 1740 Devre Kredisi + 84 Akı + 60 Modül Parçası |
+| 3.650 | 1740 Devre Kredisi + 84 Akı + 60 Modül Parçası + 3 Çekirdek Parçası |
 
 ### Arena 10 — Çekirdek Sınırı (3.650–4.199 Kupa)
 
@@ -179,7 +179,7 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 | 3.950 | 66 Akı |
 | 4.050 | Muhafız Kubbesi · 22 Modül Parçası |
 | 4.200 | Altın Sandık |
-| 4.200 | 1920 Devre Kredisi + 92 Akı + 65 Modül Parçası |
+| 4.200 | 1920 Devre Kredisi + 92 Akı + 65 Modül Parçası + 3 Çekirdek Parçası |
 
 ### Arena 11 — Shard Nexus (4.200–4.799 Kupa)
 
@@ -195,7 +195,7 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 | 4.600 | 72 Akı |
 | 4.700 | 24 Modül Parçası |
 | 4.800 | Altın Sandık |
-| 4.800 | 2100 Devre Kredisi + 100 Akı + 70 Modül Parçası |
+| 4.800 | 2100 Devre Kredisi + 100 Akı + 70 Modül Parçası + 3 Çekirdek Parçası |
 
 ### Arena 12 — Apex Devre (4.800–5.399 Kupa)
 
@@ -210,7 +210,7 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 | 5.150 | 78 Akı |
 | 5.250 | Sürü Fabrikatörü · 26 Modül Parçası |
 | 5.400 | Altın Sandık |
-| 5.400 | 2280 Devre Kredisi + 108 Akı + 75 Modül Parçası |
+| 5.400 | 2280 Devre Kredisi + 108 Akı + 75 Modül Parçası + 3 Çekirdek Parçası |
 
 ## Ligler
 
@@ -229,18 +229,18 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 
 ### Lig sandıkları
 
-Lig sandığı mağazada ya da başka bir yerde bulunmaz; içeriği şansa bağlı değildir ve alındığında doğrudan verilir. Parça belirli bir modüle bağlı değildir: her modülde harcanabilen evrensel parçadır.
+Lig sandığı mağazada ya da başka bir yerde bulunmaz; içeriği şansa bağlı değildir ve alındığında doğrudan verilir. Parça belirli bir modüle bağlı değildir: her modülde harcanabilen evrensel parçadır. Çekirdek parçası oyuncunun açık çekirdeklerinden rastgele birine gider; her arenanın son ödülü de 1 çekirdek parçası verir.
 
-| Sandık | Kupa | Devre Kredisi | Akı | Evrensel parça |
-|---|---:|---:|---:|---|
-| Kıvılcım Sandığı | 5.800 | 1.500 | 60 | 5 |
-| Voltaj Sandığı | 6.200 | 2.500 | 90 | 7 |
-| Reaktör Sandığı | 6.600 | 4.000 | 130 | 9 |
-| Kuantum Sandığı | 7.000 | 6.000 | 180 | 12 |
-| Nexus Sandığı | 7.400 | 9.000 | 250 | 15 |
-| Şampiyonlar Sandığı | 7.900 | 14.000 | 350 | 20 |
-| Efsane Sandığı | 8.600 | 20.000 | 500 | 25 |
-| GRIDSHARD Sandığı | 10.000 | 25.000 | 1.000 | 40 + kozmetik seti |
+| Sandık | Kupa | Devre Kredisi | Akı | Evrensel parça | Çekirdek parçası |
+|---|---:|---:|---:|---|---:|
+| Kıvılcım Sandığı | 5.800 | 1.500 | 60 | 5 | 5 |
+| Voltaj Sandığı | 6.200 | 2.500 | 90 | 7 | 5 |
+| Reaktör Sandığı | 6.600 | 4.000 | 130 | 9 | 6 |
+| Kuantum Sandığı | 7.000 | 6.000 | 180 | 12 | 6 |
+| Nexus Sandığı | 7.400 | 9.000 | 250 | 15 | 8 |
+| Şampiyonlar Sandığı | 7.900 | 14.000 | 350 | 20 | 8 |
+| Efsane Sandığı | 8.600 | 20.000 | 500 | 25 | 10 |
+| GRIDSHARD Sandığı | 10.000 | 25.000 | 1.000 | 40 + kozmetik seti | 20 |
 
 ### Lig durakları
 

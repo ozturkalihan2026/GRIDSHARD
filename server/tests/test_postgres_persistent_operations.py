@@ -23,6 +23,9 @@ def _premium_fixture(social_db, request):
     with gateway._store_economy_transaction(player):
         profile = gateway.player_profile_service.get_or_create(player)
         profile.season_xp = 20000
+        # Her sandık çekirdek parçası verebilir; iade o kaydı silmez, sıfıra indirir.
+        # Kayıt baştan açılır ki cüzdan karşılaştırması şansa bağlı olmasın.
+        profile.core_shards_by_type.setdefault("core_resonance", 0)
         receipt = process_purchase(profile, "season_pass_premium", "test", uuid4().hex,
                                    test_mode=True, now_iso="2026-10-10T00:00:00Z", premium_refund_policy=POLICY_VERSION)
         gateway.persist_player_data(player)

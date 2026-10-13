@@ -57,6 +57,7 @@ const sandbox = {
   uiLocale: () => "tr-TR",
   localizedUiText: (value) => value,
   document: {
+    documentElement: { lang: "tr" },
     createElement: fakeElement,
     getElementById: (id) => (id === "dock-shop-sale" ? saleBadge : null),
     querySelector: (selector) => (selector.includes('"modules"') ? cardsButton : selector.includes('"shop"') ? shopButton : null),
@@ -193,7 +194,9 @@ withState(null, () => {
 const statHost = fakeElement("div");
 sandbox.renderDetailStatRow(statHost, [
   { label:"CAN", value:100, current:100, next:103 },
-  { label:"BEKLEME", value:"1,5 sn", current:1.5, next:1.488 },
+  { label:"BEKLEME", value:"1,5 sn", current:1.5, next:1.488, unit:"seconds" },
+  { label:"BLOK", value:"%60", current:60, next:62, unit:"percent" },
+  { label:"ÜRETİM", value:"4,5/sn", current:4.5, next:4.9, unit:"per_second" },
   { label:"HASAR", value:12, current:12, next:12.6 },
   { label:"DEĞİŞMEYEN", value:5, current:5, next:5 },
   { label:"AZAMİ", value:9, current:9, next:null },
@@ -207,8 +210,10 @@ const boxes = statHost.children.map((box) => {
 });
 assert.deepEqual(boxes, [
   ["CAN", "100", "+3", "stat-next-gain"],
-  // Kısalan bekleme süresi "-" ile yazar.
-  ["BEKLEME", "1,5 sn", "-0,01", "stat-next-gain"],
+  // Fark birimiyle yazar; kısalan bekleme süresi eksi işaretiyle (−).
+  ["BEKLEME", "1,5 sn", "−0,01 sn", "stat-next-gain"],
+  ["BLOK", "%60", "+%2", "stat-next-gain"],
+  ["ÜRETİM", "4,5/sn", "+0,4/sn", "stat-next-gain"],
   ["HASAR", "12", "+0,6", "stat-next-gain"],
   ["DEĞİŞMEYEN", "5", null, null],
   ["AZAMİ", "9", null, null],
@@ -255,7 +260,7 @@ assert.ok(headline.includes(": specialEntries(item.stats, nextStats)[0]"));
 // Akım maliyeti İstatistik sekmesinde durmaya devam eder.
 assert.ok(app.includes('{ key:"current", icon:"current", tone:"gold", label:"AKIM MALİYETİ", value:number(item.current_cost) },'));
 assert.equal(i18n.translateText("BEKLEME", "en"), "COOLDOWN");
-assert.ok(app.includes('{ label:"ENERJİ", value:`${core.energy_per_second}/sn`, current:core.energy_per_second, next:nextStats?.energy_per_second, icon:"energy", tone:"cyan" },'));
+assert.ok(app.includes('{ label:"ENERJİ", value:`${core.energy_per_second}/sn`, current:core.energy_per_second, next:nextStats?.energy_per_second, unit:"per_second", icon:"energy", tone:"cyan" },'));
 assert.ok(app.includes('{ label:"DEPO", value:core.energy_capacity, current:core.energy_capacity, next:nextStats?.energy_capacity, icon:"battery", tone:"blue" },'));
 
 // Çevrim kutusu: adı sunucudan gelir, çevrimi olmayan modül "SÜREKLİ" yazar.
@@ -272,7 +277,7 @@ ${helpers}
 Object.assign(this, { serverCopy, specialDisplayValue, moduleCycleEntry, specialEntries });`, cycleSandbox);
   assert.deepEqual(
     { ...cycleSandbox.moduleCycleEntry({ cooldown_ms:1200, cycle_label_tr:"BLOK ARALIĞI", cycle_label_en:"BLOCK INTERVAL" }, { cooldown_ms:1190 }) },
-    { label:"BLOK ARALIĞI", value:"1,2 sn", current:1.2, next:1.19 },
+    { label:"BLOK ARALIĞI", value:"1,2 sn", current:1.2, next:1.19, unit:"seconds" },
   );
   assert.equal(cycleSandbox.moduleCycleEntry({ cooldown_ms:0 }, null).value, "SÜREKLİ");
   // Eski sunucu çevrim adını göndermez: "BEKLEME" yazılır.
@@ -285,7 +290,7 @@ Object.assign(this, { serverCopy, specialDisplayValue, moduleCycleEntry, special
     { specials:[{ key:"block", label_tr:"BLOK", label_en:"BLOCK", value:60, unit:"percent" }, { key:"yeni", label_tr:"YENİ", value:1, unit:"hp" }] },
     { specials:[{ key:"block", value:61.24, unit:"percent" }] },
   );
-  assert.deepEqual({ ...block }, { key:"block", label:"BLOK", value:"%60", current:60, next:61.24, icon:"shield", tone:"blue" });
+  assert.deepEqual({ ...block }, { key:"block", label:"BLOK", value:"%60", current:60, next:61.24, unit:"percent", icon:"shield", tone:"blue" });
   assert.equal(unknown.icon, "star");
   cycleSandbox.document.documentElement.lang = "en";
   assert.equal(cycleSandbox.moduleCycleEntry({ cooldown_ms:1200, cycle_label_tr:"BLOK ARALIĞI", cycle_label_en:"BLOCK INTERVAL" }, null).label, "BLOCK INTERVAL");

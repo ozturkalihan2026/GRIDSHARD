@@ -280,6 +280,9 @@ def test_unrelated_piece_deficit_does_not_block_or_get_erased_by_specific_piece_
 @pytest.fixture
 def runtime(monkeypatch, tmp_path):
     service, profile = profiles()
+    # Her sandık çekirdek parçası verebilir; iade o kaydı silmez, sıfıra indirir.
+    # Kayıt baştan açılır ki cüzdan karşılaştırması şansa bağlı olmasın.
+    profile.core_shards_by_type.setdefault("core_resonance", 0)
     receipt = buy(profile)
     platform = PlatformService(tmp_path / "platform.json")
     platform.record_store_receipt(receipt["key"], player_id=profile.player_id, receipt=receipt)

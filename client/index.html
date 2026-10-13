@@ -84,7 +84,7 @@
         <button id="battle-forfeit-button" class="battle-forfeit-button" type="button" hidden>Savaşı Bırak</button>
       </div>
       <div class="battle-status-cluster">
-        <div class="credit-indicator resource-value" id="credit-indicator"><i class="resource-symbol resource-symbol-current" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13h6l-1 9 9-12h-6Z"/></svg></i><span id="credit-indicator-value">Akım: 6 / 12</span></div>
+        <div class="credit-indicator resource-value" id="credit-indicator"><i class="resource-symbol resource-symbol-current is-token" data-token="current" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/><path class="tk-l" d="M13.9 1.5 4.3 13.5h3.4L13.85 5.6Z"/><path class="tk-d" d="M19.7 10.1 8.5 22.5 9.3 18 16.4 10.1Z"/><path class="tk-o" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/></svg></i><span id="credit-indicator-value">Akım: 6 / 12</span></div>
         <button id="battle-settings-button" class="battle-settings-button" type="button" aria-label="Ayarlar" title="Ayarlar">⚙</button>
         <div class="battle-time" id="battle-time">00:00.0</div>
       </div>
@@ -98,12 +98,12 @@
          mağaza açılır. -->
     <section id="app-resource-bar" class="app-resource-bar" aria-label="Oyuncu kaynakları">
       <button type="button" class="app-resource-chip app-resource-flux" data-open-screen="shop" data-resource-shop="flux" title="Akı" aria-label="Akı · mağazayı aç">
-        <i class="resource-symbol resource-symbol-flux" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 4 6 6 4-6 4-4 6-4-6-6-4 6-4Z"/><circle cx="12" cy="12" r="2.3"/></svg></i>
+        <i class="resource-symbol resource-symbol-flux is-token" data-token="flux" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M12 1.5 16.2 7.8 22.5 12 16.2 16.2 12 22.5 7.8 16.2 1.5 12 7.8 7.8Z"/><path class="tk-l" d="M12 1.5 7.8 7.8 1.5 12H12Z"/><path class="tk-d" d="M22.5 12 16.2 16.2 12 22.5V12Z"/><path class="tk-w" d="m12 8.4 1.1 2.5 2.5 1.1-2.5 1.1-1.1 2.5-1.1-2.5-2.5-1.1 2.5-1.1Z"/><path class="tk-o" d="M12 1.5 16.2 7.8 22.5 12 16.2 16.2 12 22.5 7.8 16.2 1.5 12 7.8 7.8Z"/></svg></i>
         <strong id="lobby-flux-shards">0</strong>
         <span class="app-resource-plus" aria-hidden="true">+</span>
       </button>
       <button type="button" class="app-resource-chip app-resource-credit" data-open-screen="shop" data-resource-shop="credit" title="Devre Kredisi" aria-label="Devre Kredisi · mağazayı aç">
-        <i class="resource-symbol resource-symbol-credit" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/></svg></i>
+        <i class="resource-symbol resource-symbol-credit is-token" data-token="credit" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle class="tk-d tk-ink" cx="12" cy="13.2" r="9.5"/><circle class="tk-m tk-ink" cx="12" cy="10.9" r="9.5"/><circle class="tk-l" cx="12" cy="10.9" r="6.8"/><path class="tk-mark" d="M7 10.9h2.6l1.6-3.4 1.8 6.8 1.6-3.4H17"/><path class="tk-shine" d="M4.6 8.6a7.8 7.8 0 0 1 3.6-4.2"/></svg></i>
         <strong id="lobby-circuit-credits">200</strong>
         <span class="app-resource-plus" aria-hidden="true">+</span>
       </button>
@@ -383,17 +383,15 @@
         <button id="chest-odds-open" class="chest-odds-tab" type="button" hidden>ÖDÜL LİSTESİ</button>
         <div class="mobile-section-heading"><div><h3 id="chest-store-title" data-ui-icon="chest:gold">Sandık Satın Al</h3></div><small id="chest-store-sale">Her ay sürpriz bir günde %40 indirim</small></div>
         <div id="chest-store-list" class="chest-store-list"></div>
-        <!-- Hediye sandık ayrı bir bölüm değildir: Bronz Sandık kartındaki düğmeyle açılır. -->
-        <p class="shop-gift-note">Bronz Sandık hediyesi 8 saatte bir yenilenir.</p>
-        <!-- Satın alınan sandıkların günlük hakkı; saati renderShop oyuncunun saatiyle yazar. -->
-        <p id="chest-store-limit-note" class="shop-gift-note shop-limit-note" hidden></p>
+        <!-- Hediye sandık ayrı bir bölüm değildir: Bronz Sandık kartındaki düğmeyle açılır.
+             Yenilenme notları Ödül Listesi penceresindedir. -->
       </section>
       <section class="shop-section paid-store-section" aria-labelledby="paid-store-title">
         <div class="mobile-section-heading"><div><h3 id="paid-store-title" data-ui-icon="gem:violet">Premium ve Paketler</h3></div><small id="paid-store-mode"></small></div>
         <div id="paid-store-premium" class="paid-store-premium"></div>
-        <h4 class="paid-pack-heading">Akı Paketleri</h4>
+        <h4 class="paid-pack-heading" data-ui-icon="flux:violet">Akı Paketleri</h4>
         <div id="paid-flux-packs" class="paid-pack-grid"></div>
-        <h4 class="paid-pack-heading">Devre Kredisi Paketleri</h4>
+        <h4 class="paid-pack-heading" data-ui-icon="credit:gold">Devre Kredisi Paketleri</h4>
         <div id="paid-credit-packs" class="paid-pack-grid"></div>
       </section>
       <p id="shop-action-status" class="mobile-action-status" role="status">Sandık ödülleri sunucu tarafından belirlenir.</p>
@@ -410,7 +408,8 @@
 
     <dialog id="chest-reveal-dialog" class="chest-reveal-dialog" aria-labelledby="chest-reveal-title">
       <div id="chest-reveal-card" class="chest-reveal-card" data-tier="bronze">
-        <div id="chest-reveal-visual" class="chest-visual chest-visual-large chest-visual-bronze" aria-hidden="true"><i></i><b></b><em>◆</em></div>
+        <!-- Çizimi setChestRevealVisual doldurur (mağaza sandığı ya da lig sandığı). -->
+        <div id="chest-reveal-visual" class="chest-visual chest-visual-large chest-visual-bronze" aria-hidden="true"></div>
         <span id="chest-reveal-kicker" class="chest-reveal-kicker">SANDIK AÇILDI</span>
         <h2 id="chest-reveal-title">Bronz Sandık</h2>
         <div id="chest-reveal-rewards" class="chest-reveal-rewards"></div>
@@ -424,6 +423,9 @@
     <dialog id="chest-odds-dialog" class="chest-odds-dialog" aria-labelledby="chest-odds-title">
       <span class="chest-odds-kicker">İÇERİK VE OLASILIKLAR</span>
       <h2 id="chest-odds-title" data-ui-icon="gift:gold">Ödül Listesi</h2>
+      <p class="chest-odds-note chest-odds-refresh-note">Bronz Sandık hediyesi 8 saatte bir yenilenir.</p>
+      <!-- Satın alınan sandıkların günlük hakkı; saati renderShop oyuncunun saatiyle yazar. -->
+      <p id="chest-store-limit-note" class="chest-odds-note chest-odds-refresh-note" hidden></p>
       <div id="chest-odds-list" class="chest-odds-groups"></div>
       <p class="chest-odds-note">Yüzde, sandığın o ödülü içerme olasılığıdır. Modül parçası, açılmış modüllerinden rastgele birine verilir; o enderlikte açılmış modülün yoksa başka enderlikteki bir modülüne verilir.</p>
       <button id="chest-odds-close" type="button">TAMAM</button>
@@ -687,7 +689,7 @@
       <div class="module-detail-level-row">
         <strong id="module-detail-level">SEVİYE 1</strong>
         <span id="module-detail-selected-state">DESTEDE</span>
-        <div><span id="module-detail-shard-icon" class="module-detail-shard-icon" aria-hidden="true"></span><span id="module-detail-shards">0 / 20</span><progress id="module-detail-progress" value="0" max="20"></progress></div>
+        <div><span id="module-detail-shard-icon" class="module-detail-shard-icon" aria-hidden="true"></span><span id="module-detail-shards">0 / 20</span><progress id="module-detail-progress" value="0" max="20"></progress><span id="module-detail-universal" class="module-detail-universal" role="img" hidden></span></div>
       </div>
       <div class="module-detail-stats" id="module-detail-stats"></div>
       <button id="module-detail-upgrade" type="button">Yükselt</button>
@@ -768,9 +770,9 @@
 
     <section class="engagement-summary-panel rewards-hub-screen" id="rewards-hub-screen" data-screen-panel="daily" hidden>
       <div class="rewards-hub-links" aria-label="Ödül bölümleri">
-        <button type="button" data-open-screen="daily-rewards"><strong>Günlük Ödüller</strong></button>
-        <button type="button" data-open-screen="daily-missions"><strong>Günlük Devre Emirleri</strong></button>
-        <button type="button" data-open-screen="rewards"><strong>Sezon Ödülleri</strong></button>
+        <button type="button" data-ui-icon="calendar:gold" data-open-screen="daily-rewards"><strong>Günlük Ödüller</strong></button>
+        <button type="button" data-ui-icon="target:red" data-open-screen="daily-missions"><strong>Günlük Devre Emirleri</strong></button>
+        <button type="button" data-ui-icon="trophy:violet" data-open-screen="rewards"><strong>Sezon Ödülleri</strong></button>
       </div>
       <span hidden aria-hidden="true">40 KADEMELİ SEZON YOLUNU AÇ</span>
     </section>
@@ -1039,7 +1041,7 @@
            dosyaların aynısıdır (client/tests/embedded-fonts.test.js denetler). -->
       <details id="open-source-licenses" class="open-source-licenses">
         <summary>Açık kaynak lisansları</summary>
-        <p>Oyun, SIL Open Font License 1.1 ile dağıtılan Orbitron ve Rajdhani yazı tiplerini kullanır.</p>
+        <p>Oyun, SIL Open Font License 1.1 ile dağıtılan Oxanium, Rajdhani ve Orbitron yazı tiplerini kullanır.</p>
         <h4 translate="no">Orbitron</h4>
         <pre translate="no" data-license="OFL-Orbitron.txt">Copyright 2018 The Orbitron Project Authors (https://github.com/theleagueof/orbitron), with Reserved Font Name: "Orbitron"
 
@@ -1156,6 +1158,100 @@ with others.
 The OFL allows the licensed fonts to be used, studied, modified and
 redistributed freely as long as they are not sold by themselves. The
 fonts, including any derivative works, can be bundled, embedded, 
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION &amp; CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
+        <h4 translate="no">Oxanium</h4>
+        <pre translate="no" data-license="OFL-Oxanium.txt">Copyright 2019 The Oxanium Project Authors (https://github.com/sevmeyer/oxanium)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+https://scripts.sil.org/OFL
+
+
+-----------------------------------------------------------
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded,
 redistributed and/or sold with any software provided that any reserved
 names are not used by derivative works. The fonts and derivatives,
 however, cannot be released under any other type of license. The
@@ -1437,22 +1533,22 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
               <span id="player-board-status" class="board-vitals" hidden>Çekirdek 300/300</span>
             </div>
           </section>
+          <button id="battle-emoji-button" class="battle-emoji-button" type="button" aria-label="Savaş emojisi gönder" aria-haspopup="menu" aria-expanded="false" aria-controls="battle-emoji-tray" hidden>
+            <span id="battle-emoji-button-glyph" aria-hidden="true">🙂</span>
+          </button>
         </div>
       </section>
 
       <aside class="shelf-panel">
         <div class="panel-title-row">
           <h2>Akım</h2>
-          <strong id="shelf-credit-indicator" class="resource-value resource-value-current"><i class="resource-symbol resource-symbol-current" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13h6l-1 9 9-12h-6Z"/></svg></i><span id="shelf-credit-value">6 / 12</span></strong>
+          <strong id="shelf-credit-indicator" class="resource-value resource-value-current"><i class="resource-symbol resource-symbol-current is-token" data-token="current" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/><path class="tk-l" d="M13.9 1.5 4.3 13.5h3.4L13.85 5.6Z"/><path class="tk-d" d="M19.7 10.1 8.5 22.5 9.3 18 16.4 10.1Z"/><path class="tk-o" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/></svg></i><span id="shelf-credit-value">6 / 12</span></strong>
           <span id="shelf-lock-label">Kilitli</span>
         </div>
         <div id="module-shelf" class="module-shelf" aria-label="Modül Rafı"></div>
         <button id="core-power-button" class="core-power-button" type="button" aria-pressed="false" disabled>
           <span class="core-power-glyph" aria-hidden="true">◈</span>
           <small id="core-power-charge">0%</small>
-        </button>
-        <button id="battle-emoji-button" class="battle-emoji-button" type="button" aria-label="Savaş emojisi gönder" aria-haspopup="menu" aria-expanded="false" aria-controls="battle-emoji-tray" hidden>
-          <span id="battle-emoji-button-glyph" aria-hidden="true">🙂</span>
         </button>
         <div id="battle-emoji-tray" class="battle-emoji-tray" role="menu" aria-label="Savaş emojileri" hidden></div>
       </aside>
@@ -1486,29 +1582,29 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
         <h2 id="post-match-reward-heading">SAVAŞ ÖDÜLLERİ</h2>
         <div id="post-match-reward-list" class="post-match-reward-list" data-accounting-mode="profile">
           <article id="post-match-trophy-card">
-            <i class="resource-symbol resource-symbol-trophy" aria-hidden="true">🏆</i>
+            <i class="resource-symbol resource-symbol-trophy is-token" data-token="trophy" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-handle" d="M7.2 5H4c0 3.3 1.4 5 3.6 5.3M16.8 5H20c0 3.3-1.4 5-3.6 5.3"/><path class="tk-d tk-ink" d="M10.3 12.6h3.4v4h-3.4Z"/><path class="tk-m tk-ink" d="M7.4 16.4h9.2l1.2 4.6H6.2Z"/><path class="tk-m tk-ink" d="M6.8 2.6h10.4v5.8a5.2 5.2 0 0 1-10.4 0Z"/><path class="tk-l" d="M8.6 4.2h2.2v4.6a3.4 3.4 0 0 0 1 2.4 3.6 3.6 0 0 1-3.2-3.6Z"/></svg></i>
             <span>KUPA</span>
             <strong id="post-match-trophy-reward">Kaydediliyor…</strong>
           </article>
           <article id="post-match-credit-card">
-            <i class="resource-symbol resource-symbol-credit" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/></svg></i>
+            <i class="resource-symbol resource-symbol-credit is-token" data-token="credit" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle class="tk-d tk-ink" cx="12" cy="13.2" r="9.5"/><circle class="tk-m tk-ink" cx="12" cy="10.9" r="9.5"/><circle class="tk-l" cx="12" cy="10.9" r="6.8"/><path class="tk-mark" d="M7 10.9h2.6l1.6-3.4 1.8 6.8 1.6-3.4H17"/><path class="tk-shine" d="M4.6 8.6a7.8 7.8 0 0 1 3.6-4.2"/></svg></i>
             <span>DEVRE KREDİSİ</span>
             <strong id="post-match-credit-reward">Kaydediliyor…</strong>
           </article>
           <article id="post-match-experience-card">
-            <i class="resource-symbol resource-symbol-experience" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 2.4 5.4L20 8l-4.2 3.8 1.2 5.7-5-2.9-5 2.9 1.2-5.7L4 8l5.6-.6Z"/><circle cx="12" cy="11" r="2.3"/></svg></i>
+            <i class="resource-symbol resource-symbol-experience is-token" data-token="experience" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M12 1.6 15.1 8.1 22.2 9 17 14l1.3 7.1L12 17.6 5.7 21.1 7 14 1.8 9 8.9 8.1Z"/><path class="tk-l" d="M12 1.6 8.9 8.1 1.8 9 12 12Z"/><path class="tk-d" d="M22.2 9 17 14l1.3 7.1L12 17.6V12Z"/><path class="tk-o" d="M12 1.6 15.1 8.1 22.2 9 17 14l1.3 7.1L12 17.6 5.7 21.1 7 14 1.8 9 8.9 8.1Z"/></svg></i>
             <span>DENEYİM</span>
             <strong id="post-match-experience-reward">Kaydediliyor…</strong>
           </article>
           <article id="post-match-team-point-card" hidden>
-            <i class="resource-symbol resource-symbol-team-point" aria-hidden="true">◆</i>
+            <i class="resource-symbol resource-symbol-team-point is-token" data-token="team_point" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M12 1.8 21.4 12 12 22.2 2.6 12Z"/><path class="tk-l" d="M12 1.8 2.6 12H12Z"/><path class="tk-d" d="M21.4 12 12 22.2V12Z"/><path class="tk-o" d="M12 1.8 21.4 12 12 22.2 2.6 12Z"/></svg></i>
             <span>TAKIM KATKI PUANI</span>
             <strong id="post-match-team-point-reward">Kaydediliyor…</strong>
           </article>
         </div>
         <p id="post-match-accounting-note" class="post-match-accounting-note" hidden></p>
         <div id="post-match-premium" class="post-match-premium" hidden>
-          <span class="post-match-premium-badge" aria-hidden="true">★</span>
+          <span class="post-match-premium-badge resource-symbol resource-symbol-premium is-token" data-token="premium" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle class="tk-d tk-ink" cx="12" cy="13" r="9.6"/><circle class="tk-m tk-ink" cx="12" cy="11" r="9.6"/><circle class="tk-l" cx="12" cy="11" r="7"/><path class="tk-k" d="m12 5.4 1.7 3.6 3.9.5-2.9 2.7.8 3.9-3.5-2-3.5 2 .8-3.9-2.9-2.7 3.9-.5Z"/></svg></span>
           <p id="post-match-premium-copy"></p>
           <button id="post-match-premium-buy" type="button" hidden>SAVAŞ PREMIUM · 199,99 TL</button>
         </div>

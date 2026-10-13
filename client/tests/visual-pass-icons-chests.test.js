@@ -47,7 +47,7 @@ function iconSandbox(lang = "tr") {
     localizedUiText: (value) => (sandbox.document.documentElement.lang === "en" ? en(value) : value),
   };
   vm.runInNewContext(`${slice("  const UI_ICON_PATHS = Object.freeze({", "  function resourceSymbolMarkup(kind) {")}
-Object.assign(this, { UI_ICON_PATHS, STAT_ICONS, uiIconMarkup, createCostChip, setCostButtonLabel });`, sandbox);
+Object.assign(this, { UI_ICON_PATHS, STAT_ICONS, RESOURCE_TOKEN_SVG, uiIconMarkup, createCostChip, setCostButtonLabel });`, sandbox);
   return sandbox;
 }
 
@@ -75,8 +75,10 @@ test("maliyet rozeti para biriminin adını değil simgesini gösterir", () => {
   assert.equal(chip.className, "cost-chip");
   assert.equal(chip.dataset.kind, "credit");
   const [icon, value] = chip.children;
-  assert.equal(icon.className, "cost-chip-icon");
-  assert.ok(icon.innerHTML.includes(sandbox.UI_ICON_PATHS.credit));
+  // Simge, üst bardaki ve ödül satırlarındaki Devre Kredisi çizimiyle aynıdır.
+  assert.equal(icon.className, "cost-chip-icon is-token");
+  assert.equal(icon.dataset.token, "credit");
+  assert.ok(icon.innerHTML.includes(sandbox.RESOURCE_TOKEN_SVG.credit));
   assert.equal(value.textContent, "2.200");
   // Ekran okuyucu için adı etikette durur.
   assert.equal(chip.attributes["aria-label"], "2.200 Devre Kredisi");
@@ -97,8 +99,7 @@ test("maliyet rozeti para biriminin adını değil simgesini gösterir", () => {
 
   const english = iconSandbox("en");
   assert.equal(english.createCostChip("flux", 60).attributes["aria-label"], "60 Flux");
-  assert.match(css, /\.cost-chip\[data-kind="credit"\] \.cost-chip-icon \{/);
-  assert.match(css, /\.cost-chip\[data-kind="flux"\] \.cost-chip-icon \{/);
+  assert.match(css, /\.resource-symbol\.is-token,\s*\.cost-chip-icon\.is-token \{/);
 });
 
 test("bilgi penceresinde bedeller ve yetenek Akı'sı simgeyle yazılır", () => {
@@ -119,7 +120,7 @@ test("istatistik sekmesi soyut çarpan yerine modülün kendi değerlerini ve fa
   assert.match(tiles, /: \[\{ key:"effect", icon:"star", tone:"violet", label:"ETKİ ÇARPANI"/);
   // Hasar karosu yalnız hasar veren modülde çıkar.
   assert.match(tiles, /\.\.\.\(Number\(stats\.base_damage\) > 0\s*\? \[\{ key:"damage", icon:"damage", tone:"red", label:"HASAR"/);
-  assert.match(tiles, /const gain = createStatGain\(tile\.current, tile\.next\);\s*if \(gain\) value\.append\(" ", gain\);/);
+  assert.match(tiles, /const gain = createStatGain\(tile\.current, tile\.next, tile\.unit\);\s*if \(gain\) value\.append\(" ", gain\);/);
   assert.match(tiles, /name\.append\(createUiIcon\(tile\.icon, tile\.tone\), document\.createTextNode\(tile\.label\)\);/);
   for (const [label, expected] of [["ÇALIŞMA", "OPERATION"], ["SÜREKLİ", "ALWAYS ON"]]) assert.equal(en(label), expected);
 });
@@ -166,18 +167,30 @@ test("başlıklar, sekmeler ve menü satırları eşleşen simgeyle süslenir", 
   assert.match(css, /\.dropdown-menu > button\.has-ui-icon \{/);
 });
 
-test("alt çubuk ayrık hücrelidir; her düğmenin rengi ve her zaman görünen adı vardır", () => {
+test("alt çubuk ayrık hücrelidir; adı yalnız açık sayfanın düğmesi taşır ve o düğme büyür", () => {
   for (const screen of ["shop", "modules", "menu", "team", "events"]) {
     assert.match(css, new RegExp(`#app-bottom-dock \\.menu-action\\[data-open-screen="${screen}"\\] \\{ --dock-a:#[0-9a-f]{6};--dock-b:#[0-9a-f]{6};--dock-tone:#[0-9a-f]{6}; \\}`));
   }
   const title = css.match(/body:not\(\[data-app-screen="play"\]\) #app-bottom-dock \.menu-action \.menu-action-title \{([^}]*)\}/)[1];
-  assert.match(title, /max-height:none !important;/);
-  assert.match(title, /opacity:1 !important;/);
+  // Kullanıcının kararı (13 Ekim 2026): "tıklanan butonun ismi yazsın ve buton
+  // biraz büyüsün" — diğer dört düğme yalnız simgedir.
+  assert.match(title, /display:none !important;/);
+  assert.match(css, /#app-bottom-dock \.menu-action\.is-active \.menu-action-title \{ display:block !important; \}/);
   // Android en küçük yazı boyu 8 pikseldir.
-  assert.match(title, /font:800 \.5rem\/1\.1 var\(--gs-font-display\) !important;/);
+  assert.match(title, /font:800 \.56rem\/1\.1 var\(--gs-font-display\) !important;/);
   const cell = css.match(/body:not\(\[data-app-screen="play"\]\) #app-bottom-dock \.menu-action \{([^}]*)\}/)[1];
   assert.match(cell, /border:1px solid rgba\(120,170,210,\.24\) !important;/);
-  assert.match(css, /#app-bottom-dock \.menu-action\.is-active \{[^}]*transform:translateY\(-6px\);/);
+  assert.match(cell, /flex:1 1 0 !important;/);
+  // Açık düğme genişler, yukarı doğru uzar ve simgesi büyür.
+  const active = css.match(/#app-bottom-dock \.menu-action\.is-active \{([^}]*)\}/)[1];
+  assert.match(active, /flex-grow:1\.62 !important;/);
+  assert.match(active, /height:60px !important;/);
+  assert.match(active, /margin-top:-10px !important;/);
+  assert.match(css, /#app-bottom-dock \.menu-action\.is-active \.lobby-dock-icon \{ width:36px !important;height:36px !important;filter:none; \}/);
+  // Gizlenen adlar ekran okuyucuda durur.
+  for (const [screen, label] of [["shop", "Mağaza"], ["modules", "Kartlar"], ["menu", "Ev"], ["team", "Takım"], ["events", "Etkinlik"]]) {
+    assert.match(html, new RegExp(`data-open-screen="${screen}" data-shell-screen="${screen}" aria-label="${label}" title="${label}"`));
+  }
 });
 
 // --- Lig sandığının açılışı ------------------------------------------------------
@@ -209,7 +222,7 @@ Object.assign(this, { leagueChestMarkup, setChestRevealVisual, LEAGUE_CHEST_OPEN
   sandbox.setChestRevealVisual({ tier:"silver" });
   assert.equal(card.dataset.league, undefined);
   assert.equal(visual.className, "chest-visual chest-visual-large chest-visual-silver");
-  assert.equal(visual.innerHTML, "<i></i><b></b><em>◆</em>");
+  assert.match(visual.innerHTML, /^<svg class="shop-chest" viewBox="0 0 100 86"/);
   for (const name of ["showChestReveal", "showBulkChestReveal", "showChestOpening", "showClaimedChest"]) {
     const body = app.slice(app.indexOf(`  function ${name}(`), app.indexOf("\n  }\n", app.indexOf(`  function ${name}(`)));
     assert.ok(body.includes("setChestRevealVisual({ tier });"), `${name} pencerenin çizimini sıfırlamıyor`);

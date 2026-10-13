@@ -1,10 +1,166 @@
-# Claude devir notu — 13 Ekim 2026 (ev bilgisayarı, ikinci oturum)
+# Claude devir notu — 13 Ekim 2026 (iş bilgisayarı, yedinci oturum)
 
-Bu not ev bilgisayarında, 13 Ekim'deki ikinci oturumun sonunda yazıldı (ilki 12 Ekim akşamından 13 Ekim'e uzanan Faz 2 düzeltmeleri + Faz 3 oturumuydu). Depo `5fa10ed` (`main` = `origin/main`; kalite denetimi o commit için yeşil) ve **üstünde commit edilmemiş büyük bir değişiklik var** (44 değişen dosya, 9 yeni dosya; iki oturumun toplamı). Commit ve push'u kullanıcı yapar. Canlıda sunucu r16 ve kapalı testte v8 paketi var (Codex'in kaydı, `CODEX_CHECKPOINT.md`; Claude doğrulamadı); gerçek test kullanıcıları oynuyor. `CODEX_CHECKPOINT.md` dosyasına ve Codex'in değişikliklerine dokunulmaz.
+Bu not iş bilgisayarında, 13 Ekim'deki yedinci oturumun sonunda yazıldı. Depo `e4401d5` (`main` = `origin/main`) ve **üstünde commit edilmemiş beş oturumun işi var**: üçüncü oturum (gelir hesabı, çekirdek parçası kaynakları, enderliğe göre parça; sunucu ve istemci), dördüncü, beşinci, altıncı oturumlar (görsel tur 2, 3, 4; yalnız istemci) ve yedinci oturum (görsel tur 5; yalnız istemci). Commit ve push'u kullanıcı yapar. Canlıda sunucu r16 ve kapalı testte v8 paketi var (Codex'in kaydı, `CODEX_CHECKPOINT.md`; Claude doğrulamadı; depoda sürüm kodu hâlâ 8); gerçek test kullanıcıları oynuyor. `CODEX_CHECKPOINT.md` dosyasına ve Codex'in değişikliklerine dokunulmaz.
 
-**Sıra (kullanıcı kararı, 12 Ekim akşamı):** "iş bilgisayarındaki işimiz bitti. faz 3 ü evde başlarız. Sunucu ve paketi faz 3 ten sonra yaparız." İlk oturumda Faz 2 düzeltmeleri (R1–R6) ve Faz 3, ikinci oturumda kullanıcının yeni isteği (modül çevrimleri ve görsel tur, aşağıda) yapıldı. **Sıradaki: kullanıcının Faz 3'ü ve bu oturumun işini görmesi → commit + push → kalite denetimi → yayın (sunucu r17 + paket, sürüm kodu 9), kullanıcının açık onayıyla.** Faz 4 (kozmetik içerik) başlamadı.
+**Sıradaki:** commit + push (beş oturumun işi; kullanıcı yapar) → **yeni oturumda Faz 4** (aşağıda; başlanmadı; kullanıcının 13 Ekim cümlesi: "tamamlayalım ve faz 4 e geçelim") → kalite denetimi → yayın (sunucu r17 + paket, sürüm kodu 9; ev bilgisayarında, kullanıcının açık onayıyla). **Hiçbir oturumun işi gerçek cihazda görülmedi.**
 
-## İkinci oturum (13 Ekim): modül çevrimleri ve görsel tur — commit bekliyor, yayınlanmadı, gerçek cihazda görülmedi
+## Yedinci oturum (13 Ekim, iş bilgisayarı): görsel tur 5 — commit bekliyor, yayınlanmadı, gerçek cihazda görülmedi
+
+Kullanıcının açılış cümlesi: "Son olarak modüller kaldı yeni tasarım diline göre dokunmadığımız. Modülleride yeni tasarım dili ile güncelleyelim. Ev Uzun Ekran görüntüsünde savaş destesinin üst kenarı uzamış ona gerek yok aynı korunsun. Devre yolu ile savaş destesi arasındaki mesafe artsın uzun ekranda yeterli. Mağaza içeriklerinin boyutları fazla ve gereksiz büyütülmesini azaltarak tamamlayalım ve faz 4 e geçelim." İş sürerken iki düzeltme mesajı yazdı (bilgi penceresinde eski yerleşim, yapboz parçasında ortalama, çekirdek rozetleri; çekirdek penceresi de aynı yerleşimde, mağazadaki iki bilgi yazısı Ödül Listesi'ne). Tam metinler, yapılanlar, kullanıcının görmediği seçimler, yapılmayanlar ve doğrulama `docs/OYUN_DUZENLEMELERI_PLANI.md` içinde, "Görsel tur 5" başlığında. Özet:
+
+- **Modül amblemleri:** 36 modül ve Çekirdek, tek harfli yazı işareti yerine çizilmiş amblemle (`GridshardModuleCardView.emblemFor`, `client/src/battle/module-card-view.js`; bağlama `mountModuleEmblem`, `client/src/app.js`). Renk sınıftan gelir. Oyunda modülün göründüğü her yerde.
+- **Bilgi pencereleri (modül ve çekirdek):** ad ve enderlik üstte ortada, amblem arkada aşağıda ortada, rengini arkaya yayar. Ad bir punto küçük. Çekirdek penceresinde tur 4'ün "amblem solda" yerleşimi kalktı.
+- **Yapboz parçası:** amblem beyaz, girintilerin dışındaki dolu alanın ortasında.
+- **Çekirdek enderlik rozeti:** karolarda ve pencerede modüldekiyle aynı (büyük harf, enderlik renginde).
+- **Ev ekranı:** panel her ekranda aynı boyda (150–161 piksel); uzun ekranda artan yükseklik lig kartı ile panel arasına gider (393×852'de 258 piksel), panel ile SAVAŞ arası en çok 48 piksel. Kısa ekran ölçüleri değişmedi. Uzun ekrandaki çekirdek adı satırı kalktı.
+- **Mağaza:** ölçüler küçüldü (sandık kartı 206 → 155 piksel; mağazanın boyu 360×640'ta 3,5 → 2,7 ekran; dört sandık ilk ekranda). Hediye ve alım hakkı yenilenme notları ÖDÜL LİSTESİ penceresinde.
+
+### Doğrulama (son kodla, 13 Ekim, iş bilgisayarı)
+
+- Ham sonuç (`artifacts/gorsel-tur5-20261013/dogrulama.txt`): istemci 390 test: 388 geçti, 2 atlandı, başarısız yok; `tools/release_guard.py` geçti; telefon boyutunda dört yapılandırmanın (360×640, 320×568 en küçük yazı boyu, 393×852, İngilizce 360×640) her birinde mağaza 6/6 ve amblem / pencere denetimleri 27/27 geçti; ev ekranı 360×640, 320×568 ve İngilizce 360×640'ta 7/7, uzun ekranlarda (360×640 + 412×915 + 360×800 birlikte) 23/23 geçti; 393×852 tek başına koşulduğunda "panel 360×640'takiyle aynı boyda" denetimi karşılaştıracak ölçü bulamadığı için düştü (denetimin kusuru), bu yüzden 360×640 ile birlikte yeniden koşuldu: 15/15 denetim geçti; tur 4 denetimleri 360×640'ta 16/16 ve 54/54 geçti; uçtan uca masaüstü 5/5 geçti (`menu-navigation`, `beta33-season`, `battle-density`, `beta381-battle-events`); Android öykünmesinde projenin tamamı koşuldu: 10 geçti, 2 düştü. Düşen ikisi `two-client-pvp` testleri; bu koşu yalnız yapay zeka eşleşmeli yerel sunucuya karşıydı ve o testler insan eşleşmesi isteyen kendi sunucusuyla koşulur (önceki oturumlarda da bu kipte koşulmadı). Nedenin bu olduğu Claude'un çıkarımıdır; `two-client-pvp` kendi sunucusuyla bu oturumda koşulmadı.
+- **Sunucu kodu bu oturumda değişmedi; sunucu testleri yeniden koşulmadı.** `two-client-pvp` koşulmadı. Modül tanıtım penceresi, takım istek kartı, sayaç yongaları ve masaüstü havuz ekranındaki amblemler tarayıcıda görülmedi. `dist/` yeniden üretilmedi. **Gerçek cihazda hiçbir şey görülmedi.**
+- Düzenek (git'te izlenmez, yalnız iş bilgisayarında): `artifacts/gorsel-tur5-20261013/` (`run-all.sh`, `verify5.js`, `home5.js`, `shop5.js`, `sheet.js`; amblem tablosunun kaynağı `emblems.part.js` + `build-emblems.js`). `canon.css` sonundaki "Görsel tur 5" bloğu `apply5.js` ile `t5-*.css` parçalarından üretilir; `apply4.py` tur 3 işaretinden dosya sonuna kadar yazdığı için **önce `apply4.py`, sonra `apply5.js`** çalıştırılır. Bu turda tur 3 ve tur 4 parçaları da düzenlendi (mağaza ölçüleri `t3/tur3-1.css`, ev ekranı `t4-1.css`, çekirdek penceresi `t4-2.css`).
+
+### Yayın için ek notlar
+
+- Değişiklik yalnız istemcidedir (paketle çıkar); sunucu, veritabanı ve kayıt biçimi değişmedi. Yeni dosya yok (yalnız yeni test dosyası); amblemler kodun içindedir, pakete yeni varlık girmez.
+- Commit'te bu oturumun dosyaları: `client/src/battle/module-card-view.js` (bu oturumda ilk kez), `client/src/app.js`, `client/src/canon.css`, `client/index.html`; `client/tests/visual-pass-5-module-emblems.test.js` (yeni), `visual-pass-2-tokens-chests.test.js`, `visual-pass-3-surfaces.test.js`, `visual-pass-4-emblem-surfaces.test.js`, `league-road-and-module-unlocks.test.js`, `shop-gift-on-bronze-card.test.js`, `store-chest-daily-limit.test.js` (son üçü bu oturumda ilk kez); `docs/OYUN_DUZENLEMELERI_PLANI.md`, `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md`; `CLAUDE_CHECKPOINT.md`. Bu oturumda Codex çalışmadı.
+
+## Altıncı oturum (13 Ekim, iş bilgisayarı): görsel tur 4 — commit bekliyor, yayınlanmadı, gerçek cihazda görülmedi
+
+Kullanıcı oturumu şöyle açtı: "checkpoint oku, yazı tipini indirebilirsin. Ana ekrandaki çekirdekler için yaptığın yeni tasarımlar kartlar/çekirdekler alanında da aynı olması. hatta savaş alanında da aynı görüntü ve efektleri kullanmalı. Ona göre profesyonel dokunuşu yapalım." İş sürerken iki mesaj daha yazdı: (1) "kartlar/çekirdek alanında rezonans çekirdeği ile diğer çekirdeklerin kutuları farklı boyutlarda rezonans çekirdeği de aynı boyuta taşınsın. Savaş alanında ortadaki çekirdek hücresinde ortalanmamış görünüyor. bu tür hataları görüp teslim etmeden tamamlamalısın" (2) "savaş alanındaki emoji yuvarlağını savaş alanı içine sağ alt köşeye taşısak daha mı güzel olur." Tur 3'e yanıtı (sekiz maddelik plan), bu cümleler, yapılanlar, kullanıcının görmediği seçimler, yapılmayanlar ve doğrulama `docs/OYUN_DUZENLEMELERI_PLANI.md` içinde, "Görsel tur 4" başlığında. Özet:
+
+- **Tek Çekirdek amblemi:** ev ekranındaki çizim ve hareketi (dönen iki yörünge, parıltı) artık Kartlar → Çekirdek, çekirdek bilgi penceresi, savaş alanındaki iki çekirdek hücresi (rakip kendi türüyle; sunucunun zaten gönderdiği `core_type`), Çekirdek gücü düğmesi, maç sonu, profil ve Devre Yolu'nda. Üç katman (`coreEmblemMarkup`, `mountCoreEmblem`; `client/src/app.js`); hareket azaltma ve düşük grafikte durur.
+- **Kullanıcının üç düzeltmesi yapıldı ve ölçüldü:** çekirdek karoları aynı boyda; savaşta amblem hücrenin tam ortasında (0,75 piksel içinde; ilk halinde 2 piksel sağdaydı); emoji düğmesi savaş alanının sağ alt köşesinde (`#duel-arena` içine taşındı, 34 piksel).
+- **Profesyonel dokunuş:** tur 3'ün yüzey dili bir kademe sakinleşti (kontur 1 piksel, alt dudak 2 piksel ve çevresindeki koyu halka yok, geçişler daha az parlak, köşeler yaklaşık %80). Tur 3 stil bloğu bu ölçülerle yeniden yazıldı.
+- **Yazı tipi Oxanium** (SIL OFL 1.1; Google Fonts'tan iki dosya, 22 KB; kullanıcının bu oturumdaki izniyle indirildi; Türkçe harflerin hepsi kendi çiziminde, ölçülerek doğrulandı). `size-adjust:%109` ile çizilir. Orbitron yalnız GRIDSHARD marka yazısında (`--gs-font-brand`). Lisans metni `client/assets/fonts/OFL-Oxanium.txt` ve oyunun içinde.
+- **Alt çubuk:** Takım mor. **Ev ekranı:** amblem küçüldü (360×640'ta 126 → 93 piksel), altı deste tepsisinin arkasına iniyor, lig kartı ile panel arasında boşluk var, panelin zemini altıgen ızgaralı sahne, uzun ekranda çekirdeğin adı yazıyor.
+- **Profil, Devre Koleksiyonu:** üç kupa ve dört rozet yuva olarak; kazanılan renkli, kazanılmayan soluk; simgeler çizim.
+- **Dokunulmayan yerler yapıldı:** savaş ekranı (yalnız yüzey), maç sonu, kart karoları, takımı olan hesabın takım sayfası (takımsız ekranlar dahil), turnuva ayrıntı sayfaları, Devre Yolu'nda AL (lig sandığında yeşil düğme, alınabilir durakta yeşil rozet).
+- **Görülmeyen durumlar görüldü:** indirim günü, alınabilir emir (gerçek), ender ve efsanevi rozet, alınabilir Devre Yolu durağı ve lig sandığı. Alınabilir sezon ödülü yalnız görüntüde taklit edildi; dolu mesaj kutusu kartı yine görülmedi.
+
+### Kullanıcının görmediği seçimler (Claude)
+
+Liste plan dosyasında. Başlıcaları: sakinleştirmenin ölçüleri; Oxanium'un %109 çizilmesi ve marka yazısının Orbitron'da kalması; Takım düğmesinin moru; amblemin maç sonu, profil, Devre Yolu ve ödül satırlarına da konması (kullanıcı Kartlar → Çekirdek ve savaşı saydı); ev ekranına çekirdek adının eklenmesi; Devre Koleksiyonu'nda kazanılmamışların da gösterilmesi; takım istatistiklerinin iki sütuna alınması; Devre Yolu durağına AL rozeti. Kullanıcı takım, turnuva, profil ve Devre Yolu'nun son halini iş sürerken görmedi.
+
+### Doğrulama (son kodla, 13 Ekim, iş bilgisayarı)
+
+- İstemci 379 geçti, 2 atlandı (yeni `client/tests/visual-pass-4-emblem-surfaces.test.js`, 13 test). `tools/release_guard.py` geçti. **Sunucu kodu bu oturumda değişmedi; sunucu testleri yeniden koşulmadı.**
+- Uçtan uca (yerel sunucu, kurulu Chrome): Android öykünmesi 9/9, masaüstü 5/5 (`beta381-battle-events` dahil). `two-client-pvp` koşulmadı.
+- Telefon boyutunda Chrome'da (`artifacts/gorsel-tur4-20261013/run-all.sh`): 360×640, 320×568 (en küçük yazı boyu taklidiyle), 393×852, İngilizce 360×640, İngilizce 320×568 (en küçük yazı boyu); her birinde 84 denetim, beşinde de hepsi geçti. Takımı olan hesap (deneme sunucusu, 360×640): 9 denetim geçti. Masaüstü boyutunda (1280×800) savaş ekranına bakıldı.
+- Görülmeyenler plan dosyasında sayılı (dolu mesaj kutusu, gerçek alınabilir sezon ödülü, lider panosu ve oyuncu profili pencereleri, savaşta Rezonans dışındaki çekirdekler, `dist/`). **Gerçek cihazda hiçbir şey görülmedi.**
+- Düzenek (git'te izlenmez, yalnız iş bilgisayarında): `artifacts/gorsel-tur4-20261013/`. `canon.css` sonundaki "Görsel tur 3" ve "Görsel tur 4" blokları o klasördeki `calm.py` (tur 3 parçalarını sakinleştirir) ve `apply4.py` (`t3/tur3-*.css` + `t4-*.css`) ile üretildi; bloklar depoda elle düzenlenirse parçalar eskir.
+
+### Yayın için ek notlar
+
+- Değişiklik yalnız istemcidedir (paketle çıkar); sunucu, veritabanı ve kayıt biçimi değişmedi. Rakibin çekirdek amblemi sunucunun bugün de gönderdiği `core_type` alanını okur; alan yoksa Rezonans çizilir.
+- Pakete iki yeni yazı tipi dosyası girer (`oxanium-200-800-latin.woff2`, `oxanium-200-800-latin-ext.woff2`); derleme ve denetim betikleri dosyaları sayarak bulur (`tools/build-client.js`, `tools/audit-android-review-release.ps1`), liste elle tutulmuyor (Claude kodu okuyarak çıkardı; derleme koşulmadı).
+- Commit'te bu oturumun dosyaları: `client/src/app.js`, `client/src/canon.css`, `client/index.html`, `client/src/styles.css`, `client/src/fonts.css`, `client/src/i18n-catalog.js`; yeni `client/assets/fonts/oxanium-200-800-latin.woff2`, `oxanium-200-800-latin-ext.woff2`, `OFL-Oxanium.txt` ve `client/assets/fonts/README.md`; `client/tests/visual-pass-4-emblem-surfaces.test.js` (yeni), `visual-pass-3-surfaces.test.js`, `embedded-fonts.test.js`; `docs/OYUN_DUZENLEMELERI_PLANI.md`, `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md`, `docs/CHILD_AUDIENCE_AUDIT.md`; `CLAUDE_CHECKPOINT.md`. Bu oturumda Codex çalışmadı.
+
+## Sıradaki iş: Faz 4 — kozmetik içerik (**başlanmadı**; yeni oturumda)
+
+Kullanıcının 13 Ekim cümlesi görsel tur 2'nin sonunda: "Bunlardan sonra faz4 e geç." Faz 4'ün özgün cümleleri `docs/OYUN_DUZENLEMELERI_PLANI.md` dosyasının sonundaki ekte (kelimesi kelimesine; her maddede önce o cümle okunur), maddeler aynı dosyada "Faz 4 — kozmetik içerik" başlığında (G1–G6).
+
+- **Neden henüz başlanmadı:** kullanıcı yedinci oturumda görsel tur 5'i isteyip "tamamlayalım ve faz 4 e geçelim" dedi; tur bittiğinde 5 saatlik kullanım hakkı dolmak üzereydi (iş bitmeden son ölçüm %90; haftalık %75) ve bağlam 350 bin belirteci geçmişti. Faz 4 büyük bir iş (sunucu + istemci + çizim) ve taze oturumda başlar. Yeni görsel dilin güncel ölçüleri tur 4'ünkilerdir (ince kontur, alçak dudak; `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md`); modül amblemleri Faz 4 çizimleri (karakterler, desenler, hareketli emojiler) için de örnektir (`module-card-view.js`: `solid`, `orb`, `stroke` yardımcıları). Kullanıcının ölçüsü: "Çokta çocuksu görüntüye düşmeyelim profesyonel dokunuşunu yap"; ayrıca çizim isteği yerleşim değişikliği izni değildir (bu oturumda iki kez düzeltti).
+- **G1** canlı veriye dokunur ("Uç oyuncusuna bir adet arka plan aç"): yalnız yayın oturumunda, kullanıcının o anki onayıyla. Öncesinde arka plan değişiminin çalıştığı yerel sunucuda doğrulanır.
+- **G2** sunucu işidir: sıralama ve dereceyle kazanılan kozmetikler her turnuva döneminde (takım ve bireysel) farklı olmalı ve kendiliğinden değişmeli. Kozmetiklerin altındaki "nerede kazanılır" notları Faz 1'de kaldırıldı (G2b).
+- **G3–G5** çizim işidir (hareketli emojiler, profil barında desenler, profil resminde karakterler). Varsayılan yol: oyunun kendi çizim diliyle (SVG ve CSS hareketi) depoda üretilir, dışarıdan paket indirilmez; kullanıcının cümlesi emojiler için "evrensel hareketli gifler kullanılabilir" diyor — hazır set istenirse önce lisans okunur ve indirme onayı alınır (plan dosyasındaki 1. açık karar; iş bunu beklemeden başlar). Hedef kitle 13 yaş ve üzeri.
+- **G6** araştırmadır (başka oyunlardaki kozmetik çeşitliliği).
+- Başlarken bakılacak yerler (`client/src/app.js`; bu oturumda görüldü, içleri okunmadı): `PROFILE_AVATARS`, `PROFILE_AVATAR_FRAMES`, `PROFILE_BACKGROUNDS` (bugün iki renkli geçiş: `colors`), `BATTLE_EMOJIS` (bazılarında `motion` alanı var), `PROFILE_BADGES`, `PROFILE_RANK_TROPHIES`, `applyAvatarVisual`, `createBattleEmojiVisual`, ödül önizlemesi `rewardPreviewEntries`. Turnuva ödül sandıklarının görsel kimlikleri: `weekly_circuit_crown`, `weekly_prism`, `weekly_pulse`, `team_reactor_crown`, `team_prism_relay`, `team_signal_cache`. Sunucu tarafı (turnuva ödül tanımları) bu oturumda açılmadı.
+- Yeni görsel dil (Faz 4 çizimleri buna uyar): dolu gövde, aydınlık ve gölge yüzey, koyu kontur (`#0a1024`). Örnekler: `shopChestSvg`, `leagueChestMarkup`, `RESOURCE_TOKEN_SVG`, `createModulePuzzlePiece`; stiller `client/src/canon.css` sonunda "Görsel tur 2" bölümü.
+
+## Beşinci oturum (13 Ekim, iş bilgisayarı): görsel tur 3 — commit bekliyor, yayınlanmadı, gerçek cihazda görülmedi
+
+Kullanıcı oturumu mağazanın ekran görüntüsüyle açtı: "Mağazada arka plan açık mavi ve desen, sandıkların yerleştiği düz koyu mavi alan var vs. … Mağaza tasarımını düzenlemek lazım gibi." Aynı mesajda ilk oyun deneyimi ekranlarını, üç çizgi menüsünün sayfalarını, geri düğmelerini ve "buna benzer buton, hücre alan vs." yeni görsel dile çekmemi istedi, "Gerekirse yazı tipinde de güncelleme yapabilirsin" dedi ve diğer aracın üç önerisini ekledi (enderlik rengi ve Lider Panosu; ev ekranındaki orta boşluk ve Çekirdek görseli; sayıların okunması). İsteğin tam metni, yüzey dili, yapılanlar, kullanıcının görmediği seçimler, yapılmayanlar ve doğrulama `docs/OYUN_DUZENLEMELERI_PLANI.md` içinde, "Görsel tur 3" başlığında. Özet:
+
+- **Yüzey dili:** levha (yükseltilmiş panel), yuva (gömük hücre), düğme (kalın, alt dudaklı; altın ana eylem ve hazır ödül, yeşil satın al / ödül al, mavi gezinme, turkuaz seçili sekme, kırmızı kapat / sil), şerit (bölüm başlığı). Düz koyu bölüm kutuları kalktı. Stiller `client/src/canon.css` sonunda "Görsel tur 3" bloğu; `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md` içinde "Yüzey dili" maddesi.
+- **Mağaza** yeniden tasarlandı: şerit başlıklar, kademe renginde sandık kartları (ad plakası üstte, sandık ortada, düğme altta), yeşil fiyat düğmeleri, ortada simgeli paket kartları, mor premium kartlar.
+- **Sayfalar:** Kozmetik, Ödüller (üç alt sayfa), Arkadaşlar, Ayarlar (dört sekme), Profil, Kartlar (deste paneli, sekmeler), Etkinlik. Geri düğmesi liste kayarken sol altta sabit.
+- **Pencereler ve ilk oyun deneyimi:** hesap, günlük meta, mesaj kutusu, ödül listesi, sandık açılışı; rehber kartı, İLERİ düğmesi, ilerleme çubuğu.
+- **Diğer aracın önerileri:** enderlik rengi tek dil (rozet ve kimlik simgesi; `setRarityBadge`, `RARITY_ICON_TONES`); Lider Panosu mavi; ev ekranında orta boşluk kalktı ve çizilmiş Çekirdek amblemi geldi (`coreEmblemSvg`, yedi çekirdek); parça "500 / 28" ve ayrı evrensel parça rozeti; değer farkları birimiyle ("−0,01 sn"; `statGainText`).
+- **Yazı tipi ailesi değişmedi.** Orbitron'da ğ, ş ve İ yok (yedek yazı tipiyle çiziliyor); Türkçe harfli bir başlık yazı tipine geçmek dosya indirme onayı ve bütün ekranların yeniden ölçülmesini ister. Yanıtta kullanıcıya söylendi; kararı bekleniyor. Yalnız küçük yazılar büyütüldü (takvim satırları, 8 pikselin altındaki düğme yazıları).
+
+### Kullanıcının görmediği seçimler (Claude)
+
+Bu turun bütün renk, biçim ve yerleşim kararları (liste plan dosyasında). Kullanıcı iş sürerken hiçbir ekran görüntüsü görmedi; özet görüntüler oturum sonunda gönderildi.
+
+### Doğrulama (son kodla, 13 Ekim, iş bilgisayarı)
+
+- İstemci 366 geçti, 2 atlandı (yeni `client/tests/visual-pass-3-surfaces.test.js`, 12 test). `tools/release_guard.py` geçti. **Sunucu kodu bu oturumda değişmedi; sunucu testleri yeniden koşulmadı.**
+- Uçtan uca (yerel sunucu, kurulu Chrome): Android öykünmesi 9/9, masaüstü 4/4. `two-client-pvp` koşulmadı.
+- Telefon boyutunda Chrome'da (`artifacts/gorsel-tur3-20261013/verify-tur3.js`): 360×640, 320×568 (en küçük yazı boyu taklidiyle), 393×852, İngilizce 360×640, İngilizce 320×568 (en küçük yazı boyu); beşinde de 85 denetimin hepsi geçti. Masaüstü boyutunda beş sayfaya bakıldı.
+- Görülmeyenler plan dosyasında sayılı (indirim günü, alınabilir emir ve sezon ödülü, takımı olan hesap, bazı pencereler, `dist/`). **Gerçek cihazda hiçbir şey görülmedi.**
+- Düzenek (git'te izlenmez, yalnız iş bilgisayarında): `artifacts/gorsel-tur3-20261013/`. "Görsel tur 3" stil bloğu o klasördeki `tur3-*.css` parçalarından `apply.py` ile üretildi; blok depoda elle düzenlenirse parçalar eskir.
+
+### Yayın için ek notlar
+
+- Değişiklik yalnız istemcidedir (paketle çıkar); sunucu, veritabanı ve kayıt biçimi değişmedi.
+- Commit'te bu oturumun dosyaları: `client/src/app.js`, `client/src/canon.css`, `client/index.html`, `client/src/i18n.js` (bu oturumda ilk kez), `client/tests/visual-pass-3-surfaces.test.js` (yeni), `client/tests/card-upgrade-indicators.test.js` (bu oturumda ilk kez), `client/tests/visual-pass-icons-chests.test.js`, `docs/OYUN_DUZENLEMELERI_PLANI.md`, `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md`, `CLAUDE_CHECKPOINT.md`. Bu oturumda Codex çalışmadı.
+
+## Dördüncü oturum (13 Ekim, iş bilgisayarı): görsel tur 2 — commit bekliyor, yayınlanmadı, gerçek cihazda görülmedi
+
+Kullanıcı oturumu "checkpoint oku. sorunun cevabı a" diye açtı (alt çubuk sorusunun yanıtı: adı yalnız açık sayfanın düğmesi yazar). İsteğin özgün cümlesi, yapılanlar, kullanıcının görmediği seçimler ve doğrulama `docs/OYUN_DUZENLEMELERI_PLANI.md` içinde, "Görsel tur 2" başlığında. Özet:
+
+- **Mağaza sandıkları** yeni çizimde (`shopChestSvg`): lig sandıklarının diliyle ama ayrı sandık (pahlı düz kapak, tek kuşak, baklava kilit; kademeye göre oluk, köşebent, taç, kristal). Mağaza, posta kutusu, sezon yolu, ödül önizlemesi, turnuva ödülleri ve sandık açılışı aynı çizimi kullanır; açılışta kapak kalkar.
+- **Kaynak simgeleri** dolu çizimde (`RESOURCE_TOKEN_SVG`, `resourceTokenMarkup`): Akı mor kristal, Devre Kredisi altın para; Akım, deneyim, kupa, çekirdek parçası, takım puanı, sandık ve ücretli ürün simgesi aynı takımda. Sabit sayfadaki dokuz simge de aynı çizim (`client/index.html`; test ikisinin aynı olduğunu sınar).
+- **Mağaza fiyatı** simgeyle yazılır ("2000 DK" yerine para simgesi ve sayı).
+- **Alt çubuk (a):** adı yalnız açık düğme yazar; o düğme genişler (1,62 kat), yukarı uzar (50 → 60 piksel) ve simgesi büyür.
+- **Yapboz parçası** dolu çizimde; **ödül bölümleri** satırlarında simge; **savaşta** Akım simgesi, maç sonu ödül simgeleri ve Savaş Premium rozeti yeni takımda. Karttaki "ϟ" bedel işareti, savaş kuralı ve yerleşim değişmedi.
+
+### Kullanıcının görmediği seçimler (Claude)
+
+Bütün çizimler ve renkler (sandık biçimi ve süsleri, kristal ve para); açık düğmenin büyüme oranı; mağaza fiyatının simgeyle yazılması; ödül bölümleri simgeleri; maç sonundaki kupa emojisinin çizime çevrilmesi; "ϟ" işaretinin bırakılması. Kullanıcı yalnız ilk ekran görüntüsünü gördü ve yanıt vermeden iş sürdü.
+
+### Doğrulama (son kodla, 13 Ekim, iş bilgisayarı)
+
+- İstemci 354 geçti, 2 atlandı (yeni `client/tests/visual-pass-2-tokens-chests.test.js`, 9 test; `visual-pass-icons-chests.test.js` güncellendi). `tools/release_guard.py` geçti. **Sunucu kodu bu oturumda değişmedi; sunucu testleri yeniden koşulmadı** (üçüncü oturumun sonuçları aşağıda).
+- Uçtan uca (yerel sunucu, kurulu Chrome): Android öykünmesi 9/9 (`onboarding`, `settings-layout`, `mobile-battle` 2/2, `startup-loading` 5/5); masaüstü 4/4 (`menu-navigation` 2/2, `beta33-season`, `battle-density`). `two-client-pvp` koşulmadı.
+- Telefon boyutunda Chrome'da (`artifacts/gorsel-tur2-20261013/verify-tur2.js`): 360×640, 320×568 (en küçük yazı boyu taklidiyle), 393×852, İngilizce 360×640, İngilizce 320×568 (en küçük yazı boyu); beşinde de 79 denetimin hepsi geçti. Ayrıca bakıldı: Devre Yolu durakları, haftalık turnuva sıralamasındaki sandıklar, savaşta Akım göstergesi, maç sonu ödül ekranı.
+- Görülmeyenler: takım turnuvası sandıkları ve posta kutusundaki sandık ekranda, indirim günündeki üstü çizili fiyat, `dist/` derlemesi (yeniden üretilmedi; yeni stil `color-mix` kullanmaz). **Gerçek cihazda hiçbir şey görülmedi.**
+- Düzenek (git'te izlenmez, yalnız iş bilgisayarında): `artifacts/gorsel-tur2-20261013/` (`verify-tur2.js`, `shots/`); ortak iskelet `artifacts/oyun-duzenlemeleri-20261012/tools/lib.js`.
+
+### Yayın için ek notlar
+
+- Bu oturumun değişikliği yalnız istemcidedir (paketle çıkar); sunucu, veritabanı ve kayıt biçimi değişmedi. Eski paket (v8) etkilenmez.
+- Commit'te bu oturumun dosyaları: `client/src/app.js`, `client/src/canon.css`, `client/index.html` (üçü de üçüncü oturumda ya da öncesinde değişmişti; `index.html` bu oturumda ilk kez), `client/tests/visual-pass-2-tokens-chests.test.js` (yeni), `client/tests/visual-pass-icons-chests.test.js`, `docs/OYUN_DUZENLEMELERI_PLANI.md`, `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md`, `CLAUDE_CHECKPOINT.md`. Bu oturumda Codex çalışmadı.
+
+## Üçüncü oturum (13 Ekim, iş bilgisayarı): gelir hesabı, çekirdek parçası kaynakları, enderliğe göre parça — commit bekliyor, yayınlanmadı, gerçek cihazda görülmedi
+
+Kullanıcı D9 maliyet tablosunun sonucunu sordu, gelirin tamamıyla hesaplanmasını istedi ve hesabı görünce karar verdi. Özgün cümleleri, hesap, bulgular ve sonuç tablosu `docs/OYUN_DUZENLEMELERI_PLANI.md` içinde, "Gelir hesabı, çekirdek parçası kaynakları ve enderliğe göre parça" başlığında. Kararı: çekirdek parçası Devre Yolu'nda arena ve lig son ödüllerinden ("rastgele"), giriş takviminin "1-2 tanesinden" ve bütün sandıklardan gelsin (Bronz %1, Gümüş %3, Altın %5, Elmas %10); "Efsanevini parçada da ekonomide de daha yavaş olmalı"; "Kriter destede bulunması değil enderlik sırası ve modülün açılıp açılmadığı."
+
+### Yapılanlar
+
+- **Çekirdek parçası kaynakları.** Sandık şansları kullanıcının sayılarıyla (şans çıkınca 1, 2, 3, 5 parça); giriş takviminde 14. gün 10, 28. gün 15 parça; her arenanın son ödülünde 3, lig sandıklarında 5, 5, 6, 6, 8, 8, 10, GRIDSHARD Sandığı'nda 20 (Devre Yolu toplamı 104). Parça açık çekirdeklerden rastgele birine gider (kullanıcı onayladı). Kullanıcı ilk sayıları görünce: "Çekirdeğin yükselmesi yine çok uzun sürüyor. Çekirdek ödül oranını değil ama ödüldeki çekirdek parçası sayısını artıralım." Sayılar buna göre büyütüldü; şanslar değişmedi. Mağazanın ödül listesi parça sayısını sunucudan okur (`client/src/app.js`, `i18n-catalog.js`).
+- **Parça ödülleri desteye değil, açık modüllere.** Giriş takvimi ve sezon yolu parçaları açık modüllerden rastgele birine gider; miktar enderliğe göre küçülür (sıradan %100, ender %75, destansı %35, efsanevi %15) ve görünen sayı kartın gerçekten alacağı sayıdır. Devre Yolu'nun hedefsiz duraklarında miktar aynı kalır, ender kartın seçilme ağırlığı aynı oranlarla düşer. Giriş ve sezon parça miktarları üç katına çıktı (parça artık altı karta değil açık bütün modüllere bölünüyor).
+- **Yükseltme maliyetleri ve sandıkların modül parçası oranları değişmedi.** İstemcide yalnız ödül listesindeki çekirdek satırı değişti.
+- **Yeni araç:** `python tools/economy_income_model.py [maç/gün] [galibiyet oranı]` geliri ve süreleri güncel koddan hesaplar (beklenen değer).
+- **Sonuç (günde 10 maç, %55 galibiyet, ücretsiz oyuncu, bütün modüller açık; parça bakımından bir kartın son seviyesi):** sıradan 433, ender 680, destansı 1.030, efsanevi 1.430 gün; Devre Kredisi günde yaklaşık 1.500–1.750, Akı 128. Çekirdek: günde 1,23 parça; yedi çekirdek açıkken çekirdek başına seviye 5 için 34, seviye 10 için 182, seviye 15 için 618 gün (Devre Yolu'nun 104 parçası hariç). Değişiklikten önce çekirdek 83 günde bir parça alıyordu ve efsanevi kartın parçası sıradan karttan hızlı doluyordu.
+
+### Kullanıcının görmediği seçimler (Claude)
+
+Giriş takviminde hangi günler ve kaç parça; sandıktan çıkan parça sayısı; arena, lig ve GRIDSHARD Sandığı çekirdek parçası sayıları (hedef: çekirdek başına son seviye yaklaşık 20 ay); enderlik oranları; giriş ve sezon parçalarının üç katına çıkması ve hedef süreler; Devre Yolu'nun hedefsiz duraklarında miktar yerine seçilme ağırlığı. Kullanıcı ilk sayıları sohbette gördü, "rastgele" okumasını onayladı ve yalnız çekirdek sayılarını büyüttürdü; büyütülmüş sayıları ve diğerlerini onaylamadı.
+
+### Doğrulama (son kodla, 13 Ekim, iş bilgisayarı)
+
+- Sunucu: 1482 geçti, 45 atlandı, 35 başarısız; 35'in hepsi bu makinede kurulu olmayan `google-auth` (33) ve `fakeredis` (2). Yeni dosya `server/tests/test_reward_rarity_and_core_sources.py` (8 test).
+- **Rastgelelik düzeltmesi:** sandık kimlikleri rastgele olduğu için, sandık açıp sonra iadeyi sınayan üç düzenek (`test_reward_delivery.py`, `test_premium_reward_recovery.py`, `test_postgres_persistent_operations.py`) artık ara sıra çekirdek parçası çıkınca düşüyordu (iade doğru çalışıyor; kayıt silinmiyor, sıfıra iniyor ve test bunu fark sayıyordu; tam pakette bir kez görüldü). Düzeneklerde çekirdek kaydı baştan açıldı; iade kodu değişmedi. İlgili altı dosya art arda 30 kez geçti. PostgreSQL'li üç dosya tek kullanımlık, yalnız 127.0.0.1 dinleyen kümeyle üç kez koşuldu (88 geçti); küme silindi. Tam PostgreSQL ve Redis paketi burada koşmadı (push sonrası kalite denetiminde koşar).
+- İstemci 345 geçti, 2 atlandı (`chest-odds.test.js` güncellendi). Araçlar 18/18; `tools/release_guard.py` geçti.
+- Uçtan uca (yerel sunucu, kurulu Chrome): `menu-navigation` 2/2 ve `beta33-season` (masaüstü); `onboarding`, `settings-layout`, `mobile-battle` 2/2 (Android öykünmesi). `two-client-pvp` koşulmadı.
+- Telefon boyutunda Chrome'da (360×640, 320×568 en küçük yazı boyu taklidiyle, 393×852; boyut başına 41 denetim, hepsi geçti): giriş takviminde 14. ve 28. günde çekirdek parçası satırı, 28 kartta taşma yok, mağazanın ödül listesinde dört sandığın çekirdek şansı (%1, %3, %5, %10). Sayılar büyütüldükten sonra 360×640 ve 320×568'de yeniden koşuldu (takvimde +10 ve +15; listede "%10 · 5 parça"). Sandıktan çekirdek parçasının gerçekten çıktığı ve Devre Yolu'ndaki çekirdek ödülünün alındığı tarayıcıda görülmedi (sunucu testiyle sınandı). **Gerçek cihazda hiçbir şey görülmedi.**
+- Tarayıcı betiği oturumun geçici klasöründeydi (kalıcı değil); `artifacts/oyun-duzenlemeleri-20261012/tools/lib.js` iskeletini kullanır (yalnız iş bilgisayarında, git'te izlenmez).
+- `tools/test-review-postgres.ps1` gibi elle küme kurarken bu makinede `initdb` yerel ayar adındaki Türkçe harf yüzünden düşer; `--locale=C` ile çalışır.
+
+### Yayın için ek notlar
+
+- Sunucu ve istemcide tek satır (ödül listesi) değişti; veritabanı biçimi değişmedi. Yeni istemci eski sunucuyla parça sayısını 1 gösterir (alan yoksa). Alınmamış giriş ve sezon ödüllerinde görünen kart ve miktar güncellemeyle değişir; alınmış ödüller makbuzdaki haliyle kalır.
+- Eski paket (v8) yeni sunucuyla: sandık oranlarını sunucudan okur, çekirdek parçasını ödül satırı olarak gösterir (istemci koduna bakarak çıkarım; v8 kaynağıyla denenmedi).
+- Commit'te bu oturumun dosyaları: `server/app/arena_canon.py`, `meta_progression.py`, `player_profile.py`; `server/tests/test_reward_rarity_and_core_sources.py` (yeni), `test_chest_odds_disclosure.py`, `test_beta54_chest_balance.py`, `test_league_road_and_module_unlocks.py`, `test_reward_delivery.py`, `test_premium_reward_recovery.py`, `test_postgres_persistent_operations.py`; `client/src/app.js`, `client/src/i18n-catalog.js`, `client/tests/chest-odds.test.js`; `tools/economy_income_model.py` (yeni), `tools/generate_arena_canon_docs.py`; `docs/OYUN_DUZENLEMELERI_PLANI.md`, `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md`, `docs/ARENA_MODUL_ODUL_KANONU.md` (üretilir); `CLAUDE_CHECKPOINT.md`. Bu oturumda Codex çalışmadı.
+
+## Geçmiş kayıt — ev bilgisayarındaki ikinci oturumun girişi (13 Ekim)
+
+Ev bilgisayarındaki iki oturumun işi `e4401d5` ile commit edildi. Kullanıcının o günkü sırası (12 Ekim akşamı): "iş bilgisayarındaki işimiz bitti. faz 3 ü evde başlarız. Sunucu ve paketi faz 3 ten sonra yaparız." İlk ev oturumunda Faz 2 düzeltmeleri (R1–R6) ve Faz 3, ikincisinde modül çevrimleri ve görsel tur yapıldı.
+
+## İkinci ev oturumu (13 Ekim): modül çevrimleri ve görsel tur — `e4401d5` ile commit edildi; yayınlanmadı, gerçek cihazda görülmedi
 
 Kullanıcının isteği altı parçaydı (özgün cümleler `docs/OYUN_DUZENLEMELERI_PLANI.md` içinde, "Modül çevrimleri ve görsel tur" başlığında, kelimesi kelimesine): (1) "Güçlendiricide yaptığımız gibi tüm modüllerde düzenleme yapmalıyız" (örnekler: Kalkan 1,2 sn'de bir saldırı engeller; Yansıtıcı 1 sn aralıkla hasarı üzerine çeker, %30 yansıtır), (2) Devre Yolu'ndaki lig sandıkları "şeffaf olmasın … fiziksel olarak orada olsunlar", sandık açma efekti, (3) yazılarla eşleşen görseller, desenli düz zemin, ayrık ve renkli alt çubuk, (4) Yükselt düğmesinde "dk ve akı yerine simgeleri", (5) bilgi/istatistik/yetenek sekmeleri "daha renkli ve simgeli", (6) Çekirdek gücü düğmesi "daha dikkat çekici". Ekinde üç görsel vardı (Rush Royale menüsü, Clash Royale sandıkları ve ana ekranı). Oturum ortasında kullanıcı yalnız "devam et" dedi. **Tasarım kararlarını Claude verdi; kullanıcı Kalkan ve Yansıtıcı örneklerinin dışındaki sayıları ve hiçbir çizimi görmedi.**
 
@@ -44,7 +200,7 @@ Kalkan bloğunun tam engelleme değil %60 olması (kullanıcı "saldırı engell
 - Veritabanı biçimi bu oturumda değişmedi.
 - Commit'te bu oturumun dosyaları: yeni `server/app/game/module_cycles.py`, `module_sheet.py`, `server/tests/game/test_module_cycles.py`, `client/tests/visual-pass-icons-chests.test.js`, `docs/MODUL_CEVRIM_KANONU.md`; ilk kez değişen `client/index.html`, `server/app/game/sabotage.py`, `client/tests/beta72-core-signatures.test.js`, `card-upgrade-indicators.test.js`, `checkpoint-ui-pass.test.js`, `server/tests/game/test_combat_actions.py`, `test_defense_resolution.py`; önceki oturumdan beri zaten değişmiş olup yeniden değişenler `client/src/app.js`, `canon.css`, `i18n-catalog.js`, `client/tests/league-road-and-module-unlocks.test.js`, `server/app/arena_canon.py`, `meta_progression.py`, `game/catalog.py`, `catalog_view.py`, `combat.py`, `energy.py`, `engine.py`, `pvp_session.py`, `support.py`, `server/tests/game/test_faz3_battle_mechanics.py`, `test_support_modules.py`, `tools/generate_arena_canon_docs.py`, belgeler. Bu oturumda Codex çalışmadı.
 
-## İlk oturumda (12–13 Ekim gecesi) yapılanlar — hepsi commit bekliyor, yayınlanmadı, gerçek cihazda görülmedi
+## İlk ev oturumunda (12–13 Ekim gecesi) yapılanlar — `e4401d5` ile commit edildi; yayınlanmadı, gerçek cihazda görülmedi
 
 Ayrıntı ve madde durumları `docs/OYUN_DUZENLEMELERI_PLANI.md` içinde ("Faz 2 düzeltmeleri" ve "Faz 3 uygulaması"). Güncel sayılar üretilen belgelerde: `docs/ARENA_MODUL_ODUL_KANONU.md`, `docs/BOT_HAVUZU_120.md`, `docs/YETENEK_KANONU.md` (`python tools/generate_arena_canon_docs.py`).
 

@@ -18,13 +18,14 @@ const app = read("src", "app.js");
 const css = read("src", "canon.css");
 const styles = read("src", "styles.css");
 
-// Sayfada hediye bölümü kalmadı; sandık bölümünde 8 saat notu durur.
+// Sayfada hediye bölümü kalmadı; 8 saat notu Ödül Listesi penceresindedir (görsel tur 5).
 const shop = html.slice(html.indexOf('<section id="shop-screen"'), html.indexOf('<dialog id="reward-ad-dialog"'));
 assert.ok(shop.length > 0);
 assert.ok(!shop.includes("gift-chest-list"));
 assert.ok(!shop.includes("Hediye Sandık"));
-assert.match(shop, /<p class="shop-gift-note">Bronz Sandık hediyesi 8 saatte bir yenilenir\.<\/p>/);
-assert.ok(shop.indexOf('id="chest-store-list"') < shop.indexOf('class="shop-gift-note"'));
+const oddsDialog = /<dialog id="chest-odds-dialog"[\s\S]*?<\/dialog>/.exec(html)?.[0] || "";
+assert.match(oddsDialog, /<p class="chest-odds-note chest-odds-refresh-note">Bronz Sandık hediyesi 8 saatte bir yenilenir\.<\/p>/);
+assert.ok(!html.includes('class="shop-gift-note"'));
 for (const source of [css, styles]) {
   assert.ok(!/\.gift-chest-(list|card)\b/.test(source), "eski hediye bölümünün stili kalmamalı");
 }

@@ -121,10 +121,11 @@ def arena_canon_lines() -> list[str]:
     add("### Lig sandıkları")
     add("")
     add("Lig sandığı mağazada ya da başka bir yerde bulunmaz; içeriği şansa bağlı değildir ve alındığında doğrudan "
-        "verilir. Parça belirli bir modüle bağlı değildir: her modülde harcanabilen evrensel parçadır.")
+        "verilir. Parça belirli bir modüle bağlı değildir: her modülde harcanabilen evrensel parçadır. Çekirdek "
+        "parçası oyuncunun açık çekirdeklerinden rastgele birine gider; her arenanın son ödülü de 1 çekirdek parçası verir.")
     add("")
-    add("| Sandık | Kupa | Devre Kredisi | Akı | Evrensel parça |")
-    add("|---|---:|---:|---:|---|")
+    add("| Sandık | Kupa | Devre Kredisi | Akı | Evrensel parça | Çekirdek parçası |")
+    add("|---|---:|---:|---:|---|---:|")
     for stage in LEAGUE_STAGES:
         for node in stage["nodes"]:
             if not node.get("league_chest"):
@@ -133,7 +134,7 @@ def arena_canon_lines() -> list[str]:
             shards = str(rewards["universal_module_shards"])
             if node.get("is_final_reward"):
                 shards += " + kozmetik seti"
-            add(f"| {node['description_tr']} | {number(node['trophies'])} | {number(rewards['circuit_credits'])} | {number(rewards['flux_shards'])} | {shards} |")
+            add(f"| {node['description_tr']} | {number(node['trophies'])} | {number(rewards['circuit_credits'])} | {number(rewards['flux_shards'])} | {shards} | {rewards['core_shards']} |")
     add("")
     add("### Lig durakları")
     add("")

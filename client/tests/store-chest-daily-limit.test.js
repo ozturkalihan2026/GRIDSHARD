@@ -47,10 +47,11 @@ const openAll = decision.slice(decision.indexOf("if (ownedCount"), decision.inde
 assert.ok(gift.length > 0 && openAll.length > 0);
 assert.ok(!gift.includes("limitReached") && !openAll.includes("limitReached"));
 
-// Yenilenme notu sandıkların altında, hediye notunun yanında; saati istemci yazar.
-const section = /<section class="shop-section chest-store-section"[\s\S]*?<\/section>/.exec(html)?.[0] || "";
-assert.match(section, /<p id="chest-store-limit-note" class="shop-gift-note shop-limit-note" hidden><\/p>/);
-assert.ok(section.indexOf('class="shop-gift-note"') < section.indexOf('id="chest-store-limit-note"'));
+// Yenilenme notu Ödül Listesi penceresinde, hediye notunun altında; saati istemci yazar.
+const section = /<dialog id="chest-odds-dialog"[\s\S]*?<\/dialog>/.exec(html)?.[0] || "";
+assert.match(section, /<p id="chest-store-limit-note" class="chest-odds-note chest-odds-refresh-note" hidden><\/p>/);
+assert.ok(section.indexOf("Bronz Sandık hediyesi") < section.indexOf('id="chest-store-limit-note"'));
+assert.ok(!/<section class="shop-section chest-store-section"[\s\S]*?<\/section>/.exec(html)[0].includes("chest-store-limit-note"));
 assert.ok(render.includes("chestStore?.limit_resets_at"));
 assert.ok(render.includes("limitNote.hidden = !known;"));
 assert.ok(render.includes("`Alım hakları her gün yenilenir (saat ${String(resetsAt.getHours()).padStart(2, \"0\")}:${String(resetsAt.getMinutes()).padStart(2, \"0\")}).`"));

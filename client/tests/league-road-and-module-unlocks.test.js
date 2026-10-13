@@ -246,6 +246,7 @@ function unlockSandbox() {
     localizedMessage: (key, params) => i18n.t(key, params, "tr"),
     localizedNumber: (value) => String(value),
     moduleIconFor: () => "◆",
+    mountModuleEmblem: (element) => { element.textContent = "◆"; },
     moduleRarityLabel: (rarity) => (rarity === "legendary" ? "Efsanevi" : "Sıradan"),
     poolCategoryLabel: (category) => ({ "saldırı":"Saldırı", savunma:"Savunma" }[category] || "Destek"),
     openModuleDetail: () => sandbox.opened.push(sandbox.selectedCollectionModuleId),

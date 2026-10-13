@@ -57,6 +57,7 @@ def test_every_purchasable_chest_publishes_its_full_odds_table():
             assert 1 <= low <= high
         assert 0.0 <= item["core_drop_chance"] < 1.0
         assert item["core_drop_chance"] == CHEST_DEFINITIONS[definition_id].get("core_drop_chance", 0.0)
+        assert item["core_drop_shards"] == CHEST_DEFINITIONS[definition_id]["core_drop_shards"] >= 1
 
 
 @pytest.mark.parametrize("definition_id", sorted(STORE_CHEST_PRICES))
@@ -81,7 +82,8 @@ def test_published_odds_match_what_purchased_chests_really_give(definition_id, m
         rewards = service.purchase_store_chest(profile, definition_id, f"buy-{index}")["rewards"]
         assert item["reward_preview"]["circuit_credits"][0] <= rewards["circuit_credits"] <= item["reward_preview"]["circuit_credits"][1]
         assert item["reward_preview"]["flux_shards"][0] <= rewards["flux_shards"] <= item["reward_preview"]["flux_shards"][1]
-        core_drops += rewards["core_shards"]
+        core_drops += int(rewards["core_drop"])
+        assert rewards["core_shards"] == (item["core_drop_shards"] if rewards["core_drop"] else 0)
         if rewards["module_shards"]:
             rarity = rewards["module_rarity"]
             by_rarity[rarity] += 1

@@ -183,6 +183,27 @@ def legacy_module_unlocks(legacy_peak_rating: int) -> tuple[str, ...]:
     )
 
 
+# Çekirdek parçası kaynakları (13 Ekim 2026, kullanıcı kararı): Devre Yolu'nda
+# her arenanın ve her ligin son ödülü, giriş takviminin iki günü ve bütün
+# sandıklar. Parça, oyuncunun açık çekirdeklerinden rastgele birine gider.
+ARENA_FINISH_CORE_SHARDS = 3
+
+# Hedefsiz parça ödülü kuralı (13 Ekim 2026, kullanıcı kararı): ölçüt kartın
+# destede olması değil, açık olması ve enderliğidir. Giriş takvimi ile sezon
+# yolunda ödül açık modüllerden birine gider ve ender kart aynı ödülden daha az
+# parça alır; Devre Yolu'nun hedefsiz duraklarında miktar yazıldığı gibidir,
+# ender kartın seçilme ağırlığı düşüktür.
+REWARD_SHARD_PERCENT_BY_RARITY = {"common": 100, "rare": 75, "epic": 35, "legendary": 15}
+
+
+def reward_shards_for_rarity(amount: int, rarity: str) -> int:
+    """Aynı ödülden ender kartın aldığı parça (ödül varsa en az 1)."""
+    amount = int(amount)
+    if amount <= 0:
+        return 0
+    return max(1, round(amount * REWARD_SHARD_PERCENT_BY_RARITY.get(rarity, 100) / 100))
+
+
 def _normalized_arena_rewards() -> tuple[dict, ...]:
     """Keep arena entry unlocks separate from targeted road-piece rewards.
 
@@ -199,9 +220,9 @@ def _normalized_arena_rewards() -> tuple[dict, ...]:
         nodes: list[dict] = []
         for raw_node in raw_arena["nodes"]:
             node = {**raw_node, "rewards": dict(raw_node.get("rewards", {}))}
-            # Core fragments are reserved for Diamond Chests.  Strip legacy
-            # arena-road values and their stale copy so old JSON cannot leak a
-            # second core-fragment source into the live economy.
+            # Strip legacy arena-road core values and their stale copy; the
+            # only road stops that carry core fragments are the arena finish
+            # rewards below and the league chests.
             node["rewards"].pop("core_shards", None)
             node["description_tr"] = re.sub(
                 r"\s*\+?\s*\d+\s*Çekirdek Parçası",
@@ -217,6 +238,11 @@ def _normalized_arena_rewards() -> tuple[dict, ...]:
                 })
                 module_name = MODULES.get(module_id, {}).get("name_tr", module_id)
                 node["description_tr"] = f"{module_name} · {shard_amount} Modül Parçası"
+            if str(node["id"]).endswith("_finish"):
+                node["rewards"]["core_shards"] = ARENA_FINISH_CORE_SHARDS
+                node["description_tr"] = (
+                    f"{node['description_tr']} + {ARENA_FINISH_CORE_SHARDS} Çekirdek Parçası"
+                )
             nodes.append(node)
         arenas.append({**raw_arena, "nodes": nodes})
     return tuple(arenas)
@@ -253,15 +279,15 @@ LEAGUE_NAMES = tuple(stage["name_tr"] for stage in _LEAGUE_OUTLINE)
 # ya da başka bir yerde bulunmaz. Adı, içeriği ve görünümü lige özeldir; içeriği
 # şansa bağlı değildir ve belirli bir modüle değil, her modülde harcanabilen
 # evrensel parçaya dayanır.
-# Sıra: ad, İngilizce ad, Devre Kredisi, Akı, evrensel modül parçası.
+# Sıra: ad, İngilizce ad, Devre Kredisi, Akı, evrensel modül parçası, çekirdek parçası.
 LEAGUE_CHESTS = {
-    "spark": ("Kıvılcım Sandığı", "Spark Chest", 1500, 60, 5),
-    "volt": ("Voltaj Sandığı", "Voltage Chest", 2500, 90, 7),
-    "reactor": ("Reaktör Sandığı", "Reactor Chest", 4000, 130, 9),
-    "quantum": ("Kuantum Sandığı", "Quantum Chest", 6000, 180, 12),
-    "nexus": ("Nexus Sandığı", "Nexus Chest", 9000, 250, 15),
-    "champions": ("Şampiyonlar Sandığı", "Champions Chest", 14000, 350, 20),
-    "legendary": ("Efsane Sandığı", "Legend Chest", 20000, 500, 25),
+    "spark": ("Kıvılcım Sandığı", "Spark Chest", 1500, 60, 5, 5),
+    "volt": ("Voltaj Sandığı", "Voltage Chest", 2500, 90, 7, 5),
+    "reactor": ("Reaktör Sandığı", "Reactor Chest", 4000, 130, 9, 6),
+    "quantum": ("Kuantum Sandığı", "Quantum Chest", 6000, 180, 12, 6),
+    "nexus": ("Nexus Sandığı", "Nexus Chest", 9000, 250, 15, 8),
+    "champions": ("Şampiyonlar Sandığı", "Champions Chest", 14000, 350, 20, 8),
+    "legendary": ("Efsane Sandığı", "Legend Chest", 20000, 500, 25, 10),
 }
 GRIDSHARD_CHEST_NODE_ID = "gridshard_chest"
 # GRIDSHARD Ligi 8600'de başlar; sandığı ve son unvan ligin içinde, 10000
@@ -273,6 +299,7 @@ GRIDSHARD_CHEST_REWARDS = {
     "circuit_credits": 25000,
     "flux_shards": 1000,
     "universal_module_shards": 40,
+    "core_shards": 20,
     "avatar_id": "gridshard_apex",
     "avatar_frame_id": "gridshard_apex",
     "profile_background_id": "gridshard_apex",
@@ -306,12 +333,13 @@ def _league_reward_nodes(stage: dict) -> tuple[dict, ...]:
                 "description_tr": description, "rewards": rewards}
 
     def league_chest(offset: int) -> dict:
-        name_tr, name_en, chest_credits, chest_flux, chest_shards = LEAGUE_CHESTS[league]
+        name_tr, name_en, chest_credits, chest_flux, chest_shards, chest_cores = LEAGUE_CHESTS[league]
         return {
             **node(offset, name_tr, {
                 "circuit_credits": chest_credits,
                 "flux_shards": chest_flux,
                 "universal_module_shards": chest_shards,
+                "core_shards": chest_cores,
             }),
             "description_en": name_en,
             "league_chest": league,

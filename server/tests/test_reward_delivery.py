@@ -19,7 +19,11 @@ NOW = datetime(2026, 10, 11, 6, tzinfo=timezone.utc)
 
 def fixture():
     profiles = PlayerProfileService(now_func=lambda: NOW)
-    return profiles, profiles.get_or_create("mail-fixture"), MetaProgressionService(now_func=lambda: NOW)
+    profile = profiles.get_or_create("mail-fixture")
+    # Her sandık çekirdek parçası verebilir; iade o kaydı silmez, sıfıra indirir.
+    # Kayıt baştan açılır ki cüzdan karşılaştırması şansa bağlı olmasın.
+    profile.core_shards_by_type.setdefault("core_resonance", 0)
+    return profiles, profile, MetaProgressionService(now_func=lambda: NOW)
 
 
 def buy(profile, order="private-order", policy=POLICY_VERSION):

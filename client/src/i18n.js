@@ -2267,6 +2267,7 @@
     "Kartlar · Yükseltme mevcut":"Cards · Upgrade available",
     "Yükseltme mevcut":"Upgrade available",
     "Sonraki seviye":"Next level",
+    "Evrensel parça":"Universal pieces",
     "Çekirdekler":"Cores",
     "SIRADAN":"COMMON",
     "SEZONLAR":"SEASONS",
