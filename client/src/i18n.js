@@ -2463,7 +2463,7 @@
   // metin sözlükten tahmin edilmez, birebir geri yüklenir.
   const TRANSLATED_ATTRIBUTES = Object.freeze(["aria-label", "title", "placeholder", "alt"]);
   const ATTRIBUTE_SELECTOR = TRANSLATED_ATTRIBUTES.map((name) => `[${name}]`).join(",");
-  const SKIPPED_TEXT_PARENTS = "script,style,textarea,[translate='no']";
+  const SKIPPED_TEXT_PARENTS = "script,style,textarea,[translate='no'],#battle-effect-layer";
   const CACHE_LIMIT = 4000;
   const textSources = new WeakMap();
   const attributeSources = new WeakMap();
@@ -3051,6 +3051,9 @@
     const value = raw.trim();
     if (!value || skippedTextNode(node)) return;
     const memory = textSources.get(node);
+    // UI DOM is authored in Turkish; reverse translation is an explicit API
+    // for external messages, not work for every new battle text node.
+    if (activeLanguage === "tr" && !memory) return;
     const leading = raw.slice(0, raw.length - raw.trimStart().length);
     const trailing = raw.slice(raw.trimEnd().length);
     if (activeLanguage === "en") {
@@ -3071,15 +3074,16 @@
         return;
       }
     }
-    const translated = toTurkish(value);
-    if (translated !== value) node.nodeValue = `${leading}${translated}${trailing}`;
+    // A writer replacing a translated node supplies a new Turkish source.
   }
 
   function translateAttribute(element, attribute) {
+    if (element.closest?.("#battle-effect-layer")) return;
     const value = element.getAttribute(attribute);
     if (!value || !value.trim()) return;
     let memories = attributeSources.get(element);
     const memory = memories?.get(attribute);
+    if (activeLanguage === "tr" && !memory) return;
     if (activeLanguage === "en") {
       if (memory && memory.rendered === value) return;
       const translated = translateText(value, "en");
@@ -3102,12 +3106,12 @@
         return;
       }
     }
-    const translated = translateText(value, "tr");
-    if (translated !== value) element.setAttribute(attribute, translated);
+    // No regex reversal for newly authored Turkish attributes.
   }
 
   function translateElement(root) {
     if (!root || typeof document === "undefined") return;
+    if (root.nodeType === 1 && root.closest?.("#battle-effect-layer")) return;
     if (root.nodeType === 3) {
       translateTextNode(root);
       return;
@@ -3139,6 +3143,12 @@
     if (documentTitleSource === null) documentTitleSource = document.title;
     document.title = activeLanguage === "en" ? toEnglish(documentTitleSource) : documentTitleSource;
     translateElement(document.body);
+    // Effect labels own their source and are localized at creation. Language
+    // changes refresh those few labels once, not every particle mutation.
+    for (const label of document.querySelectorAll?.("#battle-effect-layer [data-i18n-source]") || []) {
+      const text = activeLanguage === "en" ? translateText(label.dataset.i18nSource, "en") : label.dataset.i18nSource;
+      if (label.textContent !== text) label.textContent = text;
+    }
 
     if (!observer && typeof MutationObserver !== "undefined") {
       observer = new MutationObserver((records) => {

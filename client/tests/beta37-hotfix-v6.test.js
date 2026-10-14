@@ -2,11 +2,12 @@ const fs = require('fs');
 const assert = require('assert');
 
 const app = fs.readFileSync('./src/app.js', 'utf8');
+const battleCard = fs.readFileSync('./src/battle/module-card-state-view.js', 'utf8');
 const css = fs.readFileSync('./src/styles.css', 'utf8');
 const html = fs.readFileSync('./index.html', 'utf8');
 
 assert.ok(app.includes('battle-live-ticker'));
-assert.ok(app.includes('module-live-status-row'));
+assert.ok(battleCard.includes('module-live-status-row'));
 assert.ok(app.includes('floatingFeedbackLive'));
 assert.ok(css.includes('Beta.37 Hotfix V6'));
 assert.ok(css.includes('.battle-live-ticker'));

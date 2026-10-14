@@ -36,7 +36,9 @@ for (const effect of [
 
 // Rakip çekirdeğin imza rozeti de çizilir (Anka doğuşu karşı oyun için görünür).
 assert.ok(app.includes("mockEnemyCoreBadges=normalizeSignatureBadges(enemyCore?.signature_badges);"));
-assert.ok(app.includes('enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,mockEnemyCoreMaxHp,"core",{ signatureBadges:mockEnemyCoreBadges })'));
+assert.ok(app.includes('signatureBadges:mockEnemyCoreBadges,'));
+assert.ok(app.includes('enemyBattleBoardView.render(modules, {'));
+assert.ok(app.includes('signatureBadges = normalizeSignatureBadges(moduleLike.signatureBadges)'));
 for (const badge of ["ember", "static", "last_stand", "chain"]) {
   assert.ok(css.includes(`.module-signature-badge[data-badge="${badge}"]`), `${badge} rozeti yok`);
 }

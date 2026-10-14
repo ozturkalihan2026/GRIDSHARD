@@ -1,3 +1,4 @@
+"""Historical web-test balance drafts; not part of the active server package."""
 from __future__ import annotations
 
 from pathlib import Path

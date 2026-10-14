@@ -22,23 +22,28 @@ class FakeElement {
     this.checked = false;
     this.className = "";
     this.children = [];
-    this.style = { setProperty(name, value) { this[name] = value; } };
+    this.style = { setProperty(name, value) { this[name] = String(value); }, getPropertyValue(name) { return this[name] || ""; } };
+    this.attributes = {};
     this._listeners = {};
     this.classList = {
       add() {}, remove() {}, toggle() {}, contains() { return false; },
     };
   }
   addEventListener(type, callback) { this._listeners[type] = callback; }
-  appendChild(child) { this.children.push(child); return child; }
-  append(...items) { this.children.push(...items); }
+  click() { this._listeners.click?.({stopPropagation() {}, target:this}); }
+  appendChild(child) { child.parentElement=this; this.children.push(child); return child; }
+  append(...items) { items.forEach(item => this.appendChild(item)); }
+  insertBefore(child, before) { const index=this.children.indexOf(before); child.parentElement=this; if(index<0)this.children.push(child);else this.children.splice(index,0,child); }
+  remove() { this.parentElement?.removeChild(this); this.parentElement=null; }
   prepend(...items) { this.children.unshift(...items); }
   replaceChildren(...items) { this.children = [...items]; }
   removeChild(child) { this.children = this.children.filter((x) => x !== child); }
   querySelector() { return null; }
   querySelectorAll() { return []; }
-  setAttribute() {}
-  getAttribute() { return null; }
-  removeAttribute() {}
+  setAttribute(name,value) { this.attributes[name]=String(value); if(name==="title")this.title=String(value); }
+  getAttribute(name) { return this.attributes[name] ?? null; }
+  hasAttribute(name) { return Object.hasOwn(this.attributes,name); }
+  removeAttribute(name) { delete this.attributes[name]; }
   focus() {}
 }
 
@@ -127,6 +132,7 @@ for (const relativePath of [
   ["src", "tutorial", "onboarding.js"],
   ["src", "battle", "board-view.js"],
   ["src", "battle", "module-card-view.js"],
+  ["src", "battle", "module-card-state-view.js"],
   ["src", "battle", "graphics-tier.js"],
   ["src", "battle", "battle-presentation.js"],
   ["src", "battle", "battle-countdown.js"],
@@ -154,13 +160,36 @@ const auditSeam = `
   globalThis.__battleAudit = {
     playerId:participantPlayerId,
     applyOnline:applyOnlineBattleSnapshot,
+    present:renderBattleHud,
     applyLocal:applyLocalServerSnapshotEnvelope,
     core:() => client.requireModule("core-1"),
     enemyCard,
+    rememberDestructions:rememberServerDestructions,
     bindLocal(id) { activePlayMode="local"; localServerSessionId=id; localServerState.bindSession(id); },
     cursor:() => localServerEventCursor,
     transportReady:battleTransportReady,
     onlineTransport(open) { activePlayMode="online"; pvpConnection.status=open ? "open" : "reconnecting"; pvpState.connected=open; },
+    exerciseCurrentCardListeners() {
+      const original=client.modules.get("core-1"), previousReady=corePowerReady, previousUse=useCorePowerOn;
+      try {
+        const card=createModuleCard(original);
+        const replacement={...original,hp:123};
+        let seen=null;
+        useCorePowerOn=current=>{seen=current;};
+        corePowerReady=true;
+        client.modules.set("core-1",replacement);
+        card.click();
+        const click=seen===replacement;
+        seen=null;
+        card._listeners.keydown({key:"Enter",preventDefault(){}});
+        const enter=seen===replacement;
+        seen=null;
+        card._listeners.keydown({key:" ",preventDefault(){}});
+        return {click,enter,space:seen===replacement};
+      } finally {
+        client.modules.set("core-1",original);corePowerReady=previousReady;useCorePowerOn=previousUse;
+      }
+    },
   };
 `;
 vm.runInContext(source.slice(0,closing) + auditSeam + source.slice(closing), sandbox, { filename: "app.js" });
@@ -250,12 +279,14 @@ if (activeWithoutServer.some((moduleId) => moduleId !== "core-1")) {
     throw new Error(`Sunucusuz savaş hazırlığa dönmedi: ${document.body.dataset.localStatus}`);
   }
   const audit=sandbox.__battleAudit;
+  assert.deepEqual({...audit.exerciseCurrentCardListeners()},{click:true,enter:true,space:true});
   const core=(id,hp,maxHp) => ({instance_id:id,definition_id:"core",name_tr:"Çekirdek",status:"active",x:2,y:1,hp,max_hp:maxHp});
   const snapshot=(tick,hp,maxHp) => ({session_id:"audit-local",tick,elapsed_ms:tick*100,status:"running",
     players:{[audit.playerId]:{player_id:audit.playerId,modules:[core("own",hp,maxHp)],circuit_credits:6},
       enemy:{player_id:"enemy",modules:[core("enemy",hp,maxHp)]}}});
   audit.bindLocal("audit-local");
   assert.equal(audit.applyOnline(snapshot(10,450,450)),true);
+  audit.present();
   assert.equal(audit.core().hp,450);
   assert.equal(audit.core().maxHp,450);
   assert.equal(audit.enemyCard("enemy-core","Çekirdek",450,450,"core").style["--hp-ratio"],"1");
@@ -270,6 +301,13 @@ if (activeWithoutServer.some((moduleId) => moduleId !== "core-1")) {
   assert.equal(audit.cursor(),9);
   assert.equal(audit.applyLocal({snapshot:{...snapshot(12,1,1),session_id:"previous-match"}}),false);
   assert.equal(audit.core().hp,450);
+  audit.onlineTransport(false);
+  audit.bindLocal("audit-local");
+  audit.rememberDestructions([{type:"module_destroyed",at_ms:1200,data:{player_id:audit.playerId,module_id:"own"}}]);
+  assert.equal(audit.applyLocal({snapshot:snapshot(12,450,600),events:[],event_cursor:10}),true);
+  assert.equal(audit.core().hp,0,"local snapshot at destruction time cannot revive the module");
+  assert.equal(audit.applyLocal({snapshot:snapshot(13,90,600),events:[],event_cursor:11}),true);
+  assert.equal(audit.core().hp,90,"a later authoritative revival remains valid");
   audit.onlineTransport(false);
   assert.equal(audit.transportReady(),false);
   audit.onlineTransport(true);

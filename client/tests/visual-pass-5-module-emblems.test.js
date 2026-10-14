@@ -49,7 +49,8 @@ test("bilinmeyen modül genel yongayla çizilir; sınıf yalnız bilinen beş de
 test("oyun modülü her yerde amblemle çizer; tek harfli simge yalnız yedek yoldadır", () => {
   assert.equal((app.match(/moduleIconFor\(/g) || []).length, 2);
   assert.ok(app.includes("element.textContent = moduleIconFor(module);"));
-  assert.equal((app.match(/mountModuleEmblem\(/g) || []).length, 19);
+  assert.equal((app.match(/mountModuleEmblem\(/g) || []).length, 18);
+  assert.ok(app.includes('} else mountModuleEmblem(icon, model.module);'), "both battle boards share the persistent artwork path");
   assert.ok(app.includes('element.innerHTML = moduleEmblemMarkup(module);'));
   assert.ok(app.includes('element.classList.add("has-module-emblem");'));
   // Yapboz parçasındaki amblem ayrı sınıf taşır; evrensel parça yıldızlı kalır.

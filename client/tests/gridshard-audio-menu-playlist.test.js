@@ -100,6 +100,7 @@ test("varsayılan liste üç parçadır ve akıtılarak çalınır", (t) => {
   assert.ok(director.currentTrack instanceof FakeAudio);
   assert.ok(playlist.includes(asset(director)));
   assert.notEqual(director._menuAdvanceTimer, null);
+  assert.equal(director._musicBufferCache.size, 0, "Android/Chrome menü listesi decoded tamponları tutmaz");
 });
 
 test("listedeki her parçanın kaynağı ve mobil türevleri yerindedir", () => {
@@ -329,7 +330,40 @@ test("ses öğesinin seviyesi ayarlanamıyorsa Web Audio kullanılır ve eski pa
   assert.equal(asset(director), TRACKS[1]);
   assert.ok(director._musicBufferCache.has(TRACKS[1]));
   assert.equal(director._musicBufferCache.has(TRACKS[0]), false);
+  assert.equal(first.paused, false, "önbellekten çıkarma oynayan crossfade kaynağını kesmez");
+  assert.ok(first._source, "geçiş bitene kadar çalan kaynak korunur");
+
+  await wait(global.GRIDSHARD_AUDIO_MIX.playlistCrossfadeMs + 200);
+  assert.equal(first.paused, true);
+  assert.equal(first._source, null);
+  assert.equal(director._fadeTimerByAudio.has(first), false, "biten geçiş eski parçayı yönetmende tutmaz");
+  assert.equal(director._pendingPlayback.has(first), false);
 
   director.setState("battle");
   assert.equal(director._musicBufferCache.has(TRACKS[1]), false, "savaşa girince menü parçaları bırakılır");
+});
+
+test("tekrarlı ön/arka plan döngüsü menü timer, geçiş ve playback sahiplerini biriktirmez", async (t) => {
+  const director = playlistDirector(t);
+  director.setState("menu");
+  await settle();
+  const context = director._musicContext;
+  for (let cycle = 0; cycle < 20; cycle++) {
+    const previous = director.currentTrack;
+    director.setAppActive(false);
+    await settle();
+    assert.equal(previous.paused, true);
+    assert.equal(director.currentTrack, null);
+    assert.equal(director._menuAdvanceTimer, null);
+    assert.equal(director._fadeTimers.size, 0);
+    assert.equal(director._fadeTimerByAudio.size, 0);
+    assert.equal(director._pendingPlayback.size, 0);
+    director.setAppActive(true);
+    await settle();
+    assert.equal(director._musicContext, context);
+    assert.notEqual(director._menuAdvanceTimer, null);
+    assert.equal(director._fadeTimers.size, 1);
+    assert.equal(director._musicBufferCache.size, 0);
+    assert.equal(director._pendingPlayback.size, 0);
+  }
 });

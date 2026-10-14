@@ -37,6 +37,7 @@ from .tutorial import ACK_COMMAND as TUTORIAL_ACK_COMMAND, deck_supports_tutoria
 
 
 MAX_PVP_PLAYERS = 2
+_IMMUTABLE_EVENT_VALUE_TYPES = frozenset({str, int, float, bool, type(None)})
 
 OWNER_ONLY_EVENT_TYPES = frozenset({
     "battle_pool_set",
@@ -891,13 +892,21 @@ class PvPSessionService:
         event,
         viewer_player_id: str,
     ) -> dict | None:
-        data = deepcopy(event.data)
-        owner_player_id = data.get("player_id")
+        owner_player_id = event.data.get("player_id")
         if (
             event.type in OWNER_ONLY_EVENT_TYPES
             and owner_player_id != viewer_player_id
         ):
             return None
+
+        # Most combat payloads contain only scalar values. A new outer dict is
+        # sufficient there; nested payloads still require independent copies.
+        # Never deep-copy a private event that will not be sent to this viewer.
+        data = (
+            dict(event.data)
+            if all(type(value) in _IMMUTABLE_EVENT_VALUE_TYPES for value in event.data.values())
+            else deepcopy(event.data)
+        )
 
         if event.type in {"core_power_activated", "core_power_used"} and owner_player_id != viewer_player_id:
             data.pop("request_id", None)

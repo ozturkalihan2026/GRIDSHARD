@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GRIDSHARD — Yazı tipi denemesi</title>
+<link rel="stylesheet" href="/src/fonts.css"><link rel="stylesheet" href="./pilot.css">
+<style>
+*{box-sizing:border-box}body{margin:0;padding:24px;background:#061226;color:#edf6ff;font:600 18px/1.4 Rajdhani,sans-serif}
+h1{margin:0 0 5px;font:700 24px/1.3 Rajdhani,sans-serif}body>p{margin:0 0 20px;color:#b3cbdf}
+.comparison{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.pilot-column{position:relative;border:1px solid #34536d;border-radius:16px;padding:18px;background:linear-gradient(180deg,#15334f,#091c33)}
+.caption{min-height:80px;margin:0 0 22px;font:700 20px/1.2 Rajdhani,sans-serif;color:#e7f4ff}.caption small{display:block;margin-top:4px;color:#96b4ce;font-size:15px}
+.sample-brand{margin:16px 0 24px;font:800 28px/1.2 Orbitron,sans-serif;text-align:center;color:#c6f2fc;text-shadow:0 3px #061226}
+.sample-card{padding:16px;border:1.5px solid #e5bf65;border-radius:14px;background:linear-gradient(120deg,#1b4d73,#123159);box-shadow:0 3px #061226}
+.sample-card small{display:block;color:#65ebdc;font:700 13px Rajdhani,sans-serif;letter-spacing:.05em}.sample-arena{display:block;margin-top:5px;font-size:24px;color:#66ecdf}
+.sample-battle{margin-top:24px;padding:16px 8px;border-radius:15px;background:linear-gradient(#ffe174,#ffb827);box-shadow:0 4px #ac630b;color:#091526;text-align:center}
+.sample-battle strong{display:block;font-size:28px}.sample-battle small{font:700 17px Rajdhani,sans-serif}
+.sample-dock{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:22px 0}
+.sample-dock span{display:grid;place-items:center;min-height:44px;border:1px solid #4c6981;border-radius:9px;background:linear-gradient(#173655,#102640);font-size:14px}
+.sample-heading{margin:22px 0 8px;font-size:21px;line-height:1.2}.sample-turkish{margin-top:22px;font-size:22px;color:#ffdc78;letter-spacing:.02em}
+.sample-copy{margin:8px 0;color:#afc9dd;font:500 17px/1.4 Rajdhani,sans-serif}
+.footer{margin-top:20px;font-size:16px;color:#96b4ce}
+.glyph-warning{position:absolute;top:70px;left:18px;right:18px;margin:0;color:#ffb9c4;font:700 13px/1.3 Rajdhani,sans-serif}
+@media(max-width:700px){.comparison{grid-template-columns:1fr}.pilot-column{max-width:450px;margin:auto;width:100%}}
+</style></head><body>
+<h1>GRIDSHARD · Yazı tipi karşılaştırması</h1><p>Logo ve açıklamalar aynı. Yalnız başlıklar ve düğme yazıları değişiyor.</p>
+<main class="comparison">
+<section class="pilot-column"><h2 class="caption">Mevcut · Oxanium<small>Karşılaştırma başlangıcı</small></h2>
+<div class="sample-brand">GRIDSHARD</div><div class="sample-card"><small>DEVRE YOLU</small><strong class="sample-arena">Voltaj Ligi I</strong></div>
+<div class="sample-battle"><strong>SAVAŞ</strong><small>Eşleştirmeyi başlat</small></div>
+<div class="sample-dock"><span>MAĞAZA</span><span>KARTLAR</span><span>ETKİNLİK</span></div>
+<h3 class="sample-heading">Haftalık Devre Turnuvası</h3><p class="sample-copy">Çekirdek bugün daha yüksek dayanıklılıkla savaşa girer.</p>
+<div class="sample-turkish">ÇĞİÖŞÜ · çğıöşü</div></section>
+<section class="pilot-column" data-font-pilot="lilita"><h2 class="caption">A · Lilita One<small>Yuvarlak, kompakt oyun başlığı</small></h2>
+<p class="glyph-warning">Ğ, İ, Ş, ğ, ş eksik → başka fonta düşer.</p>
+<div class="sample-brand">GRIDSHARD</div><div class="sample-card"><small>DEVRE YOLU</small><strong class="sample-arena">Voltaj Ligi I</strong></div>
+<div class="sample-battle"><strong>SAVAŞ</strong><small>Eşleştirmeyi başlat</small></div>
+<div class="sample-dock"><span>MAĞAZA</span><span>KARTLAR</span><span>ETKİNLİK</span></div>
+<h3 class="sample-heading">Haftalık Devre Turnuvası</h3><p class="sample-copy">Çekirdek bugün daha yüksek dayanıklılıkla savaşa girer.</p>
+<div class="sample-turkish">ÇĞİÖŞÜ · çğıöşü</div></section>
+<section class="pilot-column" data-font-pilot="rowdies"><h2 class="caption">B · Rowdies Bold<small>Daha köşeli ve hareketli oyun başlığı</small></h2>
+<div class="sample-brand">GRIDSHARD</div><div class="sample-card"><small>DEVRE YOLU</small><strong class="sample-arena">Voltaj Ligi I</strong></div>
+<div class="sample-battle"><strong>SAVAŞ</strong><small>Eşleştirmeyi başlat</small></div>
+<div class="sample-dock"><span>MAĞAZA</span><span>KARTLAR</span><span>ETKİNLİK</span></div>
+<h3 class="sample-heading">Haftalık Devre Turnuvası</h3><p class="sample-copy">Çekirdek bugün daha yüksek dayanıklılıkla savaşa girer.</p>
+<div class="sample-turkish">ÇĞİÖŞÜ · çğıöşü</div></section>
+</main><p class="footer">Yerel tipografi örneği · Kalıcı font seçimi yapılmadı · Gerçek oyun ekranları ayrıca kaydedildi.</p>
+</body></html>

@@ -46,7 +46,10 @@ assert.ok(reducedMotion.includes(".module-signature-effect > i"));
 // Kart imza rozetleri anlık görüntüden gelir ve kart imzasına katılır.
 assert.equal((app.match(/signatureBadges:normalizeSignatureBadges\(/g) || []).length, 3);
 assert.ok(app.includes("signatureBadges:module.signatureBadges,"));
-assert.ok(app.includes("appendSignatureBadges(card, moduleLike.signatureBadges);"));
+assert.ok(app.includes("normalizeSignatureBadges(moduleLike.signatureBadges).map("));
+const cardView = fs.readFileSync("./src/battle/module-card-state-view.js", "utf8");
+assert.ok(cardView.includes("module-signature-row"));
+assert.ok(cardView.includes("model.signatureBadges"));
 
 // Ses adları mevcut dosyalara bağlanır; Beta.71 mobil biçimleri dosya adıyla seçer.
 const formats = fs.readFileSync("./src/gridshard-audio-formats.js", "utf8");

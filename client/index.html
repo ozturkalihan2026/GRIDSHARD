@@ -369,27 +369,63 @@
 
     <nav id="app-bottom-dock" class="main-scope-nav lobby-bottom-dock app-bottom-dock" aria-label="Ana gezinme">
       <button type="button" class="menu-action" data-open-screen="shop" data-shell-screen="shop" aria-label="Mağaza" title="Mağaza">
-        <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1 11H5L4 9Z"/><path d="M7 9V6a5 5 0 0 1 10 0v3M9 13h6"/></svg>
+        <svg class="lobby-dock-icon dock-object-emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <path class="de-body" d="M9 27h46v27H9Z"/>
+          <path class="de-shade" d="M9 45h46v9H9Z"/>
+          <path class="de-body" d="m8 27 5-15h38l5 15v6H8Z"/>
+          <path class="de-light" d="m13 12-3 9h44l-3-9Z"/>
+          <path class="de-metal" d="M17 12h7v42h-7Z M40 12h7v42h-7Z"/>
+          <path class="de-ink" d="M8 33h48"/>
+          <path class="de-metal" d="M25 27h14v16H25Z"/>
+          <path class="de-energy" d="m32 30 5 5-5 5-5-5Z"/>
+        </svg>
         <span class="menu-action-title">MAĞAZA</span>
         <!-- Sandık indirimi günü indirim oranı (renderDockIndicators). -->
         <span id="dock-shop-sale" class="dock-sale-badge" aria-hidden="true" hidden></span>
       </button>
       <button type="button" class="menu-action" data-open-screen="modules" data-shell-screen="modules" aria-label="Kartlar" title="Kartlar">
-        <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="menu-action-title">KARTLAR</span>
+        <svg class="lobby-dock-icon dock-object-emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <path class="de-shade" d="M5 14 31 7l11 40-26 7Z"/>
+          <path class="de-light" d="m28 9 26 5-8 41-26-5Z"/>
+          <rect class="de-body" x="17" y="15" width="31" height="43" rx="4"/>
+          <path class="de-light" d="M21 16h23v5H21Z"/>
+          <path class="de-shade" d="M18 48h29v6q0 3-3 3H21q-3 0-3-3Z"/>
+          <path class="de-metal" d="m32.5 25 9.5 11-9.5 11L23 36Z"/>
+          <path class="de-energy" d="m32.5 30 5 6-5 6-5-6Z"/>
+        </svg><span class="menu-action-title">KARTLAR</span>
       </button>
       <button type="button" class="menu-action is-active" data-open-screen="menu" data-shell-screen="menu" aria-label="Ev" title="Ev" aria-current="page">
-        <svg class="lobby-dock-icon lobby-dock-home" viewBox="0 0 28 28" aria-hidden="true">
-          <rect class="dock-home-shell" x="6" y="6" width="16" height="16" rx="4"/>
-          <path class="dock-home-gates" d="M14 2.8v5.1M14 20.1v5.1M2.8 14h5.1M20.1 14h5.1"/>
-          <path class="dock-home-core" d="m14 9.2 4.8 4.8-4.8 4.8-4.8-4.8Z"/>
-          <path class="dock-home-crack" d="m15.4 10.6-2.7 6.8"/>
+        <svg class="lobby-dock-icon lobby-dock-home dock-object-emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <path class="de-metal" d="M32 4 56 18v28L32 60 8 46V18Z"/>
+          <path class="de-metal-shade" d="M32 60V32l24-14v28Z"/>
+          <path class="de-body" d="M32 11 49 21v21L32 53 15 42V21Z"/>
+          <path class="de-light" d="M32 11v21L15 42V21Z"/>
+          <path class="de-shade" d="M32 32 49 21v21L32 53Z"/>
+          <path class="de-white" d="m32 18 12 14-12 14-12-14Z"/>
+          <path class="de-body" d="m32 24 7 8-7 8-7-8Z"/>
+          <path class="de-ink" d="M8 18 15 21M49 42l7 4"/>
         </svg><span class="menu-action-title">EV</span>
       </button>
       <button type="button" class="menu-action" data-open-screen="team" data-shell-screen="team" aria-label="Takım" title="Takım">
-        <svg class="lobby-dock-icon lobby-dock-team" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6M14 15c3.6-.8 6.1 1 7 5"/></svg><span class="menu-action-title">TAKIM</span>
+        <svg class="lobby-dock-icon lobby-dock-team dock-object-emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <path class="de-metal" d="M9 9h46v6H9Z M12 14h5v43h-5Z M47 14h5v43h-5Z"/>
+          <path class="de-body" d="M17 15h30v28L32 57 17 43Z"/>
+          <path class="de-light" d="M17 15h30v5H22v25l-5-2Z"/>
+          <path class="de-shade" d="M32 20h10v21L32 51Z"/>
+          <path class="de-gold" d="M32 25 42 29v7c0 7-4 11-10 15-6-4-10-8-10-15v-7Z"/>
+          <path class="de-energy" d="m32 29 5 8-5 7-5-7Z"/>
+          <path class="de-gold" d="m14 4 4 6-4 6-4-6Z m36 0 4 6-4 6-4-6Z"/>
+        </svg><span class="menu-action-title">TAKIM</span>
       </button>
       <button type="button" class="menu-action" data-open-screen="events" data-shell-screen="events" aria-label="Etkinlik" title="Etkinlik">
-        <svg class="lobby-dock-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v3M18 3v3M4 8h16M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="m12 11 1.2 2.4 2.7.4-2 1.9.5 2.7-2.4-1.3-2.4 1.3.5-2.7-2-1.9 2.7-.4Z"/></svg><span class="menu-action-title">ETKİNLİK</span>
+        <svg class="lobby-dock-icon dock-object-emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <path class="de-shade" d="m15 34-5 25 14-5 8 6 4-25Z m34 0 5 25-14-5-8 6-4-25Z"/>
+          <path class="de-body" d="m32 8 10 5 11 2 2 12-3 13-11 6-9 5-9-5-11-6-3-13 2-12 11-2Z"/>
+          <path class="de-light" d="m32 8 10 5 11 2-1 6-11-2-9-5-9 5-11 2-1-6 11-2Z"/>
+          <path class="de-shade" d="m52 31-3 7-17 10-17-10-3-7 2 9 18 11 18-11Z"/>
+          <path class="de-gold" d="m32 17 4.5 9 10 1.5-7.3 7 1.8 10-9-5-9 5 1.8-10-7.3-7 10-1.5Z"/>
+          <path class="de-white" d="m32 20 3 7 7 1-10 4-8-4 5-1Z"/>
+        </svg><span class="menu-action-title">ETKİNLİK</span>
       </button>
     </nav>
 
@@ -618,16 +654,21 @@
     </section>
 
     <section id="events-screen" class="mobile-hub-screen events-screen" data-screen-panel="events" hidden>
-      <header id="daily-meta-card" class="events-hero daily-meta-card">
+      <header id="daily-meta-card" class="daily-meta-card" aria-labelledby="daily-meta-heading">
+        <span class="event-hub-emblem" data-event-emblem="wheel" aria-hidden="true"></span>
+        <h2 id="daily-meta-heading">Günlük Meta</h2>
         <strong id="daily-meta-name">Henüz belirlenmedi</strong>
         <p id="daily-meta-description">Meta çarkını çevirerek bugünkü oyun planını belirle.</p>
         <span id="daily-meta-effect" class="daily-meta-effect" hidden></span>
       </header>
-      <nav class="event-directory" aria-label="Aktif etkinlikler">
+      <h2 id="event-directory-heading" class="event-directory-heading">Turnuvalar</h2>
+      <nav class="event-directory" aria-labelledby="event-directory-heading">
         <button type="button" data-open-screen="weekly-event">
+          <span class="event-hub-emblem" data-event-emblem="trophy" aria-hidden="true"></span>
           <strong id="weekly-event-link-name">Haftalık Devre Turnuvası</strong><small id="weekly-event-link-period">Her pazartesi yenilenir</small><i aria-hidden="true">→</i>
         </button>
         <button type="button" data-open-screen="team-event">
+          <span class="event-hub-emblem" data-event-emblem="banner" aria-hidden="true"></span>
           <strong id="team-event-link-name">Takımlar Arası Turnuva</strong><small id="team-event-link-period">4 haftada bir yenilenir</small><i aria-hidden="true">→</i>
         </button>
       </nav>
@@ -1679,6 +1720,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
   <script src="./src/tutorial/onboarding.js"></script>
   <script src="./src/battle/board-view.js"></script>
   <script src="./src/battle/module-card-view.js"></script>
+  <script src="./src/battle/module-card-state-view.js"></script>
   <script src="./src/battle/battle-event-bus.js"></script>
   <script src="./src/battle/battle-performance.js"></script>
   <script src="./src/battle/battle-presentation.js"></script>

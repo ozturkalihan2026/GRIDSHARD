@@ -2,7 +2,141 @@
 
 Güncelleme tarihi: 14 Ekim 2026
 
-## Güncel devir — 14 Ekim: Faz 4 yarın iş bilgisayarında değerlendirilecek
+## İş bilgisayarında duruş — evde devam, 14 Ekim 2026
+
+Kullanıcı iş bilgisayarındaki sürenin dolduğunu ve evde devam edeceğini
+bildirdi. Bu noktada uygulama çalışması durduruldu; otomatik devam veya
+yayın yapılmamalı.
+
+- **Dock kararı verilmedi.** Mevcut dolu/hacimli SVG pilotu kaynakta duruyor,
+  kabul edilmiş tasarım değildir. Kullanıcı evde yalnız bu denemeyi geri
+  almayı veya daha iyi yeni görseller üretmeyi seçebilir. Bu mesaj geri
+  alma yetkisi değildir; şu anda geri alınmadı.
+- Önceki onaylı ortak lacivert buton + renkli amblem ilkesi, meta ayrımı,
+  teknik optimizasyonlar ve kullanıcının önceki değişiklikleri korunmalı.
+  Geri alma istenirse yalnız beş dock SVG'si ve `Dock-only pilot` CSS bloğu
+  hedeflenmeli; geniş git restore/reset ile önceki işler silinmemeli.
+- **Font seçimi de açık.** Oxanium kalıcı font olarak durur. Rowdies yalnız
+  önizlemede uygulandı; Lilita'nın beş Türkçe glifi eksik. Yeni seçimi veya
+  tüm ekranlara uygulanmayı varsayma.
+- Dock önizlemeleri: `qa_reports/visual-atmosphere-20261014/dock-pilot-mobile.png`
+  ve `home-dock-pilot-mobile.png`; öncesi `home-mobile.png` olarak saklı.
+- Font karşılaştırması ve lisanslar:
+  `qa_reports/typography-pilot-20261014/` (özellikle `font-comparison.png`).
+- Bu dosyalar iş bilgisayarındaki çalışma ağacına kaydedildi. Commit/push
+  veya ev bilgisayarına aktarım yapılmadı; evde yerel kopya/aktarım durumunu
+  doğrulamadan dosyaların mevcut olduğunu varsayma. Test sunucusu PID kaydı
+  yok. Son web build dock pilotunu içerir; dağıtım yapılmadı.
+
+Evde ilk adım: dock için geri alma / yeni tasarım tercihini ve font kararını
+netleştir; kullanıcının onayı olmadan diğer amblem alanlarına genişleme.
+
+## Son devir — tipografi karşılaştırması, font seçimi bekliyor
+
+Kullanıcı Lilita One / Rowdies Bold önizlemesi istedi. Oyun fontu kalıcı
+değişmedi; yalnız yalıtılmış testte başlık/düğme yazıları değiştirildi.
+Oxanium başlangıcı, Lilita ve Rowdies aynı stil örneğinde ve gerçek Ev /
+Etkinlik sayfalarında kaydedildi. Dosyalar + lisanslar
+`qa_reports/typography-pilot-20261014/` altında, build'e girmez.
+
+**Önemli düzeltme:** Latin-ext metadata'sı tam Türkçe destek kanıtı değil.
+Lilita One resmî tam TTF dosyasında Ğ, İ, Ş, ğ, ş yok; bu harfler fallback
+olur. Rowdies Bold tüm `ÇĞİÖŞÜçğıöşü` gliflerini içerir. Kanıt TTF cmap
+tablosundan doğrudan okunur. Eksik harf uyarısı görsele işlendi; Lilita bu
+haliyle Türkçe oyuna önerilmez. Logo ve açıklama fontları korunur.
+
+Test `e2e/typography-pilot.spec.js`; 320/393 px yerleşim ve aktif dock
+etiketi, aynı gövde fontu, gerçek font yüklemesi ve lisans kontrolü var.
+Son desktop/Android kontrolü 2/2 geçti; PNG'ler kalıcı QA klasörüne kopyalandı.
+Ayrıntı `qa_reports/typography-pilot-20261014/README.md`.
+Diğer amblemlere devam etme veya kalıcı font seçimi için kullanıcı onayı
+henüz yok. Önceki dock denemesi yerinde; native/sunucu/canlı işlem yok.
+
+## Son devir — yalnız dock amblemi denemesi, kullanıcı onayı bekliyor
+
+Kullanıcı Rush Royale'ın üç ekranını paylaştı; görsel değerlendirmede dolu
+nesne silueti, belirgin ışık/gölge, doygun vurgu ve ortak çizim dili konuşuldu.
+Ardından yalnız dock üzerinde uygulama ve görsel istedi; diğer alanlara
+devam etmek için açık onay bekleniyor.
+
+Beş sabit inline SVG değişti: altın mekanik sandık, mavi kart destesi,
+turkuaz altıgen çekirdek, mor takım sancağı, pembe etkinlik nişanı. Ortak
+lacivert buton yüzeyi, aktif sekme/etiket, ARIA, bildirimler ve yönlendirme
+korundu. CSS yalnız dock kapsamındadır; yeni filtre, resim isteği veya
+animasyon döngüsü yok. Diğer modüller/sandıklar/savaş çizimleri değişmedi.
+
+İstemci 439 geçti / 2 JDK atlaması; build 9/9; desktop menü + desktop/Android
+görsel test 4/4; aktif hücrenin taşmasını içeren son Android önizlemesi 1/1.
+Web build `b3ce9e7850c70db1`; APK/AAB, sunucu veya canlı yayın yok.
+Önizlemeler `qa_reports/visual-atmosphere-20261014/dock-pilot-mobile.png`
+ve `home-dock-pilot-mobile.png`. Kaynak değişikliği yerel denemedir,
+tasarımın tamamının kabul edildiği anlamına gelmez.
+
+## Son takip — meta ayrımı ve rakip görsel incelemesi
+
+Günlük Meta turnuva kartlarından ayrıldı: küçük bilgi yuvası + ayrı
+Turnuvalar başlığı. Konumu, seçimi ve savaş etkisi korunur. İstemci 438/2
+atlama, build 9/9, yalıtılmış görsel E2E 2/2; yeni web build
+`fbbef26a06919e82`. Önizleme ve açıklama
+`docs/VISUAL_ATMOSPHERE_20261014.md` son bölümünde.
+
+Kullanıcı Rush Royale'ın daha canlı/net sanat dilini incelememizi istedi.
+Resmî görsel bağlantıları bulundu ancak tarayıcıda kurum erişim engeli vardı;
+kısıt aşılmadı. Kesin piksel/renk karşılaştırması tamamlanmadı. GRIDSHARD
+önerileri belgeye yazıldı; yeni renk/SVG paketi uygulanmadı. Kullanıcıdan
+görüntü gelirse gerçek yan yana karşılaştırma yapılabilir. Canlı/native
+paket veya sunucu işlemi yapılmadı.
+
+## Güncel devir — devre atmosferi ve profil/dock paketi, 14 Ekim
+
+Kullanıcı altı görsel düzeltmeyi, bütün dock yüzeylerinin aynı renkte olup
+yalnız amblemlerin renklenmesini ve iki turnuva kartının kendine özel zeminini
+onayladı. Kaynakta uygulandı; ayrıntı ve önizlemeler:
+`docs/VISUAL_ATMOSPHERE_20261014.md`.
+
+Zikzak yerini vignette'li ince devre ızgarasına bıraktı; sekme üst ışıkları
+ayrıdır. Etkinlikte SVG çark/kupa/sancak ve altın/mor turnuva zeminleri var.
+Devre Yolu kontur/dudak kazandı. Kendi/ziyaret edilen profiller aynı yüzey
+token'larını paylaşır. Takım toplam/ortalama kupaları ortak kupa görseli taşır.
+**Yeni kesin karar:** Devre Koleksiyonu yalnız kazanılmış kupa/rozet çizer;
+eski “bütün kazanılmamış görselleri soluk yuva olarak göster” kararı artık
+geçerli değildir. Kazanım/kimlik/veri silinmez. Büyük kozmetik Faz 4 kalanları
+ayrıdır; avatarlar veya dönem ödülü rotasyonu bu turda değiştirilmedi.
+
+İstemci 438 geçti / 2 JDK atlaması, build 9/9, gezinme/görsel/mobil savaş
+6/6; son 320 px + TR/EN görsel kontrol 2/2. Yalıtılmış başsız Chrome kullanıldı.
+Web build `1d0e2986d2edd4f9`; canlıya çıkış veya APK/AAB yok.
+
+## Önceki devir — teknik denetim yerel uygulaması, 14 Ekim
+
+Kullanıcı teknik denetim planını sonuna kadar uygulamayı ve yalnız yalıtılmış
+başsız tarayıcı testlerini açıkça istedi. Yerel güvenlik/doğruluk/kalıcı kart/
+çeviri/render/efekt/olay kopyalama paketi uygulandı. Önceki görsel dil ve Faz 4
+kararları korundu; yeni kozmetik/VFX işi bu pakete eklenmedi.
+
+- Plan: `docs/TEKNIK_DENETIM_UYGULAMA_PLANI_20261014.md`.
+- Kapsam, ham ölçümler ve açık kapılar:
+  `docs/TEKNIK_DENETIM_UYGULAMA_SONUCLARI_20261014.md`.
+- Yerel test: istemci 438 geçti / 2 JDK atlaması; sunucu+araç 1.596 geçti /
+  44 PostgreSQL-Redis atlaması; build 9/9; import 402/0. İki gerçek yerel
+  tarayıcı PvP/reconnect 3/3, Android ekran öykünmesi 9/9.
+- Başlangıç HEAD `7f82db77fcc7a974ba60508d7a3c9536335f95f1`;
+  değişiklikler çalışma ağacında, commit/push/deploy/AAB yapılmadı.
+- Capacitor 8.5.1; purchases ve native PGS/reklam kimlikleri korundu.
+  Native hook'u makine ayarı olmadan yeniden sync etmek kimliği değiştirir;
+  kanonik config kullanan üretim hazırlama yolunu esas al.
+- 7 eski balance aracı içerikleriyle `docs/archive/retired-balance-tools-20261014/`
+  altında. Canlı veri silinmedi. Kalıcı kart view yeni ayrı script'tir;
+  script sırasını ve aynı anda iki tahtanın yaşam döngüsünü koru.
+- **Açık:** bu makinede JDK 21 yok; native derleme, gerçek telefon PGS/Billing
+  ve uzun maç WebView profili, kalıcı PostgreSQL/Redis CI, canlı origin/proxy
+  doğrulaması. Bileşen ölçümünü tüm oyun FPS kazancı sayma. Canvas koşullu.
+
+Mevcut tarayıcı sekmeleri, canlı oyuncu/Uç hesabı, AWS/Cloud/Play ayarları
+bu uygulamada kullanılmadı. Plan tümüyle kapatılmadı; fiziksel cihaz ve canlı
+kanıtın yerine otomatik yerel testi koyma.
+
+## Önceki devir — 14 Ekim: Faz 4 yarın iş bilgisayarında değerlendirilecek
 
 Kullanıcı, `CLAUDE_CHECKPOINT.md` içindeki Faz 4'ün kalan işlerini incelememi
 istedi; plan ve mevcut kod salt okunur incelendi. Ardından **“notunu al yarın

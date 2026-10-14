@@ -1,0 +1,25 @@
+@font-face {
+  font-family:"Pilot Lilita One";
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  src:url("./LilitaOne-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family:"Pilot Rowdies";
+  font-style:normal;
+  font-weight:700;
+  font-display:swap;
+  src:url("./Rowdies-Bold.ttf") format("truetype");
+}
+[data-font-pilot="lilita"] { --pilot-family:"Pilot Lilita One";--pilot-weight:400; }
+[data-font-pilot="rowdies"] { --pilot-family:"Pilot Rowdies";--pilot-weight:700; }
+/* Only explicit headings/button labels. Never change body copy, brand or SVG. */
+body:is([data-font-pilot="lilita"],[data-font-pilot="rowdies"])
+  :is(#home-arena-name,#home-battle-button > span,#app-bottom-dock .menu-action-title,
+    #events-screen .event-directory button > strong,#event-directory-heading,#daily-meta-heading),
+.pilot-column :is(.sample-arena,.sample-battle strong,.sample-dock span,.sample-heading,.sample-turkish) {
+  font-family:var(--pilot-family,"Oxanium"),sans-serif !important;
+  font-weight:var(--pilot-weight,800) !important;
+  font-synthesis:none;
+}

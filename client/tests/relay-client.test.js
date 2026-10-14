@@ -191,7 +191,9 @@ function createClient() {
   const fs = require("fs");
   const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
-  assert.ok(src.includes("ENERJİSİZ"));
+  assert.ok(src.includes('powerState:flowing ? "flowing" : required > 0 ? "disconnected" : "passive"'));
+  const view=fs.readFileSync(path.join(ROOT,"src/battle/module-card-state-view.js"),"utf8");
+  assert.ok(view.includes('this.toggle(card, "energy-disconnected", Boolean(model.powerMessage));'));
 }
 
 
@@ -202,7 +204,8 @@ function createClient() {
   assert.ok(!src.includes("PORT_COUNT_BY_NAME"));
   assert.ok(!src.includes("modulePorts"));
   assert.ok(!src.includes("areConnected"));
-  assert.ok(src.includes("energy-disconnected"));
+  const view = fs.readFileSync(path.join(ROOT,"src/battle/module-card-state-view.js"),"utf8");
+  assert.ok(view.includes("energy-disconnected"));
 }
 
 

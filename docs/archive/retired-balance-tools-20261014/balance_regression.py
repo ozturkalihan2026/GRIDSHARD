@@ -1,3 +1,4 @@
+"""Historical port/topology regression; retained as reference, not executable."""
 from __future__ import annotations
 
 from dataclasses import asdict

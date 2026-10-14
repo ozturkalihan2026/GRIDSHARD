@@ -20,6 +20,12 @@ SEARCH_ROOTS = [SERVER / "app", SERVER / "tests", SERVER / "json_migrations", RO
 
 _cache = {}
 
+# Python creates these on file-backed modules; they are not AST assignments.
+IMPLICIT_MODULE_ATTRIBUTES = frozenset({
+    "__name__", "__file__", "__package__", "__loader__", "__spec__",
+    "__doc__", "__builtins__", "__cached__",
+})
+
 
 def module_file(modname):
     parts = modname.split(".")
@@ -69,7 +75,7 @@ def top_level(path):
     if path in _cache:
         return _cache[path]
     tree = ast.parse(path.read_text(encoding="utf-8"))
-    names, stars = set(), []
+    names, stars = set(IMPLICIT_MODULE_ATTRIBUTES), []
     for node in tree.body:
         collect(node, names, stars)
     _cache[path] = (names, stars)
@@ -96,64 +102,75 @@ def resolve(path, node):
     return node.module
 
 
-problems = []
-files = [p for root in SEARCH_ROOTS if root.exists() for p in root.rglob("*.py") if "__pycache__" not in p.parts]
-for path in files:
-    try:
-        tree = ast.parse(path.read_text(encoding="utf-8"))
-    except SyntaxError as exc:
-        problems.append(f"{path}: sözdizimi {exc}")
-        continue
-    aliases = {}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom):
-            modname = resolve(path, node) if (node.level or (node.module or "").startswith("app")) else None
-            if not modname or not modname.startswith("app"):
-                continue
-            target = module_file(modname)
-            if target is None:
-                problems.append(f"{path.relative_to(ROOT)}:{node.lineno}: modül yok: {modname}")
-                continue
-            names, stars = top_level(target)
-            for alias in node.names:
-                if alias.name == "*":
-                    continue
-                if alias.name in names or module_file(f"{modname}.{alias.name}") is not None:
-                    if module_file(f"{modname}.{alias.name}") is not None:
-                        aliases[alias.asname or alias.name] = f"{modname}.{alias.name}"
-                    continue
-                problems.append(
-                    f"{path.relative_to(ROOT)}:{node.lineno}: '{alias.name}' {modname} içinde tanımlı değil"
-                )
-        elif isinstance(node, ast.Import):
-            for alias in node.names:
-                if alias.name.startswith("app") and alias.asname:
-                    aliases[alias.asname] = alias.name
-    # Modül takma adıyla öznitelik erişimi (ör. gateway.telemetry_service).
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id in aliases:
-            modname = aliases[node.value.id]
-            target = module_file(modname)
-            if target is None:
-                continue
-            names, _stars = top_level(target)
-            if node.attr not in names and module_file(f"{modname}.{node.attr}") is None:
-                problems.append(
-                    f"{path.relative_to(ROOT)}:{node.lineno}: {node.value.id}.{node.attr} ({modname}) tanımlı değil"
-                )
-    source = path.read_text(encoding="utf-8")
-    for match in re.finditer(r'monkeypatch\.setattr\(\s*([A-Za-z_]\w*)\s*,\s*"([A-Za-z_]\w*)"', source):
-        alias, attr = match.groups()
-        if alias not in aliases:
+def check_imports(paths=None):
+    _cache.clear()
+    problems = []
+    files = list(paths) if paths is not None else [p for root in SEARCH_ROOTS if root.exists() for p in root.rglob("*.py") if "__pycache__" not in p.parts]
+    for path in files:
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except SyntaxError as exc:
+            problems.append(f"{path}: sözdizimi {exc}")
             continue
-        target = module_file(aliases[alias])
-        names, _stars = top_level(target)
-        if attr not in names:
-            line = source[: match.start()].count("\n") + 1
-            problems.append(f"{path.relative_to(ROOT)}:{line}: monkeypatch {alias}.{attr} tanımlı değil")
+        aliases = {}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                modname = resolve(path, node) if (node.level or (node.module or "").startswith("app")) else None
+                if not modname or not modname.startswith("app"):
+                    continue
+                target = module_file(modname)
+                if target is None:
+                    problems.append(f"{path.relative_to(ROOT)}:{node.lineno}: modül yok: {modname}")
+                    continue
+                names, stars = top_level(target)
+                for alias in node.names:
+                    if alias.name == "*":
+                        continue
+                    if alias.name in names or module_file(f"{modname}.{alias.name}") is not None:
+                        if module_file(f"{modname}.{alias.name}") is not None:
+                            aliases[alias.asname or alias.name] = f"{modname}.{alias.name}"
+                        continue
+                    problems.append(
+                        f"{path.relative_to(ROOT)}:{node.lineno}: '{alias.name}' {modname} içinde tanımlı değil"
+                    )
+            elif isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.name.startswith("app") and alias.asname:
+                        aliases[alias.asname] = alias.name
+        # Modül takma adıyla öznitelik erişimi (ör. gateway.telemetry_service).
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id in aliases:
+                modname = aliases[node.value.id]
+                target = module_file(modname)
+                if target is None:
+                    continue
+                names, _stars = top_level(target)
+                if node.attr not in names and module_file(f"{modname}.{node.attr}") is None:
+                    problems.append(
+                        f"{path.relative_to(ROOT)}:{node.lineno}: {node.value.id}.{node.attr} ({modname}) tanımlı değil"
+                    )
+        source = path.read_text(encoding="utf-8")
+        for match in re.finditer(r'monkeypatch\.setattr\(\s*([A-Za-z_]\w*)\s*,\s*"([A-Za-z_]\w*)"', source):
+            alias, attr = match.groups()
+            if alias not in aliases:
+                continue
+            target = module_file(aliases[alias])
+            names, _stars = top_level(target)
+            if attr not in names:
+                line = source[: match.start()].count("\n") + 1
+                problems.append(f"{path.relative_to(ROOT)}:{line}: monkeypatch {alias}.{attr} tanımlı değil")
 
-for item in sorted(set(problems)):
-    print(item)
-print(f"{len(files)} dosya, {len(set(problems))} sorun")
-sys.exit(1 if problems else 0)
+    return files, sorted(set(problems))
+
+
+def main():
+    files, problems = check_imports()
+    for item in problems:
+        print(item)
+    print(f"{len(files)} dosya, {len(problems)} sorun")
+    return 1 if problems else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 

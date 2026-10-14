@@ -1,3 +1,4 @@
+"""Archived AI report using retired Direction rules; reference only."""
 from __future__ import annotations
 
 import argparse

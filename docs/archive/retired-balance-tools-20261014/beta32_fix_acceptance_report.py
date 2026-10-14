@@ -1,3 +1,4 @@
+"""Archived acceptance report for retired move/port rules."""
 from __future__ import annotations
 
 from array import array

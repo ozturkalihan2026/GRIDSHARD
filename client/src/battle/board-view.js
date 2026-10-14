@@ -9,6 +9,7 @@
     constructor(boardElement) {
       this.board = boardElement;
       this.cellSignatures = new WeakMap();
+      this.cellViews = new WeakMap();
     }
 
     render(
@@ -17,8 +18,11 @@
         selectedModuleId = null,
         battleFinished = false,
         createModuleCard,
+        updateModuleCard = null,
+        moduleIdentity = module => String(module.instanceId ?? module.id),
         cellDebris = [],
         debrisLabel = "Enkaz",
+        secondsLabel = "sn",
         moduleSignature = null,
         onCardPlaced = null,
         force = false,
@@ -62,20 +66,61 @@
           ? Math.max(1, Math.ceil(Number(debris.remaining_ms || 0) / 1000))
           : 0;
         const signature = typeof moduleSignature === "function"
-          ? `${tapDropTarget ? 1 : 0}|${seconds}|${debrisLabel}|${module ? moduleSignature(module) : ""}`
+          ? `${tapDropTarget ? 1 : 0}|${seconds}|${debrisLabel}|${secondsLabel}|${module ? moduleSignature(module) : ""}`
           : null;
         if (!force && signature !== null && this.cellSignatures.get(cell) === signature) {
           continue;
         }
         this.cellSignatures.set(cell, signature);
-        this.resetCell(cell, selectedModuleId, battleFinished);
-        if (debris) this.appendDebris(cell, seconds, debrisLabel);
+        let view = this.cellViews.get(cell);
+        if (!view) {
+          this.resetCell(cell, selectedModuleId, battleFinished);
+          view = { card:null, identity:null, debris:null };
+          this.cellViews.set(cell, view);
+        }
+        const identity = module ? moduleIdentity(module) : null;
+        if (view.card && (identity !== view.identity || typeof updateModuleCard !== "function")) {
+          if (typeof view.card.remove === "function") view.card.remove();
+          else { cell.innerHTML = ""; view.debris = null; }
+          view.card = null;
+          view.identity = null;
+        }
+        if (!debris && view.debris) {
+          view.debris.remove();
+          view.debris = null;
+        }
+        this.setData(cell, "occupied", String(Boolean(module)));
+        this.setData(cell, "debris", String(Boolean(debris)));
+        this.toggleClass(cell, "debris-cell", Boolean(debris));
+        this.toggleClass(cell, "tap-drop-target", tapDropTarget && !debris);
+        if (debris) {
+          if (!view.debris) view.debris = this.appendDebris(cell, seconds, debrisLabel, secondsLabel);
+          else {
+            const label = `${debrisLabel}: ${seconds}`;
+            if (view.debris.getAttribute("aria-label") !== label) view.debris.setAttribute("aria-label", label);
+            const countdown = view.debris.children[1];
+            const text = `${seconds} ${secondsLabel}`;
+            if (countdown.textContent !== text) countdown.textContent = text;
+          }
+        }
         if (module) {
-          cell.dataset.occupied = "true";
-          cell.appendChild(createModuleCard(module));
+          if (!view.card) {
+            view.card = createModuleCard(module);
+            view.identity = identity;
+            cell.appendChild(view.card);
+          }
+          if (typeof updateModuleCard === "function") updateModuleCard(view.card, module);
           if (typeof onCardPlaced === "function") onCardPlaced(module, cell);
         }
       }
+    }
+
+    setData(element, key, value) {
+      if (element.dataset[key] !== value) element.dataset[key] = value;
+    }
+
+    toggleClass(element, name, enabled) {
+      if (element.classList.contains(name) !== enabled) element.classList.toggle(name, enabled);
     }
 
     resetCell(cell, selectedModuleId, battleFinished) {
@@ -91,7 +136,7 @@
       );
     }
 
-    appendDebris(cell, seconds, debrisLabel) {
+    appendDebris(cell, seconds, debrisLabel, secondsLabel = "sn") {
       cell.dataset.debris = "true";
       cell.classList.add("debris-cell");
       cell.classList.remove("tap-drop-target");
@@ -103,9 +148,10 @@
       shards.className = "cell-debris-shards";
       shards.setAttribute("aria-hidden", "true");
       const countdown = document.createElement("strong");
-      countdown.textContent = `${seconds} sn`;
+      countdown.textContent = `${seconds} ${secondsLabel}`;
       marker.append(shards, countdown);
       cell.appendChild(marker);
+      return marker;
     }
 
     renderBySelector(modules, { createModuleCard, cellDebris, debrisLabel }) {

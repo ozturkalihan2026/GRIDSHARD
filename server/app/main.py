@@ -6963,11 +6963,30 @@ async def create_local_ai_session(
             session_id,
             request.player_id,
         )
-    except (PvPSessionError, ValueError) as exc:
-        raise HTTPException(
-            status_code=422,
-            detail=str(exc),
-        ) from exc
+    except BaseException as exc:
+        # Registration and even runner startup can precede a failed response.
+        await pvp_tick_runner.discard_session(session_id)
+        if isinstance(exc, (PvPSessionError, ValueError)):
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        raise
+
+
+@app.delete("/local-ai/sessions/{session_id}")
+async def abandon_local_ai_session(
+    session_id: str,
+    player_id: str = Query(min_length=1),
+) -> dict:
+    try:
+        session = pvp_service.get_session(session_id)
+    except PvPSessionError:
+        return {"session_id": session_id, "closed": True}
+    if (not session_id.startswith("local-ai-")
+        or session.engine.state.match_type != "local_test"
+        or player_id not in session.slots
+        or player_id in session.ai_player_ids):
+        raise HTTPException(status_code=403, detail="Bu yerel oturumu kapatamazsınız.")
+    await pvp_tick_runner.discard_session(session_id)
+    return {"session_id": session_id, "closed": True}
 
 
 @app.post(

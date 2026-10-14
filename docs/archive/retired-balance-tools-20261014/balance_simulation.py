@@ -1,3 +1,4 @@
+"""Historical interaction-unlock simulation; not an active balance contract."""
 from __future__ import annotations
 
 from dataclasses import dataclass

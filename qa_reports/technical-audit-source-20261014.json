@@ -1,0 +1,52 @@
+{
+  "baseline": "7f82db77fcc7a974ba60508d7a3c9536335f95f1",
+  "state": "uncommitted working tree; not deployed",
+  "webBuild": "c99f9e10aacab879",
+  "mobileWebBuild": "50e9aad1a68ab150",
+  "files": [
+    {
+      "path": "client/src/app.js",
+      "sha256": "CDA2E33F091859FB267243E1C62CFEB4660D0AEF13CF68CD362A32E3134F7E74"
+    },
+    {
+      "path": "client/src/battle/board-view.js",
+      "sha256": "36CFA8E3EC5938AAD273EB1E3C59E3F2E97D1261A1EF654C559463983C903D3C"
+    },
+    {
+      "path": "client/src/battle/module-card-state-view.js",
+      "sha256": "7A430A98E139D8D02332984945A8C55ED4EF08B4D5A8279241FDCAF93B773AB3"
+    },
+    {
+      "path": "client/src/i18n.js",
+      "sha256": "2EB1DDBB8A0402E45A90F84608CEB53708174F839D88A542F77854DCE9832A4D"
+    },
+    {
+      "path": "server/app/main.py",
+      "sha256": "D4ABBD5A0590E891F49CD72D8248FEB61AFF7B5499D5409938849CC62F96A013"
+    },
+    {
+      "path": "server/app/game/pvp_session.py",
+      "sha256": "9ECA0C9A94197D40F70EC6A6DB050F953829D8FC33880B40E16440C3E9297DD0"
+    },
+    {
+      "path": "server/app/game/pvp_runner.py",
+      "sha256": "F64AAF7C629B857700417E4C06F48BAFE4F9C013AFFCD4791B56377768CB1CAD"
+    },
+    {
+      "path": "server/app/game/composition.py",
+      "sha256": "E8D67747F70BCF075597A349FBEA83380FCB6DB689A2552348FDBA2527931DEC"
+    },
+    {
+      "path": "package.json",
+      "sha256": "4B7CE01D78A296F368487C5E8C6A82BF595174BA1FEBAFB79E72670F7D7289F7"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "6F5BD43721FA062063D866104785C5C4EDCC36177608F61845224E66F430B649"
+    },
+    {
+      "path": "android/capacitor.settings.gradle",
+      "sha256": "33B17B14F65926D31994B54BB07ED5F59F06D308A160BFF49817F91775B198AC"
+    }
+  ]
+}

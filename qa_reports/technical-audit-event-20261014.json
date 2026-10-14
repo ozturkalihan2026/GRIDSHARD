@@ -1,0 +1,81 @@
+{
+  "baseline": "7f82db77fcc7a974ba60508d7a3c9536335f95f1",
+  "measured_at": "2026-10-14T08:05:09.302887+00:00",
+  "python": "3.12.10",
+  "platform": "win32",
+  "kind": "event-copy component; not requests/s or full-match memory",
+  "results": [
+    {
+      "case": "scalar",
+      "iterations": 30000,
+      "samples_ms": {
+        "baseline": [
+          104.44,
+          110.88,
+          105.59,
+          101.65,
+          100.88
+        ],
+        "current": [
+          31.6,
+          30.65,
+          29.65,
+          29.87,
+          29.62
+        ]
+      },
+      "median_ms": {
+        "baseline": 104.44,
+        "current": 29.87
+      }
+    },
+    {
+      "case": "nested",
+      "iterations": 30000,
+      "samples_ms": {
+        "baseline": [
+          169.44,
+          166.11,
+          165.53,
+          169.54,
+          170.94
+        ],
+        "current": [
+          196.87,
+          195.14,
+          198.47,
+          198.19,
+          208.14
+        ]
+      },
+      "median_ms": {
+        "baseline": 169.44,
+        "current": 198.19
+      }
+    },
+    {
+      "case": "private_filtered",
+      "iterations": 30000,
+      "samples_ms": {
+        "baseline": [
+          236.33,
+          263.03,
+          260.84,
+          352.99,
+          430.66
+        ],
+        "current": [
+          4.08,
+          3.47,
+          3.33,
+          3.5,
+          6.6
+        ]
+      },
+      "median_ms": {
+        "baseline": 263.03,
+        "current": 3.5
+      }
+    }
+  ]
+}

@@ -1535,7 +1535,13 @@
     }
   }
 
+  let renderedHomeHubSignature = null;
   function renderHomeHub() {
+    const signature = JSON.stringify([metaProgressionState, profileState.profile?.rating, deckEditorSlots, battlePoolPresets,
+      activeBattlePoolPresetName, document.documentElement.lang, homeMatchmakingLaunchPending,
+      homeMatchmakingCancelPending, isOnlineMatchmakingCancelable()]);
+    if (signature === renderedHomeHubSignature) return;
+    renderedHomeHubSignature = signature;
     renderHomeCoreHero();
     renderDeckStrip(document.getElementById("home-active-deck"));
     renderPresetStrip(document.getElementById("home-preset-decks"));
@@ -1656,8 +1662,10 @@
   });
 
   function uiIconMarkup(name, tone = "") {
-    const paths = UI_ICON_PATHS[name] || UI_ICON_PATHS.star;
-    return `<i class="ui-icon" data-icon="${name}"${tone ? ` data-tone="${tone}"` : ""} aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false">${paths}</svg></i>`;
+    const iconName = Object.hasOwn(UI_ICON_PATHS, name) ? name : "star";
+    const safeTone = /^[a-z][a-z0-9-]{0,30}$/.test(tone) ? tone : "";
+    const paths = UI_ICON_PATHS[iconName];
+    return `<i class="ui-icon" data-icon="${iconName}"${safeTone ? ` data-tone="${safeTone}"` : ""} aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false">${paths}</svg></i>`;
   }
 
   function createUiIcon(name, tone = "") {
@@ -2992,9 +3000,13 @@
     positionQuickActions(panel, anchor, document.getElementById("modules-screen"));
   }
 
+  let renderedCoreCollection = null;
   function renderCoreCollection() {
     const host = document.getElementById("core-collection-list");
     if (!host) return;
+    const signature = JSON.stringify([metaProgressionState?.cores?.types, document.documentElement.lang]);
+    if (renderedCoreCollection?.host === host && renderedCoreCollection.signature === signature) return;
+    renderedCoreCollection = {host, signature};
     host.replaceChildren();
     const cores = metaProgressionState?.cores?.types || [];
     const selected = cores.find((item) => item.selected) || cores[0];
@@ -3365,9 +3377,15 @@
     );
   }
 
+  let renderedModuleCollection = null;
   function renderModuleCollection() {
-    document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
     const state = metaProgressionState || fallbackMetaProgression();
+    const host = document.getElementById("module-collection-grid");
+    const signature = JSON.stringify([state.module_collection, deckEditorSlots, battlePoolPresets,
+      activeBattlePoolPresetName, pendingDeckModuleInstanceId, activeModuleFilter, document.documentElement.lang]);
+    if (renderedModuleCollection?.host === host && renderedModuleCollection.signature === signature) return;
+    renderedModuleCollection = {host, signature};
+    document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
     const setText = (id, value) => {
       const element = document.getElementById(id);
       if (element) element.textContent = String(value);
@@ -3375,7 +3393,6 @@
     setText("module-deck-count", `${deckEditorSlots.filter(Boolean).length} / 6`);
     renderDeckStrip(document.getElementById("module-deck-strip"), { editable: true });
     renderPresetStrip(document.getElementById("module-preset-strip"));
-    const host = document.getElementById("module-collection-grid");
     if (!host) return;
     host.replaceChildren();
     const selected = new Set(deckEditorSlots.filter(Boolean).map(clientDefinitionId));
@@ -3458,7 +3475,10 @@
         card.dataset.tier = item.tier;
         card.dataset.storeChestId = item.definition_id;
         card.dataset.sale = String(Number(item.cost) < Number(item.base_cost));
-        card.innerHTML = `${chestVisualMarkup(item.tier)}<strong>${item.name_tr}</strong>`;
+        card.innerHTML = chestVisualMarkup(item.tier);
+        const chestName = document.createElement("strong");
+        chestName.textContent = item.name_tr;
+        card.appendChild(chestName);
         const metadata = document.createElement("div");
         metadata.className = "chest-store-metadata";
         // Günlük alım hakkı: sayımı sunucu yapar. Bu alanları göndermeyen eski
@@ -3803,7 +3823,7 @@
     if (host) {
       // Hata metni sunucudan gelebilir; HTML olarak yorumlanmaz.
       const message = document.createElement("span");
-      message.textContent = error instanceof Error ? error.message : String(error);
+      message.textContent = localizedUiText(error instanceof Error ? error.message : String(error));
       const wrap = document.createElement("div");
       wrap.appendChild(message);
       host.replaceChildren(wrap);
@@ -7699,8 +7719,8 @@
     setText("team-member-count", `${teamState.member_count || 0} / ${teamState.member_limit || 30}`);
     const statistics = teamState.statistics || {};
     const tournament = teamState.tournament || {};
-    setText("team-profile-total-trophies", Number(teamState.total_trophies || 0).toLocaleString(uiLocale()));
-    setText("team-profile-average-trophies", Number(teamState.average_trophies || 0).toLocaleString(uiLocale()));
+    renderTrophyValue("team-profile-total-trophies", Number(teamState.total_trophies || 0));
+    renderTrophyValue("team-profile-average-trophies", Number(teamState.average_trophies || 0));
     setText("team-profile-total-matches", Number(statistics.total_matches || 0).toLocaleString(uiLocale()));
     setText("team-profile-win-rate", `%${boundedWinRatePercent(statistics.win_rate || 0)}`);
     setText("team-profile-tournament-position", tournament.position ? `#${tournament.position}` : "—");
@@ -9728,7 +9748,7 @@
     corePowerButtonEl.dataset.ready=String(corePowerReady);
     applyCoreVisualIdentity(corePowerButtonEl, selectedCore);
     mountCoreEmblem(corePowerButtonEl.querySelector(".core-power-glyph"), selectedCore);
-    const coreCard = document.getElementById("core-1");
+    const coreCard = board?.querySelector('[data-module-id="core-1"]');
     if (coreCard) {
       applyCoreVisualIdentity(coreCard, selectedCore);
       coreCard.style.setProperty("--core-charge", `${charge}%`);
@@ -10680,6 +10700,11 @@
   }
 
   function setActivePlayMode(mode) {
+    if (activePlayMode === "local" && mode !== "local" && localServerSessionId && !localBattleFinished) {
+      void closeLocalServerSession(localServerSessionId);
+      stopLocalServerPolling();
+      localServerSessionId = null;
+    }
     activePlayMode = mode;
     document.body.dataset.playMode =
       mode;
@@ -11325,7 +11350,7 @@
       "--feedback-lane-offset",
       `${Math.max(0, Number(eventResult.lane || 0)) * 14}px`
     );
-    chip.textContent = Number.isFinite(eventResult.amount)
+    const feedbackText = Number.isFinite(eventResult.amount)
       ? formatFloatingFeedbackAmount(
           eventResult.amount,
           eventResult.metadata?.suffix || parsed?.suffix || "",
@@ -11335,6 +11360,8 @@
           }
         )
       : eventResult.text;
+    chip.dataset.i18nSource = String(feedbackText ?? "");
+    chip.textContent = battleUiText(feedbackText);
     updateFloatingFeedbackImportance(chip, eventResult.amount ?? 0);
     chip.style.left = `${anchor.left + anchor.width / 2 - layerRect.left}px`;
     chip.style.top = `${anchor.top + Math.max(16, anchor.height * 0.28) - layerRect.top}px`;
@@ -12404,8 +12431,7 @@
     if (document.body.dataset.battleAuthority !== "server") {
       document.body.dataset.battleAuthority="server";
     }
-    renderEnemyBoard();
-    render();
+    // Transport applies state immediately; its owner does one presentation pass.
     return true;
   }
 
@@ -12505,11 +12531,11 @@
       }
       client.applyServerModuleState({
         instanceId:clientModuleId,
-        hp:Number(serverModule.hp || 0),
+        hp:destroyedAfterSnapshot(participantPlayerId, serverModule.instance_id, snapshot) ? 0 : Number(serverModule.hp || 0),
         maxHp:Number(serverModule.max_hp ?? client.requireModule(clientModuleId).maxHp),
-        status:serverModule.status,
+        status:destroyedAfterSnapshot(participantPlayerId, serverModule.instance_id, snapshot) ? "destroyed" : serverModule.status,
         position:
-          serverModule.x === null
+          destroyedAfterSnapshot(participantPlayerId, serverModule.instance_id, snapshot) || serverModule.x === null
           || serverModule.y === null
             ? null
             : {
@@ -12546,10 +12572,7 @@
       snapshot
     );
 
-    render();
-    renderEnemyBoard();
-    renderCredits();
-    renderPlayerCoreSummary();
+    renderBattleHud();
 
     if (
       snapshot.status
@@ -12633,7 +12656,11 @@
         return false;
       }
       const payload=await response.json();
-      if (!localServerRequests.isCurrent(generation) || !payload?.session_id) return false;
+      if (!payload?.session_id) return false;
+      if (!localServerRequests.isCurrent(generation)) {
+        void closeLocalServerSession(payload.session_id);
+        return false;
+      }
 
       localServerSessionId=
         payload.session_id;
@@ -12652,6 +12679,20 @@
       );
       return true;
     } catch (_error) {
+      return false;
+    }
+  }
+
+  async function closeLocalServerSession(sessionId) {
+    if (!sessionId) return false;
+    try {
+      const response = await fetchWithDeadline(
+        `/local-ai/sessions/${encodeURIComponent(sessionId)}?player_id=${encodeURIComponent(participantPlayerId)}`,
+        { method:"DELETE" }, 5000
+      );
+      return response.ok;
+    } catch (_error) {
+      // Offline exit remains responsive; server inactivity cleanup is the fallback.
       return false;
     }
   }
@@ -12733,6 +12774,9 @@
   // durumu (tahta, Akım, Çekirdek gücü) yerinde kalır.
   function clearBattleEffects() {
     battleVisualGeneration += 1;
+    if (signatureEffectFrame !== null) window.cancelAnimationFrame?.(signatureEffectFrame);
+    signatureEffectFrame = null;
+    pendingSignatureEffects.length = 0;
     battleSweepQueue.reset();
     battleLiveTickerTimer = null;
     battleLiveTickerEl?.classList.remove("pulse");
@@ -12836,6 +12880,7 @@
   }
 
   function resetLocalBattleState() {
+    if (localServerSessionId) void closeLocalServerSession(localServerSessionId);
     resetBattleVisualSurface();
     pvpConnection.disconnect();
 
@@ -12948,6 +12993,7 @@
   }
 
   function prepareLocalMatch() {
+    if (localServerSessionId && !localBattleFinished) void closeLocalServerSession(localServerSessionId);
     stopLocalServerPolling();
     localServerSessionId = null;
     localServerAuthoritative = false;
@@ -13978,6 +14024,44 @@
   });
   const signatureEffectLastAt = new Map();
   let signatureEffectsLive = 0;
+  const pendingSignatureEffects = [];
+  let signatureEffectFrame = null;
+
+  function queueSignatureEffect(effect) {
+    pendingSignatureEffects.push(effect);
+    if (signatureEffectFrame === null) signatureEffectFrame = window.requestAnimationFrame(flushSignatureEffects);
+  }
+
+  function flushSignatureEffects() {
+    signatureEffectFrame = null;
+    const queued = pendingSignatureEffects.splice(0);
+    const ready = [];
+    for (const effect of queued) {
+      if (effect.generation !== battleVisualGeneration) continue;
+      if (performance.now() - effect.createdAt >= 600) {
+        signatureEffectsLive = Math.max(0, signatureEffectsLive - 1);
+      } else ready.push(effect);
+    }
+    if (!ready.length) return;
+    // All geometry is read before any effect enters the connected DOM. This
+    // also prevents microtasks between separate rAF callbacks invalidating it.
+    battleAnchorBatch = null;
+    battleAnchorRects();
+    const allNodes = [];
+    for (const effect of ready) {
+      const nodes = buildSignatureEffectNodes(effect.kind, effect.anchorId, {
+        links:effect.links, label:effect.label, lifetimeMs:effect.lifetime,
+        particleCount:signatureParticleCount(effect.particles), append:false,
+      });
+      allNodes.push(...nodes);
+      scheduleBattleSweep(effect.lifetime, () => {
+        for (const node of nodes) node.remove();
+        signatureEffectsLive = Math.max(0, signatureEffectsLive - 1);
+      });
+    }
+    document.getElementById("battle-effect-layer")?.append(...allNodes);
+    battleAnchorBatch = null;
+  }
 
   // Efekt yükü. Savaş kalabalıklaştıkça aynı anda yaşayan efekt öğeleri artar
   // ve her biri her ana karede stil hesabına girer; düşük donanımda kareleri
@@ -14051,7 +14135,7 @@
   function buildSignatureEffectNodes(
     kind,
     anchorId,
-    { links, label, lifetimeMs, particleCount }
+    { links, label, lifetimeMs, particleCount, append=true }
   ) {
     const layer = document.getElementById("battle-effect-layer");
     if (!layer || typeof layer.getBoundingClientRect !== "function") {
@@ -14109,11 +14193,12 @@
     if (label) {
       const tag = document.createElement("span");
       tag.className = "signature-label";
-      tag.textContent = localizedUiText(label);
+      tag.dataset.i18nSource = String(label);
+      tag.textContent = battleUiText(label);
       effect.appendChild(tag);
     }
     nodes.push(effect);
-    layer.append(...nodes);
+    if (append) layer.append(...nodes);
     return nodes;
   }
 
@@ -14152,22 +14237,8 @@
     );
     // Olaylar yeni anlık görüntü çizilmeden işlenir; konumu çizimden sonra ölç.
     // Sekme arka plandayken bekleyen kareler dönüşte topluca çizilmez.
-    window.requestAnimationFrame(() => {
-      if (visualGeneration !== battleVisualGeneration) return;
-      const fresh = performance.now() - now < 600;
-      const nodes = fresh && visualGeneration === battleVisualGeneration
-        ? buildSignatureEffectNodes(kind, anchorId, {
-            links:validLinks,
-            label,
-            lifetimeMs:lifetime,
-            particleCount:signatureParticleCount(config.particles),
-          })
-        : [];
-      scheduleBattleSweep(lifetime, () => {
-        for (const node of nodes) node.remove();
-        signatureEffectsLive = Math.max(0, signatureEffectsLive - 1);
-      });
-    });
+    queueSignatureEffect({kind, anchorId, links:validLinks, label, lifetime,
+      particles:config.particles, createdAt:now, generation:visualGeneration});
     if (config.cue) {
       triggerBattleCue(config.cue, { minIntervalMs:config.cueIntervalMs ?? 160 });
     }
@@ -16691,67 +16762,6 @@
     ensureBoardCableLayer(enemyBoard);
   }
 
-  function appendEnergyFlowIndicator(
-    card,
-    {
-      isPowered=false,
-      energyReceived=0,
-      energyRequired=0,
-      isSource=false,
-      powerReason=null,
-    }={}
-  ) {
-    const received=Math.max(
-      0,
-      Number(energyReceived || 0)
-    );
-    const required=Math.max(
-      0,
-      Number(energyRequired || 0)
-    );
-    const flowing=Boolean(
-      isSource
-      ? isPowered && received > 0
-      : isPowered
-        && required > 0
-        && received > 0
-    );
-
-    card.dataset.powerState=
-      flowing
-        ? "flowing"
-        : (
-            required > 0
-              ? "disconnected"
-              : "passive"
-          );
-    if (!flowing) {
-      if (required <= 0) return false;
-      // Türkçe yazılır; İngilizce görünümü i18n katmanı üretir.
-      const reasons={
-        emp_disabled:"EMP etkisi bu modülün enerji sistemini devre dışı bıraktı.",
-        line_disrupted:"Kesici etkisi bu modülün enerji hattını geçici olarak kopardı.",
-        insufficient_supply:`Çekirdek enerji ihtiyacı: ${required.toFixed(1)} Ü, gelen: ${received.toFixed(1)} Ü.`,
-        waiting_energy:"Enerji rezervi bu modülün sıradaki eylemine yetmiyor; enerji birikince ateşler.",
-      };
-      const message=reasons[powerReason]
-        || "Bu modül devre dışı. Sabotaj etkilerini ve Çekirdek enerji baskısını kontrol edin.";
-      card.classList.add("energy-disconnected");
-      const tooltip=document.createElement("span");
-      tooltip.className="power-state-tooltip";
-      tooltip.textContent=message;
-      tooltip.setAttribute("role","tooltip");
-      card.appendChild(tooltip);
-      const placeTooltip=()=>updateShelfTooltipPlacement(card,tooltip);
-      card.addEventListener("pointerenter",placeTooltip);
-      card.addEventListener("focusin",placeTooltip);
-      card.title=`${card.title ? `${card.title} · ` : ""}${message}`;
-      card.setAttribute("aria-label",message);
-      return false;
-    }
-
-    return true;
-  }
 
   // Isı barı kartın üst kenarında durur: CAN barından ince, iki yandan içeride
   // ve termometre gibi sarıdan kırmızıya ilerler. Isı yüzdedir: %40 (üstünde
@@ -16784,95 +16794,6 @@
     return `Etki -%${Math.round(100 - 100 / (1 + penalty / 100))}`;
   }
 
-  function appendModuleHeatBar(card, moduleLike) {
-    const heat = Math.min(MODULE_MAX_HEAT, Math.max(0, Number(moduleLike?.heat || 0)));
-    const overheated = Boolean(moduleLike?.overheated);
-    if (!card || (heat <= 0 && !overheated)) return;
-    const percent = overheated ? 100 : Math.round(heat);
-    const bar = document.createElement("span");
-    bar.className = "module-heat-bar";
-    bar.dataset.heatState = overheated
-      ? "overheated"
-      : heat >= MODULE_MAX_HEAT
-        ? "critical"
-        : heat >= MODULE_HEAT_HIGH
-          ? "high"
-          : heat >= MODULE_HEAT_SLOWDOWN_START + MODULE_HEAT_SLOWDOWN_STEP
-            ? "slowed"
-            : "warm";
-    bar.style.setProperty("--heat-percent", `${percent}%`);
-    bar.setAttribute("role", "img");
-    const heatEffect = moduleHeatEffectLabel(moduleLike);
-    bar.setAttribute("aria-label", overheated
-      ? `Aşırı ısındı · Isı %${Math.round(heat)}`
-      : heatEffect
-        ? `Isı %${Math.round(heat)} · ${heatEffect}`
-        : `Isı %${Math.round(heat)}`);
-    const fill = document.createElement("i");
-    fill.setAttribute("aria-hidden", "true");
-    bar.appendChild(fill);
-    card.classList.add("has-heat-bar");
-    card.appendChild(bar);
-  }
-
-  function appendModuleLiveStatus(
-    card,
-    moduleLike
-  ) {
-    if (!card || !moduleLike) return;
-
-    const row = document.createElement("span");
-    row.className = "module-live-status-row";
-
-    const addBadge = (label, kind, title) => {
-      const badge = document.createElement("span");
-      badge.className = `module-live-status ${kind}`;
-      badge.textContent = label;
-      badge.title = title;
-      row.appendChild(badge);
-    };
-
-    const heat = Number(moduleLike.heat || 0);
-    if (moduleLike.overheated) {
-      addBadge(
-        "♨",
-        "heat-critical overheated",
-        `Aşırı ısındı · Isı %${Math.round(heat)} · %70'in altına inince yeniden çalışır`
-      );
-    } else if (heat >= MODULE_HEAT_HIGH) {
-      const heatEffect = moduleHeatEffectLabel(moduleLike);
-      addBadge(
-        "♨",
-        heat >= MODULE_MAX_HEAT ? "heat-critical" : "heat-high",
-        heatEffect ? `Isı %${Math.round(heat)} · ${heatEffect}` : `Isı %${Math.round(heat)}`
-      );
-    }
-
-    if (moduleLike.energyWaiting) {
-      addBadge(
-        "ϟ",
-        "energy-waiting",
-        "Enerji bekliyor · enerji sırası gelince çalışır"
-      );
-    }
-
-    // Aşırı ısınma kendi rozetiyle gösterilir; genel etki sayacına katılmaz.
-    const debuffs = Array.isArray(moduleLike.debuffs)
-      ? moduleLike.debuffs.filter((effectId) => effectId !== "overheated")
-      : [];
-    if (debuffs.length > 0) {
-      addBadge(
-        `!${debuffs.length > 1 ? debuffs.length : ""}`,
-        "debuffed",
-        `Aktif olumsuz etki: ${debuffs.join(", ")}`
-      );
-    }
-
-    if (row.children.length > 0) {
-      card.appendChild(row);
-    }
-    appendSignatureBadges(card, moduleLike.signatureBadges);
-  }
 
   // Beta.72 — kart üstü imza rozetleri. Başlıklar sabit metindir (çeviri
   // sözlüğünden geçer); sayı yalnız rozetin kendi yazısındadır.
@@ -16939,7 +16860,7 @@
   function normalizeSignatureBadges(badges) {
     if (!Array.isArray(badges)) return [];
     return badges
-      .filter((badge) => SIGNATURE_BADGE_KINDS[badge?.kind])
+      .filter((badge) => Object.hasOwn(SIGNATURE_BADGE_KINDS, badge?.kind))
       .slice(0, SIGNATURE_BADGE_LIMIT)
       .map((badge) => ({
         kind:badge.kind,
@@ -16949,91 +16870,93 @@
       }));
   }
 
-  function appendSignatureBadges(card, badges) {
-    if (!card || !Array.isArray(badges) || badges.length === 0) return;
-    const row = document.createElement("span");
-    row.className = "module-signature-row";
-    for (const badge of badges.slice(0, SIGNATURE_BADGE_LIMIT)) {
+
+  const battleCardStateView = new GridshardBattleCardStateView({
+    document,
+    mountIcon:(icon, model, card) => {
+      if (model.core) {
+        mountCoreEmblem(icon, model.coreType);
+        applyCoreVisualIdentity(card, model.coreType);
+      } else mountModuleEmblem(icon, model.module);
+    },
+    onTooltip:updateShelfTooltipPlacement,
+  });
+
+  function battleUiText(value) {
+    const source = String(value ?? "").replaceAll("Onarım Modülü", "Onarım");
+    return document.documentElement.lang === "en" ? localizedUiText(source) : source;
+  }
+
+  function battleCardModel(moduleLike, { enemy=false }={}) {
+    const name = moduleLike.nameTr ?? moduleLike.name ?? "";
+    const core = moduleLike.definitionId === "core" || moduleLike.kind === "core" || name === "Çekirdek";
+    const coreType = enemy ? mockEnemyCoreType : metaProgressionState?.cores?.selected_core_type || "core_resonance";
+    const received = Math.max(0, Number(moduleLike.energyReceived || 0));
+    const required = Math.max(0, Number(moduleLike.energyRequired || 0));
+    const flowing = core ? moduleLike.isPowered && received > 0 : moduleLike.isPowered && required > 0 && received > 0;
+    let powerMessage = "";
+    if (!flowing && required > 0) powerMessage = battleUiText({
+      emp_disabled:"EMP etkisi bu modülün enerji sistemini devre dışı bıraktı.",
+      line_disrupted:"Kesici etkisi bu modülün enerji hattını geçici olarak kopardı.",
+      insufficient_supply:"Çekirdek enerji ihtiyacı: " + required.toFixed(1) + " Ü, gelen: " + received.toFixed(1) + " Ü.",
+      waiting_energy:"Enerji rezervi bu modülün sıradaki eylemine yetmiyor; enerji birikince ateşler.",
+    }[moduleLike.powerReason] || "Bu modül devre dışı. Sabotaj etkilerini ve Çekirdek enerji baskısını kontrol edin.");
+    const heat = Math.min(MODULE_MAX_HEAT, Math.max(0, Number(moduleLike.heat || 0)));
+    const heatEffect = moduleHeatEffectLabel(moduleLike);
+    const heatText = "Isı %" + Math.round(heat);
+    const liveBadges = [];
+    const addLive = (key, label, kind, title) => liveBadges.push({
+      key, label, className:"module-live-status " + kind, title:battleUiText(title),
+    });
+    if (moduleLike.overheated) addLive("heat", "♨", "heat-critical overheated",
+      "Aşırı ısındı · " + heatText + " · %70'in altına inince yeniden çalışır");
+    else if (heat >= MODULE_HEAT_HIGH) addLive("heat", "♨", heat >= MODULE_MAX_HEAT ? "heat-critical" : "heat-high",
+      heatEffect ? heatText + " · " + heatEffect : heatText);
+    if (moduleLike.energyWaiting) addLive("waiting", "ϟ", "energy-waiting", "Enerji bekliyor · enerji sırası gelince çalışır");
+    const debuffs = (Array.isArray(moduleLike.debuffs) ? moduleLike.debuffs : []).filter(id => id !== "overheated");
+    if (debuffs.length) addLive("debuff", "!" + (debuffs.length > 1 ? debuffs.length : ""), "debuffed", "Aktif olumsuz etki: " + debuffs.join(", "));
+    const signatureBadges = normalizeSignatureBadges(moduleLike.signatureBadges).map((badge, index) => {
       const kind = SIGNATURE_BADGE_KINDS[badge.kind];
-      if (!kind) continue;
-      const element = document.createElement("span");
-      element.className = "module-signature-badge";
-      element.dataset.badge = badge.kind;
-      if (badge.phase) element.dataset.phase = badge.phase;
-      element.textContent = kind.label(badge);
-      element.title = localizedUiText(
-        typeof kind.title === "function" ? kind.title(badge) : kind.title
-      );
-      row.appendChild(element);
-    }
-    if (row.children.length > 0) {
-      card.appendChild(row);
-    }
+      return {key:badge.kind + ":" + index, kind:badge.kind, phase:badge.phase, className:"module-signature-badge",
+        label:kind.label(badge), title:battleUiText(typeof kind.title === "function" ? kind.title(badge) : kind.title)};
+    });
+    const targeting = core && !enemy && corePowerTargeting;
+    const title = enemy ? name + " · HP " + Math.max(0, Math.round(moduleLike.hp)) + "/" + moduleLike.maxHp
+      : targeting ? "Çekirdek Rezonansını kullan" : core ? name + " sabit başlangıç modülüdür." : name + " · savaş sırasında sabit";
+    const coreCharge = Math.max(0, Math.min(100, Math.round(corePowerCharge)));
+    return {
+      module:moduleLike, id:moduleLike.instanceId ?? moduleLike.id, enemy, core, coreType, targeting,
+      category:moduleLike.category ?? moduleLike.kind ?? "", name:battleUiText(name),
+      shortName:battleUiText(moduleShortNameFor(moduleLike)), title:battleUiText(title),
+      artwork:core ? "core:" + coreType : (moduleLike.definitionId || "") + ":" + name,
+      hp:moduleLike.hp, maxHp:moduleLike.maxHp, heat, overheated:Boolean(moduleLike.overheated),
+      coreCharge, coreReady:corePowerReady,
+      coreLabel:core && !enemy ? battleUiText("Çekirdek gücü · " + (corePowerReady ? "Hazır" : "%" + coreCharge)) : "",
+      powerState:flowing ? "flowing" : required > 0 ? "disconnected" : "passive", powerMessage,
+      heatState:moduleLike.overheated ? "overheated" : heat >= 100 ? "critical" : heat >= 70 ? "high" : heat >= 45 ? "slowed" : "warm",
+      heatLabel:battleUiText(moduleLike.overheated ? "Aşırı ısındı · " + heatText : heatEffect ? heatText + " · " + heatEffect : heatText),
+      liveBadges, signatureBadges,
+    };
   }
 
-  function enemyCard(
-    moduleId,
-    name,
-    hp,
-    maxHp,
-    kind="module",
-    power={}
-  ) {
-    const card=document.createElement("div");
-    card.className="module-card enemy-module-card";
-    card.dataset.moduleId=moduleId;
-    card.dataset.category=kind;
-    card.title=
-      `${name} · HP ${Math.max(0,Math.round(hp))}/${maxHp}`;
-    const icon=document.createElement("span");
-    icon.className="module-icon";
-    // Rakibin çekirdeği kendi türünün amblemiyle çizilir (tür anlık görüntüde gelir).
-    if (kind === "core") mountCoreEmblem(icon, mockEnemyCoreType);
-    else mountModuleEmblem(icon, {nameTr:name});
-    icon.setAttribute("aria-label",name);
-    card.appendChild(icon);
-    const label=document.createElement("span");
-    label.className="name";
-    fillBattleCardName(label, {nameTr:name});
-    card.appendChild(label);
-    appendHpBar(card,hp,maxHp,{ battle:true });
-    const isSource=
-      moduleId === "enemy-core";
-    appendEnergyFlowIndicator(
-      card,
-      {
-        ...power,
-        isSource,
-      }
-    );
-    if (
-      Number(power.energyRequired || 0) > 0
-      && !power.isPowered
-    ) {
-      card.classList.add(
-        "energy-disconnected"
-      );
-    }
-    appendModuleLiveStatus(card, power);
-    if (!isSource) appendModuleHeatBar(card, power);
-    appendModuleFxOverlay(card);
-    return card;
+  function updateBattleModuleCard(card, module, options={}) {
+    battleCardStateView.update(card, battleCardModel(module, options));
   }
 
-  // Vuruş/destek geri bildirimi katmanı. Orta ve Düşük grafik kademesinde kart
-  // yerine bu katmanın opaklığı canlandırılır (bkz. canon.css, grafik kademeleri).
-  function appendModuleFxOverlay(card) {
-    const overlay = document.createElement("span");
-    overlay.className = "module-fx-overlay";
-    overlay.setAttribute("aria-hidden", "true");
-    card.appendChild(overlay);
+  function enemyCard(moduleId, name, hp, maxHp, kind="module", power={}) {
+    return battleCardStateView.create(battleCardModel({
+      ...power, instanceId:moduleId, nameTr:name, hp, maxHp, category:kind,
+      definitionId:kind === "core" ? "core" : power.definitionId,
+    }, {enemy:true}));
   }
+
 
   // Kartın görünümünü belirleyen alanlar. Hücre imzası değişmedikçe kart
   // yeniden kurulmaz (bkz. GridshardBattleBoardView).
   function battleModuleRenderSignature(moduleLike) {
     return JSON.stringify([
       moduleLike.instanceId ?? moduleLike.id,
+      moduleLike.definitionId ?? moduleLike.definition_id,
       moduleLike.nameTr ?? moduleLike.name,
       moduleLike.category ?? moduleLike.kind,
       moduleLike.status ?? "active",
@@ -17052,70 +16975,30 @@
     ]);
   }
 
-  const enemyBoardCellSignatures = new WeakMap();
+  const enemyBattleBoardView = new GridshardBattleBoardView(enemyBoard);
 
   function renderEnemyBoard({ force=false }={}) {
     if (!enemyBoard) return;
-    if (!enemyBoard.children?.length) {
-      createEnemyBoard();
-    }
+    if (!enemyBoard.children?.length) createEnemyBoard();
     const language = document.documentElement?.lang || "tr";
-    const debrisByCell = new Map(
-      (enemyCellDebris || []).map((debris) => [
-        `${Number(debris.x)},${Number(debris.y)}`,
-        debris,
-      ])
-    );
-    const cardByCell = new Map();
-    cardByCell.set("2,1", {
-      id:"enemy-core",
-      signature:JSON.stringify([mockEnemyCoreHp, mockEnemyCoreMaxHp, mockEnemyCoreBadges, mockEnemyCoreType]),
-      build:() => enemyCard("enemy-core","Çekirdek",mockEnemyCoreHp,mockEnemyCoreMaxHp,"core",{ signatureBadges:mockEnemyCoreBadges }),
+    const modules = [{
+      instanceId:"enemy-core", nameTr:"Çekirdek", category:"core", definitionId:"core",
+      status:"active", position:{x:2,y:1}, hp:mockEnemyCoreHp, maxHp:mockEnemyCoreMaxHp,
+      signatureBadges:mockEnemyCoreBadges,
+    }, ...mockEnemyModules.filter(module => module.hp > 0).map(module => ({
+      ...module, instanceId:module.id, nameTr:module.name, category:module.kind, status:"active",
+    }))];
+    enemyBattleBoardView.render(modules, {
+      cellDebris:enemyCellDebris || [], debrisLabel:localizedUiText("Enkaz"),
+      secondsLabel:language === "en" ? "s" : "sn",
+      moduleSignature:module => battleModuleRenderSignature(module) + "|" + language + "|" + mockEnemyCoreType,
+      createModuleCard:module => enemyCard(module.instanceId, module.nameTr, module.hp, module.maxHp, module.category, module),
+      updateModuleCard:(card, module) => updateBattleModuleCard(card, module, {enemy:true}),
+      onCardPlaced:(module, cell) => moduleAnchorCells.set(String(module.instanceId), cell), force,
     });
-    for (const module of mockEnemyModules) {
-      if (module.hp<=0) continue;
-      cardByCell.set(`${Number(module.position.x)},${Number(module.position.y)}`, {
-        id:module.id,
-        signature:battleModuleRenderSignature(module),
-        build:() => enemyCard(
-          module.id,
-          module.name,
-          module.hp,
-          module.maxHp,
-          module.kind,
-          module
-        ),
-      });
-    }
-    for (const cell of enemyBoard.querySelectorAll(".board-cell")) {
-      const key=`${Number(cell.dataset.x)},${Number(cell.dataset.y)}`;
-      const debris=debrisByCell.get(key) || null;
-      const entry=cardByCell.get(key) || null;
-      const seconds=debris
-        ? Math.max(1, Math.ceil(Number(debris.remaining_ms || 0) / 1000))
-        : 0;
-      const signature=`${language}|${seconds}|${entry ? entry.signature : ""}`;
-      if (!force && enemyBoardCellSignatures.get(cell) === signature) continue;
-      enemyBoardCellSignatures.set(cell, signature);
-      cell.innerHTML="";
-      cell.dataset.occupied="false";
-      cell.dataset.debris="false";
-      cell.classList.remove("debris-cell");
-      if (debris) appendCellDebris(enemyBoard, [debris]);
-      if (entry) {
-        cell.dataset.occupied="true";
-        cell.appendChild(entry.build());
-        moduleAnchorCells.set(String(entry.id), cell);
-      }
-    }
-    if (enemyBoardStatusEl) {
-      setHudText(enemyBoardStatusEl, `Çekirdek ${Math.max(0,mockEnemyCoreHp)}/${mockEnemyCoreMaxHp}`);
-    }
+    if (enemyBoardStatusEl) setHudText(enemyBoardStatusEl, "Çekirdek " + Math.max(0, mockEnemyCoreHp) + "/" + mockEnemyCoreMaxHp);
     renderBattleIdentityPanels();
-    renderBoardCables(
-      enemyBoard,
-      enemyCircuitCableModules()
-    );
+    renderBoardCables(enemyBoard, enemyCircuitCableModules());
   }
 
   function opponentBattleDisplayName() {
@@ -18018,8 +17901,8 @@
       + '<path class="hn-w" d="m12 10.800 1.300 2.700 2.900.400-2.100 2 .500 2.900-2.600-1.400-2.600 1.400.500-2.900-2.100-2 2.900-.400Z"/></svg>',
   });
 
-  // Koleksiyon: tanımlı bütün kupa ve rozetler birer yuvada durur; kazanılan renkli,
-  // kazanılmayan soluktur. Tanımı olmayan (yeni) bir kimlik kazanılmış olarak eklenir.
+  // Yalnız sunucunun kazanılmış kimlikleri çizilir; boş koleksiyon metindir.
+  // Tanımı olmayan yeni bir kazanım da kaybolmadan gösterilir.
   function fillHonorCollection(host, group) {
     if (!host) return;
     host.replaceChildren();
@@ -18032,7 +17915,14 @@
       tone:"cyan",
     }));
     host.dataset.kind = group.kind;
-    for (const definition of [...group.definitions, ...extra]) {
+    if (!earned.size) {
+      const empty = document.createElement("p");
+      empty.className = "profile-honor-empty";
+      empty.textContent = localizedUiText("Henüz kazanılmadı");
+      host.appendChild(empty);
+      return;
+    }
+    for (const definition of [...group.definitions.filter(item => earned.has(item.id)), ...extra]) {
       const has = earned.has(definition.id);
       const item = document.createElement("article");
       item.className = "profile-honor-item";
@@ -18151,7 +18041,11 @@
         button.dataset.avatarId = avatar.id;
         button.dataset.state = !unlocked.has(avatar.id) ? "locked" : avatar.id === avatarId ? "selected" : "available";
         button.disabled = !unlocked.has(avatar.id);
-        button.innerHTML = `<span>${avatar.glyph}</span><strong>${avatar.nameTr}</strong>`;
+        const glyph = document.createElement("span");
+        glyph.textContent = avatar.glyph;
+        const name = document.createElement("strong");
+        name.textContent = avatar.nameTr;
+        button.append(glyph, name);
         button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(avatar.id), selected:avatar.id === avatarId }));
         button.addEventListener("click", () => selectProfileCosmetic("avatar", avatar.id));
         avatarHost.appendChild(button);
@@ -18169,7 +18063,11 @@
         button.dataset.frame = frame.id;
         button.dataset.state = !unlocked.has(frame.id) ? "locked" : frame.id === frameId ? "selected" : "available";
         button.disabled = !unlocked.has(frame.id);
-        button.innerHTML = `<span>◇</span><strong>${frame.nameTr}</strong>`;
+        const glyph = document.createElement("span");
+        glyph.textContent = "◇";
+        const name = document.createElement("strong");
+        name.textContent = frame.nameTr;
+        button.append(glyph, name);
         button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(frame.id), selected:frame.id === frameId }));
         button.addEventListener("click", () => selectProfileCosmetic("frame", frame.id));
         frameHost.appendChild(button);
@@ -18211,7 +18109,11 @@
         button.style.setProperty("--profile-bg-b", background.colors[1]);
         button.dataset.state = !unlocked.has(background.id) ? "locked" : background.id === backgroundId ? "selected" : "available";
         button.disabled = !unlocked.has(background.id);
-        button.innerHTML = `<span>▰</span><strong>${background.nameTr}</strong>`;
+        const glyph = document.createElement("span");
+        glyph.textContent = "▰";
+        const name = document.createElement("strong");
+        name.textContent = background.nameTr;
+        button.append(glyph, name);
         button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(background.id), selected:background.id === backgroundId }));
         button.addEventListener("click", () => selectProfileCosmetic("background", background.id));
         backgroundHost.appendChild(button);
@@ -18273,12 +18175,13 @@
     return node;
   }
 
-  function publicProfileMetric(label, value) {
+  function publicProfileMetric(label, value, trophy = false) {
     const article = document.createElement("article");
     const name = document.createElement("span");
     const amount = document.createElement("strong");
     name.textContent = label;
-    amount.textContent = String(value);
+    if (trophy) renderTrophyValue(amount, value);
+    else amount.textContent = String(value);
     article.append(name, amount);
     return article;
   }
@@ -18355,6 +18258,7 @@
     deckHeading.className = "profile-section-heading";
     const deckTitle = document.createElement("h3");
     deckTitle.textContent = "En Çok Kullanılan Deste";
+    deckTitle.prepend(createUiIcon("card", "blue"));
     deckHeading.append(deckTitle);
     const deckVisual = document.createElement("div");
     deckVisual.className = "profile-deck-visual";
@@ -18412,6 +18316,7 @@
     seasonHeading.className = "profile-section-heading";
     const seasonTitle = document.createElement("h3");
     seasonTitle.textContent = "Sezon Geçmişi";
+    seasonTitle.prepend(createUiIcon("star", "violet"));
     seasonHeading.append(seasonTitle);
     // Güncel sezon tek satırdır: solda sezon adı, sağ üstte lig ve kupa.
     const currentSeason = document.createElement("article");
@@ -18461,6 +18366,7 @@
     statsHeading.className = "profile-section-heading";
     const statsTitle = document.createElement("h3");
     statsTitle.textContent = "İstatistikler";
+    statsTitle.prepend(createUiIcon("bars", "gold"));
     statsHeading.append(statsTitle);
     const statsGrid = document.createElement("div");
     statsGrid.className = "statistics-metrics-grid public-profile-stat-grid";
@@ -18578,12 +18484,13 @@
     heading.classList.add("team-stats-heading");
     const title = document.createElement("h3");
     title.textContent = "Takım İstatistikleri";
+    title.prepend(createUiIcon("bars", "gold"));
     heading.append(title);
     const grid = document.createElement("div");
     grid.className = "statistics-metrics-grid public-profile-stat-grid team-profile-stat-grid";
     for (const metric of [
-      ["Toplam Kupa", Number(payload.total_trophies || 0).toLocaleString(uiLocale())],
-      ["Ortalama Kupa", Number(payload.average_trophies || 0).toLocaleString(uiLocale())],
+      ["Toplam Kupa", Number(payload.total_trophies || 0).toLocaleString(uiLocale()), true],
+      ["Ortalama Kupa", Number(payload.average_trophies || 0).toLocaleString(uiLocale()), true],
       ["Toplam Maç", Number(statistics.total_matches || 0).toLocaleString(uiLocale())],
       ["Galibiyet Oranı", `%${boundedWinRatePercent(statistics.win_rate, statistics.wins, statistics.total_matches)}`],
       ["Turnuva Sırası", tournament.position ? `#${tournament.position}` : "—"],
@@ -19785,8 +19692,12 @@
     sabotaj:3,
   });
 
+  function normalizeBattleCategory(category) {
+    return category === "sistem" ? "enerji" : category;
+  }
+
   function deploymentCompositionRejection(module) {
-    if (!module || !LIVE_UTILITY_CATEGORIES.has(module.category)) return null;
+    if (!module || !LIVE_UTILITY_CATEGORIES.has(normalizeBattleCategory(module.category))) return null;
     const definitionId = module.definitionId || clientDefinitionId(module.instanceId);
     const active = [...client.modules.values()].filter((candidate) => (
       candidate.status === "active"
@@ -19800,9 +19711,9 @@
       return `${module.nameTr} için aynı anda en fazla 2 kopya kullanılabilir.`;
     }
     const categoryCount = active.filter(
-      (candidate) => candidate.category === module.category
+      (candidate) => normalizeBattleCategory(candidate.category) === normalizeBattleCategory(module.category)
     ).length;
-    const categoryLimit = LIVE_CATEGORY_LIMITS[module.category];
+    const categoryLimit = LIVE_CATEGORY_LIMITS[normalizeBattleCategory(module.category)];
     if (categoryCount >= categoryLimit) {
       return `${poolCategoryLabel(module.category)} sınırı dolu: ${categoryCount}/${categoryLimit}.`;
     }
@@ -19810,7 +19721,7 @@
       (candidate) => candidate.category === "saldırı"
     ).length;
     const utilityCount = active.filter(
-      (candidate) => LIVE_UTILITY_CATEGORIES.has(candidate.category)
+      (candidate) => LIVE_UTILITY_CATEGORIES.has(normalizeBattleCategory(candidate.category))
     ).length;
     if (utilityCount + 1 > attackCount + 2) {
       return "Devre dengesi için önce bir Saldırı modülü yerleştir.";
@@ -19928,14 +19839,22 @@
     const boardSignature = JSON.stringify({
       battleFinished:localBattleFinished,
       corePowerTargeting,
+      language:document.documentElement?.lang || "tr",
+      coreType:metaProgressionState?.cores?.selected_core_type,
       cellDebris:playerCellDebris,
       modules:[...client.modules.values()].map(module => ({
         id:module.instanceId,
+        definitionId:module.definitionId,
+        nameTr:module.nameTr,
+        category:module.category,
         status:module.status,
         position:module.position,
         hp:module.hp,
         maxHp:module.maxHp,
         heat:module.heat,
+        heatPenalty:module.heatPenalty,
+        overheated:module.overheated,
+        energyWaiting:module.energyWaiting,
         isPowered:module.isPowered,
         energyReceived:module.energyReceived,
         energyRequired:module.energyRequired,
@@ -19954,13 +19873,15 @@
         selectedModuleId: null,
         battleFinished: localBattleFinished,
         createModuleCard,
+        updateModuleCard:updateBattleModuleCard,
         cellDebris: playerCellDebris,
         debrisLabel: localizedUiText("Enkaz"),
+        secondsLabel:document.documentElement?.lang === "en" ? "s" : "sn",
         // Çekirdek kartı hedefleme durumuna göre de değişir.
         moduleSignature: (module) => (
           `${battleModuleRenderSignature(module)}|${
             module.nameTr === "Çekirdek" && corePowerTargeting ? 1 : 0
-          }|${document.documentElement?.lang || "tr"}`
+          }|${document.documentElement?.lang || "tr"}|${module.definitionId === "core" ? metaProgressionState?.cores?.selected_core_type || "core_resonance" : ""}`
         ),
         onCardPlaced: (module, cell) => {
           moduleAnchorCells.set(String(module.instanceId), cell);
@@ -20012,217 +19933,28 @@
   }
 
   function createModuleCard(module) {
-    const card = document.createElement("div");
-    card.className = "module-card";
-    card.dataset.moduleId =
-      module.instanceId;
-    card.dataset.category =
-      module.category || "";
-    const hasTargetInteraction = Boolean(
-      module.nameTr === "Çekirdek" && corePowerTargeting
-    );
-    if (hasTargetInteraction) {
-      card.tabIndex = 0;
-      card.setAttribute("role", "button");
-    }
-
-    if (
-      module.definitionId === "core"
-    ) {
-      card.classList.add(
-        "fixed-module"
-      );
-      card.title =
-        `${module.nameTr} sabit başlangıç modülüdür.`;
-    } else {
-      card.title = `${module.nameTr} · savaş sırasında sabit`;
-    }
-    if (module.nameTr === "Çekirdek" && corePowerTargeting) {
-      card.classList.add("core-power-target");
-      card.title="Çekirdek Rezonansını kullan";
-    }
-
-    const icon=
-      document.createElement(
-        "span"
-      );
-    icon.className=
-      "module-icon";
-    // Çekirdek, oyunun her yerindeki amblemiyle çizilir; diğer modüller simgeyle.
-    if (module.definitionId === "core") {
-      mountCoreEmblem(icon, metaProgressionState?.cores?.selected_core_type || "core_resonance");
-    } else {
-      mountModuleEmblem(icon, module);
-    }
-    icon.setAttribute(
-      "aria-label",
-      module.nameTr
-    );
-
-    const name = document.createElement("span");
-    name.className = "name";
-    fillBattleCardName(name, module);
-
-    const stats =
-      document.createElement("span");
-    stats.className =
-      "module-stats";
-
-    const hp =
-      document.createElement("span");
-    hp.className =
-      "module-stat hp";
-    hp.textContent =
-      `HP ${module.hp}/${module.maxHp}`;
-    stats.appendChild(hp);
-
-    if (
-      module.status === "reserve"
-      && module.currentCost > 0
-    ) {
-      const cost =
-        document.createElement("span");
-      cost.className =
-        "module-stat credit";
-      cost.textContent =
-        `${module.currentCost} Akım`;
-      stats.appendChild(cost);
-    }
-
-    if (module.status === "active") {
-      const power =
-        document.createElement("span");
-      power.className =
-        "module-stat energy";
-      power.textContent =
-        Number(module.energyRequired || 0) > 0
-          ? (
-              `E ${Number(module.energyReceived || 0).toFixed(0)}`
-              + `/${Number(module.energyRequired || 0).toFixed(0)}`
-            )
-          : "Pasif";
-      stats.appendChild(power);
-
-      if (
-        !module.isPowered
-        && Number(module.energyRequired || 0) > 0
-      ) {
-        const warning =
-          document.createElement("span");
-        warning.className =
-          "module-stat warning";
-        warning.textContent =
-          "ENERJİSİZ";
-        stats.appendChild(warning);
+    const card = battleCardStateView.create(battleCardModel(module));
+    card.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const current = client.modules.get(card.dataset.moduleId);
+      if (!current) return;
+      if (current.definitionId === "core" && corePowerReady) {
+        useCorePowerOn(current);
+        return;
       }
-    }
-
-    const meta =
-      document.createElement("span");
-    meta.className =
-      "meta";
-
-    const detailParts = [];
-    const supportLabel =
-      supportLabelForModule(module);
-    const sabotageLabel =
-      sabotageLabelForModule(module);
-
-    if (supportLabel) {
-      detailParts.push(
-        supportLabel
-      );
-    }
-    if (sabotageLabel) {
-      detailParts.push(
-        sabotageLabel
-      );
-    }
-    if (module.status === "active") {
-      detailParts.push(
-        heatStatusLabel(module)
-      );
-    }
-
-    meta.textContent =
-      detailParts.join(" · ");
-
-    card.append(icon,name);
-    if (module.status !== "active") {
-      card.appendChild(stats);
-    }
-    appendHpBar(
-      card,
-      module.hp,
-      module.maxHp,
-      { battle:module.status === "active" }
-    );
-    if (
-      module.status !== "active"
-      && meta.textContent
-    ) {
-      card.appendChild(meta);
-    }
-
-    if (
-      module.status === "active"
-      && !module.isPowered
-      && Number(module.energyRequired || 0) > 0
-    ) {
-      card.classList.add(
-        "energy-disconnected"
-      );
-    }
-
-    if (module.status === "active") {
-      appendEnergyFlowIndicator(
-        card,
-        {
-          isPowered:
-            Boolean(module.isPowered),
-          energyReceived:
-            Number(module.energyReceived || 0),
-          energyRequired:
-            Number(module.energyRequired || 0),
-          isSource:
-            module.nameTr === "Çekirdek",
-          powerReason:
-            module.powerReason,
-        }
-      );
-      appendModuleLiveStatus(card, module);
-      if (module.definitionId !== "core") appendModuleHeatBar(card, module);
-      appendModuleFxOverlay(card);
-    }
-
-    card.addEventListener(
-      "click",
-      (event) => {
-        event.stopPropagation();
-        if (module.definitionId === "core" && corePowerReady) {
-          useCorePowerOn(module);
+      if (current.status === "reserve") {
+        if (!modulePlacementSlotState().ready) {
+          logClientMessage("Devre dolu; boş hücre açılınca yerleştirebilirsin.");
           return;
         }
-        if (module.status === "reserve") {
-          if (!modulePlacementSlotState().ready) {
-            logClientMessage("Devre dolu; boş hücre açılınca yerleştirebilirsin.");
-            return;
-          }
-          deployDeckModule(module);
-          return;
-        }
+        deployDeckModule(current);
       }
-    );
-
-    card.addEventListener(
-      "keydown",
-      (event) => {
-        if (event.key !== "Enter" && event.key !== " ") return;
-        event.preventDefault();
-        card.click();
-      }
-    );
-
+    });
+    card.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      card.click();
+    });
     return card;
   }
 
@@ -20398,10 +20130,12 @@
     if (commandLog.length > COMMAND_LOG_LIMIT) {
       commandLog.splice(0, commandLog.length - COMMAND_LOG_LIMIT);
     }
-    const lines = commandLog
-      .map(formatBattleLogEntry)
-      .filter(Boolean)
-      .slice(-8);
+    const lines = [];
+    for (let index = commandLog.length - 1; index >= 0 && lines.length < 8; index -= 1) {
+      const text = formatBattleLogEntry(commandLog[index]);
+      if (text) lines.push(text);
+    }
+    lines.reverse();
     logEl.textContent = lines.join("\n");
   }
 
@@ -20629,13 +20363,9 @@
 
     renderLockState();
     renderCapacity();
-    if (
-      activePlayMode
-      === "local"
-      && !localBattleFinished
-    ) {
+    if (activePlayMode === "online" || (activePlayMode === "local" && !localBattleFinished)) {
       renderEnemyBoard();
-      publishBattleUxMetrics();
+      if (activePlayMode === "local") publishBattleUxMetrics();
     }
 
     renderCredits();
@@ -21652,7 +21382,38 @@
   // Sabit sayfadaki yazıların yanına eşleşen renkli simgeler: bilgi penceresi
   // sekmeleri, üç çizgi menüsü ve takım menüsü. Sayfa kaynağı yalın kalır;
   // simgeler tek takımdan (UI_ICON_PATHS) gelir.
+  // Fixed SVG artwork: physical rim, light/shadow faces and dark contour.
+  // Mounted once; no animation loop, measured layout or player text in HTML.
+  const EVENT_HUB_EMBLEMS = Object.freeze({
+    trophy:PROFILE_HONOR_ICONS.trophy,
+    wheel:'<svg viewBox="0 0 80 80" focusable="false" aria-hidden="true">'
+      + '<path class="eb-shadow" d="M19 69h42l5 5H14Z"/>'
+      + '<path class="eb-steel eb-outline" d="M34 57h12v11H34Z M26 67h28l5 7H21Z"/>'
+      + '<circle class="eb-steel eb-outline" cx="40" cy="34" r="29"/>'
+      + '<circle class="eb-dark eb-outline" cx="40" cy="34" r="23"/>'
+      + '<path class="eb-cyan eb-outline" d="M40 13 52 16 40 34 28 16Z M61 34 58 46 40 34 58 22Z M40 55 28 52 40 34 52 52Z M19 34 22 22 40 34 22 46Z"/>'
+      + '<path class="eb-gold eb-outline" d="M52 16 58 22 40 34Z M58 46 52 52 40 34Z M28 52 22 46 40 34Z M22 22 28 16 40 34Z"/>'
+      + '<path class="eb-light" d="M12 29A29 29 0 0 1 40 5v4a25 25 0 0 0-24 21Z"/>'
+      + '<circle class="eb-steel eb-outline" cx="40" cy="34" r="8"/>'
+      + '<path class="eb-gold eb-outline" d="M40 1 46 9 40 16 34 9Z"/>'
+      + '<circle class="eb-light" cx="40" cy="34" r="3"/></svg>',
+    banner:'<svg viewBox="0 0 80 80" focusable="false" aria-hidden="true">'
+      + '<path class="eb-shadow" d="M10 71h60l5 4H5Z"/>'
+      + '<path class="eb-steel eb-outline" d="M13 8h5v64h-5Z M62 8h5v64h-5Z"/>'
+      + '<path class="eb-gold eb-outline" d="m15.5 2 5 6-5 6-5-6Z m49 0 5 6-5 6-5-6Z"/>'
+      + '<path class="eb-violet eb-outline" d="M18 14h44v40L40 69 18 54Z"/>'
+      + '<path class="eb-light" d="M18 14h44v5H23v34l-5 1Z"/>'
+      + '<path class="eb-shade" d="M40 19h17v32L40 63Z"/>'
+      + '<path class="eb-gold eb-outline" d="M40 25 53 30v10c0 8-5 14-13 19-8-5-13-11-13-19V30Z"/>'
+      + '<path class="eb-dark eb-outline" d="m40 33 7 9-7 9-7-9Z"/>'
+      + '<path class="eb-cyan" d="m40 37 4 5-4 5-4-5Z"/></svg>',
+  });
+
   function decorateStaticIcons() {
+    for (const host of document.querySelectorAll("[data-event-emblem]")) {
+      const kind = host.dataset.eventEmblem;
+      if (Object.hasOwn(EVENT_HUB_EMBLEMS, kind)) host.innerHTML = EVENT_HUB_EMBLEMS[kind];
+    }
     for (const [selector, icon, tone] of [
       ['[data-module-detail-tab="overview"], [data-core-detail-tab="overview"]', "info", "cyan"],
       ['[data-module-detail-tab="stats"], [data-core-detail-tab="stats"]', "bars", "gold"],
@@ -22481,6 +22242,8 @@
       onboardingOverlay.hide();
       return;
     }
+    if (!onboardingFlow.active && onboardingFlow.isCompleted()
+      && !pvpState.snapshot?.tutorial && !localServerState.snapshot?.tutorial) return;
     const context = onboardingContext();
     if (!onboardingFlow.active && context.directed && !ONBOARDING_AUTOMATION_OPT_OUT) {
       // Yönetmenli savaşa akış dışında bağlanıldı (ör. eğitim maçı sürerken

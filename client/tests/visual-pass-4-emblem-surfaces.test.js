@@ -61,7 +61,7 @@ test("Çekirdek amblemi üç katmandır ve her yerde aynı işlevle çizilir", (
     "mountCoreEmblem(coreGlyph, coreType);",
     'mountCoreEmblem(corePowerButtonEl.querySelector(".core-power-glyph"), selectedCore);',
     'mountCoreEmblem(coreCard.querySelector(".module-icon"), selectedCore);',
-    'if (kind === "core") mountCoreEmblem(icon, mockEnemyCoreType);',
+    'mountCoreEmblem(icon, model.coreType);',
     'mountCoreEmblem(document.getElementById("profile-featured-core-glyph"), core?.id || "core_resonance");',
     'mountCoreEmblem(coreGlyph, payload.selected_core?.id || "core_resonance");',
   ]) assert.ok(app.includes(call), call);
@@ -71,7 +71,7 @@ test("Çekirdek amblemi üç katmandır ve her yerde aynı işlevle çizilir", (
   assert.ok(app.includes("if (element.dataset.coreEmblem === normalizedId && element.firstElementChild) return;"));
   // Rakibin çekirdek türü anlık görüntüden gelir ve kartın imzasına girer.
   assert.ok(app.includes('mockEnemyCoreType=CORE_VISUALS[enemy.core_type] ? enemy.core_type : "core_resonance";'));
-  assert.ok(app.includes("signature:JSON.stringify([mockEnemyCoreHp, mockEnemyCoreMaxHp, mockEnemyCoreBadges, mockEnemyCoreType]),"));
+  assert.ok(app.includes('moduleSignature:module => battleModuleRenderSignature(module) + "|" + language + "|" + mockEnemyCoreType,'));
 });
 
 test("amblemin hareketi katmanlardadır; hareket azaltma ve düşük grafikte durur", () => {
@@ -92,7 +92,8 @@ test("savaşta çekirdek amblemi hücrenin ortasındadır", () => {
   assert.match(icon, /grid-area:auto !important;/);
   assert.match(icon, /inset:12% !important;/);
   assert.match(icon, /justify-self:stretch !important;[^}]*align-self:stretch !important;/);
-  assert.ok(app.includes('if (module.definitionId === "core") {\n      mountCoreEmblem(icon, metaProgressionState?.cores?.selected_core_type || "core_resonance");'));
+  assert.ok(app.includes('if (model.core) {\n        mountCoreEmblem(icon, model.coreType);'));
+  assert.ok(app.includes('const coreType = enemy ? mockEnemyCoreType : metaProgressionState?.cores?.selected_core_type || "core_resonance";'));
 });
 
 test("savaşta emoji düğmesi savaş alanının içinde, sağ alt köşededir", () => {
@@ -123,7 +124,7 @@ test("ev ekranı: amblem küçülür, tepsinin arkasına iner, lig kartı ile pa
   assert.equal(html.includes("home-core-hero-name"), false);
 });
 
-test("alt çubuk: Ev ve Takım ayrı renktedir", () => {
+test("alt çubuk amblemleri: Ev ve Takımın renk kimliği ayrıdır", () => {
   const tone = (screen) => /--dock-a:(#[0-9a-f]{6});--dock-b:(#[0-9a-f]{6});/.exec(rule(`body:not([data-app-screen="play"]) #app-bottom-dock .menu-action[data-open-screen="${screen}"]`)).slice(1).join(" ");
   const tones = ["shop", "modules", "menu", "team", "events"].map(tone);
   assert.equal(new Set(tones).size, 5);
@@ -131,7 +132,7 @@ test("alt çubuk: Ev ve Takım ayrı renktedir", () => {
   assert.equal(tone("menu"), "#43cfc2 #12938e");
 });
 
-test("profil: Devre Koleksiyonu bütün kupa ve rozetleri yuva olarak gösterir", () => {
+test("profil: Devre Koleksiyonu yalnız kazanılmış kupa/rozetleri, boşken metni gösterir", () => {
   const start = app.indexOf("  const PROFILE_HONOR_ICONS = Object.freeze({");
   const end = app.indexOf("  function deckDisplayName(deck) {");
   assert.ok(start > 0 && end > start);
@@ -145,15 +146,19 @@ test("profil: Devre Koleksiyonu bütün kupa ve rozetleri yuva olarak gösterir"
   ];
   const host = element("div");
   sandbox.fillHonorCollection(host, { ids:["season_third", "yeni_kupa"], definitions, kind:"trophy" });
-  assert.deepEqual(host.children.map((item) => [item.dataset.tone, item.dataset.earned]), [["gold", "false"], ["silver", "false"], ["bronze", "true"], ["cyan", "true"]]);
+  assert.deepEqual(host.children.map((item) => [item.dataset.tone, item.dataset.earned]), [["bronze", "true"], ["cyan", "true"]]);
   assert.ok(host.children.every((item) => item.children[0].innerHTML === sandbox.PROFILE_HONOR_ICONS.trophy));
-  assert.equal(host.children[2].attributes["aria-label"], "Sezon Üçüncülüğü · Kazanıldı");
-  assert.equal(host.children[0].attributes["aria-label"], "Sezon Birinciliği · Henüz kazanılmadı");
-  // Hiç kazanılmamışken de yuvalar çizilir; eski "henüz kazanılmadı" satırı yoktur.
+  assert.equal(host.children[0].attributes["aria-label"], "Sezon Üçüncülüğü · Kazanıldı");
+  // Kullanıcının 14 Ekim kararı: kazanılmayan görsel/yuva çizilmez.
   const empty = element("div");
   sandbox.fillHonorCollection(empty, { ids:[], definitions, kind:"badge" });
-  assert.equal(empty.children.length, 3);
-  assert.equal(app.includes("profile-honor-empty"), false);
+  assert.equal(empty.children.length, 1);
+  assert.equal(empty.children[0].tag, "p");
+  assert.equal(empty.children[0].textContent, "Henüz kazanılmadı");
+  assert.equal(empty.children[0].innerHTML, "");
+  sandbox.fillHonorCollection(empty, { ids:["season_first"], definitions, kind:"trophy" });
+  assert.equal(empty.children.length, 1);
+  assert.equal(empty.children[0].dataset.earned, "true");
   assert.ok(catalog.includes('"Henüz kazanılmadı":"Not earned yet",') && catalog.includes('"Kazanıldı":"Earned",'));
   assert.match(rule(".profile-honor-collection"), /grid-template-columns:repeat\(4,minmax\(0,1fr\)\);/);
   assert.match(rule('.profile-honor-item[data-earned="false"]'), /--honor-color:#54698a;/);

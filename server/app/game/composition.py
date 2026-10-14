@@ -18,6 +18,11 @@ MAX_ACTIVE_UTILITY_COPIES_PER_DEFINITION = 2
 UTILITY_LEAD_OVER_ATTACK = 2
 
 
+def normalize_battle_category(category: str) -> str:
+    """Sistem is the display/canonical alias of the existing wire category."""
+    return "enerji" if category == "sistem" else category
+
+
 def active_deployable_modules(player: PlayerBattleState) -> tuple[BattleModule, ...]:
     return tuple(
         module
@@ -40,7 +45,7 @@ def deployment_rejection_reason(
         for module in active_deployable_modules(player)
         if module.instance_id != ignored_instance_id
     )
-    category = definition.category
+    category = normalize_battle_category(definition.category)
 
     if category not in UTILITY_CATEGORIES:
         return None
@@ -57,7 +62,7 @@ def deployment_rejection_reason(
 
     category_limit = CATEGORY_ACTIVE_LIMITS[category]
     category_count = sum(
-        module.definition.category == category
+        normalize_battle_category(module.definition.category) == category
         for module in active
     )
     if category_count >= category_limit:
@@ -74,7 +79,7 @@ def deployment_rejection_reason(
         for module in active
     )
     utility_count = sum(
-        module.definition.category in UTILITY_CATEGORIES
+        normalize_battle_category(module.definition.category) in UTILITY_CATEGORIES
         for module in active
     )
     if utility_count + 1 > attack_count + UTILITY_LEAD_OVER_ATTACK:

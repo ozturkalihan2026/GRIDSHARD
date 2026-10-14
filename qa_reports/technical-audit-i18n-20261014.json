@@ -1,0 +1,48 @@
+{
+  "baseline": "7f82db77fcc7a974ba60508d7a3c9536335f95f1",
+  "measuredAt": "2026-10-14T08:05:00.578Z",
+  "node": "v24.19.0",
+  "browser": "155.0.8059.79",
+  "platform": "win32",
+  "kind": "real-DOM observer work; not FPS",
+  "results": [
+    {
+      "mode": "baseline",
+      "uiNodes": 100,
+      "particles": 300,
+      "turkish": 700,
+      "callbacks": 1,
+      "records": 400,
+      "fxWalks": 300,
+      "correctness": {
+        "english": "Settings",
+        "englishTitle": "Battle",
+        "restored": "Ayarlar",
+        "restoredTitle": "Savaş",
+        "restoredEffect": "Çekirdek",
+        "changedSource": "Mağaza",
+        "changedTitle": "Ayarlar",
+        "explicitExternalTranslation": "Ayarlar"
+      }
+    },
+    {
+      "mode": "current",
+      "uiNodes": 100,
+      "particles": 300,
+      "turkish": 0,
+      "callbacks": 1,
+      "records": 400,
+      "fxWalks": 0,
+      "correctness": {
+        "english": "Settings",
+        "englishTitle": "Battle",
+        "restored": "Ayarlar",
+        "restoredTitle": "Savaş",
+        "restoredEffect": "Çekirdek",
+        "changedSource": "Mağaza",
+        "changedTitle": "Ayarlar",
+        "explicitExternalTranslation": "Ayarlar"
+      }
+    }
+  ]
+}

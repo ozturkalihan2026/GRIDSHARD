@@ -1,3 +1,4 @@
+"""Archived report for retired energy topology; not an active tool."""
 from __future__ import annotations
 
 from itertools import combinations

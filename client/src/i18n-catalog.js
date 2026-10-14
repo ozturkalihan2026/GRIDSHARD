@@ -44,6 +44,8 @@
     "Tamamlanan açılış adımları":"Completed startup steps",
     "6 haneli kod":"6-digit code",
     "Aktif etkinlikler":"Active events",
+    "Günlük Meta":"Daily Meta",
+    "Turnuvalar":"Tournaments",
     "Çekirdek bilgi başlıkları":"Core information tabs",
     "E-posta adresin":"Your email address",
     "En çok kullanılan deste":"Most used deck",

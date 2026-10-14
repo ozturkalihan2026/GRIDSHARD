@@ -15,8 +15,9 @@ assert.ok(app.includes('`/players/search?player_id=${encodeURIComponent(particip
 assert.ok(app.includes('match_type:"friend_battle"') || app.includes('opponent_type:"human"'));
 assert.ok(relay.includes("connectSession("));
 
-assert.ok(!html.includes("<h2>Turnuvalar</h2>"));
-assert.ok(html.includes('id="daily-meta-card" class="events-hero daily-meta-card"'));
+assert.ok(html.includes('id="event-directory-heading" class="event-directory-heading">Turnuvalar</h2>'));
+assert.ok(html.includes('id="daily-meta-card" class="daily-meta-card" aria-labelledby="daily-meta-heading"'));
+assert.ok(!html.includes('class="events-hero daily-meta-card"'));
 assert.ok(html.includes('id="weekly-tournament-register"'));
 assert.ok(html.includes('id="team-tournament-register"'));
 // Ödüller ayrı sayfada değil, sıralamada ilk üçün yanında sandık olarak görünür.

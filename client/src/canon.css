@@ -11598,3 +11598,243 @@ body[data-app-screen="play"] .duel-player-side[data-core-critical="true"] > .boa
   from { filter:brightness(1.12); }
   to { filter:brightness(1.55) saturate(1.28); }
 }
+
+/* === Devre atmosferi (14 Ekim 2026): ortak yüzey, renkli amblem ===
+   Static layered backgrounds only. No full-screen filter, animated gradient or
+   new battle work. The vignette masks the low-contrast grid at panel edges. */
+:root {
+  --gs-room-rgb:79,221,207;
+  --gs-pattern-circuit:
+    radial-gradient(ellipse at 50% 42%,transparent 20%,rgba(6,18,38,.45) 68%,#061226 100%),
+    radial-gradient(circle at 1px 1px,rgba(160,224,242,.035) 1px,transparent 1.6px) 50% 50% / 38px 38px,
+    linear-gradient(90deg,rgba(148,205,228,.03) 1px,transparent 1px) 50% 50% / 38px 38px,
+    linear-gradient(rgba(148,205,228,.03) 1px,transparent 1px) 50% 50% / 38px 38px;
+  /* Compatibility alias for boot/dialog backgrounds; the zigzag is retired. */
+  --gs-pattern-diamond:var(--gs-pattern-circuit);
+}
+body[data-app-screen="shop"] { --gs-room-rgb:255,199,91; }
+body[data-app-screen="modules"] { --gs-room-rgb:87,163,249; }
+body:is([data-app-screen="team"],[data-app-screen="team-event"]) { --gs-room-rgb:173,128,245; }
+body:is([data-app-screen="events"],[data-app-screen="weekly-event"]) { --gs-room-rgb:243,119,192; }
+body:not([data-app-screen="play"]) :is(#main-menu-panel,.mobile-hub-screen,#team-screen) {
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(var(--gs-room-rgb),.12),transparent 65%),
+    var(--gs-pattern-circuit),
+    linear-gradient(180deg,#0d2845,#091c34 58%,#061226) !important;
+}
+/* Tournament emblems stay prominent; daily gameplay conditions are a separate well. */
+#events-screen .event-directory button {
+  position:relative;
+  display:grid !important;
+  grid-template-columns:clamp(60px,16vw,82px) minmax(0,1fr) !important;
+  column-gap:14px !important;
+  row-gap:6px !important;
+  align-content:center;
+  min-height:126px !important;
+  padding:16px 46px 16px 16px !important;
+  border-width:1.5px !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 0 1px #040e20,0 3px 0 #071529 !important;
+}
+#events-screen .daily-meta-card {
+  display:grid !important;
+  grid-template-columns:38px minmax(0,1fr);
+  gap:5px 12px;
+  min-height:0;
+  margin:0;
+  padding:12px;
+  border:0;
+  border-radius:10px;
+  background:#081b2e;
+  box-shadow:inset 0 0 0 1px rgba(127,171,199,.18);
+}
+#events-screen .daily-meta-card > h2 {
+  grid-column:2;
+  margin:0;
+  color:#9bb9ce;
+  font:700 .55rem/1.3 var(--gs-font-display);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+#events-screen .daily-meta-card > strong { font:800 .8rem/1.3 var(--gs-font-display); }
+#events-screen .daily-meta-card > .event-hub-emblem { grid-row:1 / span 4; }
+#events-screen .daily-meta-effect { font-size:.5rem; padding:4px 8px; }
+#events-screen .event-directory-heading {
+  margin:24px 2px 0;
+  color:#e1ecf6;
+  font:800 .65rem/1.4 var(--gs-font-display);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+#events-screen .event-directory { margin-top:10px !important; }
+#events-screen .event-directory button[data-open-screen="weekly-event"] {
+  background:
+    radial-gradient(ellipse at 9% 30%,rgba(255,205,92,.18),transparent 64%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='120' viewBox='0 0 240 120'%3E%3Cg fill='none' stroke='%23ffdc84' stroke-opacity='.055' stroke-width='1.4'%3E%3Cpath d='M132 14h24v22h24v48h-24v22h-24M108 14h24M108 36h48M108 84h48M108 106h24M180 60h36'/%3E%3Ccircle cx='218' cy='60' r='8'/%3E%3C/g%3E%3C/svg%3E") right center / auto 100% no-repeat,
+    linear-gradient(120deg,#25435b,#183550 60%,#122a43) !important;
+}
+#events-screen .event-directory button[data-open-screen="team-event"] {
+  background:
+    radial-gradient(ellipse at 9% 30%,rgba(185,126,245,.19),transparent 64%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='120' viewBox='0 0 240 120'%3E%3Cg fill='none' stroke='%23d3b2ff' stroke-opacity='.055' stroke-width='1.4'%3E%3Cpath d='M155 12h52v58l-26 34-26-34ZM165 22h32v45l-16 23-16-23Z'/%3E%3Cpath d='m140 30-15 30 15 30m81-60 15 30-15 30'/%3E%3C/g%3E%3C/svg%3E") right center / auto 100% no-repeat,
+    linear-gradient(120deg,#303953,#20314f 60%,#18283f) !important;
+}
+#events-screen :is(.daily-meta-card,.event-directory button) > :is(strong,p,small,.daily-meta-effect) {
+  grid-column:2;
+  min-width:0;
+  margin:0 !important;
+  overflow-wrap:anywhere;
+  text-align:left;
+}
+#events-screen .event-directory button > strong { grid-row:1; }
+#events-screen .event-directory button > small { grid-row:2; }
+#events-screen .daily-meta-effect { justify-self:start; }
+.event-hub-emblem {
+  --honor-color:#ffd45e;
+  grid-column:1;
+  grid-row:1 / span 3;
+  align-self:center;
+  display:block;
+  width:100%;
+  aspect-ratio:1;
+  pointer-events:none;
+}
+.event-hub-emblem > svg { display:block;width:100%;height:100%;overflow:visible; }
+.event-hub-emblem .eb-outline { stroke:#061226;stroke-width:1.7;stroke-linejoin:round; }
+.event-hub-emblem .eb-steel { fill:#8cacc7; }
+.event-hub-emblem .eb-dark { fill:#102b49; }
+.event-hub-emblem .eb-cyan { fill:#51d7c8; }
+.event-hub-emblem .eb-gold { fill:#ffd064; }
+.event-hub-emblem .eb-violet { fill:#aa77e8; }
+.event-hub-emblem .eb-light { fill:#ffffff;opacity:.26; }
+.event-hub-emblem .eb-shade { fill:#081026;opacity:.3; }
+.event-hub-emblem .eb-shadow { fill:#020914;opacity:.5; }
+.event-hub-emblem .hn-m { fill:var(--honor-color); }
+.event-hub-emblem .hn-l { fill:#fff3bf;opacity:.6; }
+.event-hub-emblem .hn-s { fill:#90601c;opacity:.5; }
+.event-hub-emblem .hn-o { fill:none;stroke:#061226;stroke-width:1.1;stroke-linejoin:round; }
+.event-hub-emblem .hn-handle { fill:none;stroke:var(--honor-color);stroke-width:2.1;stroke-linecap:round; }
+.event-hub-emblem .hn-w { fill:#fff3bf;stroke:#061226;stroke-width:.8; }
+
+/* Restore a shallow physical lip without increasing layout dimensions. */
+body[data-app-screen="menu"] #home-arena-card {
+  border:1.5px solid #e5bf65 !important;
+  box-shadow:inset 0 1px 0 rgba(255,246,205,.18),inset 0 -1px 0 #0a2440,
+    0 0 0 1px #040e20,0 3px 0 1px #07182c,0 5px 8px rgba(1,8,22,.25) !important;
+}
+body[data-app-screen="menu"] #home-arena-card:active { transform:translateY(1px); }
+
+/* Shared local/visited profile surface tokens; cosmetic identity stays owned
+   by applyProfileAppearance, and social/report/block handlers are unchanged. */
+#public-profile-dialog,#team-profile-dialog {
+  border:1.5px solid var(--gs-polish-line) !important;
+  border-radius:14px !important;
+  background:linear-gradient(180deg,#0d2845,#061226) !important;
+}
+:is(.profile-summary-panel,#public-profile-content,#team-profile-content)
+  :is(.profile-deck-showcase,.profile-clan-card,.profile-season-history,.profile-inline-statistics,.public-profile-statistics,.team-profile-statistics,.team-public-identity,.team-profile-members) {
+  border:1px solid var(--gs-polish-line) !important;
+  border-radius:12px !important;
+  background:var(--gs3-slab) !important;
+  box-shadow:var(--gs-polish-shadow) !important;
+}
+:is(.profile-summary-panel,#public-profile-content,#team-profile-content)
+  :is(.profile-deck-visual,.profile-past-seasons article,.statistics-metric-card,.public-profile-stat-grid article) {
+  border:0 !important;
+  border-radius:9px !important;
+  background:var(--gs3-well) !important;
+  box-shadow:var(--gs3-well-shadow) !important;
+}
+:is(.profile-summary-panel,#public-profile-content) .profile-current-season {
+  border:0 !important;
+  border-radius:9px !important;
+  background:linear-gradient(180deg,rgba(120,84,10,.62),rgba(46,30,4,.62)) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,214,98,.4) !important;
+}
+.profile-honor-empty {
+  grid-column:1 / -1;
+  margin:0;
+  padding:12px 14px;
+  color:#a9c3dc;
+  font:500 .75rem/1.4 var(--gs-font-copy);
+  border-radius:9px;
+  background:var(--gs3-well);
+}
+/* One button material in every tab. Only SVG emblems carry tab colors;
+   the active tab still lifts/expands, shows its label and has a neutral rim. */
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action,
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active {
+  background:linear-gradient(180deg,#173655,#102640) !important;
+  border-color:rgba(153,190,224,.28) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 0 #040e20 !important;
+}
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active {
+  box-shadow:inset 0 0 0 1px #bed4e8,0 2px 0 #040e20 !important;
+}
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon,
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action:not(.is-active) .lobby-dock-icon {
+  color:var(--dock-tone) !important;
+  stroke:var(--dock-tone) !important;
+  background:none !important;
+  box-shadow:none !important;
+  filter:none !important;
+}
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon *,
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action:not(.is-active) .lobby-dock-icon * { stroke:var(--dock-tone) !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon .dock-home-core,
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action:not(.is-active) .lobby-dock-icon .dock-home-core { fill:var(--dock-tone) !important;stroke:none !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon .dock-home-crack,
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action:not(.is-active) .lobby-dock-icon .dock-home-crack { stroke:#102640 !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .menu-action-title { color:#e0edf7 !important; }
+
+:is(.profile-summary-panel,#public-profile-content,#team-profile-content)
+  :is(.profile-section-heading,.team-stats-heading) h3 {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  font-size:var(--gs-polish-title) !important;
+  font-weight:700 !important;
+  text-shadow:none !important;
+}
+.team-profile-stat-grid article > strong.trophy-visual-value {
+  justify-content:flex-start;
+  gap:6px;
+}
+.team-profile-stat-grid article > strong.trophy-visual-value > span {
+  color:inherit !important;
+  font:inherit !important;
+}
+
+/* Dock-only pilot: painted objects with crisp faces, not neon line icons.
+   Button material, navigation, notification badges and active lift stay intact. */
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action[data-shell-screen="shop"] { --dock-tone:#ffbf24;--de-light:#ffe479;--de-shade:#b96c10; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action[data-shell-screen="modules"] { --dock-tone:#298dff;--de-light:#80caff;--de-shade:#1752b8; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action[data-shell-screen="menu"] { --dock-tone:#14d5be;--de-light:#77f8dc;--de-shade:#087b89; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action[data-shell-screen="team"] { --dock-tone:#9850ee;--de-light:#cb91ff;--de-shade:#502591; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action[data-shell-screen="events"] { --dock-tone:#ed3d9c;--de-light:#ff97d0;--de-shade:#a11964; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon.dock-object-emblem {
+  padding:0;
+  width:36px !important;
+  height:36px !important;
+  border-radius:0;
+  pointer-events:none;
+}
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active .lobby-dock-icon.dock-object-emblem {
+  width:40px !important;
+  height:40px !important;
+}
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon.dock-object-emblem * {
+  fill:none !important;
+  stroke:#051326 !important;
+  stroke-width:2.6 !important;
+  stroke-linejoin:round;
+  stroke-linecap:round;
+}
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon.dock-object-emblem .de-body { fill:var(--dock-tone) !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon.dock-object-emblem .de-light { fill:var(--de-light) !important;stroke:none !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon.dock-object-emblem .de-shade { fill:var(--de-shade) !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon.dock-object-emblem .de-metal { fill:#b1cde3 !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon.dock-object-emblem .de-metal-shade { fill:#527796 !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon.dock-object-emblem .de-energy { fill:#13e5d3 !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon.dock-object-emblem .de-gold { fill:#ffcc38 !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon.dock-object-emblem .de-white { fill:#e8fbff !important; }

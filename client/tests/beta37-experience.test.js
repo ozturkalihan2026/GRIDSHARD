@@ -17,7 +17,8 @@ assert.ok(html.includes('class="selected-pool-heading"'));
 assert.ok(!html.includes('id="capacity-indicator"'));
 assert.ok(html.includes('data-shell-screen="shop"'));
 assert.ok(html.includes('data-shell-screen="modules"'));
-assert.ok(html.includes("dock-home-crack"));
+// Dock pilot keeps the Core identity but replaces the old line/crack drawing.
+assert.ok(html.includes("lobby-dock-home dock-object-emblem"));
 // Eski lobi ızgarası kaldırıldı; Ev yalnız mobil savaş merkezini kullanır.
 assert.ok(!html.includes("lobby-feature-grid"));
 assert.ok(html.includes('id="home-battle-button"'));

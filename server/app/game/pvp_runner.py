@@ -83,6 +83,14 @@ class PvPTickRunner:
         for session_id in tuple(self._tasks):
             await self.stop_session(session_id)
 
+    async def discard_session(self, session_id: str) -> None:
+        """Release an abandoned local session without recording a match result."""
+        try:
+            await self.stop_session(session_id)
+        finally:
+            self._stats.pop(session_id, None)
+            self.service.delete_session(session_id)
+
     async def run_single_tick(self,session_id: str) -> bool:
         session=self.service.get_session(session_id)
         if session.engine.state.status != BattleStatus.RUNNING:
