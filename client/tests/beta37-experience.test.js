@@ -17,8 +17,8 @@ assert.ok(html.includes('class="selected-pool-heading"'));
 assert.ok(!html.includes('id="capacity-indicator"'));
 assert.ok(html.includes('data-shell-screen="shop"'));
 assert.ok(html.includes('data-shell-screen="modules"'));
-// Dock pilot keeps the Core identity but replaces the old line/crack drawing.
-assert.ok(html.includes("lobby-dock-home dock-object-emblem"));
+// Casual dock uses the requested shield/laser Battle icon, not the former Core.
+assert.ok(html.includes("lobby-dock-battle dock-painted-emblem"));
 // Eski lobi ızgarası kaldırıldı; Ev yalnız mobil savaş merkezini kullanır.
 assert.ok(!html.includes("lobby-feature-grid"));
 assert.ok(html.includes('id="home-battle-button"'));
@@ -51,7 +51,7 @@ assert.ok(!html.includes("season-equipped-title"));
 assert.ok(!html.includes("avatar-live-preview"));
 assert.ok(app.includes("/operator-titles/"));
 assert.ok(app.includes("function renderOperatorTitles()"));
-assert.ok(html.includes('lobby-dock-home'));
+assert.ok(html.includes('lobby-dock-battle'));
 assert.ok(app.includes("ai_archetype"));
 
 console.log("beta37 client experience test passed");

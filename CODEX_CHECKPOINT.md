@@ -1,6 +1,267 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 14 Ekim 2026
+Güncelleme tarihi: 15 Ekim 2026
+
+## Son çalışma — keskin köşeli sandıklar ve Mağaza dock sandığı, 15 Ekim 2026
+
+Kullanıcı önce sandık köşelerini keskinleştirmeyi istedi. Arada daha az metal/
+parçalı bir örnek gösterdi, tek Altın sadeleştirme pilotu üretildi; **bu pilotu
+reddetti** ve keskin köşeli çalışmaya dönülmesini, dock Mağaza sandığının da
+aynı keskinlikte olmasını istedi. Son seçimi sadeleştirme değil, mevcut parçalar
+korunarak düz yüzeyler, küçük pahlar ve daha az bombeli/fasetli kapaktır.
+
+- Imagegen becerisi/built-in edit aracıyla `client/assets/ui/chests-casual-v2/`
+  4 kapalı + 4 eşleşen boş açık PNG üretildi. Altın geometry ankrajı, diğer
+  tier'lerin kendi hedef renk/taş/taç/kristal kimlikleri korunur. 8 master
+  1254px RGBA, alpha 0–255; yalnız teknik lossless WebP export, kaynaklar değişmez.
+- 256px kapalı / 512px kapalı-açık 12 WebP: **2.077.180 bayt**. HTML template
+  referansları yeni klasöre geçti; standart mağaza/mesaj/sezon/reveal ortak
+  aileyi kullanır. Özel lig/turnuva SVG'leri ayrı kalır.
+- Mağaza menüsü sandığı ayrıca `dock-casual-v1/shop-chamfer-v2.png/.webp`.
+  256px türev 69.640 bayt; güncel 5 dock WebP toplamı 315.758 bayt. Diğer dört
+  ikonun SHA-256'sı aynı; SAVAŞ çapraz kılıçları, etiket/route/geometri/rozetler
+  değişmedi. Eski shop.png/.webp ve chests-casual-v1 kaynakları silinmedi.
+- Mevcut sandığa özel renkli ışık/açılış kodu, gerçek makbuz kapısı, fiyatlar,
+  ödül/satın alma kuralları, font/logo değişmedi. Bağımsız kapak rig'i yok.
+- 449 istemci, 9 derleme, 6 masaüstü/Android tarayıcı testi geçti (4 sandık,
+  2 dock). 320/393/768px, fiyat hizaları, bütün açılış/hata/teslim/toplu/reduced-
+  motion/düşük grafik ve TR/EN doğrulandı. Geçici üretim paketinde PNG ustalar,
+  eski sandık/dock ve development-only API dışarıda; güncel WebP'ler byte-identical.
+- Gerçek prompt seti: `client/assets/ui/chests-casual-v2/PROMPTS.md` (son
+  prompt Mağaza dock ikonu). Video/kanıt: `artifacts/chest-chamfer-20261015/`.
+  Video yerel test makbuzları kullanır, gerçek alım değil. `git diff --check` temiz.
+- Sade pilot `qa_reports/chests-simple-pilot-20261015/` yalnız reddedilmiş kayıt;
+  oyuna bağlanmadı. Gerçek telefon/AAB/canlı sunucu/site/Play/commit/push yok.
+
+## Son çalışma — Savaş ikonu çapraz enerji kılıçları v2, 15 Ekim 2026
+
+Kullanıcı kalkan-lazer Savaş ikonunu beğenmedi; önerilen çapraz iki kısa
+enerji kılıcını denemeyi istedi. Imagegen becerisi/built-in araçla kendi Altın
+sandık ve mavi kart destesi PNG'leri stil referansı olarak incelenerek yeni
+şeffaf, iri turkuaz bıçaklı/altın saplı dengeli X çizimi üretildi.
+
+- `client/assets/ui/dock-casual-v1/battle-swords-v2.png/.webp`; gerçek prompt
+  ve doğrulama `BATTLE-SWORDS-V2.md`. Kaynak değişmez; yalnız teknik alpha-
+  koruyan 256px kayıpsız WebP export. Yeni dosya 52.096, 5 ikon toplamı
+  315.914 bayt. Eski `battle.png/.webp` silinmedi; artık runtime referansı yok.
+- Yalnız Savaş düğmesinin img src'si yeni dosyaya geçti. Diğer dört WebP'nin
+  SHA-256'sı değişmedi. SAVAŞ/BATTLE, route, düğme geometrisi, rozetler,
+  diğer UI/sandık, font, ödeme/sunucu/oyun kuralları aynıdır.
+- 449 istemci testi ve 2 masaüstü/Android testi geçti; 320/393/768px,
+  beş ekran gezinmesi, dokunma alanı ve TR/EN etiketler doğrulandı. Geçici
+  üretim paketi yalnız güncel 5 WebP'yi içerir; eski kalkan-lazer/PNG ustalar
+  ve development-only API dışarıda. `git diff --check` temiz.
+- Oyun içi kanıt: `artifacts/battle-swords-20261015/screens/`.
+  Gerçek telefon/AAB/canlı yayın/commit/push yapılmadı. Yerel önizleme içindir.
+
+## Son çalışma — sandık diliyle casual menü ikonları ve Savaş, 14 Ekim 2026
+
+Kullanıcı beş alt menü ikonunun son casual sandıklarla aynı dilde üretilmesini,
+Ev adının Savaş olmasını ve çekirdek yerine kalkan/silah ikonu kullanılmasını
+istedi. Imagegen becerisi/built-in araçla, kendi Altın/Elmas PNG'leri stil
+referansı olarak incelenip beş ayrı orijinal şeffaf görsel üretildi:
+
+- Mağaza: altın/indigo sandık; Kartlar: mavi kart destesi; Savaş: turkuaz
+  kalkan + lazer silahı; Takım: mor iki oyunculu arma; Etkinlik: pembe yıldızlı
+  takvim. İri yuvarlatılmış hacimler ve geniş temiz highlight yüzeyleri.
+- Kaynaklar ve bütün gerçek promptlar: `client/assets/ui/dock-casual-v1/PROMPTS.md`.
+  PNG kaynaklar değişmez. `tools/export-casual-dock-icons.js` yalnız teknik
+  alpha-koruyan 256px kayıpsız WebP türevi üretir: 5 dosya **331.910 bayt**.
+- `index.html` referansları yeni aileye geçti. Düğme geometrisi, 36/40px ikon
+  boyları, aktif yükselme, bildirim/indirim rozetleri ve `menu` dahil bütün
+  route'lar aynıdır. TR SAVAŞ / EN BATTLE; ekran okuyucu/title ve ilgili
+  eğitim/geri dönüş metinleri de güncellendi. Çekirdek artık dock ikonu değildir.
+- Önceki `dock-painted-v1` dosyaları silinmedi; PNG ustalar/eski dock görselleri
+  üretim derlemesine alınmaz. Sunucu, ödeme, ödül, sandık, font/logo değiştirilmedi.
+- 449 istemci, 9 derleme, 2 masaüstü/Android tarayıcı testi geçti; 320/393/768px,
+  beş ekranın gezinmesi, taşma/dokunma alanı ve dil kontrolü doğrulandı.
+  Üretim paketinde 5 görsel byte-identical, önizleme API'si hariç doğrulandı.
+- Kanıtlar `artifacts/casual-dock-20261014/`; ekranlar izole yerel test hesabı.
+  Gerçek telefonda henüz denenmedi. AAB/canlı yayın/commit/push yapılmadı.
+
+## Son düzeltme — sandığa özel renkli açılış ışığı v2, 14 Ekim 2026
+
+Kullanıcı ilk açılış efektlerini beğenmedi; her sandığın kendi renginde parlama
+ve açılma animasyonu istedi. Bitmapler korunarak `client/src/canon.css` içindeki
+kod tabanlı efektler yeniden düzenlendi:
+
+- Bronz amber, Gümüş buz mavisi, Altın sarı, Elmas turkuaz ışık. İç hazneden
+  yükselen ışınlar, geniş halo, iç ışık, kenar parlaması, halka ve renkli yıldızlar.
+- Kapalı sandık 1,15sn kilit/açılış hareketinden açık görsele geçip yerleşir.
+  2,4sn ışık hareketi sonunda sakin statik parlama kalır. Ayrı kapak rig'i yok.
+  Ödül satırları .75sn + sıra*.1sn sonra görünür; sunucu makbuzu/haklar değişmez.
+- Hata/bekleme/teslimde açılış ışığı yok. Hareket azaltma/düşük grafikte yeni
+  hareketli ışıklar gizlenir. AAB/canlı sunucu/Play/commit/push yapılmadı.
+- 448 istemci testi, 9 derleme testi, 4 masaüstü/Android tarayıcı testi geçti.
+  Her rengin gerçek RGB/ışın/hazne opacity'si animasyonun 800ms anında kontrol
+  edildi; örnekler `artifacts/casual-chest-opening-20261014/glow-v2-screens/`.
+- Video: `artifacts/casual-chest-opening-20261014/casual-chests-glow-v2.mp4`.
+  İzole yerel test/önizleme ödülleri; gerçek ödeme değil. Önceki demo korunur.
+
+## Son çalışma — casual sandıklar ve açılış efektleri oyunda, 14 Ekim 2026
+
+Kullanıcı yeni casual sandıkları açılış efektleriyle oyuna yerleştirmeyi istedi.
+
+- Dört kapalı pilot kaynak değişmeden kopyalandı. Imagegen becerisi/built-in
+  edit aracı her sandığa eşleşen, boş iç hazneli açık çizim üretti. Kaynaklar ve
+  gerçek prompt: `client/assets/ui/chests-casual-v1/PROMPTS.md`.
+- 256px kapalı ikonlar; 512px kapalı/açık reveal görselleri. 12 kayıpsız WebP
+  **2.061.266 bayt**. Alpha korunur, PNG ustalar ve eski gerçekçi aile derleme
+  izin listesine girmez. Önceki dosyalar geri dönüş için silinmedi.
+- Mağaza ve standart mesaj/sezon/ödül sandıkları aynı aileyi kullanır; özel
+  turnuva/lig SVG'leri ayrı kalır. Font/logo/dock bu istekte değiştirilmedi.
+- Bekleme → kapalı/açık geçiş → kısa ışık/6 parçacık → ödüller sırayla belirir.
+  İki çizim arasında CSS geçişidir, ayrı kapak rig'i değildir. Hareket azaltma
+  ve düşük grafik ayarında yeni hareket/parçacıklar kapalıdır.
+- Gerçek sunucu makbuzu gelmeden sandık açılmaz/ödül gösterilmez; satın alma,
+  hediye/eldeki sandık önceliği, fiyatlar, ödül hesapları değişmedi. Henüz
+  açılmamış envanter teslimi `claimed` kapalı durumdur, hata da kapalı kalır.
+- 447 istemci testi, 9 derleme testi ve 4 masaüstü/Android öykünmeli tarayıcı
+  kontrolü geçti. Dört tür, toplu ödül toplamı, hata, teslim, 320/393px hizaları,
+  hareket azaltma ve düşük grafik doğrulandı. İlk önizleme testi teslim akışının
+  başlangıç penceresini açmadan çağrıldığı için düzeltildi; gerçek akış eşlendi.
+- Geçici üretim derlemesinde 12 görsel byte-identical ve test API'si hariç
+  doğrulandı. Önizleme API'si mevcut development-only bloğun içindedir.
+- Kanıtlar/demo: `artifacts/casual-chest-opening-20261014/` (yerel test makbuzu,
+  gerçek alım değil). Gerçek telefonda henüz denenmedi. Commit/push, yeni AAB,
+  canlı sunucu/site/Play yayını bu turda yapılmadı. Kullanıcı önce yerelde görecek.
+
+Önceki pilot notları aşağıda tarihsel olarak korunur.
+
+## Son çalışma — daha oyunsu casual sandık ailesi, yalnız pilot, 14 Ekim 2026
+
+Kullanıcı önceki boyanmış dock/sandıkları fazla gerçekçi ve metalsi buldu.
+Kapsamlı tasarım işinden kaçınmak yerine en oyunsu/güzel sonucun önemli
+olduğunu söyledi; Magnific sandık araması ve Pinterest style_text panosunu verdi.
+Bu istek önceki geri alma önerisini kabul ettiği anlamına gelmez: geri alınmadı.
+
+- Magnific arama sayfası iç tarayıcıda gerçekten incelendi. Örneklerden
+  yuvarlatılmış iri parçalar, sade yüzeyler, kuvvetli renk ayrımı ve kontrollü
+  highlight yönü çıkarıldı. Stok görsel kopyalanmadı/indirilmedi/satın alınmadı.
+- Pinterest'te başlık ve girişsiz kenarlarda görülen logo örnekleri incelendi;
+  zorunlu giriş penceresi tam pano incelemesini engelledi. Kimlik bilgisi
+  kullanılmadı veya engel aşılmadı. Tam pano incelenmiş gibi davranılmamalı.
+- Imagegen becerisi/built-in edit aracıyla önce kendi Altın PNG'si daha
+  casual-strategy / RPG bir şekle çevrildi. Bronz/Gümüş/Elmas kendi eski
+  hedeflerini ve yeni Altın stil ankrajını kullanarak ayrı ayrı üretildi.
+  Metal tanesi, çizik, ince perçin ve mekanik plaka sayısı azaldı; daha
+  iri yuvarlatılmış parçalar ve geniş renk yüzeyleri var. Hacim korunur.
+- Dört pilot PNG/WebP ve bütün gerçek promptlar:
+  `qa_reports/chests-casual-pilot-20261014/README.md`.
+  PNG'ler 1254×1254 RGBA, alpha 0–255; dört 256×256 kayıpsız WebP toplam
+  **272.228 bayt**. `export-preview.cjs` sadece teknik türev üretir.
+- **Uygulamaya bağlanmadı.** Mevcut boyanmış dock/sandık kaynakları, Rowdies,
+  logo, davranış ve diğer kullanıcı değişiklikleri aynen korunur. Bu turda
+  yalnız alternatif görseller/notlar üretildi; kod değişmedi, test sonucu
+  veya gerçek telefon doğrulaması iddia edilmez. AAB/canlı yayın yok.
+- Önerilen sonraki adım: önce aileyi kullanıcıyla görsel olarak seçmek;
+  sonra dört sandık ve beş dock'u aynı ailede bitirmek. Modül/çekirdek,
+  kaynaklar ve ekran yüzeyleri daha sonra ayrı kontrollü adımlarla
+  uyarlanabilir. Kullanıcının bu pilotu/tüm oyun yeniden tasarımını henüz
+  onayladığı varsayılmamalı; otomatik toplu dönüşüm yapılmamalı.
+
+## Son çalışma — dört mağaza sandığı boyanmış görsellerle yenilendi, 14 Ekim 2026
+
+Kullanıcı dock'ta kullanılan prompt ve teknikle mağazadaki sandıkları
+yenilemeyi istedi. Imagegen becerisi/built-in araç kullanıldı; dört ayrı
+üretimde dock'un `shop.png` dosyası yalnız stil referansı olarak verildi.
+
+- Bronz: bakır/kehribar; Gümüş: çelik/buz mavisi; Altın: altın/kırmızı taş
+  ve kapağa bağlı taç; Elmas: turkuaz/gümüş, mor taş ve bağlı kristaller.
+  Boyanmış 2.5D, fiziksel metal hacmi, üst-soldan ışık, aynı perspektif,
+  şeffaf alpha. Metin/düğme zemini görsellere işlenmedi.
+- Dosyalar ve tam gerçek prompt seti:
+  `client/assets/ui/chests-painted-v1/` (`PROMPTS.md`). Dört değiştirilmemiş
+  1254×1254 RGBA PNG kaynak ve dört 256×256 kayıpsız WebP. Runtime toplam
+  **294.980 bayt**; PNG'ler pakete girmez. Teknik türev yordamı:
+  `tools/export-painted-shop-chests.js` (Sharp, dock ile aynı export yöntemi).
+- `index.html` içinde inert `painted-shop-chest-assets` template'i vardır;
+  derlemenin izin listesi böylece yalnız dört WebP'yi görür.
+  `app.js`'de `paintedShopChestMarkup` yalnız dört mağaza kartına uygulanır.
+  Kademe izin listesi ve template yoksa eski SVG'ye güvenli dönüş korunur.
+- 63×54 CSS px yuva, kart ölçüsü ve fiyat/eylem satırları korunur; ek CSS
+  hale/drop-shadow üretmez. Tek düğmenin hediye → eldeki sandık → satın al
+  önceliği, ücretler, günlük limitler, ödüller/olasılıklar değişmedi.
+  Posta/sezon/lig/turnuva görselleri ile SVG kapak açılış animasyonları
+  kapsam dışında tutuldu. Dock ve Rowdies değişiklikleri korunur.
+- Doğrulama: **444/444 istemci**, **9/9 paket**, **4/4 tarayıcı testi**
+  (sandık + gömülü font; masaüstü Chrome ve Android Chrome öykünmesi).
+  320×568 ve 393×852'de dört dosya yüklenir, her kart tek düğmelidir,
+  çiftlerin düğmeleri aynı hizada ve yatay taşma yok; Ödül Listesi açılır.
+  Alpha/gövde sınırları incelendi. Gerçek telefon test edilmedi.
+- Gerçek geçici web derlemesinde dört WebP bayt bayt eşleşti, PNG kaynaklar
+  dışarıda, beş dock ikonu ve Rowdies paket içinde, uyarı yok. Ana `dist`
+  değiştirilmedi. Önizleme/kanıt: `artifacts/chests-painted-20261014/`;
+  bu artifacts dosyalarının Git ile taşınacağı varsayılmaz.
+- Commit/push, AAB, sunucu/site/Play yayını yapılmadı. Yalnız yalıtılmış
+  yerel fixture kullanıldı; testte satın alma veya sandık açma yapılmadı.
+
+## Son çalışma — Rowdies Bold kalıcı olarak uygulandı, 14 Ekim 2026
+
+Kullanıcı iş bilgisayarında seçilen fontu indirmeyi ve uygulamayı istedi.
+Önceki notlarda Türkçe glifleri tam olan öneri **Rowdies Bold** idi; Lilita
+One kullanılmadı. Bu yeni talep aşağıdaki “font seçimi bekliyor” kaydını
+günceller; diğer tarihsel duruş/Faz 4 kapsamını değiştirmez.
+
+- Resmî Google Fonts `ofl/rowdies/Rowdies-Bold.ttf` yeniden indirildi;
+  SHA-256 önceki pilot kaynağıyla aynı:
+  `e56ac3fe30e56243483083a6ba271387e332f77920e850ce7dc1baead4fbede2`.
+- `client/assets/fonts/rowdies-700-full.woff2` **31.744 bayt**. FontTools
+  4.60.1 ile tam font sıkıştırıldı; TTF/WOFF2 Unicode cmap tabloları aynı,
+  `ÇĞİÖŞÜçğıöşü` glifleri kaybolmadı. Altküme/glyph çizimi değişikliği yok.
+  Tekrar üretim: `tools/export-rowdies-font.py` (`fonttools[woff]` gerekir).
+- `--gs-font-display` artık Rowdies; ana başlıklar/düğmeler bu yüzü kullanır.
+  Gövde/açıklama Rajdhani, GRIDSHARD markası Orbitron olarak korunur.
+  Oxanium yedek olarak durur. Sentetik kalınlık kapalı, sentetik italik serbest.
+- SIL OFL 1.1 metni `OFL-Rowdies.txt` ve oyun içindeki açık kaynak
+  lisanslarında bulunur; telif/lisans sözcükleri korunur. Font açılışta
+  dış adresten istenmez. Teknik kaynak/lisans bilgisi fonts/README.md'de.
+- Kontrol: **441/441 istemci**, **9/9 paket testi**, **4/4 tarayıcı testi**
+  (gömülü font + tarihsel pilot; masaüstü Chrome ve Android Chrome öykünmesi).
+  TR/EN, 320×568 / 393×852, beş dock sekmesi, fiyat etiketleri, modül bilgi
+  penceresi ve mesaj kutusu kontrol edildi. Gerçek telefon test edilmedi.
+- Geçici gerçek web derlemesinde Rowdies dosyası bayt bayt eşleşti; CSS
+  referansı ve lisans var, beş yeni boyanmış dock ikonu da pakette. Ana `dist`
+  değiştirilmedi. Kanıtlar: `artifacts/rowdies-font-20261014/`; artifacts
+  dosyalarının Git ile diğer bilgisayara taşınacağı varsayılmamalı.
+- Önceki yeni dock görselleri ve kullanıcının başka değişiklikleri korunur.
+  Commit/push, AAB, sunucu/site/Play yayını yapılmadı. Test fixture'ında
+  ödeme veya gerçek kullanıcı verisi kullanılmadı.
+
+## Son çalışma — beş dock ikonu Imagegen ile yeniden üretildi, 14 Ekim 2026
+
+Kullanıcı “Kendine bir prompt ver o zaman bu 5 ikon için ve yeniden üret”
+talimatıyla mevcut SVG dock pilotu yerine yeni görsel üretimini istedi.
+Yalnız Mağaza/Kartlar/Ev/Takım/Etkinlik ikonları değişti; profil avatarları,
+modül/çekirdek görselleri, font ve Faz 4 ödül sistemi değiştirilmedi.
+
+- Ortak sanat yönü: tek nesneli boyanmış 2.5D ikon, fiziksel hacim ve malzeme,
+  hafif perspektif, üst-soldan ışık, profesyonel ton, kontrollü kontur ve
+  şeffaf arka plan. Yazı, düğme zemini veya aşırı neon yok.
+- Konular: altın sandık, mavi modül kartları, turkuaz reaktör, mor takım
+  sancağı ve pembe/altın etkinlik madalyonu. Rush Royale görseli üretim girdisi
+  olarak verilmedi veya kopyalanmadı; özgün GRIDSHARD çizimleri üretildi.
+- Dosyalar ve tam prompt seti: `client/assets/ui/dock-painted-v1/`.
+  Beş değiştirilmemiş kaynak PNG 1254×1254 RGBA; uygulamanın kullandığı beş
+  kayıpsız WebP 256×256, toplam **337,220 bayt**. Alpha korunur.
+  `tools/export-dock-painted-icons.js` yalnız teknik boyut/format türevi üretir.
+- `client/index.html` beş dekoratif `<img>` kullanır; `canon.css` sonunda
+  `Painted dock assets` bloğu vardır. Normal/seçili ikon **36/40 CSS px**;
+  düğme geometrisi, ortak lacivert yüzey, aktif yükselme, gezinme, ad ve
+  bildirim rozetleri korunur. Önceki SVG çizimleri Git geçmişinde durur.
+- Kontrol: **441/441 istemci testi**; alpha/köşe ve dosya kontrolleri;
+  393×852 ve 320×568 yalıtılmış tarayıcıda beş sekme; bütün ikonlar yüklenir,
+  düğme sınırları içindedir, yatay taşma yok. Geçici gerçek web derlemesinde
+  beş WebP bayt bayt korunur, büyük PNG'ler pakete alınmaz, uyarı yok.
+  Kullanıcının mevcut `dist` çıktısı değiştirilmedi; gerçek telefon denenmedi.
+- Önizleme: `artifacts/dock-painted-20261014/screens/dock-393x852.png`;
+  bu artifacts dosyalarının diğer bilgisayara Git ile geçeceği varsayılmaz.
+- Commit/push, AAB üretimi ve canlı sunucu/site/Play yayını yapılmadı.
+  Bu yeni çizimlerin kullanıcı tarafından görsel kabulü henüz alınmadı.
+  Diğer ekranlara yaygınlaştırma yok. Önceki font kararı açık kalır.
+
+Aşağıdaki iş bilgisayarında duruş/SVG pilot kayıtları bu yeni kullanıcı
+talimatından önceki tarihsel durumdur; yeni ikon talebini engellemez.
 
 ## İş bilgisayarında duruş — evde devam, 14 Ekim 2026
 

@@ -1,10 +1,20 @@
 /* Oyunun yazı tipleri pakete gömülüdür; açılışta dış adrese istek gitmez
    (docs/CHILD_AUDIENCE_AUDIT.md). Dosyalar Google Fonts'tan alınmıştır:
-   Oxanium (başlık ve düğme yazısı; Latin ve genişletilmiş Latin, Türkçe harflerin
-   hepsi var; dar bir yazı tipi olduğu için size-adjust ile %9 büyük çizilir), Rajdhani (gövde yazısı; Latin ve genişletilmiş Latin) ve Orbitron
-   (yalnız GRIDSHARD marka yazısı; yalnız Latin). Üçü de SIL Open Font License 1.1
+   Rowdies Bold (başlık/düğme yazısı; tam glif kümesi, Türkçe dahil), Oxanium
+   (yedek başlık fontu; Latin ve genişletilmiş Latin, size-adjust ile %9 büyük),
+   Rajdhani (gövde yazısı; Latin ve genişletilmiş Latin) ve Orbitron
+   (yalnız GRIDSHARD marka yazısı; yalnız Latin). Dördü de SIL Open Font License 1.1
    ile dağıtılır; lisans metinleri client/assets/fonts/OFL-*.txt dosyalarında ve
    oyunun içinde Ayarlar → Hesap ve Gizlilik → Açık kaynak lisansları altındadır. */
+@font-face {
+  font-family:"Rowdies";
+  font-style:normal;
+  font-weight:700;
+  font-display:swap;
+  src:url("../assets/fonts/rowdies-700-full.woff2") format("woff2");
+  /* Full official font, not a Latin-only subset: no Turkish fallback. */
+  unicode-range:U+0000-10FFFF;
+}
 @font-face {
   font-family:"Oxanium";
   font-style:normal;

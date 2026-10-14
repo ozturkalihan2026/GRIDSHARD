@@ -188,7 +188,7 @@ test("alt çubuk ayrık hücrelidir; adı yalnız açık sayfanın düğmesi ta�
   assert.match(active, /margin-top:-10px !important;/);
   assert.match(css, /#app-bottom-dock \.menu-action\.is-active \.lobby-dock-icon \{ width:36px !important;height:36px !important;filter:none; \}/);
   // Gizlenen adlar ekran okuyucuda durur.
-  for (const [screen, label] of [["shop", "Mağaza"], ["modules", "Kartlar"], ["menu", "Ev"], ["team", "Takım"], ["events", "Etkinlik"]]) {
+  for (const [screen, label] of [["shop", "Mağaza"], ["modules", "Kartlar"], ["menu", "Savaş"], ["team", "Takım"], ["events", "Etkinlik"]]) {
     assert.match(html, new RegExp(`data-open-screen="${screen}" data-shell-screen="${screen}" aria-label="${label}" title="${label}"`));
   }
 });
@@ -205,7 +205,7 @@ test("lig sandığı açılış penceresiyle alınır; ödüller sunucu onayınd
   // Ara ödüller (sandık olmayan duraklar) pencere açmaz.
   assert.match(claim, /if \(chestLeague\) showLeagueChestOpening\(/);
 
-  const sandbox = { document: { getElementById: () => null, querySelector: () => null } };
+  const sandbox = { casualChestAsset:()=>"", document: { getElementById: () => null, querySelector: () => null } };
   vm.runInNewContext(`${slice("  const LEAGUE_EMBLEMS = Object.freeze({", "  // Maçta yeni açılan Devre Yolu ödülü")}
 Object.assign(this, { leagueChestMarkup, setChestRevealVisual, LEAGUE_CHEST_OPENING_MIN_MS });`, sandbox);
   assert.ok(sandbox.LEAGUE_CHEST_OPENING_MIN_MS >= 600);

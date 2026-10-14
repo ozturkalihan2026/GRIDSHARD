@@ -229,7 +229,7 @@
       <p id="arena-reward-status" role="status" aria-live="polite"></p>
       <div id="arena-path" class="arena-path"></div>
       <footer class="arena-path-footer">
-        <button id="arena-detail-close" class="arena-detail-back-button" type="button" aria-label="Ev ekranına dön">←</button>
+        <button id="arena-detail-close" class="arena-detail-back-button" type="button" aria-label="Savaş ekranına dön">←</button>
         <button id="arena-leaderboard-button" class="arena-leaderboard-button" type="button">♛ LİDER PANOSU</button>
       </footer>
     </dialog>
@@ -369,67 +369,38 @@
 
     <nav id="app-bottom-dock" class="main-scope-nav lobby-bottom-dock app-bottom-dock" aria-label="Ana gezinme">
       <button type="button" class="menu-action" data-open-screen="shop" data-shell-screen="shop" aria-label="Mağaza" title="Mağaza">
-        <svg class="lobby-dock-icon dock-object-emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <path class="de-body" d="M9 27h46v27H9Z"/>
-          <path class="de-shade" d="M9 45h46v9H9Z"/>
-          <path class="de-body" d="m8 27 5-15h38l5 15v6H8Z"/>
-          <path class="de-light" d="m13 12-3 9h44l-3-9Z"/>
-          <path class="de-metal" d="M17 12h7v42h-7Z M40 12h7v42h-7Z"/>
-          <path class="de-ink" d="M8 33h48"/>
-          <path class="de-metal" d="M25 27h14v16H25Z"/>
-          <path class="de-energy" d="m32 30 5 5-5 5-5-5Z"/>
-        </svg>
+        <img class="lobby-dock-icon dock-painted-emblem" src="./assets/ui/dock-casual-v1/shop-chamfer-v2.webp" width="256" height="256" alt="" aria-hidden="true" draggable="false" decoding="async" />
         <span class="menu-action-title">MAĞAZA</span>
         <!-- Sandık indirimi günü indirim oranı (renderDockIndicators). -->
         <span id="dock-shop-sale" class="dock-sale-badge" aria-hidden="true" hidden></span>
       </button>
       <button type="button" class="menu-action" data-open-screen="modules" data-shell-screen="modules" aria-label="Kartlar" title="Kartlar">
-        <svg class="lobby-dock-icon dock-object-emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <path class="de-shade" d="M5 14 31 7l11 40-26 7Z"/>
-          <path class="de-light" d="m28 9 26 5-8 41-26-5Z"/>
-          <rect class="de-body" x="17" y="15" width="31" height="43" rx="4"/>
-          <path class="de-light" d="M21 16h23v5H21Z"/>
-          <path class="de-shade" d="M18 48h29v6q0 3-3 3H21q-3 0-3-3Z"/>
-          <path class="de-metal" d="m32.5 25 9.5 11-9.5 11L23 36Z"/>
-          <path class="de-energy" d="m32.5 30 5 6-5 6-5-6Z"/>
-        </svg><span class="menu-action-title">KARTLAR</span>
+        <img class="lobby-dock-icon dock-painted-emblem" src="./assets/ui/dock-casual-v1/cards.webp" width="256" height="256" alt="" aria-hidden="true" draggable="false" decoding="async" /><span class="menu-action-title">KARTLAR</span>
       </button>
-      <button type="button" class="menu-action is-active" data-open-screen="menu" data-shell-screen="menu" aria-label="Ev" title="Ev" aria-current="page">
-        <svg class="lobby-dock-icon lobby-dock-home dock-object-emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <path class="de-metal" d="M32 4 56 18v28L32 60 8 46V18Z"/>
-          <path class="de-metal-shade" d="M32 60V32l24-14v28Z"/>
-          <path class="de-body" d="M32 11 49 21v21L32 53 15 42V21Z"/>
-          <path class="de-light" d="M32 11v21L15 42V21Z"/>
-          <path class="de-shade" d="M32 32 49 21v21L32 53Z"/>
-          <path class="de-white" d="m32 18 12 14-12 14-12-14Z"/>
-          <path class="de-body" d="m32 24 7 8-7 8-7-8Z"/>
-          <path class="de-ink" d="M8 18 15 21M49 42l7 4"/>
-        </svg><span class="menu-action-title">EV</span>
+      <button type="button" class="menu-action is-active" data-open-screen="menu" data-shell-screen="menu" aria-label="Savaş" title="Savaş" aria-current="page">
+        <img class="lobby-dock-icon lobby-dock-battle dock-painted-emblem" src="./assets/ui/dock-casual-v1/battle-swords-v2.webp" width="256" height="256" alt="" aria-hidden="true" draggable="false" decoding="async" /><span class="menu-action-title">SAVAŞ</span>
       </button>
       <button type="button" class="menu-action" data-open-screen="team" data-shell-screen="team" aria-label="Takım" title="Takım">
-        <svg class="lobby-dock-icon lobby-dock-team dock-object-emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <path class="de-metal" d="M9 9h46v6H9Z M12 14h5v43h-5Z M47 14h5v43h-5Z"/>
-          <path class="de-body" d="M17 15h30v28L32 57 17 43Z"/>
-          <path class="de-light" d="M17 15h30v5H22v25l-5-2Z"/>
-          <path class="de-shade" d="M32 20h10v21L32 51Z"/>
-          <path class="de-gold" d="M32 25 42 29v7c0 7-4 11-10 15-6-4-10-8-10-15v-7Z"/>
-          <path class="de-energy" d="m32 29 5 8-5 7-5-7Z"/>
-          <path class="de-gold" d="m14 4 4 6-4 6-4-6Z m36 0 4 6-4 6-4-6Z"/>
-        </svg><span class="menu-action-title">TAKIM</span>
+        <img class="lobby-dock-icon lobby-dock-team dock-painted-emblem" src="./assets/ui/dock-casual-v1/team.webp" width="256" height="256" alt="" aria-hidden="true" draggable="false" decoding="async" /><span class="menu-action-title">TAKIM</span>
       </button>
       <button type="button" class="menu-action" data-open-screen="events" data-shell-screen="events" aria-label="Etkinlik" title="Etkinlik">
-        <svg class="lobby-dock-icon dock-object-emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <path class="de-shade" d="m15 34-5 25 14-5 8 6 4-25Z m34 0 5 25-14-5-8 6-4-25Z"/>
-          <path class="de-body" d="m32 8 10 5 11 2 2 12-3 13-11 6-9 5-9-5-11-6-3-13 2-12 11-2Z"/>
-          <path class="de-light" d="m32 8 10 5 11 2-1 6-11-2-9-5-9 5-11 2-1-6 11-2Z"/>
-          <path class="de-shade" d="m52 31-3 7-17 10-17-10-3-7 2 9 18 11 18-11Z"/>
-          <path class="de-gold" d="m32 17 4.5 9 10 1.5-7.3 7 1.8 10-9-5-9 5 1.8-10-7.3-7 10-1.5Z"/>
-          <path class="de-white" d="m32 20 3 7 7 1-10 4-8-4 5-1Z"/>
-        </svg><span class="menu-action-title">ETKİNLİK</span>
+        <img class="lobby-dock-icon dock-painted-emblem" src="./assets/ui/dock-casual-v1/events.webp" width="256" height="256" alt="" aria-hidden="true" draggable="false" decoding="async" /><span class="menu-action-title">ETKİNLİK</span>
       </button>
     </nav>
 
     <section id="shop-screen" class="mobile-hub-screen shop-screen" data-screen-panel="shop" hidden>
+      <template id="painted-shop-chest-assets">
+        <span class="chest-visual chest-visual-bronze chest-painted-visual" data-painted-chest-tier="bronze" aria-hidden="true"><img class="chest-painted-art" src="./assets/ui/chests-casual-v2/bronze.webp" width="256" height="256" alt="" aria-hidden="true" draggable="false" decoding="async" /></span>
+        <span class="chest-visual chest-visual-silver chest-painted-visual" data-painted-chest-tier="silver" aria-hidden="true"><img class="chest-painted-art" src="./assets/ui/chests-casual-v2/silver.webp" width="256" height="256" alt="" aria-hidden="true" draggable="false" decoding="async" /></span>
+        <span class="chest-visual chest-visual-gold chest-painted-visual" data-painted-chest-tier="gold" aria-hidden="true"><img class="chest-painted-art" src="./assets/ui/chests-casual-v2/gold.webp" width="256" height="256" alt="" aria-hidden="true" draggable="false" decoding="async" /></span>
+        <span class="chest-visual chest-visual-diamond chest-painted-visual" data-painted-chest-tier="diamond" aria-hidden="true"><img class="chest-painted-art" src="./assets/ui/chests-casual-v2/diamond.webp" width="256" height="256" alt="" aria-hidden="true" draggable="false" decoding="async" /></span>
+      </template>
+      <template id="casual-chest-reveal-assets">
+        <span class="casual-chest-stage" data-painted-chest-tier="bronze" aria-hidden="true"><span class="casual-chest-burst"></span><img class="casual-chest-closed" src="./assets/ui/chests-casual-v2/bronze-reveal.webp" width="512" height="512" alt="" draggable="false" /><img class="casual-chest-open" src="./assets/ui/chests-casual-v2/bronze-open.webp" width="512" height="512" alt="" draggable="false" /><span class="casual-chest-particles"><i></i><i></i><i></i><i></i><i></i><i></i></span></span>
+        <span class="casual-chest-stage" data-painted-chest-tier="silver" aria-hidden="true"><span class="casual-chest-burst"></span><img class="casual-chest-closed" src="./assets/ui/chests-casual-v2/silver-reveal.webp" width="512" height="512" alt="" draggable="false" /><img class="casual-chest-open" src="./assets/ui/chests-casual-v2/silver-open.webp" width="512" height="512" alt="" draggable="false" /><span class="casual-chest-particles"><i></i><i></i><i></i><i></i><i></i><i></i></span></span>
+        <span class="casual-chest-stage" data-painted-chest-tier="gold" aria-hidden="true"><span class="casual-chest-burst"></span><img class="casual-chest-closed" src="./assets/ui/chests-casual-v2/gold-reveal.webp" width="512" height="512" alt="" draggable="false" /><img class="casual-chest-open" src="./assets/ui/chests-casual-v2/gold-open.webp" width="512" height="512" alt="" draggable="false" /><span class="casual-chest-particles"><i></i><i></i><i></i><i></i><i></i><i></i></span></span>
+        <span class="casual-chest-stage" data-painted-chest-tier="diamond" aria-hidden="true"><span class="casual-chest-burst"></span><img class="casual-chest-closed" src="./assets/ui/chests-casual-v2/diamond-reveal.webp" width="512" height="512" alt="" draggable="false" /><img class="casual-chest-open" src="./assets/ui/chests-casual-v2/diamond-open.webp" width="512" height="512" alt="" draggable="false" /><span class="casual-chest-particles"><i></i><i></i><i></i><i></i><i></i><i></i></span></span>
+      </template>
       <section class="shop-section chest-store-section" aria-labelledby="chest-store-title">
         <!-- Sandıkların içeriği ve olasılıkları: bölümün köşesindeki bu sekmeyle, satın
              almadan önce açılır; her kartta ayrıca özet satırı durur (Google Play ödeme
@@ -1218,6 +1189,100 @@ with others.
 The OFL allows the licensed fonts to be used, studied, modified and
 redistributed freely as long as they are not sold by themselves. The
 fonts, including any derivative works, can be bundled, embedded, 
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION &amp; CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
+        <h4 translate="no">Rowdies Bold</h4>
+        <pre translate="no" data-license="OFL-Rowdies.txt">Copyright 2018 The Rowdies Project Authors (https://github.com/magictype/rowdy)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+https://scripts.sil.org/OFL
+
+
+-----------------------------------------------------------
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded,
 redistributed and/or sold with any software provided that any reserved
 names are not used by derivative works. The fonts and derivatives,
 however, cannot be released under any other type of license. The

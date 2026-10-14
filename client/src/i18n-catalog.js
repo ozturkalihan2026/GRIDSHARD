@@ -1289,7 +1289,7 @@
     "Geri dön":"Go back",
     "Sol üstteki okla etkinlik listesine dön.":"Use the arrow at the top left to return to the event list.",
     "Ev":"Home",
-    "Artık hazırsın. EV sekmesine dön.":"You're ready. Go back to the HOME tab.",
+    "Artık hazırsın. SAVAŞ sekmesine dön.":"You're ready. Go back to the BATTLE tab.",
     "Profilin":"Your profile",
     "Adın, unvanın ve kupaların burada. Mesaj kutusuna ödüller ve duyurular gelir; yanındaki menüden kozmetik, ödül, arkadaş ve ayar sayfaları açılır.":"Your name, title and trophies are here. Rewards and announcements arrive in the inbox; the menu next to it opens cosmetics, rewards, friends and settings.",
     "Sıra savaşta. SAVAŞ'a dokun; ilk savaşında sana adım adım eşlik edeceğim.":"Time to fight. Tap BATTLE; I'll walk you through your first battle step by step.",

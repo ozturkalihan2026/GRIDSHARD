@@ -14,6 +14,8 @@
 }
 [data-font-pilot="lilita"] { --pilot-family:"Pilot Lilita One";--pilot-weight:400; }
 [data-font-pilot="rowdies"] { --pilot-family:"Pilot Rowdies";--pilot-weight:700; }
+/* Keep the historical baseline after Rowdies becomes the permanent font. */
+body[data-font-pilot="current"] { --gs-font-display:"Oxanium",sans-serif; }
 /* Only explicit headings/button labels. Never change body copy, brand or SVG. */
 body:is([data-font-pilot="lilita"],[data-font-pilot="rowdies"])
   :is(#home-arena-name,#home-battle-button > span,#app-bottom-dock .menu-action-title,

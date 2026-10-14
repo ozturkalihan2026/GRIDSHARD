@@ -7120,7 +7120,7 @@ body[data-app-screen="menu"] .app-bottom-dock .menu-action.is-active .menu-actio
 
 /* GRIDSHARD visual pass — display type, clean dock and neon circuit seals. */
 :root {
-  --gs-font-display:"Oxanium","Bahnschrift SemiBold","Segoe UI Semibold","Arial Black",sans-serif;
+  --gs-font-display:"Rowdies","Oxanium","Bahnschrift SemiBold","Segoe UI Semibold","Arial Black",sans-serif;
   --gs-font-brand:"Orbitron","Oxanium","Bahnschrift SemiBold","Arial Black",sans-serif;
   --gs-font-copy:"Rajdhani","Bahnschrift","Segoe UI",sans-serif;
 }
@@ -7128,6 +7128,9 @@ body[data-app-screen="menu"] .app-bottom-dock .menu-action.is-active .menu-actio
 body {
   font-family:var(--gs-font-copy);
   font-weight:500;
+  /* Rowdies has a real Bold (700) face; never synthesize heavier outlines.
+     Italic copy may still use synthetic style. Brand/copy families are unchanged. */
+  font-synthesis:style;
 }
 
 :is(

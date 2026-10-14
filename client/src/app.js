@@ -2419,7 +2419,13 @@
       visual.innerHTML = `${leagueChestMarkup(league)}<span class="chest-reveal-sparks" aria-hidden="true">${"<i></i>".repeat(10)}</span>`;
     } else {
       visual.className = `chest-visual chest-visual-large chest-visual-${tier}`;
-      visual.innerHTML = shopChestSvg(tier);
+      const painted = casualChestAsset(tier, { reveal:true });
+      if (painted) {
+        visual.className += " chest-casual-reveal";
+        visual.innerHTML = painted;
+      } else {
+        visual.innerHTML = shopChestSvg(tier);
+      }
     }
   }
 
@@ -3421,8 +3427,27 @@
     }[tier];
     const safeTier = ["bronze", "silver", "gold", "diamond"].includes(tier) ? tier : customBase || "bronze";
     const safeVisual = String(visualId || "").replace(/[^a-z0-9_-]/gi, "");
+    // The same four standard chests appear in shop, inbox and reward tracks.
+    // Keep custom tournament marks and the legacy large SVG fallback separate.
+    if (!large && !safeVisual && ["bronze", "silver", "gold", "diamond"].includes(tier)) {
+      const painted = casualChestAsset(safeTier);
+      if (painted) return painted;
+    }
     const mark = safeVisual.startsWith("team_") ? "hex" : safeVisual.startsWith("weekly_") ? "star" : "diamond";
     return `<span class="chest-visual chest-visual-${safeTier}${safeVisual ? ` chest-visual-event chest-visual-${safeVisual}` : ""}${large ? " chest-visual-large" : ""}" aria-hidden="true">${shopChestSvg(safeTier, mark)}</span>`;
+  }
+
+  // Inert templates declare every runtime image to the package whitelist.
+  // Empty result is deliberate: callers may use the original SVG fallback.
+  function casualChestAsset(tier, { reveal = false } = {}) {
+    if (!["bronze", "silver", "gold", "diamond"].includes(tier) || typeof document === "undefined") return "";
+    const asset = document.getElementById(reveal ? "casual-chest-reveal-assets" : "painted-shop-chest-assets")?.content
+      ?.querySelector(`[data-painted-chest-tier="${tier}"]`);
+    return asset?.outerHTML || "";
+  }
+
+  function paintedShopChestMarkup(tier) {
+    return casualChestAsset(tier) || chestVisualMarkup(tier);
   }
 
   function shopChestAction({ gift, ownedCount, openableCount, item, state }) {
@@ -3475,7 +3500,7 @@
         card.dataset.tier = item.tier;
         card.dataset.storeChestId = item.definition_id;
         card.dataset.sale = String(Number(item.cost) < Number(item.base_cost));
-        card.innerHTML = chestVisualMarkup(item.tier);
+        card.innerHTML = paintedShopChestMarkup(item.tier);
         const chestName = document.createElement("strong");
         chestName.textContent = item.name_tr;
         card.appendChild(chestName);
@@ -3749,8 +3774,10 @@
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
     if (host) {
       host.replaceChildren();
-      host.appendChild(createRewardRows(rewards));
-      appendChestCosmeticRows(host.firstChild, rewards);
+      const rows = createRewardRows(rewards);
+      appendChestCosmeticRows(rows, rewards);
+      [...rows.children].forEach((row, index) => row.style.setProperty("--reveal-index", String(index)));
+      host.appendChild(rows);
     }
     const dialog = document.getElementById("chest-reveal-dialog");
     if (dialog?.showModal && !dialog.open) dialog.showModal();
@@ -3784,7 +3811,9 @@
       section.className = "bulk-chest-reward";
       const label = document.createElement("small");
       label.textContent = `${receipts.length} SANDIĞIN TOPLAM ÖDÜLÜ`;
-      section.append(label, createBulkRewardRows(batchReceipt));
+      const rows = createBulkRewardRows(batchReceipt);
+      [...rows.children].forEach((row, index) => row.style.setProperty("--reveal-index", String(index)));
+      section.append(label, rows);
       host.appendChild(section);
     }
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
@@ -3865,7 +3894,7 @@
     const host = document.getElementById("chest-reveal-rewards");
     const close = document.getElementById("chest-reveal-close");
     setChestRevealVisual({ tier });
-    if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
+    if (card) { card.dataset.tier = tier; card.dataset.state = "claimed"; }
     if (title) title.textContent = chest.name_tr || definition?.name_tr || "Hediye Sandık";
     if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
     if (host) {
@@ -21538,6 +21567,12 @@
     window.__GRIDSHARD_TEST_API={
       startQuickLocalBattle,
       fillBattlePoolForQuickTest,
+      // Visual-only chest previews. This API is removed by production builds.
+      showChestOpening,
+      showChestReveal,
+      showBulkChestReveal,
+      showClaimedChest,
+      showChestFailure,
       // Uses the same authenticated setup/ready/render path as an accepted
       // friend invitation. This entire API is removed by production builds.
       launchSocialBattle,
@@ -22086,8 +22121,8 @@
       target:() => onboardingDock("menu"),
       done:(c) => c.screen === "menu",
       onNext:() => openAppScreen("menu"),
-      title:"Ev",
-      body:"Artık hazırsın. EV sekmesine dön.",
+      title:"Savaş",
+      body:"Artık hazırsın. SAVAŞ sekmesine dön.",
     },
     {
       id:"home",

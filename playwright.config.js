@@ -56,12 +56,12 @@ module.exports = defineConfig({
   projects: [
     {
       name: "desktop-chromium",
-      testMatch: /(startup-loading|two-client-pvp|menu-navigation|persistent-render|visual-atmosphere|typography-pilot|battle-density|beta33-season|beta381-battle-events)\.spec\.js/,
+      testMatch: /(startup-loading|two-client-pvp|menu-navigation|persistent-render|visual-atmosphere|typography-pilot|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|battle-density|beta33-season|beta381-battle-events)\.spec\.js/,
       use: { ...devices["Desktop Chrome"], ...localChrome }
     },
     {
       name: "android-chrome-emulated",
-      testMatch: /(startup-loading|two-client-pvp|visual-atmosphere|typography-pilot|mobile-battle|settings-layout|onboarding)\.spec\.js/,
+      testMatch: /(startup-loading|two-client-pvp|visual-atmosphere|typography-pilot|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|mobile-battle|settings-layout|onboarding)\.spec\.js/,
       use: { ...devices["Pixel 7"], ...localChrome }
     },
     {

@@ -178,10 +178,10 @@ test("takım ve turnuva sayfaları yüzey dilindedir", () => {
   assert.match(block, /\.event-detail-screen \.event-detail-tabs > button,\n#team-screen \.team-tabs > button \{ font-size:\.5rem !important;/);
 });
 
-test("başlık yazı tipi Oxanium'dur; marka yazısı Orbitron'da kalır", () => {
+test("başlık yazı tipi Rowdies Bold'dur; marka yazısı Orbitron'da kalır", () => {
   const styles = read("src", "styles.css");
   const fonts = read("src", "fonts.css");
-  assert.match(styles, /--gs-font-display:"Oxanium","Bahnschrift SemiBold","Segoe UI Semibold","Arial Black",sans-serif;/);
+  assert.match(styles, /--gs-font-display:"Rowdies","Oxanium","Bahnschrift SemiBold","Segoe UI Semibold","Arial Black",sans-serif;/);
   assert.match(styles, /content:"GRIDSHARD";[^}]*font-family:var\(--gs-font-brand\);/);
   assert.match(rule(".boot-title"), /font-family:var\(--gs-font-brand\) !important;/);
   // Dar yazı tipi biraz büyük çizilir; böylece ölçüler yeniden yazılmadan okunur kalır.

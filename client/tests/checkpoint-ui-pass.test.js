@@ -39,7 +39,9 @@ assert.ok(app.includes('applyCoreVisualIdentity(coreHost, core?.id || "core_reso
 assert.ok(app.includes("function createRewardRows"));
 assert.ok(app.includes("function moduleRewardIdentity"));
 assert.ok(app.includes("function coreRewardIdentity"));
-assert.ok(app.includes("host.appendChild(createRewardRows(rewards))"));
+const chestReveal = app.slice(app.indexOf("  function showChestReveal("), app.indexOf("  function showBulkChestReveal("));
+assert.ok(chestReveal.includes("const rows = createRewardRows(rewards);"));
+assert.ok(chestReveal.includes("host.appendChild(rows);"));
 assert.ok(app.includes("const prize = createRewardRows(reward, { compact:true })"));
 assert.ok(app.includes("const prize = createRewardRows(reward, { compact:true })"));
 assert.ok(app.includes("card.append(day, prize, action)"));

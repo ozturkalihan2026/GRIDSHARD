@@ -1003,7 +1003,7 @@
     "Arena ödül ilerlemesi":"Arena reward progress",
     "Aktif altı modüllük deste":"Active six-module deck",
     "Hazır savaş desteleri":"Preset battle decks",
-    "Ev ekranına dön":"Back to home",
+    "Savaş ekranına dön":"Back to battle",
     "Kupa sıralaması kapsamı":"Trophy ranking scope",
     "Oyuncu sıralaması":"Player ranking",
     "Lider panosu bölümleri":"Leaderboard sections",
