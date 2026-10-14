@@ -3259,7 +3259,9 @@ function createClient() {
   assert.ok(app.includes('dataset.action'));
   assert.ok(app.includes("renderPresetGallery"));
   assert.ok(app.includes("updateBattlePoolPresetMeta"));
-  assert.ok(app.includes("lobby-parallax-x"));
+  // Görsel tur 6: ev ekranının arkasındaki soluk çekirdek katmanı ve imleçle kayması kalktı.
+  assert.ok(!app.includes("lobby-parallax-x"));
+  assert.ok(fs.readFileSync("./src/canon.css","utf8").includes(".lobby-backdrop { display:none !important; }"));
   assert.ok(css.includes(".lobby-board-grid"));
   assert.ok(css.includes(".preset-card"));
   assert.ok(css.includes('[data-action="remove"]'));

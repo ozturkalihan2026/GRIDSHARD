@@ -21,4 +21,4 @@ RUN groupadd --gid 10001 gridshard && useradd --uid 10001 --gid 10001 --no-creat
     && mkdir -p /var/lib/gridshard && chown gridshard:gridshard /var/lib/gridshard
 USER 10001:10001
 EXPOSE 8000
-CMD ["python", "-m", "uvicorn", "server.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--no-proxy-headers", "--no-access-log"]
+CMD ["python", "-m", "uvicorn", "server.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--no-proxy-headers", "--no-access-log", "--ws-max-size", "262144"]

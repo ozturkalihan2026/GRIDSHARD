@@ -464,6 +464,13 @@
       requestJson: requestJsonWithDeadline,
     });
   let metaProgressionState = null;
+  // Modülün adı yalnız "Onarım"dır; eski sunucu verisi "Onarım Modülü" gönderir.
+  function withCanonicalModuleNames(state) {
+    for (const item of state?.module_collection || []) {
+      if (item?.name_tr === "Onarım Modülü") item.name_tr = "Onarım";
+    }
+    return state;
+  }
   // Gerçek para mağazası (/store): ürünler, sağlayıcılar, geçiş ve premium durumu.
   let storeState = null;
   let purchaseInFlight = false;
@@ -920,6 +927,17 @@
     }
   }
 
+  // Ekran geçişinde (alt çubuk hareketi sürerken) tazelenen verinin yeniden
+  // çizimi bekletilir; aynı karede yapılınca geçiş takılarak görünüyordu.
+  const NAVIGATION_SETTLE_MS = 360;
+  let navigationSettleUntil = 0;
+
+  function afterNavigationSettle(task) {
+    const wait = navigationSettleUntil - performance.now();
+    if (wait <= 0) task();
+    else window.setTimeout(task, wait);
+  }
+
   function openAppScreen(screen, { keepSubTab=false }={}) {
     const previousScreen = appRouter.currentScreen;
     const result = appRouter.go(screen);
@@ -927,6 +945,7 @@
       logClientMessage(result.reason);
       return result;
     }
+    if (screen !== previousScreen) navigationSettleUntil = performance.now() + NAVIGATION_SETTLE_MS;
     closeDropdownMenus();
     if (!keepSubTab) resetScreenSubTabs(screen, previousScreen);
 
@@ -954,13 +973,13 @@
       accountDataLoader
         .loadProfile()
         .then(() => markScreenNotificationsSeen(screen))
-        .then(() => {
+        .then(() => afterNavigationSettle(() => {
           renderProfileSummary();
           renderMetaHubScreens();
           renderRemoteDataStatus();
-        });
+        }));
       if (["shop", "modules", "team", "menu"].includes(screen)) {
-        loadMetaProgression();
+        loadMetaProgression({ afterSettle:true });
       }
       if (["shop", "rewards"].includes(screen)) void loadStoreState();
       if (screen === "team") {
@@ -1060,14 +1079,14 @@
     };
   }
 
-  async function loadMetaProgression({required = false} = {}) {
+  async function loadMetaProgression({required = false, afterSettle = false} = {}) {
     try {
       const response = await fetchWithDeadline(
         `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression`,
         { cache: "no-store" }
       );
       if (!response.ok) throw new Error("Koleksiyon yüklenemedi.");
-      metaProgressionState = await response.json();
+      metaProgressionState = withCanonicalModuleNames(await response.json());
       const repair = repairBattleDeckAgainstCollection();
       if (repair.changed) {
         await persistBattlePoolDefinitionIds(repair.definitionIds);
@@ -1080,7 +1099,8 @@
         if (status) status.textContent = "Hesap verileri yüklenemedi. Sunucu bağlantısını kontrol edip sayfayı yenile.";
       }
     }
-    renderMetaHubScreens();
+    if (afterSettle) afterNavigationSettle(renderMetaHubScreens);
+    else renderMetaHubScreens();
     return metaProgressionState;
   }
 
@@ -1158,13 +1178,21 @@
         amount.append(" ", changeLabel);
       }
       box.append(name, amount);
-      // Simge kutunun köşesinde durur; değer ve fark eskisi gibi okunur.
+      // Hücre en çok iki satırdır: üstte simge ve etiket, altta değer ve farkı (canon.css).
       if (icon) {
         box.dataset.tone = tone || "";
         box.appendChild(createUiIcon(icon, tone));
       }
       host.appendChild(box);
     }
+    // Etiket tek satırdır. Sığmayan uzun etikette (ör. İngilizce "SABOTAGE INTERVAL")
+    // hücrenin simgesi çizilmez; ölçüm pencere açıldıktan sonraki karede yapılır.
+    globalThis.requestAnimationFrame?.(() => {
+      for (const box of host.children) {
+        const name = box.querySelector("span");
+        if (name && name.scrollWidth > name.clientWidth + 1) box.dataset.tight = "true";
+      }
+    });
   }
 
   // Bir sonraki seviyenin farkı değerin kendi birimiyle yazılır: "+3",
@@ -1278,7 +1306,14 @@
     const arrow = document.createElement("span");
     arrow.className = "upgrade-arrow";
     arrow.setAttribute("aria-hidden", "true");
-    arrow.innerHTML = '<svg viewBox="0 0 12 12" focusable="false"><path d="M6 1.3 1.7 6h2.5v4.7h3.6V6h2.5Z"/></svg>';
+    // Yalın ok, yeni görsel dilde: aydınlık sol yüz, gölgeli sağ yüz, koyu kontur.
+    arrow.innerHTML = '<svg viewBox="0 0 24 24" focusable="false">'
+      + '<path class="ua-s" d="M12 4 21.4 14.4h-5.6v8.4H8.2v-8.4H2.6Z"/>'
+      + '<path class="ua-m" d="M12 2.2 21.4 12.6h-5.6v8.4H8.2v-8.4H2.6Z"/>'
+      + '<path class="ua-l" d="M12 2.2 2.6 12.6h3.6L12 6.2ZM8.2 12.6h2.1v8.4H8.2Z"/>'
+      + '<path class="ua-d" d="M12 2.2v4l5.8 6.4h3.6ZM13.7 12.6h2.1v8.4h-2.1Z"/>'
+      + '<path class="ua-o" d="M12 2.2 21.4 12.6h-5.6v8.4H8.2v-8.4H2.6Z"/>'
+      + "</svg>";
     return arrow;
   }
 
@@ -2431,6 +2466,9 @@
       : arenaPath;
     const currentStageId = metaProgressionState?.rank?.id;
     const rewardIcon = (rewards = {}) => {
+      // Duraktaki mağaza sandığı (Bronz, Gümüş, Altın, Elmas) mağazadaki çizimiyle görünür.
+      const storeChestTier = rewards.chest_id ? chestTier({ id:rewards.chest_id }) : "";
+      if (storeChestTier && STORE_CHEST_DEFINITION_IDS.has(rewards.chest_id)) return chestVisualMarkup(storeChestTier);
       // GRIDSHARD Sandığı kozmetik seti taşır; o da sandık simgesiyle görünür.
       if (rewards.chest_id || rewards.profile_background_id) return resourceSymbolMarkup("chest");
       if (rewards.core_shards) {
@@ -3008,7 +3046,7 @@
         method: "PUT",
         body: JSON.stringify({ core_type_id: core.id }),
       });
-      metaProgressionState = payload;
+      metaProgressionState = withCanonicalModuleNames(payload);
       renderMetaHubScreens();
       document.getElementById("core-quick-actions")?.setAttribute("hidden", "");
       const status = document.getElementById("core-action-status");
@@ -3029,6 +3067,9 @@
     selectedCollectionCoreId = core.id;
     openCoreDetail();
   }
+
+  // Çekirdek yetenek eşiklerinin rozet rengi: modül yetenek ağacındaki tür renkleri.
+  const CORE_SKILL_TIER_KINDS = Object.freeze(["basic", "tuning", "mastery"]);
 
   function renderCoreDetailTab(tabName) {
     const core = activeMetaCore();
@@ -3053,6 +3094,8 @@
       ]) {
         const row = document.createElement("div");
         row.dataset.tone = tone;
+        // Savaş rolü bir cümledir; satırı doldurur ve metin boyunda yazılır (canon.css).
+        if (label === "Savaş rolü") row.dataset.wide = "true";
         const name = document.createElement("dt");
         name.append(createUiIcon(icon, tone), document.createTextNode(label));
         const amount = document.createElement("dd");
@@ -3062,34 +3105,78 @@
       }
       host.appendChild(list);
     } else if (tabName === "skills") {
-      intro.textContent = "Her eşikte tek bir çekirdek yeteneği seçilebilir.";
+      // Modül yetenek ağacıyla aynı tasarım: her eşikte iki dal, ortada seviye rozeti
+      // ve Akı bedeli. Açıklama düğmede değil, dokununca üstteki satırda yazar.
+      const learnedSkills = (core.skills || []).filter((skill) => skill.learned);
+      intro.textContent = learnedSkills.length
+        ? talentDisplayDescription(learnedSkills[learnedSkills.length - 1])
+        : "Her eşikte tek bir çekirdek yeteneği seçilebilir. Açıklamasını görmek için bir yeteneğe dokun.";
       const tree = document.createElement("div");
-      tree.className = "core-skill-tree";
+      tree.className = "module-talent-path core-talent-path";
+      const tiers = new Map();
       for (const skill of core.skills || []) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = skill.learned ? "is-selected" : "";
-        const state = skill.learned ? "SEÇİLDİ" : skill.tier_selected ? "DİĞER DAL SEÇİLDİ" : core.level < skill.level ? `SV ${skill.level} GEREKLİ` : `${skill.flux_cost} AKI`;
-        // Çekirdek yeteneği çekirdeğe özel bir kuraldır; açıklaması düğmede yazar.
-        const skillName = document.createElement("strong");
-        skillName.textContent = talentDisplayName(skill);
-        const skillState = document.createElement("small");
-        skillState.textContent = `SV ${skill.level} · ${state}`;
-        button.append(skillName, skillState);
-        if (skill.description_tr) {
-          const skillDescription = document.createElement("em");
-          skillDescription.textContent = talentDisplayDescription(skill);
-          button.appendChild(skillDescription);
-        }
-        button.setAttribute("aria-label", `${talentDisplayName(skill)} · ${state} · ${talentDisplayDescription(skill)}`);
-        button.disabled = !coreSkillLearnable(core, skill);
-        button.addEventListener("click", async () => {
-          button.disabled = true;
-          try { await mutateSelectedCore(`skills/${skill.id}`); }
-          catch (error) { document.getElementById("core-detail-status").textContent = error.message; button.disabled = false; }
-        });
-        tree.appendChild(button);
+        const tierKey = String(skill.tier ?? skill.level);
+        if (!tiers.has(tierKey)) tiers.set(tierKey, []);
+        tiers.get(tierKey).push(skill);
       }
+      [...tiers.values()].forEach((tierSkills, tierIndex) => {
+        const threshold = tierSkills[0];
+        const row = document.createElement("section");
+        row.className = "module-talent-node";
+        row.dataset.selected = tierSkills.find((skill) => skill.learned)?.id || "";
+        row.dataset.reachable = String(Number(core.level) >= Number(threshold.level));
+        const tierKind = CORE_SKILL_TIER_KINDS[Math.min(tierIndex, CORE_SKILL_TIER_KINDS.length - 1)];
+        row.dataset.kind = tierKind;
+        const level = document.createElement("span");
+        level.className = "module-talent-level";
+        const levelValue = document.createElement("strong");
+        levelValue.textContent = `SV ${threshold.level}`;
+        level.append(levelValue, createCostChip("flux", threshold.flux_cost));
+        const kind = document.createElement("em");
+        kind.className = "module-talent-kind";
+        kind.textContent = localizedUiText(`EŞİK ${tierIndex + 1}`);
+        const [kindIcon, kindTone] = TALENT_KIND_ICONS[tierKind] || ["star", "cyan"];
+        kind.prepend(createUiIcon(kindIcon, kindTone));
+        const choices = document.createElement("div");
+        choices.className = "module-talent-choices";
+        row.append(kind, choices);
+        tierSkills.forEach((skill, skillIndex) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          const canLearn = coreSkillLearnable(core, skill);
+          button.className = `${skillIndex === 0 ? "is-left-choice" : "is-right-choice"}${skill.learned ? " is-selected" : ""}${canLearn ? "" : " is-unavailable"}`;
+          const state = skill.learned
+            ? "SEÇİLDİ"
+            : skill.tier_selected ? "DİĞER DAL SEÇİLDİ"
+              : core.level < skill.level ? `SV ${skill.level} GEREKLİ`
+                : Number(metaProgressionState?.flux_shards || 0) < Number(skill.flux_cost || 0) ? `${skill.flux_cost} AKI GEREKLİ`
+                  : "SEÇ";
+          const skillName = document.createElement("strong");
+          skillName.textContent = talentDisplayName(skill);
+          const skillState = document.createElement("small");
+          skillState.textContent = state;
+          button.append(skillName, skillState);
+          button.dataset.selectable = String(canLearn);
+          button.setAttribute("aria-label", `${talentDisplayName(skill)} · ${state} · Açıklamayı göster`);
+          button.title = talentDisplayDescription(skill);
+          button.addEventListener("click", async () => {
+            intro.textContent = talentDisplayDescription(skill);
+            tree.querySelectorAll("button").forEach((candidate) => candidate.classList.toggle("is-previewed", candidate === button));
+            if (!canLearn) return;
+            button.disabled = true;
+            try {
+              await mutateSelectedCore(`skills/${skill.id}`);
+              // Pencere yeniden çizilince Genel sekmesi açılır; seçim yapılan sekmede kalınır.
+              for (const tab of document.querySelectorAll("[data-core-detail-tab]")) tab.classList.toggle("is-active", tab.dataset.coreDetailTab === "skills");
+              renderCoreDetailTab("skills");
+              document.getElementById("core-detail-status").textContent = "Yetenek kaydedildi.";
+            } catch (error) { document.getElementById("core-detail-status").textContent = error.message; button.disabled = false; }
+          });
+          choices.appendChild(button);
+          if (skillIndex === 0) choices.appendChild(level);
+        });
+        tree.appendChild(row);
+      });
       host.appendChild(tree);
     } else {
       intro.textContent = core.role_tr;
@@ -3203,7 +3290,9 @@
     setText("arena-detail-rating", `${rating} Kupa`);
     setText("arena-detail-range", rank.next_stage ? `${rating - floor} / ${ceiling - floor}` : "Azami aşama");
     setText("arena-detail-next", rank.next_stage ? `Sonraki: ${rank.next_stage.name_tr} · ${ceiling} Kupa` : "Efsanevi yol tamamlandı");
-    renderArenaPath();
+    // Devre Yolu yüzlerce durak çizer. Pencere kapalıyken çizilmez (her ekran
+    // değişiminde yeniden kurulması gezinmeyi takıltıyordu); açılırken çizilir.
+    if (document.getElementById("arena-detail-dialog")?.open) renderArenaPath();
     const segments = document.getElementById("home-arena-segments");
     if (segments) {
       segments.replaceChildren();
@@ -3246,6 +3335,8 @@
       .includes(item.definition_id);
     if (select) {
       select.textContent = localizedUiText(selected ? "Çıkar" : "Seç");
+      // Desteye ekleyen düğme yeşil, desteden çıkaran kırmızıdır (canon.css).
+      select.dataset.action = selected ? "remove" : "add";
       select.disabled = item.unlocked === false && !selected;
     }
     panel.hidden = false;
@@ -3296,6 +3387,8 @@
       host.appendChild(tile);
     }
   }
+
+  const STORE_CHEST_DEFINITION_IDS = new Set(["field_3h", "circuit_8h", "core_24h", "diamond_24h"]);
 
   function chestTier(definition) {
     return definition?.visual_tier
@@ -3592,7 +3685,7 @@
         // uses the same receipt id, so a lost response cannot duplicate a
         // chest reward, module level or currency spend.
         pendingMetaRequests.delete(url);
-        metaProgressionState = payload.meta_progression || payload;
+        metaProgressionState = withCanonicalModuleNames(payload.meta_progression || payload);
         if (payload.profile) profileState.applyProfile(payload.profile);
         renderProfileSummary();
         renderMetaHubScreens();
@@ -3707,7 +3800,14 @@
     const close = document.getElementById("chest-reveal-close");
     if (card) card.dataset.state = "error";
     if (kicker) { kicker.hidden = false; kicker.textContent = "SANDIK AÇILAMADI"; }
-    if (host) host.innerHTML = `<div><span>${error instanceof Error ? error.message : String(error)}</span></div>`;
+    if (host) {
+      // Hata metni sunucudan gelebilir; HTML olarak yorumlanmaz.
+      const message = document.createElement("span");
+      message.textContent = error instanceof Error ? error.message : String(error);
+      const wrap = document.createElement("div");
+      wrap.appendChild(message);
+      host.replaceChildren(wrap);
+    }
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
   }
 
@@ -3952,7 +4052,7 @@
       });
       nativeStore.markProcessed(native);
       storeState = payload.store || storeState;
-      if (payload.meta_progression) metaProgressionState = payload.meta_progression;
+      if (payload.meta_progression) metaProgressionState = withCanonicalModuleNames(payload.meta_progression);
       if (payload.profile) profileState.applyProfile(payload.profile);
       renderProfileSummary();
       renderMetaHubScreens();
@@ -4127,7 +4227,7 @@
         nativeStore.markProcessed(native);
       }
       storeState = payload.store || storeState;
-      if (payload.meta_progression) metaProgressionState = payload.meta_progression;
+      if (payload.meta_progression) metaProgressionState = withCanonicalModuleNames(payload.meta_progression);
       if (payload.profile) profileState.applyProfile(payload.profile);
       renderProfileSummary();
       renderMetaHubScreens();
@@ -7797,6 +7897,15 @@
   function scheduleMetaHubFlush() {
     if (metaHubFlushHandle !== null || !metaHubDirtySections.size) return;
     if (appRouter.currentScreen === RelayAppScreen.PLAY) return;
+    const settleWait = navigationSettleUntil - performance.now();
+    if (settleWait > 0) {
+      // Geçiş bitene kadar görünmeyen ekranlar çizilmez.
+      metaHubFlushHandle = window.setTimeout(() => {
+        metaHubFlushHandle = null;
+        scheduleMetaHubFlush();
+      }, settleWait);
+      return;
+    }
     metaHubFlushHandle = typeof globalThis.requestIdleCallback === "function"
       ? globalThis.requestIdleCallback(() => flushMetaHubSections(), { timeout:900 })
       : window.setTimeout(() => flushMetaHubSections(), 60);
@@ -9108,6 +9217,8 @@
     requestFrame:(run) => window.requestAnimationFrame(run),
     cancelFrame:(id) => window.cancelAnimationFrame(id),
     rememberEvents:rememberServerDestructions,
+    // Sahnede karşılığı olmayan olaylar (bkz. processLocalServerEvents).
+    ignoredTypes:["module_cooldown_started", "module_heat_changed"],
     present:({ snapshot, events, snapshotChanged }) => syncOnlineServerBattle({
       type:"presentation", payload:{ snapshot, events, snapshotChanged },
     }),
@@ -9261,9 +9372,21 @@
             ? "core_hit"
             : "module_hit"
         );
+    const delay=Math.max(0,Number(travelMs || 0));
+    const dueAt=performance.now()+delay;
+    const generation=battleVisualGeneration;
     window.setTimeout(
-      () => triggerGridshardCue(cue),
-      Math.max(0,Number(travelMs || 0))
+      () => {
+        // Takılmadan sonra birikmiş vuruş sesleri topluca çalmaz.
+        if (
+          generation !== battleVisualGeneration
+          || performance.now()-dueAt > BATTLE_FX_LATE_LIMIT_MS
+        ) {
+          return;
+        }
+        triggerGridshardCue(cue);
+      },
+      delay
     );
   }
 
@@ -9562,6 +9685,24 @@
     );
 
   let renderedCorePowerSignature = null;
+
+  // Savaş göstergeleri her sunucu mesajında yeniden hesaplanır. Değişmeyen
+  // metni yeniden yazmak metin düğümünü yeniler, düzeni geçersiz kılar ve aynı
+  // turda yapılan konum ölçümünü pahalı bir düzen hesabına çevirir. Bu yüzden
+  // yalnız değişen değer yazılır. Karşılaştırma yazılan kaynak metinle yapılır;
+  // ekrandaki metin çeviri katmanınca değiştirilmiş olabilir. Bu öğelere başka
+  // yerden yazılmaz.
+  const hudTextSources = new WeakMap();
+
+  function setHudText(element, text) {
+    if (!element || hudTextSources.get(element) === text) return;
+    hudTextSources.set(element, text);
+    element.textContent = text;
+  }
+
+  function setHudData(element, key, value) {
+    if (element && element.dataset[key] !== value) element.dataset[key] = value;
+  }
 
   function renderCorePowerControl() {
     if (!corePowerButtonEl) return;
@@ -9906,64 +10047,6 @@
       () => openAppScreen(
         button.dataset.openScreen
       )
-    );
-  }
-
-  const lobbyPanel=
-    document.getElementById(
-      "main-menu-panel"
-    );
-
-  if (lobbyPanel) {
-    lobbyPanel.addEventListener(
-      "pointermove",
-      (event) => {
-        const rect=
-          lobbyPanel.getBoundingClientRect();
-        const x=
-          (
-            event.clientX
-            - rect.left
-          ) / Math.max(
-            1,
-            rect.width
-          );
-        const y=
-          (
-            event.clientY
-            - rect.top
-          ) / Math.max(
-            1,
-            rect.height
-          );
-
-        lobbyPanel.style.setProperty(
-          "--lobby-parallax-x",
-          `${(
-            x - .5
-          ) * 10}px`
-        );
-        lobbyPanel.style.setProperty(
-          "--lobby-parallax-y",
-          `${(
-            y - .5
-          ) * 8}px`
-        );
-      }
-    );
-
-    lobbyPanel.addEventListener(
-      "pointerleave",
-      () => {
-        lobbyPanel.style.setProperty(
-          "--lobby-parallax-x",
-          "0px"
-        );
-        lobbyPanel.style.setProperty(
-          "--lobby-parallax-y",
-          "0px"
-        );
-      }
     );
   }
 
@@ -10993,6 +11076,37 @@
     return battleSweepQueue.schedule(delayMs, run);
   }
 
+  // Zamanı gelen bir efekt bundan uzun gecikirse (uzun kare, arka plandan
+  // dönüş) gösterilmez. Gecikenlerin hepsi aynı anda çalışacağı için aksi hâlde
+  // takılmanın ardından efektler ve sesler yığın hâlinde gelir.
+  const BATTLE_FX_LATE_LIMIT_MS = 300;
+
+  // Ana iş parçacığının sıkışıklığı. Savaş zamanlayıcıları (ör. merminin
+  // varış anı) ne kadar geç çalışıyorsa ana iş parçacığı o kadar doludur.
+  // Yumuşatılmış gecikme eşiği aşınca süs efektleri kısılır (bkz.
+  // battleEffectLoad); böylece yetişemeyen cihazda efektler birikip savaşı
+  // dondurmaz, yük geçince kendiliğinden geri gelir. Yetişen cihazda gecikme
+  // birkaç milisaniyedir ve hiçbir şey kısılmaz.
+  const BATTLE_TIMER_LAG_BUSY_MS = 30;
+  const BATTLE_TIMER_LAG_OVERLOADED_MS = 60;
+  let battleTimerLagMs = 0;
+
+  function noteBattleTimerLag(dueAt) {
+    // Arka plandaki sekmede zamanlayıcılar bilerek seyreltilir; yük sayılmaz.
+    if (document.hidden) return;
+    const lag = Math.min(1000, Math.max(0, performance.now() - dueAt));
+    battleTimerLagMs += (lag - battleTimerLagMs) * 0.25;
+  }
+
+  // Gecikmeli geri bildirim (ör. Çekirdek onarımının yazısı). Süpürme HUD
+  // turunda çalıştığı için o aralık kadar gecikme olağandır.
+  function scheduleBattleFeedback(delayMs, run) {
+    const dueAt = performance.now() + delayMs;
+    return scheduleBattleSweep(delayMs, () => {
+      if (performance.now() - dueAt <= BATTLE_FX_LATE_LIMIT_MS + BATTLE_HUD_RENDER_INTERVAL_MS) run();
+    });
+  }
+
   function runBattleSweep(now=performance.now()) {
     battleSweepQueue.flush(now);
   }
@@ -11792,7 +11906,7 @@
             data.source_module_id
           );
           if (sourceModule?.definition_id === "core") {
-            scheduleBattleSweep(170, feedback);
+            scheduleBattleFeedback(170, feedback);
           } else {
             feedback();
           }
@@ -11806,7 +11920,7 @@
           data.unit || ""
         );
         if (Number(data.value || 0) > 0) {
-          scheduleBattleSweep(170, () => emitServerModuleFeedback(
+          scheduleBattleFeedback(170, () => emitServerModuleFeedback(
             snapshot,
             data.target_player_id || data.player_id,
             data.target_module_id || data.module_id,
@@ -12063,6 +12177,10 @@
               targetModule
             );
 
+      // Ağır vuruş: savunulmamış ve 40 ya da üstü hasar, ya da hedefin azami CAN'ının dörtte biri.
+      const hitDamage=Math.max(0, Number(data.damage || 0));
+      const targetMaxHp=Math.max(1, Number(targetModule?.max_hp || targetModule?.maxHp || 0));
+      const heavyHit=!defended && (hitDamage >= 40 || hitDamage / targetMaxHp >= .25);
       const travelMs=emitDuelAttackEffect(
         sourceId,
         targetId,
@@ -12073,7 +12191,8 @@
                 ? "attack"
                 : "enemy"
             ),
-        sourceModule?.definition_id
+        sourceModule?.definition_id,
+        heavyHit ? "heavy" : "light"
       );
 
       triggerGridshardCue(
@@ -12596,9 +12715,23 @@
     }
   }
 
-  function resetBattleVisualSurface() {
-    battleCountdown.cancel();
-    onlineBattlePresentation.reset();
+  const BATTLE_CARD_FX_CLASSES = Object.freeze([
+    "fx-fire",
+    "fx-hit",
+    "fx-shield",
+    "fx-sabotage",
+    "fx-feedback-heal",
+    "fx-feedback-cool",
+    "fx-feedback-energy",
+    "fx-feedback-boost",
+    "fx-feedback-reflect",
+    "fx-feedback-warning",
+    "fx-feedback-status",
+  ]);
+
+  // Sahnedeki bütün geçici efektleri ve bekleyen efekt işlerini bırakır; savaş
+  // durumu (tahta, Akım, Çekirdek gücü) yerinde kalır.
+  function clearBattleEffects() {
     battleVisualGeneration += 1;
     battleSweepQueue.reset();
     battleLiveTickerTimer = null;
@@ -12610,6 +12743,43 @@
     creditEl?.classList.remove("credit-insufficient");
     clearArenaPulse();
     signatureEffectsLive = 0;
+    for (const effectId of [...floatingFeedbackLive.keys()]) {
+      removeFloatingFeedbackRecord(effectId);
+    }
+    battleEffectAggregator?.clear?.();
+    clearBattleVisualElement(document.getElementById("battle-effect-layer"));
+  }
+
+  // Uygulama arka plandan dönünce: beklemiş olaylar ve yarım kalmış efektler
+  // oynatılmaz, sahne en yeni durumdan devam eder.
+  const BATTLE_RESUME_DISCARD_AFTER_MS = 700;
+  let battleHiddenAt = null;
+
+  function handleBattleVisibilityChange() {
+    if (document.hidden) {
+      battleHiddenAt = performance.now();
+      return;
+    }
+    const hiddenFor = battleHiddenAt === null ? 0 : performance.now() - battleHiddenAt;
+    battleHiddenAt = null;
+    if (hiddenFor < BATTLE_RESUME_DISCARD_AFTER_MS || activePlayMode === "idle") return;
+    onlineBattlePresentation.discardEffects();
+    clearBattleEffects();
+    battleTimerLagMs = 0;
+    for (const card of document.querySelectorAll("#board .module-card, #enemy-board .module-card")) {
+      card.classList.remove(...BATTLE_CARD_FX_CLASSES);
+    }
+  }
+
+  document.addEventListener("visibilitychange", handleBattleVisibilityChange);
+
+  function resetBattleVisualSurface() {
+    battleCountdown.cancel();
+    onlineBattlePresentation.reset();
+    clearBattleEffects();
+    battleTimerLagMs = 0;
+    moduleAnchorRects.clear();
+    moduleAnchorCells.clear();
     signatureEffectLastAt.clear();
     battleCueLastAt.clear();
     client.clearPendingPlacements?.();
@@ -12621,7 +12791,6 @@
     corePowerReady = false;
     corePowerTargeting = false;
     renderCorePowerControl();
-    clearBattleVisualElement(document.getElementById("battle-effect-layer"));
     createBoard();
     createEnemyBoard();
   }
@@ -13042,37 +13211,40 @@
         "core-1"
       );
 
-    playerCoreSummaryEl.textContent =
+    setHudText(
+      playerCoreSummaryEl,
       `Sen: Çekirdek ${
         Math.max(
           0,
           Number(core?.hp || 0)
         )
-      }/${core?.maxHp || 300}`;
+      }/${core?.maxHp || 300}`
+    );
 
-    if (playerBoardStatusEl) {
-      playerBoardStatusEl.textContent=
-        `Çekirdek ${Math.max(0,Number(core?.hp||0))}/${core?.maxHp||300} · Enerji %${Math.round(Number(client.energyLoadRatio || 0) * 100)}`;
-    }
+    setHudText(
+      playerBoardStatusEl,
+      `Çekirdek ${Math.max(0,Number(core?.hp||0))}/${core?.maxHp||300} · Enerji %${Math.round(Number(client.energyLoadRatio || 0) * 100)}`
+    );
 
     const playerSide=
       document.querySelector(
         ".duel-player-side"
       );
-    if (playerSide) {
-      playerSide.dataset.coreCritical=
-        String(
-          Number(core?.hp || 0) > 0
-          && Number(core?.hp || 0)
-            / Math.max(
-                1,
-                Number(
-                  core?.maxHp || 300
-                )
+    setHudData(
+      playerSide,
+      "coreCritical",
+      String(
+        Number(core?.hp || 0) > 0
+        && Number(core?.hp || 0)
+          / Math.max(
+              1,
+              Number(
+                core?.maxHp || 300
               )
-            <= .33
-        );
-    }
+            )
+          <= .33
+      )
+    );
 
     syncCriticalCoreAudioState();
   }
@@ -13365,6 +13537,8 @@
     return true;
   }
 
+  // Sıradan vuruş küçük ve kısadır; yalnız ağır vuruşta (impact "heavy") halka ve
+  // bütün kıvılcımlar çizilir. Sürekli atışta ekran parlamayla dolmaz.
   function emitDuelImpactEffect({
     layer,
     x,
@@ -13372,12 +13546,26 @@
     targetModuleId,
     kind,
     weapon,
+    impactLevel="light",
   }) {
+    const heavy=impactLevel === "heavy";
+    // Efekt bütçesinin iki katı aşıldıysa vuruş parlaması da çizilmez; kart
+    // vurgusu ve hasar yazısı kalır.
+    if (battleEffectLoad(layer) >= 2) {
+      pulseBattleFx(
+        targetModuleId,
+        kind === "shield"
+          ? "shield"
+          : "hit"
+      );
+      return;
+    }
     const impact=
       document.createElement("span");
     impact.className="duel-hit-impact";
     impact.dataset.kind=kind;
     impact.dataset.weapon=weapon;
+    impact.dataset.impact=heavy ? "heavy" : "light";
     impact.dataset.targetModuleId=
       targetModuleId;
     impact.style.left=`${x}px`;
@@ -13390,22 +13578,25 @@
     // Kalabalık savaşta yalnız parlama kalır. Yüksek kademede on ayrı kıvılcım,
     // Orta kademede aynı görüntüyü veren tek öğelik patlama çizilir.
     if (battleEffectLoad(layer) === 0) {
-      const ring=
-        document.createElement("span");
-      ring.className="duel-impact-ring";
-      impact.appendChild(ring);
+      if (heavy) {
+        const ring=
+          document.createElement("span");
+        ring.className="duel-impact-ring";
+        impact.appendChild(ring);
+      }
       const quality=battleGraphicsQuality();
       if (quality === "yuksek") {
-        for (let index=0;index<10;index+=1) {
+        const sparkCount=heavy ? 10 : 4;
+        for (let index=0;index<sparkCount;index+=1) {
           const spark=
             document.createElement("i");
           spark.style.setProperty(
             "--impact-angle",
-            `${index*36+(index%2)*9}deg`
+            `${index*(360/sparkCount)+(index%2)*9}deg`
           );
           impact.appendChild(spark);
         }
-      } else if (quality === "orta") {
+      } else if (quality === "orta" && heavy) {
         const burst=
           document.createElement("span");
         burst.className="duel-impact-burst";
@@ -13426,7 +13617,8 @@
     sourceModuleId,
     targetModuleId,
     kind="attack",
-    definitionId="laser"
+    definitionId="laser",
+    impactLevel="light"
   ) {
     if (
       !sourceModuleId
@@ -13501,6 +13693,7 @@
     line.dataset.kind=kind;
     line.dataset.weapon=
       presentation.fx;
+    line.dataset.impact=impactLevel === "heavy" ? "heavy" : "light";
     line.style.left=`${x1}px`;
     line.style.top=`${y1}px`;
     line.style.width=`${distance}px`;
@@ -13550,9 +13743,15 @@
     if (effectLoad < 2) layer.appendChild(line);
 
     playBattleFxClass(source, "fx-fire", presentation.travelMs);
+    const impactDueAt = performance.now() + presentation.travelMs;
     window.setTimeout(
       () => {
-        if (visualGeneration !== battleVisualGeneration) {
+        noteBattleTimerLag(impactDueAt);
+        // Savaş değiştiyse ya da vuruş anı çoktan geçtiyse (takılma) vuruş çizilmez.
+        if (
+          visualGeneration !== battleVisualGeneration
+          || performance.now() - impactDueAt > BATTLE_FX_LATE_LIMIT_MS
+        ) {
           line.remove();
           return;
         }
@@ -13563,6 +13762,7 @@
           targetModuleId,
           kind,
           weapon:presentation.fx,
+          impactLevel,
         });
       },
       presentation.travelMs
@@ -13660,6 +13860,10 @@
     (level) => level.className
   );
   const BATTLE_VIBRATION_MIN_GAP_MS = 260;
+  // Aynı düzeydeki sarsıntı bu aralıktan sık yinelenmez: sürekli atış altında
+  // arena durmadan sarsılmaz. Çekirdek patlaması her zaman oynar.
+  const ARENA_PULSE_REPEAT_GAP_MS = Object.freeze({ light:900, medium:700, heavy:450, core:0 });
+  const arenaPulseLastAt = new Map();
   let arenaPulseLevel = null;
   let arenaPulseTimer = 0;
   let lastBattleVibrationAt = -Infinity;
@@ -13667,6 +13871,7 @@
   function clearArenaPulse() {
     window.clearTimeout(arenaPulseTimer);
     arenaPulseLevel = null;
+    arenaPulseLastAt.clear();
     document.getElementById("duel-arena")?.classList.remove(...ARENA_PULSE_CLASSES);
   }
 
@@ -13698,17 +13903,17 @@
     ) {
       return false;
     }
-    // Eşzamanlı düzen zorlamadan yeniden başlatma (bkz. playBattleFxClass).
-    const restarting = ARENA_PULSE_CLASSES.some((name) => arena.classList.contains(name));
-    arena.classList.remove(...ARENA_PULSE_CLASSES);
-    if (restarting && typeof window.requestAnimationFrame === "function") {
-      const generation = battleVisualGeneration;
-      window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
-        if (generation === battleVisualGeneration && arenaPulseLevel === level) arena.classList.add(config.className);
-      }));
-    } else {
-      arena.classList.add(config.className);
+    const pulseAt = performance.now();
+    if (pulseAt - (arenaPulseLastAt.get(level) ?? -Infinity) < ARENA_PULSE_REPEAT_GAP_MS[level]) {
+      return false;
     }
+    arenaPulseLastAt.set(level, pulseAt);
+    // Süren sarsıntı başka düzeye geçerse sınıf değişir ve yeni animasyon
+    // kendiliğinden başlar; kare beklenmez (bkz. playBattleFxClass).
+    for (const name of ARENA_PULSE_CLASSES) {
+      if (name !== config.className) arena.classList.remove(name);
+    }
+    arena.classList.add(config.className);
     arenaPulseLevel = level;
     window.clearTimeout(arenaPulseTimer);
     arenaPulseTimer = window.setTimeout(() => {
@@ -13780,38 +13985,52 @@
   // aşınca süs parçaları (namlu parlaması, halka, kıvılcım), iki katını aşınca
   // atış çizgisi atlanır. Hasar yazısı ve kart vurgusu her zaman kalır.
   const BATTLE_EFFECT_ROOT_BUDGET = Object.freeze({ dusuk:8, orta:14, yuksek:32 });
+
+  // Ana iş parçacığının sıkışıklığı (bkz. noteBattleTimerLag): 0 rahat,
+  // 1 sıkışık, 2 yetişemiyor.
+  function battleTimerLoad() {
+    if (battleTimerLagMs >= BATTLE_TIMER_LAG_OVERLOADED_MS) return 2;
+    return battleTimerLagMs >= BATTLE_TIMER_LAG_BUSY_MS ? 1 : 0;
+  }
+
   function battleEffectLoad(layer) {
     const budget = BATTLE_EFFECT_ROOT_BUDGET[battleGraphicsQuality()] || 32;
     const live = Number(layer?.childElementCount || 0);
-    if (live >= budget * 2) return 2;
-    return live >= budget ? 1 : 0;
+    const crowding = live >= budget * 2 ? 2 : (live >= budget ? 1 : 0);
+    return Math.max(crowding, battleTimerLoad());
   }
 
   // Patlama parçacığı bütçesi; her parçacık ayrı bir animasyonlu öğedir.
+  // Sıkışık anda yarıya, yetişemezken dörtte bire iner.
   function battleParticleBudget(baseCount) {
     const quality = battleGraphicsQuality();
-    if (quality === "dusuk") return Math.min(4, Math.ceil(baseCount / 4));
-    return quality === "orta" ? Math.ceil(baseCount / 2) : baseCount;
+    const count = quality === "dusuk"
+      ? Math.min(4, Math.ceil(baseCount / 4))
+      : (quality === "orta" ? Math.ceil(baseCount / 2) : baseCount);
+    const load = battleTimerLoad();
+    return load === 0 ? count : Math.min(count, Math.ceil(baseCount / (load === 1 ? 2 : 4)));
   }
 
   function signatureEffectMinimumPriority() {
     const quality = battleGraphicsQuality();
+    // Yük altında yalnız belirleyici imza efektleri çizilir.
+    const floor = [1, 2, 3][battleTimerLoad()];
     if (quality === "dusuk") {
-      return signatureEffectsLive >= 3 ? 4 : 3;
+      return Math.max(floor, signatureEffectsLive >= 3 ? 4 : 3);
     }
     const steps = quality === "orta"
       ? [[6, 4], [4, 3], [2, 2]]
       : [[9, 4], [6, 3], [4, 2]];
     for (const [liveCount, priority] of steps) {
-      if (signatureEffectsLive >= liveCount) return priority;
+      if (signatureEffectsLive >= liveCount) return Math.max(floor, priority);
     }
-    return 1;
+    return floor;
   }
 
   function signatureParticleCount(baseCount) {
     const quality = battleGraphicsQuality();
-    if (quality === "dusuk") return 0;
-    return quality === "orta" ? Math.ceil(baseCount / 2) : baseCount;
+    if (quality === "dusuk" || battleTimerLoad() === 2) return 0;
+    return quality === "orta" || battleTimerLoad() === 1 ? Math.ceil(baseCount / 2) : baseCount;
   }
 
   function isCoreDomId(moduleId) {
@@ -14190,10 +14409,13 @@
           )
         : "Henüz kullanılmadı";
 
-    quickLoadoutActiveSummaryEl
-      .innerHTML=
-        `<strong>${favorite}${activeBattlePoolPresetName}</strong>`
-        + `<span>${selectedCount}/6 kart · ${clean ? "Kayıtla aynı" : "Değiştirildi"} · ${freshness}</span>`;
+    // Deste adını oyuncu yazar; HTML olarak yorumlanmaz.
+    const summaryName = document.createElement("strong");
+    summaryName.textContent = `${favorite}${activeBattlePoolPresetName}`;
+    const summaryDetail = document.createElement("span");
+    summaryDetail.textContent =
+      `${selectedCount}/6 kart · ${clean ? "Kayıtla aynı" : "Değiştirildi"} · ${freshness}`;
+    quickLoadoutActiveSummaryEl.replaceChildren(summaryName, summaryDetail);
   }
 
   function renderActivePresetState() {
@@ -15250,11 +15472,13 @@
   }
 
   function localizedUiText(value) {
-    return globalThis.GridshardI18n
+    const text = globalThis.GridshardI18n
       ?.translateText(
         String(value ?? ""),
         document.documentElement.lang
       ) || String(value ?? "");
+    // Modülün adı yalnız "Onarım"dır; eski sunucu verisi "Onarım Modülü" gönderir.
+    return text.includes("Onarım Modülü") ? text.replaceAll("Onarım Modülü", "Onarım") : text;
   }
 
   function localizedMessage(key, params = {}) {
@@ -16175,7 +16399,8 @@
     return geometry;
   }
 
-  function createCircuitCableLine(layer, geometry, first, second, className) {
+  // Kenarın iki ucu: komşu hücrelerin birbirine bakan kenar ortaları (tahta pikseli).
+  function circuitCableEndpoints(geometry, first, second) {
     const firstCell = geometry.cells.get(cablePositionKey(first));
     const secondCell = geometry.cells.get(cablePositionKey(second));
     if (!firstCell || !secondCell) return null;
@@ -16195,6 +16420,13 @@
     const end = horizontal
       ? { x:secondCell.left + (forward ? 0 : secondCell.width), y:secondCenter.y }
       : { x:secondCenter.x, y:secondCell.top + (forward ? 0 : secondCell.height) };
+    return { start, end };
+  }
+
+  function createCircuitCableLine(layer, geometry, first, second, className) {
+    const points = circuitCableEndpoints(geometry, first, second);
+    if (!points) return null;
+    const { start, end } = points;
     const line=document.createElementNS("http://www.w3.org/2000/svg","line");
     line.classList.add(...className.split(" ").filter(Boolean));
     line.setAttribute("x1",String(start.x));
@@ -16203,6 +16435,41 @@
     line.setAttribute("y2",String(end.y));
     layer.appendChild(line);
     return line;
+  }
+
+  // Yüksek kademede akım, kesik çizginin kaydırılmasıyla (stroke-dashoffset)
+  // değil, kendi kutusunda kayan bir şeritle gösterilir. Kesik çizgi kaydırma
+  // ana iş parçacığında her taramada stil hesabı ve boyama istiyordu; şeridin
+  // kayması bir dönüşüm animasyonudur ve onu bileşimci oynatır. Şerit yalnız
+  // Yüksek kademede görünür (bkz. canon.css, "bileşimcinin oynattığı
+  // animasyonlar"); diğer kademelerde SVG çizgisi durur.
+  function ensureBoardFlowLayer(boardElement, currentLayer) {
+    let layer=boardElement.querySelector(":scope > .board-cable-flow-layer");
+    if (layer) return layer;
+    layer=document.createElement("div");
+    layer.className="board-cable-flow-layer";
+    layer.setAttribute("aria-hidden","true");
+    if (typeof currentLayer.after === "function") currentLayer.after(layer);
+    else boardElement.prepend(layer);
+    return layer;
+  }
+
+  function createCircuitCableFlow(layer, geometry, first, second) {
+    const points = circuitCableEndpoints(geometry, first, second);
+    if (!points) return null;
+    const { start, end } = points;
+    const strip=document.createElement("span");
+    strip.className="circuit-cable-flow";
+    strip.style.left=`${start.x}px`;
+    strip.style.top=`${start.y}px`;
+    strip.style.width=`${Math.hypot(end.x - start.x, end.y - start.y)}px`;
+    strip.style.setProperty(
+      "--cable-flow-angle",
+      `${Math.atan2(end.y - start.y, end.x - start.x)}rad`
+    );
+    strip.appendChild(document.createElement("i"));
+    layer.appendChild(strip);
+    return strip;
   }
 
   function boardCableState(boardElement, layer) {
@@ -16219,8 +16486,10 @@
     if (!state) observeBattleLayout(boardElement);
     const geometry = measureBoardCableGeometry(boardElement);
     const currentLayer = ensureBoardCurrentLayer(boardElement, layer);
+    const flowLayer = ensureBoardFlowLayer(boardElement, currentLayer);
     layer.replaceChildren();
     currentLayer.replaceChildren();
+    flowLayer.replaceChildren();
     layer.setAttribute("viewBox", `0 0 ${geometry.width} ${geometry.height}`);
     currentLayer.setAttribute("viewBox", `0 0 ${geometry.width} ${geometry.height}`);
     const cells = new Set(BOARD_CELLS.map(([x,y]) => `${x},${y}`));
@@ -16239,10 +16508,11 @@
           direction:"none",
           current:null,
           glow:null,
+          flow:null,
         });
       }
     }
-    state = { epoch:battleLayoutEpoch, geometry, edges, currentLayer, fedSignature:null };
+    state = { epoch:battleLayoutEpoch, geometry, edges, currentLayer, flowLayer, fedSignature:null };
     boardCableStates.set(layer, state);
     return state;
   }
@@ -16320,8 +16590,10 @@
       edge.direction = direction;
       edge.current?.remove();
       edge.glow?.remove();
+      edge.flow?.remove();
       edge.current = null;
       edge.glow = null;
+      edge.flow = null;
       if (direction === "none") continue;
       const from = direction === "forward" ? edge.first : edge.second;
       const to = direction === "forward" ? edge.second : edge.first;
@@ -16331,6 +16603,9 @@
       );
       edge.current = createCircuitCableLine(
         cableState.currentLayer, cableState.geometry, from, to, "circuit-cable-current"
+      );
+      edge.flow = createCircuitCableFlow(
+        cableState.flowLayer, cableState.geometry, from, to
       );
     }
     if (boardElement === board) renderCorePowerControl();
@@ -16834,7 +17109,7 @@
       }
     }
     if (enemyBoardStatusEl) {
-      enemyBoardStatusEl.textContent=`Çekirdek ${Math.max(0,mockEnemyCoreHp)}/${mockEnemyCoreMaxHp}`;
+      setHudText(enemyBoardStatusEl, `Çekirdek ${Math.max(0,mockEnemyCoreHp)}/${mockEnemyCoreMaxHp}`);
     }
     renderBattleIdentityPanels();
     renderBoardCables(
@@ -18578,6 +18853,29 @@
     }
   }
 
+  function createInboxCardMeta(item, detailText) {
+    const meta = document.createElement("div");
+    meta.className = "inbox-card-meta";
+    const detail = document.createElement("small");
+    detail.textContent = detailText;
+    const stamp = document.createElement("time");
+    stamp.className = "inbox-card-date";
+    const raw = item.created_at || item.awarded_at || "";
+    const date = raw ? new Date(raw) : null;
+    if (date && Number.isFinite(date.getTime())) {
+      stamp.dateTime = date.toISOString();
+      stamp.textContent = date.toLocaleString(uiLocale(), {
+        year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit",
+      });
+      stamp.title = localizedUiText("Mesaj tarihi");
+    } else {
+      // Eski kayıtta tarih yoksa bugünü mesaj tarihi diye göstermeyiz.
+      stamp.textContent = localizedUiText("Tarih kaydı yok");
+    }
+    meta.append(detail, stamp);
+    return meta;
+  }
+
   function createInboxInvitationCard(item) {
     const card = document.createElement("article");
     card.className = "reward-inbox-card inbox-invitation-card";
@@ -18590,11 +18888,10 @@
     const copy = document.createElement("div");
     const title = document.createElement("strong");
     title.textContent = item.kind === "team_training" ? "Takım antrenman maçı" : "Arkadaş savaşı";
-    const detail = document.createElement("small");
-    detail.textContent = item.incoming && item.status === "pending"
+    const detailText = item.incoming && item.status === "pending"
       ? `${item.peer_name} seni kupasız savaşa çağırdı.`
       : `${item.peer_name} ile kupasız savaş alanı hazır.`;
-    copy.append(title, detail);
+    copy.append(title, createInboxCardMeta(item, detailText));
     const actions = document.createElement("span");
     actions.className = "inbox-card-actions";
     if (item.incoming && item.status === "pending") {
@@ -18635,13 +18932,21 @@
     const copy = document.createElement("div");
     const title = document.createElement("strong");
     title.textContent = notice.title_tr || "Bildirim";
-    const detail = document.createElement("small");
     const schedule = notice.scheduled_at ? new Date(notice.scheduled_at) : null;
     const scheduleLabel = schedule && !Number.isNaN(schedule.getTime())
       ? ` · ${schedule.toLocaleString(uiLocale(), { weekday:"short", hour:"2-digit", minute:"2-digit" })}`
       : "";
-    detail.textContent = `${notice.body_tr || ""}${scheduleLabel}`;
-    copy.append(title, detail);
+    copy.append(title, createInboxCardMeta(notice, `${notice.body_tr || ""}${scheduleLabel}`));
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "inbox-message-delete";
+    remove.textContent = localizedUiText("SİL");
+    remove.setAttribute("aria-label", `${localizedUiText("SİL")} · ${notice.title_tr || "Bildirim"}`);
+    remove.disabled = inboxDismissBusy;
+    remove.addEventListener("click", () => void dismissInboxMessages(
+      notice.category === "purchase" ? "purchase" : "system", [notice.notice_id], remove
+    ));
+    copy.appendChild(remove);
     card.append(icon, copy);
     return card;
   }
@@ -18661,9 +18966,7 @@
     const copy = document.createElement("div");
     const title = document.createElement("strong");
     title.textContent = message.title_tr || "Rekabet Ödülü";
-    const detail = document.createElement("small");
-    detail.textContent = reward.chest_name_tr || "Ödül Kasası";
-    copy.append(title, detail);
+    copy.append(title, createInboxCardMeta(message, reward.chest_name_tr || "Ödül Kasası"));
     const claim = document.createElement("button");
     claim.type = "button";
     claim.textContent = message.status === "claimed" ? "ALINDI" : "TOPLA";
@@ -18694,9 +18997,60 @@
   }
 
   let activeInboxTab = "reward";
+  const INBOX_AREA_LIMIT = 20;
+  let inboxDismissBusy = false;
+  let lastInboxDismiss = null;
+  let inboxMutationVersion = 0;
+  let pendingInboxDismiss = null;
+
+  function renderInboxDismissControls() {
+    const removable = ["purchase", "system"].includes(activeInboxTab);
+    const entries = activeInboxTab === "purchase" ? rewardInboxState?.purchases : rewardInboxState?.notices;
+    const removeAll = document.getElementById("inbox-delete-all");
+    if (removeAll) removeAll.disabled = inboxDismissBusy || !removable || !entries?.length;
+    const undo = document.getElementById("inbox-delete-undo");
+    if (undo) {
+      undo.hidden = !lastInboxDismiss || lastInboxDismiss.playerId !== participantPlayerId;
+      undo.disabled = inboxDismissBusy;
+    }
+  }
+
+  async function dismissInboxMessages(category, noticeIds, button, { all = false, restore = false } = {}) {
+    if (inboxDismissBusy || (!all && !noticeIds.length)) return;
+    const playerId = participantPlayerId;
+    const status = document.getElementById("reward-inbox-status");
+    inboxDismissBusy = true;
+    inboxMutationVersion += 1;
+    if (button) button.disabled = true;
+    renderInboxDismissControls();
+    try {
+      // Geri alma, çok eski bir satın alım geçmişinde de istek boyunu sınırlı tutar.
+      const batches = all ? [[]] : Array.from({ length:Math.ceil(noticeIds.length / 200) },
+        (_, index) => noticeIds.slice(index * 200, (index + 1) * 200));
+      let payload;
+      for (const batch of batches) {
+        payload = await requestJsonWithDeadline(
+          `/profile/${encodeURIComponent(playerId)}/reward-inbox/messages/dismiss`,
+          { method:"POST", body:JSON.stringify({ player_id:playerId, category, notice_ids:batch, all_in_category:all, restore }) },
+          12000
+        );
+      }
+      if (participantPlayerId !== playerId) return;
+      rewardInboxState = payload;
+      const changedIds = payload.changed_notice_ids || [];
+      lastInboxDismiss = restore || !changedIds.length ? null : { playerId, category, ids:changedIds };
+      if (status) status.textContent = localizedUiText(restore ? "Mesajlar geri alındı." : "Mesajlar silindi. Geri al ile geri getirebilirsin.");
+    } catch (error) {
+      if (participantPlayerId === playerId && status) status.textContent = error instanceof Error ? error.message : String(error);
+    } finally {
+      inboxDismissBusy = false;
+      inboxMutationVersion += 1;
+      renderRewardInbox();
+    }
+  }
 
   function setRewardInboxTab(tab, { focus = false } = {}) {
-    if (!["battle", "purchase", "reward"].includes(tab)) return;
+    if (!["battle", "purchase", "reward", "system"].includes(tab)) return;
     activeInboxTab = tab;
     for (const button of document.querySelectorAll("[data-inbox-tab]")) {
       const selected = button.dataset.inboxTab === tab;
@@ -18706,6 +19060,7 @@
       if (panel) panel.hidden = !selected;
       if (selected && focus) button.focus();
     }
+    renderInboxDismissControls();
     if (document.getElementById("reward-inbox-dialog")?.open) void markInboxNoticesSeen();
   }
 
@@ -18728,7 +19083,8 @@
       const host = document.getElementById(hostId);
       if (!host) return;
       host.replaceChildren();
-      for (const item of items) host.appendChild(createCard(item));
+      // Her alan en çok INBOX_AREA_LIMIT kayıt gösterir (sunucu da aynı sınırla gönderir).
+      for (const item of items.slice(0, INBOX_AREA_LIMIT)) host.appendChild(createCard(item));
       if (!host.children.length) {
         const empty = document.createElement("p");
         empty.className = "reward-inbox-empty";
@@ -18742,6 +19098,7 @@
     fill("reward-inbox-list", rewards.filter((item) => item.category !== "battle"), createInboxRewardCard, "Yeni ödül sandığı yok. Sezon, lig ve turnuva sandıkları burada teslim edilir.");
     fill("reward-inbox-purchases", rewardInboxState?.purchases || [], createInboxNoticeCard, "Henüz satın alım mesajı yok.");
     fill("reward-inbox-notices", rewardInboxState?.notices || [], createInboxNoticeCard, "Yeni oyun bildirimi yok.");
+    renderInboxDismissControls();
   }
 
   // Arkadaşın ya da takım üyen daveti kabul edince davet eden oyuncu da savaş
@@ -18764,17 +19121,22 @@
   }
 
   async function markInboxNoticesSeen() {
-    const unseen = [...(rewardInboxState?.notices || []), ...(activeInboxTab === "purchase" ? rewardInboxState?.purchases || [] : [])].filter((notice) => !notice.seen);
+    if (inboxDismissBusy) return;
+    const playerId = participantPlayerId;
+    const version = inboxMutationVersion;
+    const unseen = [...(activeInboxTab === "system" ? rewardInboxState?.notices || [] : []), ...(activeInboxTab === "purchase" ? rewardInboxState?.purchases || [] : [])].filter((notice) => !notice.seen);
     if (!unseen.length) return;
     try {
-      rewardInboxState = await requestJsonWithDeadline(
-        `/profile/${encodeURIComponent(participantPlayerId)}/reward-inbox/notices/seen`,
+      const payload = await requestJsonWithDeadline(
+        `/profile/${encodeURIComponent(playerId)}/reward-inbox/notices/seen`,
         {
           method:"POST",
-          body:JSON.stringify({ player_id:participantPlayerId, notice_ids:unseen.map((notice) => notice.notice_id) }),
+          body:JSON.stringify({ player_id:playerId, notice_ids:unseen.map((notice) => notice.notice_id) }),
         },
         12000
       );
+      if (version !== inboxMutationVersion || inboxDismissBusy || playerId !== participantPlayerId) return;
+      rewardInboxState = payload;
       renderRewardInbox();
     } catch (_error) {
       // Okundu işareti bir sonraki açılışta yeniden denenir.
@@ -18809,12 +19171,17 @@
 
   async function loadRewardInbox({ open=false, quiet=false } = {}) {
     const status = document.getElementById("reward-inbox-status");
+    const playerId = participantPlayerId;
+    const version = inboxMutationVersion;
+    if (inboxDismissBusy && !open) return;
     try {
-      rewardInboxState = await requestJsonWithDeadline(
-        `/profile/${encodeURIComponent(participantPlayerId)}/reward-inbox`,
+      const payload = await requestJsonWithDeadline(
+        `/profile/${encodeURIComponent(playerId)}/reward-inbox`,
         { cache:"no-store" },
         12000
       );
+      if (version !== inboxMutationVersion || inboxDismissBusy || playerId !== participantPlayerId) return;
+      rewardInboxState = payload;
       if (status && !quiet) status.textContent = "";
       renderRewardInbox();
       maybeAutoLaunchAcceptedInvite();
@@ -18966,6 +19333,12 @@
 
   const LOGIN_WEEKDAYS_TR = Object.freeze(["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]);
 
+  // Aylık giriş, günlük emir ve sezon yolu listeleri (yüzden fazla kart) yalnız
+  // verisi değişince yeniden kurulur. Bu işlev her ekran geçişinden sonra
+  // çağrılır; listeleri her seferinde baştan kurmak, o an görünmeseler de
+  // geçişten hemen sonra uzun bir kare üretiyordu.
+  let renderedEngagementListsSignature = null;
+
   function renderEngagementSummary(engagement) {
     if (!engagement) return;
 
@@ -19054,6 +19427,15 @@
     if (lobbyProgressFill) lobbyProgressFill.style.width = `${percentage}%`;
 
     const loginTrack = document.getElementById("monthly-login-track");
+    const missions = document.getElementById("daily-mission-list");
+    const rewards = document.getElementById("season-reward-track");
+    const listsSignature = `${document.documentElement.lang || "tr"}|${JSON.stringify(engagement)}`;
+    // Liste başka bir yerden boşaltıldıysa imza aynı olsa da yeniden kurulur.
+    const rebuildLists = listsSignature !== renderedEngagementListsSignature
+      || (loginTrack && loginTrack.childElementCount !== loginRewards.length)
+      || (missions && missions.childElementCount !== missionList.length)
+      || (rewards && rewards.childElementCount !== rewardList.length);
+    renderedEngagementListsSignature = listsSignature;
     const loginDayCount = Number(engagement.daily_login?.day_count || loginRewards.length || 28);
     setText(
       "monthly-login-summary",
@@ -19067,7 +19449,7 @@
         ? `BU DÖNEM · ${eventDayRangeLabel(engagement.daily_login.starts_at, engagement.daily_login.ends_at)}`
         : "BU DÖNEM"
     );
-    if (loginTrack) {
+    if (loginTrack && rebuildLists) {
       loginTrack.replaceChildren();
       const today = Number(engagement.daily_login?.today || 1);
       for (const reward of loginRewards) {
@@ -19101,8 +19483,7 @@
       }
     }
 
-    const missions = document.getElementById("daily-mission-list");
-    if (missions) {
+    if (missions && rebuildLists) {
       missions.replaceChildren();
       // Alınabilir emirler üstte, sürenler ortada, alınanlar altta durur.
       const orderedMissions = [...missionList].sort(
@@ -19124,12 +19505,11 @@
     }
     updateDailyMissionReset();
 
-    const rewards = document.getElementById("season-reward-track");
-    if (rewards) {
+    if (rewards) renderSeasonPremiumPurchase();
+    if (rewards && rebuildLists) {
       rewards.replaceChildren();
       const premiumPass = engagement.premium_pass || {};
       const premiumTrack = engagement.premiumRewardTrack || engagement.premium_reward_track || [];
-      renderSeasonPremiumPurchase();
       const seasonXp = Number(engagement.season_xp || 0);
       for (const reward of engagement.rewardTrack || []) {
         const premium = premiumTrack.find((item) => Number(item.tier) === Number(reward.tier)) || null;
@@ -19153,7 +19533,10 @@
       }
     }
 
-    globalThis.GridshardI18n?.apply(document.documentElement.lang || "tr");
+    // Yeni kurulan kartların metni çevrilir; liste değişmediyse belgenin
+    // tamamını yeniden taramaya gerek yoktur (tek tek değişen metinleri çeviri
+    // katmanının kendi gözlemcisi izler).
+    if (rebuildLists) globalThis.GridshardI18n?.apply(document.documentElement.lang || "tr");
   }
 
   function operationRequestId(prefix) {
@@ -19871,14 +20254,20 @@
   }
 
   function renderCredits() {
-    const battleValue = document.getElementById("credit-indicator-value");
-    if (battleValue) battleValue.textContent = `Akım: ${client.circuitCredits} / 12`;
+    setHudText(
+      document.getElementById("credit-indicator-value"),
+      `Akım: ${client.circuitCredits} / 12`
+    );
     if (shelfCreditIndicatorEl) {
-      const value = document.getElementById("shelf-credit-value");
-      if (value) value.textContent = `${client.circuitCredits} / 12`;
+      setHudText(
+        document.getElementById("shelf-credit-value"),
+        `${client.circuitCredits} / 12`
+      );
     }
+    // Bu sayaca merkez ekranı da yazar; karşılaştırma ekrandaki sayıyla yapılır.
     const lobbyCredits = document.getElementById("lobby-circuit-credits");
-    if (lobbyCredits) lobbyCredits.textContent = String(metaProgressionState?.circuit_credits ?? 0);
+    const lobbyValue = String(metaProgressionState?.circuit_credits ?? 0);
+    if (lobbyCredits && lobbyCredits.textContent !== lobbyValue) lobbyCredits.textContent = lobbyValue;
   }
 
   function flashInsufficientCredits() {
@@ -19892,23 +20281,18 @@
   function renderCapacity() {
     if (!capacityEl) return;
     const placement = modulePlacementSlotState();
-    capacityEl.textContent = localizedUiText(
+    setHudText(capacityEl, localizedUiText(
       `Devrede ${placement.active} / ${placement.currentLimit}`
-    );
-    capacityEl.dataset.state = placement.available > 0 ? "ready" : "complete";
+    ));
+    setHudData(capacityEl, "state", placement.available > 0 ? "ready" : "complete");
     capacityEl.classList.remove("capacity-opened");
   }
 
   function renderLockState() {
     if (localBattleFinished) {
-      lockLabel.dataset.active =
-        "false";
-      lockLabel.textContent =
-        "Maç Bitti";
-      if (shelfHelp) {
-        shelfHelp.textContent =
-          "Savaş tamamlandı; yeni kart basılamaz.";
-      }
+      setHudData(lockLabel, "active", "false");
+      setHudText(lockLabel, "Maç Bitti");
+      setHudText(shelfHelp, "Savaş tamamlandı; yeni kart basılamaz.");
       return;
     }
 
@@ -19918,17 +20302,15 @@
       return module && client.circuitCredits >= Number(module.currentCost || 0);
     });
     const unlocked = placement.ready && affordable;
-    lockLabel.dataset.active = String(unlocked);
-    lockLabel.textContent = unlocked ? "Aktif" : "Beklemede";
+    setHudData(lockLabel, "active", String(unlocked));
+    setHudText(lockLabel, unlocked ? "Aktif" : "Beklemede");
 
     if (unlocked) {
-      if (shelfHelp) {
-        shelfHelp.textContent = localizedUiText("Deste kartına tıkla; sunucu uygun hücreye otomatik yerleştirsin.");
-      }
-    } else if (shelfHelp) {
-      shelfHelp.textContent = placement.available <= 0
+      setHudText(shelfHelp, localizedUiText("Deste kartına tıkla; sunucu uygun hücreye otomatik yerleştirsin."));
+    } else {
+      setHudText(shelfHelp, placement.available <= 0
         ? "Devre dolu; boş hücre açılınca yerleştirebilirsin."
-        : "Akım yenileniyor: 2,5 saniyede +1.";
+        : "Akım yenileniyor: 2,5 saniyede +1.");
     }
   }
 
@@ -20008,7 +20390,14 @@
     return String(entry.kind || "Olay").replaceAll("_", " ");
   }
 
+  // Kayıt yalnız son satırları gösterir; çevrimiçi savaşlar arasında
+  // sıfırlanmadığı için oturum boyunca büyümesin diye kırpılır.
+  const COMMAND_LOG_LIMIT = 200;
+
   function renderLog() {
+    if (commandLog.length > COMMAND_LOG_LIMIT) {
+      commandLog.splice(0, commandLog.length - COMMAND_LOG_LIMIT);
+    }
     const lines = commandLog
       .map(formatBattleLogEntry)
       .filter(Boolean)
@@ -20045,6 +20434,9 @@
         return battlePerformanceSampler?.active ? battlePerformanceSampler.summary() : null;
       },
       get last() { return lastBattlePerformance; },
+      // Savaş zamanlayıcılarının yumuşatılmış gecikmesi ve ondan türeyen yük düzeyi (0-2).
+      get pulseLagMs() { return Math.round(battleTimerLagMs); },
+      get pulseLoad() { return battleTimerLoad(); },
     });
   }
   if (battlePerformanceSampler && typeof document.addEventListener === "function") {
@@ -21021,6 +21413,7 @@
   function openArenaDetail({ focusNodeId = "" } = {}) {
     highlightedArenaNodeId = focusNodeId;
     renderHomeArena();
+    if (!arenaDetailDialog?.open) renderArenaPath();
     const status = document.getElementById("arena-reward-status");
     if (status) status.textContent = "";
     if (arenaDetailDialog?.showModal && !arenaDetailDialog.open) arenaDetailDialog.showModal();
@@ -21310,10 +21703,33 @@
   // Deneme reklamı süresi dolmadan kapatılamaz; ödül yalnız izleme bitince istenir.
   document.getElementById("reward-ad-dialog")?.addEventListener("cancel", (event) => event.preventDefault());
   document.getElementById("reward-inbox-close")?.addEventListener("click", () => document.getElementById("reward-inbox-dialog")?.close());
+  document.getElementById("inbox-delete-all")?.addEventListener("click", () => {
+    if (inboxDismissBusy || !["purchase", "system"].includes(activeInboxTab)) return;
+    const dialog = document.getElementById("inbox-delete-confirm-dialog");
+    if (!dialog?.showModal || dialog.open) return;
+    pendingInboxDismiss = { playerId:participantPlayerId, category:activeInboxTab };
+    dialog.showModal();
+  });
+  document.getElementById("inbox-delete-cancel")?.addEventListener("click", () => {
+    document.getElementById("inbox-delete-confirm-dialog")?.close();
+  });
+  document.getElementById("inbox-delete-confirm-dialog")?.addEventListener("close", () => {
+    pendingInboxDismiss = null;
+  });
+  document.getElementById("inbox-delete-confirm")?.addEventListener("click", () => {
+    const pending = pendingInboxDismiss;
+    document.getElementById("inbox-delete-confirm-dialog")?.close();
+    if (!pending || pending.playerId !== participantPlayerId) return;
+    void dismissInboxMessages(pending.category, [], document.getElementById("inbox-delete-all"), { all:true });
+  });
+  document.getElementById("inbox-delete-undo")?.addEventListener("click", (event) => {
+    if (!lastInboxDismiss || lastInboxDismiss.playerId !== participantPlayerId) return;
+    void dismissInboxMessages(lastInboxDismiss.category, lastInboxDismiss.ids, event.currentTarget, { restore:true });
+  });
   for (const tab of document.querySelectorAll("[data-inbox-tab]")) {
     tab.addEventListener("click", () => setRewardInboxTab(tab.dataset.inboxTab));
     tab.addEventListener("keydown", (event) => {
-      const tabs = ["battle", "purchase", "reward"];
+      const tabs = ["battle", "purchase", "reward", "system"];
       const index = tabs.indexOf(activeInboxTab);
       const next = { ArrowRight:(index + 1) % tabs.length, ArrowLeft:(index + tabs.length - 1) % tabs.length, Home:0, End:tabs.length - 1 }[event.key];
       if (next === undefined) return;

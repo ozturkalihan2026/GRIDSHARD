@@ -65,13 +65,21 @@ test("yetenek ekranı eşiğin türünü yazar ve dal adını güvenli biçimde 
   assert.match(css, /\.module-talent-node\[data-kind="signature"\] \.module-talent-kind \{/);
 });
 
-test("çekirdek yetenek düğmesi adı, durumu ve açıklamayı gösterir", () => {
+test("çekirdek yetenekleri modül yetenek ağacıyla aynı tasarımdadır", () => {
+  // Görsel tur 6: iki dal ve ortada seviye rozeti; açıklama düğmede değil, dokununca üstte yazar.
   const tab = slice('    } else if (tabName === "skills") {', "      host.appendChild(tree);");
+  assert.match(tab, /tree\.className = "module-talent-path core-talent-path";/);
+  assert.match(tab, /row\.className = "module-talent-node";/);
+  assert.match(tab, /level\.append\(levelValue, createCostChip\("flux", threshold\.flux_cost\)\);/);
   assert.match(tab, /skillName\.textContent = talentDisplayName\(skill\);/);
-  assert.match(tab, /skillDescription\.textContent = talentDisplayDescription\(skill\);/);
-  assert.match(tab, /button\.disabled = !coreSkillLearnable\(core, skill\);/);
+  assert.match(tab, /skillState\.textContent = state;/);
+  assert.match(tab, /intro\.textContent = talentDisplayDescription\(skill\);/);
+  assert.match(tab, /const canLearn = coreSkillLearnable\(core, skill\);/);
+  assert.match(tab, /if \(!canLearn\) return;/);
+  // Seçimden sonra Yetenekler sekmesinde kalınır.
+  assert.match(tab, /await mutateSelectedCore\(`skills\/\$\{skill\.id\}`\);[\s\S]*renderCoreDetailTab\("skills"\);/);
   assert.ok(!/skill\.name_tr\}<\/strong>/.test(tab));
-  assert.match(css, /\.core-skill-tree button em \{[^}]*font-size:\.5rem/);
+  assert.equal(en("EŞİK 2"), "TIER 2");
 });
 
 test("savaşta tetiklenen modül ve çekirdek yeteneği adıyla gösterilir", () => {

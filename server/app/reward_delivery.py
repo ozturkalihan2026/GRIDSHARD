@@ -117,13 +117,30 @@ def queue_purchase_notice(profile, receipt: dict, *, product_name: str, product_
     })
 
 
+# Mesaj kutusunun her alanı (savaş sandıkları, ödül sandıkları, satın alım
+# mesajları, bildirimler, davetler) en çok bu kadar kayıt gösterir (13 Ekim 2026,
+# kullanıcı kararı). Sınırın dışına düşen satın alım mesajı kutudan kalkar; kaydı
+# yinelenmeyi önleyen tanık olarak durur. Toplanmamış sandık silinmez: yenileri
+# toplandıkça sıradaki eskiler kutuya girer.
+MAILBOX_AREA_LIMIT = 20
+
+
 def mailbox_messages(profile) -> tuple[list[dict], list[dict]]:
     rewards, purchases = [], []
+    shown = {"battle": 0, "reward": 0}
     seen = set(profile.seen_inbox_notice_ids)
+    dismissed = set(profile.dismissed_inbox_notice_ids)
     for item in reversed(profile.reward_inbox):
         if item.get("category") == "purchase":
-            purchases.append({**deepcopy(item), "notice_id": item["message_id"], "seen": item["message_id"] in seen})
+            if item.get("message_id") in dismissed:
+                continue
+            if len(purchases) < MAILBOX_AREA_LIMIT:
+                purchases.append({**deepcopy(item), "notice_id": item["message_id"], "seen": item["message_id"] in seen})
         elif item.get("status") == "unclaimed" and chest_available(profile, item.get("inventory_chest") or {}):
+            area = "battle" if item.get("category") == "battle" else "reward"
+            if shown[area] >= MAILBOX_AREA_LIMIT:
+                continue
+            shown[area] += 1
             rewards.append({key: deepcopy(value) for key, value in item.items() if key != "inventory_chest"})
     return rewards, purchases
 

@@ -73,3 +73,36 @@ def test_recovery_with_an_already_verified_contact_still_works(platform):
     assert recovery["accepted"] is True
     assert recovery["development_player_id"] == PLAYER
     assert platform.confirm_recovery(PLAYER, recovery["development_code"]) is True
+
+
+def test_recovery_code_is_invalidated_after_repeated_wrong_attempts(platform):
+    # Altı haneli kod sınırsız denenemez; beşinci yanlıştan sonra doğru kod da geçmez.
+    earlier = platform.request_verification(PLAYER, "email", "deneme@example.com")
+    platform.confirm_verification(PLAYER, "email", earlier["development_code"])
+    recovery = platform.request_recovery("deneme@example.com")
+    code = recovery["development_code"]
+    wrong = "000000" if code != "000000" else "111111"
+
+    for _ in range(platform.RECOVERY_MAX_ATTEMPTS):
+        with pytest.raises(Exception):
+            platform.confirm_recovery(PLAYER, wrong)
+    with pytest.raises(Exception):
+        platform.confirm_recovery(PLAYER, code)
+
+    # Yeni istenen kod yeniden beş deneme hakkıyla çalışır.
+    fresh = platform.request_recovery("deneme@example.com")
+    with pytest.raises(Exception):
+        platform.confirm_recovery(PLAYER, "000000" if fresh["development_code"] != "000000" else "111111")
+    assert platform.confirm_recovery(PLAYER, fresh["development_code"]) is True
+
+
+def test_wrong_recovery_code_for_unknown_player_stores_nothing(platform):
+    with pytest.raises(Exception):
+        platform.confirm_recovery("never-seen-player", "123456")
+    assert "never-seen-player" not in platform._read()["accounts"]
+
+
+def test_recovery_endpoints_are_rate_limited_per_client():
+    assert gateway._rate_limit_policy("/account-recovery/request") == ("recovery", 5, 60)
+    assert gateway._rate_limit_policy("/account-recovery/confirm") == ("recovery", 5, 60)
+    assert set(gateway.UNAUTHENTICATED_RATE_SCOPES) == {"auth", "recovery"}

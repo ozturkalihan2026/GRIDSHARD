@@ -4,6 +4,8 @@ Play Console → Kullanıcı sayısını artırın → Play Store'daki varlığ�
 
 **Durum (7 Ekim 2026):** metinler ve görseller hazırlandı; konsola yüklenmedi. Yüklemeyi ve kaydı kullanıcı yapar.
 
+**Güncelleme (13 Ekim 2026, ev bilgisayarı):** oyunun görsel dili değişti (görsel tur 2–6); simge, özellik grafiği ve sekiz ekran görüntüsü yeni arayüzle yeniden üretildi (aşağıda "Görseller"). Metinler değişmedi. **Yeni görseller konsola yüklenmedi;** yüklemeyi kullanıcı yapar. Görüntüler bu depodaki çalışma ağacının arayüzüdür: konsola, bu arayüzü taşıyan paket (sürüm kodu 9) yayınlanırken yüklenmelidir; kapalı testteki v8 paketi eski arayüzdedir.
+
 ## Uyulan kurallar
 
 7 Ekim 2026'da Google'ın iki yardım sayfası okundu: meta veri politikası (`support.google.com/googleplay/android-developer/answer/9898842`) ve önizleme öğeleri (`.../answer/9866151`). Metinleri ve görselleri bağlayanlar:
@@ -123,20 +125,20 @@ Website: https://gridshardgame.com
 
 ## Görseller
 
-Dosyalar `artifacts/play-store-listing-20261007/` altındadır (git'te izlenmez; 7 Ekim'de iş bilgisayarında üretildi). Türkçe set `tr-TR/`, İngilizce set `en-US/` klasöründedir; açıklama metinlerinin kopyaları da aynı klasörlerdedir.
+Güncel set `artifacts/play-store-listing-20261013/` altındadır (git'te izlenmez; 13 Ekim'de ev bilgisayarında üretildi). Türkçe set `tr-TR/`, İngilizce set `en-US/` klasöründedir. 7 Ekim'de iş bilgisayarında üretilen ilk set (`artifacts/play-store-listing-20261007/`) eski arayüzdedir.
 
 | Öğe | Dosya | Biçim |
 |---|---|---|
-| Uygulama simgesi | `client/assets/branding/gridshard-store-icon-512.png` (depoda) | 512×512, PNG, 234 KB |
+| Uygulama simgesi | `client/assets/branding/gridshard-store-icon-512.png` (depoda; kopyası `icon-512.png`) | 512×512, 24 bit PNG, 134 KB |
 | Özellik grafiği | `feature-graphic-1024x500.png` | 1024×500, 24 bit PNG |
-| Telefon ekran görüntüleri | `phone/01…08-*.png` | 1080×1920 (9:16), 24 bit PNG, her biri 1,5 MB altında |
+| Telefon ekran görüntüleri | `phone/01…08-*.png` | 1080×1920 (9:16), 24 bit PNG, her biri 1,3 MB altında |
 
 Ekran görüntülerinin sırası ve isteğe bağlı alternatif metinleri (en çok 140 karakter):
 
 | Sıra | Ekran | Alternatif metin (Türkçe) | Alternatif metin (İngilizce) |
 |---|---|---|---|
 | 1 | Savaş | İki devre tahtasında modüller karşılıklı ateş ediyor; altta altı kartlık deste ve Akım göstergesi | Modules fire across two circuit boards; the six-card deck and Current meter sit below |
-| 2 | Çekirdek gücü | Çekirdek gücü kullanılmış savaş anı; oyuncunun devresi güçlenmiş | A battle moment with the core power active on the player's circuit |
+| 2 | Çekirdek gücü | Çekirdek gücü kullanılmış savaş anı; oyuncunun devresi onarılıyor | A battle moment with the core power active; the player's circuit is being repaired |
 | 3 | Kartlar | Altı kartlık savaş destesi ve seviyeleriyle modül koleksiyonu | The six-card battle deck and the module collection with levels |
 | 4 | Çekirdekler | Seçili savaş çekirdeği ve açılmış çekirdekler | The selected battle core and the unlocked cores |
 | 5 | Devre Yolu | Arena 7'de kupa eşiklerine bağlı modül parçası, Devre Kredisi ve Akı ödülleri | Arena 7 rewards tied to trophy milestones: module shards, Circuit Credits and Flux |
@@ -146,14 +148,14 @@ Ekran görüntülerinin sırası ve isteğe bağlı alternatif metinleri (en ço
 
 Özellik grafiğinin alternatif metni: "GRIDSHARD yazısı ve sloganı; iki yanda savaş ve kartlar ekranı" / "The GRIDSHARD wordmark and tagline between the battle and cards screens".
 
-### Nasıl üretildi
+### Nasıl üretildi (13 Ekim 2026)
 
 - Ekran görüntüleri oyunun kendi ekranlarıdır; üstlerine yazı, çerçeve ya da süsleme eklenmedi. Yalıtılmış bir yerel sunucuda (geçici veri klasörü, yalnız yapay zekâ eşleşmesi, reklam ve ödeme kapalı) kurulu Chrome ile 360×640 CSS pikseli ve 3 kat çözünürlükte çekildi. Canlı sunucuya ve gerçek oyuncu verisine dokunulmadı.
-- Hesap, takım üyeleri ve takım adı bu çekim için oluşturulmuş örnek veridir (Arena 7, 1846 kupa; Türkçe sette "Kıvılcım" ve "Akım Birliği", İngilizce sette "Sparkline" ve "Arc Union"). Savaşlar gerçekten oynandı; rakip, oyunun yapay zekâ rakibidir.
-- Görüntüler çalışma ağacındaki arayüzden alındı (Play'deki v3 paketinden sonraki arayüz düzeltmelerini içerir). Seçilen ekranlar o düzeltmelerin dokunduğu ekranlar (mağaza, Kartlar'daki Bilgi / Seç kutusu, takım isteği, analitik sorusu) değildir; bu, değişiklik listesinden çıkarımdır, v3 paketiyle yan yana karşılaştırılmadı.
+- Hesap, takım üyeleri ve takım adı bu çekim için oluşturulmuş örnek veridir (Arena 7, 2380 kupa; Türkçe sette "Kıvılcım" ve "Akım Birliği", İngilizce sette "Sparkline" ve "Arc Union"; üye adları da örnektir). Arena eşikleri 7 Ekim'den sonra değiştiği için ilk setteki 1846 kupa artık Arena 6'ya düşer; Arena 7 alternatif metni doğru kalsın diye 2380 kupa kullanıldı. Savaşlar gerçekten oynandı; rakip, oyunun yapay zekâ rakibidir. Çekirdek gücü görüntüsü güç kullanıldıktan yaklaşık yarım saniye sonra, maç sonucu görüntüsü aynı maçın bitiminde alındı.
 - Gerçek para fiyatı ya da indirim yazısı gösteren ekranlar (mağaza, sezon ödülleri) bilerek sete alınmadı.
-- Özellik grafiği oyunun yazı tipleriyle (Orbitron, Rajdhani), marka renkleriyle ve iki ekran görüntüsüyle kuruldu. Slogan tanıtım sitesindekiyle aynıdır.
-- Çekim betikleri geçicidir ve depoda değildir; kopyaları `artifacts/play-store-listing-20261007/tools/` altındadır.
+- Özellik grafiği oyunun yazı tipleriyle (GRIDSHARD yazısı Orbitron, slogan Oxanium), oyunun desenli mavi zeminiyle ve iki gerçek ekran görüntüsüyle kuruldu (HTML/CSS düzeni, Chrome'da çizildi). Slogan tanıtım sitesindekiyle aynıdır. Cihaz çerçevesi, mağaza rozeti ve simgeye benzeyen marka görseli yoktur; iki ekran, oyundaki levhalar gibi koyu konturlu ve dudaklı panellerdir.
+- Uygulama simgesi `tools/generate_brand_assets.py` ile yeniden çizildi (aynı motif: altın halkada çatlamış kristal; yeni çizim dili: dolu gövde, aydınlık ve gölge yüz, koyu kontur, desenli düz zemin). Web simgeleri, yükleme ekranı amblemi ve Android / iOS simge ve açılış görselleri aynı betikten çıkar.
+- Çekim betikleri depoda değildir; `artifacts/gorsel-tur6-20261013/` altındadır (`store.js`, `feature.js`, örnek veriyi kuran `probe_server.py`).
 - **Sınır:** görüntüler masaüstü Chrome'un telefon boyutundaki görünümündendir, gerçek cihazdan değil.
 
 ## Yapay zekayla üretilmiş öğe beyanı
@@ -170,7 +172,7 @@ Mağaza girişi ekranının sonunda iki seçenekli bir beyan vardır: "Öğeleri
 
 | Öğe | Nasıl üretildi | Görsel üreten bir yapay zekâ modelinin çıktısı mı |
 |---|---|---|
-| Uygulama simgesi | `tools/generate_brand_assets.py` çizim betiğinin çıktısı (Pillow; dış görsel servisi yok, her çalıştırmada aynı sonuç; depodaki dosya `D:\Projects\GRIDSHARD2.1` içindekiyle bayt bayt aynı). Betik 30 Eylül'de bir yapay zekâ kodlama aracının iş paketinde yazıldı (Beta.72 tur 18); motif, o tarihte kullanımdan kalkan ImageGen simgesini izler. Konsoldaki simge alanı 7 Ekim'e kadar boştu; kullanıcının paylaştığı ekrandaki küçük resim bu dosyayla uyumlu. | Hayır |
+| Uygulama simgesi | `tools/generate_brand_assets.py` çizim betiğinin çıktısı (Pillow; dış görsel servisi yok, her çalıştırmada aynı sonuç). Betiğin çizim bölümü 13 Ekim'de bir yapay zekâ kodlama aracıyla (Claude) yeniden yazıldı: biçimler kodla tarif edilen çokgen, halka ve çizgilerdir; motif 30 Eylül'deki simgeyle aynıdır. | Hayır |
 | Özellik grafiği | Claude'un yazdığı HTML/CSS düzeninin Chrome'da çizilmiş hali: oyunun yazı tipleri, marka renkleri ve iki gerçek ekran görüntüsü. | Hayır |
 | Ekran görüntüleri | Çalışan oyunun ekranları; çekimi bir betik yaptı, görüntüye dokunulmadı. | Hayır |
 | Kısa ve tam açıklama | Claude yazdı, özellikleri koddan doğruladı; kullanıcı gözden geçirip konsola girdi. | Metin; yapay zekâ taslağı |

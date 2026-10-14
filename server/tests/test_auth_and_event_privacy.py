@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -75,6 +76,53 @@ def test_http_identity_cannot_read_or_mutate_another_player(monkeypatch):
     ).status_code == 403
 
 
+def test_body_player_id_is_checked_for_every_json_content_type(monkeypatch):
+    # FastAPI gövdeyi `+json` türlerinde ve büyük harfli yazımda da çözer;
+    # kimlik denetimi içerik türüne göre atlanmamalı.
+    monkeypatch.setenv("GRIDSHARD_AUTH_REQUIRED", "1")
+    client = TestClient(app)
+    player_a = "auth-ctype-player-a"
+    player_b = "auth-ctype-player-b"
+    headers_a = _auth_headers(client, player_a, "a" * 40)
+    headers_b = _auth_headers(client, player_b, "b" * 40)
+    for player_id, headers in ((player_a, headers_a), (player_b, headers_b)):
+        assert client.post(f"/participants/{player_id}/bootstrap", headers=headers).status_code == 200
+
+    for content_type in (
+        "application/json",
+        "application/vnd.api+json",
+        "APPLICATION/JSON",
+        "application/json; charset=utf-8",
+        "text/plain",
+    ):
+        for path, body in (
+            ("/matchmaking/join", {"player_id": player_b}),
+            ("/teams/any-team/leave", {"player_id": player_b, "request_id": "ctype-leave-1"}),
+            ("/events/weekly/register", {"player_id": player_b, "request_id": "ctype-event-1"}),
+        ):
+            response = client.post(
+                path,
+                headers={**headers_a, "content-type": content_type},
+                content=json.dumps(body).encode("utf-8"),
+            )
+            assert response.status_code == 403, (content_type, path, response.text)
+
+    # Dize olmayan kimlik de başka oyuncu sayılır.
+    assert client.post(
+        "/matchmaking/join",
+        headers={**headers_a, "content-type": "application/json"},
+        content=b'{"player_id": ["auth-ctype-player-b"]}',
+    ).status_code == 403
+    # Kendi kimliğiyle istek her yazımda kabul edilir.
+    own = client.post(
+        "/matchmaking/join",
+        headers={**headers_a, "content-type": "application/vnd.api+json"},
+        content=json.dumps({"player_id": player_a}).encode("utf-8"),
+    )
+    assert own.status_code == 200, own.text
+    client.delete(f"/matchmaking/{player_a}", headers=headers_a)
+
+
 def test_http_private_routes_reject_missing_token(monkeypatch):
     monkeypatch.setenv("GRIDSHARD_AUTH_REQUIRED", "1")
     response = TestClient(app).get("/profile/no-token-player")
@@ -121,3 +169,40 @@ def test_command_payload_and_private_result_fields_do_not_leak():
     opponent = service.events_since("events", "player-b")["events"]
     assert any(event["type"] == "command_received" for event in own)
     assert not any(event["type"] in {"command_received", "command_rejected"} for event in opponent)
+
+
+def test_telemetry_endpoints_require_identity_and_stay_private(monkeypatch):
+    monkeypatch.setenv("GRIDSHARD_AUTH_REQUIRED", "1")
+    client = TestClient(app)
+    payload = {
+        "event_id": "telemetry-private-1",
+        "event_type": "game_opened",
+        "timestamp_ms": 1,
+        "metadata": {"platform": "web"},
+    }
+    assert client.post("/telemetry/events", json=payload).status_code == 401
+    assert client.get("/telemetry/events").status_code == 401
+
+    player_a = "telemetry-player-a"
+    player_b = "telemetry-player-b"
+    headers_a = _auth_headers(client, player_a, "a" * 40)
+    headers_b = _auth_headers(client, player_b, "b" * 40)
+    # Başkası adına olay yazılamaz; kimliksiz olay belirtecin sahibine yazılır.
+    assert client.post(
+        "/telemetry/events", headers=headers_a, json={**payload, "player_id": player_b},
+    ).status_code == 403
+    assert client.post("/telemetry/events", headers=headers_a, json=payload).status_code == 200
+    assert client.post(
+        "/telemetry/events",
+        headers=headers_b,
+        json={**payload, "event_id": "telemetry-private-2", "player_id": player_b},
+    ).status_code == 200
+
+    own = client.get("/telemetry/events", headers=headers_a).json()["events"]
+    assert {item["player_id"] for item in own} == {player_a}
+    assert client.get(
+        "/telemetry/events", headers=headers_a, params={"player_id": player_b},
+    ).status_code == 403
+
+    oversized = {**payload, "event_id": "telemetry-private-3", "metadata": {"blob": "x" * 5000}}
+    assert client.post("/telemetry/events", headers=headers_a, json=oversized).status_code == 413

@@ -535,6 +535,8 @@ class PlayerProfile:
     verified_ad_views: dict[str, dict] = field(default_factory=dict)
     # Mesaj kutusundaki duyurular ve doğrudan mesajlar için okundu izleri.
     seen_inbox_notice_ids: tuple[str, ...] = ()
+    # Mesaj görünürlüğü; satın alma/ödül makbuzları hiçbir zaman silinmez.
+    dismissed_inbox_notice_ids: tuple[str, ...] = ()
     direct_messages_seen_at: int = 0
     daily_meta_day: str = ""
     daily_meta_id: str = ""

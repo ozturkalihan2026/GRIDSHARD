@@ -98,6 +98,8 @@ test("Kart sırası, kısa otomatik ad ve sade operatör bildirimleri", async ({
     const style = getComputedStyle(menuButton, "::after");
     return { width:style.width, height:style.height, animation:style.animationName, background:style.backgroundImage };
   });
-  expect(light).toEqual({ width:"8px", height:"8px", animation:"none", background:"none" });
+  // Görsel tur 6: nokta dolu boncuktur (aydınlık üst yüz, koyu kontur); hareketsizdir.
+  expect({ width:light.width, height:light.height, animation:light.animation }).toEqual({ width:"11px", height:"11px", animation:"none" });
+  expect(light.background).toMatch(/^radial-gradient\(/);
   await page.screenshot({ path:"test-results/operator-cards-mobile.png" });
 });

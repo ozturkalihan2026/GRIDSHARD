@@ -109,3 +109,89 @@ test("a stale reconnect snapshot cannot discard fresh destruction events", () =>
   assert.deepEqual(renders[1].events, [destruction]);
   assert.deepEqual(remembered, [destruction]);
 });
+
+function presentationHarness(options = {}) {
+  const renders = [];
+  const queue = new GridshardBattlePresentationQueue({requestFrame:() => 1, cancelFrame:() => {},
+    present:batch => renders.push(batch), ...options});
+  return {queue, renders};
+}
+
+test("a late batch shows only the newest routine effects, measured from the newest event", () => {
+  const {queue, renders} = presentationHarness();
+  // The snapshot is a second older than the newest events (one per second vs. every tick).
+  queue.push({type:"snapshot",payload:snapshot(100)});
+  const stalled = Array.from({length:30}, (_, i) => ({type:"attack_performed",cursor:i + 1,at_ms:8000 + i * 100}));
+  queue.push({type:"events"}, {events:stalled});
+  queue.flush();
+  const shown = renders[0].events.map(event => event.at_ms);
+  assert.deepEqual(shown, [10400, 10500, 10600, 10700, 10800, 10900]);
+  assert.equal(queue.droppedEffects, 24);
+});
+
+test("on-time ticks are never trimmed", () => {
+  const {queue, renders} = presentationHarness();
+  queue.push({type:"snapshot",payload:snapshot(100)});
+  for (let tick = 0; tick < 5; tick += 1) {
+    const events = Array.from({length:12}, (_, i) => ({type:i % 2 ? "module_damaged" : "attack_performed",at_ms:10000 + tick * 100}));
+    queue.push({type:"events"}, {events});
+    queue.flush();
+    assert.equal(renders.at(-1).events.length, 12);
+  }
+  assert.equal(queue.droppedEffects, 0);
+});
+
+test("decisive events outlive routine ones in a late batch", () => {
+  const {queue, renders} = presentationHarness();
+  queue.push({type:"snapshot",payload:snapshot(100)});
+  const destroyed = {type:"module_destroyed",at_ms:9100,data:{player_id:"a",module_id:"laser"}};
+  const power = {type:"core_power_used",at_ms:9050,data:{player_id:"b"}};
+  const expired = {type:"module_destroyed",at_ms:8700,data:{player_id:"a",module_id:"shield"}};
+  const hits = Array.from({length:10}, (_, i) => ({type:"module_damaged",at_ms:9000 + i * 100}));
+  queue.push({type:"events"}, {events:[expired, power, destroyed, ...hits]});
+  queue.flush();
+  const shown = renders[0].events;
+  assert.ok(shown.includes(destroyed) && shown.includes(power));
+  assert.ok(!shown.includes(expired));
+  assert.deepEqual(shown.filter(event => event.type === "module_damaged").map(event => event.at_ms), [9500, 9600, 9700, 9800, 9900]);
+});
+
+test("one frame never presents more routine effects than its budget", () => {
+  const {queue, renders} = presentationHarness({maxRoutinePerFrame:8});
+  queue.push({type:"snapshot",payload:snapshot(100)});
+  const destroyed = {type:"module_destroyed",at_ms:10000,data:{player_id:"a",module_id:"laser"}};
+  const volley = Array.from({length:30}, (_, i) => ({type:"attack_performed",cursor:i + 1,at_ms:10000}));
+  queue.push({type:"events"}, {events:[destroyed, ...volley]});
+  queue.flush();
+  const shown = renders[0].events;
+  assert.ok(shown.includes(destroyed));
+  assert.deepEqual(shown.filter(event => event.type === "attack_performed").map(event => event.cursor), [23, 24, 25, 26, 27, 28, 29, 30]);
+});
+
+test("discarding queued effects keeps the newest state and important notices", () => {
+  const {queue, renders} = presentationHarness();
+  queue.push({type:"snapshot",payload:snapshot(300)});
+  const warning = {type:"inactivity_warning",at_ms:29000,data:{player_id:"a"}};
+  queue.push({type:"events"}, {events:[warning, {type:"attack_performed",at_ms:29900}, {type:"module_destroyed",at_ms:29950,data:{}}]});
+  queue.discardEffects();
+  queue.flush();
+  assert.equal(renders[0].snapshot.tick, 300);
+  assert.equal(renders[0].snapshotChanged, true);
+  assert.deepEqual(renders[0].events, [warning]);
+  assert.equal(queue.droppedEffects, 2);
+});
+
+test("event types without a presentation do not consume the effect budgets", () => {
+  const {queue, renders} = presentationHarness({maxEffects:6, maxRoutinePerFrame:4, ignoredTypes:["module_heat_changed"]});
+  queue.push({type:"snapshot",payload:snapshot(100)});
+  const remembered = [];
+  queue.rememberEvents = events => remembered.push(...events);
+  const noise = Array.from({length:40}, () => ({type:"module_heat_changed",at_ms:10000}));
+  const hits = Array.from({length:4}, (_, i) => ({type:"module_damaged",cursor:i + 1,at_ms:10000}));
+  queue.push({type:"events"}, {events:[...hits, ...noise]});
+  assert.equal(remembered.length, 44);
+  assert.equal(queue.effects.length, 4);
+  queue.flush();
+  assert.deepEqual(renders[0].events.map(event => event.cursor), [1, 2, 3, 4]);
+  assert.equal(queue.droppedEffects, 0);
+});

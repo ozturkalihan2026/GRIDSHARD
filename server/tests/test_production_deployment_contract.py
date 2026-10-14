@@ -60,6 +60,25 @@ def test_cloudflare_proxy_uses_mounted_certificates_without_http_or_access_logs(
     assert not any(line.strip().startswith("log") for line in source.splitlines())
 
 
+def test_request_sizes_are_bounded_at_the_proxy_and_the_websocket_server():
+    # The API takes small JSON bodies and the battle socket small commands.
+    docker = (ROOT / "Dockerfile").read_text()
+    assert '"--ws-max-size", "262144"' in docker
+    for name in ("Caddyfile", "Caddyfile.cloudflare"):
+        source = (ROOT / "deploy" / name).read_text()
+        assert "request_body {" in source and "max_size 1MB" in source
+        assert source.index("request_body {") < source.index("reverse_proxy relay-web:8000")
+
+
+def test_cloudflare_overlay_keys_rate_limits_on_the_reported_client_address():
+    # Text check: the overlay uses Compose's `!override` tag, which plain YAML loaders reject.
+    overlay = (ROOT / "docker-compose.cloudflare.yml").read_text()
+    assert "  relay-web:\n    environment:\n" in overlay.replace("\r\n", "\n")
+    assert "      GRIDSHARD_CLIENT_IP_HEADER: CF-Connecting-IP" in overlay
+    # The plain proxy file sets no such header: the proxy's own forwarded hop is used.
+    assert "GRIDSHARD_CLIENT_IP_HEADER" not in (ROOT / "docker-compose.production.yml").read_text()
+
+
 def test_tmpfs_options_are_one_yaml_scalar_not_multiple_mount_paths():
     import yaml
 

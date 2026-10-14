@@ -23,7 +23,7 @@ Her modülün dört eşiği vardır; her eşikte iki daldan biri seçilir. Eşik
 | Soğutucu | Destek | **Derin Dondurma** — Her 18 saniyede bir 5 saniye boyunca etkisi %80 artar. | **Isı Geri Kazanımı** — Her 20 saniyede bir +1 Akım kazandırır. |
 | EMP | Sabotaj | **Şok Darbesi** — Sabotajı hedefe ayrıca 12 hasar verir. | **Uzun Dalga** — Her 24 saniyede bir 8 saniye boyunca etkisi %40 artar. |
 | Güçlendirici | Destek | **Rezonans Dalgası** — Her 20 saniyede bir 6 saniye boyunca etkisi %50 artar. | **Son Yük** — Yok olduğunda +2 Akım kazandırır. |
-| Onarım Modülü | Destek | **Acil Onarım** — Her 20 saniyede bir 5 saniye boyunca etkisi %60 artar. | **Saha Kurulumu** — Yerleştiği anda devredeki diğer modülleri 20 CAN onarır. |
+| Onarım | Destek | **Acil Onarım** — Her 20 saniyede bir 5 saniye boyunca etkisi %60 artar. | **Saha Kurulumu** — Yerleştiği anda devredeki diğer modülleri 20 CAN onarır. |
 | Zırh | Savunma | **Son Katman** — CAN'ı %40 altına düşünce aldığı hasar %30 azalır. | **Parçalanan Zırh** — Yok olduğunda devredeki diğer modülleri 25 CAN onarır. |
 | Darbe Topu | Saldırı | **Üçüncü Darbe** — Her 3. atış %60 daha çok hasar verir. | **Zırh Kıran** — Hedefin savunma azaltımının %30 kadarını yok sayar. |
 | Füze Fırlatıcı | Saldırı | **Çekirdek Avcısı** — Çekirdeğe %30 daha çok hasar verir. | **Seri Fırlatma** — Bir modülü yok ettiğinde beklemeden yeniden ateş eder. |

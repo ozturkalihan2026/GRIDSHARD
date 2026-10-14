@@ -342,11 +342,29 @@
         <button id="inbox-tab-battle" type="button" role="tab" data-inbox-tab="battle" aria-controls="inbox-panel-battle" aria-selected="false" tabindex="-1">Savaş</button>
         <button id="inbox-tab-purchase" type="button" role="tab" data-inbox-tab="purchase" aria-controls="inbox-panel-purchase" aria-selected="false" tabindex="-1">Satın Alım</button>
         <button id="inbox-tab-reward" type="button" role="tab" data-inbox-tab="reward" aria-controls="inbox-panel-reward" aria-selected="true">Ödül</button>
+        <button id="inbox-tab-system" type="button" role="tab" data-inbox-tab="system" aria-controls="inbox-panel-system" aria-selected="false" tabindex="-1">Sistem</button>
       </nav>
+      <!-- Kutunun boyu sabittir; başlık ve sekmeler yerinde durur, yalnız bu gövde kayar. -->
+      <div class="reward-inbox-tools">
+        <button id="inbox-delete-all" type="button" disabled>SEKMEDEKİLERİ SİL</button>
+        <button id="inbox-delete-undo" type="button" hidden>GERİ AL</button>
+        <small id="inbox-delete-note">Toplanmamış sandıklar ve savaş davetleri korunur.</small>
+      </div>
+      <div class="reward-inbox-body">
       <section id="inbox-panel-battle" role="tabpanel" aria-labelledby="inbox-tab-battle" class="reward-inbox-section" hidden><h3 id="reward-inbox-invitations-title" data-ui-icon="swords:red">Savaş Davetleri</h3><div id="reward-inbox-invitations" class="reward-inbox-list"></div><h3 data-ui-icon="chest:gold">Savaş Sandıkları</h3><div id="reward-inbox-battle-rewards" class="reward-inbox-list"></div></section>
       <section id="inbox-panel-purchase" role="tabpanel" aria-labelledby="inbox-tab-purchase" class="reward-inbox-section" hidden><h3 data-ui-icon="shop:blue">Satın Alım Mesajları</h3><div id="reward-inbox-purchases" class="reward-inbox-list"></div></section>
       <section id="inbox-panel-reward" role="tabpanel" aria-labelledby="inbox-tab-reward" class="reward-inbox-section"><h3 id="reward-inbox-rewards-title" data-ui-icon="gift:gold">Ödül Sandıkları</h3><div id="reward-inbox-list" class="reward-inbox-list"></div></section>
-      <section class="reward-inbox-section" aria-labelledby="reward-inbox-notices-title"><h3 id="reward-inbox-notices-title" data-ui-icon="info:cyan">Oyun Bildirimleri</h3><div id="reward-inbox-notices" class="reward-inbox-list"></div></section>
+      <section id="inbox-panel-system" role="tabpanel" aria-labelledby="inbox-tab-system" class="reward-inbox-section" hidden><h3 id="reward-inbox-notices-title" data-ui-icon="info:cyan">Oyun Bildirimleri</h3><div id="reward-inbox-notices" class="reward-inbox-list"></div></section>
+      </div>
+    </dialog>
+
+    <dialog id="inbox-delete-confirm-dialog" class="inbox-delete-confirm-dialog" aria-labelledby="inbox-delete-confirm-title" aria-describedby="inbox-delete-confirm-copy">
+      <h2 id="inbox-delete-confirm-title">Mesajları sil</h2>
+      <p id="inbox-delete-confirm-copy">Bu sekmedeki tüm bilgilendirme mesajları silinsin mi? Satın alma ve ödül hakları değişmez.</p>
+      <div class="inbox-delete-confirm-actions">
+        <button id="inbox-delete-cancel" type="button" autofocus>VAZGEÇ</button>
+        <button id="inbox-delete-confirm" type="button">MESAJLARI SİL</button>
+      </div>
     </dialog>
 
     <nav id="app-bottom-dock" class="main-scope-nav lobby-bottom-dock app-bottom-dock" aria-label="Ana gezinme">
@@ -381,7 +399,7 @@
              almadan önce açılır; her kartta ayrıca özet satırı durur (Google Play ödeme
              politikası; docs/CHILD_AUDIENCE_AUDIT.md). -->
         <button id="chest-odds-open" class="chest-odds-tab" type="button" hidden>ÖDÜL LİSTESİ</button>
-        <div class="mobile-section-heading"><div><h3 id="chest-store-title" data-ui-icon="chest:gold">Sandık Satın Al</h3></div><small id="chest-store-sale">Her ay sürpriz bir günde %40 indirim</small></div>
+        <div class="mobile-section-heading"><div><h3 id="chest-store-title" data-ui-icon="chest:gold">Sandık Satın Al</h3></div></div>
         <div id="chest-store-list" class="chest-store-list"></div>
         <!-- Hediye sandık ayrı bir bölüm değildir: Bronz Sandık kartındaki düğmeyle açılır.
              Yenilenme notları Ödül Listesi penceresindedir. -->
@@ -423,6 +441,7 @@
     <dialog id="chest-odds-dialog" class="chest-odds-dialog" aria-labelledby="chest-odds-title">
       <span class="chest-odds-kicker">İÇERİK VE OLASILIKLAR</span>
       <h2 id="chest-odds-title" data-ui-icon="gift:gold">Ödül Listesi</h2>
+      <p id="chest-store-sale" class="chest-odds-note chest-odds-refresh-note">Her ay sürpriz bir günde %40 indirim</p>
       <p class="chest-odds-note chest-odds-refresh-note">Bronz Sandık hediyesi 8 saatte bir yenilenir.</p>
       <!-- Satın alınan sandıkların günlük hakkı; saati renderShop oyuncunun saatiyle yazar. -->
       <p id="chest-store-limit-note" class="chest-odds-note chest-odds-refresh-note" hidden></p>

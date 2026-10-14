@@ -45,9 +45,9 @@ test("purchase limits and low balance never disable a ready gift or stock", () =
   assert.equal(decide({ state:{ ...state, unavailable:true }, gift:{ claim_available:true } }).disabled, true);
 });
 
-test("mailbox tabs keep notifications below and collected chests disappear", () => {
+test("mailbox has four tabs, system owns notifications and collected chests disappear", () => {
   const dialog = html.slice(html.indexOf('<dialog id="reward-inbox-dialog"'), html.indexOf('</dialog>', html.indexOf('<dialog id="reward-inbox-dialog"')));
-  for (const tab of ["battle", "purchase", "reward"]) {
+  for (const tab of ["battle", "purchase", "reward", "system"]) {
     assert.ok(dialog.includes(`data-inbox-tab="${tab}"`));
     assert.ok(dialog.includes(`aria-controls="inbox-panel-${tab}"`));
     assert.ok(dialog.includes(`id="inbox-panel-${tab}" role="tabpanel"`));

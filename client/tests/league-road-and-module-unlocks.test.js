@@ -448,8 +448,12 @@ test("yol ekranı çekirdeği ayrı satırda, lig sonu sandığını hücresiz �
   assert.match(road, /claim\.addEventListener\("click", \(\) => claimLeagueNode\(node, claim\)\);/);
   assert.match(road, /chestStop\.className = "arena-league-chest-stop";/);
   assert.match(road, /if \(leagueRoad\.childElementCount\) section\.appendChild\(leagueRoad\);\s*if \(chestStop\) section\.appendChild\(chestStop\);/);
-  // Lig sandığı mağaza sandığının çizimini kullanmaz.
-  assert.ok(!road.includes("chestVisualMarkup("));
+  // Lig sandığı mağaza sandığının çizimini kullanmaz; mağaza sandığı veren arena durağı ise
+  // (Bronz, Gümüş, Altın, Elmas) mağazadaki çizimiyle görünür (görsel tur 6).
+  const leagueChestBranch = road.slice(road.indexOf("if (node.league_chest || node.is_final_reward) {"), road.indexOf("chestStop.appendChild(stop);"));
+  assert.ok(leagueChestBranch.length > 200 && !leagueChestBranch.includes("chestVisualMarkup("));
+  assert.match(road, /if \(storeChestTier && STORE_CHEST_DEFINITION_IDS\.has\(rewards\.chest_id\)\) return chestVisualMarkup\(storeChestTier\);/);
+  assert.match(app, /const STORE_CHEST_DEFINITION_IDS = new Set\(\["field_3h", "circuit_8h", "core_24h", "diamond_24h"\]\);/);
   const floating = css.match(/\.arena-reward-node\.is-floating-chest,[^{]*\{([^}]*)\}/)[1];
   assert.match(floating, /border:0;/);
   assert.match(floating, /background:none;/);

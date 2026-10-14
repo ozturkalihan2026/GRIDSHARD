@@ -10528,3 +10528,1073 @@ body[data-app-screen="play"] .module-card[data-hp-state="destroyed"] .module-emb
 /* Ödül Listesi: hediye ve alım hakkı yenilenme notları (mağaza sayfasından buraya alındı). */
 .chest-odds-dialog .chest-odds-refresh-note { margin:0 0 3px; color:#cfe6ff; }
 .chest-odds-dialog .chest-odds-refresh-note + .chest-odds-groups { margin-top:10px; }
+
+/* === Görsel tur 6 (13 Ekim 2026): mesaj kutusu, bilgi pencereleri, kart karoları, yazı boyları, giriş ekranı, savaş efektleri ===
+   Kullanıcının 13 Ekim listesi (docs/OYUN_DUZENLEMELERI_PLANI.md, "Görsel tur 6").
+   Blok ev bilgisayarında artifacts/gorsel-tur6-20261013/apply6.py ile t6-*.css parçalarından üretildi. */
+/* Kaydırma çubuğu hiçbir sayfada görünmez; kaydırma dokunma ve tekerlekle sürer. */
+html, body, * { scrollbar-width:none !important; }
+*::-webkit-scrollbar { width:0 !important; height:0 !important; display:none !important; }
+
+/* Ev ekranı: desenli zeminin arkasındaki soluk çekirdek, yörüngeler ve eğik tahta kalktı
+   (imleçle kayıyor ve nefes alıyordu; zeminin altında seçilmiyordu). */
+.lobby-backdrop { display:none !important; }
+
+/* Alt çubuk: seçilen düğme yerine anında oturur; hareket yalnız transform ve
+   opaklıkla yapılır. Genişlik ve yükseklik geçişi düzen hesabı istiyor, ekran
+   çizilirken kareleri atlıyordu. */
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action { transition:transform .12s ease !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-icon { transition:none !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active { animation:gs6-dock-rise .24s cubic-bezier(.2,.85,.3,1.25); }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active .lobby-dock-icon { animation:gs6-dock-icon .3s cubic-bezier(.2,.85,.3,1.4); }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active .menu-action-title { animation:gs6-dock-title .22s ease-out; }
+@keyframes gs6-dock-rise { from { transform:translateY(7px) scale(.94); } }
+@keyframes gs6-dock-icon { from { transform:scale(.8); } }
+@keyframes gs6-dock-title { from { opacity:0; transform:translateY(4px); } }
+@media (prefers-reduced-motion:reduce) {
+  body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active,
+  body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active .lobby-dock-icon,
+  body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active .menu-action-title { animation:none; }
+}
+body[data-graphics="dusuk"]:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active,
+body[data-graphics="dusuk"]:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active .lobby-dock-icon,
+body[data-graphics="dusuk"]:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active .menu-action-title { animation:none; }
+
+/* Bildirim noktaları: ışık halkalı düz daire yerine dolu boncuk (aydınlık üst yüz,
+   gölgeli alt yüz, koyu kontur, altında ince dudak). Kırmızı: bekleyen bildirim;
+   yeşil: yükseltme hazır. */
+:root {
+  --gs-notification-light:radial-gradient(circle at 34% 26%,#ffe1e6 0 13%,#ff7a93 40%,#e83f66 74%,#b3214a 100%);
+  --gs-notification-ring:#0a1024;
+  --gs-notification-glow:0 1.5px 0 #0a1024;
+  --gs-upgrade-light:radial-gradient(circle at 34% 26%,#e2ffee 0 13%,#6ceca4 40%,#2fc878 74%,#14904d 100%);
+}
+[data-open-screen].has-persistent-notification::after,
+.friends-tabs button.has-friends-notification::after,
+#team-menu-button.has-team-application::after {
+  width:11px !important;
+  height:11px !important;
+  border-width:1.5px !important;
+}
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-persistent-notification::after,
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification::after {
+  top:0 !important;
+  left:calc(50% + 10px) !important;
+  width:12px !important;
+  height:12px !important;
+  border-width:1.5px !important;
+}
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification::after { box-shadow:0 1.5px 0 #0a1024 !important; }
+.app-progress-ribbon #lobby-player-details[data-claimable="true"]::before,
+#profile-hero-details[data-claimable="true"]::before {
+  width:9px !important;
+  height:9px !important;
+  border-width:1.5px !important;
+}
+/* Üç çizgi düğmesindeki nokta da aynı boncuktur. */
+body #lobby-menu-button.has-avatar-notification::after,
+body #lobby-menu-button.has-social-notification::after {
+  width:11px !important;
+  min-width:0 !important;
+  height:11px !important;
+  padding:0 !important;
+  border:1.5px solid #0a1024 !important;
+  background:var(--gs-notification-light) !important;
+  box-shadow:0 1.5px 0 #0a1024 !important;
+}
+/* Sayı taşıyan rozetler (mesaj kutusu, takım başvurusu): aynı dilde hap. */
+.reward-inbox-button > #reward-inbox-notification,
+.team-application-badge {
+  border:1.5px solid #0a1024 !important;
+  color:#fff !important;
+  background:linear-gradient(180deg,#ff8ea3 0 46%,#e83f66 46% 100%) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 1.5px 0 #0a1024 !important;
+  text-shadow:0 1px 0 rgba(90,8,34,.75);
+}
+
+/* Yükseltme oku: yalın ok, yeni dilde (aydınlık sol yüz, gölgeli sağ yüz, koyu kontur). */
+.upgrade-arrow > svg { fill:none; stroke:none; overflow:visible; }
+.upgrade-arrow > svg .ua-m { fill:#3fdc86; }
+.upgrade-arrow > svg .ua-l { fill:#b4f9d0; }
+.upgrade-arrow > svg .ua-d { fill:#189457; }
+.upgrade-arrow > svg .ua-o { fill:none; stroke:#0a1024; stroke-width:1.9; stroke-linejoin:round; }
+.upgrade-arrow > svg .ua-s { fill:#0a1024; opacity:.55; }
+.collection-module-tile > .upgrade-arrow,
+.core-collection-tile > .upgrade-arrow { width:17px; height:17px; }
+.module-detail-tabs button > .upgrade-arrow { width:16px; height:16px; }
+
+/* Devre Yolu: duraktaki mağaza sandığı (Bronz, Gümüş, Altın, Elmas) mağazadaki çizimiyle. */
+.arena-reward-node > i > .chest-visual { width:34px; height:30px; display:block; }
+.arena-reward-node > i > .chest-visual > .shop-chest { width:100%; height:100%; display:block; }
+
+/* Mesaj kutusu: boyu içeriğe göre değişmez. Başlık ve sekmeler yerinde durur,
+   yalnız gövde kayar; her alan en çok 20 kayıt gösterir (app.js, INBOX_AREA_LIMIT). */
+.reward-inbox-dialog[open] {
+  display:flex !important;
+  flex-direction:column;
+  height:min(600px,calc(100dvh - 32px)) !important;
+  max-height:none !important;
+  overflow:hidden !important;
+}
+.reward-inbox-dialog > header,
+.reward-inbox-dialog > .reward-inbox-tabs,
+.reward-inbox-dialog > #reward-inbox-status { flex:none; }
+.reward-inbox-dialog > header { position:static !important; }
+.reward-inbox-dialog > #reward-inbox-status:empty { display:none; }
+.reward-inbox-dialog > .reward-inbox-tabs { padding-bottom:10px !important; box-shadow:0 1px 0 rgba(3,10,24,.45); }
+.reward-inbox-dialog > .reward-inbox-body {
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding-bottom:6px;
+}
+
+/* Ev ekranı: destenin altındaki koyu cam şerit kalktı. Modüller çekirdeğin
+   sahnesinde (altıgen ızgaralı zemin) havada durur; altlarında yumuşak gölge var. */
+body[data-app-screen="menu"] .home-loadout-front {
+  background:none !important;
+  box-shadow:none !important;
+}
+body[data-app-screen="menu"] #home-active-deck .unified-module-tile {
+  box-shadow:inset 0 2px 0 currentColor,inset 0 3px 0 rgba(255,255,255,.1),0 0 0 1px var(--gs3-ink),0 2px 0 1px #06173a,0 9px 10px -4px rgba(1,6,18,.6) !important;
+}
+
+/* Kartlar: modül karosunda boşluk azaldı (360 genişlikte 111 -> 93 piksel). Ad iki
+   satıra kadar yazılır; seviye rozeti ve seçim işareti yerinde. */
+.collection-module-tile {
+  padding:16px 4px 5px !important;
+  grid-template-rows:30px auto auto !important;
+  gap:2px !important;
+}
+.collection-module-tile .unified-module-art { height:30px !important; font-size:1.42rem !important; }
+.collection-module-tile .unified-module-name { min-height:2.16em; line-height:1.08 !important; }
+.collection-module-tile .unified-module-progress { gap:2px !important; }
+.collection-module-tile[data-selected="true"] > .upgrade-arrow { top:19px !important; }
+
+/* Karta dokununca açılan kutu: düğmeler alçaldı (38 -> 26 piksel), yazı boyu aynı.
+   Bilgi mavi; desteye ekleyen düğme yeşil, desteden çıkaran kırmızı. */
+.module-quick-actions { padding:5px !important; gap:4px !important; }
+.module-quick-actions strong { font-size:.6rem !important; line-height:1.1 !important; }
+.module-quick-actions button { min-height:26px !important; padding:3px 4px !important; border-radius:7px !important; }
+.module-quick-actions > button[data-action="add"] { --b-a:#74d384; --b-b:#31a95d; --b-lip:#12703a; }
+.module-quick-actions > button[data-action="remove"] { --b-a:#f0788c; --b-b:#d1405d; --b-lip:#8c1c39; }
+
+/* Modül ve çekirdek bilgi pencereleri: üstteki ad, enderlik ve amblem birbirine
+   yaklaştı (başlık alanı 108 -> 88 piksel); seviye satırından sonrası yukarı çıktı,
+   sekme içeriğine yer kaldı. */
+.module-detail-dialog .module-detail-hero { min-height:88px !important; }
+#module-detail-dialog .module-detail-art.has-module-emblem .module-emblem { width:42px; height:42px; }
+#module-detail-dialog .module-detail-art.has-module-emblem::before,
+.core-detail-dialog .core-detail-art.is-emblem::before { width:160px; height:96px; bottom:-18px; }
+.core-detail-dialog .core-detail-art.is-emblem { padding-bottom:6px !important; }
+.core-detail-dialog .core-detail-art.is-emblem .core-emblem-set { width:42px; height:42px; }
+.core-detail-dialog .core-detail-hero { min-height:88px !important; }
+#module-detail-dialog .module-detail-title h2,
+.core-detail-dialog .module-detail-title h2 { margin-bottom:1px !important; font-size:.84rem !important; }
+.module-detail-dialog .module-detail-level-row { margin:4px 0 !important; padding:5px 8px !important; }
+.module-detail-dialog .module-detail-level-row > strong { font-size:.6rem !important; }
+#module-detail-upgrade,
+.core-detail-actions #core-detail-upgrade { min-height:36px !important; padding:4px 10px !important; }
+#module-detail-upgrade .cost-button-label,
+.core-detail-actions #core-detail-upgrade .cost-button-label { font-size:.64rem !important; }
+#module-detail-upgrade .cost-chip > b,
+.core-detail-actions #core-detail-upgrade .cost-chip > b { font-size:.6rem !important; }
+.core-detail-actions #core-detail-select { min-height:36px !important; }
+#module-detail-status,
+#core-detail-status { font-size:.54rem !important; }
+@media (max-height:600px) {
+  .module-detail-dialog .module-detail-hero,
+  .core-detail-dialog .core-detail-hero { min-height:74px !important; }
+  #module-detail-dialog .module-detail-art.has-module-emblem .module-emblem,
+  .core-detail-dialog .core-detail-art.is-emblem .core-emblem-set { width:34px; height:34px; }
+}
+
+/* CAN, saldırı aralığı, hasar (çekirdekte enerji, depo, yetenek) hücreleri en çok iki
+   satırdır: üstte simge ve etiket (tek satır), altta değer ve bir sonraki seviyenin
+   farkı (tek satır). Yazılar ortalı ve bir kademe küçük. */
+.module-detail-stats > div {
+  grid-template-columns:minmax(0,1fr) auto minmax(0,auto) minmax(0,1fr) !important;
+  grid-template-rows:auto auto !important;
+  gap:2px 0 !important;
+  padding:5px 4px 4px !important;
+  text-align:center !important;
+}
+.module-detail-stats > div > .ui-icon { grid-column:2 !important; margin-right:3px; font-size:.58rem !important; }
+/* Uzun etiket sığsın diye: sığmayan hücrede (app.js ölçer) ve dar ekranda (340 pikselin
+   altı) hücre simgesi çizilmez. Çekirdekte enerji hücresi geniştir (değer ve farkı tek satır). */
+.module-detail-stats > div[data-tight="true"] > .ui-icon { display:none !important; }
+@media (max-width:340px) {
+  .module-detail-stats > div > .ui-icon { display:none !important; }
+}
+#core-detail-stats { grid-template-columns:minmax(0,1.32fr) minmax(0,1fr) minmax(0,1fr) !important; }
+.module-detail-stats > div > span {
+  grid-column:3 !important;
+  overflow:hidden;
+  font:700 .5rem/1.15 var(--gs-font-copy) !important;
+  letter-spacing:.01em !important;
+  text-align:center;
+  text-overflow:ellipsis;
+  white-space:nowrap !important;
+}
+.module-detail-stats > div > strong {
+  grid-column:1 / -1 !important;
+  overflow:hidden;
+  font-size:.6rem !important;
+  line-height:1.2 !important;
+  text-align:center;
+  white-space:nowrap;
+}
+.module-detail-stats .stat-next-gain { font:700 .5rem/1 var(--gs-font-copy) !important; letter-spacing:0; }
+
+/* Sekme içeriği: açıklama ve kimlik satırları bir kademe küçük (mesaj kutusundaki ölçü). */
+.module-detail-tab-content .module-detail-tab-intro { font-size:.55rem !important; line-height:1.35 !important; }
+.module-identity-panel .module-identity-row > strong { font-size:.55rem !important; line-height:1.35 !important; }
+.module-overview-grid > div > strong { font-size:.55rem !important; line-height:1.3 !important; }
+.module-stat-chips > span > strong { font-size:.58rem !important; }
+.module-detail-tab-content dl.module-stat-tiles dd { font-size:.66rem !important; }
+/* Çekirdek istatistiklerinde savaş rolü bir cümledir: satırı doldurur, metin boyunda yazılır. */
+.module-detail-tab-content dl.core-stat-tiles > div[data-wide="true"] { grid-column:1 / -1; order:-1; }
+.module-detail-tab-content dl.core-stat-tiles > div:last-child { grid-column:1 / -1; }
+.module-detail-tab-content dl.core-stat-tiles > div[data-wide="true"] > dd {
+  white-space:normal !important;
+  font:600 .55rem/1.35 var(--gs-font-copy) !important;
+  letter-spacing:0;
+}
+
+/* Yazı boyları: büyük kalan yazılar yaklaşık iki punto küçüldü. Ölçü mesaj kutusudur
+   (başlık 14,4, bölüm başlığı 9,6, satır başlığı 9,3 piksel); 8 pikselin altına inilmez
+   (Android WebView daha küçüğünü 8 piksele büyütür). */
+/* Ev ve üst bar */
+#lobby-player-name { font-size:.82rem !important; }
+/* Unvan satırı adın %80'inden küçük kalır (e2e/menu-navigation denetler). */
+#lobby-player-details { font-size:.62rem !important; }
+.app-resource-chip > strong { font-size:.76rem !important; }
+#home-arena-name { font-size:.64rem !important; }
+#home-battle-button > span { font-size:.92rem !important; }
+/* Üç çizgi menüsü: yazı küçüldü, satırlar alçaldı. */
+.dropdown-menu { min-width:176px !important; gap:5px !important; padding:6px !important; }
+.dropdown-menu > button.has-ui-icon {
+  min-height:38px !important;
+  gap:9px !important;
+  padding:0 30px 0 7px !important;
+  border-radius:10px !important;
+  font-size:.6rem !important;
+}
+.dropdown-menu > button.has-ui-icon > .ui-icon { font-size:.98rem !important; }
+/* Kartlar, mağaza, etkinlik, ödüller, arkadaşlar, profil */
+.mobile-section-heading h3 { font-size:.72rem !important; }
+#chest-store-title,
+#paid-store-title { font-size:.68rem !important; }
+#module-category-tabs > button { font-size:.58rem !important; }
+.shop-chest-action .cost-chip > b { font-size:.6rem !important; }
+.paid-product-card strong { font-size:.6rem !important; }
+#daily-meta-name { font-size:.9rem !important; }
+.event-directory > button > strong { font-size:.66rem !important; }
+.season-zero-progress-summary .season-track-label,
+#season-tier-label { font-size:.8rem !important; }
+.season-zero-progress-summary .season-progress-meta small { font-size:.6rem !important; }
+.friends-hero h3 { font-size:.72rem !important; }
+.season-section-heading h3 { font-size:.72rem !important; }
+.monthly-login-card > strong { font-size:.58rem !important; }
+#profile-hero-name { font-size:.9rem !important; }
+#profile-hero-details { font-size:.66rem !important; }
+.profile-section-heading h3 { font-size:.64rem !important; }
+/* Devre Yolu */
+#arena-detail-title { font-size:1.02rem !important; }
+.arena-road-header .screen-kicker { font-size:.6rem !important; }
+.arena-path-stage-copy h3 { font-size:.7rem !important; }
+.arena-reward-node.is-floating-chest > strong { font-size:.6rem !important; }
+#monthly-login-title,
+#daily-mission-title { font-size:.72rem !important; }
+/* Ayarlar: etiketler ve düğmeler tarayıcının varsayılan boyunda (16 piksel) kalmıştı. */
+#settings-panel-general .profile-name-form > label,
+#settings-panel-general .settings-form > label { font-size:.68rem !important; }
+#settings-panel-general .profile-name-form > button:not(.account-player-id) { font-size:.66rem !important; }
+#settings-panel-general .profile-name-form > small { font-size:.56rem !important; line-height:1.35; }
+#account-player-id-label,
+#account-player-id-value { font-size:.66rem !important; }
+
+/* Giriş (yükleme) ekranı yeni görsel dilde: oyunun desenli mavi zemini, yeni amblem
+   (tools/generate_brand_assets.py), konturlu ve dudaklı marka yazısı, yuva içinde dolu
+   ilerleme çubuğu. Neon ışımalar, süpürülen çizgiler ve karartma kalktı. Eski blok
+   ("Beta.72 tur 17") yerinde durur; bu kurallar onun üstüne yazar. */
+.boot-screen { background:#0d2f62; }
+.boot-screen-backdrop {
+  background:
+    var(--gs-pattern-diamond),
+    linear-gradient(180deg,#14427c,#0d2f62 52%,#0a2452);
+}
+.boot-screen-backdrop::before {
+  /* Amblemin arkasında iki kademeli düz ışık dairesi (mağaza simgesindeki gibi). */
+  inset:auto;
+  left:50%;
+  top:calc(50% - 22px);
+  width:min(118vw,560px,74dvh);
+  aspect-ratio:1;
+  border-radius:50%;
+  transform:translate(-50%,-58%);
+  background:radial-gradient(circle,rgba(92,170,246,.2) 0 58%,rgba(92,170,246,.12) 58% 100%);
+  -webkit-mask-image:none;
+  mask-image:none;
+}
+.boot-screen-backdrop::after { display:none; }
+.boot-trace { display:none; }
+.boot-emblem-art { filter:drop-shadow(0 6px 0 rgba(3,10,24,.28)); }
+/* Dönen yaylar: ışıma yerine düz renkli, kalın iki yörünge parçası. */
+.boot-emblem-ring {
+  inset:3%;
+  background:conic-gradient(from 0deg,transparent 0 80%,#43cfc2 80% 100%);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
+  mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
+}
+.boot-emblem-ring-outer {
+  inset:-4%;
+  opacity:1;
+  background:conic-gradient(from 120deg,transparent 0 86%,#f7ba3c 86% 100%);
+}
+.boot-title {
+  color:#ffffff;
+  -webkit-text-stroke:5px #0a1024;
+  paint-order:stroke fill;
+  text-shadow:0 4px 0 #0a1024;
+}
+/* Aynı adlı eski hareket yazıyı ışıtıyordu; yeni dilde yazı hafifçe yükselir, dudağı derinleşir. */
+@keyframes gs-boot-glow { 50% { transform:translateY(-2px); text-shadow:0 6px 0 #0a1024; } }
+.boot-tagline { color:#cfe6ff; text-shadow:0 1px 0 rgba(3,10,24,.6); }
+.boot-version { text-shadow:0 1px 0 rgba(3,10,24,.6); }
+.boot-status { text-shadow:0 1px 0 rgba(3,10,24,.7); }
+.boot-bar {
+  height:18px;
+  border:0;
+  border-radius:9px;
+  background:#081a3c;
+  box-shadow:inset 0 2px 4px rgba(1,6,18,.7),0 0 0 2px #0a1024,0 3px 0 2px rgba(3,10,24,.45);
+}
+.boot-bar-fill {
+  min-width:14px;
+  background:linear-gradient(180deg,#8ff0b3 0 38%,#3fdc86 38% 100%);
+  box-shadow:inset 0 -3px 0 rgba(12,96,52,.5);
+}
+.boot-bar-fill::after { background:repeating-linear-gradient(115deg,transparent 0 10px,rgba(255,255,255,.22) 10px 17px); background-size:40px 100%; }
+.boot-screen[data-state="ready"] .boot-bar-fill {
+  background:linear-gradient(180deg,#ffe793 0 38%,#f7ba3c 38% 100%);
+  box-shadow:inset 0 -3px 0 rgba(150,78,6,.45);
+}
+.boot-screen[data-state="error"] .boot-bar-fill {
+  background:linear-gradient(180deg,#ff9bab 0 38%,#e83f66 38% 100%);
+  box-shadow:inset 0 -3px 0 rgba(120,14,44,.5);
+}
+.boot-percent { color:#ffd965; text-shadow:0 1px 0 #0a1024; }
+.boot-retry {
+  border-radius:11px;
+  color:#4a2504;
+  background:linear-gradient(180deg,#ffdc72,#f7ac30);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 0 1px #0a1024,0 3px 0 1px #8a4a08;
+}
+.boot-retry:active { transform:translateY(2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 0 0 1px #0a1024,0 1px 0 1px #8a4a08; }
+
+/* Savaş efektleri yeni görsel dilde: ışıma, bulanık gölge ve yumuşak geçiş yok. Atış,
+   vuruş, patlama ve imza efektleri dolu gövdeli, iki tonlu (aydınlık üst yüz) ve koyu
+   konturlu biçimlerdir.
+   Kademe (kullanıcı kararı, 13 Ekim 2026): sürekli ve bol parlama yok. Sıradan atış ve
+   vuruş küçük ve kısadır, kart yalnız kısa bir kırpmayla tepki verir. Parlama yalnız
+   vurucu sonuçta büyür: ağır vuruş (data-impact="heavy"; app.js), modülün yok olması,
+   Çekirdek patlaması. Güç alan hücre sürekli parlamaz; durumu sabit çerçeveyle görünür. */
+:root { --gs6-fx-ink:#0a1024; }
+
+/* Atış: lazer ve ray topunda dolu ışın, diğerlerinde kesik izli yörünge. */
+.duel-shot-beam {
+  top:-1.5px;
+  height:3px;
+  background:repeating-linear-gradient(90deg,var(--shot-color) 0 7px,transparent 7px 12px);
+  box-shadow:none;
+}
+.duel-attack-line[data-weapon="laser"] .duel-shot-beam,
+.duel-attack-line[data-weapon="railgun"] .duel-shot-beam {
+  top:-1.5px;
+  height:3px;
+  background:linear-gradient(180deg,#ffffff 0 36%,var(--shot-color) 36% 100%);
+  box-shadow:0 0 0 1px var(--gs6-fx-ink);
+}
+.duel-attack-line[data-impact="heavy"][data-weapon="laser"] .duel-shot-beam,
+.duel-attack-line[data-impact="heavy"][data-weapon="railgun"] .duel-shot-beam {
+  top:-2.5px;
+  height:5px;
+  box-shadow:0 0 0 1.5px var(--gs6-fx-ink);
+}
+.duel-shot-muzzle {
+  width:9px;
+  height:9px;
+  border:1.5px solid var(--gs6-fx-ink);
+  background:radial-gradient(circle,#ffffff 0 34%,var(--shot-color) 36% 100%);
+  box-shadow:none;
+}
+.duel-attack-line[data-impact="heavy"] .duel-shot-muzzle { width:15px; height:15px; border-width:2px; }
+.duel-shot-projectile {
+  width:14px;
+  height:8px;
+  border:1.5px solid var(--gs6-fx-ink);
+  background:linear-gradient(180deg,#ffffff 0 42%,var(--shot-color) 42% 100%);
+  box-shadow:-7px 0 0 -2px var(--shot-color),-12px 0 0 -3px var(--shot-color);
+}
+.duel-attack-line[data-weapon="pulse"] .duel-shot-projectile {
+  width:16px;
+  height:16px;
+  border:2px solid var(--gs6-fx-ink);
+  background:radial-gradient(circle,#ffffff 0 30%,var(--shot-color) 32% 100%);
+  box-shadow:none;
+}
+.duel-attack-line[data-weapon="railgun"] .duel-shot-projectile {
+  width:24px;
+  height:6px;
+  box-shadow:-9px 0 0 -1.5px var(--shot-color);
+}
+.duel-attack-line[data-weapon="missile"] .duel-shot-projectile {
+  width:20px;
+  height:9px;
+  background:linear-gradient(90deg,#ff9d3c 0 22%,#eaf3ff 22% 76%,#ff5f72 76% 100%);
+  box-shadow:-8px 0 0 -2px #ffb84d,-14px 0 0 -3.5px #ffe07a;
+}
+.duel-attack-line[data-weapon="drone"] .duel-shot-projectile {
+  width:10px;
+  height:7px;
+  background:var(--shot-color);
+  box-shadow:none;
+}
+.duel-attack-line[data-weapon="arc"] .duel-shot-projectile {
+  height:6px;
+  box-shadow:0 0 0 1.5px var(--gs6-fx-ink);
+}
+
+/* Vuruş: yumuşak parlama yerine sekiz uçlu dolu patlama yıldızı (kontur, renk, beyaz göbek). */
+.duel-impact-flash,
+.module-explosion .explosion-flash {
+  border-radius:0;
+  background:var(--gs6-fx-ink);
+  box-shadow:none;
+  clip-path:polygon(50% 0%,61% 27%,85% 15%,73% 39%,100% 50%,73% 61%,85% 85%,61% 73%,50% 100%,39% 73%,15% 85%,27% 61%,0% 50%,27% 39%,15% 15%,39% 27%);
+}
+.duel-impact-flash::before,
+.duel-impact-flash::after,
+.module-explosion .explosion-flash::before,
+.module-explosion .explosion-flash::after {
+  content:"";
+  position:absolute;
+  clip-path:inherit;
+}
+.duel-impact-flash { width:24px; height:24px; animation-duration:.34s; }
+.duel-hit-impact[data-impact="heavy"] .duel-impact-flash { width:46px; height:46px; animation-duration:.52s; }
+.duel-hit-impact:not([data-impact="heavy"]) i { width:7px; height:3px; animation-duration:.4s; }
+.duel-impact-flash::before { inset:10%; background:var(--impact-color); }
+.duel-impact-flash::after { inset:34%; background:#ffffff; }
+.duel-impact-ring {
+  border:3px solid var(--impact-color);
+  box-shadow:0 0 0 1.5px var(--gs6-fx-ink),inset 0 0 0 1.5px var(--gs6-fx-ink);
+}
+.duel-hit-impact i {
+  width:9px;
+  height:4px;
+  border-radius:2px;
+  background:linear-gradient(180deg,#ffffff 0 45%,var(--impact-color) 45% 100%);
+  box-shadow:0 0 0 1px var(--gs6-fx-ink);
+}
+
+/* Patlama: iki tonlu yıldız, konturlu şok halkası, dolu kıymıklar. */
+.module-explosion:not(.core-explosion) .explosion-flash { width:74px; height:74px; }
+.module-explosion .explosion-flash::before { inset:7%; background:var(--explosion-color); }
+.module-explosion .explosion-flash::after { inset:27%; background:#fff3ae; }
+.module-explosion .explosion-shockwave {
+  box-shadow:0 0 0 1.5px var(--gs6-fx-ink),inset 0 0 0 1.5px var(--gs6-fx-ink);
+}
+.module-explosion i {
+  border-radius:2px;
+  background:linear-gradient(180deg,#fff7bc 0 45%,var(--explosion-color) 45% 100%);
+  box-shadow:0 0 0 1px var(--gs6-fx-ink);
+}
+.module-explosion::before,
+.module-explosion::after {
+  background:linear-gradient(180deg,#ffffff 0 40%,var(--explosion-color) 40% 100%);
+  box-shadow:0 0 0 1.5px var(--gs6-fx-ink);
+}
+
+/* Hasar ve durum yazıları: ışıma yerine koyu kontur ve alt dudak. */
+body[data-app-screen="play"] .battle-floating-feedback {
+  opacity:1;
+  font-weight:900 !important;
+  -webkit-text-stroke:3px var(--gs6-fx-ink);
+  paint-order:stroke fill;
+  text-shadow:0 2px 0 var(--gs6-fx-ink) !important;
+}
+
+/* Kartın tepkisi: vuruşta bir an süren kırpma, atışta yok denecek kadar hafif; destek ve
+   durum bildiriminde yalnız ince renkli çerçeve. Hale ve uzun parlama yok. */
+@keyframes gs-card-impact-static {
+  0%,46%,100% { filter:none; }
+  14% { filter:brightness(1.28); }
+}
+@keyframes gs-card-fire-static {
+  0%,100% { filter:none; }
+  38% { filter:brightness(1.08); }
+}
+@keyframes gs-grid-module-feedback {
+  0%,100% { outline-color:transparent; }
+  34% { outline:2px solid var(--grid-feedback-color); outline-offset:-3px; }
+}
+body[data-graphics="orta"][data-app-screen="play"] .module-card > .module-fx-overlay,
+body[data-graphics="dusuk"][data-app-screen="play"] .module-card > .module-fx-overlay { box-shadow:none; }
+
+/* Güç alan hücre: her saniye parlayıp sönen darbe yerine sabit ince çerçeve. Kablodaki
+   akım çizgisi daha yavaş ve daha soluk akar. */
+body[data-app-screen="play"] .vertical-circuit-arena .board-cell.energy-fed-cell {
+  box-shadow:inset 0 0 0 1px rgba(125,255,240,.42) !important;
+  animation:none !important;
+  filter:none !important;
+}
+body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-current {
+  stroke:#5fd6ca !important;
+  stroke-width:3 !important;
+  animation-duration:.9s !important;
+}
+
+/* İmza efektleri: düz renkli disk, konturlu halka, dolu noktalar, levha etiketi. */
+.module-signature-effect .signature-halo { display:none; }
+.module-signature-effect[data-signature="quantum_charge"] .signature-halo,
+.module-signature-effect[data-signature="phoenix_revive"] .signature-halo,
+.module-signature-effect[data-signature="core_rebirth"] .signature-halo {
+  display:block;
+  background:radial-gradient(circle,var(--signature-glow) 0 63%,transparent 64%);
+}
+.module-signature-effect .signature-ring {
+  border-width:3px;
+  box-shadow:0 0 0 1.5px var(--gs6-fx-ink),inset 0 0 0 1.5px var(--gs6-fx-ink);
+}
+.module-signature-effect > i {
+  width:5px;
+  height:5px;
+  box-shadow:0 0 0 1px var(--gs6-fx-ink);
+}
+.module-signature-effect .signature-label {
+  border:1.5px solid var(--gs6-fx-ink);
+  border-radius:5px;
+  background:#12305a;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 2px 0 var(--gs6-fx-ink);
+}
+.signature-link-effect .signature-link-beam {
+  top:-1.5px;
+  height:3px;
+  box-shadow:none;
+}
+.signature-link-effect .signature-link-pulse {
+  left:-4px;
+  top:-4px;
+  width:8px;
+  height:8px;
+  border:1.5px solid var(--gs6-fx-ink);
+  box-shadow:none;
+}
+
+/* === Profesyonel rötuş (13 Ekim 2026) =========================================
+   Görsel tur 6 üstüne sınırlı yüzey/okunabilirlik düzeltmesi. Yerleşim, amblem
+   siluetleri, sınıf/enderlik renkleri ve oyun davranışı korunur. Bilgi penceresine
+   kapatma düğmesi eklenmez (kullanıcının açık istisnası).
+   Küçük amblemler aynı SVG'nin dekoratif yüzlerini sadeleştirir; ayrı bir ikon
+   eşlemesi veya çalışma anında boyut ölçümü yoktur. chrome109 / safari15 uyumlu. */
+:root {
+  --gs-polish-copy:.75rem;
+  --gs-polish-label:.6875rem;
+  --gs-polish-action:.875rem;
+  --gs-polish-title:1rem;
+  --gs-polish-line:rgba(153,190,224,.28);
+  --gs-polish-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 3px 8px rgba(1,8,22,.18);
+  --gs-polish-tab-ink:#072c35;
+  --gs-polish-tab-a:#6ad5cc;
+  --gs-polish-tab-b:#42b8af;
+  --gs3-slab:linear-gradient(180deg,#1b436d,#15365d);
+  --gs3-slab-shadow:var(--gs-polish-shadow);
+  --gs3-well:#102b49;
+  --gs3-well-shadow:inset 0 0 0 1px rgba(130,190,245,.14);
+  --gs-pattern-diamond:
+    linear-gradient(135deg,rgba(255,255,255,.018) 25%,transparent 25%) -22px 0 / 44px 44px,
+    linear-gradient(225deg,rgba(255,255,255,.018) 25%,transparent 25%) -22px 0 / 44px 44px,
+    linear-gradient(315deg,rgba(255,255,255,.018) 25%,transparent 25%) 0 0 / 44px 44px,
+    linear-gradient(45deg,rgba(255,255,255,.018) 25%,transparent 25%) 0 0 / 44px 44px;
+}
+
+/* Metin hiyerarşisi: açıklama 12 px, küçük kart etiketi 11 px, eylem 14 px.
+   Oxanium yüzü en çok 800 ağırlığı içerir; gövde yazısı Rajdhani 500–600'dür. */
+body:not([data-app-screen="play"]) .mobile-section-heading h3,
+body:not([data-app-screen="play"]) .season-section-heading h3,
+body:not([data-app-screen="play"]) .friends-hero h3,
+.shop-screen #chest-store-title,
+.shop-screen #paid-store-title,
+.shop-screen .paid-pack-heading {
+  font-size:var(--gs-polish-title) !important;
+  font-weight:700 !important;
+  letter-spacing:.01em !important;
+  text-shadow:none !important;
+}
+body:not([data-app-screen="play"]) :is(.daily-refresh-copy,.friends-hero > small,.event-directory button > small),
+.shop-screen .shop-section > .mobile-section-heading > small,
+.shop-screen #shop-action-status,
+.shop-screen .paid-product-card small,
+.settings-summary-panel .profile-name-form > small,
+.module-detail-tab-content .module-detail-tab-intro,
+.module-detail-tab-content .module-identity-panel .module-identity-row > strong,
+.module-detail-tab-content .module-overview-grid > div > strong,
+.module-detail-tab-content .module-effect-panel li,
+.module-detail-tab-content dl.core-stat-tiles > div[data-wide="true"] > dd {
+  font-family:var(--gs-font-copy) !important;
+  font-size:var(--gs-polish-copy) !important;
+  font-weight:500 !important;
+  line-height:1.4 !important;
+  letter-spacing:0 !important;
+  text-shadow:none !important;
+}
+.shop-screen .paid-product-card strong {
+  font-size:var(--gs-polish-copy) !important;
+  font-weight:700 !important;
+  line-height:1.25 !important;
+  text-shadow:none !important;
+}
+.shop-screen .paid-product-card > button,
+.shop-screen .shop-chest-action .cost-chip > b,
+#module-detail-upgrade .cost-button-label,
+.core-detail-actions #core-detail-upgrade .cost-button-label {
+  font-size:var(--gs-polish-action) !important;
+  font-weight:800 !important;
+  letter-spacing:.01em !important;
+  text-shadow:none !important;
+}
+.shop-screen .shop-chest-action,
+.shop-screen .chest-store-card > strong {
+  font-size:var(--gs-polish-copy) !important;
+  font-weight:700 !important;
+  line-height:1.2 !important;
+  letter-spacing:0 !important;
+}
+.shop-screen .chest-store-limit,
+.shop-screen .chest-gift-countdown,
+.shop-screen .paid-product-card[data-bonus="true"] small {
+  font-family:var(--gs-font-copy) !important;
+  font-size:var(--gs-polish-label) !important;
+  font-weight:600 !important;
+  line-height:1.25 !important;
+  box-shadow:none !important;
+}
+.shop-screen .chest-store-card > .chest-store-metadata {
+  min-height:32px;
+  align-content:center;
+  gap:2px;
+}
+.shop-screen .chest-store-limit { padding-inline:4px; font-size:.625rem !important; white-space:nowrap; }
+.shop-screen .chest-store-card > .chest-visual { margin:5px 0 2px; }
+.shop-screen .chest-store-card > .shop-chest-actions { align-self:end; }
+.shop-screen .chest-odds-tab {
+  font-size:var(--gs-polish-label) !important;
+  font-weight:700 !important;
+  letter-spacing:0 !important;
+}
+.collection-module-tile .unified-module-name,
+.core-rarity-list .core-collection-copy strong {
+  font-size:var(--gs-polish-label) !important;
+  font-weight:600 !important;
+  line-height:1.15 !important;
+}
+.collection-module-tile .unified-module-name { min-height:2.3em; }
+.collection-module-tile .unified-module-shards,
+.core-rarity-list .core-collection-copy small,
+.module-quick-actions strong,
+.module-quick-actions button {
+  font-size:var(--gs-polish-label) !important;
+  font-weight:700 !important;
+  line-height:1.2 !important;
+}
+#module-category-tabs > button { font-size:.75rem !important; font-weight:600 !important; }
+#module-detail-dialog .module-detail-title h2,
+.core-detail-dialog .module-detail-title h2 { font-size:1.125rem !important; font-weight:700 !important; }
+.module-detail-stats > div > span { font-size:.625rem !important; font-weight:600 !important; }
+.module-detail-stats > div > strong { font-size:.75rem !important; font-weight:700 !important; }
+.module-detail-stats .stat-next-gain { font-size:.625rem !important; font-weight:600 !important; }
+.module-detail-tabs button > small,
+.module-detail-tab-content .module-identity-row > span,
+.module-detail-tab-content .module-overview-grid > div > span,
+.module-detail-tab-content .module-effect-panel > strong,
+.module-detail-tab-content .module-stat-tiles dt {
+  font-size:.625rem !important;
+  font-weight:700 !important;
+  letter-spacing:.02em !important;
+}
+.module-detail-tab-content dl.module-stat-tiles dd { font-size:.8125rem !important; }
+.reward-inbox-dialog .reward-inbox-card strong { font-size:.75rem !important; font-weight:700 !important; }
+.reward-inbox-dialog :is(.reward-inbox-card small,.reward-inbox-empty) { font-size:.6875rem !important; line-height:1.4; }
+.reward-inbox-dialog .reward-inbox-section h3 { font-size:.75rem !important; font-weight:700 !important; }
+.reward-inbox-dialog .reward-inbox-card button { font-size:.75rem !important; font-weight:700 !important; text-shadow:none !important; }
+.reward-inbox-dialog .reward-inbox-card { box-shadow:var(--gs-polish-shadow) !important; }
+body:not([data-app-screen="play"]) .dropdown-menu > button.has-ui-icon,
+body:not([data-app-screen="play"]) .reward-back-link,
+body:not([data-app-screen="play"]) .event-directory > button > strong,
+body:not([data-app-screen="play"]) .settings-summary-panel :is(label,button:not(.account-player-id)),
+body:not([data-app-screen="play"]) .reward-inbox-tabs button {
+  font-size:var(--gs-polish-copy) !important;
+  font-weight:700 !important;
+  letter-spacing:.01em !important;
+}
+#lobby-player-name { font-size:.9375rem !important; font-weight:700 !important; }
+#lobby-player-details { font-size:.6875rem !important; font-weight:600 !important; }
+.app-resource-chip > strong { font-size:.875rem !important; font-weight:700 !important; }
+#home-arena-name { font-size:.8125rem !important; font-weight:700 !important; }
+#home-battle-button > span { font-size:1rem !important; font-weight:800 !important; }
+
+/* Açık turkuaz üzerinde koyu yazı: her iki degrade ucunda da 4,5:1'in üstü.
+   Seçili durum rengin yanında mevcut şekil/kenar işaretini de korur. */
+#module-category-tabs > button.is-active,
+.cards-page-tabs button.is-active,
+.friends-tabs button.is-active,
+.settings-category-tabs button[aria-selected="true"],
+.reward-inbox-tabs button.is-active,
+.reward-inbox-tabs button[aria-selected="true"],
+.shop-screen .chest-odds-tab {
+  color:var(--gs-polish-tab-ink) !important;
+  background:linear-gradient(180deg,var(--gs-polish-tab-a),var(--gs-polish-tab-b)) !important;
+  box-shadow:inset 0 0 0 1px rgba(115,230,220,.25) !important;
+  text-shadow:none !important;
+}
+.cards-page-tabs button.is-active * { color:var(--gs-polish-tab-ink) !important; }
+.module-quick-actions > button {
+  --b-a:#285d96; --b-b:#204e80;
+  box-shadow:inset 0 0 0 1px rgba(153,190,224,.28) !important;
+  text-shadow:none !important;
+}
+.module-quick-actions > button[data-action="add"] { color:#082d1c !important; }
+.module-quick-actions > button[data-action="remove"] { --b-a:#ad304d; --b-b:#92263f; }
+.shop-screen .chest-store-buy:not(:disabled),
+.shop-screen .paid-product-card:not(.is-premium) > button:not(:disabled) {
+  --b-ink:#082d1c;
+}
+.shop-screen .chest-store-buy:not(:disabled) .cost-chip > b { color:#082d1c !important; }
+
+/* Kartların dış halkası ve renkli alt dudağı kaldırılır. Kademe/sınıf renkleri
+   mevcut kenarda ve simgede kalır; kompakt ızgara ve tek düğme akışı korunur. */
+.shop-screen .chest-store-card,
+.shop-screen .paid-product-card,
+.shop-screen .paid-product-card.is-premium {
+  border-width:1px !important;
+  box-shadow:var(--gs-polish-shadow) !important;
+}
+.shop-screen .chest-store-card,
+.shop-screen .paid-product-card { background:var(--gs3-slab) !important; }
+.shop-screen .chest-store-card { grid-template-rows:auto auto minmax(32px,1fr) auto !important; }
+.shop-screen .paid-product-card.is-premium {
+  border-color:#9e83c9 !important;
+  background:linear-gradient(180deg,#343457,#292e4c) !important;
+}
+.shop-screen .paid-product-card.is-premium small { color:#e4e6f5 !important; }
+.shop-screen .chest-store-card > strong { box-shadow:none !important; }
+.shop-screen .shop-section > .mobile-section-heading > div,
+.engagement-summary-panel .season-section-heading > div,
+.friends-hero > h3 { box-shadow:none !important; }
+.shop-screen .paid-store-section > .mobile-section-heading > div { background:#41416d !important; }
+.shop-screen .shop-section > .mobile-section-heading > div { min-height:38px; }
+.shop-screen .shop-chest-action,
+.shop-screen .paid-product-card > button {
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 1px 0 var(--b-lip) !important;
+}
+.shop-screen .shop-chest-action:disabled,
+.shop-screen .paid-product-card > button:disabled { box-shadow:inset 0 0 0 1px var(--gs-polish-line) !important; }
+.module-detail-dialog .module-identity-row,
+.module-detail-dialog .module-overview-grid > div,
+.module-detail-dialog .module-effect-panel,
+.core-detail-dialog .module-identity-row,
+.core-detail-dialog .module-overview-grid > div {
+  background:#102b49 !important;
+  box-shadow:inset 0 0 0 1px rgba(153,190,224,.16) !important;
+}
+.module-detail-tabs button,
+.module-detail-tabs button.is-active {
+  box-shadow:none !important;
+  background:#142f50 !important;
+}
+#module-detail-dialog .module-detail-art.has-module-emblem::before,
+.core-detail-dialog .core-detail-art.is-emblem::before { opacity:.16; }
+#module-detail-dialog .module-detail-art.has-module-emblem .module-emblem,
+.core-detail-dialog .core-detail-art.is-emblem .core-emblem-set { filter:none !important; }
+body:not([data-app-screen="play"]) :is(.collection-module-tile,.core-collection-tile,.events-hero,.event-directory button,.rewards-hub-links button,.profile-identity-card) {
+  box-shadow:var(--gs-polish-shadow) !important;
+  border-width:1px !important;
+}
+body[data-app-screen="menu"] #home-arena-card,
+body[data-app-screen="menu"] .home-loadout-card { box-shadow:var(--gs-polish-shadow) !important; }
+body[data-app-screen="menu"] #home-battle-button {
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 0 #8a4a08 !important;
+}
+body[data-app-screen="menu"] #home-battle-button:active { box-shadow:inset 0 1px 0 rgba(255,255,255,.15) !important; }
+body[data-app-screen="menu"] .home-core-hero::before { opacity:.15; }
+body[data-app-screen="menu"] .mobile-home-hub::before { filter:drop-shadow(0 1px 0 rgba(4,14,34,.7)); }
+body:not([data-app-screen="play"]) #app-bottom-dock { box-shadow:inset 0 0 0 1px var(--gs-polish-line) !important; }
+
+/* Alt gezinme: pasif simgeler sakin çelik, seçili sayfa kendi renginde. Mevcut
+   genişleme/yükselme, bildirim noktası ve dokunma alanı korunur. */
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action {
+  box-shadow:inset 0 0 0 1px rgba(153,190,224,.12) !important;
+  background:#112c4a !important;
+}
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action:not(.is-active) .lobby-dock-icon {
+  color:#a8bfd5 !important;
+  background:#1a3857 !important;
+  box-shadow:none !important;
+  filter:none !important;
+}
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action:not(.is-active) .lobby-dock-icon * { stroke:#a8bfd5 !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action:not(.is-active) .lobby-dock-icon .dock-home-core { fill:#a8bfd5 !important; stroke:none !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action:not(.is-active) .lobby-dock-icon .dock-home-crack { stroke:#1a3857 !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active { box-shadow:inset 0 0 0 1px var(--dock-tone) !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active .lobby-dock-icon { box-shadow:inset 0 1px 0 rgba(255,255,255,.2) !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .menu-action-title { font-size:.625rem !important; font-weight:700 !important; }
+
+/* Küçük SVG varyantı: aynı siluet ve iç mekanik işaretleri. Ayrıntı penceresinin
+   büyük amblemi değişmez; çizimin küçük slotlarda parlaması / kirlenmesi azalır. */
+:is(#home-active-deck,#module-deck-strip,#module-shelf,#enemy-deck-preview,.collection-module-tile,.module-counter-chip,.profile-deck-module,.statistics-deck-module,.arena-module-unlocks) .module-emblem :is(.me-shine,.me-light,.me-dark) { display:none; }
+:is(#home-active-deck,#module-deck-strip,#module-shelf,#enemy-deck-preview,.collection-module-tile,.module-counter-chip,.profile-deck-module,.statistics-deck-module,.arena-module-unlocks) .module-emblem .me-ink { stroke-width:2.2; }
+:is(#home-active-deck,#module-deck-strip,#module-shelf,#enemy-deck-preview) .module-emblem { filter:none !important; }
+.module-counter-chip .core-emblem :is(.ce-bolt,.ce-frame-light,.ce-frame-dark,.ce-gem-light,.ce-gem-dark),
+.core-power-button .core-emblem :is(.ce-bolt,.ce-frame-light,.ce-frame-dark) { display:none; }
+
+/* Savaş metni incelir. Sıradan atışta kontursuz kıvılcım; ağır darbe ve çekirdek
+   patlamasının mevcut güçlü silueti korunur. Yeni sürekli filtre/ışıma eklenmez. */
+body[data-app-screen="play"] .battle-floating-feedback {
+  font-weight:800 !important;
+  -webkit-text-stroke:1.25px var(--gs6-fx-ink);
+  text-shadow:0 1px 0 var(--gs6-fx-ink) !important;
+}
+.duel-hit-impact:not([data-impact="heavy"]) i { box-shadow:none; }
+.duel-hit-impact:not([data-impact="heavy"]) .duel-impact-flash::before { inset:5%; }
+.module-signature-effect > i { box-shadow:none; }
+body[data-app-screen="play"] .core-power-button[data-ready="true"] {
+  animation:none !important;
+}
+body[data-app-screen="play"] .core-power-button[data-ready="true"]::before { filter:none; }
+body[data-app-screen="play"] .core-power-button[data-ready="true"]::after { box-shadow:inset 0 0 0 1px #ffe793; }
+body[data-app-screen="play"] .core-power-button[data-ready="true"] .core-power-glyph::after { display:none; }
+body[data-app-screen="play"] .core-power-button[data-ready="true"] > small { box-shadow:none; }
+
+/* Dar telefon: bölüm başlığı ve düğmesi aynı şeritte, üç istatistik iki satırda
+   kalır. Açıklamalar küçülmez; mevcut içerik alanı kayar. */
+@media (max-width:340px) {
+  .shop-screen #chest-store-title,
+  .shop-screen #paid-store-title { font-size:.875rem !important; }
+  .shop-screen .chest-odds-tab { padding-inline:6px; font-size:.625rem !important; }
+  .shop-screen .chest-store-section > .mobile-section-heading > div { padding-right:102px; }
+  #module-category-tabs > button { padding-inline:0 !important; font-size:.6875rem !important; }
+  .module-detail-stats > div > span { font-size:.5625rem !important; }
+}
+
+/* === Görsel geri bildirim düzeltmeleri (13 Ekim 2026) ========================
+   Başlık ve amblem ayrı alan kullanır; fiyat çipinin kendi koyu zemini üzerinde
+   her durumda açık sayı bulunur. Tarih, mesaj açıklamasının sağ altındadır. */
+.module-detail-dialog .module-detail-hero,
+.core-detail-dialog .module-detail-hero { min-height:104px !important; }
+.module-detail-dialog .module-detail-title,
+.core-detail-dialog .module-detail-title { top:6px; left:10px; right:10px; }
+#module-detail-dialog .module-detail-title h2,
+.core-detail-dialog .module-detail-title h2 {
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  font-size:.875rem !important;
+  line-height:1.2 !important;
+}
+#module-detail-dialog .module-detail-art.has-module-emblem,
+.core-detail-dialog .core-detail-art.is-emblem { padding:52px 0 5px !important; }
+.shop-screen .chest-store-buy:not(:disabled) .cost-chip > b { color:#f5f9ff !important; }
+.shop-screen .shop-chest-action .cost-chip { color:#f5f9ff; background:#142b42 !important; }
+.chest-odds-dialog #chest-store-sale { font:600 .75rem/1.4 var(--gs-font-copy); }
+
+#module-quick-actions,
+#core-quick-actions {
+  padding:6px !important;
+  gap:5px !important;
+  border:1px solid rgba(153,190,224,.48);
+  border-radius:10px;
+  background:var(--gs3-slab);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 5px 12px rgba(1,8,22,.34);
+}
+.module-quick-actions > strong {
+  padding:2px 0 5px;
+  border-bottom:1px solid rgba(153,190,224,.24);
+  font:700 .75rem/1.2 var(--gs-font-display) !important;
+  text-shadow:none;
+}
+.module-quick-actions > button {
+  min-height:30px !important;
+  border-radius:7px !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 1px 0 var(--b-lip) !important;
+}
+.reward-inbox-dialog .reward-inbox-tabs { gap:5px !important; }
+.reward-inbox-dialog .reward-inbox-tabs > button { padding-inline:2px; font:700 .6875rem/1.2 var(--gs-font-copy) !important; }
+.reward-inbox-card .inbox-card-meta {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:3px 8px;
+}
+.reward-inbox-card .inbox-card-meta > small { flex:1 1 130px; min-width:0; }
+.reward-inbox-card .inbox-card-date {
+  margin-left:auto;
+  color:#b5cee3;
+  font:500 .625rem/1.3 var(--gs-font-copy);
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.reward-inbox-dialog > .reward-inbox-tools {
+  flex:none;
+  padding:5px 14px 8px;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:5px 8px;
+}
+.reward-inbox-tools > small { flex-basis:100%; color:#b5cee3; font:500 .625rem/1.3 var(--gs-font-copy); }
+.reward-inbox-tools > button,
+.reward-inbox-card button.inbox-message-delete {
+  min-height:28px;
+  padding:3px 8px;
+  border:1px solid rgba(236,151,170,.4) !important;
+  border-radius:7px !important;
+  color:#ffcfda !important;
+  background:#42233a !important;
+  box-shadow:none !important;
+  font:600 .6875rem/1.2 var(--gs-font-copy) !important;
+}
+.reward-inbox-card button.inbox-message-delete { justify-self:end; }
+.reward-inbox-tools > button:disabled { color:#9bb1c8 !important; background:#18324d !important; border-color:#36516d !important; }
+.reward-inbox-tools > #inbox-delete-undo { color:#b0f1e7 !important; border-color:#416e7d !important; background:#183c48 !important; }
+.inbox-delete-confirm-dialog { width:min(340px, calc(100vw - 32px)); box-sizing:border-box; padding:18px; border:1px solid #416485; border-radius:14px; color:#eef5fb; background:var(--gs3-slab); box-shadow:0 14px 40px rgba(0,0,0,.45); }
+.inbox-delete-confirm-dialog::backdrop { background:rgba(3,10,20,.7); }
+.inbox-delete-confirm-dialog h2 { margin:0 0 10px; font:700 18px/1.2 Rajdhani, sans-serif; text-shadow:none; }
+.inbox-delete-confirm-dialog p { margin:0 0 16px; color:#c4d6e6; font:500 14px/1.45 Rajdhani, sans-serif; }
+.inbox-delete-confirm-actions { display:flex; gap:8px; }
+.inbox-delete-confirm-actions button { flex:1; min-width:0; min-height:40px; padding:8px; border:1px solid #416485; border-radius:8px; background:#17354f; color:#eef5fb; font:700 12px/1.2 Rajdhani, sans-serif; box-shadow:none; text-shadow:none; }
+#inbox-delete-confirm { border-color:#865766; background:#573546; }
+@media (max-height:600px) {
+  .module-detail-dialog .module-detail-hero,
+  .core-detail-dialog .module-detail-hero { min-height:96px !important; }
+}
+
+/* === Savaş: bileşimcinin oynattığı animasyonlar (14 Ekim 2026) ================
+   Yüksek kademede iki animasyon ana iş parçacığında çalışıyordu: kablodaki akım
+   (stroke-dashoffset) ve kartın destek/durum çerçevesi (outline). Bunlar savaş
+   boyunca her taramada ana iş parçacığında kare ürettiriyor, o karelerde çalışan
+   bütün efektlerin stili yeniden hesaplanıyordu. İkisi de artık yalnız dönüşüm
+   ve opaklık canlandırır; görünüm aynıdır. Ölçüm ve gerekçe:
+   docs/DENETIM_20261014.md, "Donmanın kaynağı". */
+
+/* Destek ve durum çerçevesi: Orta ve Düşük kademedeki gibi kartın üstündeki
+   katmanın opaklığıyla çizilir (bkz. "Kart geri bildirimi"). Vuruş ve atış
+   kırpması kartın kendi parlaklık animasyonu olarak kalır. */
+body[data-graphics="yuksek"][data-app-screen="play"] .module-card > .module-fx-overlay {
+  display:block;
+  outline:2px solid var(--grid-feedback-color,#d8ecff);
+  outline-offset:-3px;
+}
+body[data-graphics="yuksek"][data-app-screen="play"] .module-card[class*="fx-feedback-"] {
+  animation:none !important;
+}
+body[data-graphics="yuksek"][data-app-screen="play"] .module-card[class*="fx-feedback-"] > .module-fx-overlay {
+  animation:gs-module-fx-overlay .7s ease-out;
+}
+
+/* Akım şeritleri (bkz. app.js, createCircuitCableFlow). Şerit, kenarın
+   başlangıcına konur ve akış yönüne döndürülür; içindeki desen bir kesik çizgi
+   boyu kayıp başa döner. Hız ve görünüm SVG çizgisiyle aynıdır: 3 piksel
+   kalınlık, 6 piksel yuvarlak uçlu çizgi, 2 piksel boşluk, saniyede ~28 piksel. */
+.board-cable-flow-layer { display:none; }
+body[data-graphics="yuksek"][data-app-screen="play"] .vertical-circuit-arena .board-cable-flow-layer {
+  display:block;
+  position:absolute;
+  inset:0;
+  z-index:3;
+  overflow:visible;
+  pointer-events:none;
+}
+body[data-graphics="yuksek"][data-app-screen="play"] .vertical-circuit-arena .circuit-cable-current {
+  display:none !important;
+}
+.circuit-cable-flow {
+  --cable-flow-ink:#5fd6ca;
+  position:absolute;
+  height:3px;
+  margin-top:-1.5px;
+  overflow:hidden;
+  transform-origin:0 50%;
+  transform:rotate(var(--cable-flow-angle,0rad));
+}
+.circuit-cable-flow > i {
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:-8px;
+  right:0;
+  background:
+    radial-gradient(circle at 2.5px 50%,var(--cable-flow-ink) 1.4px,transparent 1.7px),
+    radial-gradient(circle at 5.5px 50%,var(--cable-flow-ink) 1.4px,transparent 1.7px),
+    linear-gradient(90deg,transparent 2.5px,var(--cable-flow-ink) 2.5px 5.5px,transparent 5.5px);
+  background-size:8px 100%;
+  animation:gs-cable-flow .288s linear infinite;
+}
+@keyframes gs-cable-flow {
+  to { transform:translateX(8px); }
+}
+@media (prefers-reduced-motion:reduce) {
+  body[data-graphics="yuksek"][data-app-screen="play"] .vertical-circuit-arena .board-cable-flow-layer {
+    display:none;
+  }
+  body[data-graphics="yuksek"][data-app-screen="play"] .vertical-circuit-arena .circuit-cable-current {
+    display:inline !important;
+  }
+}
+
+/* Durum uyarıları. Aşağıdakiler savaşın uzun bölümlerinde sürekli döner ve hepsi
+   ana iş parçacığında çalışıyordu (kutu gölgesi ya da gölge filtresi). Artık
+   yalnız opaklık ve parlaklık canlandırılır. */
+
+/* Çekirdek kritik (%33 ve altı): oyuncu tarafının tamamına her karede yeniden
+   uygulanan gölge filtresi yerine, tahtanın çevresinde nabız atan kırmızı hale. */
+body[data-app-screen="play"] .duel-player-side[data-core-critical="true"] {
+  animation:none;
+}
+body[data-app-screen="play"] .duel-player-side[data-core-critical="true"] > .board::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:5;
+  border-radius:10px;
+  box-shadow:0 0 16px 1px rgba(255,70,82,.46),inset 0 0 30px rgba(255,70,82,.3);
+  opacity:0;
+  pointer-events:none;
+  animation:gs-critical-core-edge 1.2s ease-in-out infinite;
+}
+@keyframes gs-critical-core-edge {
+  50% { opacity:1; }
+}
+@media (prefers-reduced-motion:reduce) {
+  body[data-app-screen="play"] .duel-player-side[data-core-critical="true"] > .board::before {
+    opacity:.6;
+    animation:none;
+  }
+}
+
+/* Isı ve enerji rozetleri, imza rozetleri, hazır Çekirdek kartı: yanıp sönme
+   parlaklıkla verilir; canlandırılan kutu gölgesi kalktı. */
+@keyframes gs-status-critical {
+  to { filter:brightness(1.45); }
+}
+@keyframes gs-signature-badge-blink {
+  to { filter:brightness(1.6); }
+}
+@keyframes gs-beta49-core-ready {
+  from { filter:brightness(1.12); }
+  to { filter:brightness(1.55) saturate(1.28); }
+}

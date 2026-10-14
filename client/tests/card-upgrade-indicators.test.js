@@ -237,7 +237,7 @@ sandbox.setDetailTabUpgradeArrow(null, true);
 assert.ok(app.includes("const reason = moduleUpgradeBlockReason(item);"));
 assert.ok(app.includes("const canChoose = moduleTalentSelectable(item, node);"));
 assert.ok(app.includes("const canUpgrade = coreUpgradeAvailable(core);"));
-assert.ok(app.includes("button.disabled = !coreSkillLearnable(core, skill);"));
+assert.ok(app.includes("const canLearn = coreSkillLearnable(core, skill);"));
 assert.ok(app.includes('const needsAttention = cardNeedsAttention("module", item);'));
 assert.ok(app.includes('const needsAttention = cardNeedsAttention("core", core);'));
 assert.match(app, /setDetailTabUpgradeArrow\(document\.querySelector\('\[data-module-detail-tab="talents"\]'\), moduleTalentAvailable\(item\)\);/);

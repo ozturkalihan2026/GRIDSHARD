@@ -12,6 +12,7 @@ from typing import Any, Callable, Protocol
 from .game.models import BattleState, BattleStatus
 
 
+TELEMETRY_ID_MAX_LENGTH = 256
 TELEMETRY_EVENT_TYPES = frozenset({
     "game_opened",
     "matchmaking_started",
@@ -501,9 +502,15 @@ class InMemoryTelemetryService:
         *,
         now_func: Callable[[], float] = time.time,
         repository: TelemetryRepository | None = None,
+        max_events: int | None = None,
     ):
         self.now_func = now_func
         self.repository = repository
+        # Depo olmadan da bellekteki liste sınırlıdır; aksi hâlde süreç
+        # yaşadıkça büyür (canlı kipte depo bağlanmaz).
+        self.memory_max_events = (
+            max(1, int(max_events)) if max_events is not None else None
+        )
         self._events: list[TelemetryEvent] = (
             repository.load()
             if repository is not None
@@ -557,8 +564,15 @@ class InMemoryTelemetryService:
             self._validate(event)
 
         with self._lock:
-            original_events = list(self._events)
-            original_event_ids = set(self._event_ids)
+            # Geri alma kopyası yalnız depo yazımı başarısız olabilecekse
+            # gerekir; depo yokken her kayıtta bütün geçmişi kopyalamak
+            # savaş sonucu yolunu süreç yaşadıkça yavaşlatıyordu.
+            original_events = (
+                list(self._events) if self.repository is not None else None
+            )
+            original_event_ids = (
+                set(self._event_ids) if self.repository is not None else None
+            )
             stored_events: list[TelemetryEvent] = []
             for event in events:
                 if event.event_id in self._event_ids:
@@ -597,6 +611,18 @@ class InMemoryTelemetryService:
                         -self.repository.max_events:
                     ]
                 )
+                self._event_ids = {
+                    item.event_id
+                    for item in self._events
+                }
+
+            memory_limit = self.memory_max_events
+            if (
+                memory_limit is not None
+                # Sınırda her kayıtta kırpmamak için onda bir pay bırakılır.
+                and len(self._events) > memory_limit + max(1, memory_limit // 10)
+            ):
+                self._events = self._events[-memory_limit:]
                 self._event_ids = {
                     item.event_id
                     for item in self._events
@@ -823,3 +849,10 @@ class InMemoryTelemetryService:
             raise TelemetryError("Telemetri timestamp negatif olamaz.")
         if not isinstance(event.metadata, dict):
             raise TelemetryError("Telemetri metadata nesne olmalıdır.")
+        for label, value in (
+            ("event_id", event.event_id),
+            ("player_id", event.player_id),
+            ("session_id", event.session_id),
+        ):
+            if value is not None and len(str(value)) > TELEMETRY_ID_MAX_LENGTH:
+                raise TelemetryError(f"Telemetri {label} çok uzun.")

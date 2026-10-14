@@ -99,6 +99,7 @@ def _thread_unread_count(
 class PlatformService(PushOutbox):
     VERIFICATION_TTL_SECONDS = 10 * 60
     RECOVERY_TTL_SECONDS = 15 * 60
+    RECOVERY_MAX_ATTEMPTS = 5
     INVITE_TTL_SECONDS = 7 * 24 * 60 * 60
     GOOGLE_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth"
     GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -1109,13 +1110,21 @@ class PlatformService(PushOutbox):
             data = self._read()
             account = self._account(data, player_id)
             recovery = account.get("recovery") or {}
-            valid = (
-                int(recovery.get("expires_at", 0)) > int(self.now_func())
-                and secrets.compare_digest(
-                    str(recovery.get("code_hash", "")), self._code_hash(code)
-                )
+            active = int(recovery.get("expires_at", 0)) > int(self.now_func())
+            valid = active and secrets.compare_digest(
+                str(recovery.get("code_hash", "")), self._code_hash(code)
             )
             if not valid:
+                if active:
+                    # Altı haneli kod sınırsız denenemez: birkaç yanlış
+                    # denemeden sonra kod geçersizleşir, yenisi istenmelidir.
+                    attempts = int(recovery.get("failed_attempts", 0)) + 1
+                    account["recovery"] = (
+                        {}
+                        if attempts >= self.RECOVERY_MAX_ATTEMPTS
+                        else {**recovery, "failed_attempts": attempts}
+                    )
+                    self._write(data)
                 raise PlatformServiceError("Kurtarma kodu geçersiz veya süresi dolmuş.")
             account["recovery"] = {}
             self._write(data)

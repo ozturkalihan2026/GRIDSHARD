@@ -11,7 +11,7 @@ from app.player_data_store import InMemoryPlayerDataRepository, PlayerDataStoreS
 from app.player_settings import PlayerSettingsService
 from app.player_statistics import PlayerStatisticsService
 from app.premium_reward_recovery import POLICY_VERSION, PremiumRecoveryError, wallet_snapshot
-from app.reward_delivery import collect_chest, mailbox_messages, premium_origin, queue_purchase_notice
+from app.reward_delivery import MAILBOX_AREA_LIMIT, collect_chest, mailbox_messages, premium_origin, queue_purchase_notice
 from app.store_catalog import process_purchase, revoke_purchase, restore_refunded_purchase
 
 NOW = datetime(2026, 10, 11, 6, tzinfo=timezone.utc)
@@ -164,6 +164,40 @@ def test_more_than_sixty_unclaimed_deliveries_are_never_discarded():
     _, profile, meta = fixture()
     for index in range(75):
         deliver(profile, meta, identity=f"reward-{index}")
-    assert len(mailbox_messages(profile)[0]) == 75
+
+    def unclaimed():
+        return sum(item.get("status") == "unclaimed" for item in profile.reward_inbox)
+
+    # Kutu her alanda en çok MAILBOX_AREA_LIMIT kayıt gösterir (13 Ekim 2026, kullanıcı
+    # kararı); toplanmamış sandık silinmez, yenileri toplandıkça sıradakiler kutuya girer.
+    assert unclaimed() == 75
+    assert len(mailbox_messages(profile)[0]) == MAILBOX_AREA_LIMIT
     collect(profile)
-    assert len(mailbox_messages(profile)[0]) == 74
+    assert unclaimed() == 74
+    assert len(mailbox_messages(profile)[0]) == MAILBOX_AREA_LIMIT
+    for index in range(1, 75 - MAILBOX_AREA_LIMIT + 1):
+        collect(profile, index)
+    assert unclaimed() == MAILBOX_AREA_LIMIT - 1
+    assert len(mailbox_messages(profile)[0]) == MAILBOX_AREA_LIMIT - 1
+
+
+def test_mailbox_areas_show_the_newest_entries_up_to_the_limit():
+    _, profile, meta = fixture()
+    for index in range(MAILBOX_AREA_LIMIT + 5):
+        deliver(profile, meta, identity=f"reward-{index}")
+        meta.award_battle_chest(profile, f"battle-{index}", True)
+        queue_purchase_notice(profile, {"key": f"order-{index}", "request_id": f"order-{index}", "purchased_at": NOW.isoformat()},
+                              product_name=f"Paket {index}", product_id="fixture")
+    rewards, purchases = mailbox_messages(profile)
+    # Savaş sandıkları, ödül sandıkları ve satın alım mesajları ayrı alanlardır; her biri kendi sınırını kullanır.
+    assert sum(item.get("category") == "battle" for item in rewards) == MAILBOX_AREA_LIMIT
+    assert sum(item.get("category") != "battle" for item in rewards) == MAILBOX_AREA_LIMIT
+    assert len(purchases) == MAILBOX_AREA_LIMIT
+    # En yeniler gösterilir; sınırın dışına düşen satın alım mesajının kaydı tanık olarak durur.
+    assert purchases[0]["title_tr"].endswith(f"Paket {MAILBOX_AREA_LIMIT + 4}")
+    assert all(not item["title_tr"].endswith("Paket 0") for item in purchases)
+    stored = sum(item.get("category") == "purchase" for item in profile.reward_inbox)
+    assert stored == MAILBOX_AREA_LIMIT + 5
+    queue_purchase_notice(profile, {"key": "order-0", "request_id": "order-0", "purchased_at": NOW.isoformat()},
+                          product_name="Paket 0", product_id="fixture")
+    assert sum(item.get("category") == "purchase" for item in profile.reward_inbox) == stored

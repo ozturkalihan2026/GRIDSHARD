@@ -760,12 +760,14 @@
     _publishPlaybackState() {
       const body=global.document?.body;
       if (!body?.dataset) return;
-      body.dataset.audioContextState=
-        this._musicContext?.state || "unavailable";
-      body.dataset.audioResult=
-        this._resultBufferOutcome || "none";
-      body.dataset.audioActiveSources=
-        String(this._activeBufferSources.size);
+      // Savaşta saniyede onlarca ses başlar ve biter; değişmeyen değer gövde
+      // özniteliğine yeniden yazılmaz.
+      const publish = (key, value) => {
+        if (body.dataset[key] !== value) body.dataset[key] = value;
+      };
+      publish("audioContextState", this._musicContext?.state || "unavailable");
+      publish("audioResult", this._resultBufferOutcome || "none");
+      publish("audioActiveSources", String(this._activeBufferSources.size));
     }
 
     _createMusicTrack(asset, {seamless=false}={}) {

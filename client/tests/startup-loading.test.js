@@ -172,10 +172,12 @@ test("boot labels, percentages, errors and ready text use language keys", async 
   assert.equal(loading.statusEl.textContent,"Ready!");
 });
 
-test("original source artwork and the entire animation CSS block are unchanged", () => {
+test("startup artwork and the entire animation CSS block are unchanged", () => {
   const hash = data => crypto.createHash("sha256").update(data).digest("hex");
   const art = fs.readFileSync("assets/branding/gridshard-emblem.webp");
-  assert.equal(hash(art),"c5b44663c45dd516f33f07aadeb31d0d3f84dd919d4b4dbc193579c26fbfa913");
+  // Görsel tur 6 (13 Ekim 2026, kullanıcı isteği): amblem yeni görsel dilde yeniden çizildi
+  // (tools/generate_brand_assets.py). Eski özet: c5b44663…fa913 (GRIDSHARD2.1 kaynağı).
+  assert.equal(hash(art),"4c187311d6bd426381cb8627170febd2448409157e0e04fda72e076b318f0f18");
   const css = fs.readFileSync("src/canon.css","utf8").replace(/\r\n/g,"\n");
   const block = css.slice(css.indexOf("/* === Beta.72 tur 17: yükleme ekranı"),css.indexOf("/* Operator title progression */")).trim();
   assert.equal(hash(block),"5b9f8d3a4997e2ab33751e004528d92094dddb02236a996c4c7c1390dbbff009");

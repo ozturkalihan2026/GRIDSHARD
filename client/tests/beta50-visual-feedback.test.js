@@ -19,7 +19,9 @@ assert.ok(app.includes('event?.type === "core_power_activated"'));
 assert.ok(app.includes("presentCorePowerActivation(snapshot, data)"));
 // Delay is preserved, but owned by the battle generation rather than a timer
 // that survives rematch/reset (behavior covered by battle-lifecycle.test.js).
-assert.ok(app.includes("scheduleBattleSweep(170, feedback)"));
+// The feedback helper also skips text whose moment passed during a stall.
+assert.ok(app.includes("scheduleBattleFeedback(170, feedback)"));
+assert.match(app, /function scheduleBattleFeedback\(delayMs, run\) \{[\s\S]*?return scheduleBattleSweep\(delayMs, \(\) => \{/);
 assert.ok(app.includes('sourceModule?.category === "sabotaj" ? "sabotage" : "damage"'));
 assert.ok(css.includes('font-size:.68rem !important'));
 assert.ok(css.includes('background:transparent !important'));

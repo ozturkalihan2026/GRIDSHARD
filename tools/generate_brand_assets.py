@@ -1,24 +1,30 @@
-"""GRIDSHARD marka görselleri (Beta.72 tur 18).
+"""GRIDSHARD marka görselleri (görsel tur 6, 13 Ekim 2026).
 
 Mağaza ikonu, web ikonları, yükleme ekranı amblemi ve yerel Android/iOS
 ikon ve açılış görselleri tek kaynaktan, belirlenimci olarak üretilir:
 
     python tools/generate_brand_assets.py
+    python tools/generate_brand_assets.py --preview <klasör>   # depoya dokunmadan dene
 
 Görsel tamamen çizimle üretilir: yazı tipi, ağdan indirilen dosya ya da dış
 görsel servisi kullanılmaz. Aynı Pillow sürümünde çıktı her çalıştırmada
 aynıdır. Betik web ikonlarıyla birlikte ``native-assets/`` altında Android/iOS
 kaynakları da üretir; mevcut native projelere otomatik kopyalama yapmaz.
 
-Tasarım: devre kartı zemin üzerinde, altın reaktör halkasının içinde ortadan
-çatlayıp iki parçaya ayrılan camgöbeği kristal (GRID + SHARD). Çatlaktan enerji
-sızar; yatay ana hat halkanın boşluklarından kristalin uçlarına güç taşır.
+Tasarım (motif Beta.72 tur 18 ile aynı): altın reaktör halkasının içinde ortadan
+çatlayıp iki parçaya ayrılan camgöbeği kristal (GRID + SHARD); çatlaktan enerji
+çıkar, yatay ana hat halkanın boşluklarından kristale güç taşır.
+
+Çizim dili oyunun yeni görsel dilidir (sandıklar, kaynak simgeleri, modül ve
+Çekirdek amblemleri): dolu gövde, aydınlık ve gölge yüz, koyu kontur, altta
+kalınlık veren dudak. Işıma, bulanıklık ve parçacık yoktur; zemin desenli düz
+renktir.
 """
 
 from __future__ import annotations
 
+import argparse
 import math
-import random
 from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
@@ -30,31 +36,26 @@ NATIVE = ROOT / "native-assets"
 SEED = 72
 WINDOW_BACKGROUND = (7, 20, 43)  # #07142B, capacitor.config.js ile aynı
 
+# Oyunun kontur rengi (canon.css, --gs3-ink).
+INK = (10, 16, 36)
+# Zemin: ev ekranındaki desenli mavi (canon.css, #14427c -> #0a2452).
 BACKGROUND_STOPS = [
-    (0.00, (24, 84, 128)),
-    (0.24, (13, 50, 90)),
-    (0.52, (8, 28, 58)),
-    (0.82, (4, 13, 31)),
-    (1.00, (2, 7, 18)),
+    (0.00, (27, 84, 150)),
+    (0.52, (16, 56, 112)),
+    (1.00, (10, 36, 82)),
 ]
-CRYSTAL_STOPS = [
-    (0.00, (4, 44, 92)),
-    (0.20, (6, 104, 168)),
-    (0.44, (18, 186, 234)),
-    (0.66, (84, 234, 255)),
-    (0.84, (180, 252, 255)),
-    (1.00, (248, 255, 255)),
-]
-GOLD_STOPS = [
-    (0.00, (255, 248, 216)),
-    (0.16, (255, 224, 128)),
-    (0.42, (250, 180, 66)),
-    (0.68, (204, 114, 32)),
-    (1.00, (118, 56, 12)),
-]
-CYAN = (72, 232, 240)
-CYAN_LIGHT = (170, 255, 252)
-GOLD_GLOW = (255, 158, 54)
+GOLD = {"light": (255, 232, 148), "main": (247, 186, 60), "dark": (206, 124, 26)}
+STEEL = {"light": (222, 232, 248), "main": (159, 176, 207), "dark": (100, 118, 158)}
+CONDUIT = {"light": (176, 248, 238), "main": (67, 207, 194), "dark": (22, 142, 136)}
+CRYSTAL = {
+    "top_left": (206, 250, 255),
+    "top_right": (112, 228, 246),
+    "bottom_left": (56, 188, 228),
+    "bottom_right": (30, 138, 198),
+    "table_light": (236, 254, 255),
+    "table_dark": (150, 238, 250),
+}
+BOLT = {"light": (255, 255, 236), "main": (255, 240, 150)}
 
 # Android yoğunlukları: dp → piksel çarpanı.
 DENSITIES = {"mdpi": 1, "hdpi": 1.5, "xhdpi": 2, "xxhdpi": 3, "xxxhdpi": 4}
@@ -81,38 +82,12 @@ def colorize(gray, stops):
     return Image.merge("RGB", [gray.point([color[i] for color in table]) for i in range(3)])
 
 
-def radial(size, center, radius, radius_y=None):
-    """L maskesi: merkezde 0, yarıçapta ve dışında 255."""
-    rx = max(1.0, radius)
-    ry = max(1.0, radius_y or radius)
-    gradient = Image.radial_gradient("L").resize((round(rx * 2), round(ry * 2)), Image.BICUBIC)
-    # Pillow'un dairesel gradyanı kenar ortasında 181'e ulaşır.
-    gradient = gradient.point(lambda v: min(255, round(v * 255 / 181)))
-    out = Image.new("L", size, 255)
-    out.paste(gradient, (round(center[0] - rx), round(center[1] - ry)))
-    return out
-
-
-def invert(mask):
-    return mask.point(lambda v: 255 - v)
-
-
 def scaled(mask, factor):
     return mask.point(lambda v: min(255, round(v * factor)))
 
 
-def blur(mask, radius):
-    return mask.filter(ImageFilter.GaussianBlur(max(0.5, radius)))
-
-
 def light(size, color, alpha):
     layer = Image.new("RGBA", size, color + (0,))
-    layer.putalpha(alpha)
-    return layer
-
-
-def painted(fill, alpha):
-    layer = fill.convert("RGBA")
     layer.putalpha(alpha)
     return layer
 
@@ -135,11 +110,26 @@ def box(center, radius):
     return (center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius)
 
 
-def vertical_gradient(size, top, height):
-    ramp_image = Image.linear_gradient("L").resize((size[0], max(2, round(height))), Image.BICUBIC)
-    out = blank(size)
-    out.paste(ramp_image, (0, round(top)))
+def union(*masks):
+    out = masks[0]
+    for mask in masks[1:]:
+        out = ImageChops.lighter(out, mask)
     return out
+
+
+def grow(mask, radius):
+    """Maskeyi her yöne yaklaşık `radius` piksel genişletir (yuvarlak köşeli kontur için)."""
+    radius = max(1.0, radius)
+    soft = mask.filter(ImageFilter.GaussianBlur(radius * 0.62))
+    return soft.point(lambda v: 255 if v >= 26 else 0)
+
+
+def bevel(mask, offset):
+    """Düz pah: sol üst kenarda aydınlık, sağ alt kenarda gölge şerit."""
+    offset = max(1, round(offset))
+    lit = ImageChops.subtract(mask, ImageChops.offset(mask, offset, offset))
+    shade = ImageChops.subtract(mask, ImageChops.offset(mask, -offset, -offset))
+    return lit, shade
 
 
 def sparkle(size, center, radius, thickness):
@@ -151,12 +141,21 @@ def sparkle(size, center, radius, thickness):
     return mask
 
 
-def seeded_noise(size, seed):
-    # Image.effect_noise işletim sistemine göre farklı sonuç verebilir; tohumlu
-    # küçük döşeme her makinede aynı dokuyu üretir.
-    rng = random.Random(seed)
-    tile = Image.frombytes("L", (256, 256), bytes(rng.getrandbits(8) for _ in range(256 * 256)))
-    return tile.resize(size, Image.BICUBIC)
+def tapered(size, points, width):
+    """Kırık çizgiyi iki ucu sivri, ortası kalın bir şimşek çokgenine çevirir."""
+    left, right = [], []
+    last = len(points) - 1
+    for index, (x, y) in enumerate(points):
+        ax, ay = points[max(0, index - 1)]
+        bx, by = points[min(last, index + 1)]
+        dx, dy = bx - ax, by - ay
+        length = math.hypot(dx, dy) or 1.0
+        nx, ny = -dy / length, dx / length
+        t = index / last
+        half = width * (0.08 + 0.92 * math.sin(math.pi * t) ** 0.7) / 2
+        left.append((x + nx * half, y + ny * half))
+        right.append((x - nx * half, y - ny * half))
+    return polygon(size, left + right[::-1])
 
 
 def downsample(image, size):
@@ -165,79 +164,46 @@ def downsample(image, size):
 
 # --- Zemin -------------------------------------------------------------------
 
-def circuit_layer(size, center, ring_radius, seed=SEED):
-    """Halkadan kenarlara uzanan devre izleri, düğümler ve enerji atımları."""
-    rng = random.Random(seed)
+def zigzag(size, period):
+    """Oyunun zeminindeki baklava dilimli desen: yatay zikzak şeritler."""
     s = size[0]
-    cx, cy = center
-    unit = ring_radius
-    width = max(2, round(unit * 0.016))
-    lines, nodes, pulses = blank(size), blank(size), blank(size)
-    draw_lines, draw_nodes, draw_pulses = ImageDraw.Draw(lines), ImageDraw.Draw(nodes), ImageDraw.Draw(pulses)
-
-    # Ana hatlar: yatay hat halkanın boşluklarından kristale, dikey hat halkaya.
-    draw_lines.line([(0, cy), (cx - unit * 0.97, cy)], fill=255, width=round(width * 1.7))
-    draw_lines.line([(cx + unit * 0.97, cy), (s, cy)], fill=255, width=round(width * 1.7))
-    draw_lines.line([(cx, 0), (cx, cy - unit * 1.1)], fill=255, width=round(width * 1.3))
-    draw_lines.line([(cx, cy + unit * 1.1), (cx, s)], fill=255, width=round(width * 1.3))
-    for x in (unit * 1.32, unit * 1.62):
-        for sign in (-1, 1):
-            draw_nodes.ellipse(box((cx + sign * x, cy), unit * 0.032), outline=255, width=max(2, round(width * 0.9)))
-            draw_nodes.ellipse(box((cx + sign * x, cy), unit * 0.013), fill=255)
-
-    angles = [17, 33, 56, 73, 107, 124, 147, 163, 197, 213, 236, 253, 287, 304, 327, 343]
-    for angle in angles:
-        rad = math.radians(angle)
-        dx, dy = math.cos(rad), math.sin(rad)
-        r0 = unit * rng.uniform(1.17, 1.25)
-        p0 = (cx + dx * r0, cy + dy * r0)
-        l1 = unit * rng.uniform(0.10, 0.24)
-        p1 = (p0[0] + dx * l1, p0[1] + dy * l1)
-        l2 = unit * rng.uniform(0.28, 0.72)
-        if abs(dx) > abs(dy):
-            p2 = (p1[0] + math.copysign(l2, dx), p1[1])
-        else:
-            p2 = (p1[0], p1[1] + math.copysign(l2, dy))
-        draw_lines.line([p0, p1, p2], fill=255, width=width, joint="curve")
-        node = unit * 0.027
-        draw_nodes.ellipse(box(p2, node), outline=255, width=max(2, round(width * 0.85)))
-        draw_nodes.ellipse(box(p2, node * 0.4), fill=255)
-        draw_nodes.ellipse(box(p0, node * 0.5), fill=255)
-        if rng.random() < 0.5:
-            t = rng.uniform(0.25, 0.8)
-            pulse = (p1[0] + (p2[0] - p1[0]) * t, p1[1] + (p2[1] - p1[1]) * t)
-            draw_pulses.ellipse(box(pulse, unit * 0.018), fill=255)
-
-    out = Image.new("RGBA", size, (0, 0, 0, 0))
-    out = over(out, light(size, CYAN, scaled(blur(lines, unit * 0.035), 0.55)))
-    out = over(out, light(size, (60, 206, 226), scaled(lines, 0.66)))
-    out = over(out, light(size, CYAN_LIGHT, scaled(nodes, 0.9)))
-    out = over(out, light(size, CYAN_LIGHT, blur(pulses, unit * 0.03)))
-    out = over(out, light(size, (255, 255, 255), pulses))
-    return out
+    mask = blank(size)
+    draw = ImageDraw.Draw(mask)
+    half = period / 2
+    band = period / 4
+    columns = int(s / half) + 3
+    y = -period
+    while y < s + period:
+        upper = [((i - 1) * half, y + (half if i % 2 else 0)) for i in range(columns)]
+        lower = [(x, py + band) for x, py in reversed(upper)]
+        draw.polygon(upper + lower, fill=255)
+        y += period
+    return mask
 
 
 def render_background(s, ring_radius, *, traces=True, seed=SEED):
+    """Desenli düz zemin; amblemin arkasında iki kademeli düz ışık dairesi ve ışınlar."""
     size = (s, s)
     center = (s / 2, s / 2)
-    image = colorize(radial(size, (s * 0.5, s * 0.46), s * 0.8), BACKGROUND_STOPS).convert("RGBA")
-    image = over(image, light(size, (96, 58, 196), scaled(invert(radial(size, (s * 0.05, s * 0.03), s * 0.62)), 0.32)))
-    image = over(image, light(size, (18, 150, 166), scaled(invert(radial(size, (s * 0.97, s * 1.02), s * 0.56)), 0.24)))
-
-    grid = blank(size)
-    draw = ImageDraw.Draw(grid)
-    cells = 14
-    grid_width = max(1, round(s / 1100))
-    for index in range(1, cells):
-        position = round(index * s / cells)
-        draw.line([(position, 0), (position, s)], fill=255, width=grid_width)
-        draw.line([(0, position), (s, position)], fill=255, width=grid_width)
-    grid = ImageChops.multiply(grid, invert(radial(size, center, s * 0.64)))
-    image = over(image, light(size, (96, 214, 238), scaled(grid, 0.2)))
-
+    image = colorize(Image.linear_gradient("L").resize(size, Image.BICUBIC), BACKGROUND_STOPS).convert("RGBA")
+    image = over(image, light(size, (255, 255, 255), scaled(zigzag(size, s / 8), 0.045)))
     if traces:
-        image = over(image, circuit_layer(size, center, ring_radius, seed))
-    image = over(image, light(size, (0, 2, 8), scaled(radial(size, center, s * 0.74), 0.58)))
+        rays = blank(size)
+        draw = ImageDraw.Draw(rays)
+        reach = s * 1.5
+        for index in range(12):
+            start = math.radians(index * 30 - 7.5)
+            end = math.radians(index * 30 + 7.5)
+            draw.polygon([
+                center,
+                (center[0] + math.cos(start) * reach, center[1] + math.sin(start) * reach),
+                (center[0] + math.cos(end) * reach, center[1] + math.sin(end) * reach),
+            ], fill=255)
+        image = over(image, light(size, (126, 196, 255), scaled(rays, 0.07)))
+    for radius, alpha in ((1.62, 0.16), (1.3, 0.2)):
+        disc = blank(size)
+        ImageDraw.Draw(disc).ellipse(box(center, ring_radius * radius), fill=255)
+        image = over(image, light(size, (92, 170, 246), scaled(disc, alpha)))
     return image
 
 
@@ -249,66 +215,70 @@ CRACK = [
 ]
 
 
-def render_emblem(s, ring_radius, *, halo=1.0, particles=(1.12, 1.5, 26), seed=SEED):
-    """Şeffaf zeminde amblem: halka, kristal, çatlak ışığı ve parçacıklar."""
+def render_emblem(s, ring_radius, *, halo=1.0, particles=None, seed=SEED):
+    """Şeffaf zeminde amblem: halka, kelepçeler, güç hattı, iki parçalı kristal ve çatlak.
+
+    `halo` ve `particles` eski imzayla uyum içindir; yeni çizimde ışıma ve parçacık yoktur.
+    """
     size = (s, s)
     cx, cy = s / 2, s / 2
     unit = ring_radius
+    stroke = unit * 0.05          # kontur kalınlığı
+    lip = round(unit * 0.075)     # alttaki dudak (kalınlık)
+    edge = unit * 0.035           # pah şeridi
 
     def at(u, v):
         return (cx + u * unit, cy + v * unit)
 
-    image = Image.new("RGBA", size, (0, 0, 0, 0))
+    layers = []  # (maske, [(renk, maske), ...]) — çizim sırasıyla
 
-    # Hale ve çekirdek ışığı.
-    image = over(image, light(size, (36, 190, 226), scaled(invert(radial(size, (cx, cy), unit * 1.3 * halo)), 0.56)))
-    image = over(image, light(size, (130, 255, 246), scaled(invert(radial(size, at(0, -0.05), unit * 0.8 * halo)), 0.3)))
-
-    # Dıştaki kesikli camgöbeği yaylar.
-    arcs = blank(size)
-    draw = ImageDraw.Draw(arcs)
-    r = unit * 1.12
-    for start, end in ((100, 168), (280, 348)):
-        draw.arc(box((cx, cy), r), start, end, fill=255, width=max(2, round(unit * 0.012)))
-    image = over(image, light(size, CYAN, scaled(blur(arcs, unit * 0.02), 0.8)))
-    image = over(image, light(size, CYAN_LIGHT, scaled(arcs, 0.75)))
+    # Güç hattı: halkanın yan boşluklarından kristale girer.
+    conduit = blank(size)
+    draw = ImageDraw.Draw(conduit)
+    for sign in (-1, 1):
+        draw.rounded_rectangle(
+            (*at(min(sign * 1.3, sign * 0.3), -0.06), *at(max(sign * 1.3, sign * 0.3), 0.06)),
+            radius=round(unit * 0.05), fill=255,
+        )
+        draw.ellipse(box(at(sign * 1.3, 0), unit * 0.105), fill=255)
+    conduit_lit, conduit_shade = bevel(conduit, edge * 0.7)
+    ports = blank(size)
+    draw = ImageDraw.Draw(ports)
+    for sign in (-1, 1):
+        draw.ellipse(box(at(sign * 1.3, 0), unit * 0.04), fill=255)
+    layers.append((conduit, [
+        (CONDUIT["main"], conduit), (CONDUIT["light"], conduit_lit),
+        (CONDUIT["dark"], conduit_shade), (INK, ports),
+    ]))
 
     # Altın reaktör halkası: iki yay, yanlarda ana hattın girdiği boşluklar.
-    outer, inner = unit, unit * 0.9
+    outer, inner = unit, unit * 0.79
     ring = blank(size)
     draw = ImageDraw.Draw(ring)
     draw.ellipse(box((cx, cy), outer), fill=255)
     draw.ellipse(box((cx, cy), inner), fill=0)
     for gap in (0, 180):
-        draw.pieslice(box((cx, cy), outer + 4), gap - 9, gap + 9, fill=0)
-    image = over(image, light(size, GOLD_GLOW, scaled(blur(ring, unit * 0.075), 0.95)))
-    metal = colorize(vertical_gradient(size, cy - outer, outer * 2), GOLD_STOPS)
-    image = over(image, painted(metal, ring))
-    offset = max(2, round(unit * 0.012))
-    top_left = ImageChops.subtract(ring, ImageChops.offset(ring, offset, offset))
-    bottom_right = ImageChops.subtract(ring, ImageChops.offset(ring, -offset, -offset))
-    image = over(image, light(size, (255, 252, 230), scaled(blur(top_left, 1.2), 0.75)))
-    image = over(image, light(size, (74, 30, 4), scaled(blur(bottom_right, 1.2), 0.7)))
-    ticks = blank(size)
-    draw = ImageDraw.Draw(ticks)
-    for angle in range(0, 360, 10):
-        if min(abs((angle - gap + 180) % 360 - 180) for gap in (0, 180)) <= 12:
-            continue
-        rad = math.radians(angle)
-        p_out = (cx + math.cos(rad) * (outer - unit * 0.004), cy + math.sin(rad) * (outer - unit * 0.004))
-        p_in = (cx + math.cos(rad) * (outer - unit * 0.038), cy + math.sin(rad) * (outer - unit * 0.038))
-        draw.line([p_in, p_out], fill=255, width=max(1, round(unit * 0.008)))
-    image = over(image, light(size, (92, 40, 6), scaled(ImageChops.multiply(ticks, ring), 0.6)))
+        draw.pieslice(box((cx, cy), outer + 4), gap - 12, gap + 12, fill=0)
+    ring_lit, ring_shade = bevel(ring, edge)
+    groove = blank(size)
+    draw = ImageDraw.Draw(groove)
+    groove_radius = (outer + inner) / 2
+    for start, end in ((18, 162), (198, 342)):
+        draw.arc(box((cx, cy), groove_radius), start, end, fill=255, width=max(2, round(unit * 0.022)))
+    layers.append((ring, [
+        (GOLD["main"], ring), (GOLD["light"], ring_lit), (GOLD["dark"], ring_shade),
+        (GOLD["dark"], ImageChops.multiply(groove, ring)),
+    ]))
 
-    # Köşegen kelepçeler (her birinde camgöbeği ışık).
-    clamps, leds = blank(size), blank(size)
-    draw_clamps, draw_leds = ImageDraw.Draw(clamps), ImageDraw.Draw(leds)
+    # Köşegen kelepçeler: çelik blok, ortasında perçin.
+    clamps, rivets = blank(size), blank(size)
+    draw_clamps, draw_rivets = ImageDraw.Draw(clamps), ImageDraw.Draw(rivets)
     for angle in (45, 135, 225, 315):
         rad = math.radians(angle)
         radial_dir = (math.cos(rad), math.sin(rad))
         tangent = (-radial_dir[1], radial_dir[0])
-        mid = unit * 0.95
-        half_t, half_r = unit * 0.07, unit * 0.105
+        mid = (outer + inner) / 2
+        half_t, half_r = unit * 0.1, unit * 0.165
         corners = []
         for sr, st in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
             corners.append((
@@ -316,154 +286,67 @@ def render_emblem(s, ring_radius, *, halo=1.0, particles=(1.12, 1.5, 26), seed=S
                 cy + radial_dir[1] * (mid + sr * half_r) + tangent[1] * st * half_t,
             ))
         draw_clamps.polygon(corners, fill=255)
-        draw_leds.ellipse(box((cx + radial_dir[0] * mid, cy + radial_dir[1] * mid), unit * 0.022), fill=255)
-    steel = colorize(vertical_gradient(size, cy - unit * 1.1, unit * 2.2), [
-        (0.0, (118, 142, 170)), (0.5, (52, 70, 96)), (1.0, (24, 34, 52)),
-    ])
-    image = over(image, light(size, (0, 0, 0), scaled(blur(clamps, unit * 0.02), 0.6)))
-    image = over(image, painted(steel, clamps))
-    edge = ImageChops.subtract(clamps, ImageChops.offset(clamps, offset, offset))
-    image = over(image, light(size, (200, 230, 255), scaled(edge, 0.55)))
-    image = over(image, light(size, CYAN, blur(leds, unit * 0.03)))
-    image = over(image, light(size, (230, 255, 255), leds))
+        draw_rivets.ellipse(box((cx + radial_dir[0] * mid, cy + radial_dir[1] * mid), unit * 0.042), fill=255)
+    clamps_lit, clamps_shade = bevel(clamps, edge * 0.8)
+    layers.append((clamps, [
+        (STEEL["main"], clamps), (STEEL["light"], clamps_lit), (STEEL["dark"], clamps_shade),
+        (INK, grow(rivets, stroke * 0.55)), (CONDUIT["main"], rivets),
+    ]))
 
-    # İçteki kesikli camgöbeği halka.
-    dashes = blank(size)
-    draw = ImageDraw.Draw(dashes)
-    for start in range(0, 360, 15):
-        draw.arc(box((cx, cy), unit * 0.8), start + 2, start + 11, fill=255, width=max(2, round(unit * 0.012)))
-    image = over(image, light(size, CYAN, scaled(blur(dashes, unit * 0.02), 0.7)))
-    image = over(image, light(size, CYAN_LIGHT, scaled(dashes, 0.65)))
-
-    # Halkanın boşluklarından kristalin uçlarına güç hattı.
-    conduit, core_line, ports = blank(size), blank(size), blank(size)
-    draw_conduit, draw_core, draw_ports = ImageDraw.Draw(conduit), ImageDraw.Draw(core_line), ImageDraw.Draw(ports)
-    for sign in (-1, 1):
-        start, end = at(sign * 1.02, 0), at(sign * 0.58, 0)
-        draw_conduit.line([start, end], fill=255, width=max(3, round(unit * 0.05)))
-        draw_core.line([start, end], fill=255, width=max(2, round(unit * 0.018)))
-        draw_ports.ellipse(box(at(sign * 0.6, 0), unit * 0.034), fill=255)
-        draw_ports.ellipse(box(at(sign * 0.95, 0), unit * 0.026), fill=255)
-    image = over(image, light(size, CYAN, scaled(blur(conduit, unit * 0.05), 0.9)))
-    image = over(image, light(size, (40, 170, 210), scaled(conduit, 0.85)))
-    image = over(image, light(size, (235, 255, 255), core_line))
-    image = over(image, light(size, CYAN_LIGHT, blur(ports, unit * 0.03)))
-    image = over(image, light(size, (255, 255, 255), ports))
-
-    # Kristal geometrisi.
-    top, bottom, left, right = at(0, -1.02), at(0, 1.02), at(-0.54, 0), at(0.54, 0)
-    hub = at(-0.03, -0.06)
-
-    def pull(a, b, amount=0.18):
-        mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
-        return (mid[0] + (hub[0] - mid[0]) * amount, mid[1] + (hub[1] - mid[1]) * amount)
-
-    m_tl, m_tr, m_bl, m_br = pull(top, left), pull(top, right), pull(bottom, left), pull(bottom, right)
-    outline = [top, right, bottom, left]
-    crystal = polygon(size, outline)
-
-    # Gölge halkaya düşer.
-    shadow = ImageChops.offset(blur(crystal, unit * 0.06), round(unit * 0.05), round(unit * 0.07))
-    image = over(image, light(size, (0, 3, 10), scaled(shadow, 0.6)))
-
-    # Çatlaktan sızan enerji (kristalin arkasında; iki parça arasından görünür).
+    # Çatlaktaki enerji: kristali boydan boya geçen açık sarı şimşek (parçaların üstünde çizilir).
     crack = [at(u, v) for u, v in CRACK]
-    split = (round(unit * 0.028), round(unit * 0.034))
-    crack_mid = [(x + split[0] / 2, y + split[1] / 2) for x, y in crack]
-    energy = blank(size)
-    ImageDraw.Draw(energy).line(crack_mid, fill=255, width=max(3, round(unit * 0.07)), joint="curve")
-    image = over(image, light(size, CYAN, scaled(blur(energy, unit * 0.2), 0.6)))
-    image = over(image, light(size, (200, 255, 255), blur(energy, unit * 0.04)))
+    bolt = tapered(size, crack, unit * 0.135)
+    bolt_core = tapered(size, crack, unit * 0.05)
 
-    # Kristal yüzeyleri (ışık sol üstten).
-    table = ramp(CRYSTAL_STOPS)
-    facets = [
-        ([top, m_tl, hub], 0.8), ([m_tl, left, hub], 0.64), ([top, m_tr, hub], 0.58),
-        ([m_tr, right, hub], 0.42), ([left, m_bl, hub], 0.48), ([m_bl, bottom, hub], 0.34),
-        ([right, m_br, hub], 0.2), ([m_br, bottom, hub], 0.27),
-        ([top, left, m_tl], 0.94), ([top, right, m_tr], 0.76), ([bottom, left, m_bl], 0.46),
-        ([bottom, right, m_br], 0.22),
-    ]
-    gem = light(size, table[round(0.5 * 255)], crystal)
-    for points, lightness in facets:
-        gem = over(gem, light(size, table[round(lightness * 255)], polygon(size, points)))
-    shade = ImageChops.multiply(crystal, vertical_gradient(size, top[1], bottom[1] - top[1]))
-    gem = over(gem, light(size, (0, 12, 32), scaled(shade, 0.32)))
-    gem = over(gem, light(size, (150, 255, 250), scaled(ImageChops.multiply(crystal, invert(radial(size, hub, unit * 0.38))), 0.32)))
-    frost = blur(seeded_noise(size, seed + 2), unit * 0.008)
-    gem = over(gem, light(size, (255, 255, 255), scaled(ImageChops.multiply(crystal, frost), 0.07)))
-    edges = blank(size)
-    draw = ImageDraw.Draw(edges)
-    edge_width = max(1, round(unit * 0.007))
-    for a, b in ((hub, top), (hub, left), (hub, right), (hub, bottom), (hub, m_tl), (hub, m_tr),
-                 (hub, m_bl), (hub, m_br), (m_tl, top), (m_tl, left), (m_tr, top), (m_tr, right),
-                 (m_bl, bottom), (m_bl, left), (m_br, bottom), (m_br, right)):
-        draw.line([a, b], fill=255, width=edge_width)
-    gem = over(gem, light(size, (228, 255, 255), scaled(ImageChops.multiply(edges, crystal), 0.36)))
-    streak = polygon(size, [at(-0.075, -0.80), at(-0.045, -0.765), at(-0.30, -0.235), at(-0.34, -0.27)])
-    gem = over(gem, light(size, (255, 255, 255), scaled(blur(streak, unit * 0.006), 0.45)))
-    rim_width = max(2, round(unit * 0.016))
-    lit_rim, dim_rim = blank(size), blank(size)
-    ImageDraw.Draw(lit_rim).line([left, top, right], fill=255, width=rim_width, joint="curve")
-    ImageDraw.Draw(dim_rim).line([right, bottom, left], fill=255, width=rim_width, joint="curve")
-    grown = crystal.filter(ImageFilter.MaxFilter(5))
-    gem = over(gem, light(size, (225, 255, 255), scaled(ImageChops.multiply(lit_rim, grown), 0.95)))
-    gem = over(gem, light(size, (120, 230, 255), scaled(ImageChops.multiply(dim_rim, grown), 0.55)))
-
-    # Kristal ikiye ayrılır: alt parça hafifçe aşağı sağa kayar.
+    # Kristal: dört yüzlü baklava, ortasında tabla; çatlak boyunca iki parçaya ayrılır.
+    top, bottom, left, right = at(0, -1.02), at(0, 1.02), at(-0.54, 0), at(0.54, 0)
+    hub = at(0, 0)
+    table = [at(0, -0.46), at(0.245, 0), at(0, 0.46), at(-0.245, 0)]
+    gem = Image.new("RGBA", size, (0, 0, 0, 0))
+    for color, points in (
+        (CRYSTAL["top_left"], [top, left, hub]),
+        (CRYSTAL["top_right"], [top, right, hub]),
+        (CRYSTAL["bottom_left"], [left, bottom, hub]),
+        (CRYSTAL["bottom_right"], [right, bottom, hub]),
+        (CRYSTAL["table_dark"], table),
+        (CRYSTAL["table_light"], [table[0], table[3], table[2]]),
+    ):
+        gem = over(gem, light(size, color, polygon(size, points)))
+    crystal = polygon(size, [top, right, bottom, left])
     far_start = (crack[0][0] + (crack[0][0] - crack[1][0]) * 20, crack[0][1] + (crack[0][1] - crack[1][1]) * 20)
     far_end = (crack[-1][0] + (crack[-1][0] - crack[-2][0]) * 20, crack[-1][1] + (crack[-1][1] - crack[-2][1]) * 20)
-    lower = polygon(size, [far_start, *crack, far_end, (s * 4, s * 4), (s * 4, -s * 3)])
-    alpha = gem.getchannel("A")
-    upper_piece = gem.copy()
-    upper_piece.putalpha(ImageChops.multiply(alpha, invert(lower)))
-    lower_piece = gem.copy()
-    lower_piece.putalpha(ImageChops.multiply(alpha, lower))
-    lower_piece = ImageChops.offset(lower_piece, *split)
-    image = over(image, light(size, CYAN, scaled(blur(crystal, unit * 0.1), 0.6)))
-    # İnce koyu dış hat: parlak halenin önünde kristalin sınırı küçük boyutta da seçilir.
-    outline_mask = ImageChops.subtract(blur(crystal.filter(ImageFilter.MaxFilter(9)), unit * 0.004), crystal)
-    image = over(image, light(size, (2, 16, 36), scaled(outline_mask, 0.65)))
-    image = over(image, upper_piece)
-    image = over(image, lower_piece)
+    lower_side = polygon(size, [far_start, *crack, far_end, (s * 4, s * 4), (s * 4, -s * 3)])
+    split = (round(unit * 0.03), round(unit * 0.016))
+    pieces = []
+    for side, shift in ((ImageChops.invert(lower_side), (-split[0], -split[1])), (lower_side, split)):
+        mask = ImageChops.offset(ImageChops.multiply(crystal, side), *shift)
+        art = ImageChops.offset(gem, *shift)
+        art.putalpha(ImageChops.multiply(art.getchannel("A"), mask))
+        pieces.append((mask, art))
 
-    # Çatlağın ışığı parçaların içine saçılır ve kenarlarından taşar.
-    core = blank(size)
-    ImageDraw.Draw(core).line(crack_mid, fill=255, width=max(2, round(unit * 0.02)), joint="curve")
-    pieces = ImageChops.lighter(upper_piece.getchannel("A"), lower_piece.getchannel("A"))
-    inner_glow = ImageChops.multiply(blur(core, unit * 0.12), pieces)
-    image = over(image, light(size, (90, 240, 255), scaled(inner_glow, 2.2)))
-    glow_inside = ImageChops.multiply(pieces, invert(radial(size, at(0.02, 0.02), unit * 0.62)))
-    image = over(image, light(size, (70, 220, 255), scaled(glow_inside, 0.22)))
-    image = over(image, light(size, CYAN_LIGHT, blur(core, unit * 0.045)))
-    image = over(image, light(size, (255, 255, 255), core))
+    # Parıltılar: çatlağın üst ucunda ve halkanın sol üstünde.
+    stars = union(
+        sparkle(size, at(0.36, -0.86), unit * 0.2, unit * 0.045),
+        sparkle(size, at(-0.72, -0.9), unit * 0.12, unit * 0.03),
+    )
 
-    # Parıltılar.
-    for point, radius in ((crack_mid[0], 0.17), (crack_mid[-1], 0.12), (top, 0.1), (right, 0.07)):
-        star = sparkle(size, point, unit * radius, unit * radius * 0.13)
-        image = over(image, light(size, CYAN_LIGHT, scaled(blur(star, unit * 0.02), 0.9)))
-        image = over(image, light(size, (255, 255, 255), star))
-
-    # Parlak bölgeler hafifçe taşar (bloom).
-    luminance = ImageChops.multiply(image.convert("L"), image.getchannel("A"))
-    bloom = blur(luminance.point(lambda v: max(0, min(255, (v - 175) * 3))), unit * 0.06)
-    image = over(image, light(size, (200, 255, 255), scaled(bloom, 0.45)))
-
-    # Parçacıklar.
-    if particles:
-        inner_band, outer_band, count = particles
-        rng = random.Random(seed + 1)
-        dots_cyan, dots_gold = blank(size), blank(size)
-        draw_cyan, draw_gold = ImageDraw.Draw(dots_cyan), ImageDraw.Draw(dots_gold)
-        for _ in range(count):
-            angle = rng.uniform(0, math.tau)
-            distance = unit * rng.uniform(inner_band, outer_band)
-            point = (cx + math.cos(angle) * distance, cy + math.sin(angle) * distance)
-            radius = unit * rng.uniform(0.007, 0.02)
-            (draw_gold if rng.random() < 0.25 else draw_cyan).ellipse(box(point, radius), fill=round(rng.uniform(150, 255)))
-        for dots, color in ((dots_cyan, CYAN_LIGHT), (dots_gold, (255, 214, 130))):
-            image = over(image, light(size, color, scaled(blur(dots, unit * 0.025), 1.4)))
-            image = over(image, light(size, color, dots))
+    image = Image.new("RGBA", size, (0, 0, 0, 0))
+    silhouette = union(*(mask for mask, _ in layers), *(mask for mask, _ in pieces), bolt)
+    body = grow(silhouette, stroke)
+    # Dudak: gövdenin koyu kopyası aşağıda durur, nesneye kalınlık verir.
+    image = over(image, light(size, INK, union(body, ImageChops.offset(body, 0, lip))))
+    for mask, fills in layers:
+        image = over(image, light(size, INK, grow(mask, stroke)))
+        for color, fill in fills:
+            image = over(image, light(size, color, fill))
+    for mask, art in pieces:
+        image = over(image, light(size, INK, grow(mask, stroke)))
+        image = over(image, art)
+    image = over(image, light(size, INK, grow(bolt, stroke * 0.8)))
+    image = over(image, light(size, BOLT["main"], bolt))
+    image = over(image, light(size, BOLT["light"], bolt_core))
+    image = over(image, light(size, INK, grow(stars, stroke * 0.6)))
+    image = over(image, light(size, (255, 255, 255), stars))
     return image
 
 
@@ -492,7 +375,7 @@ def emblem_silhouette(s, ring_radius):
 # --- Çıktılar ----------------------------------------------------------------
 
 def render_icon(s):
-    ring = s * 0.335
+    ring = s * 0.3
     return over(render_background(s, ring), render_emblem(s, ring)).convert("RGB")
 
 
@@ -524,6 +407,9 @@ def save_png(image, path):
 
 def write_text(path, text):
     path.parent.mkdir(parents=True, exist_ok=True)
+    # İçerik aynıysa dosyaya dokunulmaz (yalnız satır sonu farkı değişiklik sayılmasın).
+    if path.exists() and path.read_text(encoding="utf-8").split() == text.split():
+        return
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
@@ -548,7 +434,10 @@ SPLASH_LAYER_LIST = """<?xml version="1.0" encoding="utf-8"?>
 """
 
 
-def generate():
+def generate(root=ROOT):
+    global BRANDING, NATIVE
+    BRANDING = root / "client" / "assets" / "branding"
+    NATIVE = root / "native-assets"
     # Mağaza ve web ikonları (2x çizilip küçültülür).
     icon = render_icon(2048)
     icon_1024 = downsample(icon, 1024)
@@ -557,21 +446,23 @@ def generate():
     save_png(downsample(icon_1024, 192), BRANDING / "gridshard-favicon-192.png")
     small = downsample(icon_1024, 32).filter(ImageFilter.UnsharpMask(radius=1, percent=60, threshold=2))
     save_png(small, BRANDING / "gridshard-favicon-32.png")
-    downsample(icon_1024, 256).save(ROOT / "client" / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
+    (root / "client").mkdir(parents=True, exist_ok=True)
+    downsample(icon_1024, 256).save(root / "client" / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
 
     # Yükleme ekranı amblemi (şeffaf; halkalar CSS ile döner).
-    emblem = render_emblem(1536, 1536 * 0.36)
+    emblem = render_emblem(1536, 1536 * 0.33)
+    BRANDING.mkdir(parents=True, exist_ok=True)
     emblem.resize((768, 768), Image.LANCZOS).save(
-        BRANDING / "gridshard-emblem.webp", format="WEBP", quality=90, method=6
+        BRANDING / "gridshard-emblem.webp", format="WEBP", quality=92, method=6
     )
 
     # Android başlatıcı ikonları.
     android = NATIVE / "android" / "res"
     # Amblem 66 dp güvenli dairenin içinde (halka çapı ~60 dp).
-    foreground = render_emblem(1728, 1728 * 0.28, halo=0.85, particles=(1.1, 1.36, 18))
-    background = render_background(1728, 1728 * 0.28).convert("RGB")
+    foreground = render_emblem(1728, 1728 * 0.25)
+    background = render_background(1728, 1728 * 0.25).convert("RGB")
     monochrome = Image.new("RGBA", (1728, 1728), (255, 255, 255, 0))
-    monochrome.putalpha(emblem_silhouette(1728, 1728 * 0.28))
+    monochrome.putalpha(emblem_silhouette(1728, 1728 * 0.25))
     for density, factor in DENSITIES.items():
         folder = android / f"mipmap-{density}"
         legacy = downsample(icon_1024, round(48 * factor))
@@ -585,7 +476,7 @@ def generate():
     write_text(android / "mipmap-anydpi-v26" / "ic_launcher_round.xml", ADAPTIVE_ICON)
 
     # Android açılış amblemi: 288 dp tuval, amblem 192 dp dairenin içinde.
-    splash_icon = render_emblem(2304, 2304 * 0.28, halo=0.72, particles=(1.05, 1.12, 10))
+    splash_icon = render_emblem(2304, 2304 * 0.25)
     for density, factor in DENSITIES.items():
         save_png(downsample(splash_icon, round(288 * factor)), android / f"drawable-{density}" / "gridshard_splash_icon.png")
     write_text(android / "drawable" / "gridshard_splash.xml", SPLASH_LAYER_LIST)
@@ -593,15 +484,17 @@ def generate():
     # iOS: uygulama ikonu (saydamlık yok) ve açılış görseli (ortası kırpılır).
     ios = NATIVE / "ios"
     save_png(icon_1024, ios / "AppIcon-512@2x.png")
-    splash = colorize(radial((2732, 2732), (1366, 1310), 1500), [
-        (0.0, (16, 58, 98)), (0.35, (9, 32, 64)), (0.7, WINDOW_BACKGROUND), (1.0, (4, 11, 25)),
-    ]).convert("RGBA")
-    mark = render_emblem(2600, 760, halo=0.9, particles=(1.1, 1.4, 22)).resize((1300, 1300), Image.LANCZOS)
+    # Zemin yerel pencere rengidir (capacitor.config.js); açılıştan web yükleme ekranına geçişte sıçramaz.
+    splash = Image.new("RGBA", (2732, 2732), WINDOW_BACKGROUND + (255,))
+    mark = render_emblem(2600, 760).resize((1300, 1300), Image.LANCZOS)
     splash.alpha_composite(mark, (1366 - 650, 1366 - 650))
     save_png(splash.convert("RGB"), ios / "splash-2732x2732.png")
 
 
 if __name__ == "__main__":
-    generate()
+    parser = argparse.ArgumentParser(description="GRIDSHARD marka görsellerini üretir.")
+    parser.add_argument("--preview", type=Path, help="çıktıları depo yerine bu klasöre yaz")
+    arguments = parser.parse_args()
+    generate(arguments.preview.resolve() if arguments.preview else ROOT)
     print("GRIDSHARD marka görselleri üretildi.")
 

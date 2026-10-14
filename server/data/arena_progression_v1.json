@@ -69,7 +69,7 @@
     },
     {
       "id": "repair",
-      "name_tr": "Onarım Modülü",
+      "name_tr": "Onarım",
       "category": "destek",
       "rarity": "common",
       "unlock_arena": 2,
@@ -483,7 +483,7 @@
         {
           "id": "arena_2_375",
           "trophies": 375,
-          "description_tr": "Onarım Modülü (common, destek, 3 Akım)",
+          "description_tr": "Onarım (common, destek, 3 Akım)",
           "rewards": {
             "module_id": "repair"
           }
@@ -1182,7 +1182,7 @@
         {
           "id": "arena_12_3",
           "trophies": 3,
-          "description_tr": "Onarım Modülü",
+          "description_tr": "Onarım",
           "rewards": {}
         },
         {

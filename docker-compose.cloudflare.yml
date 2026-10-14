@@ -1,6 +1,13 @@
 # Use ONLY after docker-compose.production.yml. Requires Compose >= 2.24.4.
 # Never combine this with the development Compose file.
 services:
+  relay-web:
+    environment:
+      # Behind Cloudflare the proxy's peer is a Cloudflare edge shared by many
+      # players; the per-client rate limits key on the address Cloudflare
+      # reports. Keep the origin reachable only from Cloudflare, otherwise this
+      # header can be forged by a direct caller.
+      GRIDSHARD_CLIENT_IP_HEADER: CF-Connecting-IP
   caddy:
     # Replace, don't append: no public HTTP or QUIC origin port is needed.
     ports: !override ['443:443']

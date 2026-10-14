@@ -18,65 +18,65 @@ Beta.72 tur 12: yeni ısı ve enerji kurallarına göre 51 desteye Soğutucu ya 
 | 1 | bot_a01_08 | LinaNova | Akım Ekonomisi | 189 | Rezonans Çekirdeği | Batarya, EMP, Soğutucu, Kalkan, Lazer, Güçlendirici |
 | 1 | bot_a01_09 | ArdaNova | Alan Hasarı | 206 | Rezonans Çekirdeği | Soğutucu, Lazer, EMP, Kalkan, Batarya, Güçlendirici |
 | 1 | bot_a01_10 | DuruNova | Karşı Meta | 223 | Rezonans Çekirdeği | EMP, Güçlendirici, Lazer, Soğutucu, Batarya, Kalkan |
-| 2 | bot_a02_01 | EmirNova | Dengeli | 370 | Rezonans Çekirdeği | Lazer, Soğutucu, Onarım Modülü, EMP, Batarya, Zırh |
-| 2 | bot_a02_02 | AdaNova | Hızlı Baskı | 387 | Rezonans Çekirdeği | Lazer, Soğutucu, Batarya, Zırh, EMP, Onarım Modülü |
-| 2 | bot_a02_03 | CanNova | Ağır Hasar | 404 | Rezonans Çekirdeği | Zırh, Onarım Modülü, Soğutucu, EMP, Batarya, Lazer |
-| 2 | bot_a02_04 | MinaNova | Savunma | 421 | Rezonans Çekirdeği | Zırh, Güçlendirici, Kalkan, Onarım Modülü, Batarya, Lazer |
-| 2 | bot_a02_05 | KaanNova | Sürdürülebilirlik | 438 | Rezonans Çekirdeği | Güçlendirici, Zırh, Batarya, Lazer, Soğutucu, Onarım Modülü |
-| 2 | bot_a02_06 | İlayNova | Kontrol | 455 | Rezonans Çekirdeği | EMP, Lazer, Güçlendirici, Zırh, Soğutucu, Onarım Modülü |
-| 2 | bot_a02_07 | DenizNova | Destek Zinciri | 472 | Rezonans Çekirdeği | Onarım Modülü, Soğutucu, Lazer, Zırh, Batarya, Güçlendirici |
-| 2 | bot_a02_08 | SelinNova | Akım Ekonomisi | 489 | Rezonans Çekirdeği | Batarya, Lazer, Onarım Modülü, Zırh, Güçlendirici, Soğutucu |
-| 2 | bot_a02_09 | BaranNova | Alan Hasarı | 506 | Rezonans Çekirdeği | Zırh, Onarım Modülü, Batarya, Soğutucu, Kalkan, Lazer |
+| 2 | bot_a02_01 | EmirNova | Dengeli | 370 | Rezonans Çekirdeği | Lazer, Soğutucu, Onarım, EMP, Batarya, Zırh |
+| 2 | bot_a02_02 | AdaNova | Hızlı Baskı | 387 | Rezonans Çekirdeği | Lazer, Soğutucu, Batarya, Zırh, EMP, Onarım |
+| 2 | bot_a02_03 | CanNova | Ağır Hasar | 404 | Rezonans Çekirdeği | Zırh, Onarım, Soğutucu, EMP, Batarya, Lazer |
+| 2 | bot_a02_04 | MinaNova | Savunma | 421 | Rezonans Çekirdeği | Zırh, Güçlendirici, Kalkan, Onarım, Batarya, Lazer |
+| 2 | bot_a02_05 | KaanNova | Sürdürülebilirlik | 438 | Rezonans Çekirdeği | Güçlendirici, Zırh, Batarya, Lazer, Soğutucu, Onarım |
+| 2 | bot_a02_06 | İlayNova | Kontrol | 455 | Rezonans Çekirdeği | EMP, Lazer, Güçlendirici, Zırh, Soğutucu, Onarım |
+| 2 | bot_a02_07 | DenizNova | Destek Zinciri | 472 | Rezonans Çekirdeği | Onarım, Soğutucu, Lazer, Zırh, Batarya, Güçlendirici |
+| 2 | bot_a02_08 | SelinNova | Akım Ekonomisi | 489 | Rezonans Çekirdeği | Batarya, Lazer, Onarım, Zırh, Güçlendirici, Soğutucu |
+| 2 | bot_a02_09 | BaranNova | Alan Hasarı | 506 | Rezonans Çekirdeği | Zırh, Onarım, Batarya, Soğutucu, Kalkan, Lazer |
 | 2 | bot_a02_10 | AsyaNova | Karşı Meta | 523 | Rezonans Çekirdeği | EMP, Kalkan, Lazer, Güçlendirici, Batarya, Zırh |
 | 3 | bot_a03_01 | KeremNova | Dengeli | 682 | Muhafız Çekirdeği | Darbe Topu, Zırh, Soğutucu, EMP, Batarya, Füze Fırlatıcı |
 | 3 | bot_a03_02 | EceNova | Hızlı Baskı | 702 | Rezonans Çekirdeği | Lazer, Soğutucu, Batarya, Füze Fırlatıcı, EMP, Darbe Topu |
 | 3 | bot_a03_03 | TunaNova | Ağır Hasar | 722 | Muhafız Çekirdeği | Darbe Topu, Lazer, Soğutucu, EMP, Kalkan, Füze Fırlatıcı |
-| 3 | bot_a03_04 | LaraNova | Savunma | 742 | Rezonans Çekirdeği | Kalkan, Onarım Modülü, Zırh, Darbe Topu, Batarya, Lazer |
-| 3 | bot_a03_05 | YiğitNova | Sürdürülebilirlik | 761 | Muhafız Çekirdeği | Soğutucu, Zırh, Batarya, Füze Fırlatıcı, Güçlendirici, Onarım Modülü |
-| 3 | bot_a03_06 | NehirNova | Kontrol | 781 | Rezonans Çekirdeği | EMP, Füze Fırlatıcı, Onarım Modülü, Batarya, Lazer, Soğutucu |
-| 3 | bot_a03_07 | UmutNova | Destek Zinciri | 801 | Muhafız Çekirdeği | Soğutucu, Güçlendirici, Füze Fırlatıcı, Batarya, Darbe Topu, Onarım Modülü |
+| 3 | bot_a03_04 | LaraNova | Savunma | 742 | Rezonans Çekirdeği | Kalkan, Onarım, Zırh, Darbe Topu, Batarya, Lazer |
+| 3 | bot_a03_05 | YiğitNova | Sürdürülebilirlik | 761 | Muhafız Çekirdeği | Soğutucu, Zırh, Batarya, Füze Fırlatıcı, Güçlendirici, Onarım |
+| 3 | bot_a03_06 | NehirNova | Kontrol | 781 | Rezonans Çekirdeği | EMP, Füze Fırlatıcı, Onarım, Batarya, Lazer, Soğutucu |
+| 3 | bot_a03_07 | UmutNova | Destek Zinciri | 801 | Muhafız Çekirdeği | Soğutucu, Güçlendirici, Füze Fırlatıcı, Batarya, Darbe Topu, Onarım |
 | 3 | bot_a03_08 | MayaNova | Akım Ekonomisi | 821 | Rezonans Çekirdeği | Batarya, Füze Fırlatıcı, Soğutucu, Zırh, Kalkan, Darbe Topu |
 | 3 | bot_a03_09 | AtlasNova | Alan Hasarı | 841 | Muhafız Çekirdeği | Füze Fırlatıcı, Lazer, Batarya, Soğutucu, Kalkan, Darbe Topu |
-| 3 | bot_a03_10 | ZeynepNova | Karşı Meta | 861 | Rezonans Çekirdeği | EMP, Zırh, Füze Fırlatıcı, Onarım Modülü, Batarya, Kalkan |
+| 3 | bot_a03_10 | ZeynepNova | Karşı Meta | 861 | Rezonans Çekirdeği | EMP, Zırh, Füze Fırlatıcı, Onarım, Batarya, Kalkan |
 | 4 | bot_a04_01 | BerkNova | Dengeli | 1032 | Rezonans Çekirdeği | Füze Fırlatıcı, Bariyer, Güçlendirici, EMP, Batarya, Darbe Topu |
 | 4 | bot_a04_02 | SudeNova | Hızlı Baskı | 1052 | Muhafız Çekirdeği | Lazer, Güçlendirici, Batarya, Darbe Topu, Soğutucu, Füze Fırlatıcı |
 | 4 | bot_a04_03 | OnurNova | Ağır Hasar | 1072 | Rezonans Çekirdeği | Darbe Topu, Füze Fırlatıcı, Soğutucu, EMP, Zırh, Lazer |
-| 4 | bot_a04_04 | İremNova | Savunma | 1092 | Muhafız Çekirdeği | Zırh, Onarım Modülü, Bariyer, Lazer, Füze Fırlatıcı, Kalkan |
-| 4 | bot_a04_05 | DorukNova | Sürdürülebilirlik | 1111 | Rezonans Çekirdeği | Onarım Modülü, Kalkan, Batarya, Darbe Topu, Soğutucu, Hedefleme Bilgisayarı |
-| 4 | bot_a04_06 | AlinNova | Kontrol | 1131 | Muhafız Çekirdeği | Bariyer, EMP, Darbe Topu, Onarım Modülü, Zırh, Lazer |
+| 4 | bot_a04_04 | İremNova | Savunma | 1092 | Muhafız Çekirdeği | Zırh, Onarım, Bariyer, Lazer, Füze Fırlatıcı, Kalkan |
+| 4 | bot_a04_05 | DorukNova | Sürdürülebilirlik | 1111 | Rezonans Çekirdeği | Onarım, Kalkan, Batarya, Darbe Topu, Soğutucu, Hedefleme Bilgisayarı |
+| 4 | bot_a04_06 | AlinNova | Kontrol | 1131 | Muhafız Çekirdeği | Bariyer, EMP, Darbe Topu, Onarım, Zırh, Lazer |
 | 4 | bot_a04_07 | MertcanNova | Destek Zinciri | 1151 | Rezonans Çekirdeği | Güçlendirici, Hedefleme Bilgisayarı, Füze Fırlatıcı, Zırh, Batarya, Soğutucu |
 | 4 | bot_a04_08 | CerenNova | Akım Ekonomisi | 1171 | Muhafız Çekirdeği | Bariyer, Füze Fırlatıcı, Soğutucu, Batarya, Kalkan, Darbe Topu |
 | 4 | bot_a04_09 | RüzgarNova | Alan Hasarı | 1191 | Rezonans Çekirdeği | Füze Fırlatıcı, Darbe Topu, EMP, Soğutucu, Batarya, Lazer |
-| 4 | bot_a04_10 | MelisNova | Karşı Meta | 1211 | Muhafız Çekirdeği | Hedefleme Bilgisayarı, Bariyer, Lazer, Onarım Modülü, Batarya, EMP |
+| 4 | bot_a04_10 | MelisNova | Karşı Meta | 1211 | Muhafız Çekirdeği | Hedefleme Bilgisayarı, Bariyer, Lazer, Onarım, Batarya, EMP |
 | 5 | bot_a05_01 | MertVolt | Dengeli | 1394 | Aşırı Yük Çekirdeği | Ark Topu, Bariyer, Hedefleme Bilgisayarı, EMP, Batarya, Lazer |
 | 5 | bot_a05_02 | ElifVolt | Hızlı Baskı | 1416 | Rezonans Çekirdeği | Lazer, Hedefleme Bilgisayarı, Kapasitör, Ark Topu, EMP, Füze Fırlatıcı |
 | 5 | bot_a05_03 | BoraVolt | Ağır Hasar | 1439 | Muhafız Çekirdeği | Darbe Topu, Ark Topu, Soğutucu, EMP, Bariyer, Lazer |
 | 5 | bot_a05_04 | NisaVolt | Savunma | 1462 | Aşırı Yük Çekirdeği | Kalkan, Soğutucu, Ark Topu, Füze Fırlatıcı, Batarya, Bariyer |
-| 5 | bot_a05_05 | OzanVolt | Sürdürülebilirlik | 1484 | Rezonans Çekirdeği | Soğutucu, Bariyer, Kapasitör, Lazer, Güçlendirici, Onarım Modülü |
+| 5 | bot_a05_05 | OzanVolt | Sürdürülebilirlik | 1484 | Rezonans Çekirdeği | Soğutucu, Bariyer, Kapasitör, Lazer, Güçlendirici, Onarım |
 | 5 | bot_a05_06 | DerinVolt | Kontrol | 1507 | Muhafız Çekirdeği | EMP, Kapasitör, Lazer, Soğutucu, Bariyer, Ark Topu |
-| 5 | bot_a05_07 | EgeVolt | Destek Zinciri | 1530 | Aşırı Yük Çekirdeği | Hedefleme Bilgisayarı, Onarım Modülü, Darbe Topu, Bariyer, Batarya, Soğutucu |
+| 5 | bot_a05_07 | EgeVolt | Destek Zinciri | 1530 | Aşırı Yük Çekirdeği | Hedefleme Bilgisayarı, Onarım, Darbe Topu, Bariyer, Batarya, Soğutucu |
 | 5 | bot_a05_08 | LinaVolt | Akım Ekonomisi | 1552 | Rezonans Çekirdeği | Batarya, Darbe Topu, Güçlendirici, Ark Topu, Kalkan, Kapasitör |
-| 5 | bot_a05_09 | ArdaVolt | Alan Hasarı | 1575 | Muhafız Çekirdeği | Darbe Topu, Füze Fırlatıcı, EMP, Onarım Modülü, Soğutucu, Ark Topu |
+| 5 | bot_a05_09 | ArdaVolt | Alan Hasarı | 1575 | Muhafız Çekirdeği | Darbe Topu, Füze Fırlatıcı, EMP, Onarım, Soğutucu, Ark Topu |
 | 5 | bot_a05_10 | DuruVolt | Karşı Meta | 1598 | Aşırı Yük Çekirdeği | EMP, Bariyer, Ark Topu, Soğutucu, Batarya, Kapasitör |
 | 6 | bot_a06_01 | EmirVolt | Dengeli | 1805 | Rezonans Çekirdeği | Lazer, Bariyer, Hedefleme Bilgisayarı, EMP, Kapasitör, Füze Fırlatıcı |
 | 6 | bot_a06_02 | AdaVolt | Hızlı Baskı | 1831 | Muhafız Çekirdeği | Darbe Topu, Soğutucu, Batarya, Lazer, Sinyal Bozucu, Füze Fırlatıcı |
-| 6 | bot_a06_03 | CanVolt | Ağır Hasar | 1856 | Aşırı Yük Çekirdeği | Füze Fırlatıcı, Dron Üssü, Onarım Modülü, Soğutucu, Kalkan, Darbe Topu |
-| 6 | bot_a06_04 | MinaVolt | Savunma | 1882 | Rezonans Çekirdeği | Zırh, Onarım Modülü, Bariyer, Lazer, Dron Üssü, Kalkan |
-| 6 | bot_a06_05 | KaanVolt | Sürdürülebilirlik | 1907 | Muhafız Çekirdeği | Onarım Modülü, Bariyer, Batarya, Darbe Topu, Hedefleme Bilgisayarı, Soğutucu |
+| 6 | bot_a06_03 | CanVolt | Ağır Hasar | 1856 | Aşırı Yük Çekirdeği | Füze Fırlatıcı, Dron Üssü, Onarım, Soğutucu, Kalkan, Darbe Topu |
+| 6 | bot_a06_04 | MinaVolt | Savunma | 1882 | Rezonans Çekirdeği | Zırh, Onarım, Bariyer, Lazer, Dron Üssü, Kalkan |
+| 6 | bot_a06_05 | KaanVolt | Sürdürülebilirlik | 1907 | Muhafız Çekirdeği | Onarım, Bariyer, Batarya, Darbe Topu, Hedefleme Bilgisayarı, Soğutucu |
 | 6 | bot_a06_06 | İlayVolt | Kontrol | 1933 | Aşırı Yük Çekirdeği | EMP, Soğutucu, Darbe Topu, Hedefleme Bilgisayarı, Bariyer, Sinyal Bozucu |
 | 6 | bot_a06_07 | DenizVolt | Destek Zinciri | 1958 | Rezonans Çekirdeği | Güçlendirici, Soğutucu, Füze Fırlatıcı, Bariyer, Kapasitör, Hedefleme Bilgisayarı |
-| 6 | bot_a06_08 | SelinVolt | Akım Ekonomisi | 1984 | Muhafız Çekirdeği | Kapasitör, Füze Fırlatıcı, Onarım Modülü, Batarya, Zırh, Sinyal Bozucu |
+| 6 | bot_a06_08 | SelinVolt | Akım Ekonomisi | 1984 | Muhafız Çekirdeği | Kapasitör, Füze Fırlatıcı, Onarım, Batarya, Zırh, Sinyal Bozucu |
 | 6 | bot_a06_09 | BaranVolt | Alan Hasarı | 2009 | Aşırı Yük Çekirdeği | Füze Fırlatıcı, Lazer, Soğutucu, Güçlendirici, Bariyer, Dron Üssü |
 | 6 | bot_a06_10 | AsyaVolt | Karşı Meta | 2035 | Rezonans Çekirdeği | Batarya, Kalkan, Dron Üssü, Hedefleme Bilgisayarı, Kapasitör, Sinyal Bozucu |
 | 7 | bot_a07_01 | KeremVolt | Dengeli | 2267 | Kesinti Çekirdeği | Lazer, Bariyer, Hedefleme Bilgisayarı, Sinyal Bozucu, Akım Dengeleyici, Darbe Topu |
 | 7 | bot_a07_02 | EceVolt | Hızlı Baskı | 2295 | Rezonans Çekirdeği | Darbe Topu, Soğutucu, Kapasitör, Ray Topu, EMP, Dron Üssü |
 | 7 | bot_a07_03 | TunaVolt | Ağır Hasar | 2324 | Muhafız Çekirdeği | Füze Fırlatıcı, Ray Topu, Hedefleme Bilgisayarı, EMP, Soğutucu, Dron Üssü |
 | 7 | bot_a07_04 | LaraVolt | Savunma | 2352 | Aşırı Yük Çekirdeği | Kalkan, Hedefleme Bilgisayarı, Zırh, Dron Üssü, Akım Dengeleyici, Ray Topu |
-| 7 | bot_a07_05 | YiğitVolt | Sürdürülebilirlik | 2380 | Kesinti Çekirdeği | Hedefleme Bilgisayarı, Batarya, Kapasitör, Lazer, Onarım Modülü, Soğutucu |
+| 7 | bot_a07_05 | YiğitVolt | Sürdürülebilirlik | 2380 | Kesinti Çekirdeği | Hedefleme Bilgisayarı, Batarya, Kapasitör, Lazer, Onarım, Soğutucu |
 | 7 | bot_a07_06 | NehirVolt | Kontrol | 2409 | Rezonans Çekirdeği | EMP, Akım Dengeleyici, Lazer, Hedefleme Bilgisayarı, Zırh, Sinyal Bozucu |
-| 7 | bot_a07_07 | UmutVolt | Destek Zinciri | 2437 | Muhafız Çekirdeği | Soğutucu, Onarım Modülü, Darbe Topu, Zırh, Akım Dengeleyici, Hedefleme Bilgisayarı |
+| 7 | bot_a07_07 | UmutVolt | Destek Zinciri | 2437 | Muhafız Çekirdeği | Soğutucu, Onarım, Darbe Topu, Zırh, Akım Dengeleyici, Hedefleme Bilgisayarı |
 | 7 | bot_a07_08 | MayaVolt | Akım Ekonomisi | 2465 | Aşırı Yük Çekirdeği | Akım Dengeleyici, Darbe Topu, Hedefleme Bilgisayarı, Soğutucu, Bariyer, Batarya |
-| 7 | bot_a07_09 | AtlasVolt | Alan Hasarı | 2494 | Kesinti Çekirdeği | Darbe Topu, Ray Topu, Soğutucu, Onarım Modülü, Bariyer, Lazer |
+| 7 | bot_a07_09 | AtlasVolt | Alan Hasarı | 2494 | Kesinti Çekirdeği | Darbe Topu, Ray Topu, Soğutucu, Onarım, Bariyer, Lazer |
 | 7 | bot_a07_10 | ZeynepVolt | Karşı Meta | 2522 | Rezonans Çekirdeği | Sinyal Bozucu, Bariyer, Dron Üssü, Soğutucu, Akım Dengeleyici, EMP |
 | 8 | bot_a08_01 | BerkVolt | Dengeli | 2767 | Rezonans Çekirdeği | Lazer, Yansıtıcı, Hedefleme Bilgisayarı, Sinyal Bozucu, Batarya, Ray Topu |
 | 8 | bot_a08_02 | SudeVolt | Hızlı Baskı | 2795 | Muhafız Çekirdeği | Darbe Topu, Hedefleme Bilgisayarı, Akım Dengeleyici, Ray Topu, Soğutucu, Ark Topu |
@@ -84,7 +84,7 @@ Beta.72 tur 12: yeni ısı ve enerji kurallarına göre 51 desteye Soğutucu ya 
 | 8 | bot_a08_04 | İremVolt | Savunma | 2852 | Kesinti Çekirdeği | Zırh, Nano Sağlıkçı, Lazer, Ray Topu, Batarya, Yansıtıcı |
 | 8 | bot_a08_05 | DorukVolt | Sürdürülebilirlik | 2880 | Rezonans Çekirdeği | Soğutucu, Yansıtıcı, Akım Dengeleyici, Ray Topu, Nano Sağlıkçı, Güçlendirici |
 | 8 | bot_a08_06 | AlinVolt | Kontrol | 2909 | Muhafız Çekirdeği | Sinyal Bozucu, EMP, Ray Topu, Güçlendirici, Bariyer, Nano Sağlıkçı |
-| 8 | bot_a08_07 | MertcanVolt | Destek Zinciri | 2937 | Aşırı Yük Çekirdeği | Onarım Modülü, Nano Sağlıkçı, Lazer, Soğutucu, Batarya, Hedefleme Bilgisayarı |
+| 8 | bot_a08_07 | MertcanVolt | Destek Zinciri | 2937 | Aşırı Yük Çekirdeği | Onarım, Nano Sağlıkçı, Lazer, Soğutucu, Batarya, Hedefleme Bilgisayarı |
 | 8 | bot_a08_08 | CerenVolt | Akım Ekonomisi | 2965 | Kesinti Çekirdeği | Batarya, Lazer, Hedefleme Bilgisayarı, Kapasitör, Yansıtıcı, Akım Dengeleyici |
 | 8 | bot_a08_09 | RüzgarVolt | Alan Hasarı | 2994 | Rezonans Çekirdeği | Lazer, Dron Üssü, EMP, Nano Sağlıkçı, Kalkan, Ray Topu |
 | 8 | bot_a08_10 | MelisVolt | Karşı Meta | 3022 | Muhafız Çekirdeği | Sinyal Bozucu, Yansıtıcı, Ark Topu, Nano Sağlıkçı, Batarya, EMP |
@@ -94,10 +94,10 @@ Beta.72 tur 12: yeni ısı ve enerji kurallarına göre 51 desteye Soğutucu ya 
 | 9 | bot_a09_04 | NisaArc | Savunma | 3352 | Aşırı Yük Çekirdeği | Kalkan, Lazer, Batarya, Ray Topu, Kapasitör, Bariyer |
 | 9 | bot_a09_05 | OzanArc | Sürdürülebilirlik | 3380 | Kesinti Çekirdeği | Aşırı Hızlandırıcı, Bariyer, Batarya, Ray Topu, Nano Sağlıkçı, Hedefleme Bilgisayarı |
 | 9 | bot_a09_06 | DerinArc | Kontrol | 3409 | Kapasitör Çekirdeği | Virüs, Sinyal Bozucu, Ray Topu, Hedefleme Bilgisayarı, Kalkan, EMP |
-| 9 | bot_a09_07 | EgeArc | Destek Zinciri | 3437 | Rezonans Çekirdeği | Soğutucu, Nano Sağlıkçı, Ray Topu, Kalkan, Kapasitör, Onarım Modülü |
+| 9 | bot_a09_07 | EgeArc | Destek Zinciri | 3437 | Rezonans Çekirdeği | Soğutucu, Nano Sağlıkçı, Ray Topu, Kalkan, Kapasitör, Onarım |
 | 9 | bot_a09_08 | LinaArc | Akım Ekonomisi | 3465 | Muhafız Çekirdeği | Kapasitör, Ray Topu, Aşırı Hızlandırıcı, Akım Dengeleyici, Soğutucu, Batarya |
 | 9 | bot_a09_09 | ArdaArc | Alan Hasarı | 3494 | Aşırı Yük Çekirdeği | Ray Topu, Lazer, Sinyal Bozucu, Soğutucu, Yansıtıcı, Dron Üssü |
-| 9 | bot_a09_10 | DuruArc | Karşı Meta | 3522 | Kesinti Çekirdeği | EMP, Zırh, Lazer, Onarım Modülü, Kapasitör, Virüs |
+| 9 | bot_a09_10 | DuruArc | Karşı Meta | 3522 | Kesinti Çekirdeği | EMP, Zırh, Lazer, Onarım, Kapasitör, Virüs |
 | 10 | bot_a10_01 | EmirArc | Dengeli | 3779 | Rezonans Çekirdeği | Lazer, Muhafız Kubbesi, Aşırı Hızlandırıcı, Soğutucu, Akım Dengeleyici, Plazma Havanı |
 | 10 | bot_a10_02 | AdaArc | Hızlı Baskı | 3810 | Muhafız Çekirdeği | Darbe Topu, Aşırı Hızlandırıcı, Soğutucu, Plazma Havanı, Virüs, Lazer |
 | 10 | bot_a10_03 | CanArc | Ağır Hasar | 3841 | Aşırı Yük Çekirdeği | Füze Fırlatıcı, Ray Topu, Aşırı Hızlandırıcı, Virüs, Soğutucu, Darbe Topu |
@@ -123,7 +123,7 @@ Beta.72 tur 12: yeni ısı ve enerji kurallarına göre 51 desteye Soğutucu ya 
 | 12 | bot_a12_03 | OnurArc | Ağır Hasar | 5008 | Rezonans Çekirdeği | Ark Topu, Plazma Havanı, Krono Rölesi, Soğutucu, Muhafız Kubbesi, Darbe Topu |
 | 12 | bot_a12_04 | İremArc | Savunma | 5042 | Muhafız Çekirdeği | Lazer, Krono Rölesi, Faz Zırhı, Kuantum Tekrarlayıcı, Kapasitör, Kalkan |
 | 12 | bot_a12_05 | DorukArc | Sürdürülebilirlik | 5076 | Aşırı Yük Çekirdeği | Krono Rölesi, Yansıtıcı, Batarya, Sürü Fabrikatörü, Güçlendirici, Hassasiyet Matrisi |
-| 12 | bot_a12_06 | AlinArc | Kontrol | 5110 | Kesinti Çekirdeği | Virüs, EMP, Sürü Fabrikatörü, Onarım Modülü, Kalkan, Sinyal Bozucu |
+| 12 | bot_a12_06 | AlinArc | Kontrol | 5110 | Kesinti Çekirdeği | Virüs, EMP, Sürü Fabrikatörü, Onarım, Kalkan, Sinyal Bozucu |
 | 12 | bot_a12_07 | MertcanArc | Destek Zinciri | 5144 | Kapasitör Çekirdeği | Hassasiyet Matrisi, Soğutucu, Sürü Fabrikatörü, Batarya, Kapasitör, Krono Rölesi |
 | 12 | bot_a12_08 | CerenArc | Akım Ekonomisi | 5178 | Anka Çekirdeği | Kapasitör, Sürü Fabrikatörü, Soğutucu, Batarya, Bariyer, Akım Dengeleyici |
 | 12 | bot_a12_09 | RüzgarArc | Alan Hasarı | 5212 | Kuantum Çekirdeği | Sürü Fabrikatörü, Darbe Topu, Batarya, Hedefleme Bilgisayarı, Soğutucu, Kuantum Tekrarlayıcı |

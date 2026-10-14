@@ -19,5 +19,12 @@ uygular. Portre, güvenli depolama/yedek dışlaması, yerel debug/üretim ağ s
 ve tam ekran yaşam döngüsü değiştirilmez. Yeni native paket gerçek cihazda
 ayrıca doğrulanmalıdır; web build veya görsel aktarımı APK üretildiği anlamına gelmez.
 
+13 Ekim 2026 (görsel tur 6): amblem ve bütün ikonlar oyunun yeni görsel dilinde
+yeniden çizildi (dolu gövde, aydınlık ve gölge yüz, koyu kontur, desenli düz zemin;
+ışıma ve parçacık yok). Betik çalıştırıldı; `--preview <klasör>` ile depoya dokunmadan
+denenebilir. Açılışın `.boot-*` bloğu yerinde durur, yeni görünüm `canon.css`
+sonundaki "Görsel tur 6" bloğundadır. `gridshard-emblem.webp` özetini sabitleyen test
+(`client/tests/startup-loading.test.js`) yeni dosyaya göre güncellendi.
+
 İkonun köşeleri görsele işlenmemiştir; mağaza ve işletim sistemi maskeleri
 güvenli merkez alanı üzerinden uygulanır.

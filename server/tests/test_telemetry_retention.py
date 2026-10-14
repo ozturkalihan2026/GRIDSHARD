@@ -108,3 +108,32 @@ def test_invalid_retention_limit_rejected(tmp_path):
         raise AssertionError(
             "Geçersiz retention limiti reddedilmeliydi."
         )
+
+
+def test_memory_only_service_is_bounded_without_repository():
+    # Canlı kipte depo bağlanmaz; liste yine de süreç yaşadıkça büyümemeli.
+    service=InMemoryTelemetryService(max_events=10)
+
+    for index in range(200):
+        service.record(event(index))
+
+    retained=[item["event_id"] for item in service.events()]
+    assert len(retained) <= 11
+    assert retained[-1] == "e199"
+    assert "e0" not in retained
+    assert len(service._event_ids) == len(retained)
+    # Pencereden çıkan olay yeniden alınabilir, penceredeki yinelenir.
+    assert service.record(event(199)) is False
+    assert service.record(event(0)) is True
+
+
+def test_overlong_identifiers_are_rejected():
+    service=InMemoryTelemetryService(max_events=10)
+    for field in ("event_id", "player_id", "session_id"):
+        values={"event_id":"ok", "event_type":"game_opened", "timestamp_ms":1}
+        values[field]="x" * 257
+        try:
+            service.record(TelemetryEvent(**values))
+        except ValueError:
+            continue
+        raise AssertionError(f"Aşırı uzun {field} reddedilmeliydi.")

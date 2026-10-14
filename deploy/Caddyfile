@@ -5,6 +5,10 @@
 
 {$GRIDSHARD_HOST} {
     encode zstd gzip
+    # The API takes small JSON bodies only; refuse anything larger at the edge.
+    request_body {
+        max_size 1MB
+    }
     header {
         Strict-Transport-Security "max-age=31536000"
         X-Content-Type-Options "nosniff"

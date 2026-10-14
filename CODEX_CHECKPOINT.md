@@ -1,6 +1,85 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 12 Ekim 2026
+Güncelleme tarihi: 14 Ekim 2026
+
+## Güncel devir — 14 Ekim: Faz 4 yarın iş bilgisayarında değerlendirilecek
+
+Kullanıcı, `CLAUDE_CHECKPOINT.md` içindeki Faz 4'ün kalan işlerini incelememi
+istedi; plan ve mevcut kod salt okunur incelendi. Ardından **“notunu al yarın
+iş bilgisayarında bakacağız”** dedi. Faz 4 bu turda uygulanmadı. Yarın
+(15 Ekim 2026) bu bölümden ve
+`docs/OYUN_DUZENLEMELERI_PLANI.md` içindeki **Faz 4 — kozmetik içerik** / özgün
+G1–G6 cümlelerinden devam edilecek. Bu devir kaydı tek başına uygulama veya
+canlı yayın yetkisi değildir; sonraki kullanıcının talebi esas alınır.
+
+### Faz 4: mevcut durum ve kalanlar
+
+1. **G1 — profil arka planını doğrulama:** seçme/kaydetme altyapısı mevcut.
+   Önce yalıtılmış yerel hesapta gerçek profil barı ve profil kartında görünüm
+   doğrulanacak. Uç canlı hesabına bir arka plan açılması ayrı, o anda alınan
+   kullanıcı onayını gerektirir; bu incelemede hesap değiştirilmedi.
+2. **G2 — dönemlik kozmetik rotasyonu:** bireysel ve takım turnuvası ödülleri
+   her dönem otomatik farklılaşacak. `server/app/season_competition.py`
+   içindeki `WEEKLY_PRIZES`, `TEAM_PRIZES`, `LEADERBOARD_PRIZES` hâlâ sabit.
+   Kozmetiklerin “nerede kazanılır” notları zaten kaldırılmış; yeniden yapılmaz.
+3. **G3 — hareketli emojiler:** `BATTLE_EMOJIS` ve `createBattleEmojiVisual`
+   mevcut; bazı sembollerde pulse/float/beacon/burst/glitch CSS hareketi var.
+   Faz 4'ün zengin, çizilmiş hareketli emoji seti henüz hazırlanmadı.
+4. **G4 — desenli profil arka planları:** altı arka plan tanımı var; renk
+   geçişleri ve birkaç basit desen mevcut. Çeşitler zenginleştirilecek;
+   seçim önizlemesi ile gerçek profil görünümü aynı görseli kullanmalı.
+5. **G5 — karakter avatarları:** mevcut dokuz `PROFILE_AVATARS` öğesi sembol
+   kullanıyor; `applyAvatarVisual` glyph yazıyor. Bu eski metin/sembol çizimi
+   yaklaşımıdır; yeni amblem ve karakter çizimleriyle değiştirilecek.
+6. **G6 — araştırma:** başka oyunlardaki kozmetik çeşitliliği incelenip özgün
+   içeriklere yön verecek. Bu tur dış araştırma veya görsel üretimi yapılmadı.
+
+**Kesin görsel yön — kullanıcı kararı, 14 Ekim 2026:** Faz 4'teki bütün
+çizimler artık oyunun **yeni görsel diline** uygun olacak. Kullanıcının
+ifadesi: **“Eski profil avatarları metin çizimi idi. Artık amblem ve fiziksel
+çizim kullanıyoruz.”** Yeni avatar, karakter, emoji ve desenler harf/Unicode
+sembolü yazıp büyüterek veya renklendirerek üretilmiş sayılmayacak; çizilmiş
+amblem ve fiziksel gövdesi/silueti olan özgün görseller kullanılacak. Referans
+mevcut modül/çekirdek amblemleri ve sandık çizimleridir: dolu gövde, aydınlık/
+gölge yüzeyleri, okunur siluet, profesyonel rötuştaki ince kontur ve kontrollü
+parlama. Hareketler çizilmiş görselin parçalarını canlandırmalı; eski glyph
+hareketleri yalnız mevcut altyapı/tarihsel örnektir. Bu, fotogerçekçilik veya
+3D zorunluluğu değil; metin işaretinden gerçek çizime geçiş kararıdır.
+Eski kozmetik kimlikleri, açılma hakları ve kullanıcı seçimleri korunmalı.
+
+**Önerilen sıra (henüz kullanıcı tarafından uygulama kararı verilmedi):**
+ortak kozmetik temaları/katalog → dönemlik ödül rotasyonu → karakter/desen/
+emoji çizimleri ve hareketleri → yerel doğrulama → ayrı onaylı canlı G1 testi.
+Varsayılan yaklaşım, oyunun kendi görsel diliyle SVG/CSS; hazır set/GIF
+seçilecekse lisans ve kullanım koşulları ayrıca incelenir. Profesyonel ton,
+mevcut yerleşimler ve kazanılmış eski kozmetikler korunmalı.
+
+### Önceki turdan hazırlanmış, henüz yayımlanmamış işler
+
+Profesyonel rötuş ve son kullanıcı geri bildirimleri kodda hazır:
+modül başlık/amblem ayrımı, Bronz/Gümüş fiyat görünürlüğü, indirim duyurusunun
+Ödül Listesi'ne taşınması, küçük Bilgi/Seç/Çıkar paneli, sağdaki Sistem
+sekmesi, gerçek mesaj tarihleri ve bilgilendirme mesajlarında tek/toplu silme
+ile son işlemi geri alma. Modül bilgi penceresine kapatma düğmesi eklenmedi.
+Kullanıcı **toplanmamış sandıkları koru; bilgilendirme mesajlarını sil**
+kararını açıkça verdi; Claude notundaki “karar bekleniyor” artık tarihsel.
+Ödüller, savaş davetleri, bakiyeler ve satın alma makbuzları silinmez.
+
+Ayrıntı: `docs/UI_FEEDBACK_20261013.md` ve
+`docs/PROFESSIONAL_VISUAL_POLISH_20261013.md`. Son yerel doğrulama:
+istemci **419/419**, ilgili sunucu dosyaları **38/38**, paketleme **9/9**;
+CSS chrome109/safari15 **0 uyarı**, JS sözdizimi/diff kontrolü geçti.
+393×852 ve 320×568 yalıtılmış iç tarayıcı kontrolü yapıldı; gerçek Android
+cihazda bu son değişiklikler denenmedi. Tam sunucu paketi bu tur koşulmadı.
+
+Commit/push, AAB üretimi, sunucu/site/Play yayını yapılmadı. Silme özelliği
+yeni istemci ve sunucuyu birlikte gerektirir. Çalışma ağacındaki diğer
+aracın değişiklikleri korunmuştur; commit/push kullanıcıya aittir.
+**İş bilgisayarına geçmeden bu not ve son kod/belge değişiklikleri commit/push
+ile aktarılmalı.** `artifacts/ui-feedback-20261013/` görselleri git'te izlenmez;
+diğer bilgisayarda var oldukları varsayılmamalı. Önizleme sunucusu 8892 ve
+geçici sekmeler kapatıldı. Aşağıdaki 12 Ekim kayıtları tarihsel bağlamdır;
+canlı sürüm/tester/süre bilgileri yeni ölçüm gibi sunulmaz.
 
 ## Aktif adım — 12 Ekim: mağaza kabul edildi, kapalı test sürüyor, gerçek cihaz geri bildirimi
 

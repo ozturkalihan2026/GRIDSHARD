@@ -71,6 +71,7 @@ from .postgres_repository import (
     PostgresPool,
 )
 from .runtime_coordination import RuntimeCoordinator
+from .client_address import client_address
 
 from .game.pvp_session import (
     PvPSessionError,
@@ -175,7 +176,7 @@ from .store_catalog import (
 from .store_verification import ADMOB_REJECTION_REASONS, StoreVerificationError, StoreVerifiers
 from .ad_rollout import AdRollout
 from .store_reconciliation import StoreReconciler
-from .reward_delivery import collect_chest, mailbox_messages, premium_origin, queue_purchase_notice
+from .reward_delivery import MAILBOX_AREA_LIMIT, collect_chest, mailbox_messages, premium_origin, queue_purchase_notice
 from .player_data_store import (
     JsonFilePlayerDataRepository,
     PlayerDataStoreError,
@@ -535,6 +536,8 @@ PROTECTED_PLAYER_PREFIXES = (
     "/pvp/",
     "/store/",
     "/analytics/",
+    # İstemci bu öneke zaten belirteç ekler (client/src/auth-session.js).
+    "/telemetry/",
 )
 
 
@@ -594,16 +597,22 @@ async def require_participant_authentication(request: Request, call_next):
     query_player_id = request.query_params.get("player_id")
     if query_player_id:
         claimed_player_ids.add(query_player_id)
-    if request.method in {"POST", "PUT", "PATCH"}:
-        content_type = request.headers.get("content-type", "")
-        if "application/json" in content_type:
-            try:
-                raw_body = await request.body()
-                body = json.loads(raw_body) if raw_body else {}
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                body = {}
-            if isinstance(body, dict) and isinstance(body.get("player_id"), str):
-                claimed_player_ids.add(body["player_id"])
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+        # İçerik türüne bakılmaz: FastAPI gövdeyi `application/json` dışındaki
+        # JSON türlerinde de (`application/vnd.api+json`, büyük harfli yazım)
+        # çözer. Yalnız `application/json` denetlenirken başka türle gönderilen
+        # gövdedeki `player_id` denetimden kaçıyordu.
+        try:
+            raw_body = await request.body()
+            body = json.loads(raw_body) if raw_body else {}
+        except (ValueError, RecursionError):
+            body = {}
+        claimed_body_player_id = body.get("player_id") if isinstance(body, dict) else None
+        if claimed_body_player_id is not None:
+            # Dize olmayan değer hiçbir oyuncuyla eşleşmez; istek reddedilir.
+            claimed_player_ids.add(
+                claimed_body_player_id if isinstance(claimed_body_player_id, str) else ""
+            )
 
     if any(player_id != identity.player_id for player_id in claimed_player_ids):
         return JSONResponse(
@@ -623,6 +632,8 @@ def _rate_limit_policy(path: str) -> tuple[str, int, int] | None:
         path.startswith("/accounts/") and path.endswith(("/play-games/start", "/play-games/complete"))
     ):
         return ("auth", 10, 60)
+    if path.startswith("/account-recovery/"):
+        return ("recovery", 5, 60)
     if path.endswith("/commands") or path == "/matchmaking/join":
         return ("commands", 30, 1)
     if path.endswith("/snapshot"):
@@ -630,6 +641,22 @@ def _rate_limit_policy(path: str) -> tuple[str, int, int] | None:
     if any(path.startswith(prefix) for prefix in PROTECTED_PLAYER_PREFIXES):
         return ("player_api", 120, 60)
     return None
+
+
+# Belirteç istemeyen kapsamlar: anahtar istemci adresidir ve toplam da
+# sınırlıdır (kapsam -> toplam sınırın ortam değişkeni ve varsayılanı).
+UNAUTHENTICATED_RATE_SCOPES = {
+    "auth": ("GRIDSHARD_AUTH_GLOBAL_RATE_LIMIT", 240),
+    "recovery": ("GRIDSHARD_RECOVERY_GLOBAL_RATE_LIMIT", 30),
+}
+
+
+def _global_rate_limit(scope: str) -> int:
+    variable, default = UNAUTHENTICATED_RATE_SCOPES[scope]
+    try:
+        return max(1, int(os.environ.get(variable, str(default))))
+    except ValueError:
+        return default
 
 
 @app.middleware("http")
@@ -646,10 +673,15 @@ async def apply_rate_limit(request: Request, call_next):
         return await call_next(request)
     scope, limit, window_seconds = policy
     authorization = request.headers.get("authorization", "")
+    address = client_address(request.client.host if request.client else None, request.headers)
+    # Giriş ve kurtarma uçları belirteç istemez: başlıktaki değer anahtar
+    # olursa her istek yeni kova açar ve sınır işlemez. Bu kapsamlarda anahtar
+    # istemci adresidir.
+    unauthenticated_scope = scope in UNAUTHENTICATED_RATE_SCOPES
     identity_key = (
         hashlib.sha256(authorization.encode("utf-8")).hexdigest()[:20]
-        if authorization
-        else (request.client.host if request.client else "unknown")
+        if authorization and not unauthenticated_scope
+        else address
     )
     decision = await runtime_coordinator.rate_limit(
         scope,
@@ -657,6 +689,18 @@ async def apply_rate_limit(request: Request, call_next):
         limit=limit,
         window_seconds=window_seconds,
     )
+    if decision.allowed and unauthenticated_scope:
+        # Giriş, cihaz sırrı için pahalı bir özet hesaplar; çok adresli bir
+        # saldırı savaş döngüsüyle aynı işlemciyi tüketmesin (ya da kurtarma
+        # kodunu denemesin) diye toplam da sınırlıdır.
+        ceiling = await runtime_coordinator.rate_limit(
+            f"{scope}_global",
+            "all",
+            limit=_global_rate_limit(scope),
+            window_seconds=window_seconds,
+        )
+        if not ceiling.allowed:
+            decision = ceiling
     headers = {
         "X-RateLimit-Limit": str(decision.limit),
         "X-RateLimit-Remaining": str(decision.remaining),
@@ -719,8 +763,15 @@ telemetry_repository = (
         TELEMETRY_PATH, max_events=TELEMETRY_MAX_EVENTS,
     )
 )
+# Canlı kipte olaylar yalnız bellekte tutulur ve kimse okumaz; küçük bir
+# pencere yeter. Geliştirmede sınırı depo belirler.
+TELEMETRY_MEMORY_MAX_EVENTS = max(
+    1,
+    int(os.environ.get("GRIDSHARD_TELEMETRY_MEMORY_MAX_EVENTS", "5000")),
+)
 telemetry_service = InMemoryTelemetryService(
-    repository=None if RUNTIME_STRICT else telemetry_repository
+    repository=None if RUNTIME_STRICT else telemetry_repository,
+    max_events=TELEMETRY_MEMORY_MAX_EVENTS if RUNTIME_STRICT else None,
 )
 
 def process_completed_pvp_battle(state) -> None:
@@ -1381,6 +1432,15 @@ class FriendRequestCancelOperation(BaseModel):
 class InboxNoticeSeenRequest(BaseModel):
     player_id: str
     notice_ids: list[str] = []
+
+
+class InboxDismissRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    player_id: str
+    category: str
+    notice_ids: list[str] = Field(default_factory=list, max_length=200)
+    all_in_category: bool = False
+    restore: bool = False
 
 
 class CoreSelectionRequest(BaseModel):
@@ -2182,19 +2242,32 @@ def delete_account_data(player_id: str, request: GdprDeleteRequest) -> dict:
     }
 
 
+TELEMETRY_METADATA_MAX_BYTES = 4096
+
+
 @app.post("/telemetry/events")
 def record_telemetry_event(
     request: TelemetryEventRequest,
+    http_request: Request,
 ) -> dict:
+    metadata = dict(request.metadata or {})
+    try:
+        metadata_size = len(json.dumps(metadata, ensure_ascii=False).encode("utf-8"))
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail="Telemetri metadata geçersiz.") from exc
+    if metadata_size > TELEMETRY_METADATA_MAX_BYTES:
+        raise HTTPException(status_code=413, detail="Telemetri metadata çok büyük.")
+    # Kimlik doğrulaması açıkken olay belirtecin sahibine yazılır.
+    authenticated_player_id = getattr(http_request.state, "authenticated_player_id", None)
     try:
         accepted = telemetry_service.record(
             TelemetryEvent(
                 event_id=request.event_id,
                 event_type=request.event_type,
                 timestamp_ms=request.timestamp_ms,
-                player_id=request.player_id,
+                player_id=authenticated_player_id or request.player_id,
                 session_id=request.session_id,
-                metadata=dict(request.metadata or {}),
+                metadata=metadata,
             )
         )
     except TelemetryError as exc:
@@ -2208,10 +2281,16 @@ def record_telemetry_event(
 
 @app.get("/telemetry/events")
 def get_telemetry_events(
+    http_request: Request,
     player_id: str | None = None,
     session_id: str | None = None,
     event_type: str | None = None,
 ) -> dict:
+    # Kimlik doğrulaması açıkken yalnız belirtecin sahibinin olayları döner;
+    # süzgeçsiz istek bütün oyuncuların kaydını vermez.
+    authenticated_player_id = getattr(http_request.state, "authenticated_player_id", None)
+    if authenticated_player_id:
+        player_id = authenticated_player_id
     return {
         "events": telemetry_service.events(
             player_id=player_id,
@@ -3553,6 +3632,7 @@ def _inbox_invitations(profile) -> list[dict]:
             "peer_name": peer_name or "Oyuncu",
             "battle_session_id": invite.get("battle_session_id"),
             "players": [invite.get("challenger_id"), invite.get("opponent_id")],
+            "created_at": invite.get("created_at"),
         })
     team = team_service.team_for_player(player_id)
     if team:
@@ -3583,11 +3663,12 @@ def _inbox_invitations(profile) -> list[dict]:
                 "peer_name": names.get(peer_id, "Takım üyesi"),
                 "battle_session_id": challenge.get("battle_session_id"),
                 "players": [challenge.get("challenger_id"), challenge.get("opponent_id")],
+                "created_at": challenge.get("created_at"),
             })
-    return items[:20]
+    return items[:MAILBOX_AREA_LIMIT]
 
 
-def _inbox_notices(profile) -> list[dict]:
+def _inbox_notices(profile, *, include_dismissed: bool = False) -> list[dict]:
     seen = set(profile.seen_inbox_notice_ids)
     notices = [dict(item) for item in INBOX_UPDATE_NOTICES]
     try:
@@ -3618,8 +3699,13 @@ def _inbox_notices(profile) -> list[dict]:
             "title_tr": "Takım turnuvası maçların açık" if live else "Takım turnuvası eşleşmen açıklandı",
             "body_tr": f"Rakibin: {opponent_name or 'Rakip'}. Rövanşlı iki maç Cuma–Pazar oynanır; Etkinlik → Eşleşmeler bölümünden gir.",
             "scheduled_at": fixture.get("matches_open_at"),
+            "created_at": fixture.get("created_at") or fixture.get("pairing_at"),
             "fixture_id": fixture.get("fixture_id"),
         })
+    # Güncelleme notları eskiden yeniye sıralıdır; sınır aşılırsa en eskiler düşer.
+    if not include_dismissed:
+        dismissed = set(profile.dismissed_inbox_notice_ids)
+        notices = [item for item in notices if item["notice_id"] not in dismissed][-MAILBOX_AREA_LIMIT:]
     for notice in notices:
         notice["seen"] = notice["notice_id"] in seen
     return notices
@@ -3686,6 +3772,42 @@ def mark_reward_inbox_notices_seen(player_id: str, request: InboxNoticeSeenReque
 def get_reward_inbox(player_id: str) -> dict:
     _settle_competition_rewards(player_id)
     return _reward_inbox_view(_team_member_profile(player_id))
+
+
+@app.post("/profile/{player_id}/reward-inbox/messages/dismiss")
+@persistent_operation
+def dismiss_reward_inbox_messages(player_id: str, request: InboxDismissRequest) -> dict:
+    if request.player_id != player_id:
+        raise HTTPException(status_code=403, detail="Başka bir oyuncu adına işlem yapılamaz.")
+    if request.category not in {"purchase", "system"}:
+        raise HTTPException(status_code=422, detail="Toplanmamış sandıklar ve savaş davetleri silinmez.")
+    if request.all_in_category and (request.restore or request.notice_ids):
+        raise HTTPException(status_code=422, detail="Geçersiz mesaj silme isteği.")
+    if not request.all_in_category and not request.notice_ids:
+        raise HTTPException(status_code=422, detail="Silinecek mesaj seçilmedi.")
+    # Ödül toplamayla aynı kilit sırası/transaction; eşzamanlı ödeme veya iade
+    # cüzdanını eski profil kaydıyla ezmeyiz. Yalnız görünürlük kimlikleri değişir.
+    with _store_economy_transaction(player_id), REWARD_INBOX_LOCK:
+        profile = _team_member_profile(player_id)
+        if request.category == "purchase":
+            eligible = {str(item["message_id"]) for item in profile.reward_inbox
+                        if item.get("category") == "purchase" and item.get("message_id")}
+        else:
+            eligible = {item["notice_id"] for item in _inbox_notices(profile, include_dismissed=True)}
+        wanted = sorted(eligible) if request.all_in_category else list(dict.fromkeys(request.notice_ids))
+        if any(identity not in eligible for identity in wanted):
+            raise HTTPException(status_code=404, detail="Mesaj bulunamadı.")
+        dismissed = set(profile.dismissed_inbox_notice_ids)
+        # Geri al yalnız son işlemi tersine çevirir; daha önce silinmiş
+        # mesajlar yeni toplu silmenin geri alma listesine karışmaz.
+        changed = sorted(set(wanted) & dismissed if request.restore else set(wanted) - dismissed)
+        if request.restore:
+            dismissed.difference_update(wanted)
+        else:
+            dismissed.update(wanted)
+        profile.dismissed_inbox_notice_ids = tuple(sorted(dismissed))
+        persist_player_data(player_id)
+        return {**_reward_inbox_view(profile), "changed_notice_ids": changed, "restored": request.restore}
 
 
 @app.post("/profile/{player_id}/reward-inbox/{message_id}/claim")
@@ -4182,6 +4304,7 @@ def create_social_battle_invite(player_id: str, request: SocialBattleInviteOpera
                 "match_type": "friend_battle",
                 "ranked": False,
                 "rewards_enabled": False,
+                "created_at": datetime.now(timezone.utc).isoformat(),
             }
             profile.social_battle_invites.append(dict(item))
             opponent.social_battle_invites.append(dict(item))

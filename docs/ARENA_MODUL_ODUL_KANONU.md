@@ -54,11 +54,11 @@ Arenalar ileride genişler ve 5.400 kupada biter; ligler oradan başlar.
 
 ### Arena 2 — Röle Sokakları (300–599 Kupa)
 
-**Açılan modüller:** Onarım Modülü, Zırh
+**Açılan modüller:** Onarım, Zırh
 
 | Kupa | Ödül |
 |---:|---|
-| 375 | Onarım Modülü · 6 Modül Parçası |
+| 375 | Onarım · 6 Modül Parçası |
 | 400 | 270 Devre Kredisi |
 | 475 | 18 Akı |
 | 525 | Zırh · 6 Modül Parçası |
@@ -293,7 +293,7 @@ Lig sandığı mağazada ya da başka bir yerde bulunmaz; içeriği şansa bağl
 | 4 | Soğutucu | Destek | Sıradan | Arena 1 | 0 | 2 | 100 | 0 |
 | 5 | EMP | Sabotaj | Ender | Arena 1 | 0 | 3 | 80 | 0 |
 | 6 | Güçlendirici | Destek | Ender | Arena 1 | 0 | 3 | 90 | 0 |
-| 7 | Onarım Modülü | Destek | Sıradan | Arena 2 | 300 | 3 | 100 | 0 |
+| 7 | Onarım | Destek | Sıradan | Arena 2 | 300 | 3 | 100 | 0 |
 | 8 | Zırh | Savunma | Sıradan | Arena 2 | 300 | 3 | 180 | 0 |
 | 9 | Darbe Topu | Saldırı | Ender | Arena 3 | 600 | 4 | 115 | 32 |
 | 10 | Füze Fırlatıcı | Saldırı | Ender | Arena 3 | 600 | 3 | 105 | 28 |

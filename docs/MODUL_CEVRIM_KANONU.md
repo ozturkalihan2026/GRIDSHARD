@@ -21,7 +21,7 @@ Her modül kendi çevrimiyle çalışır ve çevrim seviyeyle kısalır (seviye 
 | Soğutucu | Destek | Soğutma aralığı | 1 sn | 0,89 sn | Soğutma 3×%4,5 → 3×%7,28 |
 | EMP | Sabotaj | Sabotaj aralığı | 6 sn | 5,36 sn | Etki süresi 2,5 sn → 3,78 sn |
 | Güçlendirici | Destek | Yükleme aralığı | 2 sn | 1,79 sn | Hasar desteği %18 → %29,1 |
-| Onarım Modülü | Destek | Onarım aralığı | 2 sn | 1,79 sn | Onarım 15 → 24 |
+| Onarım | Destek | Onarım aralığı | 2 sn | 1,79 sn | Onarım 15 → 24 |
 | Zırh | Savunma | Onarım aralığı | 3 sn | 2,68 sn | Koruma %25 → %40,5; Plaka onarımı 5 → 8 |
 | Darbe Topu | Saldırı | Saldırı aralığı | 2,5 sn | 2,23 sn | Saniye hasarı 12,8/sn → 28,36/sn |
 | Füze Fırlatıcı | Saldırı | Saldırı aralığı | 3 sn | 2,68 sn | Saniye hasarı 9,33/sn → 20,68/sn; Kilit 0,7 sn |
@@ -60,7 +60,7 @@ Her modül kendi çevrimiyle çalışır ve çevrim seviyeyle kısalır (seviye 
 - **Soğutucu** — Başlangıç seviyesinde 1 saniyede bir devredeki en sıcak üç modülü, önce susmuş olanları %4,5 soğutur; aşırı ısınıp susmuş modülü hızla toparlar. Seviye yükseldikçe soğutma artar, aralık kısalır.
 - **EMP** — Enerji ve destek hatlarını geçici aksatır.
 - **Güçlendirici** — Başlangıç seviyesinde 2 saniyede bir devredeki saldırı modüllerini yükler; yüklü modülün sıradaki atışı daha çok hasar verir. Toplam %36 pay saldırılar arasında bölünür, tek saldırıya en fazla %18. Seviye yükseldikçe yükleme aralığı kısalır.
-- **Onarım Modülü** — En düşük CAN oranındaki tek modülü onarır.
+- **Onarım** — En düşük CAN oranındaki tek modülü onarır.
 - **Zırh** — Başlangıç seviyesinde kendisine gelen hasarı sürekli %25 azaltır; 3 saniyede bir zırh plakasını onarır ve 5 CAN geri kazanır. Seviye yükseldikçe azaltma ve onarım artar, aralık kısalır.
 - **Darbe Topu** — Seyrek fakat güçlü darbeler üretir.
 - **Füze Fırlatıcı** — Hazırlık süresi karşılığında yüksek baskı oluşturan ağır saldırı modülüdür.
