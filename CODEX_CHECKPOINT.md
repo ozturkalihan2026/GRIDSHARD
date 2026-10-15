@@ -2,6 +2,130 @@
 
 Güncelleme tarihi: 15 Ekim 2026
 
+## Son durum — Paket 1 onaylandı ve bağlandı; profil barı ikonları zeminsiz
+
+Kullanıcı "bağla" diyerek 10 ortak ikonu onayladı. Ek isteği: mesaj kutusu
+ve üç çizgi ikonları ayrı düğme zeminleri olmadan doğrudan profil barında.
+Bu iki istek uygulandı. Önceki "onay bekleniyor" notları üretim aşamasının
+tarihçesidir; güncel paket durumu **bağlandı, yerel/görsel kontrol kullanıcıda**.
+
+`client/assets/ui/common-icons-v1/`: onaylı 10 WebP (128px, alpha, kayıpsız),
+toplam 173.662 bayt. Onay önizlemesiyle SHA-256/byte-identical. Tek yol eşlemesi
+`canon.css` **Common UI artwork**, çağrı eşlemesi `app.js` `UI_ART_ICONS`.
+Eski gear/mail/people/bars/palette/gift/calendar/info SVG karşılıkları kaldırıldı.
+`uiIconMarkup` yeni ikonları levhasız gösterir; kalan modül/değer SVG'leri korunur.
+Başlık/sekme/menülerin yanı sıra bağımsız ana ekran posta/menü, takım menüsü,
+savaş ayarı, takım profil sekmesi, arkadaş boş durumu ve bilgi kutusunun CSS i
+işareti de ortak kaynağa bağlıdır. Seçili avatarlar, takım amblemleri ve modül/
+çekirdek çizimleri değişmedi. Profil barındaki iki düğmenin tıklama alanı/grid
+konumu, rozetler ve menü davranışı korunur; zemin/kenarlık/gölge/nabız kaldırıldı,
+focus-visible odak çizgisi var. Takım menüsünün düğme zemini bu ek isteğe dahil değil.
+
+Statik doğrulama: 10 onaylı dosya birebir, doğru boyut/alpha; bellekte CSS
+paketlemesi hepsini içeriyor ve profil barı şeffaflık kuralını çözüyor. JS
+chrome109/safari15 dönüşümü ve değişen testlerin sözdizimi geçti; diff check temiz
+(mevcut LF→CRLF uyarısı dışında). Tarayıcı, test sunucusu, oyun/birim testleri,
+dist/native derleme, canlı dağıtım, commit/push başlatılmadı. Regresyon testleri
+eklendi/güncellendi; çalıştırıldığı iddia edilmez. Paket 2'ye geçilmedi.
+Plan ve prompt setinde onay durumu güncellendi:
+`docs/GORSEL_DONUSUM_PLANI_20261015.md`.
+
+## Görsel dönüşüm — paket planı ve ilk 10 ikon
+
+Kullanıcı planın ayrı dosyaya kaydedilmesini ve ilk adımdan başlanmasını istedi.
+Plan: `docs/GORSEL_DONUSUM_PLANI_20261015.md`; sekiz ana paket, en fazla 10
+benzersiz parça/alt paket, her pakette önizleme → kullanıcı onayı → ortak
+kaynağa bağlantı. Modüller ve çekirdekler en son. Mevcut onaylı dock/sandık/
+kupa/para birimleri korunur. Denemeler kullanıcıda; yeni sunucu/tarayıcı yok.
+
+İlk 10 ikon built-in imagegen ile ayrı ayrı üretildi: 01 ayarlar, 02 mesaj,
+03 arkadaş, 04 profil, 05 hediye, 06 takvim, 07 istatistik, 08 kozmetik,
+09 bilgi, 10 menü. Son kılıç ve kredi PNG'leri yalnız stil referansı oldu.
+Gerçek prompt birleşimi ve referanslar:
+`docs/GORSEL_DONUSUM_PAKET01_PROMPTLARI_20261015.json`.
+
+PNG ustaları `artifacts/visual-refresh-pack01-20261015/masters/`; 10 adet
+128px kayıpsız alpha WebP `webp/` altında, toplam 173.662 bayt. Numaralı levha:
+`artifacts/visual-refresh-pack01-20261015/pack01-contact-sheet-v1.webp`.
+Levha büyük ve 24/32/40px örnekleriyle incelendi; alpha/format doğrulandı.
+Üretim yolları, dosya özetleri ve teknik export aracı aynı artifacts klasöründe.
+Bu klasör Git dışıdır; başka bilgisayara ayrıca taşınır. **Kullanıcı onayı
+bekleniyor; ilk paket oyuna BAĞLANMADI.** Oyun kaynakları/native/dağıtım/
+commit/push değiştirilmedi. Onaydan önce entegrasyona veya ikinci pakete geçme.
+
+## Son çalışma — ortak para birimi görselleri ve dosya temizliği
+
+Kullanıcı Akı/Devre Kredisi çizimlerini onayladı. 128px kayıpsız alpha WebP
+`client/assets/ui/currency-v1/`: Akı 11.544, Devre Kredisi 18.370 bayt.
+Tek dosya eşlemesi `canon.css` **Currency artwork** bölümünde; sabit bar/maç
+sonu ve `resourceTokenVisual` kullanan mağaza, sandık önizleme, Devre Yolu,
+ödül ve maliyet rozetleri aynı kaynağa bağlıdır. Kullanıcının ek bildirdiği
+mağaza paket başlıkları da `uiIconMarkup` üzerinden aynı kaynağa yönlendi;
+eski flux/credit SVG'leri kaldırıldı. Ödül/para/mağaza kuralları değişmedi.
+
+İstenen iki klasörden 92 dosya, 86.948.072 bayt çıkarıldı. PNG ustaları,
+eski dock/sandık tasarımları ve QA ekran çıktıları kaldırılmadan önce SHA-256
+ile doğrulanıp **Git dışı yerel** `artifacts/asset-archive-20261015/` altına
+aynı göreli yolla yedeklendi. Envanter: `qa_reports/asset-cleanup-20261015.json`.
+Oyun WebP'leri, teknik raporlar, testin kullandığı font/lisanslar korundu.
+İki klasör yaklaşık 89,8 MB → 2,9 MB (rapor hariç). Git geçmişi değişmedi.
+Önceden kullanıcı tarafından silinmiş sade sandık pilotu geri getirilmedi.
+
+Export araçları artık `resolve-art-master.js` ile yerel arşive döner. Arşiv
+Git'e yüklenmez ve **ev bilgisayarına ayrıca taşınmalıdır**; kaynak yolu için
+`GRIDSHARD_ART_MASTER_ROOT` da kullanılabilir. `client/assets/ui/README.md`
+geri alma/yeniden üretim ayrıntılarını içerir. Büyük PNG ve QA görsel çıktısı
+için hedefli ignore kuralları eklendi. İstatistik/oyun testleri çalıştırılmadı;
+yerel/görsel denemeler kullanıcıda. Yeni sunucu/tarayıcı açılmadı. Native,
+canlı dağıtım, commit/push veya Git geçmişini yeniden yazma yapılmadı.
+
+Son statik kontrol: 92 arşiv kopyası SHA-256 ile yeniden doğrulandı; 20 runtime
+görsel referansı mevcut, önceki derlemedeki 18 dock/sandık/kupa dosyası birebir
+aynı. CSS bellekte çözümlendi ve her iki para birimi WebP'si paket girdisine
+girdi; JavaScript chrome109/safari15 hedefleri için sözdizimi dönüşümünden geçti.
+Bu kontroller tarayıcı/oyun testi değildir; dist dosyaları değiştirilmedi.
+
+## Son bağlantı — altın kupa oyunda, denemeler kullanıcıda
+
+“Oyuna bağla” isteği uygulandı. Sonradan bildirilen profil istatistiği,
+takım arama/başvuru, maç sonu zafer kupası, haftalık sıralamadaki oyuncu
+kupa sayıları ve Lider Panosu başlığı/sekmesi de aynı görsele bağlandı.
+**Kapsam düzeltmesi:** başlık simgesi son açık istekle dahil; 1./2./3.'lük
+ödül kupaları ve diğer takım/turnuva amblemleri korunur.
+
+Runtime: `client/assets/ui/rating-trophy-v1/rating-trophy.webp` 128px alpha
+kayıpsız, 19.604 bayt. Teknik export `tools/export-rating-trophy.js`; ana PNG
+ve promptlar QA klasöründe. Ortak `createRatingTrophyIcon`, `renderTrophyValue`
+ve `renderTrophyCaption` kullanılır. Puan/ödül/hesap kuralları değişmedi.
+İstemci 450 geçti / 2 JDK atlaması, build 9/9. Web build
+`1763845a43c35b03`: WebP pakette byte-identical; PNG ustası/lacivert sürüm yok.
+APK/AAB/canlı/commit/push yok. Detay runtime görsel klasörünün README'sinde.
+
+Tarayıcı doğrulaması tamamlanmadı: veri yenileme yarışı ve geçici fixture'ın
+elle açtığı sonuç paneli görünürlüğü nedeniyle yeşil sonuç/gerçek zafer akışı
+kanıtı yok. Bu tur eklenen geçici E2E dosyası/konfigürasyonu kaldırıldı;
+yeni üç birim testi korundu. Kullanıcının sildiği reddedilmiş sade sandık
+pilotuna dokunulmadı, dosyalar geri getirilmedi.
+
+**Son talimat:** kullanıcı yerelde denemeyi kendisi yürütüyor; “sen kod
+tarafını hallet, denemeler bende.” Yeni tarayıcı/test sunucusu başlatma;
+kullanıcının sunucusunu/sekmesini kapatma. Bildireceği sonuçlara göre kod
+tarafında devam et.
+
+## Önceki görsel deneme — kupa sayacı, lacivertsiz altın v2
+
+Kullanıcı oyuncu ve takım kupa sayısı yanındaki simgeyi son enerji kılıçları
+ve yeni prompt diliyle üretmemizi istedi. Takım/lider panosu başlık amblemleri
+ve 1./2./3.'lük ödül kupaları hedef DEĞİL. Built-in Imagegen ile kılıç PNG'si
+stil referansı olarak kullanıldı. İlk lacivert tabanı kullanıcı reddetti:
+**bu kupa tamamen altın/amber; lacivert/mavi/mor yok**, kontur sıcak kahverengi.
+
+Son PNG `qa_reports/rating-trophy-pilot-20261015/gold-rating-trophy-v2.png`.
+İlk reddedilen sürüm ve iki tam prompt aynı klasörde korunur (`PROMPTS.md`).
+Bu tur yalnız üretim/renk düzeltmesidir: runtime'a bağlanmadı, emoji/sayı
+işlevi ve diğer kupa türleri değişmedi. Küçük boyut oyun içi test yapılmadı.
+Canlı/native/commit/push işlemi yok. Yeni dock/sandık ailesi korunuyor.
+
 ## Son çalışma — keskin köşeli sandıklar ve Mağaza dock sandığı, 15 Ekim 2026
 
 Kullanıcı önce sandık köşelerini keskinleştirmeyi istedi. Arada daha az metal/

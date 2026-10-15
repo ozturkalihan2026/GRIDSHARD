@@ -32,7 +32,7 @@ test("catalog and cosmetic names are text; only fixed allowlisted artwork uses H
 test("UI icon markup rejects raw attribute injection and prototype keys",()=>{
   const start=source.indexOf("  function uiIconMarkup(");
   const end=source.indexOf("  function createUiIcon(",start);
-  const sandbox={UI_ICON_PATHS:{star:'<path id="star"/>',hp:'<path id="hp"/>'}};
+  const sandbox={UI_ART_ICONS:{gear:"settings"},UI_ICON_PATHS:{star:'<path id="star"/>',hp:'<path id="hp"/>'}};
   vm.runInNewContext(source.slice(start,end)+"\nthis.markup=uiIconMarkup;",sandbox);
   const payload='hp\" onclick=\"bad()';
   const result=sandbox.markup(payload,'blue\" onclick=\"bad()');
@@ -40,6 +40,8 @@ test("UI icon markup rejects raw attribute injection and prototype keys",()=>{
   assert.ok(!result.includes("onclick") && !result.includes("bad()"));
   assert.ok(sandbox.markup("__proto__").includes('data-icon="star"'));
   assert.ok(sandbox.markup("hp","blue").includes('data-icon="hp" data-tone="blue"'));
+  assert.ok(sandbox.markup("gear",'blue" onclick="bad()').includes('data-ui-art="settings"'));
+  assert.ok(!sandbox.markup("gear",'blue" onclick="bad()').includes("onclick"));
 });
 
 test("battle render signature includes structural definition changes",()=>{

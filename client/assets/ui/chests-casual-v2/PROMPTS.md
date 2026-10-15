@@ -1,5 +1,10 @@
 # Keskin köşeli casual sandık ailesi v2 — 15 Ekim 2026
 
+Güncel kaynak konumu: büyük PNG ustaları ve önceki tasarımlar kullanıcı onayıyla
+Git dışı `artifacts/asset-archive-20261015/` altına aynı göreli yollarla alındı.
+Export aracı arşivden okur; aşağıdaki "silinmez/korunur" ifadeleri arşivdeki
+orijinaller için geçerlidir. Runtime WebP dosyaları değişmedi.
+
 Kullanıcı son sadeleştirme pilotunu reddederek köşeleri keskinleştiren çalışmaya
 geri dönülmesini ve Mağaza menüsündeki sandığın da eşleştirilmesini istedi.
 Imagegen becerisi/built-in edit aracıyla 4 kapalı ve 4 eşleşen açık çizim hazırlandı.

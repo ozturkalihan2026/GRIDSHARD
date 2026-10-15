@@ -1,0 +1,562 @@
+{
+    "date":  "2026-10-15",
+    "archive":  "artifacts/asset-archive-20261015",
+    "archivedCount":  92,
+    "archivedBytes":  86948072,
+    "beforeBytes":  89824564,
+    "remainingBytes":  2876492,
+    "files":  [
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/bronze-open.png",
+                      "bytes":  1755912,
+                      "sha256":  "e82bfe1998e01f1a789547a172bab3347d5af30822750ea30575d73c7bf40b7b",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/bronze-open.webp",
+                      "bytes":  254846,
+                      "sha256":  "a306df103ff47167456e8871e7efd3e0269fd1e54b6a92328019ed35f988d887",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/bronze-reveal.webp",
+                      "bytes":  223968,
+                      "sha256":  "1c44bebbca2f7122ed58bbbdf0b7463e383d94b89dc42a035db8b745bf3e54d6",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/bronze.png",
+                      "bytes":  1678290,
+                      "sha256":  "d215224719931e68e688a294a28a6dc05a9c16331d6f2e984d2967e9a8aae5a1",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/bronze.webp",
+                      "bytes":  70754,
+                      "sha256":  "c57e19ec3edbafd88b577613c7ebfe43b695f21b1241aa5bef6a4facf55b02f6",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/diamond-open.png",
+                      "bytes":  1618663,
+                      "sha256":  "2f1652e19972d72ab2d41e00727a0b70d0e94b24644988a252c34b26f7fef85b",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/diamond-open.webp",
+                      "bytes":  221142,
+                      "sha256":  "1a3f6b53842c9104c7fc6d0e20a3766822f98c85f6eddf575c6d9aec50678263",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/diamond-reveal.webp",
+                      "bytes":  205152,
+                      "sha256":  "560a37f0d42e37a4b05d16036f392c80c56e348312f7159b156073a1d679e88a",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/diamond.png",
+                      "bytes":  1561731,
+                      "sha256":  "096c9c3fc649752466e38cc5736a6592ea4f3add7fa64aff182155bbc372919c",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/diamond.webp",
+                      "bytes":  65590,
+                      "sha256":  "5454a65822039e2e774de7f3ad610db229372603f59617da8cbaca0224f5cb1d",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/gold-open.png",
+                      "bytes":  1641006,
+                      "sha256":  "e7df0222d4a461e21765b058d84180e44fbcbeec24ca26f38e75581b41dd2bfc",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/gold-open.webp",
+                      "bytes":  229576,
+                      "sha256":  "ae0fe9239ec29b7db8efd4f041e2b177e940c39fc02e949fa4422bde02412daa",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/gold-reveal.webp",
+                      "bytes":  225404,
+                      "sha256":  "f32d876ed53d99b0a03471eba6202119d4b5514955c24a908451051be3718fc7",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/gold.png",
+                      "bytes":  1605769,
+                      "sha256":  "2a2c3ada90b2718663f0af0d6ced81fb02cdffa4945a1ca316121d512e1b9816",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/gold.webp",
+                      "bytes":  72078,
+                      "sha256":  "b2183004458f64f01a34b01031f401a2316dcf04a49fcdb4708a7726ce7d2903",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/PROMPTS.md",
+                      "bytes":  5073,
+                      "sha256":  "40c4b955d809b95da848bda54bd1cdba7ee03ae8800d86fa2d8a726fd2a7cb78",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/silver-open.png",
+                      "bytes":  1696026,
+                      "sha256":  "298620e6d41fa9b33bf6a04ddd4b506f12eb00c4f62afd62975655b7c1686ecb",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/silver-open.webp",
+                      "bytes":  224108,
+                      "sha256":  "db08a6928802e2c5587be2b22115717563e28da43d7854d7adaefba8488237c4",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/silver-reveal.webp",
+                      "bytes":  204842,
+                      "sha256":  "656042b125755b5f786be5715239ab1c7767a8352367b50e0cc6048b48e633c7",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/silver.png",
+                      "bytes":  1692364,
+                      "sha256":  "c86570cdd974a0672d715398be0c5c499ee0b4c2b2401375e68e8971a9cb8879",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v1/silver.webp",
+                      "bytes":  63806,
+                      "sha256":  "c2d7505454f08ef46cb0afad0c8e1e8f4e84854e8150ff0dade4c6d282730e2b",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v2/bronze-open.png",
+                      "bytes":  1702344,
+                      "sha256":  "e040f68ee09f690a6d2d0bcf41231b06420e26e22dc7741d40b7d9bcc238562e",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v2/bronze.png",
+                      "bytes":  1601078,
+                      "sha256":  "ed448c40f070a288f56ffafb56611a0a0729e48d32b1a8fedb1cf3cf52826f3e",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v2/diamond-open.png",
+                      "bytes":  1614260,
+                      "sha256":  "9fccf4ef7adf5be3a37ff06ee81a48e53bdc32f919ec4c5a1cc2ab4d61c6c0c2",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v2/diamond.png",
+                      "bytes":  1532052,
+                      "sha256":  "0b2b7ffa1a732337ba68103fcbaa2867450e52a226cef03936a5e87259060f76",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v2/gold-open.png",
+                      "bytes":  1619313,
+                      "sha256":  "571686e295ce9aa004e814c62f80e43a460142cf40326a735cb6310b826558ad",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v2/gold.png",
+                      "bytes":  1557246,
+                      "sha256":  "31d26b2f55e6b35ce612b1b35c816055c7929b8df0d99f02936c3c7693ed2787",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v2/silver-open.png",
+                      "bytes":  1616106,
+                      "sha256":  "674f7f58c9020299924f050a6acff370d31302c79ee8e01c6f2589d51f527534",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-casual-v2/silver.png",
+                      "bytes":  1645399,
+                      "sha256":  "aa8c7e71a4ad60b44a121d542f07b2919e5604f65af3de7975c359ba852d88c9",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-painted-v1/bronze.png",
+                      "bytes":  1924505,
+                      "sha256":  "649d5972809de53ac6a175381ff47b6e09052524b6be29ba4e1faa9fb3ac0d42",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-painted-v1/bronze.webp",
+                      "bytes":  71730,
+                      "sha256":  "62735f1306447ac3709ea54dc441c7a0f1d10b110796066d10696ed1015f6bd4",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-painted-v1/diamond.png",
+                      "bytes":  2130991,
+                      "sha256":  "1c9d7567661d7bb8f0829eb069e284d51dc2d0f48a309510fecdb1cef44db215",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-painted-v1/diamond.webp",
+                      "bytes":  76826,
+                      "sha256":  "6981593abe2052fa2dfb77be41527d3adfe69cc3da411e674342b4ad0af23fc9",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-painted-v1/gold.png",
+                      "bytes":  2054307,
+                      "sha256":  "37414642a3a9841b689df0024dd99d322bb776d0977202dffdf8f64c3f9ed9e3",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-painted-v1/gold.webp",
+                      "bytes":  79998,
+                      "sha256":  "cd0b310f903217c315018e6ffb1c621c64823a1253a81dd7fb005115455e44c4",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-painted-v1/PROMPTS.md",
+                      "bytes":  5203,
+                      "sha256":  "6f6f0ea9b055302628f9dbc9f34fa5c31cdaebed9e1512351ffdd4d00585bd02",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-painted-v1/silver.png",
+                      "bytes":  2051946,
+                      "sha256":  "473c88f0e20e268bf8596c237f61f61b4198dfee499ed6ffd3ff3de47c324473",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/chests-painted-v1/silver.webp",
+                      "bytes":  66426,
+                      "sha256":  "eb4041933927f5475187ef4e772af59277085e417200800a3ae2533353071ed5",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-casual-v1/battle-swords-v2.png",
+                      "bytes":  1158127,
+                      "sha256":  "414595c6705aa58677c026aa076f9625163fea9639f23de5a74ff41c1bfafb7d",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-casual-v1/battle.png",
+                      "bytes":  1469619,
+                      "sha256":  "7128e663eb5367d31b43515f11bd4fa53460f9fe46cd111831e3af2a611f65c6",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-casual-v1/battle.webp",
+                      "bytes":  68092,
+                      "sha256":  "f285f3c7b9076b5d669d976ad3da848a2b6ed088e8aa2e43dec51a12eec93e30",
+                      "reason":  "Superseded by chamfer shop / crossed swords"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-casual-v1/cards.png",
+                      "bytes":  1447911,
+                      "sha256":  "c6d30908b770e63f025b9d9b6a2c6d95f40c22b09df19931d152f011c6979633",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-casual-v1/events.png",
+                      "bytes":  1477084,
+                      "sha256":  "d5d2c78b976e7af69cdcb458e6802e8901929312d450424d72a47c484772b08b",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-casual-v1/shop-chamfer-v2.png",
+                      "bytes":  1517235,
+                      "sha256":  "ceb61e854e0b832e270885227ba559d11a1bae1b0196b65af6623f2787cf66d3",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-casual-v1/shop.png",
+                      "bytes":  1503164,
+                      "sha256":  "3f521fd9062302177b5dbdee5a54c7673d23c63c9e59eedfd010a6ec61b70d2f",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-casual-v1/shop.webp",
+                      "bytes":  69796,
+                      "sha256":  "d2ce9b28dae75803c2a03df431a102a1b4e2939312212c6408b799f7746c1cf1",
+                      "reason":  "Superseded by chamfer shop / crossed swords"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-casual-v1/team.png",
+                      "bytes":  1215061,
+                      "sha256":  "c92c1b5dc3505f29df520442853d2d41828d9be140bf7d62f147d6f61c3e167b",
+                      "reason":  "High-resolution authoring master; runtime WebP retained"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-painted-v1/cards.png",
+                      "bytes":  2151205,
+                      "sha256":  "78ad8a0a29855be0b962ab081b3e0bec8fb09a97fa363e202982b662fa8ba565",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-painted-v1/cards.webp",
+                      "bytes":  69920,
+                      "sha256":  "fc6aa577d1eac8cb2c95a275dbdc7a5c37c1c21b43c9085a73c68d66842d69ed",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-painted-v1/events.png",
+                      "bytes":  1659066,
+                      "sha256":  "cae862cbe8ffc3085cfa0711c47b7b1ea94d5b05ea1873dc5e9b7f06b9815822",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-painted-v1/events.webp",
+                      "bytes":  63994,
+                      "sha256":  "5e02ac301d77312ec6dcf492b90712faaff8aa0716db78eab3e1a38fe8eb4b38",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-painted-v1/home.png",
+                      "bytes":  2070164,
+                      "sha256":  "63a33e09ba55e16eb23d1455ef6650cb9245ac4129cff96a127920bb77d212ff",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-painted-v1/home.webp",
+                      "bytes":  70090,
+                      "sha256":  "2ba39546ba153833d17e391e9ea4222ad7892f521a284440c6e3e0c56e2df589",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-painted-v1/PROMPTS.md",
+                      "bytes":  4837,
+                      "sha256":  "09fb35ea2242b7770a5b14f72b743570820ca83a1c7600970fd6bcf1cce75e31",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-painted-v1/shop.png",
+                      "bytes":  2018011,
+                      "sha256":  "7b538134b66d3ccc5115d6779144fe14a0537161f767904e0b1197998adfc7dc",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-painted-v1/shop.webp",
+                      "bytes":  70942,
+                      "sha256":  "8ca29a49f413a96fa27cdbb0b3e0cb5261ac99439d20eec3835d715a066bd375",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-painted-v1/team.png",
+                      "bytes":  1804221,
+                      "sha256":  "1b07c3406f506ff9c180c0b60c98eb69cd460379ac575546847daf01b474009c",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "client/assets/ui/dock-painted-v1/team.webp",
+                      "bytes":  62274,
+                      "sha256":  "7cf2bb8c526ddafd73c620c9c829939921b7f762b77d6a9446b66aeaabab8ce5",
+                      "reason":  "Retired design; no runtime references"
+                  },
+                  {
+                      "path":  "qa_reports/startup-android-chrome-emulated.png",
+                      "bytes":  609906,
+                      "sha256":  "efd9b80fef9991d145302c17e268f45205edb46de4215cf80b13a0021f8565f1",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/startup-desktop-chromium.png",
+                      "bytes":  171472,
+                      "sha256":  "518bdb1cbd1ba85e7d3b0f20d8184f89015a482314faf030ce81017397615b54",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/startup-iphone-safari-emulated.png",
+                      "bytes":  963009,
+                      "sha256":  "b47dc5ed7b25494b3881a410d9b8e743436acc366b58b36102ffc371c6e85851",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/chests-casual-pilot-20261014/bronze.png",
+                      "bytes":  1678290,
+                      "sha256":  "d215224719931e68e688a294a28a6dc05a9c16331d6f2e984d2967e9a8aae5a1",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/chests-casual-pilot-20261014/bronze.webp",
+                      "bytes":  70754,
+                      "sha256":  "c57e19ec3edbafd88b577613c7ebfe43b695f21b1241aa5bef6a4facf55b02f6",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/chests-casual-pilot-20261014/diamond.png",
+                      "bytes":  1561731,
+                      "sha256":  "096c9c3fc649752466e38cc5736a6592ea4f3add7fa64aff182155bbc372919c",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/chests-casual-pilot-20261014/diamond.webp",
+                      "bytes":  65590,
+                      "sha256":  "5454a65822039e2e774de7f3ad610db229372603f59617da8cbaca0224f5cb1d",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/chests-casual-pilot-20261014/export-preview.cjs",
+                      "bytes":  696,
+                      "sha256":  "e760bab06c5bf21dd1361cceb3130f43de68ce35dfcde3205f3dfead54f1e712",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/chests-casual-pilot-20261014/gold.png",
+                      "bytes":  1605769,
+                      "sha256":  "2a2c3ada90b2718663f0af0d6ced81fb02cdffa4945a1ca316121d512e1b9816",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/chests-casual-pilot-20261014/gold.webp",
+                      "bytes":  72078,
+                      "sha256":  "b2183004458f64f01a34b01031f401a2316dcf04a49fcdb4708a7726ce7d2903",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/chests-casual-pilot-20261014/README.md",
+                      "bytes":  8809,
+                      "sha256":  "cf8662b56da69ee991f2bf9d5304773203b8592ddab574c21ac7e98137e5615a",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/chests-casual-pilot-20261014/silver.png",
+                      "bytes":  1692364,
+                      "sha256":  "c86570cdd974a0672d715398be0c5c499ee0b4c2b2401375e68e8971a9cb8879",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/chests-casual-pilot-20261014/silver.webp",
+                      "bytes":  63806,
+                      "sha256":  "c2d7505454f08ef46cb0afad0c8e1e8f4e84854e8150ff0dade4c6d282730e2b",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/chests-chamfer-pilot-20261015/gold.png",
+                      "bytes":  1557246,
+                      "sha256":  "31d26b2f55e6b35ce612b1b35c816055c7929b8df0d99f02936c3c7693ed2787",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/chests-chamfer-pilot-20261015/README.md",
+                      "bytes":  1254,
+                      "sha256":  "8914c171d6db2f9fd099e0c0e7c6971b772e94635e83f6f1e8ff290f4e68a49a",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/currency-visual-pilot-20261015/credit-v1.png",
+                      "bytes":  1237286,
+                      "sha256":  "6336d142b3c22ceba0e7821addd5f1a06a06a2dedf7c59c7dfa027efe297772e",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/currency-visual-pilot-20261015/flux-v1.png",
+                      "bytes":  676712,
+                      "sha256":  "d933c2d70776f41925867edb3e4a0fb756195ea16ec4f127b290418210d18ec6",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/rating-trophy-pilot-20261015/gold-rating-trophy-v2.png",
+                      "bytes":  1120595,
+                      "sha256":  "0ba5bcc35743f61b95bd29a87fa9c500df9c80f1c293823d70f182520791bdfa",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/typography-pilot-20261014/events-current.png",
+                      "bytes":  1199475,
+                      "sha256":  "501b86eca8449aa73d0b113c20248f7ee6a1a3db89e0b1cb415d14f27f2fbbe1",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/typography-pilot-20261014/events-lilita.png",
+                      "bytes":  1202710,
+                      "sha256":  "72bec11edfb60700f857076d05b741852db2216b77bf477ec1c333f8a7149ddf",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/typography-pilot-20261014/events-rowdies.png",
+                      "bytes":  1203557,
+                      "sha256":  "53343f0e90b811e53b599e0c7d3f25d98b2f8f9ba58d71ca5a15d7e42a3bba59",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/typography-pilot-20261014/font-comparison.png",
+                      "bytes":  587032,
+                      "sha256":  "8afef3063c2a79527101b79c42f0b6cac634b2969673be9d08e23e52853d83f3",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/typography-pilot-20261014/home-current.png",
+                      "bytes":  1596025,
+                      "sha256":  "482b73dccb78e23d901bfc463c16494401845d1b95771ab08305503130877517",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/typography-pilot-20261014/home-lilita.png",
+                      "bytes":  1596908,
+                      "sha256":  "7dd100bc540904aba9c9d09ec114e778f8d837ab4ddfc5f8de7a5219e9d2ca35",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/typography-pilot-20261014/home-rowdies.png",
+                      "bytes":  1595782,
+                      "sha256":  "5664e8c53aca64cd69e6193dcd05addda5befe3fac611d3389a9157088e98fcb",
+                      "reason":  "Generated artwork master or historical screenshot"
+                  },
+                  {
+                      "path":  "qa_reports/visual-atmosphere-20261014/cards-mobile.png",
+                      "bytes":  1258807,
+                      "sha256":  "e09f65df3d71d01a5b351a00c41282c062c0f6d797be09443e33c51db5d15f0a",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/visual-atmosphere-20261014/dock-pilot-mobile.png",
+                      "bytes":  72867,
+                      "sha256":  "af078bcb6bbdabc678a257343ca9378a9c14a00d840962ad3e9ec4c3c798ff3b",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/visual-atmosphere-20261014/events-meta-separated-mobile.png",
+                      "bytes":  1183626,
+                      "sha256":  "8da8fdb3f40cbef07bd60482bfcf8c038f4697d837e08d0b2102345ee3ac811a",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/visual-atmosphere-20261014/events-mobile.png",
+                      "bytes":  1151970,
+                      "sha256":  "fbab8151d416e2487c5a08d58f28cfdedc4e5088bf5bacf0800851e1f48f9cb7",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/visual-atmosphere-20261014/home-dock-pilot-mobile.png",
+                      "bytes":  1594917,
+                      "sha256":  "c8bec96cf298ef95527723db3a4d017fa2160a2504b7bce9ba4cb72329df6a4b",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/visual-atmosphere-20261014/home-mobile.png",
+                      "bytes":  1583712,
+                      "sha256":  "7182645a2f72eb806dcf07b5a58e09ce391f4e355d998bc1bfeab8b91c294423",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/visual-atmosphere-20261014/shop-mobile.png",
+                      "bytes":  662504,
+                      "sha256":  "0edf0fbe99e7058ed3e02f5385dc9c5f13c6ab7dfec69387eb7a759b5f73a8f5",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/visual-atmosphere-20261014/team-profile-mobile.png",
+                      "bytes":  229130,
+                      "sha256":  "dd94b7c0b00c0fe38d282e04b79f4300824ffae7be661afc2598df11382aa2fe",
+                      "reason":  "Historical visual pilot output"
+                  },
+                  {
+                      "path":  "qa_reports/visual-atmosphere-20261014/visited-profile-mobile.png",
+                      "bytes":  435040,
+                      "sha256":  "190ce83ea5d82e0d46b32e6d24b133a3756fad18386fbf18fd2ad7c9760cbd1e",
+                      "reason":  "Historical visual pilot output"
+                  }
+              ]
+}

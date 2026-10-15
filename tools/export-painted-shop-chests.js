@@ -3,12 +3,15 @@
 // Same technical-only workflow as dock icons: unchanged Imagegen PNG masters,
 // small lossless WebP runtime derivatives, true alpha preserved.
 const path=require("node:path");
+const fs=require("node:fs");
 const sharp=require(process.env.GRIDSHARD_SHARP_MODULE || "sharp");
+const {resolveArtMaster}=require("./resolve-art-master.js");
 const directory=path.resolve(__dirname,"../client/assets/ui/chests-painted-v1");
 
 (async()=>{
+  fs.mkdirSync(directory,{recursive:true});
   for(const tier of ["bronze","silver","gold","diamond"]){
-    const source=path.join(directory,`${tier}.png`);
+    const source=resolveArtMaster(`client/assets/ui/chests-painted-v1/${tier}.png`);
     const metadata=await sharp(source).metadata();
     if(!metadata.hasAlpha) throw new Error(`${tier}: transparent master required`);
     const result=await sharp(source)

@@ -45,6 +45,11 @@ server/data/product_analytics.json*
 server/data/*.lock
 secrets/
 /artifacts/
+# Authoring masters and generated QA screenshots belong in the local art archive.
+/client/assets/ui/**/*.png
+/qa_reports/*.png
+/qa_reports/**/*.png
+/qa_reports/**/*.webp
 **/google-services.json
 **/GoogleService-Info.plist
 *.p8

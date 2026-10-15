@@ -34,7 +34,7 @@ function tokenSandbox() {
   const sandbox = { createModulePuzzlePiece: () => ({ outerHTML: "<span data-piece></span>" }) };
   vm.runInNewContext(`${slice("  const tokenFacets = ", "  // Maliyet rozeti:")}
 ${slice("  function resourceSymbolMarkup(kind) {", "  // Modül kartı parçaları her yerde")}
-Object.assign(this, { RESOURCE_TOKEN_SVG, RESOURCE_TOKEN_CLASS, resourceTokenSvg, resourceTokenMarkup, resourceSymbolMarkup });`, sandbox);
+Object.assign(this, { RESOURCE_TOKEN_SVG, RESOURCE_TOKEN_CLASS, resourceTokenVisual, resourceTokenMarkup, resourceSymbolMarkup });`, sandbox);
   return sandbox;
 }
 
@@ -49,16 +49,23 @@ Object.assign(this, { shopChestSvg, chestVisualMarkup, SHOP_CHEST_ORNAMENTS });`
 // --- Kaynak simgeleri -------------------------------------------------------------
 test("Akı, Devre Kredisi ve diğer kaynaklar dolu çizilir; her birinin rengi tanımlıdır", () => {
   const sandbox = tokenSandbox();
-  const kinds = Object.keys(sandbox.RESOURCE_TOKEN_SVG);
+  const kinds = Object.keys(sandbox.RESOURCE_TOKEN_CLASS);
   assert.deepEqual(kinds, ["flux", "credit", "current", "core", "chest", "experience", "trophy", "team_point", "premium"]);
   for (const kind of kinds) {
     const drawing = sandbox.RESOURCE_TOKEN_SVG[kind];
     assert.ok(sandbox.RESOURCE_TOKEN_CLASS[kind], `${kind}: sınıfı yok`);
-    // Gövde rengi ve koyu kontur her çizimde vardır; eski ince çizgi simge yoktur.
-    assert.match(drawing, /class="tk-m[ "]/, `${kind}: gövde yok`);
-    assert.match(drawing, /class="(?:tk-o|tk-[a-z] tk-ink)"/, `${kind}: kontur yok`);
+    if (drawing) {
+      assert.match(drawing, /class="tk-m[ "]/, `${kind}: gövde yok`);
+      assert.match(drawing, /class="(?:tk-o|tk-[a-z] tk-ink)"/, `${kind}: kontur yok`);
+    }
     const markup = sandbox.resourceTokenMarkup(kind);
-    assert.ok(markup.startsWith(`<span class="resource-symbol ${sandbox.RESOURCE_TOKEN_CLASS[kind]} is-token" data-token="${kind}" aria-hidden="true"><svg viewBox="0 0 24 24"`));
+    if (kind === "trophy") assert.ok(markup.includes('rating-trophy-v1/rating-trophy.webp') && !markup.includes('<svg'));
+    else if (kind === "flux" || kind === "credit") {
+      assert.ok(markup.includes(`<span class="currency-art" data-currency="${kind}" aria-hidden="true"></span>`));
+      assert.ok(!markup.includes("<svg"));
+      assert.equal(drawing, undefined, "Eski para SVG'si paralel kaynak olarak kalmamalı");
+    }
+    else assert.ok(markup.startsWith(`<span class="resource-symbol ${sandbox.RESOURCE_TOKEN_CLASS[kind]} is-token" data-token="${kind}" aria-hidden="true"><svg viewBox="0 0 24 24"`));
   }
   // Altın renkli olanlar varsayılan paleti kullanır; diğerlerinin kendi paleti vardır.
   for (const kind of ["flux", "current", "core", "team_point", "experience"]) {
@@ -82,7 +89,8 @@ test("ödül satırlarının simgeleri aynı çizimi kullanır", () => {
   // Mağaza paketleri ve maliyet rozetleri de aynı çizimdir.
   assert.match(app, /const PAID_ICON_TOKENS = Object\.freeze\(\{ flux_shards:"flux", circuit_credits:"credit" \}\);/);
   assert.match(app, /const token = PAID_ICON_TOKENS\[product\.currency\] \|\| "premium";/);
-  assert.match(app, /icon\.innerHTML = resourceTokenSvg\(kind\);/);
+  assert.match(app, /icon\.innerHTML = resourceTokenVisual\(kind\);/);
+  assert.match(app, /icon\.innerHTML = resourceTokenVisual\(token\);/);
   // Eski halka içi çizimler kodda kalmadı.
   assert.ok(!app.includes('<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/></svg>'));
 });
@@ -207,7 +215,8 @@ test("ödül bölümleri sayfasında her satırın kendi simgesi vardır", () =>
     ["rewards", "trophy:violet", "Sezon Ödülleri"],
   ]) {
     assert.ok(html.includes(`<button type="button" data-ui-icon="${icon}" data-open-screen="${screen}"><strong>${label}</strong></button>`), screen);
-    assert.ok(app.includes(`    ${icon.split(":")[0]}:'`), `${icon} simgesi yok`);
+    const name = icon.split(":")[0];
+    assert.ok(app.includes(`    ${name}:'`) || app.includes(`${name}:"${name}"`), `${icon} simgesi yok`);
   }
   assert.match(css, /\.rewards-hub-links button\.has-ui-icon \{ display:flex;/);
 });

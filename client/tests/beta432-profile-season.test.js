@@ -42,7 +42,7 @@ assert.ok(!app.includes("Ödül sunucuda doğrulanıyor"));
 assert.ok(!app.includes("Ödüller hesabına işlendi"));
 assert.ok(!app.includes("sandık yuvasına eklendi"));
 assert.ok(!app.includes('"rotate_module"'));
-assert.ok(app.includes('`\${activeTitle} · 🏆 \${view.rating}`'));
+assert.ok(app.includes('renderTrophyCaption(lobbyPlayerDetails, activeTitle, view.rating, "", true)'));
 assert.ok(relay.includes('["matchmaking_request_timeout", "request_timeout"]'));
 assert.ok(css.includes('.season-reward-card[data-major="true"]'));
 assert.ok(css.includes("grid-template-columns:1fr !important"));

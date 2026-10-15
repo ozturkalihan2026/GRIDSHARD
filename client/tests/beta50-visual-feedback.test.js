@@ -12,7 +12,7 @@ assert.ok(app.includes('renderTrophyValue("team-profile-total-trophies"'));
 assert.ok(app.includes('renderTrophyValue("team-profile-average-trophies"'));
 assert.ok(!app.includes('renderTrophyValue("profile-current-trophies"'));
 assert.match(app, /activeLeaderboardTab === "core_damage"[\s\S]{0,260}renderTrophyValue\(score/);
-assert.ok(html.includes('class="trophy-value-icon" aria-hidden="true">🏆</span>'));
+assert.ok(html.includes('class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp"'));
 assert.ok(!html.includes('id="team-total-trophies">0 KUPA'));
 assert.ok(!html.includes('id="profile-current-trophies"'));
 

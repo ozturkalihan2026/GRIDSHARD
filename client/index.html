@@ -85,7 +85,7 @@
       </div>
       <div class="battle-status-cluster">
         <div class="credit-indicator resource-value" id="credit-indicator"><i class="resource-symbol resource-symbol-current is-token" data-token="current" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/><path class="tk-l" d="M13.9 1.5 4.3 13.5h3.4L13.85 5.6Z"/><path class="tk-d" d="M19.7 10.1 8.5 22.5 9.3 18 16.4 10.1Z"/><path class="tk-o" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/></svg></i><span id="credit-indicator-value">Akım: 6 / 12</span></div>
-        <button id="battle-settings-button" class="battle-settings-button" type="button" aria-label="Ayarlar" title="Ayarlar">⚙</button>
+        <button id="battle-settings-button" class="battle-settings-button" type="button" aria-label="Ayarlar" title="Ayarlar"><span class="ui-art" data-ui-art="settings" aria-hidden="true"></span></button>
         <div class="battle-time" id="battle-time">00:00.0</div>
       </div>
       <div id="battle-hud-settings-panel" class="battle-hud-settings-panel">
@@ -98,12 +98,12 @@
          mağaza açılır. -->
     <section id="app-resource-bar" class="app-resource-bar" aria-label="Oyuncu kaynakları">
       <button type="button" class="app-resource-chip app-resource-flux" data-open-screen="shop" data-resource-shop="flux" title="Akı" aria-label="Akı · mağazayı aç">
-        <i class="resource-symbol resource-symbol-flux is-token" data-token="flux" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M12 1.5 16.2 7.8 22.5 12 16.2 16.2 12 22.5 7.8 16.2 1.5 12 7.8 7.8Z"/><path class="tk-l" d="M12 1.5 7.8 7.8 1.5 12H12Z"/><path class="tk-d" d="M22.5 12 16.2 16.2 12 22.5V12Z"/><path class="tk-w" d="m12 8.4 1.1 2.5 2.5 1.1-2.5 1.1-1.1 2.5-1.1-2.5-2.5-1.1 2.5-1.1Z"/><path class="tk-o" d="M12 1.5 16.2 7.8 22.5 12 16.2 16.2 12 22.5 7.8 16.2 1.5 12 7.8 7.8Z"/></svg></i>
+        <i class="resource-symbol resource-symbol-flux is-token" data-token="flux" aria-hidden="true"><span class="currency-art" data-currency="flux" aria-hidden="true"></span></i>
         <strong id="lobby-flux-shards">0</strong>
         <span class="app-resource-plus" aria-hidden="true">+</span>
       </button>
       <button type="button" class="app-resource-chip app-resource-credit" data-open-screen="shop" data-resource-shop="credit" title="Devre Kredisi" aria-label="Devre Kredisi · mağazayı aç">
-        <i class="resource-symbol resource-symbol-credit is-token" data-token="credit" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle class="tk-d tk-ink" cx="12" cy="13.2" r="9.5"/><circle class="tk-m tk-ink" cx="12" cy="10.9" r="9.5"/><circle class="tk-l" cx="12" cy="10.9" r="6.8"/><path class="tk-mark" d="M7 10.9h2.6l1.6-3.4 1.8 6.8 1.6-3.4H17"/><path class="tk-shine" d="M4.6 8.6a7.8 7.8 0 0 1 3.6-4.2"/></svg></i>
+        <i class="resource-symbol resource-symbol-credit is-token" data-token="credit" aria-hidden="true"><span class="currency-art" data-currency="credit" aria-hidden="true"></span></i>
         <strong id="lobby-circuit-credits">200</strong>
         <span class="app-resource-plus" aria-hidden="true">+</span>
       </button>
@@ -116,15 +116,15 @@
       </button>
       <div class="lobby-player-card">
         <strong id="lobby-player-name">Oyuncu</strong>
-        <button id="lobby-player-details" type="button" aria-haspopup="dialog" aria-controls="operator-titles-dialog" title="Unvanlar">Devre Çırağı · 🏆 0</button>
+        <button id="lobby-player-details" type="button" aria-haspopup="dialog" aria-controls="operator-titles-dialog" title="Unvanlar">Devre Çırağı · <span class="trophy-visual-value trophy-icon-first" aria-label="0 Kupa"><span class="trophy-value-number">0</span><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true" draggable="false" decoding="async" /></span></button>
       </div>
       <button id="reward-inbox-button" class="reward-inbox-button" type="button" aria-label="Mesaj ve ödül kutusunu aç" title="Mesaj Kutusu">
-        <svg class="reward-inbox-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m4 7.5 8 6 8-6"/></svg><i id="reward-inbox-notification" hidden></i>
+        <span class="reward-inbox-icon ui-art" data-ui-art="message" aria-hidden="true"></span><i id="reward-inbox-notification" hidden></i>
       </button>
       <!-- Üç çizgi menüsü: Kozmetik, Ödüller, Arkadaş ve Ayarlar buradan açılır.
            Profil, soldaki profil simgesinden doğrudan açılır. -->
       <button id="lobby-menu-button" class="lobby-menu-button" type="button" aria-label="Menüyü aç" title="Menü" aria-haspopup="true" aria-expanded="false" aria-controls="lobby-menu">
-        <svg class="lobby-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <span class="lobby-menu-icon ui-art" data-ui-art="menu" aria-hidden="true"></span>
       </button>
       <nav id="lobby-menu" class="dropdown-menu lobby-menu" aria-label="Menü" hidden>
         <button type="button" data-open-screen="avatar">KOZMETİK</button>
@@ -237,7 +237,7 @@
     <dialog id="leaderboard-dialog" class="leaderboard-dialog" aria-labelledby="leaderboard-title">
       <header class="leaderboard-header">
         <span class="screen-kicker">SEZONLUK REKABET</span>
-        <h2 id="leaderboard-title" data-ui-icon="trophy:gold">Lider Panosu</h2>
+        <h2 id="leaderboard-title" data-rating-trophy>Lider Panosu</h2>
         <p id="leaderboard-season-label">Bu sezonun sıralaması</p>
       </header>
       <p id="leaderboard-status" class="leaderboard-status" role="status" aria-live="polite">Sıralama yükleniyor…</p>
@@ -249,7 +249,7 @@
       <ol id="leaderboard-list" class="leaderboard-list" aria-label="Oyuncu sıralaması"></ol>
       <nav class="leaderboard-tabs" aria-label="Lider panosu bölümleri">
         <button id="leaderboard-back" type="button" aria-label="Devre Yoluna dön" title="Geri">←</button>
-        <button type="button" data-leaderboard-tab="trophies" class="is-active" aria-label="Kupa sıralaması" title="Kupa sıralaması"><span>🏆</span><small>KUPA</small></button>
+        <button type="button" data-leaderboard-tab="trophies" class="is-active" aria-label="Kupa sıralaması" title="Kupa sıralaması"><span><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true" draggable="false" decoding="async" /></span><small>KUPA</small></button>
         <button type="button" data-leaderboard-tab="core_damage"><span>◈</span><small>ÇEKİRDEK</small></button>
         <button type="button" data-leaderboard-tab="teams"><span>♟</span><small>TAKIM</small></button>
       </nav>
@@ -540,7 +540,7 @@
               <span class="team-avatar-button" aria-hidden="true"><span id="team-avatar-glyph">⬡</span></span>
               <div class="team-profile-open"><h3 id="team-name">Takım</h3><p id="team-description" class="team-description" hidden></p></div>
               <button id="team-menu-button" class="lobby-menu-button team-menu-button" type="button" aria-label="Takım yönetimini aç" title="Takım Yönetimi" aria-haspopup="true" aria-expanded="false" aria-controls="team-menu" hidden>
-                <svg class="lobby-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                <span class="lobby-menu-icon ui-art" data-ui-art="menu" aria-hidden="true"></span>
               </button>
               <nav id="team-menu" class="dropdown-menu team-menu" aria-label="Takım yönetimi bölümleri" hidden>
                 <button type="button" data-team-management-tab="cosmetics">KOZMETİK</button>
@@ -615,7 +615,7 @@
           </section>
         </div>
         <nav class="team-tabs" aria-label="Takım bölümleri">
-          <button type="button" data-team-tab="profile" class="is-active">PROFİL</button>
+          <button type="button" data-team-tab="profile" class="is-active"><span class="team-tab-icon ui-art" data-ui-art="profile" aria-hidden="true"></span>PROFİL</button>
           <button type="button" data-team-tab="members">ÜYELER</button>
           <button type="button" data-team-tab="requests">İSTEK</button>
           <button type="button" data-team-tab="chat">SOHBET</button>
@@ -740,7 +740,7 @@
           <span id="profile-hero-avatar" class="profile-avatar" data-avatar="default" data-frame="none" aria-hidden="true">◇</span>
           <div class="profile-hero-copy">
             <strong id="profile-hero-name">Oyuncu</strong>
-            <button id="profile-hero-details" type="button" aria-haspopup="dialog" aria-controls="operator-titles-dialog" title="Unvanlar">Devre Çırağı · 🏆 0</button>
+            <button id="profile-hero-details" type="button" aria-haspopup="dialog" aria-controls="operator-titles-dialog" title="Unvanlar">Devre Çırağı · <span class="trophy-visual-value trophy-icon-first" aria-label="0 Kupa"><span class="trophy-value-number">0</span><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true" draggable="false" decoding="async" /></span></button>
           </div>
         </header>
         <section class="profile-honor-showcase" aria-labelledby="profile-honor-title">
@@ -765,8 +765,8 @@
       <section class="profile-clan-card" aria-labelledby="profile-clan-title"><span>TAKIM BİLGİSİ</span><button id="profile-clan-title" class="team-profile-link" type="button" disabled>Takıma dahil değil</button><small id="profile-clan-copy">Bir takıma katıldığında takım bilgilerin burada görünecek.</small></section>
       <section class="profile-season-history" aria-labelledby="profile-season-title">
         <div class="profile-section-heading"><h3 id="profile-season-title" data-ui-icon="calendar:violet">Sezon Geçmişi</h3></div>
-        <article class="profile-current-season"><div><span id="profile-current-season-name">Güncel Sezon</span><strong id="profile-season-countdown">—</strong></div><div><strong id="profile-season-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong></div><div><small>MEVCUT LİG</small><strong id="profile-season-league">Arena 1</strong></div></article>
-        <div class="profile-past-seasons"><article><small>SON SEZON</small><strong id="profile-last-season-trophies" class="trophy-visual-value" aria-label="Kupa verisi yok"><span class="trophy-value-number">—</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong></article><article><small>EN İYİ SEZON</small><strong id="profile-best-season-trophies" class="trophy-visual-value" aria-label="Kupa verisi yok"><span class="trophy-value-number">—</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong></article><article><small>TÜM ZAMANLAR</small><strong id="profile-highest-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><span class="trophy-value-icon" aria-hidden="true">🏆</span></strong></article></div>
+        <article class="profile-current-season"><div><span id="profile-current-season-name">Güncel Sezon</span><strong id="profile-season-countdown">—</strong></div><div><strong id="profile-season-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true" draggable="false" decoding="async" /></strong></div><div><small>MEVCUT LİG</small><strong id="profile-season-league">Arena 1</strong></div></article>
+        <div class="profile-past-seasons"><article><small>SON SEZON</small><strong id="profile-last-season-trophies" class="trophy-visual-value" aria-label="Kupa verisi yok"><span class="trophy-value-number">—</span><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true" draggable="false" decoding="async" /></strong></article><article><small>EN İYİ SEZON</small><strong id="profile-best-season-trophies" class="trophy-visual-value" aria-label="Kupa verisi yok"><span class="trophy-value-number">—</span><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true" draggable="false" decoding="async" /></strong></article><article><small>TÜM ZAMANLAR</small><strong id="profile-highest-trophies" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true" draggable="false" decoding="async" /></strong></article></div>
       </section>
       <section class="profile-inline-statistics" aria-labelledby="profile-inline-statistics-title">
         <span data-open-screen="statistics" hidden aria-hidden="true"></span>
@@ -1707,12 +1707,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
         <h2 id="post-match-reward-heading">SAVAŞ ÖDÜLLERİ</h2>
         <div id="post-match-reward-list" class="post-match-reward-list" data-accounting-mode="profile">
           <article id="post-match-trophy-card">
-            <i class="resource-symbol resource-symbol-trophy is-token" data-token="trophy" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-handle" d="M7.2 5H4c0 3.3 1.4 5 3.6 5.3M16.8 5H20c0 3.3-1.4 5-3.6 5.3"/><path class="tk-d tk-ink" d="M10.3 12.6h3.4v4h-3.4Z"/><path class="tk-m tk-ink" d="M7.4 16.4h9.2l1.2 4.6H6.2Z"/><path class="tk-m tk-ink" d="M6.8 2.6h10.4v5.8a5.2 5.2 0 0 1-10.4 0Z"/><path class="tk-l" d="M8.6 4.2h2.2v4.6a3.4 3.4 0 0 0 1 2.4 3.6 3.6 0 0 1-3.2-3.6Z"/></svg></i>
+            <i class="resource-symbol resource-symbol-trophy is-token is-rating-trophy" data-token="trophy" aria-hidden="true"><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true" draggable="false" decoding="async" /></i>
             <span>KUPA</span>
             <strong id="post-match-trophy-reward">Kaydediliyor…</strong>
           </article>
           <article id="post-match-credit-card">
-            <i class="resource-symbol resource-symbol-credit is-token" data-token="credit" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle class="tk-d tk-ink" cx="12" cy="13.2" r="9.5"/><circle class="tk-m tk-ink" cx="12" cy="10.9" r="9.5"/><circle class="tk-l" cx="12" cy="10.9" r="6.8"/><path class="tk-mark" d="M7 10.9h2.6l1.6-3.4 1.8 6.8 1.6-3.4H17"/><path class="tk-shine" d="M4.6 8.6a7.8 7.8 0 0 1 3.6-4.2"/></svg></i>
+            <i class="resource-symbol resource-symbol-credit is-token" data-token="credit" aria-hidden="true"><span class="currency-art" data-currency="credit" aria-hidden="true"></span></i>
             <span>DEVRE KREDİSİ</span>
             <strong id="post-match-credit-reward">Kaydediliyor…</strong>
           </article>

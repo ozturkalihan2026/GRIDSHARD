@@ -2381,6 +2381,8 @@
     "module.unlock_trophies": {tr:"{count} kupada açılır.", en:"Unlocks at {count} trophies."},
     "deck.selected_count": {tr:"{count} / 6 modül seçildi. İlk boş yuva yeni seçimle doldurulacak.", en:"{count} / 6 modules selected. The next selection fills the first open slot."},
     "team.directory_meta": {tr:"{members}/{limit} üye · {trophies} 🏆", en:"{members}/{limit} members · {trophies} 🏆"},
+    "team.directory_members": {tr:"{members}/{limit} üye", en:"{members}/{limit} members"},
+    "team.directory_minimum": {tr:"En az", en:"Min."},
     "team.directory_requirement": {tr:" · en az {trophies} 🏆", en:" · min. {trophies} 🏆"},
     "team.creation_cost": {tr:"Kurma bedeli: {cost} Devre Kredisi · Sende {credits}", en:"Creation fee: {cost} Circuit Credits · You have {credits}"},
     "team.minimum_trophies": {tr:"En az {trophies} kupa", en:"At least {trophies} trophies"},

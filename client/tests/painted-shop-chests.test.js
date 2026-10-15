@@ -19,7 +19,7 @@ test("four painted chests are local decorative WebP assets; PNG masters stay out
     assert.equal(bytes.toString("ascii",0,4),"RIFF");
     assert.equal(bytes.toString("ascii",8,12),"WEBP");
     assert.ok(bytes.length<100000,`${tier}: oversized derivative`);
-    assert.ok(fs.existsSync(path.join(__dirname,`../assets/ui/chests-casual-v2/${tier}.png`)));
+    // A checkout needs only the runtime derivative, not the high-res master.
   }
   assert.ok(!template.includes(".png"));
   assert.ok(!template.includes("http"));

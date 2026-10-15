@@ -3103,11 +3103,19 @@ body[data-app-screen="modules"] {
 }
 .trophy-value-icon {
   display:inline-block;
-  color:#ffe06d;
-  font-size:.9em;
+  width:1.2em;
+  height:1.2em;
+  flex:0 0 1.2em;
+  object-fit:contain;
+  vertical-align:-.15em;
   line-height:1;
-  filter:drop-shadow(0 0 5px rgba(255,224,109,.58));
+  filter:none;
 }
+.trophy-icon-first > .trophy-value-icon { order:-1; }
+.trophy-visual-value { vertical-align:middle; }
+.resource-symbol.is-rating-trophy { background:none !important;box-shadow:none !important;filter:none !important; }
+.resource-symbol.is-rating-trophy > .trophy-value-icon { width:100%;height:100%; }
+#leaderboard-title > .trophy-value-icon { margin-right:8px; }
 .trophy-value-number { min-width:0; }
 
 body[data-app-screen="play"] .battle-floating-feedback {
@@ -8365,6 +8373,18 @@ body[data-graphics="dusuk"] .chest-visual { filter:none; }
 .is-token[data-token="team_point"] { --tk-m:#2fd3c2;--tk-l:#b4fff4;--tk-d:#12907f;--tk-k:#06524c; }
 .is-token[data-token="experience"] { --tk-m:#3bbdff;--tk-l:#c4ecff;--tk-d:#1b7fd6;--tk-k:#0a3f78; }
 .is-token > svg { width:100% !important;height:100% !important;overflow:visible;fill:none !important;stroke:none !important; }
+/* Currency artwork — tek dosya eşlemesi; bütün ekranlar ve maliyetler ortak.
+   CSS asset loader WebP'leri web/native derlemeye içerik hash'iyle dahil eder. */
+.currency-art {
+  display:block;
+  width:100%;height:100%;min-width:0;min-height:0;
+  background-position:center;
+  background-size:contain;
+  background-repeat:no-repeat;
+  pointer-events:none;
+}
+.currency-art[data-currency="flux"] { background-image:url("../assets/ui/currency-v1/flux.webp"); }
+.currency-art[data-currency="credit"] { background-image:url("../assets/ui/currency-v1/credit.webp"); }
 .is-token > svg .tk-m { fill:var(--tk-m); }
 .is-token > svg .tk-l { fill:var(--tk-l); }
 .is-token > svg .tk-d { fill:var(--tk-d); }
@@ -8607,6 +8627,7 @@ body[data-graphics="dusuk"] .cost-chip-icon.is-token { filter:none !important; }
   text-shadow:0 1px 0 rgba(3,10,24,.5);
 }
 .shop-screen .paid-pack-heading > .ui-icon { font-size:.9rem; }
+.shop-screen .paid-pack-heading > .resource-symbol.is-token { width:28px;height:28px; }
 .shop-screen .paid-pack-heading::after { content:"";flex:1;height:3px;border-radius:3px;background:linear-gradient(90deg,rgba(160,210,255,.5),transparent); }
 .shop-screen .paid-pack-grid { gap:11px 9px !important;padding:0 3px 4px; }
 .shop-screen .paid-store-premium {
@@ -11988,3 +12009,64 @@ body[data-graphics="dusuk"] .casual-chest-burst,
 body[data-graphics="dusuk"] .casual-chest-particles,
 body[data-graphics="dusuk"] .casual-chest-stage::before,
 body[data-graphics="dusuk"] .casual-chest-stage::after { display:none; }
+
+/* Common UI artwork — Paket 1, 15 Ekim 2026. Tek dosya eşlemesi.
+   CSS asset loader web/native pakette içerik hash'li dosyaları üretir. */
+:root {
+  --ui-art-settings:url("../assets/ui/common-icons-v1/settings.webp");
+  --ui-art-message:url("../assets/ui/common-icons-v1/message.webp");
+  --ui-art-friends:url("../assets/ui/common-icons-v1/friends.webp");
+  --ui-art-profile:url("../assets/ui/common-icons-v1/profile.webp");
+  --ui-art-gift:url("../assets/ui/common-icons-v1/gift.webp");
+  --ui-art-calendar:url("../assets/ui/common-icons-v1/calendar.webp");
+  --ui-art-statistics:url("../assets/ui/common-icons-v1/statistics.webp");
+  --ui-art-cosmetics:url("../assets/ui/common-icons-v1/cosmetics.webp");
+  --ui-art-info:url("../assets/ui/common-icons-v1/info.webp");
+  --ui-art-menu:url("../assets/ui/common-icons-v1/menu.webp");
+}
+.ui-art {
+  display:block;
+  width:100%;height:100%;min-width:0;min-height:0;flex:none;
+  background-image:var(--ui-art-image);
+  background-position:center;background-size:contain;background-repeat:no-repeat;
+  pointer-events:none;
+}
+.ui-art[data-ui-art="settings"] { --ui-art-image:var(--ui-art-settings); }
+.ui-art[data-ui-art="message"] { --ui-art-image:var(--ui-art-message); }
+.ui-art[data-ui-art="friends"] { --ui-art-image:var(--ui-art-friends); }
+.ui-art[data-ui-art="profile"] { --ui-art-image:var(--ui-art-profile); }
+.ui-art[data-ui-art="gift"] { --ui-art-image:var(--ui-art-gift); }
+.ui-art[data-ui-art="calendar"] { --ui-art-image:var(--ui-art-calendar); }
+.ui-art[data-ui-art="statistics"] { --ui-art-image:var(--ui-art-statistics); }
+.ui-art[data-ui-art="cosmetics"] { --ui-art-image:var(--ui-art-cosmetics); }
+.ui-art[data-ui-art="info"] { --ui-art-image:var(--ui-art-info); }
+.ui-art[data-ui-art="menu"] { --ui-art-image:var(--ui-art-menu); }
+/* Nesnenin arkasına eski renkli UI levhası veya beyaz çizgi filtresi ekleme. */
+.ui-icon.is-artwork {
+  border:0 !important;border-radius:0 !important;
+  background:none !important;box-shadow:none !important;filter:none !important;
+}
+.lobby-menu-icon.ui-art,.reward-inbox-icon.ui-art { width:28px;height:28px; }
+.battle-settings-button > .ui-art { display:inline-block;width:24px;height:24px;vertical-align:middle; }
+.friends-empty-state > .ui-icon.is-artwork { width:54px;height:54px; }
+#team-screen .team-tabs > [data-team-tab="profile"] { display:flex;align-items:center;justify-content:center;gap:3px; }
+.team-tab-icon.ui-art { width:16px;height:16px; }
+/* Bilgi kutularındaki CSS ile çizilmiş eski i işareti de ortak dosyayı kullanır.
+   Modül/çekirdek resimleri ve mekanikleri değişmez; bu yalnız arayüz ikonudur. */
+.module-detail-tab-content .module-detail-tab-intro::before {
+  content:"";width:18px;height:18px;border:0;border-radius:0;
+  background:var(--ui-art-info) center / contain no-repeat;
+}
+/* Kullanıcı ek onayı: posta/menü doğrudan profil barında, ayrı düğme zemini yok.
+   42px tıklama alanı, grid konumu ve bildirimler değiştirilmez. */
+body:not([data-app-screen="play"]) .app-progress-ribbon #reward-inbox-button,
+body:not([data-app-screen="play"]) .app-progress-ribbon #lobby-menu-button,
+body:not([data-app-screen="play"]) .app-progress-ribbon #lobby-menu-button[aria-expanded="true"] {
+  display:grid !important;place-items:center;padding:0 !important;
+  border:0 !important;background:transparent !important;box-shadow:none !important;
+  filter:none !important;animation:none !important;
+}
+body:not([data-app-screen="play"]) .app-progress-ribbon #reward-inbox-button:focus-visible,
+body:not([data-app-screen="play"]) .app-progress-ribbon #lobby-menu-button:focus-visible {
+  outline:2px solid #72f5e7 !important;outline-offset:2px;
+}

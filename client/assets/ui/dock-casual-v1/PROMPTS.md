@@ -1,5 +1,11 @@
 # GRIDSHARD casual dock icons — 14 October 2026
 
+Source cleanup update (15 October): all large PNG masters and retired designs
+are preserved at identical relative paths under the gitignored local directory
+`artifacts/asset-archive-20261015/`. The exporter resolves that archive fallback.
+Current five runtime WebPs are unchanged; older "retained" notes refer to the
+archive, not files shipped in this checkout. Transfer the archive separately.
+
 Latest selection, 15 October: Shop now uses `shop-chamfer-v2.png/.webp`, matching
 the sharper chest family. No other dock artwork changed. Its exact prompt is
 the final entry in `../chests-casual-v2/PROMPTS.md`; 69,640 bytes for this icon,

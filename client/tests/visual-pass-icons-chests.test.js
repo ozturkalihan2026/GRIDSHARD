@@ -47,7 +47,7 @@ function iconSandbox(lang = "tr") {
     localizedUiText: (value) => (sandbox.document.documentElement.lang === "en" ? en(value) : value),
   };
   vm.runInNewContext(`${slice("  const UI_ICON_PATHS = Object.freeze({", "  function resourceSymbolMarkup(kind) {")}
-Object.assign(this, { UI_ICON_PATHS, STAT_ICONS, RESOURCE_TOKEN_SVG, uiIconMarkup, createCostChip, setCostButtonLabel });`, sandbox);
+Object.assign(this, { UI_ICON_PATHS, UI_ART_ICONS, STAT_ICONS, resourceTokenVisual, uiIconMarkup, createCostChip, setCostButtonLabel });`, sandbox);
   return sandbox;
 }
 
@@ -78,7 +78,7 @@ test("maliyet rozeti para biriminin adını değil simgesini gösterir", () => {
   // Simge, üst bardaki ve ödül satırlarındaki Devre Kredisi çizimiyle aynıdır.
   assert.equal(icon.className, "cost-chip-icon is-token");
   assert.equal(icon.dataset.token, "credit");
-  assert.ok(icon.innerHTML.includes(sandbox.RESOURCE_TOKEN_SVG.credit));
+  assert.equal(icon.innerHTML, sandbox.resourceTokenVisual("credit"));
   assert.equal(value.textContent, "2.200");
   // Ekran okuyucu için adı etikette durur.
   assert.equal(chip.attributes["aria-label"], "2.200 Devre Kredisi");
@@ -144,7 +144,7 @@ test("başlıklar, sekmeler ve menü satırları eşleşen simgeyle süslenir", 
   const sandbox = iconSandbox();
   const marked = [...html.matchAll(/<h[23][^>]* data-ui-icon="([a-z]+):([a-z]+)"[^>]*>([^<]+)</g)];
   assert.ok(marked.length >= 28, String(marked.length));
-  for (const [, icon, , heading] of marked) assert.ok(sandbox.UI_ICON_PATHS[icon], `${heading}: ${icon} simgesi yok`);
+  for (const [, icon, , heading] of marked) assert.ok(sandbox.UI_ICON_PATHS[icon] || sandbox.UI_ART_ICONS[icon], `${heading}: ${icon} simgesi yok`);
   // Kullanıcının örneği: "Arkadaşlar" yazısının solunda iki kişi.
   assert.match(html, /<h3 data-ui-icon="people:green">Arkadaşlar<\/h3>/);
   assert.match(html, /<h3 id="chest-store-title" data-ui-icon="chest:gold">Sandık Satın Al<\/h3>/);
@@ -159,11 +159,11 @@ test("başlıklar, sekmeler ve menü satırları eşleşen simgeyle süslenir", 
     ['[data-module-detail-tab="stats"], [data-core-detail-tab="stats"]', "bars"],
   ]) {
     assert.ok(decorate.includes(`['${selector}', "${icon}",`), `${selector} süslenmiyor`);
-    assert.ok(sandbox.UI_ICON_PATHS[icon]);
+    assert.ok(sandbox.UI_ICON_PATHS[icon] || sandbox.UI_ART_ICONS[icon]);
   }
   assert.match(decorate, /for \(const element of document\.querySelectorAll\("\[data-ui-icon\]"\)\) \{/);
   // Aynı öğe iki kez süslenmez.
-  assert.match(decorate, /if \(element\.querySelector\(":scope > \.ui-icon"\)\) continue;/);
+  assert.match(decorate, /if \(element\.querySelector\(":scope > \.ui-icon, :scope > \.resource-symbol\.is-token"\)\) continue;/);
   assert.match(css, /\.dropdown-menu > button\.has-ui-icon \{/);
 });
 

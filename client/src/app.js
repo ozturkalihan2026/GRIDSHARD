@@ -1586,9 +1586,8 @@
   }
 
   // --- Renkli arayüz simgeleri ---------------------------------------------------
-  // Değer karoları, sekmeler, menü satırları ve maliyet rozetleri aynı simge
-  // takımını kullanır: renkli zeminli küçük karo, içinde beyaz çizgi simge.
-  // Çizimler 24×24'tür; "f" sınıflı yol dolu, diğerleri çizgidir.
+  // Onaylı ortak ikonlar UI_ART_ICONS üzerinden tek WebP kaynağına gider.
+  // Henüz dönüşmeyen savaş/değer simgeleri 24×24 SVG olarak korunur.
   const UI_ICON_PATHS = Object.freeze({
     hp:'<path class="f" d="M12 20.6 4.7 13.5a4.7 4.7 0 0 1 6.6-6.7l.7.7.7-.7a4.7 4.7 0 0 1 6.6 6.7Z"/>',
     damage:'<path class="f" d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5Z"/>',
@@ -1619,8 +1618,6 @@
     revive:'<path d="M19.5 12a7.5 7.5 0 1 1-2.6-5.7M19.5 3.5v4h-4"/><path d="M12 8.6v6.8M8.6 12h6.8"/>',
     bug:'<ellipse cx="12" cy="13" rx="4.6" ry="5.8"/><path d="M9 6.4 7.4 4M15 6.4 16.6 4M7.4 11 3.6 9.6M7.4 15l-3.8 1.4M16.6 11l3.8-1.4M16.6 15l3.8 1.4M12 8.6v9"/>',
     rings:'<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.4"/><circle cx="12" cy="12" r="9.6" stroke-dasharray="2.6 2.6"/>',
-    info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle class="f" cx="12" cy="7.6" r="1.3"/>',
-    bars:'<path d="M5 20V11M12 20V4M19 20v-6"/>',
     star:'<path class="f" d="m12 2.6 2.8 6 6.5.8-4.8 4.5 1.3 6.5-5.8-3.3-5.8 3.3 1.3-6.5-4.8-4.5 6.5-.8Z"/>',
     gem:'<path d="M7 4h10l4 5.4L12 21 3 9.4Z"/><path d="M3 9.4h18M9.2 9.4 12 21l2.8-11.6M7 4l2.2 5.4L12 4l2.8 5.4L17 4"/>',
     eye:'<path d="M2.2 12S5.8 5.6 12 5.6 21.8 12 21.8 12 18.2 18.4 12 18.4 2.2 12 2.2 12Z"/><circle class="f" cx="12" cy="12" r="2.8"/>',
@@ -1629,21 +1626,21 @@
     grid:'<rect x="3.6" y="3.6" width="7" height="7" rx="1.6"/><rect x="13.4" y="3.6" width="7" height="7" rx="1.6"/><rect x="3.6" y="13.4" width="7" height="7" rx="1.6"/><rect x="13.4" y="13.4" width="7" height="7" rx="1.6"/>',
     key:'<circle cx="8" cy="15.5" r="4.4"/><path d="m11.2 12.4 8.6-8.6M16.4 7.2l2.8 2.8M13.6 10l2.2 2.2"/>',
     trophy:'<path d="M7.5 3.6h9v5a4.5 4.5 0 0 1-9 0Z"/><path d="M7.5 5H4.4c0 3.2 1.3 4.8 3.4 5M16.5 5h3.1c0 3.2-1.3 4.8-3.4 5M12 13v3.6M8.4 20h7.2M9.6 16.6h4.8V20H9.6Z"/>',
-    palette:'<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2.2-1 2.2-2 0-1.4-1.2-1.8-1.2-3 0-1 .8-1.8 1.8-1.8h2A4.2 4.2 0 0 0 21 10c0-3.9-4-7-9-7Z"/><circle class="f" cx="7.6" cy="11" r="1.4"/><circle class="f" cx="10.4" cy="7.2" r="1.4"/><circle class="f" cx="15" cy="7.4" r="1.4"/>',
-    gift:'<rect x="3.6" y="9" width="16.8" height="4.2" rx="1"/><path d="M5.2 13.2V20h13.6v-6.8M12 9v11M12 9S9.6 3.6 7.4 5.2C5.4 6.8 8.4 9 12 9ZM12 9s2.4-5.4 4.6-3.8C18.6 6.8 15.6 9 12 9Z"/>',
-    people:'<circle cx="9" cy="8.2" r="3.3"/><circle cx="17.2" cy="9.4" r="2.6"/><path d="M2.8 20c.5-4.1 2.6-6.2 6.2-6.2s5.7 2.1 6.2 6.2M14.8 14.6c3.4-.6 5.6 1.2 6.4 5.4"/>',
-    gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2.6v3M12 18.4v3M2.6 12h3M18.4 12h3M5.4 5.4l2.1 2.1M16.5 16.5l2.1 2.1M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1"/>',
-    mail:'<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m4 7.6 8 6 8-6"/>',
     chest:'<path d="M4 10.2h16v9.4H4Z"/><path d="M4 10.2 5.6 5.6Q12 3.2 18.4 5.6L20 10.2"/><path class="f" d="M10.3 9h3.4v4.6h-3.4Z"/>',
     chat:'<path d="M4 5h16v10.6h-9.4L6 19.6v-4H4Z"/><path d="M8 9h8M8 12.2h5"/>',
     core:'<path d="M12 2.8 21.2 12 12 21.2 2.8 12Z"/><path class="f" d="M12 7.8 16.2 12 12 16.2 7.8 12Z"/>',
-    credit:'<circle cx="12" cy="12" r="9"/><path d="M7 12h3l2-4 2 8 2-4h2"/>',
-    flux:'<path d="m12 2 4 6 6 4-6 4-4 6-4-6-6-4 6-4Z"/><circle class="f" cx="12" cy="12" r="2.2"/>',
     current:'<path class="f" d="M13.5 2 5 13h6l-1 9 9-12h-6Z"/>',
     card:'<rect x="5" y="3" width="14" height="18" rx="2.6"/><path d="M9 8h6M9 12h6M9 16h3.4"/>',
     shop:'<path d="M4 9h16l-1.2 11H5.2Z"/><path d="M8 9V6.6a4 4 0 0 1 8 0V9M9.4 13.4h5.2"/>',
     home:'<path d="M4 11.4 12 4l8 7.4V20h-5.2v-5.4H9.2V20H4Z"/>',
-    calendar:'<rect x="3.6" y="5" width="16.8" height="15.4" rx="2.4"/><path d="M3.6 9.6h16.8M8 3v4M16 3v4"/><path class="f" d="m12 11.4 1.1 2.2 2.4.3-1.8 1.7.5 2.4-2.2-1.2-2.2 1.2.5-2.4-1.8-1.7 2.4-.3Z"/>',
+  });
+  // Eski çağrı adları ve yeni anlam adları aynı onaylı dosyaya yönlenir.
+  // Dosya yolları yalnız canon.css "Common UI artwork" bölümündedir.
+  const UI_ART_ICONS = Object.freeze({
+    gear:"settings", settings:"settings", mail:"message", message:"message",
+    people:"friends", friends:"friends", profile:"profile", gift:"gift",
+    calendar:"calendar", bars:"statistics", statistics:"statistics",
+    palette:"cosmetics", cosmetics:"cosmetics", info:"info", menu:"menu",
   });
   // Değer anahtarı → simge ve renk tonu.
   const STAT_ICONS = Object.freeze({
@@ -1662,8 +1659,13 @@
   });
 
   function uiIconMarkup(name, tone = "") {
-    const iconName = Object.hasOwn(UI_ICON_PATHS, name) ? name : "star";
+    // Para birimi başlıklarında da ayrı, eski bir levha/çizim üretme.
+    if (name === "flux" || name === "credit") return resourceTokenMarkup(name, "i");
     const safeTone = /^[a-z][a-z0-9-]{0,30}$/.test(tone) ? tone : "";
+    if (Object.hasOwn(UI_ART_ICONS, name)) {
+      return `<i class="ui-icon is-artwork" data-icon="${name}"${safeTone ? ` data-tone="${safeTone}"` : ""} aria-hidden="true"><span class="ui-art" data-ui-art="${UI_ART_ICONS[name]}" aria-hidden="true"></span></i>`;
+    }
+    const iconName = Object.hasOwn(UI_ICON_PATHS, name) ? name : "star";
     const paths = UI_ICON_PATHS[iconName];
     return `<i class="ui-icon" data-icon="${iconName}"${safeTone ? ` data-tone="${safeTone}"` : ""} aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false">${paths}</svg></i>`;
   }
@@ -1675,23 +1677,11 @@
   }
 
   // --- Kaynak simgeleri ------------------------------------------------------------
-  // Akı, Devre Kredisi, Akım ve diğer ödül kaynakları dolu çizilir: gövde,
-  // aydınlık ve gölge yüzey, koyu kontur (lig ve mağaza sandıklarıyla aynı dil).
-  // Çizimler 24×24'tür; renkleri canon.css `data-token` ile verir.
+  // Akı/Devre Kredisi: tek merkezden onaylı WebP; kalan kaynaklar 24×24 SVG.
+  // SVG renkleri canon.css `data-token`, para birimi dosyaları Currency artwork.
   const tokenFacets = (body, light, dark, extra = "") =>
     `<path class="tk-m" d="${body}"/><path class="tk-l" d="${light}"/><path class="tk-d" d="${dark}"/>${extra}<path class="tk-o" d="${body}"/>`;
   const RESOURCE_TOKEN_SVG = Object.freeze({
-    // Akı: mor kristal.
-    flux:tokenFacets(
-      "M12 1.5 16.2 7.8 22.5 12 16.2 16.2 12 22.5 7.8 16.2 1.5 12 7.8 7.8Z",
-      "M12 1.5 7.8 7.8 1.5 12H12Z",
-      "M22.5 12 16.2 16.2 12 22.5V12Z",
-      '<path class="tk-w" d="m12 8.4 1.1 2.5 2.5 1.1-2.5 1.1-1.1 2.5-1.1-2.5-2.5-1.1 2.5-1.1Z"/>'
-    ),
-    // Devre Kredisi: üstünde devre darbesi olan altın para.
-    credit:'<circle class="tk-d tk-ink" cx="12" cy="13.2" r="9.5"/><circle class="tk-m tk-ink" cx="12" cy="10.9" r="9.5"/>'
-      + '<circle class="tk-l" cx="12" cy="10.9" r="6.8"/><path class="tk-mark" d="M7 10.9h2.6l1.6-3.4 1.8 6.8 1.6-3.4H17"/>'
-      + '<path class="tk-shine" d="M4.6 8.6a7.8 7.8 0 0 1 3.6-4.2"/>',
     // Akım: şimşek.
     current:tokenFacets(
       "M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z",
@@ -1732,13 +1722,20 @@
     trophy:"resource-symbol-trophy", team_point:"resource-symbol-team-point", premium:"resource-symbol-premium",
   });
 
-  function resourceTokenSvg(kind) {
-    return `<svg viewBox="0 0 24 24" focusable="false">${RESOURCE_TOKEN_SVG[kind] || RESOURCE_TOKEN_SVG.credit}</svg>`;
+  function resourceTokenVisual(kind) {
+    const token = Object.prototype.hasOwnProperty.call(RESOURCE_TOKEN_CLASS, kind) ? kind : "credit";
+    // Tek görsel kaynağı canon.css Currency artwork bölümündedir. Sabit HTML,
+    // ödüller, önizlemeler, mağaza paketleri ve maliyetler aynı sınıfı kullanır.
+    if (token === "flux" || token === "credit") {
+      return `<span class="currency-art" data-currency="${token}" aria-hidden="true"></span>`;
+    }
+    return `<svg viewBox="0 0 24 24" focusable="false">${RESOURCE_TOKEN_SVG[token]}</svg>`;
   }
 
   function resourceTokenMarkup(kind, tag = "span") {
-    const token = RESOURCE_TOKEN_SVG[kind] ? kind : "credit";
-    return `<${tag} class="resource-symbol ${RESOURCE_TOKEN_CLASS[token]} is-token" data-token="${token}" aria-hidden="true">${resourceTokenSvg(token)}</${tag}>`;
+    const token = Object.prototype.hasOwnProperty.call(RESOURCE_TOKEN_CLASS, kind) ? kind : "credit";
+    if (token === "trophy") return `<${tag} class="resource-symbol resource-symbol-trophy is-token is-rating-trophy" data-token="trophy" aria-hidden="true"><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true" draggable="false" decoding="async" /></${tag}>`;
+    return `<${tag} class="resource-symbol ${RESOURCE_TOKEN_CLASS[token]} is-token" data-token="${token}" aria-hidden="true">${resourceTokenVisual(token)}</${tag}>`;
   }
 
   // Maliyet rozeti: para biriminin adı yerine kendi simgesi ("100 DK" → ◎ 100).
@@ -1754,7 +1751,7 @@
     icon.className = "cost-chip-icon is-token";
     icon.dataset.token = kind;
     icon.setAttribute("aria-hidden", "true");
-    icon.innerHTML = resourceTokenSvg(kind);
+    icon.innerHTML = resourceTokenVisual(kind);
     const value = document.createElement("b");
     value.textContent = Number(amount || 0).toLocaleString(uiLocale());
     chip.append(icon, value);
@@ -3962,7 +3959,7 @@
     icon.className = `resource-symbol ${RESOURCE_TOKEN_CLASS[token]} is-token`;
     icon.dataset.token = token;
     icon.setAttribute("aria-hidden", "true");
-    icon.innerHTML = resourceTokenSvg(token);
+    icon.innerHTML = resourceTokenVisual(token);
     const copy = document.createElement("div");
     const name = document.createElement("strong");
     name.textContent = product.name_tr;
@@ -5801,9 +5798,8 @@
     if (name) name.textContent = peer?.display_name || "Oyuncu";
     const meta = document.getElementById("direct-message-peer-meta");
     if (meta) {
-      meta.textContent = peer
-        ? `${peer.rank_name_tr || "Arena"} · ${Number(peer.rating || 0).toLocaleString(uiLocale())} 🏆${peer.online ? " · ÇEVRİMİÇİ" : ""}`
-        : "";
+      if (peer) renderTrophyCaption(meta, peer.rank_name_tr || "Arena", Number(peer.rating || 0), peer.online ? "ÇEVRİMİÇİ" : "");
+      else meta.replaceChildren();
     }
 
     const host = document.getElementById("direct-message-list");
@@ -5949,7 +5945,7 @@
     const identity = document.createElement("div");
     const name = createPublicPlayerName(player.player_id, player.display_name || "Oyuncu");
     const meta = document.createElement("small");
-    meta.textContent = `${player.rank_name_tr || "Arena"} · ${Number(player.rating || 0).toLocaleString(uiLocale())} 🏆${player.online ? " · ÇEVRİMİÇİ" : ""}`;
+    renderTrophyCaption(meta, player.rank_name_tr || "Arena", Number(player.rating || 0), player.online ? "ÇEVRİMİÇİ" : "");
     identity.append(name, meta);
     const controls = document.createElement("div");
     controls.className = "social-player-actions";
@@ -6006,7 +6002,7 @@
   function createFriendsEmptyState(title, copy) {
     const empty = document.createElement("div");
     empty.className = "friends-empty-state";
-    empty.innerHTML = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="18" cy="16" r="7"/><circle cx="32" cy="18" r="5"/><path d="M5 40c1-8 6-12 13-12s12 4 13 12M29 30c6-1 11 2 13 9"/></svg>';
+    empty.appendChild(createUiIcon("people", "green"));
     const heading = document.createElement("strong");
     heading.textContent = title;
     const text = document.createElement("small");
@@ -6320,12 +6316,13 @@
     const host = document.getElementById(hostId);
     if (!host) return;
     host.replaceChildren();
-    for (const [label, value] of metrics) {
+    for (const [label, value, trophy = false] of metrics) {
       const card = document.createElement("article");
       const name = document.createElement("span");
       const amount = document.createElement("strong");
       name.textContent = label;
-      amount.textContent = String(value);
+      if (trophy) renderTrophyValue(amount, value);
+      else amount.textContent = String(value);
       card.append(name, amount);
       host.appendChild(card);
     }
@@ -6370,7 +6367,7 @@
     renderEventSummary("weekly-event-summary", [
       ["SÜRE", `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`],
       ["SIRAN", participant ? `#${participant.position}` : "Henüz yok"],
-      ["KAZANILAN KUPA", participant ? `${participant.trophies_earned || participant.points} 🏆` : "0 🏆"],
+      ["KAZANILAN KUPA", participant ? participant.trophies_earned || participant.points : 0, true],
     ]);
     const host = document.getElementById("weekly-tournament-standings");
     if (!host) return;
@@ -6392,7 +6389,7 @@
       identity.append(player, record);
       const points = document.createElement("strong");
       points.className = "tournament-points";
-      points.textContent = `${row.trophies_earned || row.points} 🏆`;
+      renderTrophyValue(points, row.trophies_earned || row.points);
       item.append(position, identity, points);
       appendTournamentPrizeChest(item, tournament.prizes || [], row.position, "Hafta sonunda mesaj kutusuna teslim edilir.");
       host.appendChild(item);
@@ -6999,6 +6996,31 @@
     }
   }
 
+  function createRatingTrophyIcon() {
+    const icon = document.createElement("img");
+    icon.className = "trophy-value-icon";
+    icon.src = "./assets/ui/rating-trophy-v1/rating-trophy.webp";
+    icon.width = 128;
+    icon.height = 128;
+    icon.alt = "";
+    icon.draggable = false;
+    icon.decoding = "async";
+    icon.setAttribute("aria-hidden", "true");
+    return icon;
+  }
+
+  function renderTrophyCaption(target, prefix, value, suffix = "", iconFirst = false) {
+    if (!target) return;
+    const amount = document.createElement("span");
+    renderTrophyValue(amount, value);
+    if (iconFirst) amount.classList.add("trophy-icon-first");
+    target.replaceChildren(
+      document.createTextNode(`${localizedUiText(String(prefix))} · `),
+      amount,
+      document.createTextNode(suffix ? ` · ${localizedUiText(String(suffix))}` : "")
+    );
+  }
+
   function renderTrophyValue(targetOrId, value) {
     const target = typeof targetOrId === "string"
       ? document.getElementById(targetOrId)
@@ -7010,10 +7032,7 @@
     const number = document.createElement("span");
     number.className = "trophy-value-number";
     number.textContent = displayValue;
-    const icon = document.createElement("span");
-    icon.className = "trophy-value-icon";
-    icon.setAttribute("aria-hidden", "true");
-    icon.textContent = "🏆";
+    const icon = createRatingTrophyIcon();
     target.classList.add("trophy-visual-value");
     target.setAttribute("aria-label", `${displayValue} Kupa`);
     target.replaceChildren(number, icon);
@@ -7217,7 +7236,7 @@
         const copy = document.createElement("div");
         copy.append(createPublicPlayerName(applicant.player_id, applicant.display_name));
         const meta = document.createElement("small");
-        meta.textContent = `${applicant.rank_name_tr} · ${Number(applicant.trophies || 0).toLocaleString(uiLocale())} 🏆`;
+        renderTrophyCaption(meta, applicant.rank_name_tr || "Arena", Number(applicant.trophies || 0));
         copy.appendChild(meta);
         const actions = document.createElement("span");
         actions.className = "team-management-actions";
@@ -7253,7 +7272,7 @@
         const copy = document.createElement("div");
         copy.append(createPublicPlayerName(member.player_id, member.display_name || "Üye"));
         const meta = document.createElement("small");
-        meta.textContent = `${member.online ? "ÇEVRİMİÇİ" : "ÇEVRİMDIŞI"} · ${Number(member.trophies || 0).toLocaleString(uiLocale())} 🏆`;
+        renderTrophyCaption(meta, member.online ? "ÇEVRİMİÇİ" : "ÇEVRİMDIŞI", Number(member.trophies || 0));
         copy.appendChild(meta);
         const actions = document.createElement("span");
         actions.className = "team-management-actions";
@@ -7560,14 +7579,15 @@
     const name = createTeamProfileLink(team.team_id, team.name, { className:"team-directory-name" });
     applyTeamAppearance(row, team.appearance, { emblemHost:badge, nameHost:name });
     const meta = document.createElement("small");
-    const trophies = Number(team.total_trophies || 0).toLocaleString(uiLocale());
-    meta.textContent = localizedMessage("team.directory_meta", {
+    renderTrophyCaption(meta, localizedMessage("team.directory_members", {
       members:team.member_count,
       limit:team.member_limit,
-      trophies,
-    }) + (minTrophies > 0
-      ? localizedMessage("team.directory_requirement", { trophies:localizedNumber(minTrophies) })
-      : "");
+    }), Number(team.total_trophies || 0));
+    if (minTrophies > 0) {
+      const requirement = document.createElement("span");
+      renderTrophyCaption(requirement, localizedMessage("team.directory_minimum"), minTrophies);
+      meta.append(document.createTextNode(" · "), requirement);
+    }
     copy.append(name, meta);
     const descriptionText = teamDescriptionText(team);
     if (descriptionText) {
@@ -8820,7 +8840,7 @@
         ?? (playerId === participantPlayerId ? profileState.viewModel()?.rating : 0)
         ?? 0
       );
-      trophy.textContent = `🏆 ${Math.max(0, Math.round(rating)).toLocaleString(uiLocale())}`;
+      renderTrophyValue(trophy, Math.max(0, Math.round(rating)));
       coreCopy.append(coreName, coreLevel, trophy);
       coreCard.append(coreGlyph, coreCopy);
 
@@ -17866,9 +17886,7 @@
         view.displayName;
     }
     if (lobbyPlayerDetails) {
-      lobbyPlayerDetails.textContent= localizedUiText(
-        `${activeTitle} · 🏆 ${view.rating}`
-      );
+      renderTrophyCaption(lobbyPlayerDetails, activeTitle, view.rating, "", true);
       lobbyPlayerDetails.dataset.claimable = String(
         (view.operatorTitleProgression?.stages || []).some((stage) => stage.claimable)
       );
@@ -17878,9 +17896,7 @@
     const profileHeroDetails = document.getElementById("profile-hero-details");
     if (profileHeroName) profileHeroName.textContent = view.displayName;
     if (profileHeroDetails) {
-      profileHeroDetails.textContent = localizedUiText(
-        `${activeTitle} · 🏆 ${view.rating}`
-      );
+      renderTrophyCaption(profileHeroDetails, activeTitle, view.rating, "", true);
       profileHeroDetails.dataset.claimable = lobbyPlayerDetails?.dataset.claimable || "false";
     }
     if (document.getElementById("operator-titles-dialog")?.open) renderOperatorTitles();
@@ -19582,7 +19598,14 @@
     const matches = Math.max(1, Number(stats.matches || 0));
     const entries = [["🏆 / En yüksek", `${stats.current_trophies} / ${stats.highest_trophies}`], ["Arena / Lig", stats.rank], ["En uzun galibiyet serisi", stats.longest_streak || 0], ["Maç başı yerleştirme", ((stats.deployments || 0)/matches).toFixed(1)], ["Toplam / Ortalama Akım", `${stats.current_spent || 0} / ${((stats.current_spent || 0)/matches).toFixed(1)}`], ["Çekirdek gücü kullanımı", stats.core_power_uses || 0], ["En yüksek maç hasarı", stats.peak_damage || 0], ["Açılan modül", `${stats.unlocked_modules} / 36`], ["Yükseltilen modül", stats.upgraded_modules], ["En yüksek modül seviyesi", stats.highest_module_level], ["Açılan çekirdek", `${stats.unlocked_cores} / 7`], ["Açılan sandık", stats.opened_chests]];
     for (const [id, count] of Object.entries(stats.cores || {})) entries.push([metaProgressionState.cores?.types.find(c => c.id === id)?.name_tr || id, `%${Math.round(count / matches * 100)}`]);
-    for (const [name, value] of entries) { const card=document.createElement("div"), label=document.createElement("small"), number=document.createElement("strong"); label.textContent=name; number.textContent=String(value ?? 0); card.append(label,number); host.appendChild(card); }
+    for (const [name, value] of entries) {
+      const card=document.createElement("div"), label=document.createElement("small"), number=document.createElement("strong");
+      if (name === "🏆 / En yüksek") label.replaceChildren(createRatingTrophyIcon(), document.createTextNode(localizedMessage("stats.trophies_peak").replace("🏆", "")));
+      else label.textContent=name;
+      number.textContent=String(value ?? 0);
+      card.append(label,number);
+      host.appendChild(card);
+    }
   }
 
   function renderStatisticsSummary() {
@@ -21439,6 +21462,10 @@
   });
 
   function decorateStaticIcons() {
+    for (const host of document.querySelectorAll("[data-rating-trophy]")) {
+      if (!host.querySelector(".trophy-value-icon")) host.prepend(createRatingTrophyIcon());
+      host.classList.add("has-ui-icon");
+    }
     for (const host of document.querySelectorAll("[data-event-emblem]")) {
       const kind = host.dataset.eventEmblem;
       if (Object.hasOwn(EVENT_HUB_EMBLEMS, kind)) host.innerHTML = EVENT_HUB_EMBLEMS[kind];
@@ -21466,7 +21493,7 @@
     }
     // Sayfa kaynağında işaretli başlıklar: data-ui-icon="simge:ton".
     for (const element of document.querySelectorAll("[data-ui-icon]")) {
-      if (element.querySelector(":scope > .ui-icon")) continue;
+      if (element.querySelector(":scope > .ui-icon, :scope > .resource-symbol.is-token")) continue;
       const [icon, tone] = String(element.dataset.uiIcon).split(":");
       element.prepend(createUiIcon(icon, tone || ""));
       element.classList.add("has-ui-icon");
