@@ -38,13 +38,13 @@ Oyun kuralları, ekonomi, ödül, satın alma, hesap ve ağ akışları bu işin
 | No | Paket | Kapsam | Durum |
 | --- | --- | --- | --- |
 | 1 | Ortak ikonlar | 10 ana ikon: ayarlar, mesaj, arkadaş, profil, hediye, takvim, istatistik, kozmetik, bilgi, menü. Ortak ikon eşlemesiyle tüm karşılıklarına yayılır. | Kullanıcı onayladı; oyuna bağlandı; yerel/görsel kontrol kullanıcıda |
-| 2 | Buton ve hücre ailesi | Yaklaşık 10 ortak parça: ana/ikincil/uyarı butonları, kart ve hücre yüzeyleri, sekmeler, giriş alanları, anahtarlar, ilerleme çubukları ve etkileşim durumları. | Bekliyor |
-| 3 | Ana ekran ve marka | Logo sunumu, açılış/yükleme ekranı, ana ekran yüzeyleri, Devre Yolu giriş kartı ve ortak başlıklar. Onaylı dock korunur. | Bekliyor |
-| 4 | Rekabet ve etkinlikler | Lig amblemleri, sıralama ödülleri, haftalık ve takımlar arası turnuva hücreleri, lider panosu. Günlük meta ayrı tutulur. Kazanılmamış kupalar kazanılmış gibi gösterilmez. | Bekliyor |
-| 5 | Profil ve sosyal alanlar | Kendi/başka oyuncu profili, takım profili, üyeler, başvurular, arkadaşlar, sohbet ve mesaj kutusu; kozmetik çerçeveler ve seçim hücreleri. Büyük kozmetik koleksiyonları 10'lu alt paketlere ayrılır. | Bekliyor |
-| 6 | Mağaza ve ödüller | Paket yüzeyleri, sandık önizlemeleri, günlük görevler, sezon geçişi ve ödül ekranları. Yeni sandık/para birimleri korunur; çevreleri tamamlanır. | Bekliyor |
-| 7 | Savaş arayüzü ve kalan ekranlar | Savaş hücreleri, HUD, geri sayım, zafer/yenilgi; ayarlar, onay pencereleri, bildirimler, eğitim, boş/yükleniyor/hata ve bağlantı kurtarma durumları. Modül/çekirdek çizimleri hariç. Gerektikçe 10'lu alt paketler. | Bekliyor |
-| 8 | En son modüller ve çekirdekler | Önce modüller yaklaşık 10'lu gruplarla, ardından çekirdekler. Sınıf/işlev ayrımı, küçük boyutta okunabilirlik ve savaşta efekt yoğunluğu gözetilir. | En son; bekliyor |
+| 2 | Buton ve hücre ailesi | 10 ortak parça: ana/ikincil/uyarı butonları, kart ve seçim hücreleri, sekmeler, giriş alanları, anahtarlar, ilerleme çubukları ve zeminsiz ikon eylemleri; etkileşim durumları dahil. | Kullanıcı onayladı; ortak CSS ile oyuna bağlandı; yerel/görsel kontrol kullanıcıda |
+| 3 | Ana ekran ve marka | 8 ortak parça: logo sunumu, açılış/yükleme, profil/kaynak barları, Devre Yolu girişi, deste sahnesi ve ortak bölüm/sayfa başlıkları. Onaylı dock korunur. | Kullanıcı onayıyla oyuna bağlı; son SAVAŞ/arena rötuşları da uygulandı |
+| 4 | Rekabet ve etkinlikler | Lig amblemleri, sıralama ödülleri, haftalık ve takımlar arası turnuva hücreleri, lider panosu. Günlük meta ayrı tutulur. Kazanılmamış kupalar kazanılmış gibi gösterilmez. | 4A ve eksik 4B kaynaklara bağlı. Turnuva çevreleri onaylı ortak bileşenlerle tamamlandı; günlük meta değişmedi. Görsel/oyun kontrolü kullanıcıda |
+| 5 | Sandıklar + profil ve sosyal alanlar | Kullanıcı ek kapsamı: 5A sekiz ayrı lig sandığı; 5B ilk 10 sıranın on ayrı kasası. 5C kendi/başka oyuncu profili, takım, üyeler, başvurular, arkadaşlar, sohbet, mesaj kutusu ve kozmetik yüzeyleri. Her grup ≤10 parça. | 5A/5B kullanıcı onaylı 18 çizim, açık eşleriyle 36 dosya bağlı. Eksik 5C mevcut onaylı fiziksel amblem ve ortak bileşenlerle tamamlandı/bağlandı. Yeni portre koleksiyonu eklenmedi; görsel/oyun kontrolü kullanıcıda |
+| 6 | Mağaza ve ödüller | Paket yüzeyleri, sandık önizlemeleri, günlük görevler, sezon geçişi ve ödül ekranları. Yeni sandık/para birimleri korunur; çevreleri tamamlanır. | 16 Ekim kullanıcı onayıyla on bileşen kaynaklara bağlı. 2.lik sandığı uzun önizleme/hover düzeltmesi dahil. Detay: GORSEL_DONUSUM_PAKET06_20261016.md |
+| 7 | Savaş arayüzü ve kalan ekranlar | Savaş hücreleri, HUD, geri sayım, zafer/yenilgi; ayarlar, onay pencereleri, bildirimler, eğitim, boş/yükleniyor/hata ve bağlantı kurtarma durumları. Modül/çekirdek çizimleri hariç. Gerektikçe 10'lu alt paketler. | 16 Ekim kullanıcı onayıyla on ortak bileşen kaynaklara bağlı. Gerçek durum sınıfları/sonuçlar kullanılıyor; 5×3 yerleşim, kalıcı savaş DOM'u ve zamanlayıcı korundu. Detay: GORSEL_DONUSUM_PAKET07_20261016.md |
+| 8 | En son modüller ve çekirdekler | Önce modüller yaklaşık 10'lu gruplarla, ardından çekirdekler. Sınıf/işlev ayrımı, küçük boyutta okunabilirlik ve savaşta efekt yoğunluğu gözetilir. | 8A ilk on modül çizildi; büyük/32/48px ve normal/seçili/kilitli önizleme hazır. Onay bekliyor; oyuna bağlı değil. 8B/8C/8D kalan 26 modül, sonra çekirdekler. Detay: GORSEL_DONUSUM_PAKET08A_20261016.md |
 
 ## Teknik standart
 
@@ -59,6 +59,108 @@ Oyun kuralları, ekonomi, ödül, satın alma, hesap ve ağ akışları bu işin
   performans iyileştirmeleri korunur; kartları tekrar oluşturma geri gelmez.
 - Yeni bir alan fark edilirse uygun pakete eklenir; bütün plan tekrar
   yazılmaz. Her paketin kapanışında eski ikon/emoji/tasarım kaçakları taranır.
+
+## Paket 3 — onaylandı / oyuna bağlandı
+
+Son rötuş: SAVAŞ 202px/64%; yazı 19,333px ve ikon 31,333px (-0,5pt).
+Arena üst boşluğu bütün boylarda +8px. Dokunma yüksekliği 48px ve sahne korunur.
+
+Son onay: kaynak satırı kaymaları düzeltildi; ana savaş ekranından marka/boş
+satır kaldırıldı, arena yukarı alındı, profil mint. `home-interface-v3.css`
+ortak web/native stil bloğunda Paket 2'den sonra; `home-interface-view.js`
+app.js'ten önce. Devre Yolu gerçek tekil eşiklerle, kapalı/açık zarf okuma
+eylemiyle, küçük ikonlu SAVAŞ ve seçili dock etiketiyle bağlı. Açılış yeni
+logoyu kullanır; son arka plan/hareketli çekirdek sahnesi korunur. Oyun testi
+kullanıcıda; dağıtım/native üretim/commit/push yapılmadı. Güncel uygulama ve
+okunma senkronizasyon sınırı Paket 3 belgesinin başında; altı önizleme tarihçesi.
+
+Revizyon 3 (son kullanıcı isteği): Devre Yolu karttan çıkarılıp ortada hacimli
+zeminsiz simge/üstte arena/altta eşik ilerlemesi oldu. Savaş düğmesi daha küçük,
+solda mevcut ikon ve kalın başlık. Büyük çerçevesiz profil + karşılaştırılabilir
+kozmetik çerçeve alanı; lavanta profil/altın zarf/buz mavisi menü; belirgin artı.
+Yeni açık/kapalı zarf ve dört kategorili mesaj okuma örneği eklendi. Son arka
+plan ve hareketli çekirdek sahnesi korunur. Yalnız önizleme; oyuna bağlı değil.
+Güncel kayıt Paket 3 belgesinin başında, Imagegen promptları ayrı Rev3 JSON'da.
+
+Revizyon 2: Kullanıcı asıl yerleşim/hareket/arka planın değiştirilmemesini istedi.
+Kaynak satırı en üste alındı (oyun kaynaklarında zaten üsttedir); hacimli artı,
+gerçek tekil eşik sayısına bağlı Devre Yolu, mevcut devre atmosferi ve hareketli
+çekirdeğin altıgen sahnesi, kompakt SAVAŞ ve yalnız seçilide etiketli dock geri
+getirildi. Yeni logo için açık kullanıcı izniyle tek Imagegen önerisi üretildi;
+mevcut oyun/mağaza/native logosu değiştirilmedi. Diğer parçalar korunur.
+Güncel detaylar Paket 3 belgesinin başındadır; eski taslak kararları geçersizdir.
+
+15 Ekim: Kullanıcı Paket 2 bağlantısından sonra 3. adıma geçilmesini istedi.
+8 ortak parça için büyük/küçük örnekler ve ana ekran/açılış kompozisyonu hazır.
+Kapsam/onay numaraları `GORSEL_DONUSUM_PAKET03_20261015.md`.
+Mevcut amblem/dock/ikonlar ve kod-native modül/çekirdek çizimleri yalnız bağlamda
+kullanıldı; yeniden üretilmedi. Önizleme `artifacts/visual-refresh-pack03-20261015/`
+altında Git dışıdır, ayrıca taşınır. Sekme/varlık/sözdizimi ve yalıtılmış
+önizleme etkileşimleri kontrol edildi; gerçek tarayıcı çizimi kontrol edilmedi.
+Paket 3 için oyun kaynakları, işleyiş, derleme/dağıtım veya commit/push yok.
+**Bu önizleme onay kapısı tarihçedir; Paket 3 artık bağlıdır.**
+
+## Paket 4 / 5 — en güncel bağlantı durumu
+
+16 Ekim 2026: Kullanıcı iki sandık grubunu onayladı ve eksik 4/5 alanlarının
+tamamlanıp bağlanmasını istedi. 4A+4B ve 5A+5B+5C kaynak düzeyinde tamamlandı.
+6 turnuva yüzeyi ve 10 profil/sosyal yüzey grubu onaylı ortak dilin uygulamasıdır;
+yeni tasarım ailesi veya portre koleksiyonu oluşturulmadı. Kapanış envanteri,
+görsel alias/kimlikler, QA ve dağıtım sınırı:
+`GORSEL_DONUSUM_PAKET04B_05C_BAGLANTI_20261016.md`.
+Oyun/birim testi, tarayıcı/sunucu, dağıtım/native/commit/push yok.
+
+16 Ekim heartbeat rötuşları da bağlı: sıralama sandıklarında zeminsiz 44px
+alan/dar ekran taşma düzeltmesi ve hover önizlemesi; P2 buton köşelerinde koyu
+eski tabanın kaldırılması; mesaj kategorileri ve en çok kullanılan deste için
+ortak fiziksel ikonlar; ana Devre Yolu/arena/lig/eşik ve takım başvuru şartında
+kupa görseli. Okunma zarfları, sayılar, kilitler ve iş kuralları korunur.
+Paket 6 on parçalık örnek etkileşimlerle hazırlandı; yalnız önizlemedir.
+
+### Paket 4A önizleme tarihçesi — aşağıdaki onay bekleme notu eskidir
+
+Kullanıcı 3. paketin son rötuşundan sonra 4. adıma geçilmesini istedi.
+10 parça: 01 Kıvılcım, 02 Voltaj, 03 Reaktör, 04 Kuantum, 05 Nexus,
+06 Şampiyonlar, 07 Efsanevi, 08 GRIDSHARD lig amblemleri; 09 sıralama ödülü
+sunumu (tek kupa ailesi/üç metal); 10 lider panosu satırı/seçim durumu.
+Yedi built-in Imagegen üretimi, mevcut simge anlamı/lig rengi korunarak.
+Şampiyonlar ve kupa örnekleri onaylı mevcut kupayı kullanır; yeni kupa yok.
+Önizleme + Devre Yolu/Lider Panosu bağlamları; örnek oyuncular gerçek hesaba
+bağlı değildir. Kazanılmamış kupalar açıkça işaretlidir. Runtime'a bağlanmadı.
+Detay: `GORSEL_DONUSUM_PAKET04A_20261015.md`. Kaynaklar Git dışı
+`artifacts/visual-refresh-pack04a-20261015/`; ayrıca taşınmalıdır.
+4B'de lig sandıkları ve haftalık/takım etkinliği çevreleri ele alınacak;
+envanter 10 parçayı aşarsa yeniden alt gruplara bölünür. Günlük meta ve
+oyun kuralları kapsam dışı. **4A onayı gelmeden bağlama.**
+
+## Paket 2 — onaylandı ve bağlandı
+
+Güncel durum: Kullanıcı "bağla" dedi. `client/src/ui-components-v2.css` ortak
+kaynağı `index.html` stil derleme bloğunun sonuna bağlandı; web/native ortak
+hattı bu kaynağı içeriyor. Buton/kart/hücre/sekme/giriş/anahtar/ilerleme ve
+zeminsiz ikon eylemleri mevcut DOM ve durum adlarını kullanır. Oyun işleyicileri,
+değerler ve onaylı çizimler değişmedi. Bildirim `::after` alanı, kozmetik renk
+örnekleri ve enderlik kenarları korunur. Bellekte stil paketlemesi/JS hedef
+dönüşümü/sözdizimi/diff kontrolü geçti. Görsel oyun denemeleri kullanıcıda;
+yeni tarayıcı/sunucu, oyun testi, dağıtım veya commit/push yok. Paket 3 başlamadı.
+
+### Önizleme tarihçesi
+
+15 Ekim: Kullanıcı iş bilgisayarındaki dönüşümden sonra ikinci pakete geçilmesini
+istedi. Onaylı çizimler ve fontlar korunarak 10 ortak CSS yüzeyi için tek numaralı
+önizleme hazırlandı. Büyük/küçük kullanımlar, basılı/pasif/seçili/kilitli durumlar
+gösterilir. Kapsam ve numara eşlemeleri:
+`GORSEL_DONUSUM_PAKET02_20261015.md`.
+Dosyalar `artifacts/visual-refresh-pack02-20261015/` altında, Git dışında;
+bilgisayarlar arasında ayrıca taşınmalı. Oyun kaynakları değiştirilmedi.
+JS/CSS sözdizimi ve yalıtılmış önizleme etkileşimleri kontrol edildi; gerçek
+tarayıcı/oyun kontrolü yapılmadı, yeni tarayıcı veya sunucu başlatılmadı.
+Bu aşama artık tarihçedir; güncel onay/bağlantı durumu yukarıdadır.
+
+Kullanıcı revizyonu: Paket 2 / 10. parça ve aynı tipteki **tüm bağımsız ikon
+eylemleri zeminsiz**. Ayrı levha/kenarlık/gölge yok; tıklama alanı, odak,
+bildirim rozeti ve pasif durum ayrımı korunur. Önizleme güncellendi; metinli
+buton/sekme/kartlar ve onaylı dock bu değişikliğin dışında. Oyuna bağlanmadı.
 
 ## Paket 1 — onay numaraları
 

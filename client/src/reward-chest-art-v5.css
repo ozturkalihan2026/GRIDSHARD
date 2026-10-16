@@ -1,0 +1,39 @@
+/* Approved 5A/5B closed/open artwork. Reuse the existing colored casual
+   opening effect; only a confirmed receipt sets data-state="revealed". */
+.reward-chest-art {
+  position:relative; display:inline-block; vertical-align:middle;
+  padding:0 !important; border:0 !important; background:none !important;
+  box-shadow:none !important; filter:none !important; overflow:visible;
+}
+.reward-chest-art::before,.reward-chest-art::after { content:none !important; display:none !important; }
+.reward-chest-art > .casual-chest-stage { display:block; width:100%; height:100%; }
+.reward-chest-art .casual-chest-open { opacity:0; }
+.reward-chest-art.is-open .casual-chest-open { opacity:1; }
+.reward-chest-art.is-open .casual-chest-closed { opacity:0; }
+#chest-reveal-visual.reward-chest-reveal > .reward-chest-art { display:block; width:100% !important; height:100% !important; margin:0; transform:none; }
+/* No old tile behind a physical chest. The former 38px target + 6px margin
+   clipped the new 44px artwork. All ranking tracks now reserve the hit area. */
+:root body[data-app-screen] .reward-chest-button {
+  width:44px !important; height:44px !important;
+  min-width:0 !important; min-height:0 !important; margin:0 !important;
+  padding:0 !important; border:0 !important; border-radius:0 !important;
+  background:transparent !important; box-shadow:none !important;
+  justify-self:center; flex:0 0 44px; overflow:visible;
+}
+:root body[data-app-screen] .reward-chest-button::before,
+:root body[data-app-screen] .reward-chest-button::after { content:none !important; display:none !important; }
+:root body[data-app-screen] .reward-chest-button[aria-expanded="true"] { background:transparent !important; box-shadow:none !important; }
+.reward-chest-button .chest-visual,
+.reward-chest-button .reward-chest-art { width:44px !important; height:44px !important; transform:none !important; }
+.reward-chest-button .reward-chest-count { right:0; bottom:0; }
+.reward-chest-button .reward-chest-lock { left:0; top:0; }
+.reward-chest-button[data-locked="true"] .reward-chest-art { filter:grayscale(.55) brightness(.82) !important; }
+.reward-preview-chest .reward-chest-art { width:40px; height:40px; }
+.arena-reward-node .league-chest-painted { width:100%; height:100%; }
+.league-chest-button .league-chest-painted { display:block; }
+@media (prefers-reduced-motion:reduce) {
+  #chest-reveal-visual.reward-chest-reveal,
+  #chest-reveal-visual.reward-chest-reveal :is(.casual-chest-closed,.casual-chest-open,.casual-chest-burst,.casual-chest-particles > i) { animation:none !important; transition:none !important; }
+}
+body[data-graphics="dusuk"] #chest-reveal-visual.reward-chest-reveal,
+body[data-graphics="dusuk"] #chest-reveal-visual.reward-chest-reveal :is(.casual-chest-closed,.casual-chest-open,.casual-chest-burst,.casual-chest-particles > i) { animation:none !important; transition:none !important; }

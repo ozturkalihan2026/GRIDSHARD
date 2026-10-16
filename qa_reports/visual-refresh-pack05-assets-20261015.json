@@ -1,0 +1,207 @@
+{
+  "status": "18 closed assets; preview-only pending approval",
+  "tool": "built-in imagegen",
+  "reframe": "rank_crown r2; original retained",
+  "alphaAndSourceBoundary": "all passed during export",
+  "gameEconomyOrServerChanged": false,
+  "assets": [
+    {
+      "pack": "5a",
+      "key": "spark",
+      "master": "artifacts/visual-refresh-pack05-20261015/5a/masters/spark.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5a/webp/spark.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 34814,
+      "sha256": "7dfec7a8c240c54811521f683e421d40723dbc41984e6ed721aad36afcd51f2f"
+    },
+    {
+      "pack": "5a",
+      "key": "volt",
+      "master": "artifacts/visual-refresh-pack05-20261015/5a/masters/volt.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5a/webp/volt.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 36128,
+      "sha256": "feca1b750b3947e357d430c388810afe1c5d0321944046d46785ea86ee114b6c"
+    },
+    {
+      "pack": "5a",
+      "key": "reactor",
+      "master": "artifacts/visual-refresh-pack05-20261015/5a/masters/reactor.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5a/webp/reactor.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 43892,
+      "sha256": "f68f6f6837529a72c593d2258ef67701953bb4c43bfa29b15c204021bb5ed7e0"
+    },
+    {
+      "pack": "5a",
+      "key": "quantum",
+      "master": "artifacts/visual-refresh-pack05-20261015/5a/masters/quantum.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5a/webp/quantum.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 43424,
+      "sha256": "d499b1ac9a18761495644b1ac7b215a9dd8b778c609f03d1ef446819ba6b6756"
+    },
+    {
+      "pack": "5a",
+      "key": "nexus",
+      "master": "artifacts/visual-refresh-pack05-20261015/5a/masters/nexus.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5a/webp/nexus.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 40174,
+      "sha256": "fcf2d46310d1577786698704db8d657e122a860975b5aa8f46f5fd69a0ddf7be"
+    },
+    {
+      "pack": "5a",
+      "key": "champions",
+      "master": "artifacts/visual-refresh-pack05-20261015/5a/masters/champions.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5a/webp/champions.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 42102,
+      "sha256": "9a29323cd1d90853d90fcc2dd6f21b6c49f10ffc9dce0bd8979553a58587fda7"
+    },
+    {
+      "pack": "5a",
+      "key": "legendary",
+      "master": "artifacts/visual-refresh-pack05-20261015/5a/masters/legendary.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5a/webp/legendary.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 47454,
+      "sha256": "5e752256913b7b1ab42da8f785e273e3bac7df121e026b871c31e7f571cd0c4f"
+    },
+    {
+      "pack": "5a",
+      "key": "gridshard",
+      "master": "artifacts/visual-refresh-pack05-20261015/5a/masters/gridshard.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5a/webp/gridshard.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 45848,
+      "sha256": "1a6ccac12471403f40036d93551a5d7c57d0ea83967acb48890b45f9fb03bdf9"
+    },
+    {
+      "pack": "5b",
+      "key": "rank_crown",
+      "master": "artifacts/visual-refresh-pack05-20261015/5b/masters/rank_crown-r2.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5b/webp/rank_crown.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 35626,
+      "sha256": "4b01f072665b6f4c74de7516cb7041c383571aa98765545268ce3d4c376fb7ea"
+    },
+    {
+      "pack": "5b",
+      "key": "rank_prism",
+      "master": "artifacts/visual-refresh-pack05-20261015/5b/masters/rank_prism.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5b/webp/rank_prism.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 38926,
+      "sha256": "65200c6751859970925a37c02bdbd66801711f639e31ed7c169b696e0e253ee1"
+    },
+    {
+      "pack": "5b",
+      "key": "rank_reactor",
+      "master": "artifacts/visual-refresh-pack05-20261015/5b/masters/rank_reactor.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5b/webp/rank_reactor.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 43908,
+      "sha256": "07c55caf920b85033eed07150454d43d0b922f80515470ccab8fcd7bf140c420"
+    },
+    {
+      "pack": "5b",
+      "key": "rank_frequency",
+      "master": "artifacts/visual-refresh-pack05-20261015/5b/masters/rank_frequency.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5b/webp/rank_frequency.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 37544,
+      "sha256": "d9870f419b6d6ab6c5eeaa82a22947e8735b3d882fca978babb3940bafab7f4a"
+    },
+    {
+      "pack": "5b",
+      "key": "rank_circuit",
+      "master": "artifacts/visual-refresh-pack05-20261015/5b/masters/rank_circuit.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5b/webp/rank_circuit.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 41978,
+      "sha256": "2e721bd78f46942e80b46bcbe7444047c20198e0ef4775e6aa666b778618627d"
+    },
+    {
+      "pack": "5b",
+      "key": "rank_current",
+      "master": "artifacts/visual-refresh-pack05-20261015/5b/masters/rank_current.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5b/webp/rank_current.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 38314,
+      "sha256": "4e274c82188c9d9181c4bd222daa1cf24e0e4659d62346ffeb645697214b43cc"
+    },
+    {
+      "pack": "5b",
+      "key": "rank_neuron",
+      "master": "artifacts/visual-refresh-pack05-20261015/5b/masters/rank_neuron.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5b/webp/rank_neuron.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 41112,
+      "sha256": "54419be9a3651b5b2206be2dc7be6c92e04d5280d6e14d0a5718e96cd7f3fdef"
+    },
+    {
+      "pack": "5b",
+      "key": "rank_relay",
+      "master": "artifacts/visual-refresh-pack05-20261015/5b/masters/rank_relay.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5b/webp/rank_relay.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 37258,
+      "sha256": "53762b9754c5b9e04c7d0e28273495af43358c82e738be90c37180c59a2fceb3"
+    },
+    {
+      "pack": "5b",
+      "key": "rank_conductor",
+      "master": "artifacts/visual-refresh-pack05-20261015/5b/masters/rank_conductor.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5b/webp/rank_conductor.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 37774,
+      "sha256": "3c135b848b750471d04bd94245bbc88638f374c52212bfb2b691d5103937d59c"
+    },
+    {
+      "pack": "5b",
+      "key": "rank_spark",
+      "master": "artifacts/visual-refresh-pack05-20261015/5b/masters/rank_spark.png",
+      "preview": "artifacts/visual-refresh-pack05-20261015/5b/webp/rank_spark.webp",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 38976,
+      "sha256": "27cc649fec756c10a54395052f5b8a01a625e1253be8eb441ee658f3345e2c74"
+    }
+  ]
+}

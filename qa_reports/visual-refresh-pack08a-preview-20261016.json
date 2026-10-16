@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-16",
+  "package": "8A",
+  "components": 10,
+  "images": 10,
+  "generatedWith": "built-in imagegen; one call per object + one shield simplification edit",
+  "bytes": 213400,
+  "cssJsTransform": "passed",
+  "assetIds": "first ten canonical modules in exact order",
+  "transparency": "ten masters have 0–255 real alpha; all four derivative edges clear with technical 2px padding",
+  "interaction": "ten selections + normal/selected/locked states + restore and design size",
+  "smallSizes": [
+    32,
+    48
+  ],
+  "gameBound": false,
+  "gameTestsRun": false,
+  "browserStarted": false,
+  "serverStarted": false
+}

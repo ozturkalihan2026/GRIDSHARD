@@ -225,7 +225,7 @@ Object.assign(this, { leagueChestMarkup, setChestRevealVisual, LEAGUE_CHEST_OPEN
   assert.match(visual.innerHTML, /^<svg class="shop-chest" viewBox="0 0 100 86"/);
   for (const name of ["showChestReveal", "showBulkChestReveal", "showChestOpening", "showClaimedChest"]) {
     const body = app.slice(app.indexOf(`  function ${name}(`), app.indexOf("\n  }\n", app.indexOf(`  function ${name}(`)));
-    assert.ok(body.includes("setChestRevealVisual({ tier });"), `${name} pencerenin çizimini sıfırlamıyor`);
+    assert.ok(body.includes("setChestRevealVisual({ tier,"), `${name} pencerenin çizimini sıfırlamıyor`);
   }
 
   const reveal = slice("  function showLeagueChestReveal(rewards = {}) {", "  // Maçta yeni açılan Devre Yolu ödülü");

@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-16",
+  "package": 7,
+  "components": 10,
+  "bytes": 185664,
+  "cssJsTransform": "passed",
+  "interaction": "cell, shelf, countdown, result, settings, confirmation, notices, guide, four system states and retry",
+  "persistence": "no save on load/restore; validated restore and Tweak binding",
+  "assets": "six approved bitmaps + three existing unchanged module SVGs embedded",
+  "gameBound": false,
+  "browserStarted": false,
+  "gameTestsRun": false
+}

@@ -1,0 +1,70 @@
+{
+  "tool": "built-in imagegen",
+  "status": "preview-only",
+  "champions": "Reuses approved rating-trophy.webp; no generation",
+  "requests": [
+    {
+      "key": "spark",
+      "name": "Kıvılcım Ligi",
+      "prompt": "Use case: style-transfer. Asset type: standalone volumetric league emblem for GRIDSHARD mobile game, preview only. Image 1 is the exact existing Kıvılcım Ligi glyph identity; preserve its silhouette, topology and main structural elements. Image 2 is ONLY the approved chunky casual/RPG game-art style reference, not an object to include. Subject: six-point angular spark silhouette with alternating pointed rays. Palette: warm golden yellow, amber shaded sides. Create a clean, bold, dimensionally thick stylized 3D icon: broad crisp chamfered facets, deep colored side planes, restrained upper-left highlight and dark indigo contour. Slightly elevated near-front perspective; preserve the glyph's recognizability. Simple uncluttered silhouette readable at 28px, 40px and 96px. Centered with 10% transparent padding and genuine alpha. NO badge, plate, shield, enclosing disk or background behind the symbol. No text, letter, number, rank pips, trophy or extra ornament (unless the stated subject itself is a crown). No decorative sparkles, fog, glow, soft blur, realistic chrome or photographic metal, flat outlined vector, rounded gummy/toy finish, duplicated symbols or sprite sheet. Output ONE isolated physical emblem, not a UI mockup. Preserve the existing identity; do not redesign any other game asset.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack04a-20261015/references/spark.png",
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "key": "volt",
+      "name": "Voltaj Ligi",
+      "prompt": "Use case: style-transfer. Asset type: standalone volumetric league emblem for GRIDSHARD mobile game, preview only. Image 1 is the exact existing Voltaj Ligi glyph identity; preserve its silhouette, topology and main structural elements. Image 2 is ONLY the approved chunky casual/RPG game-art style reference, not an object to include. Subject: one angular lightning bolt silhouette. Palette: saturated electric sky blue with deep cobalt shaded sides; NOT yellow. Create a clean, bold, dimensionally thick stylized 3D icon: broad crisp chamfered facets, deep colored side planes, restrained upper-left highlight and dark indigo contour. Slightly elevated near-front perspective; preserve the glyph's recognizability. Simple uncluttered silhouette readable at 28px, 40px and 96px. Centered with 10% transparent padding and genuine alpha. NO badge, plate, shield, enclosing disk or background behind the symbol. No text, letter, number, rank pips, trophy or extra ornament (unless the stated subject itself is a crown). No decorative sparkles, fog, glow, soft blur, realistic chrome or photographic metal, flat outlined vector, rounded gummy/toy finish, duplicated symbols or sprite sheet. Output ONE isolated physical emblem, not a UI mockup. Preserve the existing identity; do not redesign any other game asset.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack04a-20261015/references/volt.png",
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "key": "reactor",
+      "name": "Reaktör Ligi",
+      "prompt": "Use case: style-transfer. Asset type: standalone volumetric league emblem for GRIDSHARD mobile game, preview only. Image 1 is the exact existing Reaktör Ligi glyph identity; preserve its silhouette, topology and main structural elements. Image 2 is ONLY the approved chunky casual/RPG game-art style reference, not an object to include. Subject: hexagonal outer ring, circular central hub, exactly three broad connecting spokes. Palette: saturated emerald/mint green with deep forest green shaded sides. Create a clean, bold, dimensionally thick stylized 3D icon: broad crisp chamfered facets, deep colored side planes, restrained upper-left highlight and dark indigo contour. Slightly elevated near-front perspective; preserve the glyph's recognizability. Simple uncluttered silhouette readable at 28px, 40px and 96px. Centered with 10% transparent padding and genuine alpha. NO badge, plate, shield, enclosing disk or background behind the symbol. No text, letter, number, rank pips, trophy or extra ornament (unless the stated subject itself is a crown). No decorative sparkles, fog, glow, soft blur, realistic chrome or photographic metal, flat outlined vector, rounded gummy/toy finish, duplicated symbols or sprite sheet. Output ONE isolated physical emblem, not a UI mockup. Preserve the existing identity; do not redesign any other game asset.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack04a-20261015/references/reactor.png",
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "key": "quantum",
+      "name": "Kuantum Ligi",
+      "prompt": "Use case: style-transfer. Asset type: standalone volumetric league emblem for GRIDSHARD mobile game, preview only. Image 1 is the exact existing Kuantum Ligi glyph identity; preserve its silhouette, topology and main structural elements. Image 2 is ONLY the approved chunky casual/RPG game-art style reference, not an object to include. Subject: three thick intersecting elliptical orbital rings and one solid spherical central hub, recognizable atom silhouette. Palette: saturated violet/purple with deep plum sides and light lavender highlights. Create a clean, bold, dimensionally thick stylized 3D icon: broad crisp chamfered facets, deep colored side planes, restrained upper-left highlight and dark indigo contour. Slightly elevated near-front perspective; preserve the glyph's recognizability. Simple uncluttered silhouette readable at 28px, 40px and 96px. Centered with 10% transparent padding and genuine alpha. NO badge, plate, shield, enclosing disk or background behind the symbol. No text, letter, number, rank pips, trophy or extra ornament (unless the stated subject itself is a crown). No decorative sparkles, fog, glow, soft blur, realistic chrome or photographic metal, flat outlined vector, rounded gummy/toy finish, duplicated symbols or sprite sheet. Output ONE isolated physical emblem, not a UI mockup. Preserve the existing identity; do not redesign any other game asset.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack04a-20261015/references/quantum.png",
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "key": "nexus",
+      "name": "Nexus Ligi",
+      "prompt": "Use case: style-transfer. Asset type: standalone volumetric league emblem for GRIDSHARD mobile game, preview only. Image 1 is the exact existing Nexus Ligi glyph identity; preserve its silhouette, topology and main structural elements. Image 2 is ONLY the approved chunky casual/RPG game-art style reference, not an object to include. Subject: diamond outer ring, four internal cardinal struts and one round central hub. Palette: saturated magenta/rose pink with raspberry shaded sides. Create a clean, bold, dimensionally thick stylized 3D icon: broad crisp chamfered facets, deep colored side planes, restrained upper-left highlight and dark indigo contour. Slightly elevated near-front perspective; preserve the glyph's recognizability. Simple uncluttered silhouette readable at 28px, 40px and 96px. Centered with 10% transparent padding and genuine alpha. NO badge, plate, shield, enclosing disk or background behind the symbol. No text, letter, number, rank pips, trophy or extra ornament (unless the stated subject itself is a crown). No decorative sparkles, fog, glow, soft blur, realistic chrome or photographic metal, flat outlined vector, rounded gummy/toy finish, duplicated symbols or sprite sheet. Output ONE isolated physical emblem, not a UI mockup. Preserve the existing identity; do not redesign any other game asset.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack04a-20261015/references/nexus.png",
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "key": "legendary",
+      "name": "Efsanevi Lig",
+      "prompt": "Use case: style-transfer. Asset type: standalone volumetric league emblem for GRIDSHARD mobile game, preview only. Image 1 is the exact existing Efsanevi Lig glyph identity; preserve its silhouette, topology and main structural elements. Image 2 is ONLY the approved chunky casual/RPG game-art style reference, not an object to include. Subject: three-point regal crown, central point tallest, small circular central inset and one thick base bar. Palette: warm saturated coral red with crimson shaded planes and restrained light gold bevel accents. Create a clean, bold, dimensionally thick stylized 3D icon: broad crisp chamfered facets, deep colored side planes, restrained upper-left highlight and dark indigo contour. Slightly elevated near-front perspective; preserve the glyph's recognizability. Simple uncluttered silhouette readable at 28px, 40px and 96px. Centered with 10% transparent padding and genuine alpha. NO badge, plate, shield, enclosing disk or background behind the symbol. No text, letter, number, rank pips, trophy or extra ornament (unless the stated subject itself is a crown). No decorative sparkles, fog, glow, soft blur, realistic chrome or photographic metal, flat outlined vector, rounded gummy/toy finish, duplicated symbols or sprite sheet. Output ONE isolated physical emblem, not a UI mockup. Preserve the existing identity; do not redesign any other game asset.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack04a-20261015/references/legendary.png",
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "key": "gridshard",
+      "name": "GRIDSHARD Ligi",
+      "prompt": "Use case: style-transfer. Asset type: standalone volumetric league emblem for GRIDSHARD mobile game, preview only. Image 1 is the exact existing GRIDSHARD Ligi glyph identity; preserve its silhouette, topology and main structural elements. Image 2 is ONLY the approved chunky casual/RPG game-art style reference, not an object to include. Subject: two nested angular diamond/rhombus frames connected by four short cardinal struts, open dark/transparent negative space between frames. Palette: warm pale gold/ivory broad faces with deep amber side planes; no purple background. Create a clean, bold, dimensionally thick stylized 3D icon: broad crisp chamfered facets, deep colored side planes, restrained upper-left highlight and dark indigo contour. Slightly elevated near-front perspective; preserve the glyph's recognizability. Simple uncluttered silhouette readable at 28px, 40px and 96px. Centered with 10% transparent padding and genuine alpha. NO badge, plate, shield, enclosing disk or background behind the symbol. No text, letter, number, rank pips, trophy or extra ornament (unless the stated subject itself is a crown). No decorative sparkles, fog, glow, soft blur, realistic chrome or photographic metal, flat outlined vector, rounded gummy/toy finish, duplicated symbols or sprite sheet. Output ONE isolated physical emblem, not a UI mockup. Preserve the existing identity; do not redesign any other game asset.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack04a-20261015/references/gridshard.png",
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    }
+  ]
+}

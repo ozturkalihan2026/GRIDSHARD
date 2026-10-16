@@ -1,0 +1,29 @@
+{
+  "tool": "built-in imagegen",
+  "status": "preview-only",
+  "revision": 3,
+  "requests": [
+    {
+      "key": "route",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack03-20261015/route-reference.png",
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ],
+      "prompt": "Use case: style-transfer. Asset type: isolated volumetric Devre Yolu progression icon for GRIDSHARD mobile game, preview only. Image 1 is the exact existing route glyph to reinterpret: preserve its ascending zigzag circuit path and THREE hollow circular nodes at lower left, upper middle and upper right. Image 2 is ONLY the approved stylized game-art material/lighting reference. Turn the existing gold route glyph into a bold, chunky beveled gold 3D icon with deep amber side planes, crisp chamfered edges and controlled upper-left highlights. Keep the same ascending path topology and the three nodes clearly visible. Near-front view with slight dimensional depth, clean dark indigo contour, readable at 80 pixels. Fully standalone cutout, actual transparent alpha and 10% transparent padding. No badge, plaque, disk, shield, frame, background, text, numbers, trophy, extra nodes, swords, sparkles, fog, outer glow, photorealistic metal, chrome. Only the existing route symbol made dimensional."
+    },
+    {
+      "key": "mail-closed",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/common-icons-v1/message.webp"
+      ],
+      "prompt": "Use case: precise-object-edit. Asset type: GRIDSHARD unread mail icon, transparent cutout. Edit target image 1 is the existing closed cyan envelope. Preserve its envelope silhouette, front-facing pose, angular bevel geometry, dark indigo contour, broad highlights, chunky stylized casual/RPG 3D game-art, composition and padding. Change ONLY the cyan/blue envelope body palette to warm golden cream with amber shaded facets. Keep it clearly CLOSED, triangular flap down. No text, notification badge, symbol, glow, fog, backdrop, plate, additional frame, realism, chrome. Real transparent alpha. Must remain readable at 32px."
+    },
+    {
+      "key": "mail-open",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/common-icons-v1/message.webp"
+      ],
+      "prompt": "Use case: precise-object-edit. Asset type: GRIDSHARD read mail icon, transparent cutout. Image 1 is the exact envelope icon family and edit target. Produce its OPEN counterpart: same front-facing width, dark indigo contour, crisp broad beveled edges, chunky stylized casual/RPG 3D treatment and upper-left lighting. The triangular back flap is lifted up, showing a small blank ivory letter inside, no writing or markings. Warm golden cream envelope with amber shaded facets instead of cyan, matching a warm-gold closed counterpart. Simple strong silhouette readable at 32px. Centered with 10% transparent padding. Actual transparent alpha. No badge, text, glow, fog, backdrop, plate, extra frame, photorealism, chrome."
+    }
+  ]
+}

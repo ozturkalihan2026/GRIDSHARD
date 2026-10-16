@@ -3893,6 +3893,10 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
 .reward-preview-panel {
   --reward-accent:#ffe170;
   position:fixed;
+  box-sizing:border-box;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
   z-index:1000;
   width:min(280px,calc(100vw - 24px));
   padding:12px;
@@ -3907,8 +3911,8 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
   animation:gs-reward-preview-in .14s ease-out;
 }
 @keyframes gs-reward-preview-in {
-  from { opacity:0;transform:translateY(4px); }
-  to { opacity:1;transform:none; }
+  from { opacity:0; }
+  to { opacity:1; }
 }
 .reward-preview-panel > strong { color:var(--reward-accent);font:900 .68rem/1.25 var(--gs-font-display); }
 .reward-preview-list { display:grid;gap:7px; }
@@ -12023,6 +12027,10 @@ body[data-graphics="dusuk"] .casual-chest-stage::after { display:none; }
   --ui-art-cosmetics:url("../assets/ui/common-icons-v1/cosmetics.webp");
   --ui-art-info:url("../assets/ui/common-icons-v1/info.webp");
   --ui-art-menu:url("../assets/ui/common-icons-v1/menu.webp");
+  --ui-art-battle:url("../assets/ui/dock-casual-v1/battle-swords-v2.webp");
+  --ui-art-deck:url("../assets/ui/dock-casual-v1/cards.webp");
+  --ui-art-purchase:url("../assets/ui/dock-casual-v1/shop-chamfer-v2.webp");
+  --ui-art-chest:url("../assets/ui/chests-casual-v2/gold.webp");
 }
 .ui-art {
   display:block;
@@ -12041,6 +12049,10 @@ body[data-graphics="dusuk"] .casual-chest-stage::after { display:none; }
 .ui-art[data-ui-art="cosmetics"] { --ui-art-image:var(--ui-art-cosmetics); }
 .ui-art[data-ui-art="info"] { --ui-art-image:var(--ui-art-info); }
 .ui-art[data-ui-art="menu"] { --ui-art-image:var(--ui-art-menu); }
+.ui-art[data-ui-art="battle"] { --ui-art-image:var(--ui-art-battle); }
+.ui-art[data-ui-art="deck"] { --ui-art-image:var(--ui-art-deck); }
+.ui-art[data-ui-art="purchase"] { --ui-art-image:var(--ui-art-purchase); }
+.ui-art[data-ui-art="chest"] { --ui-art-image:var(--ui-art-chest); }
 /* Nesnenin arkasına eski renkli UI levhası veya beyaz çizgi filtresi ekleme. */
 .ui-icon.is-artwork {
   border:0 !important;border-radius:0 !important;

@@ -1,0 +1,168 @@
+{
+  "tool": "built-in imagegen",
+  "status": "preview-only; no runtime integration without approval",
+  "requests": [
+    {
+      "pack": "5A",
+      "key": "spark",
+      "name": "Kıvılcım Sandığı",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A compact low rectangular amber-orange equipment chest with a single steep chamfer on each lid end, broad warm-yellow latch shaped as six-point spark; orange enamel body and deep indigo bottom. Straight horizontal silhouette, no dome. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5A",
+      "key": "volt",
+      "name": "Voltaj Sandığı",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A tall upright electric-blue trapezoidal chest with sloping sidewalls, split chevron slanted lid, one cyan lightning-bolt latch. Deep navy body and cyan broad side bevels. Taller than wide, no projecting antenna. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5A",
+      "key": "reactor",
+      "name": "Reaktör Sandığı",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A broad squat emerald-green hexagonal drum chest with six flat side panels and a low hexagonal hinged lid. Circular green hub with three thick spokes on front, mint bevels and dark forest lower planes. No cylindrical soft curve. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5A",
+      "key": "quantum",
+      "name": "Kuantum Sandığı",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A violet octagonal jewel-box chest on four short angular feet, sharply tented shallow purple lid, thick orbit-shaped front clasp with small violet central gem. Plum body lavender bevels. No floating parts. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5A",
+      "key": "nexus",
+      "name": "Nexus Sandığı",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A fuchsia faceted diamond-plan chest with strongly tapered base and four slanted sides, lid shaped as a broad low pyramid cut into four planes; magenta diamond clasp with four cardinal struts. Deep raspberry body and rose bevels. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5A",
+      "key": "champions",
+      "name": "Şampiyonlar Sandığı",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A wide orange-and-gold ceremonial chest, flat lid with two small upward sweeping cup-handle shaped side ends; large central stylized trophy relief on front. Burnt orange body, broad pale gold trim, deep indigo recess. Not crown silhouette. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5A",
+      "key": "legendary",
+      "name": "Efsane Sandığı",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A tall coral-red royal chest with a distinctive three-peak crown silhouette integrated into its hinged lid, crimson stepped square base, broad gold chamfers and one round front clasp. Three peaks only, few large faces. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5A",
+      "key": "gridshard",
+      "name": "GRIDSHARD Sandığı",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A massive ivory-and-dark-indigo square vault chest, layered stepped diamond-shaped lid with nested diamond center relief, broad pale-gold chamfers and thick indigo plinth. Light ivory main face, one big amber diamond front lock, clean apex relic silhouette. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5B",
+      "key": "rank_crown",
+      "name": "1. · Taç Kasası",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: The most prestigious low broad royal coffer: deep royal-blue enamel body, large warm gold edge facets, a raised five-point crown-shaped hinged lid and one large scarlet diamond latch; stepped gold feet. Grand but simple, visibly larger in structure than lower ranks. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5B",
+      "key": "rank_prism",
+      "name": "2. · Prizma Kasası",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A tall ice-blue prismatic chest with a crystalline angular asymmetric roof lid (one large diagonal facet), two broad silver side braces, a large blue triangular front clasp, slate-blue lower planes. Not a crown. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5B",
+      "key": "rank_reactor",
+      "name": "3. · Reaktör Kasası",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A burnt-orange copper rectangular industrial chest on two broad block feet, heavy horizontal flat lid with a central raised rectangular ridge and one large circular teal reactor lock. Not a hexagonal green drum; distinctly copper-and-teal. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5B",
+      "key": "rank_frequency",
+      "name": "4. · Frekans Kasası",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A very wide low violet audio-resonance coffer with a clean stepped triple-level horizontal lid profile; two large lilac side fins built into corners, one simple three-bar wave relief on front. Indigo underbody, amethyst top planes. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5B",
+      "key": "rank_circuit",
+      "name": "5. · Devre Kasası",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A mint-green compact square chest with corner-cut body, shallow four-sided pyramidal hinged lid, one broad diagonal circuit stripe wrapping from top to front ending in two large gold contact pads. Teal side planes. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5B",
+      "key": "rank_current",
+      "name": "6. · Akım Kasası",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: An electric yellow-and-cobalt wedge chest with low front and taller rear, single sloped hinged lid, thick angular zigzag clasp; black-indigo lower sides and yellow top. Strong wedge silhouette rather than rectangular coffer. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5B",
+      "key": "rank_neuron",
+      "name": "7. · Nöron Kasası",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A magenta compact pentagonal pod chest with five flat sides and flat beveled lid, central three-branch hub relief on the front, two small solid angular side grips. Dark berry body, pink top faces, blue-violet base. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5B",
+      "key": "rank_relay",
+      "name": "8. · Röle Kasası",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A steel-blue long narrow chest with a two-level offset block lid and two large orange latch blocks side-by-side, reinforced short rectangular pedestal base. One very broad orange hinge strap, minimal surfaces. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5B",
+      "key": "rank_conductor",
+      "name": "9. · İletken Kasası",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A turquoise upright chest with a U-shaped broad copper yoke wrapping both sides and top of a navy rectangular body; simple flat teal hinged lid and big square copper front clasp. Two copper vertical side rails, no crown or crystals. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    },
+    {
+      "pack": "5B",
+      "key": "rank_spark",
+      "name": "10. · Kıvılcım Kasası",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated closed reward chest for GRIDSHARD mobile casual/RPG game, approval preview. Input image is ONLY the approved game-art style reference, not a chest to copy literally. Create the following unique chest silhouette: A small warm-orange triangular-ended utility chest with a short gabled hinged lid, cream broad corner bevels, a single indigo four-ray spark clasp, two short block feet. Modest crisp silhouette, not the rectangular league spark chest. Style: chunky polished stylized 3D game illustration, broad crisp chamfered edges and saturated enamel planes, dark indigo contours, restrained upper-left lighting, readable at 40px. Keep trim to a few broad bands, no tiny mechanical decorations. Consistent slightly elevated near-front three-quarter view with right side visible, centered square canvas, chest fills 80% with transparent padding. Lid fully CLOSED with a clear hinge seam. No rewards or coins outside chest. Genuine transparent background; no ground plane, no shadow panel, no badge backing, no scene. No text, numbers, ranking digits, watermarks, labels, realistic metal/chrome, grain, fog, bloom, floating particles, gummy round corners. This chest must look structurally distinct, not a recolored copy of the style reference. One chest only, not sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/chests-casual-v2/gold.webp"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "tool": "built-in imagegen",
+  "intent": "edit approved closed artwork to matching open state",
+  "requests": [
+    {
+      "key": "spark",
+      "pack": "5a",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5a/masters/spark.png"
+      ]
+    },
+    {
+      "key": "volt",
+      "pack": "5a",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5a/masters/volt.png"
+      ]
+    },
+    {
+      "key": "reactor",
+      "pack": "5a",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5a/masters/reactor.png"
+      ]
+    },
+    {
+      "key": "quantum",
+      "pack": "5a",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5a/masters/quantum.png"
+      ]
+    },
+    {
+      "key": "nexus",
+      "pack": "5a",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5a/masters/nexus.png"
+      ]
+    },
+    {
+      "key": "champions",
+      "pack": "5a",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5a/masters/champions.png"
+      ]
+    },
+    {
+      "key": "legendary",
+      "pack": "5a",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5a/masters/legendary.png"
+      ]
+    },
+    {
+      "key": "gridshard",
+      "pack": "5a",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5a/masters/gridshard.png"
+      ]
+    },
+    {
+      "key": "rank_crown",
+      "pack": "5b",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5b/masters/rank_crown-r2.png"
+      ]
+    },
+    {
+      "key": "rank_prism",
+      "pack": "5b",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5b/masters/rank_prism.png"
+      ]
+    },
+    {
+      "key": "rank_reactor",
+      "pack": "5b",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5b/masters/rank_reactor.png"
+      ]
+    },
+    {
+      "key": "rank_frequency",
+      "pack": "5b",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5b/masters/rank_frequency.png"
+      ]
+    },
+    {
+      "key": "rank_circuit",
+      "pack": "5b",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5b/masters/rank_circuit.png"
+      ]
+    },
+    {
+      "key": "rank_current",
+      "pack": "5b",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5b/masters/rank_current.png"
+      ]
+    },
+    {
+      "key": "rank_neuron",
+      "pack": "5b",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5b/masters/rank_neuron.png"
+      ]
+    },
+    {
+      "key": "rank_relay",
+      "pack": "5b",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5b/masters/rank_relay.png"
+      ]
+    },
+    {
+      "key": "rank_conductor",
+      "pack": "5b",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5b/masters/rank_conductor.png"
+      ]
+    },
+    {
+      "key": "rank_spark",
+      "pack": "5b",
+      "prompt": "Use case: precise-object-edit. Asset type: OPEN state of this exact approved GRIDSHARD game reward chest. Image 1 is the edit target and exact identity reference. Change ONLY its hinged lid from fully closed to OPEN, rotated backward about 65 degrees on the rear hinge; show a clean empty dark interior. Preserve the exact body geometry, feet, front clasp/gem/emblem, colors, broad chamfers, dark indigo outlines, upper-left lighting and casual/RPG stylized 3D look. Keep the same camera angle and right-side visibility. The body and lid must still clearly be the same chest, no extra lid, no changed symbol. Complete entire chest including the raised lid and all feet must fit inside the square canvas with clear transparent margins, never crop. No reward objects, text, coins, rays, particles, glowing fog or background: opening light will be a separate game effect. Genuine transparent alpha background. ONE open chest, no closed comparison or sprite sheet.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/artifacts/visual-refresh-pack05-20261015/5b/masters/rank_spark.png"
+      ]
+    }
+  ]
+}

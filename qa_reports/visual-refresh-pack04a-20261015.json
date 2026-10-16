@@ -1,0 +1,77 @@
+{
+  "package": "4A",
+  "status": "preview-awaiting-approval",
+  "bytes": 570591,
+  "parts": 10,
+  "artDefinitions": 13,
+  "embeddedFonts": 3,
+  "cssAndJsTransform": "passed",
+  "isolatedTierScopeSelectionAndRestoreChecks": "passed",
+  "balancedMarkup": "passed",
+  "noNewGameIntegration": true,
+  "browserStarted": false,
+  "serverStarted": false,
+  "gameTestsRun": false,
+  "generatedAssets": [
+    {
+      "key": "spark",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 28954,
+      "sha256": "3b52cf2df25a6bfbbcc6dcd29634f38d0d6c6576a3f6396e3d3a4a264245ad1d"
+    },
+    {
+      "key": "volt",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 18392,
+      "sha256": "7220ea2fe7566c9152d8414b6c528e802a0e4db7adf8cece3f2fdb2031af9bc4"
+    },
+    {
+      "key": "reactor",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 30536,
+      "sha256": "3ea46a4178d3c4d4b287be607406302c39a729adf3aa554b891ff28ede7e682d"
+    },
+    {
+      "key": "quantum",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 35876,
+      "sha256": "98c3e1f2667ce2a7cdd0bcecbf4e75a070f4644350746d16f49d19118e3391ef"
+    },
+    {
+      "key": "nexus",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 22502,
+      "sha256": "efaf8c2b8c456bf2711ea4dc15f92fd151224373615b800e4127071f9950dd76"
+    },
+    {
+      "key": "legendary",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 31564,
+      "sha256": "d4a7581fa11a99f91cc1dcbb3d5c057ad145c63316ef01a79b2dc2b4b5659007"
+    },
+    {
+      "key": "gridshard",
+      "width": 192,
+      "height": 192,
+      "alpha": true,
+      "bytes": 25084,
+      "sha256": "4f533df80a67aeed587085c26dfdbca807f1bfdb1a2a09ea9daa67d9a75f8b74"
+    }
+  ],
+  "generationTool": "built-in imagegen",
+  "reusedChampionsCup": "client/assets/ui/rating-trophy-v1/rating-trophy.webp",
+  "promptRecord": "docs/GORSEL_DONUSUM_PAKET04A_PROMPTLAR_20261015.json",
+  "visualBrowserCheck": false
+}

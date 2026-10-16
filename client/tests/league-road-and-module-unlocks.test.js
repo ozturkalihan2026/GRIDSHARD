@@ -399,7 +399,7 @@ test("GRIDSHARD Sandığı'nın dört kozmetiği seçim listelerinde ve çizimi 
 test("her ligin kendi amblemi vardır; kademe çentiklerle okunur", () => {
   const sandbox = {};
   vm.runInNewContext(`${slice("  const LEAGUE_EMBLEMS = Object.freeze({", "  // Maçta yeni açılan Devre Yolu ödülü")}
-Object.assign(this, { LEAGUE_EMBLEMS, leagueEmblemMarkup });`, sandbox);
+Object.assign(this, { LEAGUE_EMBLEMS, LEAGUE_EMBLEM_ASSETS, leagueEmblemMarkup });`, sandbox);
   const leagues = ["spark", "volt", "reactor", "quantum", "nexus", "champions", "legendary", "gridshard"];
   assert.deepEqual(Object.keys(sandbox.LEAGUE_EMBLEMS), leagues);
   assert.equal(new Set(Object.values(sandbox.LEAGUE_EMBLEMS)).size, 8, "sekiz farklı çizim");
@@ -413,11 +413,11 @@ Object.assign(this, { LEAGUE_EMBLEMS, leagueEmblemMarkup });`, sandbox);
   assert.equal(new Set(accents).size, 8, "sekiz farklı renk");
 
   const third = sandbox.leagueEmblemMarkup({ league:"volt", league_tier:3, league_tiers:5 });
-  assert.ok(third.includes(sandbox.LEAGUE_EMBLEMS.volt));
-  assert.equal((third.match(/<i/g) || []).length, 5);
+  assert.ok(third.includes(sandbox.LEAGUE_EMBLEM_ASSETS.volt));
+  assert.equal((third.match(/<i(?:\s|>)/g) || []).length, 5);
   assert.equal((third.match(/class="is-on"/g) || []).length, 3);
   const single = sandbox.leagueEmblemMarkup({ league:"gridshard", league_tier:1, league_tiers:1 });
-  assert.ok(single.includes(sandbox.LEAGUE_EMBLEMS.gridshard) && !single.includes("league-emblem-tier"));
+  assert.ok(single.includes(sandbox.LEAGUE_EMBLEM_ASSETS.gridshard) && !single.includes("league-emblem-tier"));
   // Lig bilgisini göndermeyen eski sunucuda eski taç simgesi kalır.
   assert.equal(sandbox.leagueEmblemMarkup({ id:"league_1", kind:"league" }), "♛");
 });

@@ -1,0 +1,12 @@
+{
+  "tool": "built-in imagegen",
+  "status": "preview-only-awaiting-approval",
+  "prompt": "Use case: style-transfer / logo-brand. Asset type: GRIDSHARD mobile game brand emblem, preview-only revision, one isolated transparent icon with no text. Input image 1 is the existing GRIDSHARD emblem: preserve its recognizable identity of a tall faceted turquoise crystal with a bright angular crack/lightning seam, interrupted gold circuit ring, and horizontal teal connection ends. Input image 2 is ONLY the approved game style reference (the chamfered gold/indigo chest), not an object to include. Reinterpret the emblem in that cohesive saturated stylized casual/RPG 3D game-art family: bold readable silhouette, broad crisp chamfered facets, substantial stylized volume, clean dark indigo edges, simple controlled upper-left highlights and shaded planes, cyan/teal crystalline center and warm gold ring. Reduce fiddly brackets/bolts and omit decorative sparkle stars; preserve the overall crystal/ring/circuit identity. Balanced front-facing icon, centered with 10% transparent padding, clean real alpha. Suitable at 48px and 160px, no tiny mechanical detail. Avoid photorealistic chrome or metal realism, excessive reflections, rounded toy softness, pastel haze, outer glow, fake transparency checkerboard, text, lettering, words, watermark, background, chest, swords, additional objects. Output a single emblem, not a logo sheet and not a UI mockup. Do not alter the game background, dock, modules or any other asset.",
+  "references": [
+    "client/assets/branding/gridshard-emblem.webp",
+    "client/assets/ui/chests-casual-v2/gold.webp"
+  ],
+  "master": "artifacts/visual-refresh-pack03-20261015/logo-v2-master.png",
+  "preview": "artifacts/visual-refresh-pack03-20261015/logo-v2-preview.webp",
+  "runtimeReplacement": false
+}

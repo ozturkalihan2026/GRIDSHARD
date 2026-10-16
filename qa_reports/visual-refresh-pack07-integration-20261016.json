@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-16",
+  "package7": "ten components bound to source",
+  "styles": 12,
+  "cssBundle": "passed in memory; zero warnings",
+  "stateBindings": "actual placement/debris/affordability, victory/defeat/draw and connection enum values",
+  "unchangedCombatOwners": [
+    "client/src/battle/board-view.js",
+    "client/src/battle/module-card-state-view.js",
+    "client/src/battle/module-card-view.js",
+    "client/src/battle/battle-countdown.js"
+  ],
+  "unchangedHandlers": [
+    "purchasePaidProduct",
+    "renderConnectionStatus",
+    "renderRecoveryState",
+    "setBattleResultHero",
+    "renderShelf",
+    "renderBoard"
+  ],
+  "boardGeometryHpPseudoElementsAndCoreMotion": "preserved",
+  "gameTestsRun": false,
+  "browserStarted": false,
+  "serverStarted": false,
+  "distWritten": false
+}

@@ -1,0 +1,12 @@
+{
+  "tool": "built-in imagegen",
+  "key": "rank_crown",
+  "revision": "r2",
+  "prompt": "Use case: precise-object-edit. Edit target: the referenced GRIDSHARD first-place Crown Chest. Change ONLY framing: zoom out so the COMPLETE chest including every foot and all its dark outlines fits fully inside the square canvas, with at least 10% transparent empty margin on all four sides. Restore any tiny clipped part of the left foot. Preserve the exact closed lid, crown, royal-blue body, gold bevels, scarlet front gem, perspective, shape, lighting and illustration style. Genuine transparent background. No additions, no text, no particles, no glow, no shadow floor. One chest only.",
+  "referenced_image_paths": [
+    "C:\\Users\\S-A\\.codex\\generated_images\\01a0302f-786b-7613-9af9-d49cd1a9ee49\\exec-28496cb5-d6da-4414-8322-f6975d40f1da.png"
+  ],
+  "output": "C:\\Users\\S-A\\.codex\\generated_images\\01a0302f-786b-7613-9af9-d49cd1a9ee49\\exec-e5cb742c-fd73-4789-9373-7720fe267aea.png",
+  "reason": "Original left foot touched source border; preserve design and add transparent margin.",
+  "status": "preview-only"
+}

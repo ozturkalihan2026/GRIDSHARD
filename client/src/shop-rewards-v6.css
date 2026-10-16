@@ -1,0 +1,126 @@
+/* Paket 6 — kullanıcı onayı 16 Ekim 2026. On ortak yüzey.
+ * Gerçek fiyat, hak, stok, sayaç, ödül ve eylem işleyicileri aynen korunur.
+ * Paket 2 fiziksel düğmeleri + mevcut şeffaf sandık/kaynak çizimleri. */
+
+/* 01 / Aynı satırdaki sandıklarda başlık, resim, bilgi ve tek eylem hizası. */
+:root body[data-app-screen] .shop-screen .chest-store-list { align-items:stretch; gap:12px 10px !important; }
+:root body[data-app-screen] .shop-screen .chest-store-card {
+  min-width:0; padding:10px !important; gap:7px !important;
+  grid-template-rows:auto 96px minmax(42px,1fr) auto !important;
+  border:1px solid #376082 !important; border-radius:7px !important;
+  background:linear-gradient(145deg,#193c60,#102841) !important;
+  box-shadow:inset 0 1px #56779866,0 3px #07172b !important;
+}
+:root body[data-app-screen] .shop-screen .chest-store-card > strong {
+  padding:0; border-radius:0; background:none; box-shadow:none;
+  color:#f0f6ff !important; font:700 15px/1.3 var(--gs-font-display) !important;
+}
+:root body[data-app-screen] .shop-screen .chest-store-card > .chest-visual {
+  width:96px !important; height:96px !important; margin:0 !important; justify-self:center;
+}
+:root body[data-app-screen] .shop-screen .chest-store-card > .chest-store-metadata { padding:0; align-self:center; }
+:root body[data-app-screen] .shop-screen :is(.chest-store-limit,.chest-gift-countdown) {
+  padding:0; background:none; box-shadow:none; border-radius:0;
+  color:#c1d6e8 !important; font:600 12px/1.3 var(--gs-font-copy) !important;
+}
+:root body[data-app-screen] .shop-screen .chest-store-card > .shop-chest-actions { padding:0; margin:0; align-self:end; width:100%; }
+
+/* 02 / Hediye → eldeki sandık → gerçek maliyet: tek mevcut düğme. */
+:root body[data-app-screen] .shop-screen .shop-chest-action { min-height:44px; width:100%; font-size:14px !important; }
+:root body[data-app-screen] .shop-screen .shop-chest-action .cost-chip {
+  background:#112238 !important; border:0; box-shadow:none; padding:2px 7px; border-radius:5px;
+}
+:root body[data-app-screen] .shop-screen .shop-chest-action .cost-chip > b { color:#f5f9ff !important; font-size:15px !important; }
+:root body[data-app-screen] .shop-screen .shop-chest-action:disabled .cost-chip > b { color:#c0cfdf !important; }
+
+/* 03 / Para paketleri: miktar, açıklama, sağlayıcının fiyatı ayrı okunur. */
+:root body[data-app-screen] .shop-screen .paid-pack-grid { align-items:stretch; gap:12px 10px !important; }
+:root body[data-app-screen] .shop-screen .paid-product-card {
+  min-width:0; padding:12px 10px !important; gap:8px !important;
+  grid-template-rows:64px 1fr auto; border:1px solid #655785 !important;
+  border-radius:7px !important; background:linear-gradient(145deg,#30324e,#192c47) !important;
+  box-shadow:inset 0 1px #a0a6d02b,0 3px #07172b !important;
+}
+:root body[data-app-screen] .shop-screen .paid-product-card[data-currency="circuit_credits"] { border-color:#8c774e !important; }
+:root body[data-app-screen] .shop-screen .paid-product-card > .resource-symbol { width:64px !important; height:64px !important; }
+:root body[data-app-screen] .shop-screen .paid-product-card > div { min-width:0; align-content:start; overflow-wrap:anywhere; }
+:root body[data-app-screen] .shop-screen .paid-product-card strong { font:700 17px/1.3 var(--gs-font-display) !important; }
+:root body[data-app-screen] .shop-screen .paid-product-card small { color:#c9d8ea !important; font:600 14px/1.35 var(--gs-font-copy) !important; }
+:root body[data-app-screen] .shop-screen .paid-product-card[data-bonus="true"] small { background:#14263d; box-shadow:none; border-radius:4px; padding:2px 6px; }
+:root body[data-app-screen] .shop-screen .paid-product-card > button { min-height:44px; font-size:14px !important; }
+
+/* 04 / Premium: aynı onaylı hediye resmi; etkinlik sunucudan gelir. */
+:root body[data-app-screen] .shop-screen .paid-product-card.is-premium {
+  grid-template-columns:56px minmax(0,1fr) !important; grid-template-rows:auto auto;
+  border-color:#a38a45 !important; background:linear-gradient(145deg,#393c45,#152d48) !important;
+}
+:root body[data-app-screen] .shop-screen .paid-product-card.is-premium strong { font-size:16px !important; }
+:root body[data-app-screen] .shop-screen .premium-offer-art { width:56px; height:56px; font-size:56px; }
+:root body[data-app-screen] .shop-screen .paid-product-card[data-active="true"] { border-color:#6bc9b2 !important; }
+
+/* 05 / İçerik paneli ve olasılık listesi; indirim duyurusu yalnız içeride. */
+:root body[data-app-screen] .reward-preview-panel {
+  border-radius:7px; border-color:#567799; gap:10px;
+  background:linear-gradient(145deg,#193c60,#0b2037); box-shadow:0 5px 16px #020b17b3;
+}
+:root body[data-app-screen] .reward-preview-panel > strong { font:700 15px/1.3 var(--gs-font-display); }
+:root body[data-app-screen] .reward-preview-label { font:600 14px/1.25 var(--gs-font-copy); overflow-wrap:anywhere; }
+:root body[data-app-screen] .reward-preview-amount { font:700 13px/1.3 var(--gs-font-display); }
+:root body[data-app-screen] .reward-preview-note { font:600 12px/1.35 var(--gs-font-copy); color:#c1d6e8; }
+:root body[data-app-screen] #chest-odds-dialog { background:#0b2037 !important; border:1px solid #567799 !important; border-radius:7px !important; }
+:root body[data-app-screen] #chest-odds-dialog :is(p,li,small) { font:600 14px/1.4 var(--gs-font-copy); color:#c9daeb; }
+:root body[data-app-screen] .chest-odds-group { border:1px solid #375c80; border-radius:7px; background:#112c48; box-shadow:none; }
+:root body[data-app-screen] #chest-store-sale { padding:8px 10px; border-radius:5px; color:#ffe0a0 !important; background:#293747; box-shadow:none; }
+
+/* 06 / Günlük giriş: geçmiş, bugün, gelecek; ödül satırları esner. */
+:root body[data-app-screen] .engagement-summary-panel .monthly-login-card {
+  min-width:0; border:1px solid #375c80 !important; border-radius:7px !important;
+  background:linear-gradient(145deg,#193c60,#102841) !important; box-shadow:0 3px #07172b !important;
+}
+:root body[data-app-screen] .engagement-summary-panel .monthly-login-card[data-state="claimable"] { border-color:#71dfc6 !important; }
+:root body[data-app-screen] .engagement-summary-panel .monthly-login-card:is([data-state="locked"],[data-state="missed"]) { opacity:1; filter:none; background:#12283e !important; }
+:root body[data-app-screen] .engagement-summary-panel .monthly-login-card > strong { font:700 14px/1.3 var(--gs-font-display) !important; }
+:root body[data-app-screen] .engagement-summary-panel .monthly-login-card > button { min-height:44px; font-size:13px !important; }
+
+/* 07 / Görev: metin ve gerçek ilerleme oranı; durumu metin de belirtir. */
+:root body[data-app-screen] .daily-missions-screen .daily-mission-card {
+  min-width:0; padding:12px !important; gap:10px; border:1px solid #375c80 !important;
+  border-radius:7px !important; background:linear-gradient(145deg,#193c60,#102841) !important; box-shadow:0 3px #07172b !important;
+}
+:root body[data-app-screen] .daily-missions-screen .daily-mission-card[data-state="claimable"] { border-color:#71dfc6 !important; }
+:root body[data-app-screen] .daily-mission-card .daily-mission-icon { border:0; border-radius:0; background:none; box-shadow:none; }
+:root body[data-app-screen] .daily-mission-card .daily-mission-icon > :is(.ui-icon,img) { width:34px; height:34px; font-size:34px; object-fit:contain; }
+:root body[data-app-screen] .daily-mission-card .daily-mission-copy > strong { font:700 14px/1.3 var(--gs-font-display); white-space:normal; overflow-wrap:anywhere; }
+:root body[data-app-screen] .daily-mission-card .daily-mission-copy > span:not(.daily-mission-meter) { font:600 14px/1.3 var(--gs-font-copy); color:#c1d6e8; }
+:root body[data-app-screen] .daily-mission-card .daily-mission-count { font-size:12px; }
+:root body[data-app-screen] .daily-mission-card .daily-mission-meter { border:0; height:7px !important; box-shadow:none; }
+:root body[data-app-screen] .daily-mission-card .daily-mission-action { min-height:44px !important; font-size:12px !important; }
+
+/* 08 / Sezon: mevcut üç sütun ve gerçek XP/kademe verisi. */
+:root body[data-app-screen] .season-reward-panel .season-pass-row { padding:10px 8px; border:1px solid #375c80; border-radius:7px; background:#122d49; box-shadow:0 3px #07172b; }
+:root body[data-app-screen] .season-reward-panel .season-pass-cell { border:1px solid #375c80 !important; border-radius:6px !important; background:#10253d !important; box-shadow:none !important; }
+:root body[data-app-screen] .season-reward-panel .season-pass-cell.is-premium { border-color:#a38a45 !important; background:#2a303c !important; }
+:root body[data-app-screen] .season-reward-panel .season-pass-cell[data-state="claimable"] { border-color:#71dfc6 !important; }
+:root body[data-app-screen] .season-reward-panel .season-pass-cell:is([data-state="locked"],[data-state="pass-locked"]) { border-style:dashed !important; }
+:root body[data-app-screen] .season-pass-tier strong { font:700 13px/1.3 var(--gs-font-display); }
+:root body[data-app-screen] .season-pass-tier small { font:600 12px/1.3 var(--gs-font-copy); color:#bed2e8; overflow-wrap:anywhere; }
+
+/* 09 / Alma satırları: mevcut mesaj kutusu teslimi ve hak kontrolü. */
+:root body[data-app-screen] .season-pass-cell .season-pass-claim { min-height:44px; width:100%; padding:4px; font-size:12px !important; }
+:root body[data-app-screen] :is(.monthly-login-card,#chest-reveal-rewards) .reward-resource-row { min-width:0; grid-template-columns:30px minmax(0,1fr) auto; gap:6px; }
+:root body[data-app-screen] :is(.monthly-login-card,#chest-reveal-rewards) .reward-resource-row > span:not(.resource-symbol) { font:600 13px/1.3 var(--gs-font-copy) !important; overflow-wrap:anywhere; }
+:root body[data-app-screen] :is(.monthly-login-card,#chest-reveal-rewards) .reward-resource-row > strong { font:700 13px/1.3 var(--gs-font-display) !important; }
+
+/* 10 / Açılış ve sonuç: var olan renkli animasyon ve gerçek makbuz korunur. */
+:root body[data-app-screen] #chest-reveal-card { border:1px solid #567799 !important; border-radius:7px !important; background:linear-gradient(145deg,#193c60,#0b2037) !important; box-shadow:0 5px 20px #020b17b3 !important; }
+:root body[data-app-screen] #chest-reveal-title { font:700 20px/1.3 var(--gs-font-display); }
+:root body[data-app-screen] #chest-reveal-rewards { gap:8px; }
+:root body[data-app-screen] #chest-reveal-close { min-height:44px; font-size:15px; }
+
+@media (max-width:380px) {
+  :root body[data-app-screen] .shop-screen .chest-store-card { padding:8px !important; }
+  :root body[data-app-screen] .shop-screen .paid-product-card strong { font-size:15px !important; }
+  :root body[data-app-screen] .daily-missions-screen .daily-mission-card { grid-template-columns:32px minmax(0,1fr) !important; }
+  :root body[data-app-screen] .daily-mission-card .daily-mission-side { grid-column:2; width:100%; justify-items:stretch; }
+  :root body[data-app-screen] .daily-mission-card .daily-mission-rewards { justify-content:flex-end; }
+}

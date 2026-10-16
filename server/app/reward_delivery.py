@@ -22,8 +22,14 @@ PLAYER_UNLOCKS = {
 
 
 def public_chest(chest: dict) -> dict:
-    return {key: deepcopy(value) for key, value in chest.items()
-            if key not in {"premium_origin", "fixed_reward", "team_reward"}}
+    result = {key: deepcopy(value) for key, value in chest.items()
+              if key not in {"premium_origin", "fixed_reward", "team_reward"}}
+    # Display identity only. Keep the fixed contents and refund provenance
+    # private while letting the client show the same crate before opening.
+    fixed = chest.get("fixed_reward")
+    if isinstance(fixed, dict) and fixed.get("chest_visual_id"):
+        result["chest_visual_id"] = str(fixed["chest_visual_id"])
+    return result
 
 
 def premium_origin(profile) -> dict | None:

@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-16",
+  "tool": "built-in image_gen.imagegen",
+  "transparent_background": true,
+  "intent": "ten individually generated module emblems; preview awaiting approval",
+  "referenceRoles": "existing chest and battle swords = style references only",
+  "referencePaths": [
+    "client/assets/ui/chests-casual-v2/gold.webp",
+    "client/assets/ui/dock-casual-v1/battle-swords-v2.webp"
+  ],
+  "sharedPrompt": "Use case: stylized-concept. ONE transparent game UI module emblem for GRIDSHARD, readable at 32px. The two input images are STYLE REFERENCES ONLY: match chunky stylized casual/RPG illustration, broad crisp chamfers, saturated enamel-like planes, dark indigo contour, modest upper-left highlight and shaded lower-right side. Volumetric illustrated emblem, not realistic machinery or metallic product. Center one object in square canvas, 12 percent transparent padding, simple bold silhouette, front view with slight depth, at most three large internal forms. No background plate, badge disc, tile, ground, outside drop shadow, text, numbers, frame, particles, rays, fog, watermark, microdetails, photoreal chrome or white bloom. Actual transparent background. Navy contour, restrained highlight. ONE object only.",
+  "generationSuffix": " SUBJECT: ",
+  "generationSubjects": [
+    {
+      "id": "laser",
+      "subject": "A single angular lightning bolt, long crisp zig-zag, thick carved coral-red (#ff627b) body with clear dark side plane. No gun body, no pedestal."
+    },
+    {
+      "id": "shield",
+      "subject": "A pointed kite shield, royal-blue (#609dff) enamel body, dark navy edge, ONE small ice-blue faceted diamond inset in center. No sword, no surrounding frame."
+    },
+    {
+      "id": "cooler",
+      "subject": "One chunky six-arm snowflake with broad solid angular branches and ONE small faceted center. Main color mint green #62d795 with icy highlights. Transparent gaps. No cube or badge behind it."
+    },
+    {
+      "id": "battery",
+      "subject": "One upright compact BATTERY. Broad turquoise #3fd5ca body with chamfered rectangular corners, one squat dark terminal on top, ONE large gold lightning inset. Simple toy-like chunky shape; no gold frame around body."
+    },
+    {
+      "id": "amplifier",
+      "subject": "ONE equal-arm PLUS SIGN, very thick leaf-green #62d77e block, consistent equal arm widths, broad clear front plane, darker visible side. Freestanding + silhouette only. No gold pieces, medical bag, ring, background or other object."
+    },
+    {
+      "id": "emp",
+      "subject": "ONE bold purple #b07aff prohibition symbol: thick circular ring with ONE diagonal slash across its empty center. Volumetric violet ring and slash, ACTUAL TRANSPARENT HOLES. No backing disc, gold decorations, lightning bolt or particles."
+    },
+    {
+      "id": "repair",
+      "subject": "ONE thick crescent moon facing RIGHT, sharp upper/lower tips, broad mint-green #68d89a face and darker green side plane. ACTUAL TRANSPARENT open concavity. Repair identity is crescent, never plus, wrench or cross. No gold decorations."
+    },
+    {
+      "id": "armor",
+      "subject": "ONE broad slanted armor plate, chamfered parallelogram silhouette, royal-blue #669ff0 front face, thick darker bottom edge, ONLY FOUR large pale rivets. Simple flat protective plate, no shield shape, framing, badge, extra emblem or equipment."
+    },
+    {
+      "id": "pulse_cannon",
+      "subject": "ONE front-facing pulse-cannon muzzle: thick coral-red #ff627b outer torus, open navy bore and ONE small gold energy center. Very short visible side barrel for depth. Bold circular target-like silhouette; no stand, realistic machinery, firing ray or turret base."
+    },
+    {
+      "id": "missile_launcher",
+      "subject": "ONE upright compact stylized ROCKET: coral-red #ff627b body, pale pointed nose, TWO broad coral tail fins, ONE dark circular porthole and a short gold exhaust tip. No flame trail, launchpad or launcher rack. Clean bold silhouette."
+    }
+  ],
+  "shieldRevision": {
+    "intent": "edit of shield output; selected final",
+    "prompt": "Use case: precise-object-edit. Input image is the edit target: the existing single blue shield module emblem. Change ONLY the thick ornamental GOLD frame: replace all gold border parts and four gold raised ornaments with a SIMPLE SLIM DARK INDIGO beveled rim, about one-third of the current gold rim thickness; remove the four border ornaments entirely. Keep the shield's pointed kite outline, royal-blue main face, ONE small central ice-blue diamond, front-facing shallow 3D chamfered casual/RPG illustration, saturated colors, lighting from upper left, clean bold outline. The central diamond may have a narrow dark-indigo rim instead of gold too. No gold remains. No extra objects, textures, rays, bloom or backing plate. Keep an actual transparent background. ONE blue shield only, centered, no text. This is a simplification of the supplied artwork, not a new shape."
+  }
+}

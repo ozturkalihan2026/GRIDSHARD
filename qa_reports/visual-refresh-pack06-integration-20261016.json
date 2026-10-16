@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-16",
+  "package6": "bound: ten components",
+  "leaderboardPreview": {
+    "actualPrizeRows": [
+      {
+        "rank": 1,
+        "rows": 9
+      },
+      {
+        "rank": 2,
+        "rows": 8
+      },
+      {
+        "rank": 3,
+        "rows": 6
+      },
+      {
+        "rank": 4,
+        "rows": 5
+      },
+      {
+        "rank": 5,
+        "rows": 5
+      },
+      {
+        "rank": 6,
+        "rows": 4
+      },
+      {
+        "rank": 7,
+        "rows": 4
+      },
+      {
+        "rank": 8,
+        "rows": 4
+      },
+      {
+        "rank": 9,
+        "rows": 4
+      },
+      {
+        "rank": 10,
+        "rows": 4
+      }
+    ],
+    "secondPlace": "eight real reward entries pass",
+    "geometry": "four viewport/dialog cases; no trigger overlap",
+    "interaction": "hover bridge, panel scroll, focus/Escape, click pin, outside close"
+  },
+  "verification": "isolated function/DOM and static contracts; no browser rendering",
+  "gameTestsRun": false,
+  "browserStarted": false,
+  "serverStarted": false
+}

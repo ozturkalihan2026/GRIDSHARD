@@ -1,0 +1,112 @@
+/* Paket 7 — 16 Ekim kullanıcı onayı. Yalnız görünüm.
+ * Mevcut 5×3 saha, raf ölçüleri, çekirdek sahnesi, HUD görünürlük kararı,
+ * kalıcı savaş DOM'u ve durum/FX sınıfları kendi sahiplerinde kalır. */
+
+/* 01 / HUD: düşman/pilot kimliği, gerçek çekirdek ve akım değerleri. */
+:root body[data-app-screen="play"] :is(.combat-summary-panel,.duel-side-heading,.shelf-panel .panel-title-row) {
+  color:#eef7ff; border-color:#355473 !important;
+  background:#0b2138 !important; box-shadow:inset 0 1px #52769733 !important;
+}
+:root body[data-app-screen="play"] .shelf-panel { border-color:#375c80 !important; background:linear-gradient(145deg,#193c60,#102841) !important; box-shadow:inset 0 1px #789cc337,0 3px #07172b !important; }
+:root body[data-app-screen="play"] :is(#combat-summary,#energy-summary,#player-core-summary,#shelf-credit-value,.board-vitals) { color:#dcecfb; font-family:var(--gs-font-copy); font-weight:600; font-variant-numeric:tabular-nums; text-shadow:none; }
+:root body[data-app-screen="play"] :is(#enemy-battle-name,#player-battle-name) { color:#f0f6ff; font-family:var(--gs-font-display); text-shadow:none; }
+:root body[data-app-screen="play"] .duel-enemy-identity { border-color:#78556e !important; }
+
+/* 02 / Savaş hücreleri: aynı ölçü, sade yuva; semantik durumlar öncelikli. */
+:root body[data-app-screen="play"] .vertical-circuit-arena :is(.board-cell,.enemy-board-cell) { border-radius:5px; }
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell[data-occupied="false"] {
+  border-color:#3d6287; background:linear-gradient(#153352,#0b2035); box-shadow:inset 0 2px #45638542,0 2px #07162b;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell.tap-drop-target { outline:2px solid #79e4cb; outline-offset:-2px; }
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell.debris-cell { border-style:dashed; }
+/* Do not change HP pseudo-elements, damage feedback or power state overlays. */
+:root body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card { border-radius:5px; background-color:#14334f; }
+:root body[data-app-screen="play"] .vertical-circuit-arena .module-card.enemy-module-card.battle-module-card { background-color:#332b48; }
+
+/* 03 / Raf: seçilebilirlik gerçek data-playable / data-affordable değerinden. */
+:root body[data-app-screen="play"] .module-shelf .module-card.deck-module-card {
+  border-radius:5px !important; border-color:#456386 !important;
+  background:linear-gradient(#1c4266,#102841) !important; box-shadow:inset 0 1px #54789b55,0 2px #07172b !important;
+}
+:root body[data-app-screen="play"] .module-shelf .module-card.deck-module-card[data-playable="true"] { opacity:1 !important; filter:none !important; border-color:#62baa9 !important; }
+:root body[data-app-screen="play"] .module-shelf .module-card.deck-module-card[data-playable="false"] { opacity:1 !important; filter:none !important; border-color:#40536c !important; border-style:dashed !important; background:#122238 !important; }
+:root body[data-app-screen="play"] .module-shelf .module-card.deck-module-card[data-playable="false"] > :is(.name,.current-cost-badge) { color:#bbcddd !important; }
+:root body[data-app-screen="play"] .module-shelf .module-card.deck-module-card[data-affordable="false"] > .current-cost-badge { color:#ffd0d8 !important; background:#3a253c !important; }
+:root body[data-app-screen="play"] .module-shelf .module-card.deck-module-card > .current-cost-badge { border:0; border-radius:4px !important; background:#0b1b2c; color:#ffe3a4; box-shadow:none !important; font-variant-numeric:tabular-nums; }
+
+/* 04 / Gerçek zamanlayıcıya dokunmadan 3–2–1 yüzeyi. */
+:root body[data-app-screen] #battle-start-countdown { background:#040c1866; }
+:root body[data-app-screen] #battle-start-countdown strong {
+  min-width:1.35em; padding:.12em .16em .16em; color:#ffe39a;
+  background:#112b45; text-align:center; font-weight:700; text-shadow:0 3px #6b481f;
+  clip-path:polygon(20% 0,80% 0,100% 20%,100% 80%,80% 100%,20% 100%,0 80%,0 20%);
+}
+
+/* 05 / Sonuç: mevcut aşamalar, skor, analiz ve makbuz ayrı okunur. */
+:root body[data-app-screen="play"] .post-match-panel :is(.battle-result-hero,.post-match-scoreboard,.post-match-analysis) {
+  border-color:#375c80 !important; border-radius:7px !important;
+  background:linear-gradient(145deg,#193c60,#102841) !important; box-shadow:inset 0 1px #789cc337,0 3px #07172b !important;
+}
+:root body[data-app-screen="play"] :is(#battle-result-outcome,#post-match-reward-outcome) { color:#ffe091; font-family:var(--gs-font-display); font-weight:700; text-shadow:none; }
+:root body[data-app-screen="play"] #battle-result-hero[data-outcome="defeat"] #battle-result-outcome,
+:root body[data-app-screen="play"] #post-match-reward-outcome[data-outcome="defeat"] { color:#f3bac5; }
+:root body[data-app-screen="play"] #battle-result-hero[data-outcome="draw"] #battle-result-outcome,
+:root body[data-app-screen="play"] #post-match-reward-outcome[data-outcome="draw"] { color:#a9d6f6; }
+:root body[data-app-screen="play"] .post-match-reward-list > article { border:1px solid #355473 !important; border-radius:6px !important; background:#0b2138 !important; box-shadow:none !important; }
+:root body[data-app-screen="play"] :is(#post-match-credit-reward,#post-match-trophy-reward,#post-match-experience-reward) { font-weight:700; font-variant-numeric:tabular-nums; text-shadow:none; }
+:root body[data-app-screen] #post-match-continue { --gs2-top:#ffe798; --gs2-face:#f6c45a; --gs2-bottom:#c68731; --gs2-edge:#674326; --gs2-letter:#112139; }
+
+/* 06 / Ayarlar: dört mevcut sekme, gerçek ses/kalite/gizlilik kontrolleri. */
+:root body[data-app-screen] #settings-summary-panel :is(.profile-name-form,.settings-about-panel,[data-settings-panel]) { border-color:#375c80 !important; border-radius:7px !important; background:linear-gradient(145deg,#193c60,#102841) !important; box-shadow:inset 0 1px #789cc337,0 3px #07172b !important; }
+:root body[data-app-screen] #settings-summary-panel :is(label,small,p) { color:#c3d7e9; font-family:var(--gs-font-copy); text-shadow:none; }
+:root body[data-app-screen] #settings-summary-panel .settings-form > label { min-height:44px; }
+:root body[data-app-screen] #settings-summary-panel :is(input[type="text"],input[type="email"],input[type="password"],select) { min-height:44px; border:1px solid #4a6b8b !important; border-radius:5px !important; background:#102841 !important; color:#f0f6ff !important; font:600 16px/1.3 var(--gs-font-copy) !important; box-shadow:inset 0 2px #07172b !important; }
+:root body[data-app-screen] #settings-summary-panel input:is([type="checkbox"],[type="range"]) { accent-color:#71d1c1; }
+
+/* 07 / Özel onay pencereleri. Native Play/OS arayüzleri kendi görünümündedir. */
+:root body[data-app-screen] #inbox-delete-confirm-dialog { border:1px solid #456386; border-radius:7px; background:#102841; box-shadow:0 6px 20px #020b17b3; }
+:root body[data-app-screen] #inbox-delete-confirm-dialog h2 { font:700 18px/1.3 var(--gs-font-display); }
+:root body[data-app-screen] #inbox-delete-confirm-dialog p { color:#bed1e7; font:600 14px/1.4 var(--gs-font-copy); }
+:root body[data-app-screen] .inbox-delete-confirm-actions button { min-height:44px; }
+
+/* 08 / Bildirimler: tehlike/iyileşme gibi gerçek durum renkleri korunur. */
+:root body[data-app-screen="play"] .battle-live-ticker { font-family:var(--gs-font-copy); font-weight:600; letter-spacing:0; text-shadow:none; }
+:root body[data-app-screen] :is(.season-action-status,#profile-name-save-status,#settings-tutorial-replay-status,.post-match-store-status) { color:#a4e7dc; font:600 14px/1.35 var(--gs-font-copy); text-shadow:none; }
+:root body[data-app-screen] :is(.season-action-status,#profile-name-save-status,#settings-tutorial-replay-status,.post-match-store-status):empty { display:none; }
+
+/* 09 / Eğitim: gerçek hedef ve adım; büyük titreşen hale yerine net kontur. */
+:root body[data-app-screen] .tutorial-card { border:1px solid #a38a45 !important; border-radius:7px !important; color:#f2f7ff; background:#102841 !important; box-shadow:0 6px 20px #020b17b3 !important; }
+:root body[data-app-screen] .tutorial-card h2 { color:#ffe39a !important; font:700 18px/1.3 var(--gs-font-display); text-shadow:none !important; }
+:root body[data-app-screen] .tutorial-card p { color:#c4d7e9 !important; font:600 14px/1.4 var(--gs-font-copy); }
+:root body[data-app-screen] :is(.tutorial-kicker,.tutorial-status,[data-tutorial-progress]) { font-family:var(--gs-font-copy); font-size:12px; }
+:root body[data-app-screen] [data-tutorial-target="true"] { outline:2px solid #ffe296 !important; outline-offset:2px; box-shadow:0 0 0 3px #102841 !important; animation:none !important; }
+
+/* 10 / Boş, yükleniyor, hata ve bağlantı: mevcut görünürlük/yeniden deneme. */
+:root body[data-app-screen] :is(.team-empty-state,.social-empty-state,.statistics-empty-state,.friends-empty-state small) { color:#bed1e7; font:600 14px/1.4 var(--gs-font-copy); text-shadow:none; overflow-wrap:anywhere; }
+:root body[data-app-screen] #boot-error { border-color:#865968 !important; border-radius:7px !important; background:#15273e !important; box-shadow:none !important; }
+:root body[data-app-screen] #boot-error p { color:#f0c1ca; font:600 14px/1.4 var(--gs-font-copy); }
+:root body[data-app-screen] :is(#pvp-connection-status,#team-loading-text,#daily-load-status,#settings-load-status) { color:#c0d6e9; font-family:var(--gs-font-copy); font-weight:600; }
+:root body[data-app-screen] #pvp-connection-status:is([data-status="reconnecting"],[data-status="connecting"]) { color:#ffe2a2; }
+:root body[data-app-screen] #pvp-connection-status:is([data-status="closed"],[data-status="error"]) { color:#f4b6c4; }
+:root body[data-app-screen] #pvp-connection-status[data-status="open"] { color:#9fe5d1; }
+:root body[data-app-screen] :is(#play-recovery-panel,#account-session-recovery) { border:1px solid #456386; border-radius:7px; background:#102841; box-shadow:0 5px 16px #020b17b3; }
+:root body[data-app-screen] :is(#play-recovery-message,#account-session-recovery-status) { color:#c4d7e9; font:600 14px/1.4 var(--gs-font-copy); overflow-wrap:anywhere; }
+
+/* Remaining known text actions share the approved physical button silhouette. */
+:root body[data-app-screen] :is(#server-boot-retry,#boot-retry,#battle-pool-confirm,#play-recovery-retry,#account-session-recovery-login,#account-session-recovery-retry,.tutorial-heading [data-tutorial-skip]) {
+  position:relative; isolation:isolate; min-height:44px; padding:8px 12px 12px;
+  border:0 !important; border-radius:0 !important; background:transparent !important; box-shadow:none !important;
+  color:#eff8ff !important; font:700 14px/1.2 var(--gs-font-display); text-shadow:none !important;
+}
+:root body[data-app-screen] :is(#server-boot-retry,#boot-retry,#battle-pool-confirm,#play-recovery-retry,#account-session-recovery-login,#account-session-recovery-retry,.tutorial-heading [data-tutorial-skip])::before {
+  content:""; position:absolute; inset:0; z-index:-1;
+  background:linear-gradient(#80c7fc 0 15%,#367db8 16% 76%,#24528a 77% 88%,#142e51 89%);
+  clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 7px,100% calc(100% - 7px),calc(100% - 7px) 100%,7px 100%,0 calc(100% - 7px),0 7px);
+}
+:root body[data-app-screen] #battle-pool-confirm::before { background:linear-gradient(#ffe798 0 15%,#f6c45a 16% 76%,#c68731 77% 88%,#674326 89%); }
+:root body[data-app-screen] #battle-pool-confirm { color:#112139 !important; }
+:root body[data-app-screen] :is(#server-boot-retry,#boot-retry,#battle-pool-confirm,#play-recovery-retry,#account-session-recovery-login,#account-session-recovery-retry,.tutorial-heading [data-tutorial-skip]):disabled::before { background:linear-gradient(#57758b,#294357 78%,#17293e 79%); }
+:root body[data-app-screen] :is(#server-boot-retry,#boot-retry,#battle-pool-confirm,#play-recovery-retry,#account-session-recovery-login,#account-session-recovery-retry,.tutorial-heading [data-tutorial-skip]):disabled { color:#c0cfdf !important; }
+@media (prefers-reduced-motion:reduce) {
+  :root body[data-app-screen] #battle-start-countdown strong { animation:none !important; }
+}

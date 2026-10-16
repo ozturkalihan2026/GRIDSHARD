@@ -1,0 +1,60 @@
+{
+  "package": 3,
+  "revision": 3,
+  "bytes": 901018,
+  "parts": 8,
+  "artDefinitions": 24,
+  "embeddedFonts": 4,
+  "syntax": "passed",
+  "isolatedCompositionDockAndThresholdChecks": "passed",
+  "isolatedMailboxReadFilterAndRestoreChecks": "passed",
+  "thresholdSamples": [
+    {
+      "name": "Arena 1",
+      "count": 6
+    },
+    {
+      "name": "Arena 2",
+      "count": 5
+    },
+    {
+      "name": "Kıvılcım Ligi I",
+      "count": 2
+    },
+    {
+      "name": "Şampiyonlar Ligi I",
+      "count": 4
+    },
+    {
+      "name": "GRIDSHARD Ligi",
+      "count": 1
+    }
+  ],
+  "background": "existing-devre-atmosferi",
+  "coreMotion": "existing-orbit-and-spark-with-reduced-motion",
+  "resourceRowFirst": true,
+  "route": "unframed-centered-volumetric",
+  "battleAction": "compact-left-icon-bold-title",
+  "profile": "unframed-default-optional-cosmetic-frame",
+  "newAssetPrompts": "docs/GORSEL_DONUSUM_PAKET03_REV3_PROMPTLAR_20261015.json",
+  "newAssets": [
+    {"path":"artifacts/visual-refresh-pack03-20261015/route-rev3.webp","tool":"built-in imagegen","width":192,"height":192,"hasAlpha":true,"bytes":18722},
+    {"path":"artifacts/visual-refresh-pack03-20261015/message-rev3.webp","tool":"built-in imagegen","width":128,"height":128,"hasAlpha":true,"bytes":14222},
+    {"path":"artifacts/visual-refresh-pack03-20261015/mail-open-rev3.webp","tool":"built-in imagegen","width":128,"height":128,"hasAlpha":true,"bytes":14346}
+  ],
+  "visualBrowserCheck": false,
+  "gameTestsRun": false,
+  "browserStarted": false,
+  "serverStarted": false,
+  "runtimeIntegrated": false,
+  "logo": {
+    "tool": "built-in imagegen",
+    "status": "preview-only",
+    "path": "artifacts/visual-refresh-pack03-20261015/logo-v2-preview.webp",
+    "width": 256,
+    "height": 256,
+    "hasAlpha": true,
+    "bytes": 54786,
+    "prompt": "docs/GORSEL_DONUSUM_PAKET03_LOGO_PROMPTU_20261015.json"
+  }
+}

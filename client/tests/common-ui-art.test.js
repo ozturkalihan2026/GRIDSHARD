@@ -30,12 +30,12 @@ test("all ten approved UI icons are lightweight WebP files with one CSS source",
 test("legacy and canonical icon names share the approved art without old plates or injected attributes",()=>{
   const ctx=helpers();
   for(const [alias,name] of Object.entries(ctx.UI_ART_ICONS)){
-    assert.ok(names.includes(name));
+    assert.ok([...names,"battle","deck","purchase","chest"].includes(name));
     const markup=ctx.uiIconMarkup(alias,'blue" onclick="bad()');
     assert.ok(markup.includes('class="ui-icon is-artwork"'));
     assert.ok(markup.includes(`data-ui-art="${name}"`));
     assert.ok(!markup.includes("<svg")&&!markup.includes("onclick"));
-    assert.equal(ctx.UI_ICON_PATHS[alias],undefined);
+    if (names.includes(name)) assert.equal(ctx.UI_ICON_PATHS[alias],undefined);
   }
   assert.ok(ctx.uiIconMarkup("__proto__").includes('data-icon="star"'));
   assert.ok(ctx.uiIconMarkup("shield","blue").includes("<svg"));
@@ -48,8 +48,9 @@ test("independent message/menu/settings/profile and empty-state icons also use t
   assert.ok(app.includes('empty.appendChild(createUiIcon("people", "green"));'));
   assert.ok(css.includes('background:var(--ui-art-info) center / contain no-repeat;'));
   assert.ok(!html.includes('title="Ayarlar">⚙'));
-  // Selected cosmetic avatars and their IDs are deliberately not replaced.
-  assert.ok(app.includes('element.textContent = avatar.glyph;'));
+  // 5C replaces text glyphs with approved physical emblems, retaining IDs.
+  assert.ok(app.includes('artwork.src = PROFILE_AVATAR_ART[avatar.id];'));
+  assert.ok(app.includes('element.dataset.avatar = avatar.id;'));
 });
 test("profile bar message and menu icons have no button plate but keep hit targets, badge and focus",()=>{
   const final=css.slice(css.indexOf("/* Kullanıcı ek onayı:"));

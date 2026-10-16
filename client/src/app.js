@@ -541,6 +541,18 @@
     { id: "frequency_cyan", nameTr: "Frekans Akımı" },
     { id: "gridshard_apex", nameTr: "Zirve Halkası" },
   ]);
+  // Approved physical emblems shared by own/public profiles, chat and rewards.
+  // These are display assets only; existing server ownership IDs remain intact.
+  const PROFILE_AVATAR_ART = Object.freeze({
+    circuit_scout:"./assets/ui/home-v3/route.webp",
+    core_guardian:"./assets/ui/leagues-v1/reactor.webp",
+    season_champion:"./assets/ui/leagues-v1/legendary.webp",
+    season_finalist:"./assets/ui/leagues-v1/nexus.webp",
+    weekly_champion:"./assets/ui/rating-trophy-v1/rating-trophy.webp",
+    weekly_finalist:"./assets/ui/leagues-v1/quantum.webp",
+    rank_spark:"./assets/ui/leagues-v1/volt.webp",
+    gridshard_apex:"./assets/ui/leagues-v1/gridshard.webp",
+  });
   const BATTLE_EMOJIS = Object.freeze([
     { id:"none", nameTr:"Kapalı", glyph:"—" },
     // Gerçek emojiler: ilk altısı herkese açık, diğerleri sezon yolunda.
@@ -572,17 +584,27 @@
   ]);
   const ACCOUNT_ONBOARDING_DISMISSED_KEY = `gridshard.account-onboarding.dismissed:${participantPlayerId}`;
 
+  const SYMBOLIC_EMOJI_ART = Object.freeze({
+    victory_pulse:"./assets/ui/leagues-v1/spark.webp",
+    respect_signal:"./assets/ui/leagues-v1/gridshard.webp",
+    team_beacon:"./assets/ui/home-v3/route.webp",
+    core_burst:"./assets/ui/leagues-v1/reactor.webp",
+    glitch_wave:"./assets/ui/leagues-v1/quantum.webp",
+    overload_flash:"./assets/ui/leagues-v1/volt.webp",
+    gridshard_apex:"./assets/ui/leagues-v1/gridshard.webp",
+  });
   function createBattleEmojiVisual(emoji) {
-    const visual = document.createElement(emoji?.mediaSrc ? "img" : "span");
+    const source = emoji?.mediaSrc || (Object.hasOwn(SYMBOLIC_EMOJI_ART, emoji?.id || "") ? SYMBOLIC_EMOJI_ART[emoji.id] : "");
+    const visual = document.createElement(source ? "img" : "span");
     visual.className = "battle-emoji-visual";
     visual.dataset.motion = emoji?.motion || "none";
     if (emoji?.real) visual.dataset.real = "true";
-    if (emoji?.mediaSrc) {
-      visual.src = emoji.mediaSrc;
+    if (source) {
+      visual.src = source;
       visual.alt = "";
       visual.decoding = "async";
       visual.loading = "lazy";
-      visual.dataset.mediaType = /\.gif(?:$|\?)/i.test(emoji.mediaSrc) ? "gif" : "image";
+      visual.dataset.mediaType = /\.gif(?:$|\?)/i.test(source) ? "gif" : "image";
     } else {
       visual.textContent = emoji?.glyph || "◇";
       visual.setAttribute("aria-hidden", "true");
@@ -1641,6 +1663,8 @@
     people:"friends", friends:"friends", profile:"profile", gift:"gift",
     calendar:"calendar", bars:"statistics", statistics:"statistics",
     palette:"cosmetics", cosmetics:"cosmetics", info:"info", menu:"menu",
+    swords:"battle", battle:"battle", card:"deck", deck:"deck",
+    shop:"purchase", purchase:"purchase", chest:"chest",
   });
   // Değer anahtarı → simge ve renk tonu.
   const STAT_ICONS = Object.freeze({
@@ -2104,8 +2128,26 @@
   }
 
   let rewardPreviewState = null;
+  let rewardPreviewCloseTimer = null;
+
+  function cancelRewardPreviewClose() {
+    clearTimeout(rewardPreviewCloseTimer);
+    rewardPreviewCloseTimer = null;
+  }
+
+  function scheduleRewardPreviewClose(event) {
+    if (!rewardPreviewState || rewardPreviewState.pinned) return;
+    const { panel, trigger } = rewardPreviewState;
+    if (event?.relatedTarget && (panel.contains(event.relatedTarget) || trigger.contains(event.relatedTarget))) return;
+    cancelRewardPreviewClose();
+    // Bridge the gap between chest and scrollable contents for mouse/pen users.
+    rewardPreviewCloseTimer = setTimeout(() => {
+      if (rewardPreviewState?.trigger === trigger && !rewardPreviewState.pinned) hideRewardPreview();
+    }, 180);
+  }
 
   function hideRewardPreview() {
+    cancelRewardPreviewClose();
     if (!rewardPreviewState) return;
     rewardPreviewState.panel.remove();
     rewardPreviewState.trigger.setAttribute("aria-expanded", "false");
@@ -2119,22 +2161,35 @@
     panel.style.top = "0px";
     // Kapsayıcı blok (açık diyalog ya da görüntü alanı) ne olursa olsun
     // paneli tetikleyiciye göre görüntü alanı koordinatlarında konumlar.
-    const origin = panel.getBoundingClientRect();
     const target = trigger.getBoundingClientRect();
-    const width = origin.width;
-    const height = origin.height;
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const host = trigger.closest("dialog[open]")?.getBoundingClientRect();
+    const bounds = {
+      left:Math.max(margin, host ? host.left + margin : margin),
+      right:Math.min(viewportWidth - margin, host ? host.right - margin : viewportWidth - margin),
+      top:Math.max(margin, host ? host.top + margin : margin),
+      bottom:Math.min(viewportHeight - margin, host ? host.bottom - margin : viewportHeight - margin),
+    };
+    const below = Math.max(0, bounds.bottom - target.bottom - margin);
+    const above = Math.max(0, target.top - margin - bounds.top);
+    panel.style.maxWidth = `${Math.max(1, bounds.right - bounds.left)}px`;
+    panel.style.maxHeight = `${Math.max(1, Math.max(above, below))}px`;
+    const origin = panel.getBoundingClientRect();
+    const { width, height } = origin;
     let left = target.left + target.width / 2 - width / 2;
-    left = Math.max(margin, Math.min(left, viewportWidth - width - margin));
-    let top = target.bottom + margin;
-    if (top + height > viewportHeight - margin) top = target.top - height - margin;
-    top = Math.max(margin, top);
+    left = Math.max(bounds.left, Math.min(left, bounds.right - width));
+    // Long cosmetic bundles (notably the second-place prize) must never cover
+    // their own hover target: that immediately triggered mouseleave before.
+    const top = below >= height || below >= above
+      ? target.bottom + margin
+      : target.top - height - margin;
     panel.style.left = `${Math.round(left - origin.left)}px`;
     panel.style.top = `${Math.round(top - origin.top)}px`;
   }
 
   function showRewardPreview(trigger, { title, reward, note }) {
+    cancelRewardPreviewClose();
     if (rewardPreviewState?.trigger === trigger) return;
     hideRewardPreview();
     const host = trigger.closest("dialog[open]") || document.body;
@@ -2176,6 +2231,10 @@
       panel.appendChild(noteNode);
     }
     host.appendChild(panel);
+    panel.addEventListener("pointerenter", cancelRewardPreviewClose);
+    panel.addEventListener("mouseenter", cancelRewardPreviewClose);
+    panel.addEventListener("pointerleave", scheduleRewardPreviewClose);
+    panel.addEventListener("mouseleave", scheduleRewardPreviewClose);
     positionRewardPreview(trigger, panel);
     trigger.setAttribute("aria-expanded", "true");
     trigger.setAttribute("aria-describedby", panel.id);
@@ -2223,12 +2282,19 @@
   // odaklanınca ya da dokununca içerik paneli açılır; dokunuş paneli sabitler.
   function bindRewardPreview(button, options) {
     button.addEventListener("pointerenter", (event) => {
-      if (event.pointerType === "mouse") showRewardPreview(button, options);
+      if (!event.pointerType || event.pointerType === "mouse" || event.pointerType === "pen") showRewardPreview(button, options);
     });
     button.addEventListener("pointerleave", (event) => {
-      if (event.pointerType === "mouse" && rewardPreviewState?.trigger === button && !rewardPreviewState.pinned) {
-        hideRewardPreview();
+      if (event.pointerType !== "touch" && rewardPreviewState?.trigger === button && !rewardPreviewState.pinned) {
+        scheduleRewardPreviewClose(event);
       }
+    });
+    // Mouse-only fallback for hosts that do not dispatch pointerenter.
+    button.addEventListener("mouseenter", (event) => {
+      if (!event.sourceCapabilities?.firesTouchEvents) showRewardPreview(button, options);
+    });
+    button.addEventListener("mouseleave", (event) => {
+      if (rewardPreviewState?.trigger === button && !rewardPreviewState.pinned) scheduleRewardPreviewClose(event);
     });
     button.addEventListener("focus", () => {
       if (button.matches(":focus-visible")) showRewardPreview(button, options);
@@ -2254,7 +2320,10 @@
     if (rewardPreviewState.trigger.contains(event.target)) return;
     hideRewardPreview();
   }, true);
-  document.addEventListener("scroll", hideRewardPreview, true);
+  document.addEventListener("scroll", (event) => {
+    if (rewardPreviewState?.panel.contains(event.target)) return;
+    hideRewardPreview();
+  }, true);
   window.addEventListener("resize", hideRewardPreview);
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") hideRewardPreview();
@@ -2274,15 +2343,31 @@
     gridshard:'<path d="M12 2 21 12 12 22 3 12Z"/><path d="M12 6.5 16.9 12 12 17.5 7.1 12Z"/><path d="M12 2v4.5M12 17.5V22M3 12h4.1M16.9 12H21"/>',
   });
 
+  // Approved Package 4A assets. Keep the legacy paths above for chest artwork
+  // until its separate preview is approved; league identity stays the same.
+  const COMPETITION_TROPHY_ASSET = "./assets/ui/rating-trophy-v1/rating-trophy.webp";
+  const LEAGUE_EMBLEM_ASSETS = Object.freeze({
+    spark:"./assets/ui/leagues-v1/spark.webp",
+    volt:"./assets/ui/leagues-v1/volt.webp",
+    reactor:"./assets/ui/leagues-v1/reactor.webp",
+    quantum:"./assets/ui/leagues-v1/quantum.webp",
+    nexus:"./assets/ui/leagues-v1/nexus.webp",
+    champions:COMPETITION_TROPHY_ASSET,
+    legendary:"./assets/ui/leagues-v1/legendary.webp",
+    gridshard:"./assets/ui/leagues-v1/gridshard.webp",
+  });
+
   function leagueEmblemMarkup(stage) {
-    const paths = LEAGUE_EMBLEMS[stage?.league];
-    if (!paths) return "♛";
-    const tiers = Number(stage.league_tiers || 1);
-    const tier = Number(stage.league_tier || 1);
+    const asset = Object.hasOwn(LEAGUE_EMBLEM_ASSETS, stage?.league || "")
+      ? LEAGUE_EMBLEM_ASSETS[stage.league] : null;
+    if (!asset) return "♛";
+    const tiers = stage.league === "gridshard" ? 1 : 5;
+    const rawTier = Number(stage.league_tier || 1);
+    const tier = Number.isFinite(rawTier) ? Math.max(1, Math.min(tiers, Math.floor(rawTier))) : 1;
     const pips = tiers > 1
-      ? `<span class="league-emblem-tier">${Array.from({ length:tiers }, (_, index) => `<i${index < tier ? ' class="is-on"' : ""}></i>`).join("")}</span>`
+      ? `<span class="league-emblem-tier" aria-hidden="true">${Array.from({ length:tiers }, (_, index) => `<i${index < tier ? ' class="is-on"' : ""}></i>`).join("")}</span>`
       : "";
-    return `<svg class="league-emblem" viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>${pips}`;
+    return `<img class="league-emblem league-emblem-art" src="${asset}" width="44" height="44" alt="" aria-hidden="true" decoding="async">${pips}`;
   }
 
   // Mağaza sandığı (Bronz, Gümüş, Altın, Elmas) lig sandıklarıyla aynı dildedir
@@ -2358,8 +2443,10 @@
   // kapak ve kilidinde ligin amblemi. Rengi ligin rengidir (canon.css,
   // data-league-chest). Kapak ayrı bir gruptur: sandık açılınca kalkar, içinden
   // ışık çıkar. Çizim ortak; açık hali `open` ile verilir.
-  function leagueChestMarkup(league, { open = false } = {}) {
+  function leagueChestMarkup(league, { open = false, reveal = false } = {}) {
     const safeLeague = String(league || "").replace(/[^a-z]/g, "");
+    const painted = globalThis.GRIDSHARD_REWARD_CHEST_ART?.markup(`league_${safeLeague}`, { open, reveal });
+    if (painted) return painted;
     const emblem = LEAGUE_EMBLEMS[safeLeague] || LEAGUE_EMBLEMS.gridshard;
     return `<svg class="league-chest${open ? " is-open" : ""}" data-league-chest="${safeLeague}" viewBox="0 0 100 96" aria-hidden="true">`
       + '<ellipse class="lc-ground" cx="50" cy="87.5" rx="39" ry="6.2"/>'
@@ -2402,7 +2489,7 @@
   // durağın kendi ödülüdür.
   const LEAGUE_CHEST_OPENING_MIN_MS = 950;
 
-  function setChestRevealVisual({ tier = "bronze", league = "" } = {}) {
+  function setChestRevealVisual({ tier = "bronze", league = "", visualId = "" } = {}) {
     const card = document.getElementById("chest-reveal-card");
     const visual = document.getElementById("chest-reveal-visual");
     if (card) {
@@ -2411,7 +2498,12 @@
       else delete card.dataset.league;
     }
     if (!visual) return;
-    if (league) {
+    const artId = league ? `league_${league}` : visualId;
+    const paintedReward = globalThis.GRIDSHARD_REWARD_CHEST_ART?.markup(artId, { reveal:true, large:true });
+    if (paintedReward) {
+      visual.className = "chest-visual chest-visual-large chest-casual-reveal reward-chest-reveal";
+      visual.innerHTML = paintedReward;
+    } else if (league) {
       visual.className = "chest-reveal-league";
       visual.innerHTML = `${leagueChestMarkup(league)}<span class="chest-reveal-sparks" aria-hidden="true">${"<i></i>".repeat(10)}</span>`;
     } else {
@@ -2522,18 +2614,15 @@
       if (arena) {
         const nodeCount = (arena.nodes || []).filter((node) => Object.keys(node.rewards || {}).length && Number(node.trophies) >= Number(stage.minimum_rating || 0)).length;
         const coreCopy = arena.core_unlock ? localizedMessage("arena.new_core_suffix") : "";
-        detail.textContent = localizedMessage("arena.stage_detail", {
-          trophies:localizedNumber(stage.minimum_rating || 0),
+        renderTrophyCaption(detail, "", Number(stage.minimum_rating || 0), localizedMessage("arena.stage_rewards", {
           count:localizedNumber(nodeCount), core:coreCopy,
-        });
+        }));
       } else {
         const next = stages[stages.indexOf(stage) + 1];
-        detail.textContent = next
-          ? localizedMessage("arena.league_range", {
-            minimum:localizedNumber(stage.minimum_rating || 0),
-            maximum:localizedNumber(Number(next.minimum_rating) - 1),
-          })
-          : localizedMessage("arena.legendary_range", {minimum:localizedNumber(stage.minimum_rating || 0)});
+        renderTrophyCaption(detail, "", next
+          ? `${localizedNumber(stage.minimum_rating || 0)}–${localizedNumber(Number(next.minimum_rating) - 1)}`
+          : `${localizedNumber(stage.minimum_rating || 0)}+`,
+        localizedMessage(next ? "arena.league_context" : "arena.peak_context"));
       }
       copy.append(title, detail);
       head.append(marker, copy);
@@ -2606,7 +2695,7 @@
           reward.classList.toggle("is-new-reward", Boolean(node.claimable) && String(node.id) === highlightedArenaNodeId);
           const trophy = document.createElement("span");
           trophy.className = "arena-reward-trophy";
-          trophy.textContent = localizedMessage("arena.trophy_icon", {count:localizedNumber(node.trophies)});
+          renderTrophyValue(trophy, Number(node.trophies));
           const glyph = document.createElement("i");
           glyph.setAttribute("aria-hidden", "true");
           glyph.innerHTML = rewardIcon(node.rewards);
@@ -2694,7 +2783,7 @@
           const isNewReward = Boolean(node.claimable) && String(node.id) === highlightedArenaNodeId;
           const trophy = document.createElement("span");
           trophy.className = "arena-reward-trophy";
-          trophy.textContent = localizedMessage("arena.trophy_icon", {count:localizedNumber(node.trophies)});
+          renderTrophyValue(trophy, Number(node.trophies));
           // Lig sandığı hücre içinde durmaz; yolun ucunda, ulaşılacak hedef olarak
           // havada bekler. İçeriği diğer sandıklardaki gibi üzerine gelince ya da
           // dokununca açılan önizlemede görünür; almak için ayrı düğme vardır.
@@ -3271,7 +3360,7 @@
   }
 
   function renderHomeArena() {
-    const { rank, rating, floor, ceiling, progress } = arenaViewModel();
+    const { rank, rating, floor, ceiling } = arenaViewModel();
     const arenaCard = document.getElementById("home-arena-card");
     const hasClaimableRoadReward = [
       ...(metaProgressionState?.arena_path || []),
@@ -3297,14 +3386,15 @@
       if (element) element.textContent = String(value);
     };
     setText("home-arena-name", rank.kind !== "arena" ? rank.name_tr : `Arena ${rank.index || 1}`);
-    setText("home-arena-progress-copy", rank.next_stage ? `${rating} / ${ceiling} Kupa` : `${rating} Kupa`);
+    renderTrophyCaption(document.getElementById("home-arena-progress-copy"), "", rank.next_stage ? `${localizedNumber(rating)} / ${localizedNumber(ceiling)}` : rating);
     const arenaTitle = rank.name_tr && !/^Arena\s+\d+$/i.test(rank.name_tr)
       ? `Arena ${rank.index || 1} · ${rank.name_tr}`
       : `Arena ${rank.index || 1}`;
     setText("arena-detail-title", rank.kind !== "arena" ? rank.name_tr : arenaTitle);
-    setText("arena-detail-rating", `${rating} Kupa`);
+    renderTrophyValue("arena-detail-rating", rating);
     setText("arena-detail-range", rank.next_stage ? `${rating - floor} / ${ceiling - floor}` : "Azami aşama");
-    setText("arena-detail-next", rank.next_stage ? `Sonraki: ${rank.next_stage.name_tr} · ${ceiling} Kupa` : "Efsanevi yol tamamlandı");
+    if (rank.next_stage) renderTrophyCaption(document.getElementById("arena-detail-next"), localizedMessage("arena.next_stage_name", {name:rank.next_stage.name_tr}), ceiling);
+    else setText("arena-detail-next", localizedMessage("arena.complete"));
     // Devre Yolu yüzlerce durak çizer. Pencere kapalıyken çizilmez (her ekran
     // değişiminde yeniden kurulması gezinmeyi takıltıyordu); açılırken çizilir.
     if (document.getElementById("arena-detail-dialog")?.open) renderArenaPath();
@@ -3317,18 +3407,29 @@
       const league = rank.kind !== "arena"
         ? (metaProgressionState?.rank_stages || []).find((item) => item.id === rank.id)
         : null;
-      const nodes = (arena?.nodes || league?.nodes || []).filter(
-        (node) => Object.keys(node.rewards || {}).length && Number(node.trophies) >= floor
+      const road = GridshardHomeInterface.roadProgress(
+        arena?.nodes || league?.nodes || [], floor, ceiling, rating, !rank.next_stage
       );
-      const stops = nodes.length ? nodes : Array.from({ length: 4 }, (_, index) => ({ trophies: floor + ((ceiling - floor) / 4) * (index + 1) }));
-      stops.forEach((node, index) => {
+      segments.hidden = !road.stops.length;
+      segments.style.setProperty("--road-stops", String(Math.max(1, road.stops.length)));
+      segments.setAttribute("aria-valuemin", String(floor));
+      segments.setAttribute("aria-valuemax", String(Math.max(floor + 1, road.ceiling)));
+      segments.setAttribute("aria-valuenow", String(Math.max(floor, Math.min(road.ceiling, rating))));
+      segments.setAttribute("aria-label", localizedMessage("arena.threshold_progress", {
+        current:localizedNumber(road.completed), total:localizedNumber(road.stops.length),
+      }));
+      if (road.stops.length) renderTrophyCaption(document.getElementById("home-arena-progress-copy"), "",
+      `${localizedNumber(rating)} / ${localizedNumber(road.ceiling)}`, localizedMessage("arena.threshold_progress", {
+        current:localizedNumber(road.completed), total:localizedNumber(road.stops.length),
+      }));
+      road.stops.forEach((node) => {
         const segment = document.createElement("i");
-        segment.className = rating >= Number(node.trophies) ? "is-complete" : (index === stops.findIndex((item) => rating < Number(item.trophies)) ? "is-current" : "");
+        segment.className = node.fill >= 100 ? "is-complete" : node.fill > 0 ? "is-current" : "";
+        segment.style.setProperty("--stop-fill", `${node.fill}%`);
+        segment.setAttribute("aria-hidden", "true");
         segment.title = localizedMessage("arena.node_title", {
           trophies:localizedNumber(node.trophies),
-          reward:node.description_tr ? localizedMessage("arena.node_reward_suffix", {
-            description:localizedArenaRewardDescription(node),
-          }) : "",
+          reward:"",
         });
         segments.appendChild(segment);
       });
@@ -3418,6 +3519,8 @@
   }
 
   function chestVisualMarkup(tier, { large = false, visualId = "" } = {}) {
+    const customArt = globalThis.GRIDSHARD_REWARD_CHEST_ART?.markup(visualId, { large });
+    if (customArt) return customArt;
     const customBase = {
       weekly_first:"diamond", weekly_second:"gold", weekly_third:"silver",
       team_first:"diamond", team_second:"gold", team_third:"silver",
@@ -3764,9 +3867,9 @@
     const host = document.getElementById("chest-reveal-rewards");
     const kicker = document.getElementById("chest-reveal-kicker");
     const close = document.getElementById("chest-reveal-close");
-    setChestRevealVisual({ tier });
+    setChestRevealVisual({ tier, visualId:receipt.chest_visual_id || rewards.chest_visual_id || definition?.chest_visual_id || "" });
     if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
-    if (title) title.textContent = definition?.name_tr || storeItem?.name_tr || "Sandık";
+    if (title) title.textContent = rewards.chest_name_tr || definition?.name_tr || storeItem?.name_tr || "Sandık";
     if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
     if (close) { close.disabled = false; close.textContent = "DEVAM"; }
     if (host) {
@@ -3793,9 +3896,11 @@
     const host = document.getElementById("chest-reveal-rewards");
     const kicker = document.getElementById("chest-reveal-kicker");
     const close = document.getElementById("chest-reveal-close");
-    setChestRevealVisual({ tier });
+    // A mixed batch cannot truthfully use one player's rank chest artwork.
+    const visualIds = [...new Set(receipts.map(item => item.chest_visual_id || item.rewards?.chest_visual_id || ""))];
+    setChestRevealVisual({ tier, visualId:visualIds.length === 1 ? visualIds[0] : "" });
     if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
-    if (title) title.textContent = `${definition?.name_tr || "Sandık"} · ${receipts.length} açıldı`;
+    if (title) title.textContent = `${visualIds.length === 1 && receipts[0]?.rewards?.chest_name_tr || definition?.name_tr || "Sandık"} · ${receipts.length} açıldı`;
     if (kicker) {
       kicker.hidden = false;
       kicker.textContent = batchReceipt?.partial
@@ -3819,13 +3924,13 @@
     else dialog?.setAttribute("open", "");
   }
 
-  function showChestOpening({ tier = "bronze", title = "Sandık" } = {}) {
+  function showChestOpening({ tier = "bronze", title = "Sandık", visualId = "" } = {}) {
     const dialog = document.getElementById("chest-reveal-dialog");
     const card = document.getElementById("chest-reveal-card");
     const visual = document.getElementById("chest-reveal-visual");
     const host = document.getElementById("chest-reveal-rewards");
     const close = document.getElementById("chest-reveal-close");
-    setChestRevealVisual({ tier });
+    setChestRevealVisual({ tier, visualId });
     if (card) { card.dataset.tier = tier; card.dataset.state = "opening"; }
     const kicker = document.getElementById("chest-reveal-kicker");
     if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
@@ -3890,7 +3995,7 @@
     const kicker = document.getElementById("chest-reveal-kicker");
     const host = document.getElementById("chest-reveal-rewards");
     const close = document.getElementById("chest-reveal-close");
-    setChestRevealVisual({ tier });
+    setChestRevealVisual({ tier, visualId:chest.chest_visual_id || definition?.chest_visual_id || "" });
     if (card) { card.dataset.tier = tier; card.dataset.state = "claimed"; }
     if (title) title.textContent = chest.name_tr || definition?.name_tr || "Hediye Sandık";
     if (kicker) { kicker.hidden = true; kicker.textContent = ""; }
@@ -3954,12 +4059,15 @@
       card.dataset.bonus = String(Boolean(product.bonus_percent));
       card.dataset.packRank = String(Math.max(0, Math.min(3, Number(rank) || 0)));
     }
-    const icon = document.createElement("i");
+    const icon = premium ? createUiIcon("gift") : document.createElement("i");
     const token = PAID_ICON_TOKENS[product.currency] || "premium";
-    icon.className = `resource-symbol ${RESOURCE_TOKEN_CLASS[token]} is-token`;
-    icon.dataset.token = token;
+    if (premium) icon.classList.add("premium-offer-art");
+    else {
+      icon.className = `resource-symbol ${RESOURCE_TOKEN_CLASS[token]} is-token`;
+      icon.dataset.token = token;
+      icon.innerHTML = resourceTokenVisual(token);
+    }
     icon.setAttribute("aria-hidden", "true");
-    icon.innerHTML = resourceTokenVisual(token);
     const copy = document.createElement("div");
     const name = document.createElement("strong");
     name.textContent = product.name_tr;
@@ -4476,7 +4584,7 @@
     const status = document.getElementById("shop-action-status");
     const chest = metaProgressionState?.chests?.slots?.find((item) => item.chest_id === chestId);
     const definition = metaProgressionState?.chests?.definitions?.find((item) => item.id === chest?.definition_id);
-    showChestOpening({ tier: chestTier(definition || chest || {}), title: definition?.name_tr || chest?.name_tr || "Sandık" });
+    showChestOpening({ tier: chestTier(definition || chest || {}), title: definition?.name_tr || chest?.name_tr || "Sandık", visualId:chest?.chest_visual_id || definition?.chest_visual_id || "" });
     try {
       const payload = await metaProgressionMutation(
         `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/chests/${encodeURIComponent(chestId)}/open`
@@ -4495,9 +4603,12 @@
     const definition = metaProgressionState?.chests?.definitions?.find(
       (item) => item.id === definitionId
     );
+    const visualIds = [...new Set((metaProgressionState?.chests?.slots || [])
+      .filter(item => item.definition_id === definitionId).map(item => item.chest_visual_id || ""))];
     showChestOpening({
       tier: chestTier(definition || { id: definitionId }),
       title: `${definition?.name_tr || "Sandık"} sandıkları`,
+      visualId:visualIds.length === 1 ? visualIds[0] : "",
     });
     try {
       const payload = await metaProgressionMutation(
@@ -7015,7 +7126,7 @@
     renderTrophyValue(amount, value);
     if (iconFirst) amount.classList.add("trophy-icon-first");
     target.replaceChildren(
-      document.createTextNode(`${localizedUiText(String(prefix))} · `),
+      document.createTextNode(prefix ? `${localizedUiText(String(prefix))} · ` : ""),
       amount,
       document.createTextNode(suffix ? ` · ${localizedUiText(String(suffix))}` : "")
     );
@@ -7123,7 +7234,8 @@
 
   function teamEmblemSvg(emblemId) {
     const emblem = TEAM_EMBLEMS[emblemId] || TEAM_EMBLEMS.shield;
-    return `<svg class="team-emblem-svg" viewBox="0 0 24 24" aria-hidden="true">${emblem.path}</svg>`;
+    const key = Object.hasOwn(TEAM_EMBLEMS, emblemId) ? emblemId : "shield";
+    return `<svg class="team-emblem-svg team-emblem-relief" data-team-symbol="${key}" viewBox="0 0 24 26" aria-hidden="true"><g class="team-emblem-depth" transform="translate(0 1.4)">${emblem.path}</g><g class="team-emblem-face">${emblem.path}</g><g class="team-emblem-bevel" transform="translate(-.15 -.3)">${emblem.path}</g></svg>`;
   }
 
   // Amblemi, çerçeve rengini ve isim rengini bir kimlik kutusuna uygular.
@@ -7681,7 +7793,7 @@
         const option = document.createElement("option");
         option.value = String(value);
         option.textContent = Number(value) > 0
-          ? localizedMessage("team.minimum_trophies", { trophies:localizedNumber(value) })
+          ? localizedMessage("team.minimum_value", { count:localizedNumber(value) })
           : "Şart yok";
         requirement.appendChild(option);
       }
@@ -17978,7 +18090,9 @@
       item.setAttribute("aria-label", `${localizedUiText(definition.nameTr)} · ${localizedUiText(has ? "Kazanıldı" : "Henüz kazanılmadı")}`);
       const glyph = document.createElement("span");
       glyph.setAttribute("aria-hidden", "true");
-      glyph.innerHTML = PROFILE_HONOR_ICONS[group.kind] || PROFILE_HONOR_ICONS.badge;
+      glyph.innerHTML = group.kind === "trophy"
+        ? `<img class="competition-honor-art" src="${COMPETITION_TROPHY_ASSET}" width="36" height="36" alt="" decoding="async">`
+        : PROFILE_HONOR_ICONS[group.kind] || PROFILE_HONOR_ICONS.badge;
       const label = document.createElement("small");
       label.textContent = definition.shortNameTr;
       item.append(glyph, label);
@@ -18033,7 +18147,21 @@
     const avatar = PROFILE_AVATARS.find((item) => item.id === avatarId) || PROFILE_AVATARS[0];
     element.dataset.avatar = avatar.id;
     element.dataset.frame = frameId || "none";
-    element.textContent = avatar.glyph;
+    if (avatar.id === "default") {
+      const artwork = document.createElement("span");
+      artwork.className = "ui-art";
+      artwork.dataset.uiArt = "profile";
+      artwork.setAttribute("aria-hidden", "true");
+      element.replaceChildren(artwork);
+    } else {
+      const artwork = document.createElement("img");
+      artwork.className = "profile-avatar-art";
+      artwork.src = PROFILE_AVATAR_ART[avatar.id];
+      artwork.alt = "";
+      artwork.decoding = "async";
+      artwork.setAttribute("aria-hidden", "true");
+      element.replaceChildren(artwork);
+    }
   }
 
   async function selectProfileCosmetic(kind, id) {
@@ -18087,7 +18215,8 @@
         button.dataset.state = !unlocked.has(avatar.id) ? "locked" : avatar.id === avatarId ? "selected" : "available";
         button.disabled = !unlocked.has(avatar.id);
         const glyph = document.createElement("span");
-        glyph.textContent = avatar.glyph;
+        glyph.className = "profile-avatar";
+        applyAvatarVisual(glyph, avatar.id, "none");
         const name = document.createElement("strong");
         name.textContent = avatar.nameTr;
         button.append(glyph, name);
@@ -18109,7 +18238,8 @@
         button.dataset.state = !unlocked.has(frame.id) ? "locked" : frame.id === frameId ? "selected" : "available";
         button.disabled = !unlocked.has(frame.id);
         const glyph = document.createElement("span");
-        glyph.textContent = "◇";
+        glyph.className = "profile-avatar";
+        applyAvatarVisual(glyph, avatarId, frame.id);
         const name = document.createElement("strong");
         name.textContent = frame.nameTr;
         button.append(glyph, name);
@@ -18155,7 +18285,8 @@
         button.dataset.state = !unlocked.has(background.id) ? "locked" : background.id === backgroundId ? "selected" : "available";
         button.disabled = !unlocked.has(background.id);
         const glyph = document.createElement("span");
-        glyph.textContent = "▰";
+        glyph.className = "profile-background-swatch";
+        glyph.setAttribute("aria-hidden", "true");
         const name = document.createElement("strong");
         name.textContent = background.nameTr;
         button.append(glyph, name);
@@ -18655,9 +18786,10 @@
       if (row.player_id === participantPlayerId) item.classList.add("is-current-player");
       const rank = document.createElement("strong");
       rank.className = "leaderboard-rank";
-      const medal = { 1:"🥇", 2:"🥈", 3:"🥉" }[Number(row.position)];
-      rank.textContent = medal || String(row.position);
-      rank.classList.toggle("is-medal", Boolean(medal));
+      // Rank is a position, not an earned medal. Reward ownership remains
+      // server-backed and is rendered only by fillHonorCollection.
+      rank.textContent = String(row.position);
+      item.dataset.position = String(row.position);
       rank.setAttribute("aria-label", `${Number(row.position)}. sıra`);
       const identity = document.createElement("div");
       identity.className = "leaderboard-identity";
@@ -18833,13 +18965,10 @@
     card.className = "reward-inbox-card inbox-invitation-card";
     card.dataset.kind = item.kind;
     card.dataset.status = item.status;
-    const icon = document.createElement("span");
-    icon.className = "inbox-card-icon";
-    icon.setAttribute("aria-hidden", "true");
-    icon.textContent = item.kind === "team_training" ? "⬡" : "⚔";
     const copy = document.createElement("div");
     const title = document.createElement("strong");
     title.textContent = item.kind === "team_training" ? "Takım antrenman maçı" : "Arkadaş savaşı";
+    title.prepend(createUiIcon("swords"));
     const detailText = item.incoming && item.status === "pending"
       ? `${item.peer_name} seni kupasız savaşa çağırdı.`
       : `${item.peer_name} ile kupasız savaş alanı hazır.`;
@@ -18868,7 +18997,7 @@
       });
       actions.appendChild(enter);
     }
-    card.append(icon, copy, actions);
+    card.append(createInboxReadButton(card, item, "invitation", copy), copy, actions);
     return card;
   }
 
@@ -18877,13 +19006,10 @@
     card.className = "reward-inbox-card inbox-notice-card";
     card.dataset.kind = notice.kind || "update";
     card.dataset.seen = String(Boolean(notice.seen));
-    const icon = document.createElement("span");
-    icon.className = "inbox-card-icon";
-    icon.setAttribute("aria-hidden", "true");
-    icon.textContent = notice.category === "purchase" ? "▣" : notice.kind === "game" ? "◈" : "✦";
     const copy = document.createElement("div");
     const title = document.createElement("strong");
     title.textContent = notice.title_tr || "Bildirim";
+    title.prepend(createUiIcon(notice.category === "purchase" ? "shop" : "info"));
     const schedule = notice.scheduled_at ? new Date(notice.scheduled_at) : null;
     const scheduleLabel = schedule && !Number.isNaN(schedule.getTime())
       ? ` · ${schedule.toLocaleString(uiLocale(), { weekday:"short", hour:"2-digit", minute:"2-digit" })}`
@@ -18899,7 +19025,7 @@
       notice.category === "purchase" ? "purchase" : "system", [notice.notice_id], remove
     ));
     copy.appendChild(remove);
-    card.append(icon, copy);
+    card.append(createInboxReadButton(card, notice, "notice", copy), copy);
     return card;
   }
 
@@ -18918,7 +19044,8 @@
     const copy = document.createElement("div");
     const title = document.createElement("strong");
     title.textContent = message.title_tr || "Rekabet Ödülü";
-    copy.append(title, createInboxCardMeta(message, reward.chest_name_tr || "Ödül Kasası"));
+    title.prepend(createUiIcon("chest"));
+    copy.append(title, createInboxCardMeta(message, reward.chest_name_tr || "Ödül Kasası"), chest);
     const claim = document.createElement("button");
     claim.type = "button";
     claim.textContent = message.status === "claimed" ? "ALINDI" : "TOPLA";
@@ -18944,7 +19071,7 @@
         if (status) status.textContent = error instanceof Error ? error.message : String(error);
       }
     });
-    card.append(chest, copy, claim);
+    card.append(createInboxReadButton(card, message, "reward", copy), copy, claim);
     return card;
   }
 
@@ -18954,6 +19081,45 @@
   let lastInboxDismiss = null;
   let inboxMutationVersion = 0;
   let pendingInboxDismiss = null;
+  const inboxReadStore = GridshardHomeInterface.createReadStore({
+    read:readDevicePreference, write:writeDevicePreference, playerId:() => participantPlayerId,
+  });
+
+  function inboxReadKey(item, kind) {
+    const id = kind === "notice" ? item.notice_id : kind === "reward" ? item.message_id : item.invitation_id;
+    return id ? `${kind}:${id}` : "";
+  }
+
+  function createInboxReadButton(card, item, kind, copy) {
+    const key = inboxReadKey(item, kind);
+    const playerId = participantPlayerId;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "inbox-message-read gs-icon-action";
+    const artwork = document.createElement("span");
+    artwork.className = "ui-art";
+    artwork.setAttribute("aria-hidden", "true");
+    button.appendChild(artwork);
+    const state = document.createElement("small");
+    state.className = "inbox-read-state";
+    copy.appendChild(state);
+    const paint = () => {
+      const seen = Boolean(item.seen || inboxReadStore.has(key));
+      card.dataset.seen = String(seen);
+      artwork.dataset.uiArt = seen ? "message-open" : "message";
+      state.textContent = localizedMessage(seen ? "inbox.read" : "inbox.unread");
+      button.setAttribute("aria-label", localizedMessage(seen ? "inbox.read" : "inbox.mark_read"));
+      button.setAttribute("aria-pressed", String(seen));
+    };
+    paint();
+    button.addEventListener("click", () => {
+      if (playerId !== participantPlayerId) return;
+      inboxReadStore.mark(key);
+      paint();
+      if (kind === "notice" && item.notice_id) void markInboxNoticesSeen([item.notice_id]);
+    });
+    return button;
+  }
 
   function renderInboxDismissControls() {
     const removable = ["purchase", "system"].includes(activeInboxTab);
@@ -19021,7 +19187,10 @@
     const button = document.getElementById("reward-inbox-button");
     const notification = document.getElementById("reward-inbox-notification");
     const unclaimed = Number(rewardInboxState?.unclaimed_count || 0);
-    const unread = Number(rewardInboxState?.unread_count ?? unclaimed);
+    const locallyReadNotices = [...(rewardInboxState?.purchases || []), ...(rewardInboxState?.notices || [])]
+      .filter((notice) => !notice.seen && inboxReadStore.has(inboxReadKey(notice, "notice"))).length;
+    // A read envelope never dismisses an unclaimed chest or pending invitation.
+    const unread = Math.max(unclaimed, Number(rewardInboxState?.unread_count ?? unclaimed) - locallyReadNotices);
     button?.classList.toggle("has-reward", unclaimed > 0);
     button?.classList.toggle("has-unread", unread > 0);
     if (notification) {
@@ -19072,11 +19241,14 @@
     return true;
   }
 
-  async function markInboxNoticesSeen() {
+  async function markInboxNoticesSeen(noticeIds = null) {
     if (inboxDismissBusy) return;
     const playerId = participantPlayerId;
     const version = inboxMutationVersion;
-    const unseen = [...(activeInboxTab === "system" ? rewardInboxState?.notices || [] : []), ...(activeInboxTab === "purchase" ? rewardInboxState?.purchases || [] : [])].filter((notice) => !notice.seen);
+    const wanted = noticeIds ? new Set(noticeIds) : null;
+    const unseen = [...(activeInboxTab === "system" ? rewardInboxState?.notices || [] : []), ...(activeInboxTab === "purchase" ? rewardInboxState?.purchases || [] : [])].filter((notice) =>
+      !notice.seen && notice.notice_id && (wanted ? wanted.has(notice.notice_id) : inboxReadStore.has(inboxReadKey(notice, "notice")))
+    );
     if (!unseen.length) return;
     try {
       const payload = await requestJsonWithDeadline(
@@ -19224,7 +19396,10 @@
     const icon = document.createElement("span");
     icon.className = "daily-mission-icon";
     icon.setAttribute("aria-hidden", "true");
-    icon.innerHTML = `<svg viewBox="0 0 24 24">${DAILY_MISSION_ICONS[mission.id] || DAILY_MISSION_ICONS.complete_battles}</svg>`;
+    if (mission.id === "win_battles") icon.appendChild(createRatingTrophyIcon());
+    else if (["complete_battles", "deal_damage"].includes(mission.id)) icon.appendChild(createUiIcon("battle"));
+    else if (["circuit_actions", "destroy_modules"].includes(mission.id)) icon.appendChild(createUiIcon("deck"));
+    else icon.innerHTML = `<svg viewBox="0 0 24 24">${DAILY_MISSION_ICONS[mission.id] || DAILY_MISSION_ICONS.complete_battles}</svg>`;
     const copy = document.createElement("div");
     copy.className = "daily-mission-copy";
     const name = document.createElement("strong");
@@ -21437,7 +21612,7 @@
   // Fixed SVG artwork: physical rim, light/shadow faces and dark contour.
   // Mounted once; no animation loop, measured layout or player text in HTML.
   const EVENT_HUB_EMBLEMS = Object.freeze({
-    trophy:PROFILE_HONOR_ICONS.trophy,
+    trophy:`<img class="event-approved-trophy" src="${COMPETITION_TROPHY_ASSET}" width="64" height="64" alt="" decoding="async">`,
     wheel:'<svg viewBox="0 0 80 80" focusable="false" aria-hidden="true">'
       + '<path class="eb-shadow" d="M19 69h42l5 5H14Z"/>'
       + '<path class="eb-steel eb-outline" d="M34 57h12v11H34Z M26 67h28l5 7H21Z"/>'

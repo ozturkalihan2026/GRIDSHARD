@@ -17,11 +17,69 @@
   <link rel="stylesheet" href="./src/canon.css" />
   <link rel="stylesheet" href="./src/account-session-controls.css" />
   <link rel="stylesheet" href="./src/review-access.css" />
+  <link rel="stylesheet" href="./src/ui-components-v2.css" />
+  <link rel="stylesheet" href="./src/home-interface-v3.css" />
+  <link rel="stylesheet" href="./src/competition-v4.css" />
+  <link rel="stylesheet" href="./src/reward-chest-art-v5.css" />
+  <link rel="stylesheet" href="./src/social-profile-v5.css" />
+  <link rel="stylesheet" href="./src/shop-rewards-v6.css" />
+  <link rel="stylesheet" href="./src/battle-utility-v7.css" />
   <!-- /build:styles -->
 </head>
 <!-- Açılış ekranı betikler yüklenmeden de Ev düzeninde çizilir (Ev'e özgü
      CSS ilk boyamadan geçerli). Router da "menu" ile başlar. -->
 <body data-app-screen="menu" data-boot="loading">
+  <!-- Inert asset allowlist for dynamically rendered art in both web/native
+       builds. Templates do not preload or display these images. -->
+  <template id="competition-art-assets">
+    <img src="./assets/ui/home-v3/route.webp" alt="">
+    <img src="./assets/ui/leagues-v1/spark.webp" alt="">
+    <img src="./assets/ui/leagues-v1/volt.webp" alt="">
+    <img src="./assets/ui/leagues-v1/reactor.webp" alt="">
+    <img src="./assets/ui/leagues-v1/quantum.webp" alt="">
+    <img src="./assets/ui/leagues-v1/nexus.webp" alt="">
+    <img src="./assets/ui/leagues-v1/legendary.webp" alt="">
+    <img src="./assets/ui/leagues-v1/gridshard.webp" alt="">
+    <img src="./assets/ui/rating-trophy-v1/rating-trophy.webp" alt="">
+  </template>
+  <template id="competition-chest-assets">
+    <img src="./assets/ui/reward-chests-v1/leagues/spark.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/spark-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/volt.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/volt-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/reactor.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/reactor-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/quantum.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/quantum-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/nexus.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/nexus-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/champions.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/champions-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/legendary.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/legendary-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/gridshard.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/leagues/gridshard-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_crown.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_crown-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_prism.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_prism-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_reactor.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_reactor-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_frequency.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_frequency-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_circuit.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_circuit-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_current.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_current-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_neuron.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_neuron-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_relay.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_relay-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_conductor.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_conductor-open.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_spark.webp" alt="">
+    <img src="./assets/ui/reward-chests-v1/ranks/rank_spark-open.webp" alt="">
+  </template>
   <!-- Original GRIDSHARD2.1 branding and animations; the current server-backed
        startup-loading.js still decides when the game is actually ready. -->
   <section id="startup-loading" class="boot-screen" data-state="loading" aria-labelledby="startup-title" aria-busy="true">
@@ -39,7 +97,7 @@
       <div class="boot-emblem" aria-hidden="true">
         <span class="boot-emblem-ring"></span>
         <span class="boot-emblem-ring boot-emblem-ring-outer"></span>
-        <img class="boot-emblem-art" src="./assets/branding/gridshard-emblem.webp" alt="" width="768" height="768" decoding="async" fetchpriority="high">
+        <img class="boot-emblem-art" src="./assets/branding/gridshard-emblem-v2.webp" alt="" width="256" height="256" decoding="async" fetchpriority="high">
       </div>
       <h1 id="startup-title" class="boot-title">GRIDSHARD</h1>
       <p class="boot-tagline">Devreni kur. Stratejini konuştur.</p>
@@ -166,13 +224,11 @@
 
       <section class="mobile-home-hub" aria-label="Savaş merkezi">
         <button id="home-arena-card" type="button" class="home-arena-card" aria-haspopup="dialog" aria-controls="arena-detail-dialog">
-          <svg class="home-arena-emblem" viewBox="0 0 48 48" aria-hidden="true">
-            <path d="M9 35l7-8-3-6 9-9 6 5 8-8" />
-            <circle cx="9" cy="35" r="3" /><circle cx="22" cy="12" r="3" /><circle cx="36" cy="9" r="3" />
-          </svg>
-          <span class="home-arena-copy"><small>DEVRE YOLU</small><strong id="home-arena-name">Arena 1</strong><em id="home-arena-progress-copy">0 / 300 Kupa</em></span>
-          <span id="home-arena-segments" class="home-arena-segments" aria-label="Arena ödül ilerlemesi"></span>
-          <span class="home-arena-chevron" aria-hidden="true">›</span>
+          <strong id="home-arena-name">Arena 1</strong>
+          <img class="home-arena-emblem" src="./assets/ui/home-v3/route.webp" alt="" width="192" height="192" aria-hidden="true" draggable="false">
+          <span id="home-arena-segments" class="home-arena-segments" role="progressbar" aria-label="Arena ödül ilerlemesi" aria-valuemin="0" aria-valuemax="300" aria-valuenow="0"></span>
+          <em id="home-arena-progress-copy"><span class="trophy-visual-value" aria-label="0 / 300 Kupa"><span class="trophy-value-number">0 / 300</span><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true"></span></em>
+          <small>DEVRE YOLU <span aria-hidden="true">›</span></small>
         </button>
         <article class="home-loadout-card">
           <button id="home-core-hero" class="home-core-hero" type="button" aria-haspopup="dialog" aria-controls="core-collection-dialog">
@@ -185,8 +241,8 @@
           </div>
         </article>
         <button id="home-battle-button" type="button" class="home-battle-button">
-          <span data-ui-glyph="swords">SAVAŞ</span>
-          <small>Eşleştirmeyi başlat</small>
+          <img class="home-battle-art" src="./assets/ui/dock-casual-v1/battle-swords-v2.webp" alt="" aria-hidden="true" width="32" height="32" draggable="false">
+          <span>SAVAŞ</span>
         </button>
       </section>
 
@@ -223,7 +279,7 @@
       <header class="arena-road-header">
         <span class="screen-kicker">DEVRE YOLU</span>
         <h2 id="arena-detail-title">Arena 1</h2>
-        <p id="arena-detail-rating">0 Kupa</p>
+        <p id="arena-detail-rating" class="trophy-visual-value" aria-label="0 Kupa"><span class="trophy-value-number">0</span><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true"></p>
         <p id="arena-detail-next">Sonraki: Arena 2</p>
       </header>
       <p id="arena-reward-status" role="status" aria-live="polite"></p>
@@ -251,7 +307,7 @@
         <button id="leaderboard-back" type="button" aria-label="Devre Yoluna dön" title="Geri">←</button>
         <button type="button" data-leaderboard-tab="trophies" class="is-active" aria-label="Kupa sıralaması" title="Kupa sıralaması"><span><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true" draggable="false" decoding="async" /></span><small>KUPA</small></button>
         <button type="button" data-leaderboard-tab="core_damage"><span>◈</span><small>ÇEKİRDEK</small></button>
-        <button type="button" data-leaderboard-tab="teams"><span>♟</span><small>TAKIM</small></button>
+        <button type="button" data-leaderboard-tab="teams"><span class="ui-art" data-ui-art="friends" aria-hidden="true"></span><small>TAKIM</small></button>
       </nav>
     </dialog>
 
@@ -353,7 +409,7 @@
       <div class="reward-inbox-body">
       <section id="inbox-panel-battle" role="tabpanel" aria-labelledby="inbox-tab-battle" class="reward-inbox-section" hidden><h3 id="reward-inbox-invitations-title" data-ui-icon="swords:red">Savaş Davetleri</h3><div id="reward-inbox-invitations" class="reward-inbox-list"></div><h3 data-ui-icon="chest:gold">Savaş Sandıkları</h3><div id="reward-inbox-battle-rewards" class="reward-inbox-list"></div></section>
       <section id="inbox-panel-purchase" role="tabpanel" aria-labelledby="inbox-tab-purchase" class="reward-inbox-section" hidden><h3 data-ui-icon="shop:blue">Satın Alım Mesajları</h3><div id="reward-inbox-purchases" class="reward-inbox-list"></div></section>
-      <section id="inbox-panel-reward" role="tabpanel" aria-labelledby="inbox-tab-reward" class="reward-inbox-section"><h3 id="reward-inbox-rewards-title" data-ui-icon="gift:gold">Ödül Sandıkları</h3><div id="reward-inbox-list" class="reward-inbox-list"></div></section>
+      <section id="inbox-panel-reward" role="tabpanel" aria-labelledby="inbox-tab-reward" class="reward-inbox-section"><h3 id="reward-inbox-rewards-title" data-ui-icon="chest:gold">Ödül Sandıkları</h3><div id="reward-inbox-list" class="reward-inbox-list"></div></section>
       <section id="inbox-panel-system" role="tabpanel" aria-labelledby="inbox-tab-system" class="reward-inbox-section" hidden><h3 id="reward-inbox-notices-title" data-ui-icon="info:cyan">Oyun Bildirimleri</h3><div id="reward-inbox-notices" class="reward-inbox-list"></div></section>
       </div>
     </dialog>
@@ -525,7 +581,7 @@
             <p class="public-name-hint">Takım adını herkes görür. Gerçek ad, okul ya da telefon numarası yazma.</p>
             <!-- Açıklama serbest yazı değildir; hazır seçenekler social/safe-chat.js listesinden doldurulur. -->
             <label>Açıklama<select id="team-create-description"><option value="">Açıklama yok</option></select></label>
-            <label>Başvuru şartı<select id="team-create-min-trophies"><option value="0">Şart yok</option></select></label>
+            <label><span class="team-trophy-requirement-label"><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="Kupa" draggable="false"> Başvuru şartı</span><select id="team-create-min-trophies"><option value="0">Şart yok</option></select></label>
             <p id="team-create-cost" class="team-create-cost"></p>
             <button id="team-create-button" type="button">OLUŞTUR</button>
           </article>
@@ -1802,6 +1858,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
   <script src="./src/startup-loading.js"></script>
   <script src="./src/account-session-controls.js"></script>
   <script src="./src/review-access.js"></script>
+  <script src="./src/home-interface-view.js"></script>
+  <script src="./src/competition-chest-art.js"></script>
   <script src="./src/app.js"></script>
   <!-- /build:scripts -->
 </body>

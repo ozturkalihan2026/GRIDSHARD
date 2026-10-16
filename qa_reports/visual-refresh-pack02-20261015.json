@@ -1,0 +1,32 @@
+{
+  "package": 2,
+  "status": "integrated-user-visual-check-pending",
+  "sourceBytes": 31803,
+  "styleInputs": [
+    "./src/fonts.css",
+    "./src/styles.css",
+    "./src/canon.css",
+    "./src/account-session-controls.css",
+    "./src/review-access.css",
+    "./src/ui-components-v2.css"
+  ],
+  "cssWarnings": 0,
+  "cssBundle": "passed-in-memory",
+  "jsTargetTransform": "passed",
+  "existingDuplicateTranslationWarnings": 20,
+  "gameJavascriptChanged": false,
+  "newExternalAssets": 0,
+  "notificationAfterPreserved": true,
+  "textFaceContrast": {
+    "gold": 9.25,
+    "blue": 5.29,
+    "green": 7.51,
+    "red": 5.43,
+    "disabled": 5.56,
+    "selectedTab": 4.67
+  },
+  "testsExecuted": false,
+  "browserStarted": false,
+  "serverStarted": false,
+  "buildOutputsWritten": false
+}

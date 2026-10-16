@@ -1,6 +1,316 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 15 Ekim 2026
+Güncelleme tarihi: 16 Ekim 2026
+
+## EN GÜNCEL — 7 bağlı; 8A ilk on modül önizlemesi onay bekliyor
+
+16 Ekim son kullanıcı "bağla ve diğer adıma geç" onayıyla Paket 7 kaynaklara
+bağlandı. `client/src/battle-utility-v7.css` ortak web/native stil bloğunda
+en sonda; 12 stil / 34 betik. On bileşen: HUD, savaş hücreleri, raf, gerçek
+geri sayım, sonuç/ödül, ayarlar, özel onay pencereleri, geri bildirim, eğitim,
+boş/yükleme/hata/bağlantı kurtarma. Native Play/OS arayüzlerine dokunulmadı.
+Gerçek `tap-drop-target/debris-cell`, uygunluk, `victory/defeat/draw` ve
+bağlantı enumları kullanılır. 5×3 geometri/can pseudo-elementleri/çekirdek
+hareketi korundu; kalıcı savaş DOM'u ve zamanlayıcı dosyaları HEAD ile aynı.
+`qa_reports/visual-refresh-pack07-integration-20261016.json`: bellekte CSS
+ve altı kritik işleyici değişmezliği geçti. Oyun/görsel test kullanıcıda.
+
+Paket 8A'nın on fiziksel raster amblemi built-in imagegen ile üretildi:
+Lazer, Kalkan, Soğutucu, Batarya, Güçlendirici, EMP, Onarım, Zırh, Darbe Topu,
+Füze Fırlatıcı. **ÖNİZLEME, OYUNA BAĞLI DEĞİL; kullanıcı onayı bekle.**
+Katalog kimlikleri/sınıf renkleri korunur; Onarım hilal, Güçlendirici artı.
+Kalkanın fazla altın çerçeveli varyantı sade indigo kenarlı ile değiştirildi.
+10 seçili master PNG `artifacts/visual-refresh-pack08a-20261016/masters/`,
+384px WebP adayları aynı dizinde (262.488 bayt); arşiv Git dışı, ayrıca taşı.
+`gridshard-pack08a.html` büyük/32/48px, normal/seçili/kilitli örnekleriyle hazır
+(213.400 bayt). Teknik 2px pay, gerçek alpha ve dört temiz kenar doğrulandı.
+Yerel etkileşim/geri yükleme/tasarım ayarı kontrolleri geçti. Tarayıcı açılmadı.
+Tam prompt ve revizyon kaydı `docs/GORSEL_DONUSUM_PAKET08A_URETIM_KAYDI_20261016.json`;
+bağlantı sonrası kullanım yerleri/sıra `docs/GORSEL_DONUSUM_PAKET08A_20261016.md`.
+Toplam 36 modül; onay sonrası 8A bütün kullanımlara ortak eşlemeden bağlanır,
+sonra 8B (10), 8C (10), 8D (6); çekirdekler en son. Henüz onlar çizilmedi.
+Tarayıcı/test sunucusu, oyun/birim testleri, dist/native/AAB/dağıtım veya
+commit/push yapılmadı; mevcut kirli çalışma ağacı korundu.
+
+## Önceki kayıt — 6 bağlı; 7 henüz önizlemeydi
+
+16 Ekim son kullanıcı isteğiyle Paket 6'nın on bileşeni kaynaklara bağlandı.
+`shop-rewards-v6.css` ortak stil bloğunda en sonda; 11 stil / 34 betik.
+Premium işaretinde mevcut hediye, görevlerde mevcut savaş/deste/kupa görseli.
+Gerçek fiyatlar, stok/hediye önceliği, ödül, iade ve satın alma işleyişi aynı.
+
+2.lik Prizma Kasası: uzun panel tetikleyicinin üzerine taşmadan uygun tarafa
+yerleşir; panelin içi kaydırılabilir. Fareyle panele geçiş 180ms toleranslı;
+panel içi scroll kapatmaz. Dokunarak sabitleme/klavye/Escape korunur.
+İlk 10 gerçek ödül sözlüğü, ikinci sıranın 8 satırı ve 4 geometri örneği
+yalıtılmış kontrolden geçti. Gerçek tarayıcıda doğrulama kullanıcıda.
+
+Paket 7'nin on numaralı etkileşimli önizlemesi hazır, **OYUNA BAĞLI DEĞİL**.
+HUD, hücre, raf, geri sayım, sonuç, ayarlar, onay, bildirim, eğitim, sistem
+durum ailesi. Mevcut modül vektörleri sadece bağlamda; Paket 8 çizimi başlamadı.
+Detaylar `docs/GORSEL_DONUSUM_PAKET06_20261016.md` ve
+`docs/GORSEL_DONUSUM_PAKET07_20261016.md`. Önizleme arşivleri Git dışında,
+`artifacts/visual-refresh-pack06-20261016/` ve `visual-refresh-pack07-20261016/`.
+Yeni raporlar `qa_reports/visual-refresh-pack06-integration-20261016.json`
+ve `visual-refresh-pack07-preview-20261016.json`.
+Bellekte CSS/JS ve yalıtılmış etkileşim kontrolleri geçti. Mevcut 20 çeviri
+uyarısı ve 7 istatistik DOM tekrarına yenisi eklenmedi. Tarayıcı/test sunucusu,
+oyun/birim testleri, dist/native/AAB/dağıtım veya commit/push yapılmadı.
+
+## Önceki kayıt — 4/5 bağlı; 6 henüz önizlemeydi
+
+16 Ekim heartbeat ekleri tamamlandı: sıralama/haftalık/takım sandıklarında
+eski hücre zemini kalktı; 44px görsel artık 44px izde/sıfır marjla durur,
+dar ekran taşması giderildi. Hover/focus önizlemesi ve dokunarak sabitleme
+korunur, mouse fallback eklendi. P2 butonların eski koyu tabanı şeffaf;
+yalnız kırpılmış fiziksel yüz kalır. Savaş/sandık/satın alım mesaj başlıkları
+ortak fiziksel simgeleri, en çok kullanılan deste dock kartlarını kullanır.
+Kapalı/açık zarf okuma eylemleri aynı. Devre Yolu ana sayaç/arena/lig başlıkları,
+eşikler ve Takım Oluştur şartında kupa görseli var; sayılar/option değerleri aynı.
+
+Paket 6: on numaralı ortak mağaza/ödül bileşeni, 32/48px karşılaştırma,
+yalıtılmış örnek etkileşim ve üç tasarım ayarı. Önizleme **OYUNA BAĞLI DEĞİL**.
+Kullanıcı onayı gelmeden uygulama; ekonomi/iade/ödül işleyişini değiştirme.
+Belge `docs/GORSEL_DONUSUM_PAKET06_20261016.md`, arşiv/çevrimdışı kopya
+`artifacts/visual-refresh-pack06-20261016/` (Git dışı, ayrıca taşınmalı).
+`qa_reports/visual-refresh-pack06-preview-20261016.json`: CSS/JS, yerel
+etkileşimler/geri yükleme/Tweak geçti; gerçek tarayıcı çizimi kontrol edilmedi.
+Oyun/birim testleri çalıştırılmadı. Tarayıcı/sunucu/native/AAB/dağıtım yok.
+
+Kullanıcı iki sandık grubunu onayladı ve eksik 4/5 alanlarını bitirip bağlamayı
+istedi. 4B'nin haftalık/takım turnuvası çevreleri ve 5C profil/takım/üyeler/
+başvurular/arkadaş/sohbet/mesaj kutusu/kozmetik seçimleri onaylı P2/P3/P4 ortak
+dille tamamlandı; yeni bağımsız portre veya ikon ailesi üretimi yok.
+Sekiz özel avatar ve yedi sembolik ödül emojisi mevcut onaylı fiziksel amblemleri
+paylaşır; metin-glyph avatar render'ı kalktı. ID/sahiplik/çerçeve/izinler aynı.
+Mevcut on takım amblemine kod-native dolu yüzey/kontur/pah katmanı eklendi.
+Gerçek Unicode emojiler, safe-chat ve medya/GIF desteği korunur.
+
+5A/5B 18 sandığın Imagegen açık eşleri de tamam: `reward-chests-v1/` 36 alpha
+384px WebP, 1.630.558 bayt. Ortak helper `competition-chest-art.js` app.js'ten
+önce; 36 resim inert HTML template'inden ortak web/native pakete alınır.
+`reward-chest-art-v5.css` mevcut renkli casual açılış efektini kullanır.
+6 haftalık/takım kasası onaylı çizim alias'ı; ad/ödül kimlikleri değişmez.
+Karışık toplu açılış tek sıra kasası gibi sunulmaz. Dört mağaza stok kartı,
+tek düğme sırası, ödül grant/receipt ve iade kuralları aynı.
+Sunucuda tek sunum alanı: `public_chest` sabit özel kasanın `chest_visual_id`
+değerini dışarı verir; fixed_reward/premium_origin/team_reward gizli kalır.
+Eski sunucuda ön açılış genel kademe görseline dönebilir, makbuz sonrası doğru
+özel kasa çizilir. Sunucuya dağıtım yapılmadı.
+
+10 stil/34 betik bellekte derleme/JS dönüşüm geçti; 36 hash/alpha/kadraj ve
+dinamik paket bağlantısı doğrulandı. Altı iş handler'ı HEAD ile birebir:
+purchasePaidProduct, metaProgressionMutation, selectProfileCosmetic,
+dismissInboxMessages, sendTeamMessage, sendDirectMessage. Önceden kalan 20
+çeviri duplicate-key ve 7 istatistik DOM tekrarı kapsam dışı; yeni tekrar yok.
+QA `qa_reports/visual-refresh-pack04-05-integration-20261016.json`.
+Oyun/birim testleri KOŞULMADI; yeni regresyon dosyaları hazırlanıp yalnız
+sözdizimi kontrol edilecek. Tarayıcı/sunucu/dist/native/AAB/dağıtım/commit/push yok.
+Devre atmosferi, ana yerleşim, çekirdek hareketleri ve dock korunur.
+6 yalnız önizleme/onay bekliyor; 7/8 bekliyor.
+Kapanış envanteri `docs/GORSEL_DONUSUM_PAKET04B_05C_BAGLANTI_20261016.md`.
+Masterlar arşiv `artifacts/visual-refresh-pack05-20261015/` ve `open/masters/`;
+Git dışıdır, diğer bilgisayara ayrıca taşınmalı. Açık promptlar ayrı 05 JSON.
+
+### Tarihçe — 5A/5B onay kapısı aşağıda artık geçerli değildir
+
+5A sekiz lig sandığı ve 5B on sıralama kasasının kapalı çizimleri TAMAM.
+İki ayrı numaralı önizleme: gridshard-pack05a.html (533750 bayt),
+gridshard-pack05b.html (611372 bayt), seçim ve 32/48px karşılaştırma.
+Yeni sandıklar OYUNA BAĞLI DEĞİL. Onaydan sonra açık eşler + mevcut açılış/
+receipt akışıyla bağlantı; profil/sosyal 5C henüz bekliyor. 4A bağlı kalır.
+Arşiv `artifacts/visual-refresh-pack05-20261015/` (ayrıca taşınmalı), masterlar,
+192px alpha WebP'ler ve her iki taşınabilir önizleme mevcut. Taç Kasası kadrajı
+Imagegen r2 ile düzeldi; eski master silinmedi. 18 ayrı biçim/renk/kapak.
+Ayrıntı `docs/GORSEL_DONUSUM_PAKET05_SANDIKLAR_20261015.md`, prompt+revizyon JSON.
+QA pack05-previews geçti (yalıtılmış sunum kontrolü; oyun/birim testi yok).
+
+Kullanıcı "bağla ve 5. adıma geç" dedi; tüm lig sandıklarını ve lider panosu
+ilk 10 sandığını, hepsi farklı görünecek şekilde 5'e ekledi. 4A bağlı:
+`client/assets/ui/leagues-v1/` yedi WebP, Şampiyonlar mevcut onaylı kupa.
+`app.js LEAGUE_EMBLEM_ASSETS`, `competition-v4.css` son ortak stil. Dinamik
+resimler HTML inert template allowlist'iyle web/native pakete alınır.
+Lig kademeleri/renkleri, Devre arka planı ve çekirdek hareketleri korunur.
+Kupa koleksiyonu yalnız sunucudan kazanılmış kimlikler; altın/gümüş/bronz.
+Lider panosunda sıra numarası, kendisi mint ve odak altın; mevcut filtre,
+profil bağlantısı, ödül önizlemesi aynı. QA 04a-integration geçti; kaynak
+sözdizimi/bellekte CSS paketi geçti. Birim/oyun testi KOŞULMADI.
+
+5A sekiz lig sandığı, 5B ilk 10'un mevcut ayrı `rank_*` kasa kimlikleri.
+Her biri farklı gövde/kapak/siluet; yalnız renk varyantı değil. Built-in
+Imagegen kapalı çizimler, referans mevcut keskin gold.webp. Promptlar
+`docs/GORSEL_DONUSUM_PAKET05_SANDIK_PROMPTLAR_20261015.json`.
+Yeni sandıklar onay öncesi oyuna BAĞLANMAZ; ardından eşleşen açık varyantları,
+mevcut açılış efekti ve receipt-temelli akışla bağlanır. Ekonomi değişmez.
+5C profil/sosyal ve 4'ün etkinlik çevreleri bekliyor; tamamlandı sayma.
+Tarayıcı/sunucu/dağıtım/native/commit/push yok. Kullanıcı oyun testini yapacak.
+
+### 4A önizleme tarihçesi — aşağıdaki onay bekleme kayıtları eskidir
+
+Kullanıcı SAVAŞ'ı biraz daraltıp yazı/ikonu yarım punto küçültmeyi, arenayı
+bir tık aşağı almayı, sonra 4. adıma geçmeyi istedi. Uygulandı:
+`home-interface-v3.css`: 202px/64% genişlik, kalın yazı19,333px, ikon31,333px,
+48px eylem yüksekliği. Ana ekran padding-top 4→12px; kısa ekranda 0→8px.
+Bu rötuşlar runtime kaynaklarına bağlı; çekirdek/sahne/son arka plan değişmedi.
+Sözdizimi/bellekte CSS paketleme/diff kontrolü geçti. Oyun/birim testi yok.
+
+Paket 4A onay kapısında: 10 parça (8 lig amblemi + sıralama ödülü sunumu +
+lider panosu satırı). Yedi yeni built-in Imagegen PNG; 192px kayıpsız alpha
+WebP türevleri arşivde. Şampiyonlar simgesi mevcut onaylı kupa, yeniden
+üretilmedi. Önizlemede 28/40/88px, kademe seçimi, kilitli/mevcut/açılmış durum,
+Devre Yolu başlığı ve lider panosu örneği var. Ödül durum satırları yalnız
+etiketli stil örneğidir, gerçek durak/ödül miktarı veya hesap verisi değildir.
+Kazanılmamış sezon kupaları öyle işaretlidir. Ana ligler için 5 kademe, GRIDSHARD
+tek kademe; isim/renk/simgeler mevcut kanondan. Yeni lig paketi oyuna BAĞLI DEĞİL.
+
+Doküman `docs/GORSEL_DONUSUM_PAKET04A_20261015.md`, promptlar ayrı 04A JSON.
+Arşiv `artifacts/visual-refresh-pack04a-20261015/` Git dışı, ayrıca taşı.
+Sohbet önizlemesi thread visualizations/gridshard-pack04a.html; taşınabilir
+kopyası arşivde. JS/CSS/panel/varlık/1MB ve yalıtılmış etkileşim kontrolleri geçti;
+tarayıcı/sunucu açılmadı, oyun testi/dağıtım/native/commit/push yok.
+**Önce 4A onayı; ardından ortak bağlantı ve 4B (lig sandıkları, haftalık/takım
+etkinlikleri; her alt grup ≤10). Günlük metayı karıştırma.**
+
+## Son durum — Paket 3 onaylandı ve oyuna bağlandı
+
+**EN GÜNCEL — entegrasyon tamamlandı:** Kullanıcı son dört rötuşu ve bağlamayı
+onayladı. Kaynak satırı tek grid satırına alındı (44px; büyük/bulanıksız artı),
+ana savaş ekranındaki GRIDSHARD markası ve boş satırı kaldırıldı, Devre Yolu
+yukarıda ilk satıra geçti, varsayılan profil mint/büyük/çerçevesiz. Açılışta
+onaylı yeni logo kullanılır; launcher/mağaza ikonları ve orijinal dosya korunur.
+`client/src/home-interface-v3.css` Paket 2'den SONRA, yeni `home-interface-view.js`
+app.js'ten önce ortak web/native blokta. Devre Yolu gerçek tekil eşiklerden
+aralık bazlı dolar; veri yoksa sahte dört gösterge yok. Deste/sahne/çekirdek
+hareketleri ve son Devre atmosferi aynen korunur. Dock mevcut yönlendirmesiyle
+seçilinin adını gösterir. SAVAŞ küçük, solda onaylı resim/kalın yazı.
+
+Zarfa dokunma ayrı okundu eylemidir: satın alım/sistem mevcut seen API'siyle;
+ödül/davet hesap anahtarlı cihaz tercihiyle (sunucuya senkronize değil).
+Sekme açılışında otomatik tüm yeni mesajları okutma kaldırıldı. Ödül toplama,
+silme/geri alma/davet işleyicileri değişmedi; toplanmamış ödül bildirimi kalır.
+Varsayılan avatar fiziksel mint kişi; diğer avatarlar/çerçeveler/arka plan
+kozmetikleri korunur. Yeni varlıklar `client/assets/ui/home-v3/`, logo branding
+altında v2 kardeş dosya. Prompt/masterlar aynı artifacts arşivinde korunur.
+
+Sözdizimi, bellekte CSS paketleme, chrome109/safari15 dönüşümü, dosya/hash ve
+satır alanı hesabı geçti. Önceden var olan 20 çeviri duplicate-key ve 7 istatistik
+DOM ID tekrarı kapsam dışı bırakıldı; yeni tekrar yok. Yeni regresyon dosyası
+hazır; oyun/birim testleri KOŞULMADI. Tarayıcı/sunucu/dist/native/dağıtım/commit/
+push yok. Görsel/oyun kontrolü kullanıcıda. Ayrıntı Paket 3 belgesinin başında;
+QA `qa_reports/visual-refresh-pack03-integration-20261015.json`.
+**Aşağıdaki revizyon 2/3 önizleme onay bekleme notları TARİHÇE; artık bağlandı.
+Paket 4'e bu istekle geçilmedi.**
+
+### Paket 3 önizleme tarihçesi
+
+**REVİZYON 3 en güncel karar:** Kullanıcı son ekran referansıyla Devre Yolu'nu
+karttan çıkarmayı açıkça istedi: mevcut üç düğümlü simgeden hacimli zeminsiz
+altın ikon, ortada 96px, arena adı üstte, eşik/kupa ilerlemesi altta. Son arka
+plan ve çekirdek hareketi/sahnesi korunur. SAVAŞ 214px/68% × 48px; solunda
+mevcut savaş ikonu, kalın 20px yazı. Profil büyük/çerçevesiz varsayılan;
+Tweak'te kozmetik çerçeve sunumu karşılaştırılabilir, gerçek ödül eklenmedi.
+Profil lavanta, zarf altın, menü buz mavisi; artı 34px net/zeminsiz.
+Kapalı/açık altın zarf çifti ve dört kategorili Mesaj Kutusu örneği eklendi;
+satıra dokununca okunma durumu/açık zarf yerel olarak değişir. Ödül toplama,
+silme, davet veya gerçek mesaj/hesap kaydı yapılmaz. Yeni üç görsel Imagegen;
+master/WebP'ler aynı Git dışı artifacts klasöründe, promptlar
+`docs/GORSEL_DONUSUM_PAKET03_REV3_PROMPTLAR_20261015.json`.
+Rev2 arşivi korundu. Rev3 901.018 bayt; sözdizimi ve yalıtılmış
+mesaj/kategori/geri yükleme/dock/eşik kontrolleri geçti. Tarayıcı/oyun testi yok.
+**Henüz oyuna BAĞLI DEĞİL; kullanıcı tekrar karar verecek.** Bu turda client,
+sunucu, AAB, canlı site veya satın alma akışı değiştirilmedi.
+
+**Revizyon 2 güncel kararı:** Kullanıcı asıl tasarımın yeniden düzenlenmesine
+itiraz etti. Yalnız görsel uyum/kontrast rötuşu. Mevcut Devre atmosferi (14 Ekim)
+38px devre deseni, hareketli çekirdek/yörünge/parıltı/altıgen sahne, 150–161px
+deste paneli, mevcut boşluk akışı, kompakt SAVAŞ (260px/72vw) ve yalnız seçilide
+etiketli genişleyen/yükselen dock korunur. Önizlemede kaynaklar profilin üstüne
+alındı; **oyunda zaten bu sıradalar**, entegrasyonda yeniden ters çevirme.
+Artı işaretleri hacimli ve zeminsiz. Arena/lig kademesi eşikleri gerçek sunucu
+kanonundan; aynı kupadaki ödüller tek gösterge, sabit 4 bölümlük fallback yok.
+Örnek eşik sayıları 6/5/2/4/1. Diğer parçalar yeniden tasarlanmadı.
+
+Kullanıcı logoda yeni öneriye izin verdi: tek built-in Imagegen, mevcut kimliğe
+sadık hacimli logo `artifacts/visual-refresh-pack03-20261015/logo-v2-master.png`,
+256px alpha kayıpsız WebP `logo-v2-preview.webp` (54.786 bayt). Prompt belgesi:
+`docs/GORSEL_DONUSUM_PAKET03_LOGO_PROMPTU_20261015.json`. Önizlemede gösterilir;
+oyun/mağaza/native logosu ve üretim dosyaları değişmedi. Logo ve revizyon 2
+kullanıcı onayı bekler. Kaynak arşivi Git dışı; ayrıca taşı. Bu güncel not,
+aşağıdaki ilk taslaktaki sadeleştirme/yerleşim kararlarının yerine geçer.
+
+Kullanıcı "2. adımı bağladıktan sonra 3. adıma geç" dedi. Paket 2 bağlıdır;
+Paket 3 için 8 parçalık levha + Ana ekran/Açılış taslakları hazırlandı.
+01 logo sunumu, 02 açılış/yükleme, 03 profil barı, 04 kaynak barı,
+05 Devre Yolu girişi, 06 deste sahnesi, 07 bölüm başlığı, 08 sayfa/pencere başlığı.
+Tüm parçalarda büyük/küçük kullanım var. Mevcut marka amblemi ve onaylı dock,
+para/kupa/Paket 1 ikonları yeniden çizilmedi. Modül/çekirdek kod-native
+çizimleri yalnız bağlamda aynı geometriyle kullanıldı. İkon eylemleri zeminsiz.
+Örnek değerler hesaba bağlı değil; yeni logo/lig/başka avatar çizimi üretilmedi.
+
+Kapsam: `docs/GORSEL_DONUSUM_PAKET03_20261015.md`.
+Git dışı taşınabilir dosyalar `artifacts/visual-refresh-pack03-20261015/`:
+`gridshard-pack03.html`, `prepare-assets.cjs`, `check-preview.cjs`.
+Başka bilgisayara ayrıca taşı. Sohbet kopyası thread visualizations dizininde.
+8 parça, font/varlık/panel bağlantısı, sözdizimi ve yalıtılmış kompozisyon/eylem
+kontrolü geçti. Gerçek tarayıcı çizimi veya oyun testi yapılmadı; yeni tarayıcı/
+sunucu açılmadı. Bu turda oyun kaynakları değiştirilmedi; dağıtım/commit/push yok.
+**Paket 3 henüz oyuna BAĞLI DEĞİL. Önizleme onayı gelmeden bağlama; yalnız
+itiraz edilen numaraları değiştir. Paket 4 başlamadı.**
+
+## Son durum — Paket 2 onaylandı ve oyuna bağlandı
+
+Kullanıcı "bağla" diyerek 10 ortak bileşeni, tüm bağımsız ikon eylemleri
+zeminsiz olacak revizyonuyla onayladı. `client/src/ui-components-v2.css`
+ortak kaynak, `client/index.html` stil derleme bloğunda SON sırada. Web/native
+aynı hattı kullanır. 01–03 pahlanmış ana/ikincil/uyarı butonları, 04 kart,
+05 seçim hücresi, 06 sekme, 07 giriş, 08 native checkbox anahtar, 09 ilerleme,
+10 zeminsiz ikon eylemleri mevcut seçicilere bağlandı. UI yüzeyi dışında
+DOM, işleyiciler, oyun JavaScript'i, ekonomi/satın alma/ağ/ödüller değişmedi.
+Dock ve onaylı resimler, avatar/modül/çekirdek çizimleri aynı kaldı.
+
+Buton yüzeyi yalnız `::before`: bildirimlerin `::after` alanı korunur.
+Kozmetik renk örnekleri ve takım istek enderlik kenarları korunur. Fiyat metni
+yeni buton rengini devralır; eski koyu maliyet levhası kalktı. İkon eylemleri
+hover/basılı/açık durumda da zeminsiz; hedef alanı, rozet, odak ve disabled
+ayrımı korunur. Onaylı 4px derinlik / 7px pah / %32 ışık; küçük 3px/5px.
+
+Kontroller: bellekte CSS paketleme (0 uyarı), JS chrome109/safari15 dönüşümü,
+test dosyası sözdizimi, kontrast 4,67–9,25:1, diff check. Değişmemiş çeviri
+JS'inde 20 mevcut duplicate-key uyarısı var; bu işe dahil edilmedi.
+Yeni statik sözleşme `client/tests/ui-components-v2.test.js` **çalıştırılmadı**;
+yalnız sözdizimi kontrol edildi. Kayıt `qa_reports/visual-refresh-pack02-20261015.json`.
+Tarayıcı, test sunucusu, oyun/birim testi, dist/native çıktı, canlı dağıtım,
+commit/push yok. **Yerel/görsel kontrol kullanıcıda. Paket 3 başlamadı.**
+
+## Paket 2 — önceki önizleme notları (tarihçe)
+
+Son kullanıcı revizyonu uygulandı: Paket 2 / 10 ve aynı tipteki **tüm bağımsız
+ikon eylemleri zeminsiz**. Bilgi/ayar/posta/menü örneklerinden ayrı düğme
+levhası, kenarlık ve gölge kaldırıldı; görünmez hedef alanı, klavye odağı ve
+disabled/pasif ayrımı korunur. Bu artık yalnız profil barına özgü istisna
+değil, ortak ikon eylemi kuralıdır. Metinli butonlar, sekme/kart yüzeyleri ve
+onaylı dock korunur. Önizleme/notlar değişti; oyun runtime'ına bağlanmadı.
+
+Kullanıcı iş bilgisayarındaki görsel dönüşümden sonra planın ikinci adımına
+geçilmesini istedi. 10 ortak CSS yüzeyi için tek aile önizlemesi hazırlandı:
+01 ana eylem (altın/yeşil), 02 ikincil (mavi), 03 silme/uyarı (kırmızı),
+04 kart/liste, 05 seçim hücresi, 06 sekme, 07 giriş, 08 anahtar,
+09 ilerleme, 10 küçük ikon eylemi. Büyük/küçük ve normal/basılı/pasif/
+seçili/kilitli örnekler var. Keskin sandıkların geniş pahları ve dolu hacmi;
+Rowdies/Rajdhani korunur. Profil barındaki posta/menü zeminsiz kalır.
+
+Kapsam ve onay numaraları: `docs/GORSEL_DONUSUM_PAKET02_20261015.md`.
+Taşınabilir önizleme ve kontrol: `artifacts/visual-refresh-pack02-20261015/`.
+Git dışıdır; başka bilgisayara ayrıca taşı. Sohbet içi kopya thread'e ait
+visualizations dizininde `gridshard-pack02.html` olarak bulunur.
+Önizleme bütün fontları ve mevcut onaylı ikon/sandık bağlamını içerir; dış
+ağ çağrısı yapmaz. Yeni çizim veya oyun runtime değişikliği yok.
+
+JS/CSS dönüşümü, 10 parça/benzersiz kimlik/dosya sınırı ve yalıtılmış
+önizleme etkileşimleri geçti. Bu bir gerçek tarayıcı veya oyun testi değildir;
+görsel oyun denemeleri kullanıcıda. Yeni tarayıcı/sunucu açılmadı; native/web
+dağıtım ve commit/push yapılmadı. **Kullanıcı onayı gelmeden oyuna bağlama;
+yalnız itiraz edilen numaraları revize et. Paket 3 başlamadı.**
 
 ## Son durum — Paket 1 onaylandı ve bağlandı; profil barı ikonları zeminsiz
 

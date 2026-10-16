@@ -1,0 +1,111 @@
+{
+  "package": 3,
+  "status": "integrated-source",
+  "finalTouchup": {
+    "battleWidth": "min(202px,64%)",
+    "battleTextPx": 19.333,
+    "battleIconPx": 31.333,
+    "reductionPt": 0.5,
+    "arenaOffsetDownPx": 8,
+    "touchHeightPx": 48,
+    "memoryCssRecheck": "passed",
+    "preparedRegressionSyntax": "passed"
+  },
+  "styles": 7,
+  "scripts": 33,
+  "memoryCssBundle": "passed",
+  "cssWarnings": 0,
+  "scriptSyntaxTransform": "passed",
+  "existingTranslationDuplicateKeyWarnings": 20,
+  "warningFiles": [
+    "./src/i18n-catalog.js",
+    "./src/i18n.js"
+  ],
+  "assets": [
+    {
+      "path": "client/assets/ui/home-v3/route.webp",
+      "bytes": 18722,
+      "sha256": "3ba2d8e431f5423c03bbf83b4336f41caf22e1c5fd54d2b08a39520844a61c7e"
+    },
+    {
+      "path": "client/assets/ui/home-v3/message.webp",
+      "bytes": 14222,
+      "sha256": "1b2707af4f6c518162e63edfe1e19baec1c40b8a3e9765b712147b268e322c20"
+    },
+    {
+      "path": "client/assets/ui/home-v3/message-open.webp",
+      "bytes": 14346,
+      "sha256": "a64b5c0242576b5f051cc02ee06be2b849d6a9fbee74748a138ed6681381b7ce"
+    },
+    {
+      "path": "client/assets/branding/gridshard-emblem-v2.webp",
+      "bytes": 54786,
+      "sha256": "1d87fa7a78fb83867a8670ef845e545275464784a4e753ff9e6114c8dd4cbb53"
+    }
+  ],
+  "resourceLayoutArithmetic": [
+    {
+      "width": 320,
+      "valueColumnMinimumPx": 81,
+      "singleExplicitGridRow": true,
+      "overflow": "ellipsis; no wrapping"
+    },
+    {
+      "width": 350,
+      "valueColumnMinimumPx": 96,
+      "singleExplicitGridRow": true,
+      "overflow": "ellipsis; no wrapping"
+    },
+    {
+      "width": 360,
+      "valueColumnMinimumPx": 85,
+      "singleExplicitGridRow": true,
+      "overflow": "ellipsis; no wrapping"
+    },
+    {
+      "width": 390,
+      "valueColumnMinimumPx": 100,
+      "singleExplicitGridRow": true,
+      "overflow": "ellipsis; no wrapping"
+    },
+    {
+      "width": 440,
+      "valueColumnMinimumPx": 125,
+      "singleExplicitGridRow": true,
+      "overflow": "ellipsis; no wrapping"
+    }
+  ],
+  "uniqueDomIds": 608,
+  "existingDuplicateIds": [
+    "statistics-average-duration",
+    "statistics-live-summary",
+    "statistics-metrics-grid",
+    "statistics-record",
+    "statistics-total-damage",
+    "statistics-total-matches",
+    "statistics-win-rate"
+  ],
+  "newDuplicateIds": 0,
+  "preserveCoreMotionAndBackdrop": true,
+  "gameTestsRun": false,
+  "browserStarted": false,
+  "serverStarted": false,
+  "distWritten": false,
+  "nativeBuildOrDeploy": false,
+  "syntaxCheckedFiles": [
+    "client/src/app.js",
+    "client/src/home-interface-view.js",
+    "client/src/i18n-catalog.js",
+    "client/tests/home-interface-v3.test.js",
+    "client/tests/ui-components-v2.test.js"
+  ],
+  "regressionTestsPreparedNotExecuted": [
+    "client/tests/home-interface-v3.test.js",
+    "client/tests/ui-components-v2.test.js"
+  ],
+  "mailReadScope": {
+    "notices": "Existing server endpoint; explicit selected IDs only",
+    "rewardsAndInvitations": "Player-scoped device preferences; not synced across devices",
+    "claimAndDismissHandlers": "preserved"
+  }
+}

@@ -29,7 +29,8 @@ assert.ok(css.includes(".profile-summary-panel > .profile-identity-card { displa
 assert.ok(css.includes("rotate(calc(-1 * (var(--label-angle) + var(--daily-meta-rotation,0deg))))"));
 assert.ok(html.includes('<strong class="daily-meta-die"><span>7</span></strong>'));
 assert.ok(app.includes("function createBattleEmojiVisual"));
-assert.ok(app.includes("emoji?.mediaSrc ? \"img\" : \"span\""));
+assert.ok(app.includes('document.createElement(source ? "img" : "span")'));
+assert.ok(app.includes('const SYMBOLIC_EMOJI_ART = Object.freeze({'));
 assert.ok(app.includes('dataset.mediaType = /\\.gif'));
 assert.ok(app.includes('id:"core_burst"'));
 assert.ok(app.includes('id:"glitch_wave"'));

@@ -1,0 +1,15 @@
+{
+  "package": 6,
+  "components": 10,
+  "bytes": 852524,
+  "inlineAssets": "approved art + embedded existing fonts; no redraw",
+  "cssAndJavaScript": "passed",
+  "isolatedInteractions": "stock priority, premium, daily, quest, inbox delivery, opening, hover, widget restore, Tweak",
+  "persistOnLoad": false,
+  "narrowLayout": "single column below 620px; flexible two-column specimens",
+  "visualBrowserReview": false,
+  "gameOrUnitTestsRun": false,
+  "browserStarted": false,
+  "serverStarted": false,
+  "runtimeBound": false
+}

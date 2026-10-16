@@ -1,0 +1,1057 @@
+/* GRIDSHARD visual refresh / Paket 2 — kullanıcı onayı: 15 Ekim 2026.
+ * On ortak bileşen; CSS yüzeyleri. DOM/işleyici/oyun akışı değişmez.
+ * Sıra: eski katmanlardan sonra. Yeni ekran kompozisyonu veya modül resmi yok.
+ * İkon eylemleri EN SON zeminsizdir; bildirim pseudo-elementlerini silme.
+ */
+:root {
+  --gs2-ink:#061326;
+  --gs2-text:#f2f7ff;
+  --gs2-muted:#b7cce3;
+  --gs2-surface:linear-gradient(125deg,#224f7b,#153352);
+  --gs2-surface-shadow:inset 0 2px rgba(186,220,255,.15),0 3px #061529;
+  --gs2-well:#08192d;
+  --gs2-focus:#f8e6a4;
+  --gs2-progress:linear-gradient(180deg,#b8ee79 0 20%,#72cc4e 21% 78%,#3c8b39 79%);
+  /* Eski ortak kaynakları da aynı yüzeye yönlendir; semantik tonlar kalır. */
+  --gs3-slab:var(--gs2-surface);
+  --gs3-slab-shadow:var(--gs2-surface-shadow);
+  --gs3-well:var(--gs2-well);
+}
+
+/* 01–03 / Ana, ikincil, toplama ve uyarı: aynı pah, farklı anlam.
+ * Yalnız bilinen metinli eylemler. Dock, fiziksel sandık/modül/çekirdek,
+ * avatar, radyo/sekme ve bağlantı/oyuncu adı düğmeleri bu listede değildir. */
+:root body[data-app-screen] :is(
+  #home-battle-button,
+  .shop-chest-action,
+  .paid-product-card > button,
+  .chest-odds-tab,
+  .reward-back-link,
+  .monthly-login-card > button,
+  .daily-mission-action,
+  .season-pass-claim,
+  .season-premium-buy,
+  .friend-invite-create,
+  .friend-invite-output button,
+  .settings-summary-panel [data-settings-panel] button:not(.account-player-id),
+  .module-quick-actions > button,
+  #module-detail-upgrade,
+  .core-detail-actions > button,
+  .module-talent-node button,
+  .reward-inbox-card button:not(.reward-chest-button),
+  #inbox-delete-all,
+  #inbox-delete-undo,
+  #inbox-delete-confirm,
+  #inbox-delete-cancel,
+  .operator-titles-footer > button,
+  .module-unlock-footer > button,
+  #daily-meta-roll,
+  .chest-reveal-card > button,
+  #chest-odds-close,
+  .guide-next,
+  .tutorial-actions [data-tutorial-next],
+  .tutorial-heading [data-tutorial-skip],
+  .social-player-actions > button,
+  .social-battle-card button,
+  .team-training-card button,
+  .team-directory-action,
+  .team-management-actions > button,
+  .team-management-row > button,
+  .team-member-action,
+  .team-inline-action > button,
+  #team-create-button,
+  #team-module-request-button,
+  #team-appearance-save,
+  .event-register-button,
+  #team-loading-retry,
+  #arena-leaderboard-button,
+  .arena-reward-node > button:not(.league-chest-button):not(.reward-chest-button),
+  #post-match-continue,
+  #post-match-premium-buy,
+  #post-match-ad-button,
+  #home-matchmaking-cancel,
+  .friend-search-heading > button,
+  .gs-action-button
+) {
+  --gs2-top:#70c6ff;
+  --gs2-face:#276caf;
+  --gs2-bottom:#1b5795;
+  --gs2-edge:#143f77;
+  --gs2-letter:#f8fcff;
+  --gs2-depth:4px;
+  --gs2-cut:7px;
+  isolation:isolate;
+  min-width:0;
+  border:0 !important;
+  border-radius:5px !important;
+  color:var(--gs2-letter) !important;
+  /* The clipped physical face owns the silhouette; no old square backing. */
+  background:transparent !important;
+  box-shadow:none !important;
+  text-shadow:none !important;
+  font-family:var(--gs-font-display) !important;
+  font-weight:700 !important;
+  line-height:1.2;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  opacity:1 !important;
+  filter:none !important;
+  animation:none !important;
+  transition:transform .08s ease;
+}
+:root body[data-app-screen] :is(
+  #home-battle-button,
+  .shop-chest-action,
+  .paid-product-card > button,
+  .monthly-login-card > button,
+  .daily-mission-action,
+  .season-pass-claim,
+  .season-premium-buy,
+  .friend-invite-create,
+  .friend-invite-output button,
+  .settings-summary-panel [data-settings-panel] button:not(.account-player-id),
+  .module-quick-actions > button,
+  #module-detail-upgrade,
+  .core-detail-actions > button,
+  .module-talent-node button,
+  .reward-inbox-card button:not(.reward-chest-button),
+  #inbox-delete-all,
+  #inbox-delete-undo,
+  #inbox-delete-confirm,
+  #inbox-delete-cancel,
+  .operator-titles-footer > button,
+  .module-unlock-footer > button,
+  #daily-meta-roll,
+  .chest-reveal-card > button,
+  #chest-odds-close,
+  .guide-next,
+  .tutorial-actions [data-tutorial-next],
+  .tutorial-heading [data-tutorial-skip],
+  .social-player-actions > button,
+  .social-battle-card button,
+  .team-training-card button,
+  .team-directory-action,
+  .team-management-actions > button,
+  .team-management-row > button,
+  .team-member-action,
+  .team-inline-action > button,
+  #team-create-button,
+  #team-module-request-button,
+  #team-appearance-save,
+  .event-register-button,
+  #team-loading-retry,
+  #arena-leaderboard-button,
+  .arena-reward-node > button:not(.league-chest-button):not(.reward-chest-button),
+  #post-match-continue,
+  #post-match-premium-buy,
+  #post-match-ad-button,
+  #home-matchmaking-cancel,
+  .friend-search-heading > button,
+  .gs-action-button
+) {
+  position:relative;
+}
+:root body[data-app-screen] :is(
+  #home-battle-button,
+  .shop-chest-action,
+  .paid-product-card > button,
+  .chest-odds-tab,
+  .reward-back-link,
+  .monthly-login-card > button,
+  .daily-mission-action,
+  .season-pass-claim,
+  .season-premium-buy,
+  .friend-invite-create,
+  .friend-invite-output button,
+  .settings-summary-panel [data-settings-panel] button:not(.account-player-id),
+  .module-quick-actions > button,
+  #module-detail-upgrade,
+  .core-detail-actions > button,
+  .module-talent-node button,
+  .reward-inbox-card button:not(.reward-chest-button),
+  #inbox-delete-all,
+  #inbox-delete-undo,
+  #inbox-delete-confirm,
+  #inbox-delete-cancel,
+  .operator-titles-footer > button,
+  .module-unlock-footer > button,
+  #daily-meta-roll,
+  .chest-reveal-card > button,
+  #chest-odds-close,
+  .guide-next,
+  .tutorial-actions [data-tutorial-next],
+  .tutorial-heading [data-tutorial-skip],
+  .social-player-actions > button,
+  .social-battle-card button,
+  .team-training-card button,
+  .team-directory-action,
+  .team-management-actions > button,
+  .team-management-row > button,
+  .team-member-action,
+  .team-inline-action > button,
+  #team-create-button,
+  #team-module-request-button,
+  #team-appearance-save,
+  .event-register-button,
+  #team-loading-retry,
+  #arena-leaderboard-button,
+  .arena-reward-node > button:not(.league-chest-button):not(.reward-chest-button),
+  #post-match-continue,
+  #post-match-premium-buy,
+  #post-match-ad-button,
+  #home-matchmaking-cancel,
+  .friend-search-heading > button,
+  .gs-action-button
+)::before {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:1px 1px 2px;
+  width:auto;
+  height:auto;
+  margin:0;
+  border:0;
+  border-radius:0;
+  background:linear-gradient(115deg,rgba(255,255,255,.32),transparent 47%) top / 100% 20% no-repeat,linear-gradient(180deg,var(--gs2-top) 0 12%,var(--gs2-face) 13% 76%,var(--gs2-bottom) 77%) top / 100% calc(100% - var(--gs2-depth)) no-repeat,var(--gs2-edge);
+  box-shadow:none;
+  pointer-events:none;
+  clip-path:polygon(var(--gs2-cut) 0,calc(100% - var(--gs2-cut)) 0,100% var(--gs2-cut),100% calc(100% - var(--gs2-cut)),calc(100% - var(--gs2-cut)) 100%,var(--gs2-cut) 100%,0 calc(100% - var(--gs2-cut)),0 var(--gs2-cut));
+}
+:root body[data-app-screen] :is(
+  #home-battle-button,
+  .gift-chest-action,
+  .paid-product-card.is-premium > button,
+  .season-premium-buy,
+  #module-detail-upgrade,
+  #core-detail-upgrade,
+  #daily-meta-roll,
+  .chest-reveal-card > button,
+  #chest-odds-close,
+  .guide-next,
+  .tutorial-actions [data-tutorial-next],
+  .module-unlock-footer > button,
+  #post-match-continue,
+  .gs-action-button[data-tone="primary"]
+) {
+  --gs2-top:#ffe594;
+  --gs2-face:#ffc339;
+  --gs2-bottom:#e59c17;
+  --gs2-edge:#83500b;
+  --gs2-letter:#392307;
+}
+:root body[data-app-screen] :is(
+  .chest-store-buy,
+  .chest-open-all-action,
+  .paid-product-card:not(.is-premium) > button,
+  .daily-mission-card[data-state="claimable"] .daily-mission-action,
+  .monthly-login-card[data-state="claimable"] > button,
+  .season-pass-cell[data-state="claimable"] .season-pass-claim,
+  .reward-inbox-card:not(.inbox-notice-card):not(.inbox-invitation-card) > button,
+  .module-quick-actions > button[data-action="add"],
+  #core-detail-select,
+  #team-create-button,
+  #team-module-request-button,
+  #team-appearance-save,
+  .team-directory-action,
+  .event-register-button,
+  .gs-action-button[data-tone="success"]
+) {
+  --gs2-top:#b9ef8c;
+  --gs2-face:#7dd65e;
+  --gs2-bottom:#58ae49;
+  --gs2-edge:#286c32;
+  --gs2-letter:#12351c;
+}
+:root body[data-app-screen] :is(
+  .inbox-message-delete,
+  #inbox-delete-all,
+  #inbox-delete-confirm,
+  #account-data-delete,
+  .module-quick-actions > button[data-action="remove"],
+  .team-member-action.is-leave,
+  .team-management-row > button[data-variant="danger"],
+  .gs-action-button[data-tone="danger"]
+) {
+  --gs2-top:#ff9a9f;
+  --gs2-face:#be304c;
+  --gs2-bottom:#98253e;
+  --gs2-edge:#722238;
+  --gs2-letter:#fff9f9;
+}
+:root body[data-app-screen] :is(
+  .module-quick-actions > button,
+  .chest-odds-tab,
+  .inbox-message-delete
+) {
+  --gs2-depth:3px;
+  --gs2-cut:5px;
+}
+:root body[data-app-screen] :is(
+  #home-battle-button,
+  .shop-chest-action,
+  .paid-product-card > button,
+  .chest-odds-tab,
+  .reward-back-link,
+  .monthly-login-card > button,
+  .daily-mission-action,
+  .season-pass-claim,
+  .season-premium-buy,
+  .friend-invite-create,
+  .friend-invite-output button,
+  .settings-summary-panel [data-settings-panel] button:not(.account-player-id),
+  .module-quick-actions > button,
+  #module-detail-upgrade,
+  .core-detail-actions > button,
+  .module-talent-node button,
+  .reward-inbox-card button:not(.reward-chest-button),
+  #inbox-delete-all,
+  #inbox-delete-undo,
+  #inbox-delete-confirm,
+  #inbox-delete-cancel,
+  .operator-titles-footer > button,
+  .module-unlock-footer > button,
+  #daily-meta-roll,
+  .chest-reveal-card > button,
+  #chest-odds-close,
+  .guide-next,
+  .tutorial-actions [data-tutorial-next],
+  .tutorial-heading [data-tutorial-skip],
+  .social-player-actions > button,
+  .social-battle-card button,
+  .team-training-card button,
+  .team-directory-action,
+  .team-management-actions > button,
+  .team-management-row > button,
+  .team-member-action,
+  .team-inline-action > button,
+  #team-create-button,
+  #team-module-request-button,
+  #team-appearance-save,
+  .event-register-button,
+  #team-loading-retry,
+  #arena-leaderboard-button,
+  .arena-reward-node > button:not(.league-chest-button):not(.reward-chest-button),
+  #post-match-continue,
+  #post-match-premium-buy,
+  #post-match-ad-button,
+  #home-matchmaking-cancel,
+  .friend-search-heading > button,
+  .gs-action-button
+):active:not(:disabled):not([aria-disabled="true"]) {
+  --gs2-depth:1px;
+  transform:translateY(2px);
+  box-shadow:none !important;
+}
+:root body[data-app-screen] :is(
+  #home-battle-button,
+  .shop-chest-action,
+  .paid-product-card > button,
+  .chest-odds-tab,
+  .reward-back-link,
+  .monthly-login-card > button,
+  .daily-mission-action,
+  .season-pass-claim,
+  .season-premium-buy,
+  .friend-invite-create,
+  .friend-invite-output button,
+  .settings-summary-panel [data-settings-panel] button:not(.account-player-id),
+  .module-quick-actions > button,
+  #module-detail-upgrade,
+  .core-detail-actions > button,
+  .module-talent-node button,
+  .reward-inbox-card button:not(.reward-chest-button),
+  #inbox-delete-all,
+  #inbox-delete-undo,
+  #inbox-delete-confirm,
+  #inbox-delete-cancel,
+  .operator-titles-footer > button,
+  .module-unlock-footer > button,
+  #daily-meta-roll,
+  .chest-reveal-card > button,
+  #chest-odds-close,
+  .guide-next,
+  .tutorial-actions [data-tutorial-next],
+  .tutorial-heading [data-tutorial-skip],
+  .social-player-actions > button,
+  .social-battle-card button,
+  .team-training-card button,
+  .team-directory-action,
+  .team-management-actions > button,
+  .team-management-row > button,
+  .team-member-action,
+  .team-inline-action > button,
+  #team-create-button,
+  #team-module-request-button,
+  #team-appearance-save,
+  .event-register-button,
+  #team-loading-retry,
+  #arena-leaderboard-button,
+  .arena-reward-node > button:not(.league-chest-button):not(.reward-chest-button),
+  #post-match-continue,
+  #post-match-premium-buy,
+  #post-match-ad-button,
+  #home-matchmaking-cancel,
+  .friend-search-heading > button,
+  .gs-action-button
+):is(:disabled,[aria-disabled="true"]) {
+  --gs2-top:#5b7188;
+  --gs2-face:#40566e;
+  --gs2-bottom:#34485e;
+  --gs2-edge:#1c2e43;
+  --gs2-letter:#d4deea;
+  transform:none;
+  opacity:1 !important;
+  filter:none !important;
+}
+:root body[data-app-screen] :is(
+  .shop-chest-action,
+  #module-detail-upgrade,
+  #core-detail-upgrade
+) :is(.cost-chip,.cost-button-label,.cost-chip > b) {
+  color:inherit !important;
+  text-shadow:none !important;
+}
+:root body[data-app-screen] :is(
+  .shop-chest-action,
+  #module-detail-upgrade,
+  #core-detail-upgrade
+) .cost-chip {
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+
+/* 04 / Kart ve liste: ölçü/grid/nesne çizimleri ve kademe renkleri korunur. */
+:root body[data-app-screen] :is(
+  .reward-inbox-card,
+  .monthly-login-card,
+  .daily-mission-card,
+  .social-player-card,
+  .social-battle-card,
+  .direct-message-thread-card,
+  .team-training-card,
+  .team-request-card,
+  .settings-form > label,
+  .settings-about-panel,
+  [id="module-quick-actions"],
+  [id="core-quick-actions"]
+) {
+  border:1px solid #4676a3 !important;
+  border-radius:8px !important;
+  color:var(--gs2-text);
+  background:var(--gs2-surface) !important;
+  box-shadow:var(--gs2-surface-shadow) !important;
+}
+
+:root body[data-app-screen] :is(.monthly-login-card,.daily-mission-card)[data-state="claimable"] { border-color:#dbaa42 !important; }
+:root body[data-app-screen] .monthly-login-card[data-major="true"] { border-color:#dbaa42 !important; }
+:root body[data-app-screen] .team-request-card[data-rarity="legendary"] { border-color:#f7c75a !important; }
+:root body[data-app-screen] .team-request-card[data-rarity="epic"] { border-color:#b984ff !important; }
+:root body[data-app-screen] .team-request-card[data-rarity="rare"] { border-color:#66aef4 !important; }
+
+/* 05 / Seçim hücresi: seçili işareti ve mevcut kilit metni/overlay'i kalır.
+ * Resim, kadraj, enderlik ve sınıf rengi yeniden çizilmez. */
+:root body[data-app-screen] :is(
+  .avatar-choice-list > button,
+  .profile-background-choice,
+  .team-appearance-option,
+  .team-request-module
+) {
+  border-radius:7px !important;
+  background:var(--gs2-surface) !important;
+  box-shadow:var(--gs2-surface-shadow) !important;
+}
+:root body[data-app-screen] :is(
+  .avatar-choice-list > button,
+  .profile-background-choice,
+  .team-appearance-option,
+  .team-request-module
+):is([data-state="selected"],[aria-pressed="true"],[aria-checked="true"],.is-selected) {
+  outline:2px solid #6fe5d2;
+  outline-offset:-3px;
+  background:linear-gradient(135deg,#225f71,#173951) !important;
+  box-shadow:inset 4px 0 #6fe5d2,0 3px #061529 !important;
+}
+:root body[data-app-screen] :is(
+  .avatar-choice-list > button,
+  .profile-background-choice,
+  .team-appearance-option,
+  .team-request-module
+):is(:disabled,[aria-disabled="true"],[data-state="locked"]) {
+  border-style:dashed !important;
+  background:#172c43 !important;
+  box-shadow:inset 0 2px #102037 !important;
+}
+
+/* Renk örneği kozmetik içeriğin kendisidir; ortak mavi yüzeyle örtme.
+ * Seçili şerit/odak ve kilit metni yine ortak hücreden gelir. */
+:root body[data-app-screen] button.profile-background-choice[data-state] {
+  background:linear-gradient(135deg,var(--profile-bg-a,#0c2944),var(--profile-bg-b,#1b4962)) !important;
+}
+
+/* 06 / Sekmeler: içeriği/roving tab davranışını değiştirme; bildirimler kalır. */
+:root body[data-app-screen] :is(
+  #module-category-tabs,
+  .reward-inbox-tabs,
+  .friends-tabs,
+  .settings-category-tabs,
+  .cards-page-tabs,
+  .module-detail-tabs,
+  .team-tabs,
+  .team-request-filters,
+  .event-detail-tabs,
+  .leaderboard-tabs,
+  .leaderboard-scope-tabs
+) > button {
+  border:1px solid #315278 !important;
+  border-radius:5px !important;
+  color:#c6d9ec !important;
+  background:linear-gradient(180deg,#234568,#172e4c) !important;
+  box-shadow:0 2px #061326 !important;
+  text-shadow:none !important;
+  animation:none !important;
+}
+:root body[data-app-screen] :is(
+  #module-category-tabs,
+  .reward-inbox-tabs,
+  .friends-tabs,
+  .settings-category-tabs,
+  .cards-page-tabs,
+  .module-detail-tabs,
+  .team-tabs,
+  .team-request-filters,
+  .event-detail-tabs,
+  .leaderboard-tabs,
+  .leaderboard-scope-tabs
+) > button:is(.is-active,[aria-selected="true"],[aria-pressed="true"]) {
+  border-color:#84eddf !important;
+  color:#062e38 !important;
+  background:linear-gradient(180deg,#8ceddb 0 12%,#4bcebf 13% 81%,#2ba398 82%) !important;
+  box-shadow:0 2px #11646b !important;
+  text-decoration:underline;
+  text-decoration-thickness:2px;
+  text-underline-offset:4px;
+  text-shadow:none !important;
+}
+:root body[data-app-screen] :is(
+  #module-category-tabs,
+  .reward-inbox-tabs,
+  .friends-tabs,
+  .settings-category-tabs,
+  .cards-page-tabs,
+  .module-detail-tabs,
+  .team-tabs,
+  .team-request-filters,
+  .event-detail-tabs,
+  .leaderboard-tabs,
+  .leaderboard-scope-tabs
+) > button:is(.is-active,[aria-selected="true"],[aria-pressed="true"]) :is(strong,small,span:not(.ui-art)) {
+  color:inherit !important;
+  text-shadow:none !important;
+}
+:root body[data-app-screen] :is(
+  #module-category-tabs,
+  .reward-inbox-tabs,
+  .friends-tabs,
+  .settings-category-tabs,
+  .cards-page-tabs,
+  .module-detail-tabs,
+  .team-tabs,
+  .team-request-filters,
+  .event-detail-tabs,
+  .leaderboard-tabs,
+  .leaderboard-scope-tabs
+) > button:is(:disabled,[aria-disabled="true"]) {
+  border-style:dashed !important;
+  color:#b7c8d8 !important;
+  background:#172c43 !important;
+  text-decoration:none;
+}
+
+/* 07 / Girişler: native alan, değer, tür, olay ve gizlilik nitelikleri aynı. */
+:root body[data-app-screen] :is(
+  .friend-search-form input,
+  .profile-name-form input,
+  .settings-summary-panel input:not([type="checkbox"]):not([type="range"]):not([type="radio"]):not([type="color"]),
+  .settings-summary-panel select,
+  .team-create-card input,
+  .team-create-card select,
+  .team-management-panel input,
+  .team-management-panel textarea,
+  .team-inline-action select,
+  .gs-input
+) {
+  min-width:0;
+  border:1px solid #48759e !important;
+  border-radius:6px !important;
+  color:#f5faff !important;
+  background:var(--gs2-well) !important;
+  box-shadow:inset 0 3px #051224,0 1px #38618b !important;
+  font-family:var(--gs-font-copy);
+  font-size:1rem;
+}
+:root body[data-app-screen] :is(
+  .friend-search-form input,
+  .profile-name-form input,
+  .settings-summary-panel input:not([type="checkbox"]):not([type="range"]):not([type="radio"]):not([type="color"]),
+  .settings-summary-panel select,
+  .team-create-card input,
+  .team-create-card select,
+  .team-management-panel input,
+  .team-management-panel textarea,
+  .team-inline-action select,
+  .gs-input
+)::placeholder {
+  color:#a0b9d2;
+  opacity:1;
+}
+:root body[data-app-screen] :is(
+  .friend-search-form input,
+  .profile-name-form input,
+  .settings-summary-panel input:not([type="checkbox"]):not([type="range"]):not([type="radio"]):not([type="color"]),
+  .settings-summary-panel select,
+  .team-create-card input,
+  .team-create-card select,
+  .team-management-panel input,
+  .team-management-panel textarea,
+  .team-inline-action select,
+  .gs-input
+):is(:disabled,[readonly]) {
+  border-style:dashed !important;
+  color:#adc1d8 !important;
+  background:#172c43 !important;
+}
+
+/* 08 / Anahtarlar: işaret/konum ayrımı, semantik checkbox korunur. */
+:root body[data-app-screen] .settings-form .settings-toggle { min-height:44px; }
+:root body[data-app-screen] .settings-toggle > input[type="checkbox"] {
+  appearance:none;
+  flex:0 0 64px;
+  width:64px;
+  height:34px;
+  min-height:34px;
+  margin:0;
+  padding:0;
+  position:relative;
+  border:1px solid #3b5c7c;
+  border-radius:7px;
+  background:#0a1930;
+  box-shadow:inset 0 3px #051124;
+}
+:root body[data-app-screen] .settings-toggle > input[type="checkbox"]::before {
+  content:"−";
+  position:absolute;
+  left:3px; top:3px;
+  width:26px; height:26px;
+  display:grid; place-items:center;
+  border-radius:4px;
+  color:#17314c;
+  background:linear-gradient(180deg,#adc0d3,#68809a);
+  box-shadow:inset 0 2px #d3e2ec,0 2px #243d57;
+  font:700 20px/1 var(--gs-font-copy);
+}
+:root body[data-app-screen] .settings-toggle > input[type="checkbox"]:checked {
+  border-color:#4ba88d; background:#14544f;
+}
+:root body[data-app-screen] .settings-toggle > input[type="checkbox"]:checked::before {
+  content:"✓"; left:auto; right:3px;
+  color:#153e24;
+  background:linear-gradient(180deg,#c4f18b,#69c44c);
+  box-shadow:inset 0 2px #dffbb5,0 2px #357b36;
+}
+:root body[data-app-screen] .settings-toggle > input[type="checkbox"]:disabled { opacity:.6; border-style:dashed; }
+
+/* 09 / İlerleme: yalnız yüzey; value/max/width ve oyun hesabına dokunma. */
+:root body[data-app-screen] :is(
+  .operator-titles-meter progress,
+  #module-detail-progress,
+  #core-detail-progress
+) {
+  appearance:none;
+  border:0;
+  border-radius:4px;
+  overflow:hidden;
+  background:var(--gs2-well);
+  box-shadow:none !important;
+}
+
+:root body[data-app-screen] :is(
+  .operator-titles-meter progress,
+  #module-detail-progress,
+  #core-detail-progress
+)::-webkit-progress-bar {
+  background:var(--gs2-well);
+}
+
+:root body[data-app-screen] :is(
+  .operator-titles-meter progress,
+  #module-detail-progress,
+  #core-detail-progress
+)::-webkit-progress-value {
+  border-radius:3px;
+  background:var(--gs2-progress);
+}
+
+:root body[data-app-screen] :is(
+  .operator-titles-meter progress,
+  #module-detail-progress,
+  #core-detail-progress
+)::-moz-progress-bar {
+  border-radius:3px;
+  background:var(--gs2-progress);
+}
+
+:root body[data-app-screen] :is(
+  .guide-progress,
+  .season-progress-track,
+  .lobby-season-track
+) {
+  border:0 !important;
+  border-radius:4px;
+  background:var(--gs2-well) !important;
+  box-shadow:none !important;
+}
+
+:root body[data-app-screen] :is(
+  .guide-progress > i,
+  #season-progress-fill,
+  #lobby-season-progress-fill
+) {
+  border-radius:3px;
+  background:var(--gs2-progress) !important;
+  box-shadow:none !important;
+}
+
+:root body[data-app-screen] .daily-mission-card .daily-mission-meter {
+  border:0 !important;
+  border-radius:4px !important;
+  background:linear-gradient(90deg,#72cc4e var(--mission-progress,0%),var(--gs2-well) var(--mission-progress,0%)) !important;
+  box-shadow:none !important;
+}
+
+/* 10 / BÜTÜN bağımsız ikon eylemleri zeminsiz. Listeyi merkezi tut.
+ * Pseudo-elementleri topluca kapatma: posta/takım başvuru rozetleri korunur.
+ * Dock/sekme/metinli butonlar ve fiziksel avatar/sandıklar bu tür değildir. */
+:root body[data-app-screen] :is(
+  #reward-inbox-button,
+  #lobby-menu-button,
+  #team-menu-button,
+  #battle-settings-button,
+  #battle-emoji-button,
+  #reward-inbox-close,
+  #public-profile-close,
+  #team-profile-close,
+  .event-detail-header > button[data-open-screen],
+  #friend-search-close,
+  #direct-message-back,
+  #team-management-back,
+  #leaderboard-back,
+  .arena-detail-back-button,
+  .friend-search-form > button,
+  .gs-icon-action
+) {
+  border:0 !important;
+  border-image:none !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  text-shadow:none !important;
+  filter:none !important;
+  animation:none !important;
+}
+:root body[data-app-screen] :is(
+  #reward-inbox-button,
+  #lobby-menu-button,
+  #team-menu-button,
+  #battle-settings-button,
+  #battle-emoji-button,
+  #reward-inbox-close,
+  #public-profile-close,
+  #team-profile-close,
+  .event-detail-header > button[data-open-screen],
+  #friend-search-close,
+  #direct-message-back,
+  #team-management-back,
+  #leaderboard-back,
+  .arena-detail-back-button,
+  .friend-search-form > button,
+  .gs-icon-action
+):is(:hover,:active,:focus,[aria-expanded="true"],[aria-pressed="true"]) {
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  filter:none !important;
+}
+:root body[data-app-screen] :is(
+  #reward-inbox-button,
+  #lobby-menu-button,
+  #team-menu-button,
+  #battle-settings-button,
+  #battle-emoji-button,
+  #reward-inbox-close,
+  #public-profile-close,
+  #team-profile-close,
+  .event-detail-header > button[data-open-screen],
+  #friend-search-close,
+  #direct-message-back,
+  #team-management-back,
+  #leaderboard-back,
+  .arena-detail-back-button,
+  .friend-search-form > button,
+  .gs-icon-action
+):is(:disabled,[aria-disabled="true"]) {
+  opacity:.45 !important;
+  filter:none !important;
+}
+:root body[data-app-screen] :is(
+  #home-battle-button,
+  .shop-chest-action,
+  .paid-product-card > button,
+  .chest-odds-tab,
+  .reward-back-link,
+  .monthly-login-card > button,
+  .daily-mission-action,
+  .season-pass-claim,
+  .season-premium-buy,
+  .friend-invite-create,
+  .friend-invite-output button,
+  .settings-summary-panel [data-settings-panel] button:not(.account-player-id),
+  .module-quick-actions > button,
+  #module-detail-upgrade,
+  .core-detail-actions > button,
+  .module-talent-node button,
+  .reward-inbox-card button:not(.reward-chest-button),
+  #inbox-delete-all,
+  #inbox-delete-undo,
+  #inbox-delete-confirm,
+  #inbox-delete-cancel,
+  .operator-titles-footer > button,
+  .module-unlock-footer > button,
+  #daily-meta-roll,
+  .chest-reveal-card > button,
+  #chest-odds-close,
+  .guide-next,
+  .tutorial-actions [data-tutorial-next],
+  .tutorial-heading [data-tutorial-skip],
+  .social-player-actions > button,
+  .social-battle-card button,
+  .team-training-card button,
+  .team-directory-action,
+  .team-management-actions > button,
+  .team-management-row > button,
+  .team-member-action,
+  .team-inline-action > button,
+  #team-create-button,
+  #team-module-request-button,
+  #team-appearance-save,
+  .event-register-button,
+  #team-loading-retry,
+  #arena-leaderboard-button,
+  .arena-reward-node > button:not(.league-chest-button):not(.reward-chest-button),
+  #post-match-continue,
+  #post-match-premium-buy,
+  #post-match-ad-button,
+  #home-matchmaking-cancel,
+  .friend-search-heading > button,
+  .gs-action-button,
+  #reward-inbox-button,
+  #lobby-menu-button,
+  #team-menu-button,
+  #battle-settings-button,
+  #battle-emoji-button,
+  #reward-inbox-close,
+  #public-profile-close,
+  #team-profile-close,
+  .event-detail-header > button[data-open-screen],
+  #friend-search-close,
+  #direct-message-back,
+  #team-management-back,
+  #leaderboard-back,
+  .arena-detail-back-button,
+  .friend-search-form > button,
+  .gs-icon-action,
+  .avatar-choice-list > button,
+  .profile-background-choice,
+  .team-appearance-option,
+  .team-request-module,
+  .friend-search-form input,
+  .profile-name-form input,
+  .settings-summary-panel input:not([type="checkbox"]):not([type="range"]):not([type="radio"]):not([type="color"]),
+  .settings-summary-panel select,
+  .team-create-card input,
+  .team-create-card select,
+  .team-management-panel input,
+  .team-management-panel textarea,
+  .team-inline-action select,
+  .gs-input,
+  #module-category-tabs > button,
+  .reward-inbox-tabs > button,
+  .friends-tabs > button,
+  .settings-category-tabs > button,
+  .cards-page-tabs > button,
+  .module-detail-tabs > button,
+  .team-tabs > button,
+  .team-request-filters > button,
+  .event-detail-tabs > button,
+  .leaderboard-tabs > button,
+  .leaderboard-scope-tabs > button,
+  .settings-toggle > input[type="checkbox"]
+):focus-visible {
+  outline:2px solid var(--gs2-focus) !important;
+  outline-offset:3px;
+}
+
+/* Aynı küçük görünüm; kaba işaretçide çakışmayan en az 44px eylem alanı. */
+@media (pointer:coarse) {
+:root body[data-app-screen] :is(
+  #home-battle-button,
+  .shop-chest-action,
+  .paid-product-card > button,
+  .chest-odds-tab,
+  .reward-back-link,
+  .monthly-login-card > button,
+  .daily-mission-action,
+  .season-pass-claim,
+  .season-premium-buy,
+  .friend-invite-create,
+  .friend-invite-output button,
+  .settings-summary-panel [data-settings-panel] button:not(.account-player-id),
+  .module-quick-actions > button,
+  #module-detail-upgrade,
+  .core-detail-actions > button,
+  .module-talent-node button,
+  .reward-inbox-card button:not(.reward-chest-button),
+  #inbox-delete-all,
+  #inbox-delete-undo,
+  #inbox-delete-confirm,
+  #inbox-delete-cancel,
+  .operator-titles-footer > button,
+  .module-unlock-footer > button,
+  #daily-meta-roll,
+  .chest-reveal-card > button,
+  #chest-odds-close,
+  .guide-next,
+  .tutorial-actions [data-tutorial-next],
+  .tutorial-heading [data-tutorial-skip],
+  .social-player-actions > button,
+  .social-battle-card button,
+  .team-training-card button,
+  .team-directory-action,
+  .team-management-actions > button,
+  .team-management-row > button,
+  .team-member-action,
+  .team-inline-action > button,
+  #team-create-button,
+  #team-module-request-button,
+  #team-appearance-save,
+  .event-register-button,
+  #team-loading-retry,
+  #arena-leaderboard-button,
+  .arena-reward-node > button:not(.league-chest-button):not(.reward-chest-button),
+  #post-match-continue,
+  #post-match-premium-buy,
+  #post-match-ad-button,
+  #home-matchmaking-cancel,
+  .friend-search-heading > button,
+  .gs-action-button,
+  #reward-inbox-button,
+  #lobby-menu-button,
+  #team-menu-button,
+  #battle-settings-button,
+  #battle-emoji-button,
+  #reward-inbox-close,
+  #public-profile-close,
+  #team-profile-close,
+  .event-detail-header > button[data-open-screen],
+  #friend-search-close,
+  #direct-message-back,
+  #team-management-back,
+  #leaderboard-back,
+  .arena-detail-back-button,
+  .friend-search-form > button,
+  .gs-icon-action
+) {
+  min-height:44px !important;
+}
+
+:root body[data-app-screen] :is(
+  #reward-inbox-button,
+  #lobby-menu-button,
+  #team-menu-button,
+  #battle-settings-button,
+  #battle-emoji-button,
+  #reward-inbox-close,
+  #public-profile-close,
+  #team-profile-close,
+  .event-detail-header > button[data-open-screen],
+  #friend-search-close,
+  #direct-message-back,
+  #team-management-back,
+  #leaderboard-back,
+  .arena-detail-back-button,
+  .friend-search-form > button,
+  .gs-icon-action
+) {
+  min-width:44px;
+}
+
+  :root body[data-app-screen] .settings-toggle > input[type="checkbox"] { height:44px; min-height:44px; }
+  :root body[data-app-screen] .settings-toggle > input[type="checkbox"]::before { top:8px; }
+}
+@media (prefers-reduced-motion:reduce) {
+:root body[data-app-screen] :is(
+  #home-battle-button,
+  .shop-chest-action,
+  .paid-product-card > button,
+  .chest-odds-tab,
+  .reward-back-link,
+  .monthly-login-card > button,
+  .daily-mission-action,
+  .season-pass-claim,
+  .season-premium-buy,
+  .friend-invite-create,
+  .friend-invite-output button,
+  .settings-summary-panel [data-settings-panel] button:not(.account-player-id),
+  .module-quick-actions > button,
+  #module-detail-upgrade,
+  .core-detail-actions > button,
+  .module-talent-node button,
+  .reward-inbox-card button:not(.reward-chest-button),
+  #inbox-delete-all,
+  #inbox-delete-undo,
+  #inbox-delete-confirm,
+  #inbox-delete-cancel,
+  .operator-titles-footer > button,
+  .module-unlock-footer > button,
+  #daily-meta-roll,
+  .chest-reveal-card > button,
+  #chest-odds-close,
+  .guide-next,
+  .tutorial-actions [data-tutorial-next],
+  .tutorial-heading [data-tutorial-skip],
+  .social-player-actions > button,
+  .social-battle-card button,
+  .team-training-card button,
+  .team-directory-action,
+  .team-management-actions > button,
+  .team-management-row > button,
+  .team-member-action,
+  .team-inline-action > button,
+  #team-create-button,
+  #team-module-request-button,
+  #team-appearance-save,
+  .event-register-button,
+  #team-loading-retry,
+  #arena-leaderboard-button,
+  .arena-reward-node > button:not(.league-chest-button):not(.reward-chest-button),
+  #post-match-continue,
+  #post-match-premium-buy,
+  #post-match-ad-button,
+  #home-matchmaking-cancel,
+  .friend-search-heading > button,
+  .gs-action-button
+) {
+  transition:none;
+}
+
+}

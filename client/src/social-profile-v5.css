@@ -1,0 +1,118 @@
+/* 5C: reuse the approved P2/P3/P4 surfaces and physical art.
+ * No layout redesign, IDs, ownership, permissions, messaging or network changes.
+ * Ten application groups; cosmetic portraits are approved emblem reuse.
+ */
+
+/* 01 / Own/public identity, honors and team identity. */
+:root body[data-app-screen] :is(#profile-summary-panel,#public-profile-dialog,#team-profile-dialog) :is(.profile-identity-card,.public-profile-identity-bar,.team-public-identity) {
+  border-color:#426c92 !important; border-radius:9px !important; box-shadow:var(--gs2-surface-shadow) !important;
+}
+:root body[data-app-screen] :is(#profile-summary-panel,#public-profile-dialog,#team-profile-dialog) :is(.profile-operator-name,.public-profile-identity-copy h2) { font-size:18px; line-height:1.2; overflow-wrap:anywhere; }
+.profile-avatar > .profile-avatar-art { display:block; width:90% !important; height:90% !important; object-fit:contain; border:0; background:none; pointer-events:none; }
+.profile-avatar > .ui-art { flex-shrink:0; }
+:root body[data-app-screen] :is(#profile-summary-panel,#public-profile-dialog,#team-profile-dialog) .profile-honor-item { border-radius:6px !important; }
+
+/* 02 / Statistics, history and social profile sections. */
+:root body[data-app-screen] :is(#profile-summary-panel,#public-profile-dialog,#team-profile-dialog) :is(.profile-clan-card,.profile-season-history,.profile-inline-statistics,.public-profile-statistics,.public-profile-current-season) {
+  border:1px solid #315278 !important; border-radius:8px !important; background:var(--gs2-surface) !important; box-shadow:var(--gs2-surface-shadow) !important;
+}
+:root body[data-app-screen] :is(#profile-summary-panel,#public-profile-dialog,#team-profile-dialog,#team-screen) :is(.public-profile-stat-grid,.profile-stat-grid) > article {
+  min-width:0; padding:10px 8px; border:1px solid #315278 !important; border-radius:6px !important; background:var(--gs2-well) !important; box-shadow:none !important;
+}
+:root body[data-app-screen] :is(#profile-summary-panel,#public-profile-dialog,#team-profile-dialog,#team-screen) :is(.public-profile-stat-grid,.profile-stat-grid) > article > span { font-size:11px; line-height:1.25; color:#bdcfe1; }
+:root body[data-app-screen] :is(#profile-summary-panel,#public-profile-dialog,#team-profile-dialog,#team-screen) :is(.public-profile-stat-grid,.profile-stat-grid) > article > strong { font-size:16px; color:#ffe291; }
+
+/* 03 / Team identity and membership; custom earned frame/name tones stay. */
+:root body[data-app-screen] #team-screen #team-identity-card { border-radius:8px !important; border-color:var(--team-frame-color,#426c92) !important; background:var(--gs2-surface) !important; box-shadow:var(--gs2-surface-shadow) !important; }
+:root body[data-app-screen] :is(#team-screen,#team-profile-dialog) :is(.team-member-list li,.team-management-row) { min-width:0; padding:10px 8px; gap:8px; border:1px solid #315278; border-radius:7px; background:#102841; }
+:root body[data-app-screen] :is(#team-screen,#team-profile-dialog) :is(.team-member-list,.team-management-list) :is(.public-player-link,.team-profile-link) { font-size:13px; }
+:root body[data-app-screen] :is(#team-screen,#team-profile-dialog) :is(.team-member-list,.team-management-list) small { font:600 11px/1.35 "Rajdhani",sans-serif; color:#c3d6e8; }
+.team-emblem-relief { overflow:visible; }
+.team-emblem-relief .team-emblem-depth { fill:#061326; stroke:#061326; stroke-width:2.7; stroke-linejoin:bevel; }
+.team-emblem-relief .team-emblem-face { fill:var(--team-emblem-color,#6ff1e0); stroke:#0a233b; stroke-width:1.3; stroke-linejoin:bevel; paint-order:stroke fill; }
+.team-emblem-relief .team-emblem-bevel { fill:none; stroke:#ecffff; stroke-width:.45; opacity:.45; stroke-linejoin:bevel; }
+.team-emblem-relief:is([data-team-symbol="orbit"],[data-team-symbol="gear"],[data-team-symbol="swords"]) .team-emblem-face { fill:none; stroke:var(--team-emblem-color,#6ff1e0); stroke-width:2; }
+.team-emblem-relief[data-team-symbol="lens"] .team-emblem-face circle:first-child { fill:#153b54; }
+
+/* 04 / Team directory, creation and application surfaces. */
+:root body[data-app-screen] #team-screen :is(.team-directory-row,.team-action-card,.team-create-card,.team-management-subpanel) { border:1px solid #315278 !important; border-radius:8px !important; background:var(--gs2-surface) !important; box-shadow:var(--gs2-surface-shadow) !important; }
+:root body[data-app-screen] #team-screen :is(.team-directory-row,.team-create-card) :is(label,small,p) { font-size:12px; line-height:1.4; }
+:root body[data-app-screen] #team-screen .team-management-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; }
+
+/* 05 / Requests and contributions; module/core drawings stay untouched. */
+:root body[data-app-screen] #team-screen :is(.team-request-composer,.team-request-card,.team-request-selected) { border-color:#315278 !important; border-radius:7px !important; background:#102841 !important; }
+:root body[data-app-screen] #team-screen :is(.team-policy-note,.team-request-list-heading small) { color:#c4d7e8; font:600 12px/1.4 "Rajdhani",sans-serif; }
+:root body[data-app-screen] #team-screen .team-request-submit { gap:8px; }
+
+/* 06 / Friends, incoming/outgoing requests, search and invitations. */
+:root body[data-app-screen] #friends-screen :is(.social-player-card,.direct-message-thread-card,.social-battle-card) { min-width:0; padding:10px; border:1px solid #315278 !important; border-radius:8px !important; background:var(--gs2-surface) !important; box-shadow:var(--gs2-surface-shadow) !important; }
+:root body[data-app-screen] #friends-screen :is(.social-player-actions,.social-battle-actions) { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; }
+:root body[data-app-screen] #friends-screen .social-player-card > div { min-width:0; }
+:root body[data-app-screen] #friends-screen .public-player-link { max-width:100%; font-size:13px; }
+:root body[data-app-screen] #friends-screen :is(.social-player-card small,.friends-battle-note,.direct-message-note,.friends-empty-state) { color:#c4d7e8; font:600 12px/1.4 "Rajdhani",sans-serif; }
+
+/* 07 / Safe team/direct chat. No free-form input or change to send handlers. */
+:root body[data-app-screen] :is(#friends-screen,#team-screen) .team-message { padding:10px; border:1px solid #315278 !important; border-radius:8px !important; background:#102841 !important; box-shadow:inset 0 1px #ffffff12 !important; }
+:root body[data-app-screen] :is(#friends-screen,#team-screen) .team-message.is-own { border-right:3px solid #72ded1 !important; background:#123b40 !important; }
+:root body[data-app-screen] :is(#friends-screen,#team-screen) .team-message :is(p,span) { font:600 14px/1.35 "Rajdhani",sans-serif; overflow-wrap:anywhere; }
+:root body[data-app-screen] :is(#friends-screen,#team-screen) .team-message :is(time,small) { font:600 11px "Rajdhani",sans-serif; color:#bcd0e2; }
+:root body[data-app-screen] :is(#friends-screen,#team-screen) .preset-message-picker { gap:7px; }
+:root body[data-app-screen] :is(#friends-screen,#team-screen) .preset-message-picker > button { min-height:40px; padding:8px; border:1px solid #426c92 !important; border-radius:5px !important; color:#edf7ff !important; background:var(--gs2-surface) !important; box-shadow:var(--gs2-surface-shadow) !important; font:600 13px "Rajdhani",sans-serif; }
+:root body[data-app-screen] :is(#friends-screen,#team-screen) .preset-message-picker > button:disabled { opacity:.6; border-style:dashed !important; }
+
+/* 08 / All four inbox categories, dates/read state and safe delete tools. */
+:root body[data-app-screen] #reward-inbox-dialog .reward-inbox-card { padding:11px 10px; border:1px solid #315278 !important; border-radius:8px !important; background:var(--gs2-surface) !important; box-shadow:var(--gs2-surface-shadow) !important; }
+:root body[data-app-screen] #reward-inbox-dialog .reward-inbox-card[data-seen="false"] { border-left:3px solid #ffe18b !important; }
+:root body[data-app-screen] #reward-inbox-dialog .reward-inbox-card[data-seen="true"] { border-left:3px solid #426c92 !important; }
+:root body[data-app-screen] #reward-inbox-dialog .reward-inbox-card > div > strong { font-size:13px; line-height:1.35; }
+:root body[data-app-screen] #reward-inbox-dialog .inbox-card-meta { display:grid; gap:5px; min-width:0; }
+:root body[data-app-screen] #reward-inbox-dialog .inbox-card-meta > small { color:#c4d7e8; font:600 12px/1.4 "Rajdhani",sans-serif; }
+:root body[data-app-screen] #reward-inbox-dialog .inbox-card-date { justify-self:end; color:#bbd0e3; font:600 11px "Rajdhani",sans-serif; white-space:normal; }
+:root body[data-app-screen] #reward-inbox-dialog .reward-inbox-tools small { font:600 11px/1.3 "Rajdhani",sans-serif; color:#c4d7e8; }
+
+/* 09 / Existing cosmetic choice component, with explicit selection/lock text. */
+:root body[data-app-screen] #avatar-customization-screen .avatar-choice-list { grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+:root body[data-app-screen] #avatar-customization-screen .avatar-choice-list > button,
+:root body[data-app-screen] #team-screen .team-appearance-option { min-width:0; padding:11px 6px; border:1px solid #426c92 !important; border-radius:7px !important; color:#edf7ff; background:var(--gs2-surface) !important; box-shadow:var(--gs2-surface-shadow) !important; }
+:root body[data-app-screen] #avatar-customization-screen .avatar-choice-list > button[data-state="selected"],
+:root body[data-app-screen] #team-screen .team-appearance-option.is-selected { border:2px solid #ffe18b !important; background:#234254 !important; }
+:root body[data-app-screen] #avatar-customization-screen .avatar-choice-list > button[data-state="locked"],
+:root body[data-app-screen] #team-screen .team-appearance-option[data-locked="true"] { border-style:dashed !important; opacity:.65; }
+:root body[data-app-screen] #avatar-customization-screen .avatar-choice-list > button > :is(strong,small),
+:root body[data-app-screen] #team-screen .team-appearance-option > :is(strong,small) { font-size:11px !important; line-height:1.25; max-width:100%; white-space:normal; }
+:root body[data-app-screen] #avatar-customization-screen .avatar-choice-list > button > .profile-avatar { width:48px !important; height:48px !important; margin:2px 0 7px; padding:3px; }
+:root body[data-app-screen] #avatar-customization-screen .avatar-choice-list > button > .profile-avatar[data-frame="none"] { border:0 !important; background:none !important; box-shadow:none !important; }
+.profile-avatar[data-frame="neon_cyan"] { --g5-rim:#46fff0; --g5-rim-dark:#126873; }
+.profile-avatar[data-frame="season_gold"] { --g5-rim:#ffe06b; --g5-rim-dark:#82691d; }
+.profile-avatar[data-frame="season_crown"] { --g5-rim:#ffe98a; --g5-rim-dark:#a07720; }
+.profile-avatar[data-frame="season_silver"] { --g5-rim:#d6eaff; --g5-rim-dark:#5f7895; }
+.profile-avatar[data-frame="weekly_gold"] { --g5-rim:#fff09b; --g5-rim-dark:#9b7f2b; }
+.profile-avatar[data-frame="weekly_silver"] { --g5-rim:#e3f5ff; --g5-rim-dark:#708ba2; }
+.profile-avatar[data-frame="frequency_cyan"] { --g5-rim:#64fff1; --g5-rim-dark:#176f79; }
+.profile-avatar[data-frame="gridshard_apex"] { --g5-rim:#ffcf5a; --g5-rim-dark:#7a3fb0; }
+:root body[data-app-screen] .profile-avatar[data-frame]:not([data-frame="none"]) { border:2px solid var(--g5-rim,currentColor) !important; border-radius:9px !important; box-shadow:0 0 0 2px var(--g5-rim-dark,#173b58),inset 0 1px #ffffff60,0 3px #061326 !important; }
+
+/* 10 / Frame and profile-bar swatches use real colors, not placeholder glyphs. */
+.profile-background-swatch { display:block; width:100%; height:38px; border-radius:5px; background:linear-gradient(125deg,transparent 35%,#ffffff20 35% 39%,transparent 39% 57%,#ffffff12 57% 63%,transparent 63%),linear-gradient(135deg,var(--profile-bg-a),var(--profile-bg-b)); box-shadow:inset 0 2px #ffffff30,inset 0 -3px #06132660; }
+:root body[data-app-screen] #team-screen .team-option-frame { border-radius:5px; box-shadow:inset 0 1px #ffffff60,0 2px #061326; }
+:root body[data-app-screen] #team-screen .team-option-color { border-radius:4px; box-shadow:inset 0 2px #ffffff60,inset 0 -3px #06132650,0 2px #061326; }
+:root body[data-app-screen] #avatar-customization-screen .profile-background-choice { min-height:96px !important; }
+
+/* Presentation must never unhide permission/ownership/selection gates. */
+:root body[data-app-screen] :is(#profile-summary-panel,#public-profile-dialog,#team-profile-dialog,#team-screen,#friends-screen,#reward-inbox-dialog,#avatar-customization-screen) [hidden] { display:none !important; }
+
+@media (max-width:350px) {
+  :root body[data-app-screen] #avatar-customization-screen .avatar-choice-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  :root body[data-app-screen] #team-screen .team-appearance-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  :root body[data-app-screen] #reward-inbox-dialog .reward-inbox-card { column-gap:7px; padding-inline:8px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .profile-avatar-art,.team-emblem-relief { animation:none !important; transition:none !important; }
+}
+/* The category object complements (does not replace) the explicit read envelope. */
+#reward-inbox-dialog .reward-inbox-card strong > .ui-icon.is-artwork {
+  display:inline-flex; width:24px; height:24px; margin:0 6px 0 0;
+  vertical-align:middle; flex:none;
+}
+.team-trophy-requirement-label { display:inline-flex; align-items:center; gap:5px; }
+.team-trophy-requirement-label > .trophy-value-icon { width:23px; height:23px; flex:0 0 23px; }

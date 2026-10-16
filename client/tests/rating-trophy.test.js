@@ -37,7 +37,17 @@ test("kupa bilgi satırına oyuncu metni HTML olarak eklenmez",()=>{
   assert.ok(target.children[1].classes.has("trophy-icon-first"));
   assert.equal(target.children[2].textContent," · ÇEVRİMİÇİ");
 });
-test("bütün bağlantılar aynı WebP'yi kullanır; sıralama ödül kupaları ayrı kalır",()=>{
+
+test("devre yolu ve takım koşulundaki kupa miktarı simgeyle okunur",()=>{
+  const {renderTrophyCaption}=helpers(),target=node("em");
+  renderTrophyCaption(target,"","7 / 300","0 / 4 eşik");
+  assert.equal(target.children[0].textContent,"");
+  assert.equal(target.children[1].children[0].textContent,"7 / 300");
+  assert.equal(target.children[2].textContent," · 0 / 4 eşik");
+  assert.ok(source.includes('renderTrophyValue("arena-detail-rating", rating)'));
+  assert.ok(source.includes('localizedMessage("team.minimum_value"'));
+});
+test("aynı onaylı kupa görseli kullanılır; ödül sahipliği ayrı sunucu kimlikleriyle kalır",()=>{
   const asset=fs.readFileSync(path.join(__dirname,"../assets/ui/rating-trophy-v1/rating-trophy.webp"));
   assert.equal(asset.toString("ascii",0,4),"RIFF");assert.equal(asset.toString("ascii",8,12),"WEBP");
   assert.ok(source.includes('renderTrophyValue(points, row.trophies_earned || row.points)'));
@@ -45,5 +55,7 @@ test("bütün bağlantılar aynı WebP'yi kullanır; sıralama ödül kupaları 
   const start=source.indexOf("  const PROFILE_HONOR_ICONS = Object.freeze({");
   const end=source.indexOf("  function deckDisplayName(",start);
   assert.ok(start>0 && end>start);
-  assert.equal(source.slice(start,end).includes("rating-trophy-v1"),false);
+  assert.ok(source.slice(start,end).includes('group.kind === "trophy"'));
+  assert.ok(source.slice(start,end).includes('src="${COMPETITION_TROPHY_ASSET}"'));
+  assert.ok(source.slice(start,end).includes('group.definitions.filter(item => earned.has(item.id))'));
 });

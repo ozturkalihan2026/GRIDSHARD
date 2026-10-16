@@ -1,0 +1,29 @@
+{
+  "status": "preview-only; awaiting approval",
+  "reports": [
+    {
+      "pack": "5a",
+      "components": 8,
+      "bytes": 533750,
+      "embeddedFonts": 3,
+      "embeddedAssets": 8,
+      "htmlCssJs": "passed",
+      "selectionAndStateRestore": "passed",
+      "networkCalls": false,
+      "browserStarted": false,
+      "gameTestsRun": false
+    },
+    {
+      "pack": "5b",
+      "components": 10,
+      "bytes": 611372,
+      "embeddedFonts": 3,
+      "embeddedAssets": 10,
+      "htmlCssJs": "passed",
+      "selectionAndStateRestore": "passed",
+      "networkCalls": false,
+      "browserStarted": false,
+      "gameTestsRun": false
+    }
+  ]
+}

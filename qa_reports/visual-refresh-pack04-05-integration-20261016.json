@@ -1,0 +1,46 @@
+{
+  "completedAt": "2026-10-16",
+  "packages": [
+    "4A",
+    "4B",
+    "5A",
+    "5B",
+    "5C"
+  ],
+  "styles": 12,
+  "scripts": 34,
+  "memoryCssBundle": "passed",
+  "javascriptTargetTransform": "passed",
+  "existingTranslationDuplicateKeyWarnings": 20,
+  "newRasterArtworks": 18,
+  "runtimeFiles": 36,
+  "runtimeBytes": 1630558,
+  "alphaAndFraming": "passed",
+  "dynamicWebNativeAllowlist": "passed",
+  "tournamentAliases": 6,
+  "avatarArt": "approved physical emblem reuse; same ownership IDs",
+  "cosmeticOwnershipAndSafeChat": "unchanged",
+  "followupCleanup": [
+    "unframed 44px ranking chests; zero legacy margin",
+    "weekly/team 44px reward track also at narrow widths",
+    "mouse/pen/focus preview + touch pin",
+    "transparent action base; clipped physical face only",
+    "mail category/deck physical icons; read envelopes preserved",
+    "home/road/team requirement trophy imagery"
+  ],
+  "businessHandlersUnchanged": [
+    "purchasePaidProduct",
+    "metaProgressionMutation",
+    "selectProfileCosmetic",
+    "dismissInboxMessages",
+    "sendTeamMessage",
+    "sendDirectMessage"
+  ],
+  "serverChange": "public_chest display-only chest_visual_id; private contents/provenance stay excluded",
+  "backgroundCoreMotionAndDock": "preserved",
+  "gameOrUnitTestsRun": false,
+  "browserStarted": false,
+  "serverStarted": false,
+  "distWritten": false,
+  "nativeOrDeploy": false
+}

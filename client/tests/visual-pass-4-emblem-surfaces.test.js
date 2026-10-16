@@ -137,7 +137,7 @@ test("profil: Devre Koleksiyonu yalnız kazanılmış kupa/rozetleri, boşken me
   const end = app.indexOf("  function deckDisplayName(deck) {");
   assert.ok(start > 0 && end > start);
   const element = (tag) => ({ tag, dataset:{}, attributes:{}, children:[], className:"", textContent:"", innerHTML:"", setAttribute(name, value) { this.attributes[name] = value; }, append(...items) { this.children.push(...items); }, appendChild(item) { this.children.push(item); }, replaceChildren() { this.children = []; } });
-  const sandbox = { document:{ createElement:element }, localizedUiText:(text) => text };
+  const sandbox = { document:{ createElement:element }, localizedUiText:(text) => text, COMPETITION_TROPHY_ASSET:"./assets/ui/rating-trophy-v1/rating-trophy.webp" };
   vm.runInNewContext(`${app.slice(start, end)}\nObject.assign(this, { fillHonorCollection, PROFILE_HONOR_ICONS });`, sandbox);
   const definitions = [
     { id:"season_first", nameTr:"Sezon Birinciliği", shortNameTr:"1. Kupa", tone:"gold" },
@@ -147,7 +147,7 @@ test("profil: Devre Koleksiyonu yalnız kazanılmış kupa/rozetleri, boşken me
   const host = element("div");
   sandbox.fillHonorCollection(host, { ids:["season_third", "yeni_kupa"], definitions, kind:"trophy" });
   assert.deepEqual(host.children.map((item) => [item.dataset.tone, item.dataset.earned]), [["bronze", "true"], ["cyan", "true"]]);
-  assert.ok(host.children.every((item) => item.children[0].innerHTML === sandbox.PROFILE_HONOR_ICONS.trophy));
+  assert.ok(host.children.every((item) => item.children[0].innerHTML.includes('class="competition-honor-art"') && item.children[0].innerHTML.includes(sandbox.COMPETITION_TROPHY_ASSET)));
   assert.equal(host.children[0].attributes["aria-label"], "Sezon Üçüncülüğü · Kazanıldı");
   // Kullanıcının 14 Ekim kararı: kazanılmayan görsel/yuva çizilmez.
   const empty = element("div");

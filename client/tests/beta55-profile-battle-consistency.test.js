@@ -6,8 +6,9 @@ const fs = require("fs");
 const app = fs.readFileSync("./src/app.js", "utf8");
 const css = fs.readFileSync("./src/canon.css", "utf8");
 
-assert.ok(app.includes('const medal = { 1:"🥇", 2:"🥈", 3:"🥉" }'));
-assert.ok(app.includes('rank.classList.toggle("is-medal", Boolean(medal))'));
+// Approved Package 4A: position is a number, not an owned medal.
+assert.ok(app.includes('rank.textContent = String(row.position)'));
+assert.ok(app.includes('item.dataset.position = String(row.position)'));
 assert.match(css, /\.leaderboard-identity \.public-player-link \{[\s\S]*padding-inline:2px/);
 
 assert.match(css, /\.lobby-profile-button \.profile-avatar\[data-frame="neon_cyan"\]/);
