@@ -1,0 +1,48 @@
+/* Server-driven VFX: shallow SVG strokes, bounded roots, no blur/filter stacks. */
+.module-vfx { position:absolute; pointer-events:none; overflow:visible; z-index:12; animation:gs-module-vfx-life var(--module-vfx-ms,560ms) linear both; --vfx-color:#74e9ff; }
+.module-vfx :is(path,circle,ellipse) { vector-effect:non-scaling-stroke; }
+.module-vfx-laser,.module-vfx-laser-hit { --vfx-color:#ff263e; }
+.module-vfx-repair { --vfx-color:#47ef88; }
+.module-vfx-boost { --vfx-color:#ffdc4c; }
+.module-vfx-emp { --vfx-color:#d65bff; }
+.module-vfx-explosion { --vfx-color:#ffb43d; }
+.module-vfx-dampen,.module-vfx-blocked { --vfx-color:#43baff; }
+.vfx-ray,.vfx-electric,.vfx-eye-arc { fill:none; stroke:var(--vfx-color); stroke-width:3; stroke-linecap:round; }
+.vfx-ray-halo { fill:none; stroke:#f8243d; stroke-width:8; stroke-opacity:.18; }
+.vfx-ray-core { fill:none; stroke:#ffe2d1; stroke-width:1; }
+.vfx-electric { stroke-width:2.5; animation:gs-vfx-electric 75ms steps(2,end) infinite; }
+.vfx-eye-arc { stroke:#f0b5ff; stroke-width:2; }
+.module-vfx-repair .vfx-ray { stroke-dasharray:10 4; animation:gs-vfx-flow 300ms linear infinite; }
+.module-vfx-boost .vfx-ray { stroke-width:2; }
+.vfx-cold-cone { fill:#9defff; fill-opacity:.14; stroke:none; }
+.vfx-cold-wisp { fill:none; stroke:#c1faff; stroke-width:2; stroke-dasharray:12 14; animation:gs-vfx-flow 360ms linear infinite; }
+.vfx-support-pulse { fill:none; stroke:var(--vfx-color); stroke-width:2; stroke-opacity:.8; }
+.vfx-impact-ring { fill:var(--vfx-color); fill-opacity:.25; stroke:var(--vfx-color); stroke-width:2; transform-box:fill-box; transform-origin:center; animation:gs-vfx-impact 320ms ease-out both; }
+.vfx-impact-rays { fill:none; stroke:var(--vfx-color); stroke-width:2; stroke-linecap:round; }
+.module-vfx-dampen .vfx-impact-ring { fill:#1464ce; fill-opacity:.5; stroke-width:3; }
+.vfx-hex { fill:none; stroke:#91eeff; stroke-opacity:.28; stroke-width:1; }
+.vfx-dome-footprint { fill:#2396e3; fill-opacity:.025; stroke:#53c8ff; stroke-opacity:.14; stroke-width:1; stroke-dasharray:4 5; }
+.vfx-dome-body { stroke:none; }
+.vfx-shield-dome { stroke:#77ebff; stroke-opacity:.38; stroke-width:1.2; fill-opacity:.42; }
+.vfx-dome-ribs { fill:none; stroke:#b2f4ff; stroke-opacity:.12; stroke-width:1; }
+.vfx-dome-front { fill:none; stroke:#8cf2ff; stroke-opacity:.42; stroke-width:1.5; }
+.vfx-dome-highlight { fill:none; stroke:#c4faff; stroke-opacity:.3; stroke-width:1.4; stroke-linecap:round; }
+.module-vfx-projectile-track { height:0; transform-origin:0 0; }
+.vfx-flying-projectile { position:absolute; left:0; top:-7px; overflow:visible; animation:gs-vfx-projectile var(--travel-ms,500ms) linear both; }
+.module-vfx-ambient { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+.vfx-ambient-electric { fill:none; stroke:#affc68; stroke-width:1.6; stroke-linecap:round; vector-effect:non-scaling-stroke; animation:gs-vfx-electric 160ms steps(2,end) infinite; }
+[data-device="battery"] .vfx-ambient-electric { stroke:#ffe46d; }
+@keyframes gs-module-vfx-life { 0%,78% { opacity:1; } 100% { opacity:0; } }
+@keyframes gs-vfx-flow { to { stroke-dashoffset:-26; } }
+@keyframes gs-vfx-electric { 0%,49% { opacity:1; } 50%,100% { opacity:.4; } }
+@keyframes gs-vfx-impact { from { transform:scale(.35); } to { transform:scale(1.9); } }
+@keyframes gs-vfx-projectile { 0% { transform:translateX(-12px); opacity:1; } 99% { opacity:1; } 100% { transform:translateX(calc(var(--projectile-distance) - 12px)); opacity:0; } }
+/* Ambient electricity stops when hidden, reduced or unpowered; one-shots keep
+ * a short static color cue. Projectiles still reach their true impact point. */
+body[data-graphics="dusuk"] .module-vfx-ambient { display:none; }
+body[data-graphics="dusuk"] :is(.vfx-electric,.vfx-eye-arc,.vfx-cold-wisp,.module-vfx-repair .vfx-ray) { animation:none; }
+@media (prefers-reduced-motion:reduce) {
+  .module-vfx-ambient .vfx-ambient-electric { animation:none; opacity:.45; }
+  .module-vfx :is(.vfx-electric,.vfx-cold-wisp,.vfx-ray,.vfx-impact-ring) { animation:none; }
+  .vfx-flying-projectile { animation:none; transform:translateX(calc(var(--projectile-distance) - 12px)); }
+}

@@ -1,0 +1,80 @@
+{
+  "date": "2026-10-17",
+  "passed": true,
+  "renderer": "camera-facing upright eight-view impostors",
+  "boardCameraDegreesFromOverhead": 30,
+  "centerScale": 0.98,
+  "cameraDistancePixels": 1400,
+  "sharedBoardCameraAxis": true,
+  "continuousTargetMath": true,
+  "illustratedViewCount": 8,
+  "illustratedViewStepDegrees": 45,
+  "true3D": false,
+  "eightAnglesAreNotContinuousVolume": true,
+  "browserStarted": false,
+  "realGameplayVerified": false,
+  "fpsMeasured": false,
+  "files": [
+    {
+      "id": "laser",
+      "bytes": 45338,
+      "frames": 8,
+      "unclipped": true
+    },
+    {
+      "id": "shield",
+      "bytes": 42522,
+      "frames": 8,
+      "unclipped": true
+    },
+    {
+      "id": "battery",
+      "bytes": 46098,
+      "frames": 8,
+      "unclipped": true
+    },
+    {
+      "id": "amplifier",
+      "bytes": 41700,
+      "frames": 8,
+      "unclipped": true
+    },
+    {
+      "id": "emp",
+      "bytes": 47186,
+      "frames": 8,
+      "unclipped": true
+    },
+    {
+      "id": "repair",
+      "bytes": 39322,
+      "frames": 8,
+      "unclipped": true
+    },
+    {
+      "id": "armor",
+      "bytes": 50018,
+      "frames": 8,
+      "unclipped": true
+    },
+    {
+      "id": "cooler",
+      "bytes": 49748,
+      "frames": 8,
+      "unclipped": true
+    },
+    {
+      "id": "pulse_cannon",
+      "bytes": 50528,
+      "frames": 8,
+      "unclipped": true
+    },
+    {
+      "id": "missile_launcher",
+      "bytes": 48586,
+      "frames": 8,
+      "unclipped": true
+    }
+  ],
+  "totalBytes": 461046
+}

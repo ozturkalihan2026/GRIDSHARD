@@ -146,14 +146,36 @@ test("late HTML play rejection after ad stop cannot become a gesture-unlock retr
   assert.equal(d.currentTrack,null);
 });
 
-test("v15 changes only the intended battle/result gain controls", () => {
+test("v17 lowers combat VFX while preserving music and noncombat volume", () => {
   const {director:d,sandbox} = fixture();
   assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.battleMusicGain,2.85);
-  assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.battleSfxGain,.28);
+  assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.battleSfxGain,.16);
   assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.resultMusicGain,.55);
   assert.equal(d._musicTargetVolume(),.504);
-  d.state="battle";
-  assert.ok(Math.abs(d._sfxTargetVolume()-.154)<1e-12);
+  assert.equal(d._sfxTargetVolume(),.55,"menu effects are unchanged");
+  for(const state of ["battle","battle_pressure","critical_core","victory","defeat"]){
+    d.state=state;assert.ok(Math.abs(d._sfxTargetVolume()-.088)<1e-12,state);
+  }
+  assert.equal(d._musicTargetVolume(),.504,"the music slider/base gain is unchanged");
+});
+
+test("laser-specific trim is shared by HTML and WebAudio instead of being lost in fallback", async () => {
+  for(const webAudio of [false,true]){
+    const f=fixture({webAudio}),d=f.director;d.state="battle";
+    assert.equal(d._cueGain("laser_fire"),.65);
+    assert.equal(d._cueGain("missile_fire"),1);
+    if(webAudio){
+      await d.unlock();await f.flush();
+      // Inspect the cue routing, independent of the shared compressor output.
+      const gains=[];d._playAudioBuffer=(asset,{gain})=>{gains.push(gain);return Promise.resolve(true);};
+      const result=d.triggerCue("laser_fire");assert.equal(result.played,true);await f.flush();
+      assert.deepEqual(gains,[.65]);
+    }else{
+      d.triggerCue("laser_fire");await f.flush();
+      const track=f.audio.find(a=>a.src?.includes("laser_pulse_v2"));assert.ok(track);
+      assert.ok(Math.abs(track.volume-.088*.65)<1e-12);
+    }
+  }
 });
 
 test("HTML battle stems clamp only the final gain, preserving the requested music boost", () => {

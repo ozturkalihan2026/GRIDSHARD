@@ -97,7 +97,7 @@ MODULE_COPY_EN: dict[str, tuple[str, str]] = {
     "drone_bay": ("Distributed sustained pressure", "Wears down defenses with multiple small attacks."),
     "arc_cannon": ("Chained multi-target damage", "Produces chained energy attacks that jump onto the next target."),
     "shield": ("Periodic attack block", "At the starting level, every 1.2 sec it meets one incoming attack and blocks 60% of its damage. Leveling up shortens the block interval and raises the blocked share."),
-    "armor": ("Constant durability", "At the starting level it always reduces incoming damage by 25%; every 3 sec it mends its plating and regains 5 HP. Leveling up raises the reduction and the repair and shortens the interval."),
+    "armor": ("Constant durability", "At the starting level it always reduces incoming damage by 25%; every 3 sec it repairs its damping mechanism and regains 5 HP. Leveling up raises the reduction and the repair and shortens the interval."),
     "reflector": ("Draw and reflect", "At the starting level, every 1 sec it draws one attack aimed at the circuit onto itself and reflects 30% of its damage back to the attacker; it also reduces incoming damage by 25%. Leveling up raises the reflection and shortens the interval."),
     "barrier": ("Defense-line protection", "Draws attacks onto itself. At the starting level it reduces damage by 20% and every 4 sec shortens one sabotage applied to the circuit by 35%. Leveling up raises the sabotage resistance and shortens the interval."),
     "repair": ("Health repair", "Repairs damaged modules."),
@@ -391,7 +391,7 @@ def _mechanic_effect_lines(definition_id: str) -> list[str]:
         return [
             f"Başlangıç seviyesinde kendisine gelen hasarı sürekli %{_percent(PASSIVE_REDUCTION_BASE['armor'])} azaltır.",
             (
-                f"Başlangıç seviyesinde her {_seconds_tr(definition.cooldown_ms)} saniyede bir zırh plakasını onarır: "
+                f"Başlangıç seviyesinde her {_seconds_tr(definition.cooldown_ms)} saniyede bir sönümleme mekanizmasını onarır: "
                 f"kendine {ARMOR_REGEN_BASE} CAN geri kazandırır. Hasarsızken onarım hazır bekler."
             ),
             "Seviye yükseldikçe azaltma, onarım ve CAN artar; onarım aralığı kısalır.",
@@ -574,7 +574,7 @@ def _mechanic_effect_lines_en(definition_id: str) -> list[str]:
     if definition_id == "armor":
         return [
             f"At the starting level it always reduces incoming damage by {_percent(PASSIVE_REDUCTION_BASE['armor'])}%.",
-            f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it mends its plating and regains {ARMOR_REGEN_BASE} HP; the repair waits ready while it is undamaged.",
+            f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it repairs its damping mechanism and regains {ARMOR_REGEN_BASE} HP; the repair waits ready while it is undamaged.",
             "Leveling up raises the reduction, the repair and HP, and shortens the repair interval.",
             f"Upkeep: {definition.energy_consumption:g} energy/sec.",
         ]

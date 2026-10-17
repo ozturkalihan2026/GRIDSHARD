@@ -1,0 +1,34 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "id": "experience",
+      "path": "client/assets/ui/experience-v1/experience.webp",
+      "bytes": 15006,
+      "width": 192,
+      "height": 192,
+      "alpha": true
+    },
+    {
+      "id": "head",
+      "path": "client/assets/ui/laser-yaw-v1/head.webp",
+      "bytes": 9256,
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "base",
+      "path": "client/assets/ui/laser-yaw-v1/base.webp",
+      "bytes": 15534,
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    }
+  ],
+  "totalBytes": 39796,
+  "preview": "D:\\Projects\\GRIDSHARD\\artifacts\\laser-yaw-v11-20261016\\laser-directions-preview.webp",
+  "browserStarted": false,
+  "serverStarted": false,
+  "realGameplayVerified": false
+}

@@ -17,9 +17,10 @@ assert.ok(css.includes("--wheel-label-radius:82px"));
 assert.ok(css.includes(".daily-meta-wheel.has-result ~ .daily-meta-wheel-focus"));
 assert.ok(css.includes("translateY(-50%)"));
 
-assert.ok(app.includes("const poweredPositions = modules"));
-assert.ok(app.includes("for (const target of poweredPositions)"));
-assert.ok(app.includes("const stepY = Math.sign(target.y - core.y)"));
+// 8A circuit contract; executable routing/lifecycle checks live separately.
+assert.ok(app.includes("function circuitCableRoutes(modules)"));
+assert.ok(app.includes("module.isPowered === false"));
+assert.ok(app.includes("const stepY = Math.sign(target.y - from.y)"));
 assert.ok(app.includes("energizedEdges.add"));
 
 assert.ok(html.includes('data-team-panel="management"'));

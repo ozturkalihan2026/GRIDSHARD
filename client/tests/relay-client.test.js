@@ -94,7 +94,7 @@ function createClient() {
 {
   const fs = require("fs");
   const appSource = fs.readFileSync(path.join(ROOT,"src/canon-data.js"),"utf8");
-  for (const name of ["Güçlendirici", "Darbe Topu", "Zırh", "EMP"]) {
+  for (const name of ["Güçlendirici", "Darbe Topu", "Sönümleyici", "EMP"]) {
     assert.ok(appSource.includes(`"${name}"`));
   }
 }
@@ -3410,7 +3410,7 @@ function createClient() {
     requestJson: async (requestPath, options) => {
       assert.strictEqual(
         requestPath,
-        "/profile/season-player/engagement/tiers/2/claim?chest_delivery=inbox-v1"
+        "/profile/season-player/engagement/tiers/2/claim?chest_delivery=stock-v1"
       );
       assert.strictEqual(options.method, "POST");
       return {

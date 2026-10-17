@@ -50,7 +50,7 @@ test("source integration preserves startup IDs, core motion, cosmetics and share
 });
 
 test("reading is distinct from collection, dismissal, and accepting invitations",()=>{
-  const handler=app.slice(app.indexOf("  function createInboxReadButton("),app.indexOf("  function renderInboxDismissControls("));
+  const handler=app.slice(app.indexOf("  function createInboxReadButton("),app.indexOf("  async function collectInboxRewards("));
   assert.match(handler,/inboxReadStore\.mark\(key\)/);
   assert.match(handler,/markInboxNoticesSeen\(\[item.notice_id\]\)/);
   assert.match(handler,/playerId !== participantPlayerId/);

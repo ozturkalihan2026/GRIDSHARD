@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-16",
+  "mode": "built-in image_gen",
+  "reference": "client/assets/ui/dock-casual-v1/battle-swords-v2.webp",
+  "transparent": true,
+  "assets": [
+    {
+      "id": "core",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-c3117d66-0dd9-4c5d-9ebb-e81a7f24626d.png",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD mobile game UI icon. Input image 1 is STYLE REFERENCE ONLY (approved crossed swords); do not reproduce swords. Create ONE isolated chunky 3D painted cartoon prop with vivid saturated color, strong dark contour, crisp beveled edges, bright upper-left highlights, clean large readable silhouette at 24px. Center full object inside square with 8% transparent padding. Real transparent background. No panel, tile, label, text, watermark, particles, fog, floor or navy blue body. Match reference polish and contrast. Subject: a compact turquoise energy reactor emblem, faceted cyan diamond power crystal captured in a thick silver and gold mechanical hexagonal collar; recognizably a sci-fi circuit core, NOT a currency gem."
+    },
+    {
+      "id": "team",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-700548dd-9125-4520-b61a-5d6f9b6874b7.png",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD mobile game UI icon. Input image 1 is STYLE REFERENCE ONLY (approved crossed swords); do not reproduce swords. Create ONE isolated chunky 3D painted cartoon prop with vivid saturated color, strong dark contour, crisp beveled edges, bright upper-left highlights, clean large readable silhouette at 24px. Center full object inside square with 8% transparent padding. Real transparent background. No panel, tile, label, text, watermark, particles, fog, floor or navy blue body. Match reference polish and contrast. Subject: a violet team banner with a thick gold frame and three sculpted pale silver head-and-shoulder silhouettes, bold simple group silhouette. No lettering."
+    },
+    {
+      "id": "rarity",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-083fd6b5-bfa0-4b5b-87b4-761599a2cf3e.png",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD mobile game UI icon. Input image 1 is STYLE REFERENCE ONLY (approved crossed swords); do not reproduce swords. Create ONE isolated chunky 3D painted cartoon prop with vivid saturated color, strong dark contour, crisp beveled edges, bright upper-left highlights, clean large readable silhouette at 24px. Center full object inside square with 8% transparent padding. Real transparent background. No panel, tile, label, text, watermark, particles, fog, floor or navy blue body. Match reference polish and contrast. Subject: a violet faceted jewel mounted in a small gold six-point metal quality insignia, distinct rarity emblem, not a gift box, not a bag, no ribbons."
+    },
+    {
+      "id": "hp",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-e084521c-c87f-4405-aa11-8f7e1df74b5d.png",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD mobile game UI icon. Input image 1 is STYLE REFERENCE ONLY (approved crossed swords); do not reproduce swords. Create ONE isolated chunky 3D painted cartoon prop with vivid saturated color, strong dark contour, crisp beveled edges, bright upper-left highlights, clean large readable silhouette at 24px. Center full object inside square with 8% transparent padding. Real transparent background. No panel, tile, label, text, watermark, particles, fog, floor or navy blue body. Match reference polish and contrast. Subject: a vivid emerald green heart-shaped armored health capsule with a silver rim, simple strong heart silhouette."
+    },
+    {
+      "id": "damage",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-bcfc6860-c619-448d-b765-a4a562094a2d.png",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD mobile game UI icon. Input image 1 is STYLE REFERENCE ONLY (approved crossed swords); do not reproduce swords. Create ONE isolated chunky 3D painted cartoon prop with vivid saturated color, strong dark contour, crisp beveled edges, bright upper-left highlights, clean large readable silhouette at 24px. Center full object inside square with 8% transparent padding. Real transparent background. No panel, tile, label, text, watermark, particles, fog, floor or navy blue body. Match reference polish and contrast. Subject: a ruby red faceted sharp impact burst with a compact gold mechanical center, represents attack damage."
+    },
+    {
+      "id": "cycle",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-efdcf660-f27c-4b4c-8891-af337ccdca31.png",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD mobile game UI icon. Input image 1 is STYLE REFERENCE ONLY (approved crossed swords); do not reproduce swords. Create ONE isolated chunky 3D painted cartoon prop with vivid saturated color, strong dark contour, crisp beveled edges, bright upper-left highlights, clean large readable silhouette at 24px. Center full object inside square with 8% transparent padding. Real transparent background. No panel, tile, label, text, watermark, particles, fog, floor or navy blue body. Match reference polish and contrast. Subject: a bright electric blue and silver stopwatch with a clear white dial and one thick gold hand, no numbers, compact silhouette."
+    },
+    {
+      "id": "energy",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-0c7ef4aa-7c83-4525-b154-ed26feddc0c9.png",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD mobile game UI icon. Input image 1 is STYLE REFERENCE ONLY (approved crossed swords); do not reproduce swords. Create ONE isolated chunky 3D painted cartoon prop with vivid saturated color, strong dark contour, crisp beveled edges, bright upper-left highlights, clean large readable silhouette at 24px. Center full object inside square with 8% transparent padding. Real transparent background. No panel, tile, label, text, watermark, particles, fog, floor or navy blue body. Match reference polish and contrast. Subject: a vivid cyan lightning bolt held by a small gold electrical contact bracket, clean simple energy silhouette."
+    },
+    {
+      "id": "talent",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-c90ac848-1db7-4890-8daf-eccd676782d0.png",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD mobile game UI icon. Input image 1 is STYLE REFERENCE ONLY (approved crossed swords); do not reproduce swords. Create ONE isolated chunky 3D painted cartoon prop with vivid saturated color, strong dark contour, crisp beveled edges, bright upper-left highlights, clean large readable silhouette at 24px. Center full object inside square with 8% transparent padding. Real transparent background. No panel, tile, label, text, watermark, particles, fog, floor or navy blue body. Match reference polish and contrast. Subject: a large polished gold five-point star with a violet mechanical inset and two small cyan circuit terminals; represents skill mastery."
+    },
+    {
+      "id": "grid",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-33aebb74-61e0-41aa-9686-c4d0a7358c33.png",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD mobile game UI icon. Input image 1 is STYLE REFERENCE ONLY (approved crossed swords); do not reproduce swords. Create ONE isolated chunky 3D painted cartoon prop with vivid saturated color, strong dark contour, crisp beveled edges, bright upper-left highlights, clean large readable silhouette at 24px. Center full object inside square with 8% transparent padding. Real transparent background. No panel, tile, label, text, watermark, particles, fog, floor or navy blue body. Match reference polish and contrast. Subject: four electric blue raised microchips arranged as a compact 2 by 2 grid in silver frames; represents module class, no surrounding tile."
+    },
+    {
+      "id": "guard",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-41afd34e-8c34-40ad-9737-bf0b70cae25c.png",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD mobile game UI icon. Input image 1 is STYLE REFERENCE ONLY (approved crossed swords); do not reproduce swords. Create ONE isolated chunky 3D painted cartoon prop with vivid saturated color, strong dark contour, crisp beveled edges, bright upper-left highlights, clean large readable silhouette at 24px. Center full object inside square with 8% transparent padding. Real transparent background. No panel, tile, label, text, watermark, particles, fog, floor or navy blue body. Match reference polish and contrast. Subject: a bright azure shield with a thick silver beveled edge and small turquoise central hexagon, compact physical defensive insignia."
+    }
+  ]
+}

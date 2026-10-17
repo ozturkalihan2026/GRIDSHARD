@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-16",
+  "package": "8A pose pilot",
+  "bytes": 270620,
+  "laserDirectionPoses": 4,
+  "repairPoses": 2,
+  "placementAndStationaryBars": true,
+  "restoreWithoutResave": true,
+  "oldTenMastersUnchanged": true,
+  "assetAlpha": true,
+  "gameBound": false,
+  "finalRig": false,
+  "vfx": false,
+  "gameTestsRun": false,
+  "browserStarted": false,
+  "serverStarted": false
+}

@@ -1,0 +1,9 @@
+{
+  "mode": "built-in image_gen",
+  "intent": "precise-object-edit",
+  "reference": "client/assets/ui/detail-icons-v1/hp.webp",
+  "source": "C:/Users/SERVER/.codex/generated_images/01a04791-3fa9-7633-b06a-cd2d504f3465/exec-19840dce-6758-4bf5-a73a-6abc24d366a2.png",
+  "runtime": "client/assets/ui/detail-icons-v1/hp-red.webp",
+  "transparent_background": true,
+  "prompt": "Use case: precise-object-edit. Asset type: GRIDSHARD mobile game HP icon. Image 1 is the edit target. Change only the emerald green heart jewel into a vivid ruby/cherry RED heart. Preserve the same chunky heart silhouette, silver beveled metal rim, crisp dark outline, faceted volumetric casual-game rendering, top-left light and high small-size legibility. The heart body must read unmistakably red, not green, pink, purple or orange. Center one standalone icon with a little transparent padding. Genuinely transparent background, preserve alpha. No text, backing square, floor, shadows outside the icon, extra symbols or watermark. Keep the approved reference style, not photorealistic."
+}

@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-16",
+  "package": "8A v3 pose pilot",
+  "previewOnly": true,
+  "gameBound": false,
+  "vfxImplemented": false,
+  "finishedLayeredRig": false,
+  "imagesRedrawnInCode": false,
+  "webpBytes": 244872,
+  "assets": [
+    {
+      "id": "repair-active",
+      "masterSha256": "be5e245ce892016921470d79aa2a11e217055f6823edf86216ad78e2bfbc191d",
+      "masterBytes": 1357856,
+      "webpBytes": 45612,
+      "width": 384,
+      "height": 384,
+      "alpha": true,
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-0537ee3d-3f73-4ae1-a92d-fc1a3b9902a2.png"
+    },
+    {
+      "id": "cooler-swivel",
+      "masterSha256": "b8f916de4b34647ba98b8d75d564eece7abc8418b23b2e228d877a2dd6534bac",
+      "masterBytes": 1608665,
+      "webpBytes": 48016,
+      "width": 384,
+      "height": 384,
+      "alpha": true,
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-9bdb5d89-daab-4238-86a8-9f471f29b366.png"
+    },
+    {
+      "id": "armor-dampener",
+      "masterSha256": "491153cca9f8c5e0aea75f3da3b5193d65f73618ea3f2db524e8914ccb6253a5",
+      "masterBytes": 1367906,
+      "webpBytes": 39956,
+      "width": 384,
+      "height": 384,
+      "alpha": true,
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-22e2722d-c6ce-4b95-a628-dac07fd80939.png"
+    },
+    {
+      "id": "laser-upper-left",
+      "masterSha256": "80d67ce15b5cc84431c9f28253babc11d066dca50a51193f1597dbce5527a5db",
+      "masterBytes": 1283158,
+      "webpBytes": 38920,
+      "width": 384,
+      "height": 384,
+      "alpha": true,
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-1a011c8f-a0c4-4046-a856-b38d111571e0.png"
+    },
+    {
+      "id": "laser-lower-left",
+      "masterSha256": "e90a030aa7e04ab2cd52eda3295959f7021aa04ab233ba56e73f86689536bb5b",
+      "masterBytes": 1205805,
+      "webpBytes": 37202,
+      "width": 384,
+      "height": 384,
+      "alpha": true,
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-7b5d5073-324b-4698-ad6e-8de9e300d48b.png"
+    },
+    {
+      "id": "laser-lower-right",
+      "masterSha256": "d287a59fda0baca1700f39a403270d8d71a99b5ec2bb4a8d7d68f7c733fcb5bd",
+      "masterBytes": 1170897,
+      "webpBytes": 35166,
+      "width": 384,
+      "height": 384,
+      "alpha": true,
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-f8d82560-fcb3-4c7b-a3e6-29fb0111bbd8.png"
+    }
+  ]
+}

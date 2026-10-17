@@ -95,6 +95,17 @@ test("countdown shows 3, 2, 1, unlocks once, cancels and never restarts mid-batt
   assert.equal(timer, null);
 });
 
+test("countdown keeps its input gate but neither its overlay nor its numeral paints a dark plate",()=>{
+  const css=fs.readFileSync(path.join(__dirname,"../src/battle-utility-v7.css"),"utf8");
+  const base=fs.readFileSync(path.join(__dirname,"../src/canon.css"),"utf8");
+  const overlay=css.match(/#battle-start-countdown\s*\{([^}]+)\}/)[1];
+  const numeral=css.match(/#battle-start-countdown strong\s*\{([^}]+)\}/)[1];
+  assert.match(overlay,/background:transparent/);assert.match(overlay,/backdrop-filter:none/);
+  assert.match(numeral,/background:transparent/);assert.match(numeral,/box-shadow:none/);assert.match(numeral,/clip-path:none/);
+  assert.match(base,/\.battle-start-countdown\s*\{[^}]*pointer-events:auto/);
+  assert.match(base,/\.battle-start-countdown\[hidden\]\s*\{ display:none/);
+});
+
 test("a stale reconnect snapshot cannot discard fresh destruction events", () => {
   const renders = [], remembered = [];
   const queue = new GridshardBattlePresentationQueue({requestFrame:() => 1, cancelFrame:() => {},

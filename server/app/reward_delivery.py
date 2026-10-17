@@ -117,7 +117,7 @@ def queue_purchase_notice(profile, receipt: dict, *, product_name: str, product_
         return
     profile.reward_inbox.append({
         "message_id": identity, "category": "purchase", "status": "delivered", "source": "store",
-        "title_tr": f"Satın alım tamamlandı · {product_name}",
+        "title_tr": "Satın alım tamamlandı", "product_name_tr": product_name,
         "body_tr": "Satın alımın doğrulandı ve hesabına işlendi.", "product_id": product_id,
         "created_at": receipt.get("purchased_at"),
     })
@@ -138,6 +138,10 @@ def mailbox_messages(profile) -> tuple[list[dict], list[dict]]:
     dismissed = set(profile.dismissed_inbox_notice_ids)
     for item in reversed(profile.reward_inbox):
         if item.get("category") == "purchase":
+            # Historical soft-currency chest notices are kept as private
+            # witnesses, not displayed as real-money purchase messages.
+            if item.get("product_id") in TIER_DEFINITIONS.values():
+                continue
             if item.get("message_id") in dismissed:
                 continue
             if len(purchases) < MAILBOX_AREA_LIMIT:

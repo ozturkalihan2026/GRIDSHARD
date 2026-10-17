@@ -1,0 +1,41 @@
+{
+  "tool": "built-in imagegen",
+  "transparent": true,
+  "jobs": [
+    {
+      "key": "pulse_cannon-sw",
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target. Change ONLY the yaw/arm pose as specified. Keep same device identity, proportions, saturated colors, silver bevels, thick dark edges, upper-left lighting, same elevated camera. One isolated upper PART on genuine transparent alpha; no base, text, card, beam or particles. Yaw the barrel assembly to face screen LOWER LEFT. The open amber circular muzzle must be near the lower-left corner, the back of the gun near upper-right. Current pointing upper-right is WRONG. Do not mirror vertically or rotate the whole picture; draw the reverse yaw view.",
+      "reference": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-039ef0d5-dc3c-49dc-a23c-d310a5d892f2.png"
+    },
+    {
+      "key": "cooler-ne",
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target. Change ONLY the yaw/arm pose as specified. Keep same device identity, proportions, saturated colors, silver bevels, thick dark edges, upper-left lighting, same elevated camera. One isolated upper PART on genuine transparent alpha; no base, text, card, beam or particles. Yaw the fan body so its airflow outlet faces screen UPPER RIGHT, away from the camera. Show primarily the BACK ventilation panel and the other side, NOT the front circular fan. Fan outlet is on the far upper-right face. Keep short lower swivel neck, no pedestal.",
+      "reference": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-bea5cad4-f306-471c-b2a4-f0acfd8eccdd.png"
+    },
+    {
+      "key": "repair-se-work",
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target. Change ONLY the yaw/arm pose as specified. Keep same device identity, proportions, saturated colors, silver bevels, thick dark edges, upper-left lighting, same elevated camera. One isolated upper PART on genuine transparent alpha; no base, text, card, beam or particles. Raise BOTH articulated arms above shoulder height. Extend repair nozzle forward toward screen LOWER RIGHT at same target as eye. Pincer high and open. Preserve camera/body size. No beam. This must be clearly different from lowered-rest pose.",
+      "reference": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-713cbd5f-5d90-4593-bdba-4e5e07a54836.png"
+    },
+    {
+      "key": "repair-sw",
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target. Change ONLY the yaw/arm pose as specified. Keep same device identity, proportions, saturated colors, silver bevels, thick dark edges, upper-left lighting, same elevated camera. One isolated upper PART on genuine transparent alpha; no base, text, card, beam or particles. Yaw torso so eye/front and repair nozzle both face screen LOWER LEFT, toward camera. Rest pose arms lowered. Tool nozzle must be on left aimed lower-left, not lower-right. Keep green torso identity. No tracks.",
+      "reference": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-a08fca36-30f5-4916-b6c8-e0a725a25b17.png"
+    },
+    {
+      "key": "cooler-se",
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target. Change ONLY the yaw/arm pose as specified. Keep same device identity, proportions, saturated colors, silver bevels, thick dark edges, upper-left lighting, same elevated camera. One isolated upper PART on genuine transparent alpha; no base, text, card, beam or particles. Yaw the fan body so the circular fan outlet faces screen LOWER RIGHT. The round cyan fan is visibly on the RIGHT front face, NOT on the left. Cyan pipe should appear on the other side. Keep short lower swivel neck, no pedestal.",
+      "reference": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-a80c47d4-5176-4d34-98be-4723a3656f4d.png"
+    },
+    {
+      "key": "repair-sw-work",
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target. Change ONLY the yaw/arm pose as specified. Keep same device identity, proportions, saturated colors, silver bevels, thick dark edges, upper-left lighting, same elevated camera. One isolated upper PART on genuine transparent alpha; no base, text, card, beam or particles. Yaw torso so eye/front and repair nozzle both face screen LOWER LEFT. Raise BOTH arms above shoulders, pincer high/open, nozzle extends lower-left. Tool nozzle must be on left not lower-right. No tracks, no beam.",
+      "reference": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-9df357c8-387b-4c8e-8ec5-2a06be76cae2.png"
+    },
+    {
+      "key": "repair-ne",
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target. Change ONLY the yaw/arm pose as specified. Keep same device identity, proportions, saturated colors, silver bevels, thick dark edges, upper-left lighting, same elevated camera. One isolated upper PART on genuine transparent alpha; no base, text, card, beam or particles. Yaw torso so the eye/front and repair nozzle both aim UPPER RIGHT, away from camera. Show more of back-left torso. Resting arms are lowered but nozzle points upper-right, never lower-right. Remove all tracks/lower chassis.",
+      "reference": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-2b002be2-e3c7-4296-ba2e-e586424201f3.png"
+    }
+  ]
+}

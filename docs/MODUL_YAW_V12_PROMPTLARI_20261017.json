@@ -1,0 +1,141 @@
+{
+  "mode": "built-in image_gen",
+  "date": "2026-10-17",
+  "camera": "runtime layered 2.5D, 30 degrees from overhead",
+  "assets": [
+    {
+      "id": "shield",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD layered 2.5D battlefield texture. Image 1 is ONLY the approved physical device DESIGN and STYLE reference. Produce ONE isolated rotating upper assembly (no base/platform/feet), in STRICT ORTHOGRAPHIC TOP PLAN view. It will be rendered on raised layers and viewed by the game's 30-degree tilted camera, therefore do NOT bake camera tilt or perspective into this texture. Keep exact reference saturated class colors, chunky silver beveled metal, strong dark outline, clean broad highlights and very readable mobile-game silhouette. Mechanical rotation center must be at canvas center (50%,50%). Compact full silhouette must stay within radius40% around center, with generous genuine transparent padding. If directional, point nozzle/barrel/arms towards RIGHT, muzzle on horizontal centerline near (85%,50%). No text, border, scene, glow haze, floor shadow, projected beam, explosions, base or stand. Subject: blue/silver shield field projector with central cyan glass energy dome seen directly from above, four silver power contacts; retain cyan hexagonal dome facets.",
+      "ref": "D:/Projects/GRIDSHARD/client/assets/ui/modules-physical-v1/shield.webp",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-eb591ad3-a1d0-40f2-8c60-1ca8dc39f1d9.png",
+      "registration": {
+        "pivot": [
+          128,
+          128
+        ]
+      }
+    },
+    {
+      "id": "battery",
+      "prompt": "Use case: precise-object-edit. Image 1 is edit target. Preserve its vivid painted silver beveled metal, class color and dark contour, but FIX VIEW to a strict vertical top orthographic surface texture for a rotating 2.5D game machine. This is NOT the final camera view: game renderer adds a tilted camera. Therefore no baked side view, no isometric tilt and no front-facing vertical surfaces. THREE round amber/gold battery CELL CAPS seen from vertically above, in one row, all cells look like round discs, on a compact turquoise upper housing. ZERO visible tall cylinder bodies. Use gold metal bridge between cap centers. The assembly center is canvas center. Single compact object entirely within circle radius40% around canvas center. Genuine transparent square background. No text, no grid, no shadows on floor, no effects.",
+      "ref": "D:/Projects/GRIDSHARD/client/assets/ui/modules-physical-v1/battery.webp",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-b26da7ce-557d-4355-a295-e9213e724f1f.png",
+      "previous_source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-c93b11bf-e92b-4c80-bc24-43bd658df962.png",
+      "previous_prompt": "Use case: stylized-concept. Asset type: GRIDSHARD layered 2.5D battlefield texture. Image 1 is ONLY the approved physical device DESIGN and STYLE reference. Produce ONE isolated rotating upper assembly (no base/platform/feet), in STRICT ORTHOGRAPHIC TOP PLAN view. It will be rendered on raised layers and viewed by the game's 30-degree tilted camera, therefore do NOT bake camera tilt or perspective into this texture. Keep exact reference saturated class colors, chunky silver beveled metal, strong dark outline, clean broad highlights and very readable mobile-game silhouette. Mechanical rotation center must be at canvas center (50%,50%). Compact full silhouette must stay within radius40% around center, with generous genuine transparent padding. If directional, point nozzle/barrel/arms towards RIGHT, muzzle on horizontal centerline near (85%,50%). No text, border, scene, glow haze, floor shadow, projected beam, explosions, base or stand. Subject: a turquoise/gold battery assembly with THREE large amber energy-cell tops, silver rims and bright gold electrical bridge terminals, read as a physical battery from above.",
+      "registration": {
+        "pivot": [
+          126,
+          128
+        ]
+      }
+    },
+    {
+      "id": "amplifier",
+      "prompt": "Use case: precise-object-edit. Image 1 is edit target. Preserve its vivid painted silver beveled metal, class color and dark contour, but FIX VIEW to a strict vertical top orthographic surface texture for a rotating 2.5D game machine. This is NOT the final camera view: game renderer adds a tilted camera. Therefore no baked side view, no isometric tilt and no front-facing vertical surfaces. TWO round bright green capacitor/coil CAPS seen from vertically above, one above and one below canvas center. Gold concentric winding rings around each cap, NOT tall spring columns. Short green/silver contact extensions point right. All terminal tops are circular, not elliptical side views. Single compact object entirely within circle radius40% around canvas center. Genuine transparent square background. No text, no grid, no shadows on floor, no effects.",
+      "ref": "D:/Projects/GRIDSHARD/client/assets/ui/modules-physical-v1/amplifier.webp",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-4bac6946-baf3-45e8-a951-2feffcb21458.png",
+      "previous_source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-7e70901b-c524-4452-9bad-71f396261b3f.png",
+      "previous_prompt": "Use case: stylized-concept. Asset type: GRIDSHARD layered 2.5D battlefield texture. Image 1 is ONLY the approved physical device DESIGN and STYLE reference. Produce ONE isolated rotating upper assembly (no base/platform/feet), in STRICT ORTHOGRAPHIC TOP PLAN view. It will be rendered on raised layers and viewed by the game's 30-degree tilted camera, therefore do NOT bake camera tilt or perspective into this texture. Keep exact reference saturated class colors, chunky silver beveled metal, strong dark outline, clean broad highlights and very readable mobile-game silhouette. Mechanical rotation center must be at canvas center (50%,50%). Compact full silhouette must stay within radius40% around center, with generous genuine transparent padding. If directional, point nozzle/barrel/arms towards RIGHT, muzzle on horizontal centerline near (85%,50%). No text, border, scene, glow haze, floor shadow, projected beam, explosions, base or stand. Subject: green/silver twin-coil amplifier, two green capacitor tops side by side vertically in plan view, copper/gold winding details between, a pair of small emission contacts directed right.",
+      "registration": {
+        "pivot": [
+          114,
+          131
+        ]
+      }
+    },
+    {
+      "id": "emp",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD layered 2.5D battlefield texture. Image 1 is ONLY the approved physical device DESIGN and STYLE reference. Produce ONE isolated rotating upper assembly (no base/platform/feet), in STRICT ORTHOGRAPHIC TOP PLAN view. It will be rendered on raised layers and viewed by the game's 30-degree tilted camera, therefore do NOT bake camera tilt or perspective into this texture. Keep exact reference saturated class colors, chunky silver beveled metal, strong dark outline, clean broad highlights and very readable mobile-game silhouette. Mechanical rotation center must be at canvas center (50%,50%). Compact full silhouette must stay within radius40% around center, with generous genuine transparent padding. If directional, point nozzle/barrel/arms towards RIGHT, muzzle on horizontal centerline near (85%,50%). No text, border, scene, glow haze, floor shadow, projected beam, explosions, base or stand. Subject: violet/silver EMP assembly, two curved purple arms around a bright magenta central power coil, paired purple emitter eyes facing right. Viewed strictly from above, no platform.",
+      "ref": "D:/Projects/GRIDSHARD/client/assets/ui/modules-physical-v1/emp.webp",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-bc7f3961-5f9d-4cc6-9162-fdce6c75af76.png",
+      "registration": {
+        "pivot": [
+          132,
+          128
+        ]
+      }
+    },
+    {
+      "id": "repair",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD layered 2.5D battlefield texture. Image 1 is ONLY the approved physical device DESIGN and STYLE reference. Produce ONE isolated rotating upper assembly (no base/platform/feet), in STRICT ORTHOGRAPHIC TOP PLAN view. It will be rendered on raised layers and viewed by the game's 30-degree tilted camera, therefore do NOT bake camera tilt or perspective into this texture. Keep exact reference saturated class colors, chunky silver beveled metal, strong dark outline, clean broad highlights and very readable mobile-game silhouette. Mechanical rotation center must be at canvas center (50%,50%). Compact full silhouette must stay within radius40% around center, with generous genuine transparent padding. If directional, point nozzle/barrel/arms towards RIGHT, muzzle on horizontal centerline near (85%,50%). No text, border, scene, glow haze, floor shadow, projected beam, explosions, base or stand. Subject: emerald/silver autonomous repair robot upper body and two articulated repair arms pointing right. The body rotation joint is the center. Small mint lens at center; one right arm is a repair beam emitter. No tracks/legs/platform.",
+      "ref": "D:/Projects/GRIDSHARD/client/assets/ui/modules-physical-v1/repair.webp",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-0c75bc37-a033-4f76-b128-89c73511deb2.png",
+      "registration": {
+        "pivot": [
+          109,
+          128
+        ]
+      }
+    },
+    {
+      "id": "armor",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD layered 2.5D battlefield texture. Image 1 is ONLY the approved physical device DESIGN and STYLE reference. Produce ONE isolated rotating upper assembly (no base/platform/feet), in STRICT ORTHOGRAPHIC TOP PLAN view. It will be rendered on raised layers and viewed by the game's 30-degree tilted camera, therefore do NOT bake camera tilt or perspective into this texture. Keep exact reference saturated class colors, chunky silver beveled metal, strong dark outline, clean broad highlights and very readable mobile-game silhouette. Mechanical rotation center must be at canvas center (50%,50%). Compact full silhouette must stay within radius40% around center, with generous genuine transparent padding. If directional, point nozzle/barrel/arms towards RIGHT, muzzle on horizontal centerline near (85%,50%). No text, border, scene, glow haze, floor shadow, projected beam, explosions, base or stand. Subject: azure blue/silver damping defense assembly with a central cyan absorption port surrounded by blue armor panels. Physical compact damper, not clothing, no stand.",
+      "ref": "D:/Projects/GRIDSHARD/client/assets/ui/modules-physical-v1/armor.webp",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-15becdfa-5fb3-447e-8f3c-0c68a10fd280.png",
+      "registration": {
+        "pivot": [
+          128,
+          128
+        ]
+      }
+    },
+    {
+      "id": "cooler",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD layered 2.5D battlefield texture. Image 1 is ONLY the approved physical device DESIGN and STYLE reference. Produce ONE isolated rotating upper assembly (no base/platform/feet), in STRICT ORTHOGRAPHIC TOP PLAN view. It will be rendered on raised layers and viewed by the game's 30-degree tilted camera, therefore do NOT bake camera tilt or perspective into this texture. Keep exact reference saturated class colors, chunky silver beveled metal, strong dark outline, clean broad highlights and very readable mobile-game silhouette. Mechanical rotation center must be at canvas center (50%,50%). Compact full silhouette must stay within radius40% around center, with generous genuine transparent padding. If directional, point nozzle/barrel/arms towards RIGHT, muzzle on horizontal centerline near (85%,50%). No text, border, scene, glow haze, floor shadow, projected beam, explosions, base or stand. Subject: green/silver cooling fan and heat-exchanger head, circular cyan fan visible from above with four broad blades, short right-facing cold-air duct. No pedestal.",
+      "ref": "D:/Projects/GRIDSHARD/client/assets/ui/modules-physical-v1/cooler.webp",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-16e54a2f-e308-4523-bee9-9f47bda78683.png",
+      "registration": {
+        "pivot": [
+          116,
+          128
+        ]
+      }
+    },
+    {
+      "id": "pulse_cannon",
+      "prompt": "Use case: precise-object-edit. Image 1 is edit target. Preserve its vivid painted silver beveled metal, class color and dark contour, but FIX VIEW to a strict vertical top orthographic surface texture for a rotating 2.5D game machine. This is NOT the final camera view: game renderer adds a tilted camera. Therefore no baked side view, no isometric tilt and no front-facing vertical surfaces. Red/silver turret upper dome with ONE rectangular stout laser/pulse BARREL extending directly right. Center bearing at exactly canvas 50%,50%. Muzzle at 88%,50%. You MUST NOT see a round front-facing opening on the right; from true top view the muzzle is a thin orange vertical END SLIT. Symmetric barrel top and bottom. No feet, base or pedestal. Single compact object entirely within circle radius40% around canvas center. Genuine transparent square background. No text, no grid, no shadows on floor, no effects.",
+      "ref": "D:/Projects/GRIDSHARD/client/assets/ui/modules-physical-v1/pulse_cannon.webp",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-844d4cab-ec18-4ee7-b883-574cc45049d4.png",
+      "previous_source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-24670e8f-ec36-487b-b23e-2e6459834e60.png",
+      "previous_prompt": "Use case: stylized-concept. Asset type: GRIDSHARD layered 2.5D battlefield texture. Image 1 is ONLY the approved physical device DESIGN and STYLE reference. Produce ONE isolated rotating upper assembly (no base/platform/feet), in STRICT ORTHOGRAPHIC TOP PLAN view. It will be rendered on raised layers and viewed by the game's 30-degree tilted camera, therefore do NOT bake camera tilt or perspective into this texture. Keep exact reference saturated class colors, chunky silver beveled metal, strong dark outline, clean broad highlights and very readable mobile-game silhouette. Mechanical rotation center must be at canvas center (50%,50%). Compact full silhouette must stay within radius40% around center, with generous genuine transparent padding. If directional, point nozzle/barrel/arms towards RIGHT, muzzle on horizontal centerline near (85%,50%). No text, border, scene, glow haze, floor shadow, projected beam, explosions, base or stand. Subject: red/silver large bore pulse cannon upper assembly. Circular red bearing centered on canvas, short thick barrel extending right ending at the centerline. Gold/orange energy chamber behind it. No stand.",
+      "registration": {
+        "pivot": [
+          107,
+          126
+        ],
+        "muzzle": [
+          222,
+          126
+        ]
+      }
+    },
+    {
+      "id": "missile_launcher",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD layered 2.5D battlefield texture. Image 1 is ONLY the approved physical device DESIGN and STYLE reference. Produce ONE isolated rotating upper assembly (no base/platform/feet), in STRICT ORTHOGRAPHIC TOP PLAN view. It will be rendered on raised layers and viewed by the game's 30-degree tilted camera, therefore do NOT bake camera tilt or perspective into this texture. Keep exact reference saturated class colors, chunky silver beveled metal, strong dark outline, clean broad highlights and very readable mobile-game silhouette. Mechanical rotation center must be at canvas center (50%,50%). Compact full silhouette must stay within radius40% around center, with generous genuine transparent padding. If directional, point nozzle/barrel/arms towards RIGHT, muzzle on horizontal centerline near (85%,50%). No text, border, scene, glow haze, floor shadow, projected beam, explosions, base or stand. Subject: red/silver missile launcher rotating upper rack, THREE silver missiles with ruby red noses pointing right, aligned horizontally. Gold pivot bearing in the center. No stand.",
+      "ref": "D:/Projects/GRIDSHARD/client/assets/ui/modules-physical-v1/missile_launcher.webp",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-5adbeb68-b8d9-44a7-9ea0-c813b31778d6.png",
+      "registration": {
+        "pivot": [
+          83,
+          128
+        ],
+        "muzzle": [
+          223,
+          128
+        ]
+      }
+    },
+    {
+      "id": "base",
+      "prompt": "Use case: stylized-concept. Asset type: GRIDSHARD layered 2.5D battlefield texture. Image 1 is ONLY the approved physical device DESIGN and STYLE reference. Produce ONE isolated rotating upper assembly (no base/platform/feet), in STRICT ORTHOGRAPHIC TOP PLAN view. It will be rendered on raised layers and viewed by the game's 30-degree tilted camera, therefore do NOT bake camera tilt or perspective into this texture. Keep exact reference saturated class colors, chunky silver beveled metal, strong dark outline, clean broad highlights and very readable mobile-game silhouette. Mechanical rotation center must be at canvas center (50%,50%). Compact full silhouette must stay within radius40% around center, with generous genuine transparent padding. If directional, point nozzle/barrel/arms towards RIGHT, muzzle on horizontal centerline near (85%,50%). No text, border, scene, glow haze, floor shadow, projected beam, explosions, base or stand. Subject: a SINGLE neutral circular mechanical mounting base viewed from strict above, graphite and silver broad bevel panels with tiny gold contacts and four short symmetric stabilizer pads, centered exactly. No colored device, NO gun, NO upper assembly.",
+      "ref": "D:/Projects/GRIDSHARD/client/assets/ui/laser-yaw-v1/base.webp",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-cc45b6e5-0784-40df-ad4c-c4ea7d94a89f.png",
+      "registration": {
+        "pivot": [
+          128,
+          128
+        ]
+      }
+    }
+  ]
+}

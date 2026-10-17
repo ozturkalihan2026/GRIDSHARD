@@ -26,7 +26,7 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"shardglass-seamless-v15",
+    version:"shardglass-seamless-v17",
     crossfadeMs:1200,
     menuPoolCrossfadeMs:480,
     resultCrossfadeMs:320,
@@ -50,8 +50,10 @@
     // v15: +0.8 dB battle music, -1.2 dB combat SFX. Keep the combat
     // attenuation through the result so an explosion tail cannot jump up.
     // Result stings have their own -5.2 dB trim and 320 ms soft attack.
+    // v17: effects another ~2.8 dB behind the music. Laser also gets its own
+    // quiet, short tonal pulse, not the previous sustained noisy sizzle.
     battleMusicGain:2.85,
-    battleSfxGain:0.28,
+    battleSfxGain:0.16,
     resultMusicGain:0.55,
     battlePriorityCueGain:1.4,
     sfxCompressor:Object.freeze({ threshold:-20, knee:12, ratio:4, attack:.004, release:.22 }),
@@ -239,13 +241,22 @@
   });
 
   const GRIDSHARD_SFX_CUES = Object.freeze({
+    cooling_air:{
+      asset:"./assets/audio/cooling_air.wav",
+      identity:"kısa, yumuşak soğuk hava üflemesi",
+    },
+    repair_beam:{
+      asset:"./assets/audio/repair_beam.wav",
+      identity:"odaklanan yeşil onarım ışını",
+    },
     energy_transfer:{
       asset:"./assets/audio/energy_transfer.wav",
       identity:"kısa dijital akım",
     },
     laser_fire:{
-      asset:"./assets/audio/laser_fire.wav",
-      identity:"ince kapasitör dolumu → keskin foton boşalması",
+      asset:"./assets/audio/laser_pulse_v2.wav",
+      gain:0.65,
+      identity:"kısa ve yumuşak enerji darbesi; uzun cızırtı ve metalik çınlama yok",
     },
     pulse_cannon_fire:{
       asset:"./assets/audio/pulse_cannon_fire.wav",
@@ -256,8 +267,24 @@
       identity:"manyetik ray yükselişi → metalik kırbaç",
     },
     missile_fire:{
-      asset:"./assets/audio/missile_fire.wav",
-      identity:"ateşleyici klik → roket motoru fırlayışı",
+      asset:"./assets/audio/rocket_launch.wav",
+      identity:"basınçlı roket motoru ve kısa hava yarılması",
+    },
+    missile_explosion:{
+      asset:"./assets/audio/missile_explosion.wav",
+      identity:"tok basınç patlaması ve kısa enkaz kuyruğu",
+    },
+    kinetic_hit:{
+      asset:"./assets/audio/kinetic_hit.wav",
+      identity:"kısa tok gövde darbesi, tonal çınlama yok",
+    },
+    electrical_hit:{
+      asset:"./assets/audio/electrical_hit.wav",
+      identity:"kısa elektrik arkı ve yüzey çatırdaması",
+    },
+    shield_absorb:{
+      asset:"./assets/audio/shield_absorb.wav",
+      identity:"plazma kalkanına emilen enerji, camsı zil sesi yok",
     },
     drone_fire:{
       asset:"./assets/audio/drone_fire.wav",
@@ -284,8 +311,8 @@
       identity:"derin bass transient + elektrik çatlağı",
     },
     module_hit:{
-      asset:"./assets/audio/energy_transfer.wav",
-      identity:"kısa gövde darbesi + elektrik boşalması",
+      asset:"./assets/audio/kinetic_hit.wav",
+      identity:"yedek tok gövde darbesi; akım aktarım sesi değil",
     },
     // Beta.72 — imza ipuçları. Yeni ses dosyası yoktur; her ad mevcut bir
     // varlığa bağlanır, böylece mobil ogg/m4a seçimi aynen çalışır.
@@ -732,10 +759,11 @@
     // Savaşta önemli olaylar (çekirdek isabeti, yok etme, uyarı…) kısılmış
     // rutin efektlerin ve müziğin üstünde duyulur.
     _cueGain(name) {
-      return GRIDSHARD_BATTLE_STATE_LAYERS[this.state]
+      const trim = Math.max(0, Math.min(1, Number(GRIDSHARD_SFX_CUES[name]?.gain ?? 1)));
+      return trim * (GRIDSHARD_BATTLE_STATE_LAYERS[this.state]
         && GRIDSHARD_SFX_VOICE_LIMIT.priorityCues.includes(name)
         ? GRIDSHARD_AUDIO_MIX.battlePriorityCueGain
-        : 1;
+        : 1);
     }
 
     // Efekt çalınacaksa true döner ve zamanını kaydeder.

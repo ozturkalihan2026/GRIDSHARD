@@ -1,0 +1,12 @@
+{
+  "date":"2026-10-16",
+  "status":"four-heading pose pilot; preview only, not a finished layered rig",
+  "reference":"artifacts/visual-refresh-pack08a-20261016/rev2-physical/masters/laser-v2.png",
+  "originalHeading":"upper-right",
+  "sharedPrompt":"Use case: precise-object-edit. Image 1 is the EDIT TARGET: our original red GRIDSHARD laser turret. Produce ONE matching direction pose of exactly the same physical device. Keep the lower fixed circular base, feet, their locations, footprint, scale, canvas, shallow three-quarter camera, red/silver/graphite materials, lighting style and transparent background unchanged. Do not rotate the whole image or base. ONLY the laser weapon assembly above the central yaw bearing rotates around the vertical axis, as a turret physically aiming horizontally at another cell. Reconstruct the appropriate visible faces of the SAME weapon housing/barrel/power conduit for that yaw direction; do not replace it with a new gun. The mounted blaster stays level in world space with no elevation change; a clear barrel axis must point to the requested screen direction. Entire unit stays fully visible with clear margin, no muzzle beam, shot, smoke, target, direction arrow, ground shadow, text, background or extra objects. Genuine transparent alpha. This is one key direction frame, not a sprite sheet. Requested screen direction: ",
+  "poses":[
+    {"id":"laser-upper-left","direction":"upper-left (northwest on screen). Keep the exact same fixed feet; rotate only the upper weapon to aim toward the upper-left, visibly showing the appropriate rear/side housing."},
+    {"id":"laser-lower-left","direction":"lower-left (southwest on screen, toward the viewer-left). Keep the exact same fixed feet; show the muzzle aimed diagonally lower-left and proper foreshortened front/side gun faces."},
+    {"id":"laser-lower-right","direction":"lower-right (southeast on screen, toward the viewer-right). Keep the exact same fixed feet; show the muzzle aimed diagonally lower-right and proper foreshortened front/side gun faces."}
+  ]
+}

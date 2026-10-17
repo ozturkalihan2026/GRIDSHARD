@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import pytest
 
 from fastapi.testclient import TestClient
 
@@ -256,3 +257,49 @@ def test_season_chest_tier_delivers_then_collects_opens_and_persists_reward(monk
     collected = gateway.claim_reward_inbox_item(player_id, delivery["message_id"], gateway.MetaOperationRequest(request_id="collect-season"))
     opened = gateway.open_player_progression_chest(player_id, collected["receipt"]["chest"]["chest_id"], gateway.MetaOperationRequest(request_id="open-season"))
     assert opened["receipt"]["rewards"]["circuit_credits"] > 0
+
+
+@pytest.mark.parametrize("premium", [False, True])
+@pytest.mark.parametrize("tier", [2, 5, 10])
+def test_stock_v1_tier_endpoint_keeps_only_embedded_crates_closed_and_replay_stable(monkeypatch, premium, tier):
+    player_id = f"season-stock-endpoint-{premium}-{tier}"
+    repository = InMemoryPlayerDataRepository()
+    monkeypatch.setattr(gateway, "player_data_repository", repository)
+    monkeypatch.setattr(gateway.player_data_store_service, "repository", repository)
+    profile = gateway.player_profile_service.get_or_create(player_id)
+    profile.season_xp = SEASON_REWARD_TRACK[tier - 1]["required_xp"]
+    if premium:
+        gateway.process_purchase(profile, "season_pass_premium", "test", "stock-premium-test", test_mode=True, now_iso="2026-10-16T19:00:00+00:00")
+    client = TestClient(gateway.app)
+    path = f"/profile/{player_id}/engagement/tiers/{tier}/{'premium/' if premium else ''}claim?chest_delivery=stock-v1"
+    credits_before = profile.circuit_credits
+    response = client.post(path, json={"request_id":f"stock-endpoint-{tier}"})
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    deliveries = [item for item in (payload["season_chest_deliveries"] if premium else [payload["season_chest_delivery"]]) if item]
+    assert bool(deliveries) == bool(SEASON_REWARD_TRACK[tier - 1]["chest_tier"])
+    assert all(item["delivery"] == "inventory" for item in deliveries)
+    # The outer season reward is opened/applied now, never stocked. Only its
+    # explicit nested crate remains closed; no extra random crate loot yet.
+    assert profile.circuit_credits == credits_before + payload["season_reward_receipt"]["circuit_credits"]
+    assert len(profile.chest_slots) == len(deliveries) and not profile.chest_receipts
+    assert all(item["status"] == "claimed" for item in profile.reward_inbox)
+    before = (profile.circuit_credits, profile.flux_shards, dict(profile.module_shards), list(profile.chest_slots))
+    replay = client.post(path, json={"request_id":f"stock-endpoint-{tier}"})
+    assert replay.status_code == 200
+    assert before == (profile.circuit_credits, profile.flux_shards, profile.module_shards, profile.chest_slots)
+
+
+@pytest.mark.parametrize("premium", [False, True])
+def test_unknown_season_delivery_rejects_before_any_reward_or_claim_mutation(monkeypatch, premium):
+    repository = InMemoryPlayerDataRepository()
+    monkeypatch.setattr(gateway.player_data_store_service, "repository", repository)
+    player_id = f"unknown-season-protocol-{premium}"
+    profile = gateway.player_profile_service.get_or_create(player_id)
+    profile.season_xp = SEASON_REWARD_TRACK[4]["required_xp"]
+    before = (profile.circuit_credits, profile.flux_shards, dict(profile.engagement_claim_receipts), list(profile.chest_slots))
+    path = f"/profile/{player_id}/engagement/tiers/5/{'premium/' if premium else ''}claim?chest_delivery=unsupported-v999"
+    response = TestClient(gateway.app).post(path, json={"request_id":"must-not-consume"})
+    assert response.status_code == 422
+    assert before == (profile.circuit_credits, profile.flux_shards, profile.engagement_claim_receipts, profile.chest_slots)
+    assert gateway._uses_chest_mailbox("stock-v1") is True

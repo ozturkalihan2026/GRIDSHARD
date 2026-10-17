@@ -1,0 +1,141 @@
+{
+  "passed": true,
+  "date": "2026-10-17",
+  "legacyAssetLibraryOnly": true,
+  "runtime": false,
+  "supersededBy": "module-camera-v13-audit-20261017.json",
+  "cameraDegreesFromOverhead": 30,
+  "renderer": "superseded shallow layers",
+  "true3D": false,
+  "yawSupportedDevices": 10,
+  "newFiles": 10,
+  "newBytes": 141910,
+  "registeredAndUnclipped": true,
+  "webNativeAllowlist": true,
+  "browserStarted": false,
+  "serverRestarted": false,
+  "realGameplayVerified": false,
+  "fpsMeasured": false,
+  "files": [
+    {
+      "id": "shield",
+      "bytes": 17594,
+      "alpha": true,
+      "radius": 94.89467845985885,
+      "quadrants": [
+        5982,
+        5990,
+        6008,
+        5995
+      ]
+    },
+    {
+      "id": "battery",
+      "bytes": 12660,
+      "alpha": true,
+      "radius": 103.8123306741545,
+      "quadrants": [
+        3520,
+        3656,
+        3851,
+        4020
+      ]
+    },
+    {
+      "id": "amplifier",
+      "bytes": 16330,
+      "alpha": true,
+      "radius": 107.82393055347222,
+      "quadrants": [
+        3460,
+        5046,
+        3434,
+        5099
+      ]
+    },
+    {
+      "id": "emp",
+      "bytes": 16470,
+      "alpha": true,
+      "radius": 96.26006440887103,
+      "quadrants": [
+        5244,
+        4845,
+        5152,
+        4868
+      ]
+    },
+    {
+      "id": "repair",
+      "bytes": 12716,
+      "alpha": true,
+      "radius": 110.16805344563369,
+      "quadrants": [
+        2001,
+        4183,
+        2005,
+        3539
+      ]
+    },
+    {
+      "id": "armor",
+      "bytes": 14666,
+      "alpha": true,
+      "radius": 89.10667763978186,
+      "quadrants": [
+        5020,
+        5082,
+        5142,
+        5093
+      ]
+    },
+    {
+      "id": "cooler",
+      "bytes": 15582,
+      "alpha": true,
+      "radius": 110.2905254316979,
+      "quadrants": [
+        4804,
+        6328,
+        4842,
+        6626
+      ]
+    },
+    {
+      "id": "pulse_cannon",
+      "bytes": 14430,
+      "alpha": true,
+      "radius": 111.80339887498947,
+      "quadrants": [
+        3467,
+        5586,
+        3729,
+        6017
+      ]
+    },
+    {
+      "id": "missile_launcher",
+      "bytes": 10392,
+      "alpha": true,
+      "radius": 106.04244433244642,
+      "quadrants": [
+        940,
+        4390,
+        940,
+        4373
+      ]
+    },
+    {
+      "id": "base",
+      "bytes": 11070,
+      "alpha": true,
+      "radius": 83.02409288875127,
+      "quadrants": [
+        3783,
+        3798,
+        3901,
+        3909
+      ]
+    }
+  ]
+}

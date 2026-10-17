@@ -78,7 +78,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
   },
   {
     "id": "armor",
-    "name_tr": "Zırh",
+    "name_tr": "Sönümleyici",
     "category": "savunma",
     "rarity": "common",
     "unlock_arena": 2,

@@ -1,0 +1,188 @@
+{
+  "date": "2026-10-17",
+  "mode": "built-in image_gen",
+  "files": [
+    {
+      "id": "shield",
+      "path": "client/assets/ui/modules-yaw-v2/shield.webp",
+      "bytes": 17594,
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "registration": {
+        "pivot": [
+          128,
+          128
+        ],
+        "sourceMuzzle": null,
+        "scale": 1,
+        "rotatedRadiusPixels": 94.89467845985885
+      }
+    },
+    {
+      "id": "battery",
+      "path": "client/assets/ui/modules-yaw-v2/battery.webp",
+      "bytes": 12660,
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "registration": {
+        "pivot": [
+          126,
+          128
+        ],
+        "sourceMuzzle": null,
+        "scale": 1,
+        "rotatedRadiusPixels": 103.8123306741545
+      }
+    },
+    {
+      "id": "amplifier",
+      "path": "client/assets/ui/modules-yaw-v2/amplifier.webp",
+      "bytes": 16330,
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "registration": {
+        "pivot": [
+          114,
+          131
+        ],
+        "sourceMuzzle": null,
+        "scale": 1,
+        "rotatedRadiusPixels": 107.82393055347222
+      }
+    },
+    {
+      "id": "emp",
+      "path": "client/assets/ui/modules-yaw-v2/emp.webp",
+      "bytes": 16470,
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "registration": {
+        "pivot": [
+          132,
+          128
+        ],
+        "sourceMuzzle": null,
+        "scale": 1,
+        "rotatedRadiusPixels": 96.26006440887103
+      }
+    },
+    {
+      "id": "repair",
+      "path": "client/assets/ui/modules-yaw-v2/repair.webp",
+      "bytes": 12716,
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "registration": {
+        "pivot": [
+          109,
+          128
+        ],
+        "sourceMuzzle": null,
+        "scale": 0.78125,
+        "rotatedRadiusPixels": 110.18118068946711
+      }
+    },
+    {
+      "id": "armor",
+      "path": "client/assets/ui/modules-yaw-v2/armor.webp",
+      "bytes": 14666,
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "registration": {
+        "pivot": [
+          128,
+          128
+        ],
+        "sourceMuzzle": null,
+        "scale": 1,
+        "rotatedRadiusPixels": 89.10667763978186
+      }
+    },
+    {
+      "id": "cooler",
+      "path": "client/assets/ui/modules-yaw-v2/cooler.webp",
+      "bytes": 15582,
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "registration": {
+        "pivot": [
+          116,
+          128
+        ],
+        "sourceMuzzle": null,
+        "scale": 0.86328125,
+        "rotatedRadiusPixels": 109.9760680781358
+      }
+    },
+    {
+      "id": "pulse_cannon",
+      "path": "client/assets/ui/modules-yaw-v2/pulse_cannon.webp",
+      "bytes": 14430,
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "registration": {
+        "pivot": [
+          107,
+          126
+        ],
+        "sourceMuzzle": [
+          222,
+          126
+        ],
+        "scale": 0.890625,
+        "rotatedRadiusPixels": 111.4456254924627
+      }
+    },
+    {
+      "id": "missile_launcher",
+      "path": "client/assets/ui/modules-yaw-v2/missile_launcher.webp",
+      "bytes": 10392,
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "registration": {
+        "pivot": [
+          83,
+          128
+        ],
+        "sourceMuzzle": [
+          223,
+          128
+        ],
+        "scale": 0.73046875,
+        "rotatedRadiusPixels": 106.56084534375643
+      }
+    },
+    {
+      "id": "base",
+      "path": "client/assets/ui/modules-yaw-v2/base.webp",
+      "bytes": 11070,
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "registration": {
+        "pivot": [
+          128,
+          128
+        ],
+        "sourceMuzzle": null,
+        "scale": 1,
+        "rotatedRadiusPixels": 83.02409288875127
+      }
+    }
+  ],
+  "totalBytes": 141910,
+  "reusedLaser": true,
+  "preview": "D:\\Projects\\GRIDSHARD\\artifacts\\modules-yaw-v12-20261017\\modules-30deg-preview.webp",
+  "cameraDegrees": 30,
+  "true3D": false,
+  "browserVerified": false
+}

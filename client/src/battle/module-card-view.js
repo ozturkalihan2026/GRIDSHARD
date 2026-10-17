@@ -225,6 +225,8 @@
 
     // Modülün amblemi (SVG). Bilinmeyen ad için sınıf renginde genel bir yonga çizilir.
     static emblemFor(module) {
+      const device = globalThis.GridshardModuleDeviceArt?.markup(module);
+      if (device) return device;
       const isRepair = (module?.definition_id || module?.definitionId || module?.id) === "repair";
       const entry = EMBLEMS[isRepair ? "Onarım" : module?.nameTr] || EMBLEMS[SHORT_ALIASES[module?.nameTr]];
       const fallbackCategory = String(module?.category || "");
@@ -233,6 +235,7 @@
     }
 
     static shortNameFor(module) {
+      if (globalThis.GridshardModuleDeviceArt?.idFor(module) === "armor") return "Sönümleyici";
       const name = String(module?.nameTr || "");
       return SHORT_NAMES[name] || name;
     }

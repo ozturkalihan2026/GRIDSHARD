@@ -18,7 +18,7 @@ from .game.energy import (
 from .player_profile import CURRENT_SEASON_ID, OPERATOR_TITLE_STAGES, operator_title_view
 from .premium_reward_recovery import wallet_snapshot
 from .reward_delivery import (
-    apply_fixed_contents, chest_available, public_chest, queue_chest, queue_purchase_notice,
+    apply_fixed_contents, chest_available, public_chest, queue_chest, collect_chest,
     record_opened_premium_chest,
 )
 
@@ -1216,6 +1216,27 @@ class MetaProgressionService:
                 chest["premium_origin"] = dict(origin)
             return queue_chest(profile, chest, message_id=request_id, title="Sezon ödülü sandığı")
 
+    def stock_reward_chest(self, profile, definition_id: str, source_id: str, request_id: str, *, origin=None) -> dict:
+        """Deliver unopened stock with the existing durable collection witness.
+
+        The transient mailbox item is collected inside the same transaction,
+        so it is never a visible new message. Premium origin stays on the crate.
+        """
+        with self._lock:
+            previous = profile.reward_inbox_receipts.get(request_id)
+            if previous:
+                if previous.get("chest", {}).get("definition_id") != definition_id:
+                    raise MetaProgressionError("İşlem kimliği farklı bir sandığa ait.")
+                return dict(previous)
+            self.deliver_reward_chest(profile, definition_id, source_id, request_id, origin=origin)
+            message = next(item for item in profile.reward_inbox if item.get("message_id") == request_id)
+            receipt = collect_chest(profile, message, request_id, iso_utc(self._now_func()))
+            receipt["delivery"] = "inventory"
+            receipt["definition_id"] = receipt["chest"]["definition_id"]
+            receipt["delivered"] = True
+            profile.reward_inbox_receipts[request_id] = dict(receipt)
+            return receipt
+
     def award_instant_chest(
         self,
         profile,
@@ -1502,7 +1523,6 @@ class MetaProgressionService:
             "purchased_at": iso_utc(now),
         }
         profile.shop_receipts[request_id] = dict(receipt)
-        queue_purchase_notice(profile, receipt, product_name=definition["name_tr"], product_id=definition_id)
         while len(profile.shop_receipts) > STORE_RECEIPT_LIMIT:
             profile.shop_receipts.pop(next(iter(profile.shop_receipts)))
         return receipt

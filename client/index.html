@@ -24,6 +24,12 @@
   <link rel="stylesheet" href="./src/social-profile-v5.css" />
   <link rel="stylesheet" href="./src/shop-rewards-v6.css" />
   <link rel="stylesheet" href="./src/battle-utility-v7.css" />
+  <link rel="stylesheet" href="./src/module-device-v8.css" />
+  <link rel="stylesheet" href="./src/visual-polish-v9.css" />
+  <link rel="stylesheet" href="./src/detail-cards-v10.css" />
+  <link rel="stylesheet" href="./src/laser-yaw-v11.css" />
+  <link rel="stylesheet" href="./src/modules-yaw-v12.css" />
+  <link rel="stylesheet" href="./src/module-vfx-v14.css" />
   <!-- /build:styles -->
 </head>
 <!-- Açılış ekranı betikler yüklenmeden de Ev düzeninde çizilir (Ev'e özgü
@@ -31,6 +37,69 @@
 <body data-app-screen="menu" data-boot="loading">
   <!-- Inert asset allowlist for dynamically rendered art in both web/native
        builds. Templates do not preload or display these images. -->
+  <template id="module-device-assets">
+    <img src="./assets/ui/modules-views-v3/laser.webp" alt="">
+    <img src="./assets/ui/modules-views-v3/shield.webp" alt="">
+    <img src="./assets/ui/modules-views-v3/battery.webp" alt="">
+    <img src="./assets/ui/modules-views-v3/amplifier.webp" alt="">
+    <img src="./assets/ui/modules-views-v3/emp.webp" alt="">
+    <img src="./assets/ui/modules-views-v3/repair.webp" alt="">
+    <img src="./assets/ui/modules-views-v3/armor.webp" alt="">
+    <img src="./assets/ui/modules-views-v3/cooler.webp" alt="">
+    <img src="./assets/ui/modules-views-v3/pulse_cannon.webp" alt="">
+    <img src="./assets/ui/modules-views-v3/missile_launcher.webp" alt="">
+    <img src="./assets/ui/modules-yaw-v2/base.webp" alt="">
+    <img src="./assets/ui/modules-yaw-v2/shield.webp" alt="">
+    <img src="./assets/ui/modules-yaw-v2/battery.webp" alt="">
+    <img src="./assets/ui/modules-yaw-v2/amplifier.webp" alt="">
+    <img src="./assets/ui/modules-yaw-v2/emp.webp" alt="">
+    <img src="./assets/ui/modules-yaw-v2/repair.webp" alt="">
+    <img src="./assets/ui/modules-yaw-v2/armor.webp" alt="">
+    <img src="./assets/ui/modules-yaw-v2/cooler.webp" alt="">
+    <img src="./assets/ui/modules-yaw-v2/pulse_cannon.webp" alt="">
+    <img src="./assets/ui/modules-yaw-v2/missile_launcher.webp" alt="">
+    <img src="./assets/ui/laser-yaw-v1/head.webp" alt="">
+    <img src="./assets/ui/laser-yaw-v1/base.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/cooler-se-work.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/cooler-sw-work.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/laser-ne.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/laser-nw.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/laser-se.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/laser-sw.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/pulse_cannon-ne.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/pulse_cannon-nw.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/pulse_cannon-se.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/pulse_cannon-sw.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/missile_launcher-ne.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/missile_launcher-nw.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/missile_launcher-se.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/missile_launcher-sw.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/cooler-ne.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/cooler-nw.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/cooler-se.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/cooler-sw.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/repair-ne.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/repair-ne-work.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/repair-nw.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/repair-nw-work.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/repair-se.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/repair-se-work.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/repair-sw.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/repair-sw-work.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/turret-base.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/cooler-base.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/repair-base.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/laser.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/shield.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/cooler.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/battery.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/amplifier.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/emp.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/repair.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/armor.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/pulse_cannon.webp" alt="">
+    <img src="./assets/ui/modules-physical-v1/missile_launcher.webp" alt="">
+  </template>
   <template id="competition-art-assets">
     <img src="./assets/ui/home-v3/route.webp" alt="">
     <img src="./assets/ui/leagues-v1/spark.webp" alt="">
@@ -403,6 +472,7 @@
       <!-- Kutunun boyu sabittir; başlık ve sekmeler yerinde durur, yalnız bu gövde kayar. -->
       <div class="reward-inbox-tools">
         <button id="inbox-delete-all" type="button" disabled>SEKMEDEKİLERİ SİL</button>
+        <button id="inbox-collect-all" type="button" disabled>HEPSİNİ TOPLA</button>
         <button id="inbox-delete-undo" type="button" hidden>GERİ AL</button>
         <small id="inbox-delete-note">Toplanmamış sandıklar ve savaş davetleri korunur.</small>
       </div>
@@ -751,7 +821,7 @@
     <dialog id="core-detail-dialog" class="module-detail-dialog core-detail-dialog" aria-labelledby="core-detail-name">
       <header class="module-detail-hero core-detail-hero">
         <div id="core-detail-art" class="module-detail-art core-detail-art"></div>
-        <div class="module-detail-title"><h2 id="core-detail-name">Çekirdek</h2><span id="core-detail-rarity">YAYGIN</span></div>
+        <div class="module-detail-title"><h2 id="core-detail-name">Çekirdek</h2><span id="core-detail-rarity">YAYGIN</span><small class="detail-section-label" hidden></small></div>
       </header>
       <div class="module-detail-level-row">
         <strong id="core-detail-level">SEVİYE 1</strong>
@@ -771,7 +841,7 @@
     <dialog id="module-detail-dialog" class="module-detail-dialog" aria-labelledby="module-detail-name">
       <header class="module-detail-hero">
         <div id="module-detail-art" class="module-detail-art"></div>
-        <div class="module-detail-title"><h2 id="module-detail-name">Modül</h2><span id="module-detail-rarity">SIRADAN</span></div>
+        <div class="module-detail-title"><h2 id="module-detail-name">Modül</h2><span id="module-detail-rarity">SIRADAN</span><small class="detail-section-label" hidden></small></div>
       </header>
       <div class="module-detail-level-row">
         <strong id="module-detail-level">SEVİYE 1</strong>
@@ -779,7 +849,7 @@
         <div><span id="module-detail-shard-icon" class="module-detail-shard-icon" aria-hidden="true"></span><span id="module-detail-shards">0 / 20</span><progress id="module-detail-progress" value="0" max="20"></progress><span id="module-detail-universal" class="module-detail-universal" role="img" hidden></span></div>
       </div>
       <div class="module-detail-stats" id="module-detail-stats"></div>
-      <button id="module-detail-upgrade" type="button">Yükselt</button>
+      <div class="detail-card-actions"><button id="module-detail-select" type="button">SEÇ</button><button id="module-detail-upgrade" type="button" disabled>Yükselt</button></div>
       <p id="module-detail-status" role="status" aria-live="polite"></p>
       <section id="module-detail-tab-content" class="module-detail-tab-content"></section>
       <nav class="module-detail-tabs" aria-label="Modül bilgi başlıkları">
@@ -892,7 +962,7 @@
 
     <section class="engagement-summary-panel season-rewards-screen" id="season-rewards-screen" data-screen-panel="rewards" aria-label="Sezon Ödülleri" hidden>
       <div class="season-zero-progress-summary">
-        <div><span class="season-track-label">Sezon Ödülleri</span><strong id="season-tier-label">Kademe 0 / 40</strong></div>
+        <div><span class="season-track-label" data-ui-icon="gift:gold">Sezon Ödülleri</span><strong id="season-tier-label">Kademe 0 / 40</strong></div>
         <div class="season-progress-track" role="progressbar" aria-label="Sezon kademe ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="season-progress-fill"></span></div>
         <div class="season-progress-meta"><small id="season-progress-copy">0 Deneyim kaldı</small><small id="season-progress-ratio" title="Mevcut kademeye kadar toplanan deneyim / bir sonraki kademenin deneyimi">0 / 100 Deneyim</small></div>
       </div>
@@ -1773,7 +1843,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
             <strong id="post-match-credit-reward">Kaydediliyor…</strong>
           </article>
           <article id="post-match-experience-card">
-            <i class="resource-symbol resource-symbol-experience is-token" data-token="experience" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M12 1.6 15.1 8.1 22.2 9 17 14l1.3 7.1L12 17.6 5.7 21.1 7 14 1.8 9 8.9 8.1Z"/><path class="tk-l" d="M12 1.6 8.9 8.1 1.8 9 12 12Z"/><path class="tk-d" d="M22.2 9 17 14l1.3 7.1L12 17.6V12Z"/><path class="tk-o" d="M12 1.6 15.1 8.1 22.2 9 17 14l1.3 7.1L12 17.6 5.7 21.1 7 14 1.8 9 8.9 8.1Z"/></svg></i>
+            <i class="resource-symbol resource-symbol-experience is-token" data-token="experience" aria-hidden="true"><span class="experience-art" aria-hidden="true"></span></i>
             <span>DENEYİM</span>
             <strong id="post-match-experience-reward">Kaydediliyor…</strong>
           </article>
@@ -1840,6 +1910,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
   <script src="./src/tutorial/tutorial-controller.js"></script>
   <script src="./src/tutorial/onboarding.js"></script>
   <script src="./src/battle/board-view.js"></script>
+  <script src="./src/battle/laser-aim.js"></script>
+  <script src="./src/module-view-data.js"></script>
+  <script src="./src/module-device-art.js"></script>
+  <script src="./src/battle/module-motion.js"></script>
+  <script src="./src/battle/module-vfx.js"></script>
   <script src="./src/battle/module-card-view.js"></script>
   <script src="./src/battle/module-card-state-view.js"></script>
   <script src="./src/battle/battle-event-bus.js"></script>
@@ -1860,6 +1935,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
   <script src="./src/review-access.js"></script>
   <script src="./src/home-interface-view.js"></script>
   <script src="./src/competition-chest-art.js"></script>
+  <script src="./src/detail-card-layout.js"></script>
   <script src="./src/app.js"></script>
   <!-- /build:scripts -->
 </body>

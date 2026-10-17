@@ -60,6 +60,48 @@ def test_battle_queue_collect_open_and_duplicate_delivery_never_double_grant():
     assert meta.award_battle_chest(profile, "battle", True) is None
 
 
+def test_stock_delivery_is_unopened_unmailed_and_idempotent_even_after_opening():
+    _, profile, meta = fixture()
+    baseline = wallet_snapshot(profile)
+    receipt = meta.stock_reward_chest(profile, "circuit_8h", "season-tier:test:5", "stock-five")
+    assert receipt["delivery"] == "inventory"
+    assert len(profile.chest_slots) == 1 and not profile.chest_receipts
+    assert not mailbox_messages(profile)[0] and wallet_snapshot(profile) == baseline
+    assert meta.stock_reward_chest(profile, "circuit_8h", "season-tier:test:5", "stock-five") == receipt
+    assert len(profile.chest_slots) == 1
+    meta.open_chest(profile, receipt["chest"]["chest_id"], "open-stock")
+    after = wallet_snapshot(profile)
+    meta.stock_reward_chest(profile, "circuit_8h", "season-tier:test:5", "stock-five")
+    assert not profile.chest_slots and wallet_snapshot(profile) == after
+
+
+def test_stock_premium_chest_preserves_refund_provenance():
+    _, profile, meta = fixture()
+    purchase = buy(profile)
+    origin = premium_origin(profile)
+    meta.stock_reward_chest(profile, "core_24h", "season-premium:test:5", "premium-stock", origin=origin)
+    assert profile.chest_slots[0]["premium_origin"] == origin
+    assert len(meta.view(profile)["chests"]["slots"]) == 1
+    revoke_purchase(profile, purchase, now_iso=NOW.isoformat())
+    assert not meta.view(profile)["chests"]["slots"]
+    with pytest.raises(MetaProgressionError):
+        meta.open_chest(profile, profile.chest_slots[0]["chest_id"], "refunded-stock")
+
+
+def test_soft_currency_chests_have_no_purchase_mail_including_historical_notices():
+    _, profile, meta = fixture()
+    profile.circuit_credits = 100000
+    profile.flux_shards = 100000
+    meta.purchase_store_chest(profile, "circuit_8h", "soft-credit")
+    meta.purchase_store_chest(profile, "core_24h", "soft-flux")
+    assert not mailbox_messages(profile)[1]
+    queue_purchase_notice(profile, {"key":"old-soft", "request_id":"old-soft"}, product_name="Gümüş Sandık", product_id="circuit_8h")
+    assert not mailbox_messages(profile)[1]
+    queue_purchase_notice(profile, {"key":"paid", "request_id":"paid"}, product_name="120 Akı", product_id="flux_120")
+    assert len(mailbox_messages(profile)[1]) == 1
+    assert mailbox_messages(profile)[1][0]["product_name_tr"] == "120 Akı"
+
+
 @pytest.mark.parametrize("stage", ["mailbox", "inventory", "opened"])
 def test_premium_refund_covers_every_delivery_stage_without_unearned_debt(stage):
     _, profile, meta = fixture()
@@ -194,8 +236,9 @@ def test_mailbox_areas_show_the_newest_entries_up_to_the_limit():
     assert sum(item.get("category") != "battle" for item in rewards) == MAILBOX_AREA_LIMIT
     assert len(purchases) == MAILBOX_AREA_LIMIT
     # En yeniler gösterilir; sınırın dışına düşen satın alım mesajının kaydı tanık olarak durur.
-    assert purchases[0]["title_tr"].endswith(f"Paket {MAILBOX_AREA_LIMIT + 4}")
-    assert all(not item["title_tr"].endswith("Paket 0") for item in purchases)
+    assert purchases[0]["title_tr"] == "Satın alım tamamlandı"
+    assert purchases[0]["product_name_tr"] == f"Paket {MAILBOX_AREA_LIMIT + 4}"
+    assert all(item["product_name_tr"] != "Paket 0" for item in purchases)
     stored = sum(item.get("category") == "purchase" for item in profile.reward_inbox)
     assert stored == MAILBOX_AREA_LIMIT + 5
     queue_purchase_notice(profile, {"key": "order-0", "request_id": "order-0", "purchased_at": NOW.isoformat()},

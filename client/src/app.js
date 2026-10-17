@@ -325,6 +325,7 @@
         : "off";
     if (document.body.dataset.battlePerspective !== perspective) {
       document.body.dataset.battlePerspective = perspective;
+      invalidateBattleLayout();
     }
     return tier;
   }
@@ -468,6 +469,10 @@
   function withCanonicalModuleNames(state) {
     for (const item of state?.module_collection || []) {
       if (item?.name_tr === "Onarım Modülü") item.name_tr = "Onarım";
+      if (item?.definition_id === "armor" || item?.module_id === "armor" || item?.name_tr === "Zırh") {
+        item.name_tr = "Sönümleyici";
+        if (item.name_en) item.name_en = "Dampener";
+      }
     }
     return state;
   }
@@ -1199,22 +1204,14 @@
         changeLabel.title = localizedUiText("Sonraki seviye");
         amount.append(" ", changeLabel);
       }
-      box.append(name, amount);
-      // Hücre en çok iki satırdır: üstte simge ve etiket, altta değer ve farkı (canon.css).
+      // Overview only: centered icon, label, then value + next-level gain.
       if (icon) {
         box.dataset.tone = tone || "";
         box.appendChild(createUiIcon(icon, tone));
       }
+      box.append(name, amount);
       host.appendChild(box);
     }
-    // Etiket tek satırdır. Sığmayan uzun etikette (ör. İngilizce "SABOTAGE INTERVAL")
-    // hücrenin simgesi çizilmez; ölçüm pencere açıldıktan sonraki karede yapılır.
-    globalThis.requestAnimationFrame?.(() => {
-      for (const box of host.children) {
-        const name = box.querySelector("span");
-        if (name && name.scrollWidth > name.clientWidth + 1) box.dataset.tight = "true";
-      }
-    });
   }
 
   // Bir sonraki seviyenin farkı değerin kendi birimiyle yazılır: "+3",
@@ -1665,10 +1662,23 @@
     palette:"cosmetics", cosmetics:"cosmetics", info:"info", menu:"menu",
     swords:"battle", battle:"battle", card:"deck", deck:"deck",
     shop:"purchase", purchase:"purchase", chest:"chest",
+    target:"battle", gem:"gift",
+    core:"detail-core", team:"detail-team", rarity:"detail-rarity",
+    hp:"detail-hp", damage:"battle", dps:"detail-damage", cycle:"detail-cycle",
+    energy:"detail-battery", current:"detail-energy", bolt:"detail-energy",
+    star:"detail-talent", grid:"detail-grid", shield:"detail-guard",
+    guard:"detail-guard", dome:"detail-guard", reduction:"detail-guard",
+    reflect:"detail-guard", phase:"detail-guard", lock:"detail-guard",
+    gauge:"statistics", boost:"detail-talent", speed:"detail-cycle",
+    hourglass:"detail-cycle", rings:"detail-core", echo:"detail-core",
+    convert:"detail-energy", percent:"statistics", branch:"detail-talent",
+    flame:"detail-damage", bug:"detail-damage", pierce:"detail-damage", swarm:"detail-damage",
+    wrench:"detail-repair", revive:"detail-repair", snow:"detail-cooler", battery:"detail-battery",
+    key:"detail-unlock", eye:"profile",
   });
   // Değer anahtarı → simge ve renk tonu.
   const STAT_ICONS = Object.freeze({
-    hp:["hp", "green"], damage:["damage", "red"], cycle:["cycle", "blue"], dps:["gauge", "red"],
+    hp:["hp", "green"], damage:["damage", "red"], cycle:["cycle", "blue"], dps:["dps", "red"],
     energy:["energy", "cyan"], current:["current", "gold"],
     block:["shield", "blue"], reduction:["reduction", "steel"], reflect:["reflect", "violet"],
     regen:["wrench", "green"], sabotage_guard:["guard", "violet"], dome_guard:["dome", "cyan"],
@@ -1685,6 +1695,8 @@
   function uiIconMarkup(name, tone = "") {
     // Para birimi başlıklarında da ayrı, eski bir levha/çizim üretme.
     if (name === "flux" || name === "credit") return resourceTokenMarkup(name, "i");
+    if (name === "trophy") return `<i class="ui-icon is-artwork" aria-hidden="true">${createRatingTrophyIcon().outerHTML}</i>`;
+    if (name === "back") return '<i class="ui-icon ui-back-arrow" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M14 5 3 16l11 11v-7h15v-8H14Z" fill="#81f1de" stroke="#04121e" stroke-width="2" stroke-linejoin="round"/><path d="m14 5-9 11h8v-4h16" fill="none" stroke="#d8fff1" stroke-width="1.5"/></svg></i>';
     const safeTone = /^[a-z][a-z0-9-]{0,30}$/.test(tone) ? tone : "";
     if (Object.hasOwn(UI_ART_ICONS, name)) {
       return `<i class="ui-icon is-artwork" data-icon="${name}"${safeTone ? ` data-tone="${safeTone}"` : ""} aria-hidden="true"><span class="ui-art" data-ui-art="${UI_ART_ICONS[name]}" aria-hidden="true"></span></i>`;
@@ -1723,12 +1735,6 @@
       + '<path class="tk-d" d="M3.5 16.6h17v2.1a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"/>'
       + '<path class="tk-o" d="M3.5 10.5 5.6 5.2h12.8l2.1 5.3v8.2a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2ZM3.5 10.5h17"/>'
       + '<path class="tk-w tk-ink" d="M12 8.2 14.8 11 12 13.8 9.2 11Z"/>',
-    // Deneyim: mavi yıldız.
-    experience:tokenFacets(
-      "M12 1.6 15.1 8.1 22.2 9 17 14l1.3 7.1L12 17.6 5.7 21.1 7 14 1.8 9 8.9 8.1Z",
-      "M12 1.6 8.9 8.1 1.8 9 12 12Z",
-      "M22.2 9 17 14l1.3 7.1L12 17.6V12Z"
-    ),
     trophy:'<path class="tk-handle" d="M7.2 5H4c0 3.3 1.4 5 3.6 5.3M16.8 5H20c0 3.3-1.4 5-3.6 5.3"/>'
       + '<path class="tk-d tk-ink" d="M10.3 12.6h3.4v4h-3.4Z"/><path class="tk-m tk-ink" d="M7.4 16.4h9.2l1.2 4.6H6.2Z"/>'
       + '<path class="tk-m tk-ink" d="M6.8 2.6h10.4v5.8a5.2 5.2 0 0 1-10.4 0Z"/>'
@@ -1753,6 +1759,7 @@
     if (token === "flux" || token === "credit") {
       return `<span class="currency-art" data-currency="${token}" aria-hidden="true"></span>`;
     }
+    if (token === "experience") return '<span class="experience-art" aria-hidden="true"></span>';
     return `<svg viewBox="0 0 24 24" focusable="false">${RESOURCE_TOKEN_SVG[token]}</svg>`;
   }
 
@@ -1803,42 +1810,14 @@
     return tokens[kind] ? resourceTokenMarkup(tokens[kind]) : createModulePuzzlePiece().outerHTML;
   }
 
-  // Modül kartı parçaları her yerde yapboz parçası olarak görünür. Parça dolu
-  // çizilir: modülün sınıf renginde gövde, altta gölge, üstte ışık, koyu kontur;
-  // ortasında modülün simgesi durur. Evrensel parça altın rengi ve yıldızlıdır.
-  // Gövde 8..48 × 16..56; üstte ve sağda çıkıntı, altta ve solda girinti.
-  const MODULE_PIECE_OUTLINE = "M8 16H22A7 7 0 1 1 34 16H48V30A7 7 0 1 1 48 42V56H34A7 7 0 1 0 22 56H8V42A7 7 0 1 0 8 30Z";
-  const MODULE_PIECE_PATHS = Object.freeze([
-    ["mp-body", MODULE_PIECE_OUTLINE],
-    ["mp-shade", "M8 46H25.14A7 7 0 0 0 22 56H8ZM30.86 46H48V56H34A7 7 0 0 0 30.86 46Z"],
-    ["mp-shine", "M12.5 20.5H21M35 20.5H43.5M24.6 10.2A4.6 4.6 0 0 1 30.4 8.2"],
-    ["mp-outline", MODULE_PIECE_OUTLINE],
-  ]);
+  // Legacy helper name retained for callers. Presentation is now a miniature
+  // module card, never a puzzle shape. Amount/identity remain in adjacent copy.
   function createModulePuzzlePiece({ category = "", glyph = "", universal = false } = {}) {
     const piece = document.createElement("span");
-    piece.className = "resource-symbol resource-symbol-module-piece";
+    piece.className = "resource-symbol module-reward-card";
     piece.dataset.category = universal ? "universal" : category;
     piece.setAttribute("aria-hidden", "true");
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "7 4.4 52.6 52.6");
-    for (const [name, d] of MODULE_PIECE_PATHS) {
-      const shape = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      shape.setAttribute("class", name);
-      shape.setAttribute("d", d);
-      svg.appendChild(shape);
-    }
-    piece.appendChild(svg);
-    // Evrensel parçada yıldız, modül parçasında modülün amblemi (`glyph`: SVG) durur.
-    if (universal || glyph) {
-      const symbol = document.createElement("b");
-      if (universal) {
-        symbol.textContent = "✦";
-      } else {
-        symbol.className = "mp-emblem";
-        symbol.innerHTML = glyph;
-      }
-      piece.appendChild(symbol);
-    }
+    piece.innerHTML = glyph || uiIconMarkup("deck");
     return piece;
   }
 
@@ -2704,12 +2683,6 @@
           reward.append(trophy, glyph, caption);
           if (node.claimable) {
             reward.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
-            // Alınabilir durak bir düğmedir; üstünde lig sandığındakiyle aynı "AL" rozeti durur.
-            const chip = document.createElement("b");
-            chip.className = "arena-reward-claim-chip";
-            chip.setAttribute("aria-hidden", "true");
-            chip.textContent = localizedMessage("reward.claim_upper");
-            reward.appendChild(chip);
           }
           reward.addEventListener("click", async () => {
             reward.disabled = true;
@@ -2800,18 +2773,14 @@
             chest.setAttribute("aria-label", localizedMessage("reward.chest_preview_aria", {name:rewardDescription}));
             // Alınmış sandık açık durur: kapağı kalkmış, içi boş.
             chest.innerHTML = leagueChestMarkup(node.league_chest || stage.league || "gridshard", { open:Boolean(node.claimed) });
-            bindRewardPreview(chest, { title:rewardDescription, reward:node.rewards || {} });
+            if (!node.claimable) bindRewardPreview(chest, { title:rewardDescription, reward:node.rewards || {} });
             const name = document.createElement("strong");
             name.textContent = rewardDescription;
             stop.append(chest, name, trophy);
             if (node.claimable) {
-              const claim = document.createElement("button");
-              claim.type = "button";
-              claim.className = "arena-league-chest-claim";
-              claim.textContent = localizedMessage("reward.claim_upper");
-              claim.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
-              claim.addEventListener("click", () => claimLeagueNode(node, claim));
-              stop.appendChild(claim);
+              stop.classList.add("is-claimable");
+              chest.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
+              chest.addEventListener("click", () => claimLeagueNode(node, chest));
             } else if (node.claimed) {
               const state = document.createElement("small");
               state.className = "arena-league-chest-state";
@@ -2837,12 +2806,6 @@
           reward.append(trophy, glyph, caption);
           if (node.claimable) {
             reward.setAttribute("aria-label", localizedMessage("reward.claim_aria", {reward:rewardDescription}));
-            // Alınabilir durak bir düğmedir; üstünde lig sandığındakiyle aynı "AL" rozeti durur.
-            const chip = document.createElement("b");
-            chip.className = "arena-reward-claim-chip";
-            chip.setAttribute("aria-hidden", "true");
-            chip.textContent = localizedMessage("reward.claim_upper");
-            reward.appendChild(chip);
           }
           reward.addEventListener("click", () => claimLeagueNode(node, reward));
           leagueRoad.appendChild(reward);
@@ -3182,39 +3145,47 @@
     setDetailTabUpgradeArrow(document.querySelector('[data-core-detail-tab="skills"]'), coreSkillAvailable(core));
     host.replaceChildren();
     host.dataset.tab = tabName;
+    document.getElementById("core-detail-dialog").dataset.detailTab = tabName;
     const intro = document.createElement("p");
     intro.className = "module-detail-tab-intro";
     if (tabName === "stats") {
-      intro.textContent = "Çekirdeğin savaş alanına sağladığı kalıcı enerji ve dayanıklılık değerleri.";
+      intro.textContent = "Seviye ve yeteneklerle gelişir; enderlik güç katmaz.";
       const list = document.createElement("dl");
       list.className = "module-stat-tiles core-stat-tiles";
       for (const [label, value, icon, tone] of [
-        ["Nadirlik", moduleRarityLabel(core.rarity), "gem", "gold"],
-        ["Savaş rolü", core.role_tr, "target", "red"],
-        ["İmza", core.signature_name_tr || "—", "bolt", "cyan"],
+        ["Enderlik", moduleRarityLabel(core.rarity), "rarity", "gold"],
+        ["Sınıf", "Sistem", "grid", "blue"],
         ["Enerji üretimi", `${core.energy_per_second}/sn`, "energy", "cyan"],
         ["Enerji deposu", core.energy_capacity, "battery", "blue"],
         ["Seviye", `${core.level} / 15`, "boost", "green"],
+        ["Yetenek", (core.skills || []).filter(skill => skill.learned).length, "star", "violet"],
       ]) {
         const row = document.createElement("div");
         row.dataset.tone = tone;
         // Savaş rolü bir cümledir; satırı doldurur ve metin boyunda yazılır (canon.css).
         if (label === "Savaş rolü") row.dataset.wide = "true";
         const name = document.createElement("dt");
-        name.append(createUiIcon(icon, tone), document.createTextNode(label));
+        name.textContent = label;
         const amount = document.createElement("dd");
         amount.textContent = String(value);
-        row.append(name, amount);
+        if (core.unlocked && core.next_stats) {
+          const key = label === "Enerji üretimi" ? "energy_per_second" : label === "Enerji deposu" ? "energy_capacity" : null;
+          const gain = key && createStatGain(core[key], core.next_stats[key], key === "energy_per_second" ? "per_second" : "");
+          if (gain) amount.append(" ", gain);
+        }
+        row.append(createUiIcon(icon, tone), name, amount);
         list.appendChild(row);
       }
       host.appendChild(list);
+      const signature = createStatSignature(core);
+      if (signature) host.appendChild(signature);
     } else if (tabName === "skills") {
       // Modül yetenek ağacıyla aynı tasarım: her eşikte iki dal, ortada seviye rozeti
       // ve Akı bedeli. Açıklama düğmede değil, dokununca üstteki satırda yazar.
       const learnedSkills = (core.skills || []).filter((skill) => skill.learned);
       intro.textContent = learnedSkills.length
         ? talentDisplayDescription(learnedSkills[learnedSkills.length - 1])
-        : "Her eşikte tek bir çekirdek yeteneği seçilebilir. Açıklamasını görmek için bir yeteneğe dokun.";
+        : "Her eşikte bir dal seç. Dokun: açıklama ve seçim.";
       const tree = document.createElement("div");
       tree.className = "module-talent-path core-talent-path";
       const tiers = new Map();
@@ -3233,6 +3204,7 @@
         row.dataset.kind = tierKind;
         const level = document.createElement("span");
         level.className = "module-talent-level";
+        level.title = localizedUiText(TALENT_KIND_LABELS[tierKind] || "Yetenek");
         const levelValue = document.createElement("strong");
         levelValue.textContent = `SV ${threshold.level}`;
         level.append(levelValue, createCostChip("flux", threshold.flux_cost));
@@ -3259,9 +3231,9 @@
           skillName.textContent = talentDisplayName(skill);
           const skillState = document.createElement("small");
           skillState.textContent = state;
-          button.append(skillName, skillState);
+          button.append(createUiIcon(kindIcon, kindTone), skillName, skillState);
           button.dataset.selectable = String(canLearn);
-          button.setAttribute("aria-label", `${talentDisplayName(skill)} · ${state} · Açıklamayı göster`);
+          button.setAttribute("aria-label", `${talentDisplayName(skill)} · ${state} · ${localizedUiText(TALENT_KIND_LABELS[tierKind] || "Yetenek")} · Açıklamayı göster`);
           button.title = talentDisplayDescription(skill);
           button.addEventListener("click", async () => {
             intro.textContent = talentDisplayDescription(skill);
@@ -3283,30 +3255,11 @@
       });
       host.appendChild(tree);
     } else {
-      intro.textContent = core.role_tr;
-      host.appendChild(createModuleIdentityPanel(core, {
-        noAdvantageTr:"Enderlik CAN, enerji üretimi, dolum hızı veya güç etkisi avantajı vermez.",
-      }));
-      const overview = document.createElement("div");
-      overview.className = "module-overview-grid";
-      for (const [label, value, icon, tone] of [
-        ["NADİRLİK", moduleRarityLabel(core.rarity), "gem", "gold"],
-        ["SAVAŞ ROLÜ", core.role_tr, "target", "red"],
-        ["İMZA", core.signature_name_tr || "—", "bolt", "cyan"],
-        ["AÇILIŞ", `Arena ${core.unlock_arena}`, "key", "gold"],
-        ["ENERJİ", `${core.energy_per_second}/sn`, "energy", "cyan"],
-      ]) {
-        const card = document.createElement("div");
-        const name = document.createElement("span");
-        name.textContent = label;
-        const amount = document.createElement("strong");
-        amount.textContent = String(value);
-        card.append(createUiIcon(icon, tone), name, amount);
-        overview.appendChild(card);
-      }
-      host.appendChild(overview);
+      intro.textContent = GridshardDetailPages.description(core, {core:true, english:document.documentElement.lang === "en"});
+      intro.title = serverCopy(core.role_tr, core.role_en);
     }
     host.prepend(intro);
+    window.GridshardDetailPages?.mount(host, {item:core, core:true});
   }
 
   function openCoreDetail() {
@@ -3339,9 +3292,10 @@
     const select = document.getElementById("core-detail-select");
     if (select) { select.disabled = !core.unlocked || core.selected; select.textContent = core.selected ? "SEÇİLDİ" : core.unlocked ? "SEÇ" : "KİLİTLİ"; }
     const upgrade = document.getElementById("core-detail-upgrade");
-    const canUpgrade = coreUpgradeAvailable(core);
+    const canUpgrade = metaIndicatorsLive() && coreUpgradeAvailable(core);
     if (upgrade) {
       upgrade.disabled = !canUpgrade;
+      upgrade.setAttribute("aria-disabled", String(upgrade.disabled));
       setCostButtonLabel(upgrade, localizedUiText(cost ? "YÜKSELT" : "AZAMİ SEVİYE"), cost ? [["flux", cost.flux_shards]] : []);
     }
     setText("core-detail-status", !core.unlocked ? `Arena ${core.unlock_arena} seviyesinde açılır.` : cost && !canUpgrade ? `${cost.shards} parça ve ${cost.flux_shards} Akı gerekli.` : "");
@@ -3902,10 +3856,10 @@
     if (card) { card.dataset.tier = tier; card.dataset.state = "revealed"; }
     if (title) title.textContent = `${visualIds.length === 1 && receipts[0]?.rewards?.chest_name_tr || definition?.name_tr || "Sandık"} · ${receipts.length} açıldı`;
     if (kicker) {
-      kicker.hidden = false;
+      kicker.hidden = !batchReceipt?.partial;
       kicker.textContent = batchReceipt?.partial
         ? `${receipts.length} AÇILDI · ${batchReceipt.remaining_count || 0} KALDI`
-        : "TÜM AÇILABİLİR SANDIKLAR AÇILDI";
+        : "";
     }
     if (host) {
       host.replaceChildren();
@@ -4794,7 +4748,7 @@
     const signature = item.signature_mechanic
       || (item.shared_behavior_tr ? `Şimdilik ${item.shared_behavior_tr} ile aynı temel davranışı kullanır.` : "");
     const rows = [
-      [`ENDERLİK · ${moduleRarityLabel(rarity).toLocaleUpperCase("tr-TR")}`, `${MODULE_RARITY_RULE_TR[rarity] || MODULE_RARITY_RULE_TR.common} ${noAdvantageTr}`, "is-rarity", "gem", RARITY_ICON_TONES[rarity] || "steel"],
+      [`ENDERLİK · ${moduleRarityLabel(rarity).toLocaleUpperCase("tr-TR")}`, `${MODULE_RARITY_RULE_TR[rarity] || MODULE_RARITY_RULE_TR.common} ${noAdvantageTr}`, "is-rarity", "rarity", RARITY_ICON_TONES[rarity] || "steel"],
       ["İMZA MEKANİĞİ", signature, "is-signature", "bolt", "cyan"],
       ["SAVAŞTA NASIL GÖRÜLÜR", item.telegraph_tr, "is-telegraph", "eye", "blue"],
       ["KARŞI OYUN", item.counterplay_tr, "is-counter", "swords", "red"],
@@ -4810,6 +4764,26 @@
       copy.textContent = localizedUiText(value);
       row.append(createUiIcon(icon, tone), name, copy);
       panel.appendChild(row);
+    }
+    return panel;
+  }
+
+  // One concise source of identity copy; no repeated rarity tutorial, role or
+  // numeric effects already present in the Stats tab. Preserve full mechanics.
+  function createCompactIdentityPanel(item) {
+    const panel = document.createElement("section");
+    panel.className = "module-identity-panel";
+    for (const [label, value, icon] of [
+      ["İMZA", item.signature_mechanic || item.shared_behavior_tr, "star"],
+      ["KARŞI HAMLE", item.counterplay_tr, "swords"],
+    ]) {
+      if (!value) continue;
+      const row = document.createElement("div");
+      row.className = "module-identity-row";
+      const name = document.createElement("span"), copy = document.createElement("strong");
+      name.textContent = label; copy.textContent = localizedUiText(value);
+      row.append(createUiIcon(icon), name, copy);
+      panel.append(row);
     }
     return panel;
   }
@@ -4834,7 +4808,22 @@
   }
 
   function specialLabel(special) {
+    // Also clarify the metric when talking to an older local server.
+    if (special?.key === "dps") return document.documentElement.lang === "en" ? "THEORETICAL DPS" : "TEORİK HASAR/SN";
     return serverCopy(special?.label_tr, special?.label_en);
+  }
+
+  // Authoritative identity, not an invented talent or a second damage source.
+  function createStatSignature(item) {
+    const signature = item.signature_mechanic || item.shared_behavior_tr;
+    if (!signature) return null;
+    const panel = document.createElement("section");
+    panel.className = "module-stat-signature";
+    const heading = document.createElement("strong"), copy = document.createElement("p");
+    heading.append(createUiIcon("star", "gold"), document.documentElement.lang === "en" ? "SIGNATURE MECHANIC" : "İMZA MEKANİĞİ");
+    copy.textContent = serverCopy(signature, item.signature_mechanic_en);
+    panel.append(heading, copy);
+    return panel;
   }
 
   // Çevrim karosu: adı modüle özeldir ("BLOK ARALIĞI", "SALDIRI ARALIĞI" …).
@@ -4866,6 +4855,7 @@
       current:Number(special.value),
       next:upcoming.has(special.key) ? Number(upcoming.get(special.key).value) : undefined,
       unit:special.unit || "",
+      times:special.times,
       icon:(STAT_ICONS[special.key] || ["star", "cyan"])[0],
       tone:(STAT_ICONS[special.key] || ["star", "cyan"])[1],
     }));
@@ -4888,7 +4878,7 @@
     basic:"TEMEL", signature:"İMZA", tuning:"İNCE AYAR", mastery:"USTALIK",
   });
   const TALENT_KIND_ICONS = Object.freeze({
-    basic:["boost", "green"], signature:["star", "gold"], tuning:["gear", "blue"], mastery:["gem", "violet"],
+    basic:["boost", "green"], signature:["star", "gold"], tuning:["gear", "blue"], mastery:["rarity", "violet"],
   });
 
   function createModuleStatTiles(item) {
@@ -4923,12 +4913,12 @@
       row.dataset.stat = tile.key;
       row.dataset.tone = tile.tone || "";
       const name = document.createElement("dt");
-      name.append(createUiIcon(tile.icon, tile.tone), document.createTextNode(tile.label));
+      name.textContent = tile.label;
       const value = document.createElement("dd");
       value.textContent = tile.value;
       const gain = createStatGain(tile.current, tile.next, tile.unit);
       if (gain) value.append(" ", gain);
-      row.append(name, value);
+      row.append(createUiIcon(tile.icon, tile.tone), name, value);
       if (tile.meter !== undefined) {
         const meter = document.createElement("span");
         meter.className = "module-stat-meter";
@@ -4979,9 +4969,8 @@
     return counters;
   }
 
-  // Modül bilgi penceresi sekmeleri koyu zeminli kartlardan oluşur: Genel
-  // kimlik ve etkileri, İstatistik değer karolarını, Yetenekler iki dallı
-  // seviye yolunu gösterir. İçerik uzarsa sekme alanı kendi içinde kayar.
+  // Three distinct views: static art + next level, full stats, talent cards.
+  // No automatic pagination/reparenting or battle simulation in the dialog.
   function renderModuleDetailTab(tabName) {
     const item = activeMetaModule();
     const host = document.getElementById("module-detail-tab-content");
@@ -4989,17 +4978,18 @@
     setDetailTabUpgradeArrow(document.querySelector('[data-module-detail-tab="talents"]'), moduleTalentAvailable(item));
     host.replaceChildren();
     host.dataset.tab = tabName;
+    document.getElementById("module-detail-dialog").dataset.detailTab = tabName;
     host.dataset.category = item.category || "";
     host.scrollTop = 0;
     const text = document.createElement("p");
     text.className = "module-detail-tab-intro";
     if (tabName === "stats") {
-      text.textContent = "Savaş değerleri seviye ve yeteneklerden gelir; enderlik bu değerleri artırmaz.";
+      text.textContent = "Seviye ve yeteneklerle gelişir; enderlik güç katmaz.";
       const chips = document.createElement("div");
       chips.className = "module-stat-chips";
       for (const [label, value, kind, icon, tone] of [
         ["SINIF", poolCategoryLabel(item.category), "category", "grid", "blue"],
-        ["ENDERLİK", moduleRarityLabel(item.rarity), "rarity", "gem", "gold"],
+        ["ENDERLİK", moduleRarityLabel(item.rarity), "rarity", "rarity", "gold"],
       ]) {
         const chip = document.createElement("span");
         chip.dataset.chip = kind;
@@ -5014,7 +5004,16 @@
       }
       host.appendChild(chips);
       host.appendChild(createModuleStatTiles(item));
-      host.appendChild(createModuleCounterGrid(item));
+      const signature = createStatSignature(item);
+      if (signature) host.appendChild(signature);
+      if ((item.stats?.specials || []).some((entry) => entry.key === "dps")) {
+        const note = document.createElement("p");
+        note.className = "module-stat-note";
+        note.textContent = document.documentElement.lang === "en"
+          ? "Theoretical DPS = raw damage / interval; not an extra hit. Heat, energy, defenses and tick rounding affect actual output."
+          : "Teorik hasar/sn = ham hasar / aralık; ek vuruş değildir. Isı, enerji, savunma ve zaman adımı/yuvarlama gerçek sonucu değiştirir.";
+        host.appendChild(note);
+      }
     } else if (tabName === "talents") {
       // Açılışta seçilmiş imza yeteneğinin, o yoksa en ileri seçilmiş eşiğin
       // açıklaması yazar (dal kimlikleri her eşikte aynıdır; eşiğe göre aranır).
@@ -5024,7 +5023,7 @@
       const selectedTalent = describedNode?.choices?.find((choice) => choice.id === describedNode.selected);
       text.textContent = selectedTalent
         ? talentDisplayDescription(selectedTalent)
-        : "Yetenekler seviye ilerlemesidir, enderlik bonusu değildir. Açıklamasını görmek için bir yeteneğe dokun.";
+        : "Her eşikte bir dal seç. Dokun: açıklama ve seçim.";
       const tree = document.createElement("div");
       tree.className = "module-talent-path";
       for (const node of item.talents || []) {
@@ -5037,6 +5036,7 @@
         // Seviye rozeti iki dalın ortasında durur: sol dal · rozet · sağ dal.
         const level = document.createElement("span");
         level.className = "module-talent-level";
+        level.title = localizedUiText(TALENT_KIND_LABELS[node.kind] || "Yetenek");
         const levelValue = document.createElement("strong");
         levelValue.textContent = `SV ${node.level}`;
         // Akı bedeli yazıyla değil simgesiyle gösterilir.
@@ -5069,9 +5069,10 @@
           choiceTitle.textContent = choiceName;
           const choiceStatus = document.createElement("small");
           choiceStatus.textContent = choiceState;
-          button.append(choiceTitle, choiceStatus);
+          const [choiceIcon, choiceTone] = TALENT_KIND_ICONS[node.kind] || ["star", "cyan"];
+          button.append(createUiIcon(choiceIcon, choiceTone), choiceTitle, choiceStatus);
           button.dataset.selectable = String(canChoose);
-          button.setAttribute("aria-label", `${choiceName} · ${choiceState} · Açıklamayı göster`);
+          button.setAttribute("aria-label", `${choiceName} · ${choiceState} · ${localizedUiText(TALENT_KIND_LABELS[node.kind] || "Yetenek")} · Açıklamayı göster`);
           button.title = talentDisplayDescription(choice);
           button.addEventListener("click", async () => {
             text.textContent = talentDisplayDescription(choice);
@@ -5099,11 +5100,11 @@
         const resetPanel = document.createElement("section");
         resetPanel.className = "module-talent-reset-panel";
         const resetCopy = document.createElement("span");
-        resetCopy.textContent = `${selectedCount} seçili yetenek yeniden dağıtılabilir.`;
+        resetCopy.textContent = `${selectedCount} seçim`;
         const resetButton = document.createElement("button");
         resetButton.type = "button";
         resetButton.className = "module-talent-reset";
-        setCostButtonLabel(resetButton, localizedUiText("YETENEKLERİ SIFIRLA"), [["flux", resetCost]]);
+        setCostButtonLabel(resetButton, localizedUiText("SIFIRLA"), [["flux", resetCost]]);
         resetButton.disabled = Number(metaProgressionState?.flux_shards || 0) < resetCost;
         resetButton.addEventListener("click", async () => {
           resetButton.disabled = true;
@@ -5122,30 +5123,11 @@
         host.appendChild(resetPanel);
       }
     } else {
-      text.textContent = serverCopy(item.description_tr, item.description_en) || item.strategic_role || item.name_tr;
-      const overview = document.createElement("div");
-      overview.className = "module-overview-grid";
-      for (const [label, rawValue, icon, tone] of [
-        ["SAVAŞ ROLÜ", serverCopy(item.strategic_role, item.strategic_role_en) || "—", "target", "red"],
-        ["SINIF", poolCategoryLabel(item.category), "grid", "blue"],
-        ["AÇILIŞ", moduleUnlockRequirement(item), "key", "gold"],
-      ]) {
-        const card = document.createElement("div");
-        const name = document.createElement("span");
-        const value = document.createElement("strong");
-        name.textContent = label;
-        value.textContent = rawValue;
-        card.append(createUiIcon(icon, tone), name, value);
-        overview.appendChild(card);
-      }
-      host.appendChild(createModuleIdentityPanel(item));
-      host.appendChild(overview);
-      // İngilizce arayüzde sunucunun İngilizce etki satırları yazılır.
-      host.appendChild(createModuleEffectList(
-        document.documentElement.lang === "en" && item.effect_lines_en?.length ? item.effect_lines_en : item.effect_lines
-      ));
+      text.textContent = GridshardDetailPages.description(item, {english:document.documentElement.lang === "en"});
+      text.title = serverCopy(item.description_tr, item.description_en);
     }
     host.prepend(text);
+    window.GridshardDetailPages?.mount(host, {item});
   }
 
   function openModuleDetail() {
@@ -5205,13 +5187,20 @@
     const upgrade = document.getElementById("module-detail-upgrade");
     const reason = moduleUpgradeBlockReason(item);
     if (upgrade) {
-      upgrade.disabled = Boolean(reason || metaProgressionState?.unavailable);
+      upgrade.disabled = !moduleUpgradeAvailable(item);
+      upgrade.setAttribute("aria-disabled", String(upgrade.disabled));
       // Bedel "DK" ve "AKI" yazısıyla değil, kaynakların simgesiyle gösterilir.
       setCostButtonLabel(upgrade, localizedUiText(cost ? "YÜKSELT" : "AZAMİ SEVİYE"), cost
         ? [["credit", cost.circuit_credits], ...(Number(cost.flux_shards) > 0 ? [["flux", cost.flux_shards]] : [])]
         : []);
     }
     setText("module-detail-status", reason);
+    const select = document.getElementById("module-detail-select");
+    if (select) {
+      const inDeck = deckEditorSlots.filter(Boolean).map(clientDefinitionId).includes(item.definition_id);
+      select.disabled = !item.unlocked || inDeck || !metaIndicatorsLive();
+      select.textContent = localizedUiText(inDeck ? "DESTEDE" : item.unlocked ? "SEÇ" : "KİLİTLİ");
+    }
     for (const button of document.querySelectorAll("[data-module-detail-tab]")) button.classList.toggle("is-active", button.dataset.moduleDetailTab === "overview");
     renderModuleDetailTab("overview");
     const dialog = document.getElementById("module-detail-dialog");
@@ -5228,7 +5217,7 @@
 
   async function upgradeCollectionModule() {
     const button = document.getElementById("module-detail-upgrade");
-    if (button?.disabled) return;
+    if (button?.disabled || !moduleUpgradeAvailable(activeMetaModule())) return;
     if (button) button.disabled = true;
     const moduleId = selectedCollectionModuleId;
     try {
@@ -5236,7 +5225,7 @@
       openModuleDetail();
       document.getElementById("module-detail-status").textContent = "Modül seviyesi yükseltildi.";
     } catch (error) {
-      if (button) button.disabled = false;
+      if (button) { button.disabled = !moduleUpgradeAvailable(activeMetaModule()); button.setAttribute("aria-disabled", String(button.disabled)); }
       document.getElementById("module-detail-status").textContent = error.message;
     }
   }
@@ -8542,10 +8531,10 @@
   });
   document.getElementById("core-detail-upgrade")?.addEventListener("click", async () => {
     const button = document.getElementById("core-detail-upgrade");
-    if (button?.disabled) return;
+    if (button?.disabled || !metaIndicatorsLive() || !coreUpgradeAvailable(activeMetaCore())) return;
     if (button) button.disabled = true;
     try { await mutateSelectedCore("upgrade"); }
-    catch (error) { document.getElementById("core-detail-status").textContent = error.message; if (button) button.disabled = false; }
+    catch (error) { document.getElementById("core-detail-status").textContent = error.message; if (button) button.disabled = !metaIndicatorsLive() || !coreUpgradeAvailable(activeMetaCore()); }
   });
   document.querySelectorAll("[data-core-detail-tab]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -8555,6 +8544,14 @@
   });
   globalThis.GridshardCardSwipe.bind(document.getElementById("module-detail-dialog"), navigateModuleDetail);
   document.getElementById("module-detail-upgrade")?.addEventListener("click", upgradeCollectionModule);
+  document.getElementById("module-detail-select")?.addEventListener("click", async () => {
+    const button = document.getElementById("module-detail-select");
+    if (button?.disabled) return;
+    if (button) button.disabled = true;
+    await selectCollectionModule();
+    if (pendingDeckModuleInstanceId) document.getElementById("module-detail-dialog")?.close();
+    else openModuleDetail();
+  });
   document.querySelectorAll("[data-module-detail-tab]").forEach((button) => {
     button.addEventListener("click", () => {
       document.querySelectorAll("[data-module-detail-tab]").forEach((item) => item.classList.toggle("is-active", item === button));
@@ -9394,6 +9391,61 @@
     element:document.getElementById("battle-start-countdown"),
     onChange:() => { renderShelf(); renderCorePowerControl(); },
   });
+  const moduleMotion = new GridshardModuleMotion({
+    now:() => performance.now(),
+    hidden:() => document.hidden || document.body.dataset.appScreen !== "play",
+    reduced:() => battleGraphicsQuality() === "dusuk" || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true,
+    pointFor:record => {
+      const batch=battleAnchorRects();
+      const laser=(batch.devices || batch.lasers).get(String(record.domId));
+      if (laser) return GridshardLaserAim.project(laser.plane,GridshardLaserAim.PIVOT);
+      const rect = batch.modules.get(String(record.domId));
+      return rect ? { x:rect.left + rect.width / 2, y:rect.top + rect.height / 2 } : null;
+    },
+    draw:(record, pose) => {
+      const cell = moduleAnchorCells.get(String(record.domId));
+      const card = cell?.querySelector(".module-card");
+      if (!card || card.dataset.moduleId !== String(record.domId)) return false;
+      const icon = card.querySelector(".module-icon.has-module-device");
+      const batch=battleAnchorRects();
+      const plane=(batch.devices || batch.lasers).get(String(record.domId))?.plane;
+      return icon ? GridshardModuleDeviceArt.pose(icon, {...pose,plane}) : true;
+    },
+  });
+  const moduleVfx = new GridshardModuleVfx({
+    doc:document, now:() => performance.now(),
+    layer:() => document.getElementById("battle-effect-layer"),
+    anchor:moduleVfxAnchor,
+    boardRect:id => {
+      const root=id.startsWith("enemy-") ? enemyBoard : board;
+      const batch=battleAnchorRects(),rect=batch.boards.get(root),layer=batch.layer;
+      return rect && layer ? {left:rect.left-layer.left,top:rect.top-layer.top,width:rect.width,height:rect.height} : null;
+    },
+    rigFor:id => (battleAnchorRects().devices.get(String(id)))?.host?.querySelector(".module-device-rig"),
+    domId:serverModuleDomId,
+    schedule:(delay,run) => scheduleBattleSweep(delay,run),
+    sound:cue => triggerGridshardCue(cue),
+    quality:battleGraphicsQuality,
+    reduced:() => battleGraphicsQuality() === "dusuk" || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true,
+    hidden:() => document.hidden || document.body.dataset.appScreen !== "play",
+    load:() => battleEffectLoad(document.getElementById("battle-effect-layer")),
+  });
+  // State/DOM presentation completes synchronously after transport events.
+  // Flush new VFX once afterward, so newly placed modules have real anchors.
+  let pendingModuleVfx = null;
+  function queueModuleVfx(events,snapshot) {
+    if(pendingModuleVfx){pendingModuleVfx.events.push(...events||[]);pendingModuleVfx.snapshot=snapshot;return;}
+    const batch={events:[...events||[]],snapshot,attacks:[],generation:battleVisualGeneration};
+    pendingModuleVfx=batch;
+    const flush=()=>{
+      if(pendingModuleVfx!==batch)return;pendingModuleVfx=null;
+      if(batch.generation!==battleVisualGeneration||document.hidden)return;
+      battleAnchorBatch=null; // discard the pre-presentation geometry batch
+      moduleVfx.receive(batch.events,batch.snapshot);
+      for(const args of batch.attacks)moduleVfx.attack(...args);
+    };
+    if(typeof queueMicrotask==="function")queueMicrotask(flush);else Promise.resolve().then(flush);
+  }
   const onlineBattlePresentation = new GridshardBattlePresentationQueue({
     requestFrame:(run) => window.requestAnimationFrame(run),
     cancelFrame:(id) => window.cancelAnimationFrame(id),
@@ -9466,31 +9518,37 @@
   const WEAPON_PRESENTATION = Object.freeze({
     laser:{
       cue:"laser_fire",
+      impactCue:null, // Burning beam already owns the contact sound; no extra ping.
       fx:"laser",
       travelMs:260,
     },
     pulse_cannon:{
       cue:"pulse_cannon_fire",
+      impactCue:"kinetic_hit",
       fx:"pulse",
       travelMs:360,
     },
     railgun:{
       cue:"railgun_fire",
+      impactCue:"kinetic_hit",
       fx:"railgun",
       travelMs:220,
     },
     missile_launcher:{
       cue:"missile_fire",
+      impactCue:"missile_explosion",
       fx:"missile",
       travelMs:520,
     },
     drone_bay:{
       cue:"drone_fire",
+      impactCue:"kinetic_hit",
       fx:"drone",
       travelMs:430,
     },
     arc_cannon:{
       cue:"arc_cannon_fire",
+      impactCue:"electrical_hit",
       fx:"arc",
       travelMs:300,
     },
@@ -9498,26 +9556,31 @@
     // ayırt edici görüntüleri imza efektlerinden gelir.
     plasma_mortar:{
       cue:"plasma_mortar_fire",
+      impactCue:"missile_explosion",
       fx:"missile",
       travelMs:600,
     },
     quantum_repeater:{
       cue:"quantum_repeater_fire",
+      impactCue:null,
       fx:"laser",
       travelMs:240,
     },
     ion_spear:{
       cue:"ion_spear_fire",
+      impactCue:"electrical_hit",
       fx:"railgun",
       travelMs:220,
     },
     swarm_fabricator:{
       cue:"swarm_fabricator_fire",
+      impactCue:"kinetic_hit",
       fx:"drone",
       travelMs:430,
     },
     quantum_cannon:{
       cue:"quantum_cannon_fire",
+      impactCue:"kinetic_hit",
       fx:"pulse",
       travelMs:380,
     },
@@ -9541,34 +9604,36 @@
     ).cue;
   }
 
+  function attackImpactCue({sourceDefinitionId=null, defended=false, targetDefinitionId=null}={}) {
+    if (defended) return "shield_absorb";
+    const presentation=WEAPON_PRESENTATION[String(sourceDefinitionId || "").trim().replaceAll("-", "_")];
+    if (presentation && Object.hasOwn(presentation, "impactCue")) return presentation.impactCue;
+    return targetDefinitionId === "core" ? "core_hit" : "module_hit";
+  }
+
   function scheduleAttackImpactCue({
+    sourceDefinitionId=null,
     defended=false,
     targetDefinitionId=null,
     travelMs=0,
   }={}) {
-    const cue=defended
-      ? "shield_hit"
-      : (
-          targetDefinitionId === "core"
-            ? "core_hit"
-            : "module_hit"
-        );
+    const cue=attackImpactCue({sourceDefinitionId, defended, targetDefinitionId});
+    if (!cue) return;
     const delay=Math.max(0,Number(travelMs || 0));
     const dueAt=performance.now()+delay;
     const generation=battleVisualGeneration;
-    window.setTimeout(
-      () => {
-        // Takılmadan sonra birikmiş vuruş sesleri topluca çalmaz.
-        if (
-          generation !== battleVisualGeneration
-          || performance.now()-dueAt > BATTLE_FX_LATE_LIMIT_MS
-        ) {
-          return;
-        }
-        triggerGridshardCue(cue);
-      },
-      delay
-    );
+    // Reuse the battle's shared deferred queue, not one new timer per shot.
+    scheduleBattleSweep(delay, () => {
+      // Takılmadan sonra birikmiş vuruş sesleri topluca çalmaz.
+      if (
+        generation !== battleVisualGeneration
+        || document.hidden
+        || performance.now()-dueAt > BATTLE_FX_LATE_LIMIT_MS
+      ) {
+        return;
+      }
+      triggerGridshardCue(cue);
+    });
   }
 
   function selectedBattlePoolDefinitionIds() {
@@ -11171,19 +11236,43 @@
   // ve tahtadaki bütün kartları tek okuma turunda ölçer; kalan istekler bu
   // ölçümden yanıtlanır. Ölçüm görev bitince atılır, böylece bayatlamaz.
   let battleAnchorBatch = null;
+  const devicePlaneCache = new WeakMap();
 
   function battleAnchorRects() {
     if (battleAnchorBatch) return battleAnchorBatch;
-    const batch = { layer:null, modules:new Map() };
+    const batch = { layer:null, boards:new Map(), modules:new Map(), lasers:new Map(), devices:new Map() };
     const layer = document.getElementById("battle-effect-layer");
     if (layer && typeof layer.getBoundingClientRect === "function") {
       batch.layer = layer.getBoundingClientRect();
     }
     for (const root of [board, enemyBoard]) {
       if (!root || typeof root.querySelectorAll !== "function") continue;
+      if (typeof root.getBoundingClientRect === "function") batch.boards.set(root,root.getBoundingClientRect());
       for (const element of root.querySelectorAll("[data-module-id]")) {
         if (typeof element.getBoundingClientRect !== "function") continue;
-        batch.modules.set(String(element.dataset.moduleId), element.getBoundingClientRect());
+        const cardRect=element.getBoundingClientRect();
+        batch.modules.set(String(element.dataset.moduleId), cardRect);
+        const rig=element.querySelector?.('.module-device-rig[data-yaw="continuous"]');
+        if (rig) {
+          let cached=devicePlaneCache.get(rig);
+          if (!cached || cached.epoch!==battleLayoutEpoch || cached.width!==cardRect.width || cached.height!==cardRect.height) {
+            const measureRelative=selector=>[...rig.querySelectorAll(selector)].map(marker=>{
+              const r=marker.getBoundingClientRect(); return {x:r.left-cardRect.left,y:r.top-cardRect.top};
+            });
+            cached={epoch:battleLayoutEpoch,width:cardRect.width,height:cardRect.height,
+              relative:measureRelative(".laser-plane-point"),
+              sprite:rig.dataset.renderer === "views8" ? measureRelative(".sprite-plane-point") : []};
+            devicePlaneCache.set(rig,cached);
+          }
+          const points=cached.relative.map(p=>({x:p.x+cardRect.left,y:p.y+cardRect.top}));
+          const plane=GridshardLaserAim.plane(points) || GridshardLaserAim.plane(null,rig.getBoundingClientRect());
+          if (plane) {
+            if (cached.sprite.length === 4) plane.sprite=GridshardLaserAim.plane(cached.sprite.map(p=>({x:p.x+cardRect.left,y:p.y+cardRect.top})));
+            const entry={plane,host:rig.parentElement,definition:rig.dataset.device};
+            batch.devices.set(String(element.dataset.moduleId),entry);
+            if (rig.dataset.device === "laser") batch.lasers.set(String(element.dataset.moduleId),entry);
+          }
+        }
       }
     }
     battleAnchorBatch = batch;
@@ -11199,6 +11288,24 @@
     const batch = battleAnchorRects();
     if (batch.layer) return batch.layer;
     return layer.getBoundingClientRect();
+  }
+
+  function moduleVfxAnchor(moduleId, aimAt=null) {
+    const batch=battleAnchorRects(),layer=batch.layer,entry=batch.devices.get(String(moduleId));
+    const rect=batch.modules.get(String(moduleId));if(!layer||!rect)return null;
+    const local=p=>({x:p.x-layer.left,y:p.y-layer.top});
+    let center={x:rect.left+rect.width/2,y:rect.top+rect.height/2},emitter=center,pair=null;
+    if(entry){
+      center=GridshardLaserAim.project(entry.plane,GridshardLaserAim.PIVOT) || center;
+      if(aimAt)GridshardModuleDeviceArt.aimDevice(entry.host,entry.plane,{x:aimAt.x+layer.left,y:aimAt.y+layer.top});
+      const rig=entry.host.querySelector(".module-device-rig"),frame=Number(rig?.dataset.view||0);
+      const data=globalThis.GridshardModuleViewData?.[entry.definition];
+      if(entry.plane.sprite&&data){
+        emitter=GridshardLaserAim.project(entry.plane.sprite,data.emitters[frame]) || center;
+        if(data.pairs?.[frame])pair=data.pairs[frame].map(p=>local(GridshardLaserAim.project(entry.plane.sprite,p)));
+      }else emitter=center;
+    }
+    return {center:local(center),emitter:local(emitter),pair,definition:entry?.definition};
   }
 
   function rememberModuleAnchor(moduleId, rect) {
@@ -11954,6 +12061,9 @@
     events,
     snapshot
   ) {
+    moduleMotion.receive(events, snapshot, { ownPlayerId:participantPlayerId, domId:serverModuleDomId });
+    queueModuleVfx(events, snapshot);
+    requestBattleMotionFrame();
     for (const event of events || []) {
       const data=event.data || {};
       if (presentSignatureEvent(event, snapshot)) {
@@ -12389,6 +12499,7 @@
         )
       );
       scheduleAttackImpactCue({
+        sourceDefinitionId:sourceModule?.definition_id,
         defended,
         targetDefinitionId:
           targetModule?.definition_id,
@@ -12934,6 +13045,9 @@
   // Sahnedeki bütün geçici efektleri ve bekleyen efekt işlerini bırakır; savaş
   // durumu (tahta, Akım, Çekirdek gücü) yerinde kalır.
   function clearBattleEffects() {
+    moduleMotion.reset();
+    pendingModuleVfx=null;
+    moduleVfx.reset();
     battleVisualGeneration += 1;
     if (signatureEffectFrame !== null) window.cancelAnimationFrame?.(signatureEffectFrame);
     signatureEffectFrame = null;
@@ -12962,6 +13076,9 @@
 
   function handleBattleVisibilityChange() {
     if (document.hidden) {
+      moduleMotion.clear();
+      pendingModuleVfx=null;
+      moduleVfx.clearEffects();
       battleHiddenAt = performance.now();
       return;
     }
@@ -13833,6 +13950,14 @@
     ) {
       return 0;
     }
+    // First-ten physical projectiles/laser have one VFX owner. Later weapons
+    // retain their existing presentation; do not draw both old and new beams.
+    if (typeof moduleVfx !== "undefined") {
+      const duration=GridshardModuleVfx.travelFor(definitionId);
+      if(duration!==null&&pendingModuleVfx){pendingModuleVfx.attacks.push([sourceModuleId,targetModuleId,definitionId,kind === "shield"]);return duration;}
+      const result=moduleVfx.attack(sourceModuleId,targetModuleId,definitionId,kind === "shield");
+      if(result !== null)return result;
+    }
     const layer=document.getElementById(
       "battle-effect-layer"
     );
@@ -13871,22 +13996,27 @@
     const targetRect=
       resolveModuleAnchor(targetModuleId)
       || target.getBoundingClientRect();
-    const x1=
+    let x1=
       sourceRect.left
       + sourceRect.width/2
       - layerRect.left;
-    const y1=
+    let y1=
       sourceRect.top
       + sourceRect.height/2
       - layerRect.top;
-    const x2=
-      targetRect.left
-      + targetRect.width/2
-      - layerRect.left;
-    const y2=
-      targetRect.top
-      + targetRect.height/2
-      - layerRect.top;
+    const targetBatch=battleAnchorRects();
+    const targetLaser = (targetBatch.devices || targetBatch.lasers).get(String(targetModuleId));
+    const targetPoint = targetLaser ? GridshardLaserAim.project(targetLaser.plane,GridshardLaserAim.PIVOT)
+      : {x:targetRect.left+targetRect.width/2,y:targetRect.top+targetRect.height/2};
+    const x2=targetPoint.x-layerRect.left;
+    const y2=targetPoint.y-layerRect.top;
+    // Resolve from the same batched plane geometry as the rotating head. The
+    // instantaneous server shot aligns its head before this beam is painted.
+    const shotBatch=battleAnchorRects();
+    const laser = (shotBatch.devices || shotBatch.lasers).get(String(sourceModuleId));
+    const aimFn=GridshardModuleDeviceArt.aimDevice || GridshardModuleDeviceArt.aimLaser;
+    const aim = laser && aimFn(laser.host,laser.plane,{x:x2+layerRect.left,y:y2+layerRect.top});
+    if (aim) { x1=aim.muzzle.x-layerRect.left; y1=aim.muzzle.y-layerRect.top; }
     const dx=x2-x1;
     const dy=y2-y1;
     const distance=Math.hypot(dx,dy);
@@ -13898,6 +14028,7 @@
     line.className=
       "duel-attack-line";
     line.dataset.kind=kind;
+    if (aim) line.dataset.emitter=definitionId;
     line.dataset.weapon=
       presentation.fx;
     line.dataset.impact=impactLevel === "heavy" ? "heavy" : "light";
@@ -16577,8 +16708,7 @@
     return layer;
   }
 
-  // Akım çizgileri ayrı katmandadır: animasyon yalnız bu ince katmanı yeniden
-  // boyar, hücre ve kartların bulunduğu tahta katmanı boyanmış kalır.
+  // Sabit bağlantı ışığı ayrı SVG katmanında; akış animasyonu yoktur.
   function ensureBoardCurrentLayer(boardElement, baseLayer) {
     let layer=boardElement.querySelector(":scope > .board-cable-current-layer");
     if (layer) return layer;
@@ -16594,6 +16724,9 @@
 
   function invalidateBattleLayout() {
     battleLayoutEpoch += 1;
+    battleAnchorBatch=null;
+    moduleMotion.invalidateGeometry();
+    requestBattleMotionFrame();
     if (battleLayoutRefreshQueued) return;
     battleLayoutRefreshQueued = true;
     const refresh = () => {
@@ -16669,39 +16802,49 @@
     return line;
   }
 
-  // Yüksek kademede akım, kesik çizginin kaydırılmasıyla (stroke-dashoffset)
-  // değil, kendi kutusunda kayan bir şeritle gösterilir. Kesik çizgi kaydırma
-  // ana iş parçacığında her taramada stil hesabı ve boyama istiyordu; şeridin
-  // kayması bir dönüşüm animasyonudur ve onu bileşimci oynatır. Şerit yalnız
-  // Yüksek kademede görünür (bkz. canon.css, "bileşimcinin oynattığı
-  // animasyonlar"); diğer kademelerde SVG çizgisi durur.
-  function ensureBoardFlowLayer(boardElement, currentLayer) {
-    let layer=boardElement.querySelector(":scope > .board-cable-flow-layer");
-    if (layer) return layer;
-    layer=document.createElement("div");
-    layer.className="board-cable-flow-layer";
-    layer.setAttribute("aria-hidden","true");
-    if (typeof currentLayer.after === "function") currentLayer.after(layer);
-    else boardElement.prepend(layer);
-    return layer;
+  function createCircuitCableContacts(layer, geometry, first, second) {
+    const points = circuitCableEndpoints(geometry, first, second);
+    if (!points) return;
+    for (const point of [points.start, points.end]) {
+      const contact = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      contact.classList.add("circuit-cable-contact");
+      contact.setAttribute("cx", String(point.x));
+      contact.setAttribute("cy", String(point.y));
+      contact.setAttribute("r", "2.3");
+      layer.appendChild(contact);
+    }
   }
 
-  function createCircuitCableFlow(layer, geometry, first, second) {
-    const points = circuitCableEndpoints(geometry, first, second);
-    if (!points) return null;
-    const { start, end } = points;
-    const strip=document.createElement("span");
-    strip.className="circuit-cable-flow";
-    strip.style.left=`${start.x}px`;
-    strip.style.top=`${start.y}px`;
-    strip.style.width=`${Math.hypot(end.x - start.x, end.y - start.y)}px`;
-    strip.style.setProperty(
-      "--cable-flow-angle",
-      `${Math.atan2(end.y - start.y, end.x - start.x)}rad`
-    );
-    strip.appendChild(document.createElement("i"));
-    layer.appendChild(strip);
-    return strip;
+  // Visual bus routing only: energy and adjacency rules remain server-owned.
+  // One deterministic orthogonal route per powered destination, not every
+  // shortest route in the rectangle. Empty sockets can carry the board's bus;
+  // they never become powered modules or invented destinations.
+  function circuitCableRoutes(modules) {
+    const validCells = new Set(BOARD_CELLS.map(([x,y]) => `${x},${y}`));
+    const live = modules.filter(module => module?.position
+      && validCells.has(cablePositionKey(module.position))
+      && module.status !== "destroyed" && Number(module.hp ?? 1) > 0);
+    const core = live.find(module => module.definitionId === "core" || module.nameTr === "Çekirdek");
+    const fedCells = new Set();
+    const energizedEdges = new Set();
+    if (!core) return {fedCells, energizedEdges};
+    for (const module of live) {
+      if (module !== core && module.isPowered === false) continue;
+      fedCells.add(cablePositionKey(module.position));
+      let from = {x:Number(core.position.x), y:Number(core.position.y)};
+      const target = {x:Number(module.position.x), y:Number(module.position.y)};
+      const addStep = next => {
+        if (validCells.has(cablePositionKey(next))) {
+          energizedEdges.add(`${cablePositionKey(from)}>${cablePositionKey(next)}`);
+        }
+        from = next;
+      };
+      const stepX = Math.sign(target.x - from.x);
+      while (from.x !== target.x) addStep({x:from.x + stepX, y:from.y});
+      const stepY = Math.sign(target.y - from.y);
+      while (from.y !== target.y) addStep({x:from.x, y:from.y + stepY});
+    }
+    return {fedCells, energizedEdges};
   }
 
   function boardCableState(boardElement, layer) {
@@ -16718,10 +16861,9 @@
     if (!state) observeBattleLayout(boardElement);
     const geometry = measureBoardCableGeometry(boardElement);
     const currentLayer = ensureBoardCurrentLayer(boardElement, layer);
-    const flowLayer = ensureBoardFlowLayer(boardElement, currentLayer);
     layer.replaceChildren();
     currentLayer.replaceChildren();
-    flowLayer.replaceChildren();
+    boardElement.querySelector(":scope > .board-cable-flow-layer")?.remove();
     layer.setAttribute("viewBox", `0 0 ${geometry.width} ${geometry.height}`);
     currentLayer.setAttribute("viewBox", `0 0 ${geometry.width} ${geometry.height}`);
     const cells = new Set(BOARD_CELLS.map(([x,y]) => `${x},${y}`));
@@ -16731,20 +16873,25 @@
       for (const {dx,dy} of CIRCUIT_CABLE_DIRECTIONS) {
         const second = {x:x+dx,y:y+dy};
         if (!cells.has(cablePositionKey(second))) continue;
+        createCircuitCableLine(layer, geometry, first, second, "circuit-cable-jacket");
         createCircuitCableLine(layer, geometry, first, second, "circuit-cable-base");
+        createCircuitCableContacts(layer, geometry, first, second);
+        const glow = createCircuitCableLine(currentLayer, geometry, first, second, "circuit-cable-glow");
+        const current = createCircuitCableLine(currentLayer, geometry, first, second, "circuit-cable-current");
+        glow?.setAttribute("visibility", "hidden");
+        current?.setAttribute("visibility", "hidden");
         edges.push({
           first,
           second,
           forwardKey:`${cablePositionKey(first)}>${cablePositionKey(second)}`,
           reverseKey:`${cablePositionKey(second)}>${cablePositionKey(first)}`,
           direction:"none",
-          current:null,
-          glow:null,
-          flow:null,
+          current,
+          glow,
         });
       }
     }
-    state = { epoch:battleLayoutEpoch, geometry, edges, currentLayer, flowLayer, fedSignature:null };
+    state = { epoch:battleLayoutEpoch, geometry, edges, currentLayer, fedSignature:null };
     boardCableStates.set(layer, state);
     return state;
   }
@@ -16753,65 +16900,20 @@
     const layer = ensureBoardCableLayer(boardElement);
     if (!layer) return;
     const cableState = boardCableState(boardElement, layer);
-    const modules = [...moduleIterable];
-    const liveCore = modules.some(m => (m.definitionId === "core" || m.nameTr === "Çekirdek") && Number(m.hp) > 0);
-
-    // Keep the cell itself aware of the incoming current.  This lets the
-    // cable layer stay underneath the card while the cell edge still pulses
-    // when a powered module is attached to that part of the circuit.
-    const fedCells = new Set(
-      modules
-        .filter((module) =>
-          module?.position
-          && module.status !== "destroyed"
-          && Number(module.hp ?? 1) > 0
-          && (module.definitionId === "core"
-            || module.nameTr === "Çekirdek"
-            || module.isPowered !== false)
-        )
-        .map((module) => cablePositionKey(module.position))
-    );
-    const energizedEdges = new Set();
-    if (liveCore) {
-      const poweredPositions = modules
-        .filter((module) => module?.position && fedCells.has(cablePositionKey(module.position)))
-        .map((module) => ({
-          x:Number(module.position.x),
-          y:Number(module.position.y),
-        }));
-      // Current spreads along every shortest route from the Core to each
-      // powered module: the whole rectangle between them carries it. The top
-      // and bottom rows therefore show left/right flow as well, and every
-      // cable points away from the Core, so directions never conflict.
-      const core = {x:2,y:1};
-      for (const target of poweredPositions) {
-        const stepX = Math.sign(target.x - core.x);
-        const stepY = Math.sign(target.y - core.y);
-        for (let x = Math.min(core.x, target.x); x <= Math.max(core.x, target.x); x += 1) {
-          for (let y = Math.min(core.y, target.y); y <= Math.max(core.y, target.y); y += 1) {
-            const from = {x,y};
-            if (stepX && x !== target.x) {
-              energizedEdges.add(`${cablePositionKey(from)}>${cablePositionKey({x:x + stepX,y})}`);
-            }
-            if (stepY && y !== target.y) {
-              energizedEdges.add(`${cablePositionKey(from)}>${cablePositionKey({x,y:y + stepY})}`);
-            }
-          }
-        }
-      }
-    }
-    const fedSignature = liveCore ? [...fedCells].sort().join("|") : "";
+    const {fedCells, energizedEdges} = circuitCableRoutes([...moduleIterable]);
+    const fedSignature = [...fedCells].sort().join("|");
     if (cableState.fedSignature !== fedSignature) {
       cableState.fedSignature = fedSignature;
       for (const cell of boardElement.querySelectorAll(".board-cell")) {
         const key = `${cell.dataset.x},${cell.dataset.y}`;
-        const fed = liveCore && fedCells.has(key);
+        const fed = fedCells.has(key);
         cell.classList.toggle("energy-fed-cell", fed);
         cell.dataset.energyFed = String(fed);
       }
     }
 
-    // Kablo tabanı sabittir; yalnız akım yönü değişen kenarın çizgisi yenilenir.
+    // All cable nodes persist. Only changed connections toggle visibility;
+    // unchanged ticks allocate no cable nodes and perform no cable writes.
     for (const edge of cableState.edges) {
       const direction = energizedEdges.has(edge.forwardKey)
         ? "forward"
@@ -16820,25 +16922,9 @@
           : "none";
       if (direction === edge.direction) continue;
       edge.direction = direction;
-      edge.current?.remove();
-      edge.glow?.remove();
-      edge.flow?.remove();
-      edge.current = null;
-      edge.glow = null;
-      edge.flow = null;
-      if (direction === "none") continue;
-      const from = direction === "forward" ? edge.first : edge.second;
-      const to = direction === "forward" ? edge.second : edge.first;
-      // Parıltı, çizgi başına SVG filtresi yerine geniş ve soluk bir alt çizgidir.
-      edge.glow = createCircuitCableLine(
-        cableState.currentLayer, cableState.geometry, from, to, "circuit-cable-glow"
-      );
-      edge.current = createCircuitCableLine(
-        cableState.currentLayer, cableState.geometry, from, to, "circuit-cable-current"
-      );
-      edge.flow = createCircuitCableFlow(
-        cableState.flowLayer, cableState.geometry, from, to
-      );
+      const visibility = direction === "none" ? "hidden" : "visible";
+      edge.current?.setAttribute("visibility", visibility);
+      edge.glow?.setAttribute("visibility", visibility);
     }
     if (boardElement === board) renderCorePowerControl();
   }
@@ -17035,10 +17121,14 @@
   const battleCardStateView = new GridshardBattleCardStateView({
     document,
     mountIcon:(icon, model, card) => {
+      icon.classList.remove("has-module-device");
       if (model.core) {
         mountCoreEmblem(icon, model.coreType);
         applyCoreVisualIdentity(card, model.coreType);
-      } else mountModuleEmblem(icon, model.module);
+      } else if (model.physical) {
+        GridshardModuleDeviceArt.mount(icon, model.module, model.enemy);
+      }
+      else mountModuleEmblem(icon, model.module);
     },
     onTooltip:updateShelfTooltipPlacement,
   });
@@ -17049,7 +17139,8 @@
   }
 
   function battleCardModel(moduleLike, { enemy=false }={}) {
-    const name = moduleLike.nameTr ?? moduleLike.name ?? "";
+    const name = GridshardModuleDeviceArt.idFor(moduleLike) === "armor"
+      ? "Sönümleyici" : moduleLike.nameTr ?? moduleLike.name ?? "";
     const core = moduleLike.definitionId === "core" || moduleLike.kind === "core" || name === "Çekirdek";
     const coreType = enemy ? mockEnemyCoreType : metaProgressionState?.cores?.selected_core_type || "core_resonance";
     const received = Math.max(0, Number(moduleLike.energyReceived || 0));
@@ -17085,11 +17176,13 @@
     const title = enemy ? name + " · HP " + Math.max(0, Math.round(moduleLike.hp)) + "/" + moduleLike.maxHp
       : targeting ? "Çekirdek Rezonansını kullan" : core ? name + " sabit başlangıç modülüdür." : name + " · savaş sırasında sabit";
     const coreCharge = Math.max(0, Math.min(100, Math.round(corePowerCharge)));
+    const physical = !core && moduleLike.status === "active" && Boolean(moduleLike.position)
+      && Boolean(GridshardModuleDeviceArt.idFor(moduleLike));
     return {
-      module:moduleLike, id:moduleLike.instanceId ?? moduleLike.id, enemy, core, coreType, targeting,
+      module:moduleLike, id:moduleLike.instanceId ?? moduleLike.id, enemy, core, coreType, targeting, physical,
       category:moduleLike.category ?? moduleLike.kind ?? "", name:battleUiText(name),
       shortName:battleUiText(moduleShortNameFor(moduleLike)), title:battleUiText(title),
-      artwork:core ? "core:" + coreType : (moduleLike.definitionId || "") + ":" + name,
+      artwork:core ? "core:" + coreType : (moduleLike.definitionId || "") + ":" + name + ":" + physical,
       hp:moduleLike.hp, maxHp:moduleLike.maxHp, heat, overheated:Boolean(moduleLike.overheated),
       coreCharge, coreReady:corePowerReady,
       coreLabel:core && !enemy ? battleUiText("Çekirdek gücü · " + (corePowerReady ? "Hazır" : "%" + coreCharge)) : "",
@@ -19008,13 +19101,14 @@
     card.dataset.seen = String(Boolean(notice.seen));
     const copy = document.createElement("div");
     const title = document.createElement("strong");
-    title.textContent = notice.title_tr || "Bildirim";
-    title.prepend(createUiIcon(notice.category === "purchase" ? "shop" : "info"));
+    title.textContent = notice.category === "purchase" ? "Satın alım tamamlandı" : notice.title_tr || "Bildirim";
     const schedule = notice.scheduled_at ? new Date(notice.scheduled_at) : null;
     const scheduleLabel = schedule && !Number.isNaN(schedule.getTime())
       ? ` · ${schedule.toLocaleString(uiLocale(), { weekday:"short", hour:"2-digit", minute:"2-digit" })}`
       : "";
-    copy.append(title, createInboxCardMeta(notice, `${notice.body_tr || ""}${scheduleLabel}`));
+    const purchaseDetail = notice.product_name_tr || String(notice.title_tr || "").split(" · ").slice(1).join(" · ");
+    copy.append(title, createInboxCardMeta(notice, `${purchaseDetail ? purchaseDetail + " · " : ""}${notice.body_tr || ""}${scheduleLabel}`));
+    if (notice.category === "purchase") {
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "inbox-message-delete";
@@ -19025,6 +19119,7 @@
       notice.category === "purchase" ? "purchase" : "system", [notice.notice_id], remove
     ));
     copy.appendChild(remove);
+    }
     card.append(createInboxReadButton(card, notice, "notice", copy), copy);
     return card;
   }
@@ -19043,34 +19138,13 @@
     });
     const copy = document.createElement("div");
     const title = document.createElement("strong");
-    title.textContent = message.title_tr || "Rekabet Ödülü";
-    title.prepend(createUiIcon("chest"));
+    title.textContent = message.category === "battle" ? "Savaş Zaferi Sandığı" : message.title_tr || "Rekabet Ödülü";
     copy.append(title, createInboxCardMeta(message, reward.chest_name_tr || "Ödül Kasası"), chest);
     const claim = document.createElement("button");
     claim.type = "button";
     claim.textContent = message.status === "claimed" ? "ALINDI" : "TOPLA";
-    claim.disabled = message.status === "claimed";
-    claim.addEventListener("click", async () => {
-      claim.disabled = true;
-      const status = document.getElementById("reward-inbox-status");
-      if (status) status.textContent = "Sandık toplanıyor…";
-      try {
-        const payload = await requestJsonWithDeadline(
-          `/profile/${encodeURIComponent(participantPlayerId)}/reward-inbox/${encodeURIComponent(message.message_id)}/claim`,
-          { method:"POST", body:JSON.stringify({ request_id:`inbox:${message.message_id}` }) },
-          30000
-        );
-        rewardInboxState = payload;
-        if (payload.profile) profileState.applyProfile(payload.profile);
-        await loadMetaProgression();
-        renderRewardInbox();
-        renderProfileSummary();
-        if (status) status.textContent = "Sandık mağazadaki stoğuna eklendi.";
-      } catch (error) {
-        claim.disabled = false;
-        if (status) status.textContent = error instanceof Error ? error.message : String(error);
-      }
-    });
+    claim.disabled = message.status === "claimed" || inboxClaimBusy;
+    claim.addEventListener("click", () => void collectInboxRewards([message.message_id], claim));
     card.append(createInboxReadButton(card, message, "reward", copy), copy, claim);
     return card;
   }
@@ -19078,6 +19152,8 @@
   let activeInboxTab = "reward";
   const INBOX_AREA_LIMIT = 20;
   let inboxDismissBusy = false;
+  let inboxClaimBusy = false;
+  const inboxExpanded = new Set();
   let lastInboxDismiss = null;
   let inboxMutationVersion = 0;
   let pendingInboxDismiss = null;
@@ -19100,41 +19176,101 @@
     artwork.className = "ui-art";
     artwork.setAttribute("aria-hidden", "true");
     button.appendChild(artwork);
-    const state = document.createElement("small");
-    state.className = "inbox-read-state";
-    copy.appendChild(state);
+    const expansionKey = `${playerId}:${key}`;
+    const title = copy.firstElementChild;
+    const content = document.createElement("div");
+    content.className = "inbox-message-content";
+    for (const child of [...copy.children].slice(1)) content.appendChild(child);
+    copy.appendChild(content);
+    if (title) { title.setAttribute("role", "button"); title.tabIndex = 0; title.classList.add("inbox-message-title"); }
     const paint = () => {
       const seen = Boolean(item.seen || inboxReadStore.has(key));
       card.dataset.seen = String(seen);
       artwork.dataset.uiArt = seen ? "message-open" : "message";
-      state.textContent = localizedMessage(seen ? "inbox.read" : "inbox.unread");
-      button.setAttribute("aria-label", localizedMessage(seen ? "inbox.read" : "inbox.mark_read"));
-      button.setAttribute("aria-pressed", String(seen));
+      const expanded = inboxExpanded.has(expansionKey);
+      content.hidden = !expanded;
+      button.setAttribute("aria-label", expanded ? "İçeriği kapat" : "İçeriği göster");
+      button.setAttribute("aria-expanded", String(expanded));
+      title?.setAttribute("aria-expanded", String(expanded));
     };
     paint();
     button.addEventListener("click", () => {
       if (playerId !== participantPlayerId) return;
-      inboxReadStore.mark(key);
+      const expanding = !inboxExpanded.has(expansionKey);
+      if (expanding) { inboxExpanded.add(expansionKey); inboxReadStore.mark(key); }
+      else inboxExpanded.delete(expansionKey);
       paint();
-      if (kind === "notice" && item.notice_id) void markInboxNoticesSeen([item.notice_id]);
+      if (expanding && kind === "notice" && item.notice_id) void markInboxNoticesSeen([item.notice_id]);
+    });
+    title?.addEventListener("click", () => button.click());
+    title?.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") { event.preventDefault(); button.click(); }
     });
     return button;
   }
 
+  async function collectInboxRewards(ids = null, button = null) {
+    if (inboxClaimBusy || inboxDismissBusy) return;
+    const playerId = participantPlayerId, tab = activeInboxTab;
+    const wanted = ids ? new Set(ids) : null;
+    const visited = new Set();
+    const status = document.getElementById("reward-inbox-status");
+    inboxClaimBusy = true; inboxMutationVersion += 1;
+    if (button) button.disabled = true;
+    renderRewardInbox();
+    let collected = 0;
+    try {
+      // Serial, deterministic per-message request IDs. Each response supplies
+      // the next mailbox page; retries never grant a chest a second time.
+      while (participantPlayerId === playerId && visited.size < 200) {
+        const message = (rewardInboxState?.messages || []).find(item => item.status === "unclaimed"
+          && !visited.has(item.message_id) && (wanted ? wanted.has(item.message_id)
+            : tab === "battle" ? item.category === "battle" : tab === "reward" && item.category !== "battle"));
+        if (!message) break;
+        visited.add(message.message_id);
+        const payload = await requestJsonWithDeadline(
+          `/profile/${encodeURIComponent(playerId)}/reward-inbox/${encodeURIComponent(message.message_id)}/claim`,
+          {method:"POST", body:JSON.stringify({request_id:`inbox:${message.message_id}`})}, 30000);
+        if (participantPlayerId !== playerId) return;
+        rewardInboxState = payload;
+        if (payload.profile) profileState.applyProfile(payload.profile);
+        collected += 1;
+      }
+      if (status) status.textContent = collected ? `${collected} sandık mağazadaki stoğuna eklendi.` : "";
+    } catch (error) {
+      if (participantPlayerId === playerId && status) status.textContent = `${collected ? collected + " sandık toplandı. " : ""}${error instanceof Error ? error.message : String(error)}`;
+    } finally {
+      inboxClaimBusy = false; inboxMutationVersion += 1;
+      if (participantPlayerId === playerId) {
+        if (collected) await loadMetaProgression();
+        if (participantPlayerId === playerId) await loadRewardInbox({quiet:true});
+        if (participantPlayerId === playerId) { renderRewardInbox(); renderProfileSummary(); }
+      }
+    }
+  }
+
   function renderInboxDismissControls() {
-    const removable = ["purchase", "system"].includes(activeInboxTab);
+    const removable = activeInboxTab === "purchase";
     const entries = activeInboxTab === "purchase" ? rewardInboxState?.purchases : rewardInboxState?.notices;
     const removeAll = document.getElementById("inbox-delete-all");
-    if (removeAll) removeAll.disabled = inboxDismissBusy || !removable || !entries?.length;
+    if (removeAll) { removeAll.hidden = activeInboxTab === "system"; removeAll.disabled = inboxDismissBusy || inboxClaimBusy || !removable || !entries?.length; }
+    const collectAll = document.getElementById("inbox-collect-all");
+    if (collectAll) {
+      collectAll.hidden = !["battle", "reward"].includes(activeInboxTab);
+      collectAll.disabled = inboxDismissBusy || inboxClaimBusy || !(rewardInboxState?.messages || []).some(item => item.status === "unclaimed"
+        && (activeInboxTab === "battle" ? item.category === "battle" : item.category !== "battle"));
+    }
+    const note = document.getElementById("inbox-delete-note");
+    if (note) note.hidden = true;
     const undo = document.getElementById("inbox-delete-undo");
     if (undo) {
-      undo.hidden = !lastInboxDismiss || lastInboxDismiss.playerId !== participantPlayerId;
+      undo.hidden = activeInboxTab === "system" || !lastInboxDismiss || lastInboxDismiss.playerId !== participantPlayerId;
       undo.disabled = inboxDismissBusy;
     }
   }
 
   async function dismissInboxMessages(category, noticeIds, button, { all = false, restore = false } = {}) {
-    if (inboxDismissBusy || (!all && !noticeIds.length)) return;
+    if (inboxDismissBusy || inboxClaimBusy || category === "system" || (!all && !noticeIds.length)) return;
     const playerId = participantPlayerId;
     const status = document.getElementById("reward-inbox-status");
     inboxDismissBusy = true;
@@ -19242,7 +19378,7 @@
   }
 
   async function markInboxNoticesSeen(noticeIds = null) {
-    if (inboxDismissBusy) return;
+    if (inboxDismissBusy || inboxClaimBusy) return;
     const playerId = participantPlayerId;
     const version = inboxMutationVersion;
     const wanted = noticeIds ? new Set(noticeIds) : null;
@@ -19259,7 +19395,7 @@
         },
         12000
       );
-      if (version !== inboxMutationVersion || inboxDismissBusy || playerId !== participantPlayerId) return;
+      if (version !== inboxMutationVersion || inboxDismissBusy || inboxClaimBusy || playerId !== participantPlayerId) return;
       rewardInboxState = payload;
       renderRewardInbox();
     } catch (_error) {
@@ -19297,14 +19433,14 @@
     const status = document.getElementById("reward-inbox-status");
     const playerId = participantPlayerId;
     const version = inboxMutationVersion;
-    if (inboxDismissBusy && !open) return;
+    if (inboxDismissBusy || inboxClaimBusy) return;
     try {
       const payload = await requestJsonWithDeadline(
         `/profile/${encodeURIComponent(playerId)}/reward-inbox`,
         { cache:"no-store" },
         12000
       );
-      if (version !== inboxMutationVersion || inboxDismissBusy || playerId !== participantPlayerId) return;
+      if (version !== inboxMutationVersion || inboxDismissBusy || inboxClaimBusy || playerId !== participantPlayerId) return;
       rewardInboxState = payload;
       if (status && !quiet) status.textContent = "";
       renderRewardInbox();
@@ -19399,7 +19535,7 @@
     if (mission.id === "win_battles") icon.appendChild(createRatingTrophyIcon());
     else if (["complete_battles", "deal_damage"].includes(mission.id)) icon.appendChild(createUiIcon("battle"));
     else if (["circuit_actions", "destroy_modules"].includes(mission.id)) icon.appendChild(createUiIcon("deck"));
-    else icon.innerHTML = `<svg viewBox="0 0 24 24">${DAILY_MISSION_ICONS[mission.id] || DAILY_MISSION_ICONS.complete_battles}</svg>`;
+    else icon.innerHTML = uiIconMarkup(mission.id === "core_power" ? "core" : "info");
     const copy = document.createElement("div");
     copy.className = "daily-mission-copy";
     const name = document.createElement("strong");
@@ -19685,9 +19821,11 @@
           : viewEngagement.rewardTrack
         )?.find((reward) => String(reward.tier) === String(id))
       : null;
-    const opensChest = Boolean(selectedReward?.chest_tier);
     if (button) button.disabled = true;
     if (status) status.textContent = "Ödül alınıyor…";
+    // Every season tile is a presentation container: it opens now, even when
+    // there is no nested inventory chest in its contents.
+    if (isSeasonTrack) showChestOpening({tier:selectedReward?.chest_tier || "bronze", title:`Kademe ${id} Ödülü`});
     const engagement = profileState.viewModel()?.engagement || {};
     const claimScope = kind === "missions"
       ? (engagement.daily_mission_day || new Date().toISOString().slice(0, 10))
@@ -19713,12 +19851,34 @@
         showChestReveal(premiumReceipts[0]);
       } else if (result.payload?.season_chest_receipt) {
         showChestReveal(result.payload.season_chest_receipt);
+      } else if (isSeasonTrack && result.payload?.season_reward_receipt) {
+        const reward = result.payload.season_reward_receipt;
+        showChestReveal({
+          definition_id:({bronze:"field_3h",silver:"circuit_8h",gold:"core_24h",diamond:"diamond_24h"})[selectedReward?.chest_tier] || "field_3h",
+          rewards:{...reward, chest_name_tr:`Kademe ${id} Ödülü`},
+        });
+        // Only explicit unopened chests INSIDE the season reward are stocked.
+        // Never treat the outer animation/presentation chest as inventory.
+        const stocks = [result.payload.season_chest_delivery, ...(result.payload.season_chest_deliveries || [])].filter(item => item?.delivery === "inventory");
+        const host = document.getElementById("chest-reveal-rewards");
+        for (const stock of stocks) {
+          const row = document.createElement("div"); row.className = "season-stock-reward";
+          const caption = document.createElement("span");
+          caption.textContent = `${stock.chest?.name_tr || "Sandık"} · Mağaza stoğuna eklendi`;
+          row.append(createRewardChestButton({tier:selectedReward?.chest_tier || "bronze", title:stock.chest?.name_tr || "Sandık",
+            reward:{chest_is_container:true}, note:"Mağazadan açabilirsin."}), caption);
+          host?.appendChild(row);
+        }
+      } else if (isSeasonTrack) {
+        showChestFailure("Ödül alındı ancak içerik kaydı sunucudan alınamadı. Sayfayı yenileyebilirsin.");
       }
+    } else if (isSeasonTrack) {
+      showChestFailure(result.reason || "Ödül alınamadı.");
     }
     renderProfileSummary();
     renderRemoteDataStatus();
     if (status) {
-      status.textContent = result.ok ? (opensChest ? "Sandık mesaj kutusuna gönderildi." : "") : (result.reason || "Ödül alınamadı.");
+      status.textContent = result.ok ? "" : (result.reason || "Ödül alınamadı.");
       status.dataset.status = result.ok ? "success" : "error";
     }
     return result;
@@ -20460,6 +20620,14 @@
   let lastBattleHudRenderAt = -Infinity;
   let renderedClockText = null;
   let renderedClockOvertime = null;
+  let battleClockFrame = null;
+  let battleClockTimer = null;
+
+  function requestBattleMotionFrame() {
+    if (document.hidden || !moduleMotion.needsFrame) return;
+    if (battleClockTimer !== null) { window.clearTimeout(battleClockTimer); battleClockTimer = null; }
+    if (battleClockFrame === null) battleClockFrame = requestAnimationFrame(updateClock);
+  }
 
   // Otomatik grafik kademesi: ölçüm pencerelerinde kare hızı art arda iki kez
   // kötü çıkarsa kademe bir iner (eşikler battle/graphics-tier.js içinde).
@@ -20470,6 +20638,8 @@
   }
 
   function updateClock(now) {
+    battleClockFrame = null;
+    battleClockTimer = null;
     const analyticsBattleActive = activePlayMode === "online"
       ? document.body.dataset.onlineStatus === "battle"
       : activePlayMode === "local" && localBattleStarted && !localBattleFinished;
@@ -20545,20 +20715,20 @@
     // HUD ve tahta denetimi her karede çalışmaz: sunucu mesajı uygulanınca
     // (bkz. syncOnlineServerBattle) ve yedek olarak bu turda yenilenir.
     if (
-      !frameSampling
-      || !Number.isFinite(now)
+      !Number.isFinite(now)
       || now - lastBattleHudRenderAt >= BATTLE_HUD_RENDER_INTERVAL_MS
       || now < lastBattleHudRenderAt
     ) {
       renderBattleHud(now);
     }
 
-    if (frameSampling || typeof window.setTimeout !== "function") {
-      requestAnimationFrame(updateClock);
+    moduleMotion.tick(now);
+    if (frameSampling || moduleMotion.needsFrame || typeof window.setTimeout !== "function") {
+      battleClockFrame = requestAnimationFrame(updateClock);
     } else {
       // rAF sekme arka plandayken bekler; zamanlayıcı yalnız aralığı belirler.
-      window.setTimeout(
-        () => requestAnimationFrame(updateClock),
+      battleClockTimer = window.setTimeout(
+        () => { battleClockTimer = null; battleClockFrame = requestAnimationFrame(updateClock); },
         BATTLE_HUD_RENDER_INTERVAL_MS - 16
       );
     }
@@ -21038,6 +21208,7 @@
   function applyBattlePerspectivePreference(enabled) {
     document.body.dataset.battlePerspective =
       enabled && battleGraphicsQuality() !== "dusuk" ? "on" : "off";
+    invalidateBattleLayout();
   }
   const settingsBattlePerspectiveEl = document.getElementById("settings-battle-perspective");
   applyGraphicsQuality();
@@ -21643,7 +21814,8 @@
     }
     for (const host of document.querySelectorAll("[data-event-emblem]")) {
       const kind = host.dataset.eventEmblem;
-      if (Object.hasOwn(EVENT_HUB_EMBLEMS, kind)) host.innerHTML = EVENT_HUB_EMBLEMS[kind];
+      if (kind === "banner") host.innerHTML = '<span class="ui-art" data-ui-art="team-tournament" aria-hidden="true"></span>';
+      else if (Object.hasOwn(EVENT_HUB_EMBLEMS, kind)) host.innerHTML = EVENT_HUB_EMBLEMS[kind];
     }
     for (const [selector, icon, tone] of [
       ['[data-module-detail-tab="overview"], [data-core-detail-tab="overview"]', "info", "cyan"],
@@ -21655,6 +21827,10 @@
       ['#lobby-menu [data-open-screen="settings"]', "gear", "steel"],
       ['#team-menu [data-team-management-tab="cosmetics"]', "palette", "pink"],
       ['#team-menu [data-team-management-tab="members"]', "people", "green"],
+      ['[data-card-page="modules"]', "deck", "blue"],
+      ['[data-card-page="cores"]', "core", "cyan"],
+      ['[data-leaderboard-tab="core_damage"]', "core", "cyan"],
+      ['[data-leaderboard-tab="teams"]', "team", "violet"],
     ]) {
       for (const button of document.querySelectorAll(selector)) {
         if (button.querySelector(".ui-icon")) continue;
@@ -21665,6 +21841,14 @@
         button.dataset.tone = tone;
         button.classList.add("has-ui-icon");
       }
+    }
+    for (const button of document.querySelectorAll("#arena-detail-close,#leaderboard-back,.event-detail-header > button")) {
+      button.innerHTML = uiIconMarkup("back"); button.classList.add("refresh-back-button");
+    }
+    const leaderboardButton = document.getElementById("arena-leaderboard-button");
+    if (leaderboardButton) {
+      leaderboardButton.textContent = "LİDER PANOSU";
+      leaderboardButton.prepend(createRatingTrophyIcon());
     }
     // Sayfa kaynağında işaretli başlıklar: data-ui-icon="simge:ton".
     for (const element of document.querySelectorAll("[data-ui-icon]")) {
@@ -21695,8 +21879,9 @@
   // Deneme reklamı süresi dolmadan kapatılamaz; ödül yalnız izleme bitince istenir.
   document.getElementById("reward-ad-dialog")?.addEventListener("cancel", (event) => event.preventDefault());
   document.getElementById("reward-inbox-close")?.addEventListener("click", () => document.getElementById("reward-inbox-dialog")?.close());
+  document.getElementById("inbox-collect-all")?.addEventListener("click", event => void collectInboxRewards(null, event.currentTarget));
   document.getElementById("inbox-delete-all")?.addEventListener("click", () => {
-    if (inboxDismissBusy || !["purchase", "system"].includes(activeInboxTab)) return;
+    if (inboxDismissBusy || inboxClaimBusy || activeInboxTab !== "purchase") return;
     const dialog = document.getElementById("inbox-delete-confirm-dialog");
     if (!dialog?.showModal || dialog.open) return;
     pendingInboxDismiss = { playerId:participantPlayerId, category:activeInboxTab };
@@ -22537,5 +22722,5 @@
   render();
   renderCapacity();
   renderCredits();
-  requestAnimationFrame(updateClock);
+  battleClockFrame = requestAnimationFrame(updateClock);
 })();

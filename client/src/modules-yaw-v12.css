@@ -1,0 +1,66 @@
+/* Camera v13: the CIRCUIT is the ground plane. Device art is a camera-facing
+ * eight-view impostor, not an overhead bitmap spun/stacked like a floor decal.
+ * This is illustrated 2.5D, not a volumetric mesh. */
+:root body[data-app-screen="play"] .vertical-circuit-arena {
+  --gs-camera-tilt:0deg;
+  --gs-camera-counter:0deg;
+  --gs-camera-distance:1400px;
+  --gs-camera-fit-inset:32px;
+  /* Exactly half of v8's 52px VS track: both boards use the SAME world axis. */
+  --gs-camera-axis-gap:26px;
+}
+:root body[data-app-screen="play"][data-battle-perspective="on"] .vertical-circuit-arena {
+  --gs-camera-tilt:30deg;
+  --gs-camera-counter:-30deg;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .board {
+  transform:perspective(var(--gs-camera-distance)) rotateX(var(--gs-camera-tilt)) scale(.98) !important;
+  transform-style:preserve-3d;
+  isolation:auto; overflow:visible; filter:none !important; will-change:auto !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .enemy-board {
+  transform-origin:50% calc(100% + var(--gs-camera-axis-gap)) !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .duel-player-side .board {
+  transform-origin:50% calc(-1 * var(--gs-camera-axis-gap)) !important;
+}
+/* Do not flatten the path between the board camera and its billboard. SVG
+ * cables and edge-mounted bars stay on the board; only device art faces camera. */
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell,
+:root body[data-app-screen="play"] .vertical-circuit-arena .physical-module-card,
+:root body[data-app-screen="play"] .vertical-circuit-arena .has-module-device {
+  transform-style:preserve-3d; overflow:visible !important;
+  isolation:auto; filter:none !important;
+}
+:root body[data-app-screen="play"] .module-device-rig[data-renderer="views8"] {
+  --device-height:calc(var(--gs-battle-card-size,60px) * .14);
+  transform:none !important; transform-style:preserve-3d; opacity:1;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .physical-module-card > .module-icon.has-module-device {
+  /* Atlas frames already contain registration padding; do not pad twice. */
+  inset:3px !important; width:calc(100% - 6px) !important; height:calc(100% - 6px) !important;
+  inline-size:calc(100% - 6px) !important; block-size:calc(100% - 6px) !important;
+}
+.module-device-ground-shadow {
+  position:absolute; left:18%; right:18%; top:65%; height:20%;
+  border-radius:50%; background:#01070c80; pointer-events:none;
+}
+.module-device-billboard {
+  position:absolute; inset:0; display:block; transform-style:preserve-3d;
+  /* Registered pedestal point; no second perspective camera on the module. */
+  transform-origin:50% 82%; transform:rotateX(var(--gs-camera-counter,0deg));
+}
+.module-view-window { position:absolute; display:block; inset:0; overflow:hidden; }
+.module-view-atlas {
+  position:absolute; display:block; width:400%; height:200%; max-width:none; max-height:none;
+  left:var(--view-x,0%); top:var(--view-y,0%); pointer-events:none; user-select:none;
+}
+.module-device-rig[data-disabled="true"] .module-view-window { opacity:.68; }
+.module-device-rig[data-renderer="views8"] > .laser-plane-point { transform:translateZ(var(--device-height,7px)); }
+.sprite-plane-point { position:absolute; display:block; width:0; height:0; visibility:hidden; pointer-events:none; }
+.sprite-plane-point[data-corner="tl"] { left:0; top:0; }
+.sprite-plane-point[data-corner="tr"] { left:100%; top:0; }
+.sprite-plane-point[data-corner="br"] { left:100%; top:100%; }
+.sprite-plane-point[data-corner="bl"] { left:0; top:100%; }
+body[data-battle-perspective="off"] .module-device-rig[data-renderer="views8"],
+body[data-graphics="dusuk"] .module-device-rig[data-renderer="views8"] { --device-height:0px; }

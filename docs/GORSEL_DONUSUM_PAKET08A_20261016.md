@@ -1,5 +1,55 @@
 # Görsel dönüşüm — Paket 8A / ilk on modül
 
+## Güncel yön — amblem yerine fiziksel cihaz ve hareket
+
+**23:21 sonrası ek:** Yalnız saha Lazer'i artık sabit kaide üzerinde üstten
+çizilmiş tek başlıkla kesintisiz 360° hedef açısı kullanır. Kırmızı ışın namlu
+ucuna bağlıdır; diğer cihazlar dört yönlü kalır. Detay ve kontroller:
+`LAZER_360_DENEYIM_20261016.md`. Aşağıdaki dört yönlü Lazer notları tarihçedir.
+
+**Son uygulama:** Kullanıcı cihazların göründüğünü teyit etti. Hücre büyütme,
+grafit/petrol devre levhası, bakır temaslar ve sabit parlayan kablo bağlantıları
+kaynaklara işlendi. Isı üst, CAN alt iç kenarda; oyun mekaniği ve 5×3 korundu.
+Yerel görsel deneme kullanıcıda. Ayrıntılar hareket planının ilk bölümündedir.
+
+**Son karar:** Teknik 3D Lazer modeli kullanıcı tarafından sanat diline uygun
+bulunmadı ve oyundan çıkarıldı. İlk 10 cihaz çizilmiş WebP görsellerini kullanır;
+beş hareketli cihaz şimdilik dört yönlüdür. Hücre görünmezliği için açık kutu
+ölçüleri ve hareket bağlantıları korundu. Deney kodu oyuna yüklenmez. Yeni bir
+saha görseli onaylanmadan 3D sanat bağlanmayacak. Güncel ayrıntılar hareket
+planının ilk bölümündedir; gerçek oyun denemesi kullanıcıdadır.
+
+**Güncelleme:** Sönümleyici onaylandı; ilk 10 fiziksel cihaz ve beş yönelen
+cihazın dört yönlü hareket bağlantısı kaynaklara işlendi. Ayrı sabit kaideler,
+Onarım çalışma pozları, fan kareleri ve sabit CAN/ısı sunumu var. 39 WebP
+999.974 bayt; 25 yalıtılmış kontrol geçti. Yerel oyun denemesi kullanıcıda,
+VFX ayrı. Güncel kapsam ve promptlar:
+`GORSEL_DONUSUM_PAKET08A_HAREKET_PLANI_20261016.md`.
+Aşağıdaki v2/v3 ve eski amblem notları önceki üretim aşamalarının tarihçesidir.
+
+16 Ekim sonraki kullanıcı talimatları önceki siluet zorunluluklarını değiştirdi:
+Lazer artık yıldırım değil silah; Onarım hilal değil insansız robot;
+Güçlendirici artı değil bobin/iletim cihazı. İlk 10 modül fiziksel v2 olarak
+yeniden üretildi. Aşağıdaki amblem tablosu artık **önceki sürümün tarihçesidir**,
+yeni üretime zorunlu siluet şartı olarak uygulanmaz.
+
+- Yeni 10 cihaz: `artifacts/visual-refresh-pack08a-20261016/rev2-physical/`.
+- Tam prompt: `GORSEL_DONUSUM_PAKET08A_FIZIKSEL_REV2_20261016.json`.
+- Ek talimat: hücrede kart çerçevesi yok; fiziksel cihaz, sabit can/ısı çubukları;
+  hedefe yönelme/çalışma hareketleri. VFX sonra ayrı. Giysi Zırh yerine aynı
+  `armor` ID/mekanikle **Sönümleyici** isim/cihaz adayı.
+- Yeni poz/kaide/alternatif: `rev3-motion-concepts/`; Lazer 4 yön pozu, Onarım
+  bekleme/kollar kalkık, döner kaideli Soğutucu ve Sönümleyici. Bunlar nihai
+  hizalanmış parça/yön atlası değildir; diğer cihaz hareketleri henüz yapılmadı.
+- Ayrıntılı hareket/performans ve onay sırası:
+  `GORSEL_DONUSUM_PAKET08A_HAREKET_PLANI_20261016.md`.
+
+İlk v2/v3 önizleme aşamasında oyuna bağlanmamıştı; mevcut sınıf kimlikleri/değerleri değişmedi. Kullanıcı
+gerekirse her sınıfın görsel renginin değişmesine izin verdi; bu taslakta mevcut
+beş renk kimliği korundu. Önceki dosyalar silinmedi/üzerine yazılmadı.
+
+## Önceki amblem paketi
+
 16 Ekim 2026. **Çizimler ve etkileşimli önizleme hazır; onay bekliyor.**
 Paket 7 oyuna bağlıdır. Bu on modül henüz oyuna bağlanmadı.
 

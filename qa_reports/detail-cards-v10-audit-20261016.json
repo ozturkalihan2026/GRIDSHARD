@@ -1,0 +1,55 @@
+{
+  "passed": true,
+  "icons": 10,
+  "bytes": 137152,
+  "resolvedInCssBundle": true,
+  "alphaVerified": true,
+  "scripts": 40,
+  "styles": 18,
+  "browserStarted": false,
+  "serverStarted": false,
+  "distWritten": false,
+  "realViewportLayoutVerified": false,
+  "files": [
+    {
+      "file": "client\\assets\\ui\\detail-icons-v1\\core.webp",
+      "bytes": 16074
+    },
+    {
+      "file": "client\\assets\\ui\\detail-icons-v1\\team.webp",
+      "bytes": 12988
+    },
+    {
+      "file": "client\\assets\\ui\\detail-icons-v1\\rarity.webp",
+      "bytes": 12254
+    },
+    {
+      "file": "client\\assets\\ui\\detail-icons-v1\\hp-red.webp",
+      "bytes": 13036
+    },
+    {
+      "file": "client\\assets\\ui\\detail-icons-v1\\damage.webp",
+      "bytes": 16780
+    },
+    {
+      "file": "client\\assets\\ui\\detail-icons-v1\\cycle.webp",
+      "bytes": 14712
+    },
+    {
+      "file": "client\\assets\\ui\\detail-icons-v1\\energy.webp",
+      "bytes": 10972
+    },
+    {
+      "file": "client\\assets\\ui\\detail-icons-v1\\talent.webp",
+      "bytes": 13884
+    },
+    {
+      "file": "client\\assets\\ui\\detail-icons-v1\\grid.webp",
+      "bytes": 13208
+    },
+    {
+      "file": "client\\assets\\ui\\detail-icons-v1\\guard.webp",
+      "bytes": 13244
+    }
+  ]
+}

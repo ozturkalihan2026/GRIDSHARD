@@ -1,0 +1,89 @@
+{
+  "generatedWith": "built-in image_gen",
+  "totalBytes": 137552,
+  "assets": [
+    {
+      "id": "core",
+      "path": "client/assets/ui/detail-icons-v1/core.webp",
+      "bytes": 16074,
+      "width": 192,
+      "height": 192,
+      "alpha": true
+    },
+    {
+      "id": "team",
+      "path": "client/assets/ui/detail-icons-v1/team.webp",
+      "bytes": 12988,
+      "width": 192,
+      "height": 192,
+      "alpha": true
+    },
+    {
+      "id": "rarity",
+      "path": "client/assets/ui/detail-icons-v1/rarity.webp",
+      "bytes": 12254,
+      "width": 192,
+      "height": 192,
+      "alpha": true
+    },
+    {
+      "id": "hp",
+      "path": "client/assets/ui/detail-icons-v1/hp.webp",
+      "bytes": 13436,
+      "width": 192,
+      "height": 192,
+      "alpha": true
+    },
+    {
+      "id": "damage",
+      "path": "client/assets/ui/detail-icons-v1/damage.webp",
+      "bytes": 16780,
+      "width": 192,
+      "height": 192,
+      "alpha": true
+    },
+    {
+      "id": "cycle",
+      "path": "client/assets/ui/detail-icons-v1/cycle.webp",
+      "bytes": 14712,
+      "width": 192,
+      "height": 192,
+      "alpha": true
+    },
+    {
+      "id": "energy",
+      "path": "client/assets/ui/detail-icons-v1/energy.webp",
+      "bytes": 10972,
+      "width": 192,
+      "height": 192,
+      "alpha": true
+    },
+    {
+      "id": "talent",
+      "path": "client/assets/ui/detail-icons-v1/talent.webp",
+      "bytes": 13884,
+      "width": 192,
+      "height": 192,
+      "alpha": true
+    },
+    {
+      "id": "grid",
+      "path": "client/assets/ui/detail-icons-v1/grid.webp",
+      "bytes": 13208,
+      "width": 192,
+      "height": 192,
+      "alpha": true
+    },
+    {
+      "id": "guard",
+      "path": "client/assets/ui/detail-icons-v1/guard.webp",
+      "bytes": 13244,
+      "width": 192,
+      "height": 192,
+      "alpha": true
+    }
+  ],
+  "preview": "D:\\Projects\\GRIDSHARD\\artifacts\\visual-refresh-detail-cards-20261016\\detail-icons-preview.webp",
+  "browserStarted": false,
+  "serverStarted": false
+}

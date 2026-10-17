@@ -96,8 +96,12 @@ def module_specials(definition, stats: dict) -> list[dict]:
     if definition.category == "saldırı":
         if cooldown_ms > 0:
             specials.append(_special(
-                "dps", "SANİYE HASARI", "DAMAGE / SEC",
+                "dps", "TEORİK HASAR/SN", "THEORETICAL DPS",
                 float(stats["base_damage"]) * 1000 / cooldown_ms, "per_second",
+                # Display-only ratio; combat still uses integer hits, tick-based
+                # readiness, heat/energy, support and target defenses.
+                description_tr="Ham hasar / saldırı aralığı. Gerçek sonuç; zaman adımı, yuvarlama, ısı, enerji ve savunmaya göre değişir.",
+                description_en="Raw damage / attack interval. Actual output varies with ticks, rounding, heat, energy and defenses.",
             ))
         if module_id in PIERCE_KEPT_REDUCTION:
             specials.append(_percent("pierce", "DELME", "PIERCE", 1 - PIERCE_KEPT_REDUCTION[module_id]))

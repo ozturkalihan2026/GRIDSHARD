@@ -1,0 +1,9 @@
+{
+  "tool":"built-in imagegen",
+  "transparent_background":true,
+  "prompt":"Use case: precise-object-edit. Image 1 is the edit target, a modular game sprite upper fan assembly. Change ONLY the three cyan fan blades: turn the rotor 50 degrees in its own circular plane for a second WORKING animation frame. Keep the surrounding housing, pipe, swivel neck, camera yaw, lighting, scale, exact placement and transparent margins unchanged. No new base, no motion blur, no air particles, no text, no background. Genuine transparent alpha. ONE sprite only.",
+  "items":[
+    {"id":"cooler-se-work","reference":"artifacts/visual-refresh-pack08a-20261016/rev4-runtime/masters/cooler-se-r2.png"},
+    {"id":"cooler-sw-work","reference":"artifacts/visual-refresh-pack08a-20261016/rev4-runtime/masters/cooler-sw.png"}
+  ]
+}

@@ -16,6 +16,11 @@ Onaylı dock, sandık, kupa ve para birimleri yeniden üretilmez. Marka kimliği
 yeniden icat edilmez. Modül/çekirdek görselleri en sona bırakılır.
 Oyun kuralları, ekonomi, ödül, satın alma, hesap ve ağ akışları bu işin dışında.
 
+16 Ekim ek onayı: kullanıcı mesaj kutusu ve sezon sandıklarının teslim akışını
+da açıkça istedi. Miktar/fiyat/iade politikası değişmeden, sezon sandığı kapalı
+stok teslimi ve satın alım mesajı ayrımı bu kapsamın istisnasıdır. Son uygulama:
+`GORSEL_DUZELTMELER_20261016.md`. Kod tamamlandı; yerel görsel kabul bekleniyor.
+
 ## Paket büyüklüğü ve onay kapısı
 
 - Her paket en fazla 10 benzersiz görsel veya ortak bileşen. Kapsam büyükse
@@ -44,7 +49,7 @@ Oyun kuralları, ekonomi, ödül, satın alma, hesap ve ağ akışları bu işin
 | 5 | Sandıklar + profil ve sosyal alanlar | Kullanıcı ek kapsamı: 5A sekiz ayrı lig sandığı; 5B ilk 10 sıranın on ayrı kasası. 5C kendi/başka oyuncu profili, takım, üyeler, başvurular, arkadaşlar, sohbet, mesaj kutusu ve kozmetik yüzeyleri. Her grup ≤10 parça. | 5A/5B kullanıcı onaylı 18 çizim, açık eşleriyle 36 dosya bağlı. Eksik 5C mevcut onaylı fiziksel amblem ve ortak bileşenlerle tamamlandı/bağlandı. Yeni portre koleksiyonu eklenmedi; görsel/oyun kontrolü kullanıcıda |
 | 6 | Mağaza ve ödüller | Paket yüzeyleri, sandık önizlemeleri, günlük görevler, sezon geçişi ve ödül ekranları. Yeni sandık/para birimleri korunur; çevreleri tamamlanır. | 16 Ekim kullanıcı onayıyla on bileşen kaynaklara bağlı. 2.lik sandığı uzun önizleme/hover düzeltmesi dahil. Detay: GORSEL_DONUSUM_PAKET06_20261016.md |
 | 7 | Savaş arayüzü ve kalan ekranlar | Savaş hücreleri, HUD, geri sayım, zafer/yenilgi; ayarlar, onay pencereleri, bildirimler, eğitim, boş/yükleniyor/hata ve bağlantı kurtarma durumları. Modül/çekirdek çizimleri hariç. Gerektikçe 10'lu alt paketler. | 16 Ekim kullanıcı onayıyla on ortak bileşen kaynaklara bağlı. Gerçek durum sınıfları/sonuçlar kullanılıyor; 5×3 yerleşim, kalıcı savaş DOM'u ve zamanlayıcı korundu. Detay: GORSEL_DONUSUM_PAKET07_20261016.md |
-| 8 | En son modüller ve çekirdekler | Önce modüller yaklaşık 10'lu gruplarla, ardından çekirdekler. Sınıf/işlev ayrımı, küçük boyutta okunabilirlik ve savaşta efekt yoğunluğu gözetilir. | 8A ilk on modül çizildi; büyük/32/48px ve normal/seçili/kilitli önizleme hazır. Onay bekliyor; oyuna bağlı değil. 8B/8C/8D kalan 26 modül, sonra çekirdekler. Detay: GORSEL_DONUSUM_PAKET08A_20261016.md |
+| 8 | En son modüller ve çekirdekler | Önce modüller yaklaşık 10'lu gruplarla, ardından çekirdekler. Sınıf/işlev ayrımı, küçük boyutta okunabilirlik ve savaşta efekt yoğunluğu gözetilir. | 8A: Sönümleyici onaylandı; ilk 10 fiziksel cihaz kaynaklara bağlı. Beş cihaz için dört yön, sabit kaide, Onarım çalışma pozları ve fan kareleri gerçek olaylarla çalışır; CAN/ısı sabit. 39 WebP yaklaşık 1 MB; hücre ölçü düzeltmesi korundu. Teknik 3D Lazer sanat dili nedeniyle reddedildi ve oyundan çıkarıldı; yeni saha görseli onaydan sonra bağlanacak. Kesintisiz 360°/yeni VFX yok. Yerel görsel deneme kullanıcıda. 8B/8C/8D kalan 26 modül, sonra çekirdekler. Detay: GORSEL_DONUSUM_PAKET08A_HAREKET_PLANI_20261016.md |
 
 ## Teknik standart
 

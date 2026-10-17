@@ -2566,7 +2566,7 @@
           (kind === "premium-tiers"
             ? `/profile/${encodeURIComponent(this.playerId)}/engagement/tiers/${encodeURIComponent(id)}/premium/claim`
             : `/profile/${encodeURIComponent(this.playerId)}/engagement/${kind}/${encodeURIComponent(id)}/claim`)
-            + (["tiers", "premium-tiers"].includes(kind) ? "?chest_delivery=inbox-v1" : ""),
+            + (["tiers", "premium-tiers"].includes(kind) ? "?chest_delivery=stock-v1" : ""),
           {
             method: "POST",
             ...(requestId
@@ -2579,12 +2579,18 @@
         return { ok: true, payload };
       } catch (error) {
         this.status.profile = REMOTE_DATA_STATUS.ERROR;
-        this.errors.profile = error instanceof Error
+        const reason = error instanceof Error
           ? error.message
           : String(error);
+        const incompatibleDelivery = ["tiers", "premium-tiers"].includes(kind)
+          && /(?:bilinmeyen|unknown).*(?:teslim|delivery)/i.test(reason);
+        this.errors.profile = incompatibleDelivery
+          ? "Sezon ödülü için sunucu güncellemesi gerekli. Yerel Python sunucusunu güncel kodla yeniden başlatıp tekrar dene. Ödül alınmadı."
+          : reason;
         return {
           ok: false,
           reason: this.errors.profile,
+          ...(incompatibleDelivery ? { code:"season_delivery_unsupported", requiresServerRestart:true } : {}),
         };
       }
     }

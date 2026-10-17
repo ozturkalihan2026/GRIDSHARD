@@ -2,6 +2,13 @@
   "use strict";
 
   const EN = Object.freeze({
+    "Satın alım tamamlandı":"Purchase completed",
+    "Savaş Zaferi Sandığı":"Battle Victory Chest",
+    "HEPSİNİ TOPLA":"COLLECT ALL",
+    "İçeriği göster":"Show contents",
+    "İçeriği kapat":"Hide contents",
+    "Mağaza stoğuna eklendi":"Added to shop inventory",
+    "Mağazadan açabilirsin.":"You can open it in the shop.",
     "PLAY GAMES İLE DEVAM ET":"CONTINUE WITH PLAY GAMES",
     "PLAY GAMES BAĞLA":"LINK PLAY GAMES",
     "PLAY GAMES BAĞLI":"PLAY GAMES LINKED",
@@ -385,6 +392,12 @@
     "Ark Topu":"Arc Cannon",
     "Kalkan":"Shield",
     "Zırh":"Armor",
+    "Sönümleyici":"Dampener",
+    "Sürekli azaltma ve mekanizma onarımı":"Constant reduction and mechanism repair",
+    "Mekanizma onarımı küçüktür; yoğun ateş ve delici silahlar (Ray Topu) onu aşar.":"Mechanism repair is small; sustained fire and piercing weapons (Railgun) overcome it.",
+    "Sıçrama hasarı da hedefin savunmasından geçer; Sönümleyici ve Sinyal Bozucu verimini düşürür.":"Splash damage also passes through the target's defenses; Dampener and Jammer reduce its efficiency.",
+    "Devresinde enerji fazlası yoksa yük birikmez; Sönümleyici ve Sinyal Bozucu etkilidir.":"No charge builds without surplus energy in its circuit; Dampener and Jammer are effective.",
+    "Birikim sürerken susturmak sürüyü geciktirir; Sönümleyici sürü hasarını azaltır.":"Silencing it during build-up delays the swarm; Dampener reduces swarm damage.",
     "Yansıtıcı":"Reflector",
     "Bariyer":"Barrier",
     "Onarım Modülü":"Repair",

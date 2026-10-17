@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-17",
+  "passed": true,
+  "tests": 183,
+  "passedTests": 183,
+  "failedTests": 0,
+  "scripts": 40,
+  "styles": 18,
+  "cssWarnings": 0,
+  "existingJsWarnings": 20,
+  "firstTenVfxBound": true,
+  "serverMechanicsChanged": false,
+  "actualFireCadenceChanged": false,
+  "laserVisualDurationMs": 1000,
+  "cleanupOnDeathSessionHidden": true,
+  "sharedPostPresentationMicrotask": true,
+  "perDeviceRafOrTimer": false,
+  "camera": {
+    "degreesFromOverhead": 30,
+    "centerScale": 0.98,
+    "previousScale": 0.92,
+    "distancePixels": 1400
+  },
+  "audio": [
+    {
+      "name": "cooling_air",
+      "bytes": 20330,
+      "seconds": 0.46,
+      "peak": 0.5
+    },
+    {
+      "name": "repair_beam",
+      "bytes": 18566,
+      "seconds": 0.42,
+      "peak": 0.2447509765625
+    },
+    {
+      "name": "laser_pulse_v2",
+      "bytes": 10628,
+      "seconds": 0.24,
+      "peak": 0.259979248046875
+    },
+    {
+      "name": "rocket_launch",
+      "bytes": 15038,
+      "seconds": 0.34,
+      "peak": 0.459991455078125
+    },
+    {
+      "name": "missile_explosion",
+      "bytes": 29150,
+      "seconds": 0.66,
+      "peak": 0.459991455078125
+    },
+    {
+      "name": "kinetic_hit",
+      "bytes": 9746,
+      "seconds": 0.22,
+      "peak": 0.459991455078125
+    },
+    {
+      "name": "electrical_hit",
+      "bytes": 12392,
+      "seconds": 0.28,
+      "peak": 0.459991455078125
+    },
+    {
+      "name": "shield_absorb",
+      "bytes": 13274,
+      "seconds": 0.3,
+      "peak": 0.459991455078125
+    }
+  ],
+  "webNativeAudioSourcesVerified": true,
+  "browserStarted": false,
+  "serverStarted": false,
+  "distWritten": false,
+  "nativeBuildRun": false,
+  "realGameplayVerified": false,
+  "fpsMeasured": false
+}

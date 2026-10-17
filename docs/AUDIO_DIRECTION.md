@@ -1,5 +1,14 @@
 # GRIDSHARD — Audio Direction
 
+## Güncel savaş karışımı — 17 Ekim 2026 / v17
+
+Savaş müziği baskın: `battleMusicGain: 2.85` korunur, `battleSfxGain: 0.22 → 0.16`.
+Lazer artık `laser_pulse_v2.wav` (240 ms, tepe 0,26) kullanır: kısa/yumuşak ton,
+uzun cızırtı yok. Lazerin ilave cue trim'i `0.65`; HTML/WebAudio yolları ortak.
+Kullanıcı ayarları, ses bütçeleri, sonuç geçişi ve arka plan temizliği korunur.
+Önceki bölümler tarihsel kararlardır; güncel uygulama/kabul durumu için
+[akşam kontrol listesi](AKSAM_DUZELTMELERI_KONTROL_LISTESI_20261017.md).
+
 ## 1. Ses kimliği
 
 Ana müzik dili:

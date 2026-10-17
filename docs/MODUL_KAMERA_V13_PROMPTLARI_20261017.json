@@ -1,0 +1,443 @@
+{
+  "date": "2026-10-17",
+  "mode": "built-in image_gen",
+  "renderer": "upright 8-view camera-facing impostor",
+  "cameraDegreesFromOverhead": 30,
+  "illustratedViewResolution": 45,
+  "continuousTargetMath": true,
+  "volumetric3D": false,
+  "assets": [
+    {
+      "id": "laser",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-46a680a7-3c71-464b-b320-6af92ad3b818.png",
+      "reference": "client/assets/ui/modules-physical-v1/laser.webp",
+      "prompt": "Use case: stylized-concept. Asset type: GAME TURN-TABLE SPRITE ATLAS, one single device in eight yaw orientations, exact 4 columns x 2 rows equal cells on a genuinely transparent 1536x1024 canvas. No text, labels, borders, ground, shadows outside object or checkerboard. Every sprite centered on same fixed bottom pedestal point with generous transparent padding, fits its own cell. CAMERA FIXED in all cells: 60 degrees above horizontal ground (=30 degrees away from straight overhead), looking from south toward north. Not a 30 degree elevation isometric camera. A physically upright machine stands on the horizontal ground, its vertical panels stay vertical, never lay the machine on its back. Only turn the machine around the vertical world axis; do NOT rotate flat 2D copies in screen space. Exact eight forward headings in reading order: E, SE, S toward viewer, SW, W, NW, N away from viewer, NE. Genuine corresponding front, rear and side surfaces; no identical views repeated. Same geometry, size, colors, globally fixed upper-left lighting. Highly polished vivid stylized mobile-game painted 3D illustration, crisp dark outline, silver bevel highlights, no photorealism. Reference is identity/material/palette reference, NOT layout/camera to copy. Red and silver compact LASER CANNON on a short swiveling pedestal. One horizontal barrel, bright small round red/orange muzzle, same reference details. Horizontal bore points exactly toward E SE S SW W NW N NE in order. Fixed short pedestal points straight down, never flip the pedestal. True side E and W silhouettes (no false 3/4 side), S front centered muzzle, N rear cooling plate hiding muzzle. CAMERA: high-angle camera 60 degrees above floor; show top surfaces generously, short upright vertical sides. This is an asset atlas not a presentation poster. Each view in exactly equal cell, separate fully visible. All empty canvas truly transparent.",
+      "sourceEmitters": [
+        [
+          381,
+          214
+        ],
+        [
+          748,
+          303
+        ],
+        [
+          960,
+          318
+        ],
+        [
+          1174,
+          305
+        ],
+        [
+          52,
+          716
+        ],
+        [
+          503,
+          582
+        ],
+        [
+          960,
+          555
+        ],
+        [
+          1440,
+          570
+        ]
+      ]
+    },
+    {
+      "id": "shield",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-0bd683ed-751c-43f3-b302-b30e520f03dd.png",
+      "reference": "client/assets/ui/modules-physical-v1/shield.webp",
+      "prompt": "Use case: stylized-concept. Asset type: GAME TURN-TABLE SPRITE ATLAS, one single device in eight yaw orientations, exact 4 columns x 2 rows equal cells on a genuinely transparent 1536x1024 canvas. No text, labels, borders, ground, shadows outside object or checkerboard. Every sprite centered on same fixed bottom pedestal point with generous transparent padding, fits its own cell. CAMERA FIXED in all cells: 60 degrees above horizontal ground (=30 degrees away from straight overhead), looking from south toward north. Not a 30 degree elevation isometric camera. A physically upright machine stands on the horizontal ground, its vertical panels stay vertical, never lay the machine on its back. Only turn the machine around the vertical world axis; do NOT rotate flat 2D copies in screen space. Exact eight forward headings in reading order: E, SE, S toward viewer, SW, W, NW, N away from viewer, NE. Genuine corresponding front, rear and side surfaces; no identical views repeated. Same geometry, size, colors, globally fixed upper-left lighting. Highly polished vivid stylized mobile-game painted 3D illustration, crisp dark outline, silver bevel highlights, no photorealism. Reference is identity/material/palette reference, NOT layout/camera to copy. Blue and silver SHIELD GENERATOR from reference, round low mechanical ring with yellow clamps and a cyan translucent half-sphere hex-pattern shield dome above. Same identity for all views, not a new tall column. E SE S SW W NW N NE yaw rotates details around base, dome remains an upright half-sphere on horizontal ring. Do not draw solid floor. CAMERA fixed high angle 60 degrees above floor /30 from zenith. Show large top surfaces, not side-on hero camera. Eight equal 4x2 cells with consistent scale, actual transparent background.",
+      "sourceEmitters": null
+    },
+    {
+      "id": "battery",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-0d920634-a930-49d3-ad17-55b85788d6ab.png",
+      "reference": "client/assets/ui/modules-physical-v1/battery.webp",
+      "prompt": "Use case: stylized-concept. Asset type: GAME TURN-TABLE SPRITE ATLAS, one single device in eight yaw orientations, exact 4 columns x 2 rows equal cells on a genuinely transparent 1536x1024 canvas. No text, labels, borders, ground, shadows outside object or checkerboard. Every sprite centered on same fixed bottom pedestal point with generous transparent padding, fits its own cell. CAMERA FIXED in all cells: 60 degrees above horizontal ground (=30 degrees away from straight overhead), looking from south toward north. Not a 30 degree elevation isometric camera. A physically upright machine stands on the horizontal ground, its vertical panels stay vertical, never lay the machine on its back. Only turn the machine around the vertical world axis; do NOT rotate flat 2D copies in screen space. Exact eight forward headings in reading order: E, SE, S toward viewer, SW, W, NW, N away from viewer, NE. Genuine corresponding front, rear and side surfaces; no identical views repeated. Same geometry, size, colors, globally fixed upper-left lighting. Highly polished vivid stylized mobile-game painted 3D illustration, crisp dark outline, silver bevel highlights, no photorealism. Reference is identity/material/palette reference, NOT layout/camera to copy. Turquoise and silver BATTERY with THREE upright yellow/golden energy cylinders, same device from reference, flat short rectangular base. Cylinders stand vertically in every direction, never laid flat! Top caps clearly visible from steep overhead angle. Front/back and side chassis change during yaw, battery remains same model. Cyan system class, gold energy inside. CAMERA: high overhead-oblique angle 60 degrees above horizontal floor (30 off straight overhead), emphasize top surfaces. E SE S SW W NW N NE yaw in 4x2 equal cells. No floor, text or gridlines; actual transparent backdrop.",
+      "sourceEmitters": null
+    },
+    {
+      "id": "amplifier",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-fcc8e01e-c0b0-48c8-9aa3-226bf7d95325.png",
+      "reference": "client/assets/ui/modules-physical-v1/amplifier.webp",
+      "prompt": "Use case: stylized-concept. Asset type: GAME TURN-TABLE SPRITE ATLAS, one single device in eight yaw orientations, exact 4 columns x 2 rows equal cells on a genuinely transparent 1536x1024 canvas. No text, labels, borders, ground, shadows outside object or checkerboard. Every sprite centered on same fixed bottom pedestal point with generous transparent padding, fits its own cell. CAMERA FIXED in all cells: 60 degrees above horizontal ground (=30 degrees away from straight overhead), looking from south toward north. Not a 30 degree elevation isometric camera. A physically upright machine stands on the horizontal ground, its vertical panels stay vertical, never lay the machine on its back. Only turn the machine around the vertical world axis; do NOT rotate flat 2D copies in screen space. Exact eight forward headings in reading order: E, SE, S toward viewer, SW, W, NW, N away from viewer, NE. Genuine corresponding front, rear and side surfaces; no identical views repeated. Same geometry, size, colors, globally fixed upper-left lighting. Highly polished vivid stylized mobile-game painted 3D illustration, crisp dark outline, silver bevel highlights, no photorealism. Reference is identity/material/palette reference, NOT layout/camera to copy. Green and silver AMPLIFIER with TWO upright gold/copper coils glowing green between rings, same reference, compact base and two small forward ports. Coils stand vertically, tops clearly visible, never laid flat! Facing direction changes around vertical axis. Green support class. CAMERA: high overhead-oblique angle 60 degrees above horizontal floor (30 off straight overhead), emphasize top surfaces. E SE S SW W NW N NE yaw in 4x2 equal cells. No floor, text or gridlines; actual transparent backdrop.",
+      "sourceEmitters": null,
+      "sourcePairs": [
+        [
+          [
+            210,
+            125
+          ],
+          [
+            210,
+            250
+          ]
+        ],
+        [
+          [
+            513,
+            125
+          ],
+          [
+            673,
+            175
+          ]
+        ],
+        [
+          [
+            868,
+            160
+          ],
+          [
+            1050,
+            155
+          ]
+        ],
+        [
+          [
+            1270,
+            182
+          ],
+          [
+            1425,
+            120
+          ]
+        ],
+        [
+          [
+            210,
+            640
+          ],
+          [
+            210,
+            768
+          ]
+        ],
+        [
+          [
+            513,
+            645
+          ],
+          [
+            673,
+            695
+          ]
+        ],
+        [
+          [
+            868,
+            675
+          ],
+          [
+            1050,
+            675
+          ]
+        ],
+        [
+          [
+            1270,
+            695
+          ],
+          [
+            1425,
+            645
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "emp",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-bad9d383-b477-4af4-bb6f-3ee32941252e.png",
+      "reference": "client/assets/ui/modules-physical-v1/emp.webp",
+      "prompt": "Use case: stylized-concept. Asset type: GAME TURN-TABLE SPRITE ATLAS, one single device in eight yaw orientations, exact 4 columns x 2 rows equal cells on a genuinely transparent 1536x1024 canvas. No text, labels, borders, ground, shadows outside object or checkerboard. Every sprite centered on same fixed bottom pedestal point with generous transparent padding, fits its own cell. CAMERA FIXED in all cells: 60 degrees above horizontal ground (=30 degrees away from straight overhead), looking from south toward north. Not a 30 degree elevation isometric camera. A physically upright machine stands on the horizontal ground, its vertical panels stay vertical, never lay the machine on its back. Only turn the machine around the vertical world axis; do NOT rotate flat 2D copies in screen space. Exact eight forward headings in reading order: E, SE, S toward viewer, SW, W, NW, N away from viewer, NE. Genuine corresponding front, rear and side surfaces; no identical views repeated. Same geometry, size, colors, globally fixed upper-left lighting. Highly polished vivid stylized mobile-game painted 3D illustration, crisp dark outline, silver bevel highlights, no photorealism. Reference is identity/material/palette reference, NOT layout/camera to copy. Device: same purple/silver EMP as identity reference: TWO UPRIGHT horseshoe electromagnetic towers extending vertically above a short circular pedestal, central magenta energy canister. CRITICAL: towers stand perpendicular to horizontal floor, never lie flat. Camera STEEP HIGH ANGLE, 60 degrees above floor /30 off zenith: we see large top surfaces and short visible vertical sides. Eight true vertical-axis turns of this same device E SE S SW W NW N NE, 4x2 grid. At each yaw tower arms rise toward TOP of image from their bases; never rotate whole sprite like lying flat playing card. TWO purple eyes at upper ends, same vivid purple class identity, silver armor, blue-black joints, magenta energy. No drawn energy rays. No haze or ground, truly transparent gaps.",
+      "sourceEmitters": null,
+      "sourcePairs": [
+        [
+          [
+            204,
+            135
+          ],
+          [
+            155,
+            248
+          ]
+        ],
+        [
+          [
+            580,
+            124
+          ],
+          [
+            677,
+            180
+          ]
+        ],
+        [
+          [
+            878,
+            179
+          ],
+          [
+            1034,
+            177
+          ]
+        ],
+        [
+          [
+            1306,
+            125
+          ],
+          [
+            1232,
+            184
+          ]
+        ],
+        [
+          [
+            205,
+            655
+          ],
+          [
+            155,
+            768
+          ]
+        ],
+        [
+          [
+            584,
+            637
+          ],
+          [
+            676,
+            700
+          ]
+        ],
+        [
+          [
+            878,
+            675
+          ],
+          [
+            1036,
+            675
+          ]
+        ],
+        [
+          [
+            1304,
+            638
+          ],
+          [
+            1230,
+            701
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "repair",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-1b1e0432-a706-4ee1-9689-918094fd803e.png",
+      "reference": "client/assets/ui/modules-physical-v1/repair.webp",
+      "prompt": "Use case: stylized-concept. Asset type: GAME TURN-TABLE SPRITE ATLAS, one single device in eight yaw orientations, exact 4 columns x 2 rows equal cells on a genuinely transparent 1536x1024 canvas. No text, labels, borders, ground, shadows outside object or checkerboard. Every sprite centered on same fixed bottom pedestal point with generous transparent padding, fits its own cell. CAMERA FIXED in all cells: 60 degrees above horizontal ground (=30 degrees away from straight overhead), looking from south toward north. Not a 30 degree elevation isometric camera. A physically upright machine stands on the horizontal ground, its vertical panels stay vertical, never lay the machine on its back. Only turn the machine around the vertical world axis; do NOT rotate flat 2D copies in screen space. Exact eight forward headings in reading order: E, SE, S toward viewer, SW, W, NW, N away from viewer, NE. Genuine corresponding front, rear and side surfaces; no identical views repeated. Same geometry, size, colors, globally fixed upper-left lighting. Highly polished vivid stylized mobile-game painted 3D illustration, crisp dark outline, silver bevel highlights, no photorealism. Reference is identity/material/palette reference, NOT layout/camera to copy. Green and silver unmanned REPAIR ROBOT from reference: short tracked base, head/body with cyan eye, two articulated tool arms. Same machine in eight views, turns only about vertical axis. Tool arms held forward toward E SE S SW W NW N NE, NO repair beam yet. Robot upright on tracks in every view, never rotate the bitmap in its plane. CAMERA: steep high angle 60 degrees ABOVE floor /30 off zenith; large visible top surfaces and short visible vertical sides. Never low elevation hero-icon camera. Equal cells with transparent padding. DIRECTION CORRECTION IS CRITICAL. Grid cell 1 (top left): robot's eye/front and both tool tips face RIGHT (east, positive image X). Cell 2: front faces DOWN-RIGHT. Cell 3 faces DOWN. Cell 4 faces DOWN-LEFT. Cell 5 (bottom left) faces LEFT. Cell 6 faces UP-LEFT. Cell 7 faces UP with only back armor showing. Cell 8 faces UP-RIGHT. Do NOT draw both side views pointing left. Keep same tracked robot, no added equipment. Exact 8 in 4x2 grid, transparent background.",
+      "sourceEmitters": [
+        [
+          320,
+          270
+        ],
+        [
+          720,
+          330
+        ],
+        [
+          1000,
+          370
+        ],
+        [
+          1160,
+          330
+        ],
+        [
+          60,
+          760
+        ],
+        [
+          440,
+          675
+        ],
+        [
+          960,
+          620
+        ],
+        [
+          1490,
+          675
+        ]
+      ]
+    },
+    {
+      "id": "armor",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-a298be36-c60b-4175-80ca-fc21b4d37a6a.png",
+      "reference": "client/assets/ui/modules-physical-v1/armor.webp",
+      "prompt": "Use case: stylized-concept. Asset type: GAME TURN-TABLE SPRITE ATLAS, one single device in eight yaw orientations, exact 4 columns x 2 rows equal cells on a genuinely transparent 1536x1024 canvas. No text, labels, borders, ground, shadows outside object or checkerboard. Every sprite centered on same fixed bottom pedestal point with generous transparent padding, fits its own cell. CAMERA FIXED in all cells: 60 degrees above horizontal ground (=30 degrees away from straight overhead), looking from south toward north. Not a 30 degree elevation isometric camera. A physically upright machine stands on the horizontal ground, its vertical panels stay vertical, never lay the machine on its back. Only turn the machine around the vertical world axis; do NOT rotate flat 2D copies in screen space. Exact eight forward headings in reading order: E, SE, S toward viewer, SW, W, NW, N away from viewer, NE. Genuine corresponding front, rear and side surfaces; no identical views repeated. Same geometry, size, colors, globally fixed upper-left lighting. Highly polished vivid stylized mobile-game painted 3D illustration, crisp dark outline, silver bevel highlights, no photorealism. Reference is identity/material/palette reference, NOT layout/camera to copy. Blue and silver DAMPENER DEFENSE MODULE from reference (NOT wearable armor): upright central silver shock absorber with blue energy rings, four blue/sliver angular buttress plates around base, cyan round top indicator. Always upright. Same mechanism,8 yaw views front/back/sides. No clothing or chest armor. CAMERA fixed high angle 60 degrees above floor /30 from zenith. Show large top surfaces, not side-on hero camera. Eight equal 4x2 cells with consistent scale, actual transparent background.",
+      "sourceEmitters": [
+        [
+          220,
+          180
+        ],
+        [
+          585,
+          180
+        ],
+        [
+          965,
+          200
+        ],
+        [
+          1365,
+          180
+        ],
+        [
+          220,
+          705
+        ],
+        [
+          585,
+          700
+        ],
+        [
+          965,
+          700
+        ],
+        [
+          1365,
+          705
+        ]
+      ]
+    },
+    {
+      "id": "cooler",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-1887b9c5-0858-457b-b3ae-a9eda771dd8d.png",
+      "reference": "client/assets/ui/modules-physical-v1/cooler.webp",
+      "prompt": "Use case: stylized-concept. Asset type: GAME TURN-TABLE SPRITE ATLAS, one single device in eight yaw orientations, exact 4 columns x 2 rows equal cells on a genuinely transparent 1536x1024 canvas. No text, labels, borders, ground, shadows outside object or checkerboard. Every sprite centered on same fixed bottom pedestal point with generous transparent padding, fits its own cell. CAMERA FIXED in all cells: 60 degrees above horizontal ground (=30 degrees away from straight overhead), looking from south toward north. Not a 30 degree elevation isometric camera. A physically upright machine stands on the horizontal ground, its vertical panels stay vertical, never lay the machine on its back. Only turn the machine around the vertical world axis; do NOT rotate flat 2D copies in screen space. Exact eight forward headings in reading order: E, SE, S toward viewer, SW, W, NW, N away from viewer, NE. Genuine corresponding front, rear and side surfaces; no identical views repeated. Same geometry, size, colors, globally fixed upper-left lighting. Highly polished vivid stylized mobile-game painted 3D illustration, crisp dark outline, silver bevel highlights, no photorealism. Reference is identity/material/palette reference, NOT layout/camera to copy. Device: same green/silver COOLING FAN support machine as reference. CRITICAL CAMERA CORRECTION: steep high-angle 60 degrees ABOVE FLOOR, just 30 degrees off ZENITH. Therefore horizontal top square of its box is LARGE and visible, and its VERTICAL circular front fan is a strongly vertically foreshortened horizontal ellipse (height HALF width at front S view). The fan NEVER faces sky, its plane remains vertical. TOP of box must be more visible than front face. Draw true three-dimensional orthographic 60-degree elevation turntable, not the low 30-degree elevation reference camera. Complete device with short upright neck and same pedestal eight times. Front fan only visible in E/SE/S/SW/W, rear slats in NW/N/NE. Green side rails, cyan pipe. Genuinely zero-alpha empty gutters/background, no haze, gradient or glow outside silhouettes. Exact 4x2 grid. Use attached only for device identity/colors.",
+      "sourceEmitters": [
+        [
+          300,
+          270
+        ],
+        [
+          650,
+          310
+        ],
+        [
+          960,
+          300
+        ],
+        [
+          1230,
+          310
+        ],
+        [
+          90,
+          800
+        ],
+        [
+          440,
+          730
+        ],
+        [
+          960,
+          590
+        ],
+        [
+          1480,
+          730
+        ]
+      ]
+    },
+    {
+      "id": "pulse_cannon",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-254f4133-436d-481e-a638-a06323d6aaa7.png",
+      "reference": "client/assets/ui/modules-physical-v1/pulse_cannon.webp",
+      "prompt": "Use case: stylized-concept. Asset type: GAME TURN-TABLE SPRITE ATLAS, one single device in eight yaw orientations, exact 4 columns x 2 rows equal cells on a genuinely transparent 1536x1024 canvas. No text, labels, borders, ground, shadows outside object or checkerboard. Every sprite centered on same fixed bottom pedestal point with generous transparent padding, fits its own cell. CAMERA FIXED in all cells: 60 degrees above horizontal ground (=30 degrees away from straight overhead), looking from south toward north. Not a 30 degree elevation isometric camera. A physically upright machine stands on the horizontal ground, its vertical panels stay vertical, never lay the machine on its back. Only turn the machine around the vertical world axis; do NOT rotate flat 2D copies in screen space. Exact eight forward headings in reading order: E, SE, S toward viewer, SW, W, NW, N away from viewer, NE. Genuine corresponding front, rear and side surfaces; no identical views repeated. Same geometry, size, colors, globally fixed upper-left lighting. Highly polished vivid stylized mobile-game painted 3D illustration, crisp dark outline, silver bevel highlights, no photorealism. Reference is identity/material/palette reference, NOT layout/camera to copy. Red and silver heavy PULSE CANNON on compact swivel pedestal with single thick orange-lit horizontal barrel and two side energy drums. Same reference, attack class red not purple. Bore points E SE S SW W NW N NE in order. Show real corresponding rear/side faces not eight identical frontal illustrations. CAMERA: high-angle camera 60 degrees above floor; show top surfaces generously, short upright vertical sides. This is an asset atlas not a presentation poster. Each view in exactly equal cell, separate fully visible. All empty canvas truly transparent.",
+      "sourceEmitters": [
+        [
+          360,
+          196
+        ],
+        [
+          720,
+          290
+        ],
+        [
+          961,
+          293
+        ],
+        [
+          1227,
+          290
+        ],
+        [
+          50,
+          713
+        ],
+        [
+          515,
+          558
+        ],
+        [
+          962,
+          550
+        ],
+        [
+          1441,
+          558
+        ]
+      ]
+    },
+    {
+      "id": "missile_launcher",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-0bcacd70-d22f-485c-996f-d54bb7f67e57.png",
+      "reference": "client/assets/ui/modules-physical-v1/missile_launcher.webp",
+      "prompt": "Use case: stylized-concept. Asset type: GAME TURN-TABLE SPRITE ATLAS, one single device in eight yaw orientations, exact 4 columns x 2 rows equal cells on a genuinely transparent 1536x1024 canvas. No text, labels, borders, ground, shadows outside object or checkerboard. Every sprite centered on same fixed bottom pedestal point with generous transparent padding, fits its own cell. CAMERA FIXED in all cells: 60 degrees above horizontal ground (=30 degrees away from straight overhead), looking from south toward north. Not a 30 degree elevation isometric camera. A physically upright machine stands on the horizontal ground, its vertical panels stay vertical, never lay the machine on its back. Only turn the machine around the vertical world axis; do NOT rotate flat 2D copies in screen space. Exact eight forward headings in reading order: E, SE, S toward viewer, SW, W, NW, N away from viewer, NE. Genuine corresponding front, rear and side surfaces; no identical views repeated. Same geometry, size, colors, globally fixed upper-left lighting. Highly polished vivid stylized mobile-game painted 3D illustration, crisp dark outline, silver bevel highlights, no photorealism. Reference is identity/material/palette reference, NOT layout/camera to copy. Red and silver triple MISSILE LAUNCHER with three silver rockets with red conical noses, gold pivot and short swivel pedestal, same reference. Rockets point E SE S SW W NW N NE respectively. Rockets run horizontally, NOT pointed into the sky. Full launcher turns about vertical axis, not sprite tilted onto its side. In N view see rear tubes, in S see three nose tips. CAMERA: steep high angle 60 degrees ABOVE floor /30 off zenith; large visible top surfaces and short visible vertical sides. Never low elevation hero-icon camera. Equal cells with transparent padding.",
+      "sourceEmitters": [
+        [
+          378,
+          218
+        ],
+        [
+          725,
+          308
+        ],
+        [
+          962,
+          332
+        ],
+        [
+          1180,
+          308
+        ],
+        [
+          65,
+          721
+        ],
+        [
+          507,
+          575
+        ],
+        [
+          963,
+          559
+        ],
+        [
+          1440,
+          575
+        ]
+      ]
+    }
+  ]
+}

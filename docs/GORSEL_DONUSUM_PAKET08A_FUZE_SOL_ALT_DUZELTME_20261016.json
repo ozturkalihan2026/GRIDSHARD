@@ -1,0 +1,7 @@
+{
+  "tool": "built-in imagegen",
+  "transparent_background": true,
+  "prompt": "Use case: precise-object-edit. Image 1 is the edit target: one red three-loaded-missile turret upper assembly. Change ONLY its horizontal yaw and pitch to aim toward the screen LOWER LEFT, at a target down-left on a flat game board. The THREE RED MISSILE NOSE TIPS must be closer to the BOTTOM LEFT corner than the back of the rack; the back of the rack must be UP-RIGHT, behind the noses. The prior pose aiming upper-left is WRONG. The missile shafts should slope from upper-right rear down to lower-left tips, NOT from lower-right rear up to upper-left tips. Fixed elevated orthographic camera: physically redraw this yaw view, do not rotate the picture. Preserve the same red/silver/gold design, three loaded missiles, same yoke and bright beveled casual game style. Isolated upper part ONLY on genuine transparent alpha, no base/ground feet, no firing effects, no text. Complete silhouette with 10% transparent margin.",
+  "reference": "artifacts/visual-refresh-pack08a-20261016/rev4-runtime/masters/missile_launcher-sw.png",
+  "selectedMaster": "artifacts/visual-refresh-pack08a-20261016/rev4-runtime/masters/missile_launcher-sw-r2.png"
+}

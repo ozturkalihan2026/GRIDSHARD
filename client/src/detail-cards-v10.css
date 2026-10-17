@@ -1,0 +1,304 @@
+/* Pack 10: vivid prop icons, compact information cards, no hidden choices. */
+.ui-art[data-ui-art="detail-core"] { --ui-art-image:url("../assets/ui/detail-icons-v1/core.webp"); }
+.ui-art[data-ui-art="detail-team"] { --ui-art-image:url("../assets/ui/detail-icons-v1/team.webp"); }
+.ui-art[data-ui-art="detail-rarity"] { --ui-art-image:url("../assets/ui/detail-icons-v1/rarity.webp"); }
+.ui-art[data-ui-art="detail-hp"] { --ui-art-image:url("../assets/ui/detail-icons-v1/hp-red.webp"); }
+.ui-art[data-ui-art="detail-damage"] { --ui-art-image:url("../assets/ui/detail-icons-v1/damage.webp"); }
+.ui-art[data-ui-art="detail-cycle"] { --ui-art-image:url("../assets/ui/detail-icons-v1/cycle.webp"); }
+.ui-art[data-ui-art="detail-energy"] { --ui-art-image:url("../assets/ui/detail-icons-v1/energy.webp"); }
+.ui-art[data-ui-art="detail-talent"] { --ui-art-image:url("../assets/ui/detail-icons-v1/talent.webp"); }
+.ui-art[data-ui-art="detail-grid"] { --ui-art-image:url("../assets/ui/detail-icons-v1/grid.webp"); }
+.ui-art[data-ui-art="detail-guard"] { --ui-art-image:url("../assets/ui/detail-icons-v1/guard.webp"); }
+/* Approved physical devices are reused for their own effects, not redrawn. */
+.ui-art[data-ui-art="detail-repair"] { --ui-art-image:url("../assets/ui/modules-physical-v1/repair.webp"); }
+.ui-art[data-ui-art="detail-cooler"] { --ui-art-image:url("../assets/ui/modules-physical-v1/cooler.webp"); }
+.ui-art[data-ui-art="detail-battery"] { --ui-art-image:url("../assets/ui/modules-physical-v1/battery.webp"); }
+.ui-art[data-ui-art="detail-unlock"] { --ui-art-image:url("../assets/ui/dock-casual-v1/battle-swords-v2.webp"); }
+:root body[data-app-screen] [data-leaderboard-tab] { display:grid !important; place-content:center; justify-items:center; gap:3px; }
+:root body[data-app-screen] [data-leaderboard-tab] > .ui-icon { display:block; width:30px; height:30px; margin:0; }
+:root body[data-app-screen] [data-leaderboard-tab] > .ui-icon > .ui-art { display:block; width:100%; height:100%; }
+
+
+/* One ID-scoped owner outranks legacy art padding, transparent talent buttons
+ * and yellow disabled buttons. Only these two dialogs are affected. */
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) {
+  box-sizing:border-box !important; width:min(384px,calc(100vw - 28px)) !important;
+  height:min(680px,86dvh) !important; max-height:calc(100dvh - 24px) !important;
+  min-height:0 !important; margin:auto !important; padding:12px !important;
+  display:none !important; flex-direction:column; gap:8px !important; overflow:hidden !important;
+  border:2px solid #6495bc !important; border-radius:18px !important;
+  color:#f1f8ff; background:linear-gradient(145deg,#275581,#173654 65%,#112b46) !important;
+  box-shadow:inset 0 2px #c3e9ff66,0 5px #030e20,0 18px 40px #0009 !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog)[open] { display:flex !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog)::backdrop { background:#020916b3; backdrop-filter:none; -webkit-backdrop-filter:none; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) > .module-detail-hero {
+  position:relative !important; display:grid !important;
+  grid-template-columns:minmax(0,1fr) 38px !important;
+  grid-template-rows:48px minmax(0,1fr) !important; grid-template-areas:"heading close" "art art";
+  flex:1 1 180px !important; min-height:150px !important; height:auto !important; max-height:none !important;
+  align-items:center; gap:0 8px !important; margin:0 !important; padding:8px !important;
+  border:1px solid #6396b6 !important; border-bottom:3px solid #06182e !important; border-radius:12px !important;
+  background:radial-gradient(ellipse at 37% 75%,#4d89a955,transparent 64%),linear-gradient(150deg,#254965,#102b43) !important;
+  box-shadow:inset 0 1px #b6e4f440 !important; overflow:hidden !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-title {
+  grid-area:heading; position:static !important; inset:auto !important; order:0 !important;
+  min-width:0; margin:0 !important; transform:none !important; display:grid !important;
+  justify-items:center !important; gap:3px; padding-left:38px !important; text-align:center;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-title h2 {
+  display:block !important; margin:0 !important; padding:0 !important; overflow:visible !important;
+  -webkit-line-clamp:unset !important; font:800 20px/1.15 var(--gs-font-display) !important;
+  color:#fff; text-shadow:0 2px #07182d;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-title > :is(#module-detail-rarity,#core-detail-rarity) { position:static !important; font-size:10px !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .detail-section-label { color:#b8e6f3; font:600 12px/1.2 var(--gs-font-copy); }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .detail-section-label[hidden] { display:none !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-art {
+  grid-area:art; position:relative !important; inset:auto !important; order:0 !important;
+  width:100% !important; height:100% !important; min-height:0 !important; max-height:none !important;
+  margin:0 !important; padding:0 !important; transform:none !important; display:block !important;
+  border:0 !important; border-radius:0 !important; background:none !important;
+  filter:none !important; overflow:visible !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-art::before {
+  content:none; display:none !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-art > :is(.module-emblem,.core-emblem,.core-emblem-set) {
+  position:absolute !important; left:50% !important; top:48% !important; inset-inline-end:auto !important; bottom:auto !important;
+  display:block !important; width:clamp(96px,39vw,180px) !important; height:clamp(96px,39vw,180px) !important;
+  max-width:54% !important; max-height:90% !important; padding:0 !important; margin:0 !important;
+  transform:translate(-50%,-50%) !important; object-fit:contain; z-index:2;
+  filter:none !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) button::before, :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) button::after { display:none !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .detail-card-close {
+  grid-area:close; position:static !important; place-self:start end; display:grid !important; place-items:center;
+  width:36px !important; height:36px !important; min-height:36px !important; padding:0 !important;
+  border:1px solid #ffadb6 !important; border-bottom:3px solid #771b36 !important; border-radius:11px !important;
+  background:linear-gradient(#ff6c7d,#d83258) !important; color:white !important;
+  font:800 30px/1 var(--gs-font-copy) !important; box-shadow:inset 0 1px #fff5,0 2px #07172b !important;
+  clip-path:none !important; cursor:pointer; filter:none !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-level-row {
+  order:1; flex:none !important; min-height:32px !important; margin:0 !important; padding:5px 8px !important;
+  display:flex !important; gap:6px !important; align-items:center; border:1px solid #487596 !important;
+  border-radius:8px; background:#0c2239 !important; font:600 11px/1.25 var(--gs-font-copy);
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-level-row > strong { font-size:11px !important; white-space:nowrap; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-level-row > span { font-size:9px !important; white-space:nowrap; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-level-row > div { min-width:0; flex:1; display:flex; align-items:center; gap:5px; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-level-row progress { min-width:10px; flex:1; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) > .module-detail-stats {
+  order:3; flex:none; display:grid !important; grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:6px !important; margin:0 !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-stats > div {
+  position:relative; display:grid !important; grid-template-columns:minmax(0,1fr) !important;
+  grid-template-rows:24px minmax(24px,auto) auto !important; justify-items:center;
+  gap:3px 4px; min-width:0; min-height:70px; margin:0 !important; padding:7px 6px !important;
+  align-content:center; border:1px solid #6b91b7 !important; border-radius:9px !important;
+  background:linear-gradient(#315d86,#224665) !important; box-shadow:0 2px #091c33 !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-stats > div > .ui-icon { grid-column:1 !important; grid-row:1 !important; justify-self:center; align-self:center; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-stats > div > span:not(.ui-icon) {
+  grid-column:1 !important; grid-row:2 !important; position:static !important; color:#d7eafa !important; white-space:normal !important;
+  text-align:center; align-self:center;
+  font:600 10px/1.2 var(--gs-font-copy) !important; overflow:visible !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-stats > div > strong {
+  grid-column:1 !important; grid-row:3 !important; position:static !important; color:#fff; text-align:center;
+  font:800 14px/1.2 var(--gs-font-display) !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(.detail-card-actions,.core-detail-actions) {
+  order:4; flex:none; margin:0 !important; display:grid !important; grid-template-columns:1fr 1.5fr !important; gap:8px;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(.detail-card-actions,.core-detail-actions) > button {
+  min-height:44px !important; margin:0 !important; padding:6px !important; border:1px solid #74b4ed !important;
+  border-bottom:3px solid #17416a !important; border-radius:9px !important; clip-path:none !important;
+  font:800 13px/1.2 var(--gs-font-display) !important; color:white !important;
+  background:linear-gradient(#408ddd,#2465ae) !important; box-shadow:inset 0 1px #fff4 !important;
+  opacity:1 !important; filter:none !important; text-shadow:none !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(#module-detail-upgrade,#core-detail-upgrade):not(:disabled) {
+  background:linear-gradient(#ffe886,#ffb52f) !important; color:#452b0a !important;
+  border-color:#fff0b1 !important; border-bottom-color:#a85e12 !important; cursor:pointer;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(.detail-card-actions,.core-detail-actions) > button:disabled {
+  background:linear-gradient(#56728c,#3b526c) !important; color:#abc1d2 !important;
+  border-color:#688195 !important; border-bottom-color:#21364e !important; cursor:not-allowed;
+  box-shadow:inset 0 1px #a8c2d326 !important; opacity:1 !important; filter:none !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(.detail-card-actions,.core-detail-actions) > button:disabled .cost-chip {
+  background:transparent !important; color:#a8bdce !important; box-shadow:none !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(#module-detail-status,#core-detail-status) {
+  order:5; flex:none; margin:0 2px !important; min-height:0 !important; color:#ffe2a1;
+  font:500 11px/1.25 var(--gs-font-copy) !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(#module-detail-status,#core-detail-status):empty { display:none !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-tab-content {
+  order:2; flex:none !important; min-height:0 !important; margin:0 !important; padding:8px 10px !important;
+  display:flex !important; flex-direction:column; gap:8px; overflow:auto !important; scrollbar-width:none;
+  border:1px solid #608ca8 !important; border-radius:11px !important;
+  background:linear-gradient(130deg,#d9e9f0,#c6dce7) !important; color:#173650;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-tab-content::-webkit-scrollbar { display:none; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-tab-intro {
+  flex:none; margin:0 !important; padding:0 !important; border:0 !important; background:none !important;
+  color:#21445b !important; font:500 12px/1.4 var(--gs-font-copy) !important; white-space:normal;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-tab-intro::before { display:none !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-tabs {
+  order:6; flex:none; display:grid !important; grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:6px !important; margin:0 !important; padding:0 !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-tabs button {
+  display:grid !important; justify-items:center; gap:3px; min-height:48px !important; padding:5px !important;
+  border:1px solid #719ac0 !important; border-bottom:3px solid #102d4c !important; border-radius:8px !important;
+  background:linear-gradient(#305d85,#234969) !important; color:#e4f3ff !important; clip-path:none !important;
+  box-shadow:inset 0 1px #a8d4ff3d !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-tabs button.is-active { background:linear-gradient(#66e1d2,#2eb1a6) !important; color:#073d40 !important; border-bottom-color:#106c70 !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-tabs small { font:800 10px/1.2 var(--gs-font-display) !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .ui-icon.is-artwork { display:inline-block !important; width:24px; height:24px; margin:0; flex:none; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .ui-icon.is-artwork > .ui-art { display:block; width:100%; height:100%; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .stat-next-gain { font:700 11px/1.2 var(--gs-font-copy) !important; color:#18a34e; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-stats .stat-next-gain { color:#8cff9e; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog):not([data-detail-tab="overview"]) > .module-detail-hero {
+  flex:0 0 auto !important; min-height:58px !important; grid-template-rows:auto !important;
+  grid-template-areas:"heading close"; padding:8px !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog):not([data-detail-tab="overview"]) .module-detail-art,
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog):not([data-detail-tab="overview"]) .module-detail-title > :is(#module-detail-rarity,#core-detail-rarity),
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog):not([data-detail-tab="overview"]) > :is(.module-detail-level-row,.module-detail-stats,.core-detail-actions,.detail-card-actions) { display:none !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog):not([data-detail-tab="overview"]) .module-detail-tab-content { flex:1 1 0 !important; padding:12px !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog)[data-detail-tab="stats"] .module-detail-tab-intro { display:none !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(.module-stat-chips,dl.module-stat-tiles) {
+  display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:8px !important; margin:0 !important; padding:0 !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(.module-stat-chips > span,dl.module-stat-tiles > div) {
+  position:relative; display:grid !important; grid-template-columns:30px minmax(0,1fr) !important;
+  grid-template-rows:auto auto !important; align-items:center; align-content:center;
+  gap:3px 7px !important; min-height:60px !important; min-width:0; margin:0 !important; padding:8px !important;
+  border:1px solid #83a5bb !important; border-bottom:2px solid #7290a6 !important;
+  border-radius:10px !important; background:linear-gradient(#bfd3e2,#acc5d9) !important; color:#16354f;
+  grid-column:auto !important; overflow:visible !important; order:0 !important; box-shadow:inset 0 1px #fff5;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(.module-stat-chips > span,dl.module-stat-tiles > div)::before { display:none !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(.module-stat-chips,dl.module-stat-tiles) > * > .ui-icon { grid-column:1; grid-row:1 / 3; width:28px; height:28px; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(.module-stat-chips small,.module-stat-tiles dt) {
+  grid-column:2 !important; grid-row:1; display:block !important; margin:0 !important;
+  font:600 11px/1.2 var(--gs-font-copy) !important; color:#31536b !important;
+  white-space:normal !important; overflow:visible !important; letter-spacing:0; text-align:left;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is(.module-stat-chips strong,.module-stat-tiles dd) {
+  grid-column:2 !important; grid-row:2; display:block !important; margin:0 !important; color:#102d46 !important;
+  font:800 13px/1.25 var(--gs-font-display) !important; white-space:normal; overflow-wrap:anywhere; text-align:left;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-stat-meter { display:none !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-path { display:grid !important; gap:6px; margin:0 !important; padding:0 !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-path::before { display:none !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-node {
+  display:grid !important; gap:3px !important; padding:0 !important; margin:0 !important;
+  border:0 !important; background:transparent !important; box-shadow:none !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-kind {
+  display:flex; justify-self:center; align-items:center; gap:4px; margin:0 !important; padding:1px 7px !important;
+  border:1px solid #91b3c6 !important; border-radius:12px; background:#a9c7d8 !important;
+  color:#24485e !important; font:700 10px/1.2 var(--gs-font-copy) !important; letter-spacing:0;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-kind > .ui-icon { width:14px; height:14px; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices { display:grid !important; grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr) !important; gap:6px !important; align-items:center; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices::before { display:none !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button {
+  position:relative !important; display:grid !important; grid-template-columns:20px minmax(0,1fr) !important;
+  grid-template-rows:auto auto; align-items:center; gap:4px !important; min-width:0;
+  min-height:52px !important; height:auto !important; padding:5px !important; margin:0 !important;
+  border:1px solid #679ac6 !important; border-bottom:3px solid #2d5885 !important; border-radius:10px !important;
+  background:linear-gradient(#4c83b4,#316592) !important; color:#fff !important; opacity:1 !important;
+  clip-path:none !important; box-shadow:inset 0 1px #fff4 !important; transform:none !important; filter:none !important;
+  text-align:left !important; white-space:normal !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button > .ui-icon { grid-column:1; grid-row:1 / 3; width:20px; height:20px; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button strong { grid-column:2; color:inherit !important; font:700 11px/1.2 var(--gs-font-display) !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button small { grid-column:2; color:#d7e8f6 !important; font:500 9px/1.2 var(--gs-font-copy) !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button.is-unavailable { background:linear-gradient(#7895ad,#617d96) !important; border-color:#8ea9bc !important; border-bottom-color:#415b71 !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button.is-selected { background:linear-gradient(#7cdec4,#43b49e) !important; border-color:#c2ffe0 !important; border-bottom-color:#267463 !important; color:#0a3e34 !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button.is-selected small { color:#194e43 !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button.is-previewed { outline:2px solid #eaa42e; outline-offset:1px; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-level {
+  width:44px !important; height:44px; min-height:44px !important; padding:3px !important;
+  display:grid; place-items:center; align-content:center; gap:2px; border-radius:12px !important;
+  border:1px solid #719bb8 !important; background:#315b80 !important; color:#fff;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-level > strong { font:800 11px/1.2 var(--gs-font-display) !important; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-reset-panel {
+  display:flex; align-items:center; justify-content:space-between; gap:6px; padding:7px !important;
+  margin:0 !important; background:#b2ccdc !important; color:#254b63; border:1px solid #87a6b9; border-radius:8px;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-reset-panel > span { font:600 11px var(--gs-font-copy); }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-reset-panel button { min-height:32px !important; padding:4px 8px !important; font-size:11px !important; }
+@media (max-width:360px) {
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) { padding:8px !important; gap:6px !important; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-title h2 { font-size:17px !important; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices { grid-template-columns:minmax(0,1fr) 38px minmax(0,1fr) !important; gap:5px !important; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button { grid-template-columns:1fr !important; min-height:52px !important; padding:6px !important; text-align:center !important; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button > .ui-icon { display:none !important; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button :is(strong,small) { grid-column:1; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-level { width:38px !important; }
+}
+@media (max-height:600px) {
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) { gap:5px !important; padding:8px !important; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) > .module-detail-hero { min-height:110px !important; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-stats > div { min-height:56px; padding:5px !important; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-tabs button { min-height:42px !important; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-art > :is(.module-emblem,.core-emblem,.core-emblem-set) { width:110px !important; height:110px !important; }
+}
+/* Accessibility/very short landscape: keep every control reachable instead of
+ * clipping or inventing extra pages. Normal portrait retains the three views. */
+@media (max-height:520px) {
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) { overflow-y:auto !important; scrollbar-width:none; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-tabs { position:sticky; bottom:0; z-index:4; background:#173654; }
+}
+/* Portrait talent view: keep all real choices together. A short description
+ * wraps naturally; no nested scroll box, clipped prose or invented pages.
+ * Very short landscape retains the accessibility overflow fallback above. */
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog):is([data-detail-tab="talents"],[data-detail-tab="skills"]) {
+  height:min(680px,calc(100dvh - 40px)) !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is([data-tab="talents"],[data-tab="skills"]) {
+  gap:6px !important; padding:8px !important; overflow:hidden !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is([data-tab="talents"],[data-tab="skills"]) .module-detail-tab-intro {
+  flex:none; min-height:0 !important; max-height:none; overflow:visible;
+  padding:5px 7px !important; border:1px solid #91b3c6 !important; border-radius:7px;
+  background:#c1d8e4 !important; font-size:11px !important; line-height:1.3 !important;
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-stat-signature {
+  flex:none; margin:0; padding:8px; border:1px solid #83a5bb; border-radius:9px;
+  background:#c4dde8; color:#173650; font:500 11px/1.35 var(--gs-font-copy);
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-stat-signature > strong {
+  display:flex; gap:5px; align-items:center; margin-bottom:4px; font:700 11px/1.2 var(--gs-font-copy);
+}
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-stat-signature p { margin:0; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-stat-note {
+  flex:none; margin:0; color:#31536b; font:500 10px/1.3 var(--gs-font-copy);
+}
+@media (max-height:700px) {
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is([data-tab="talents"],[data-tab="skills"]) .module-detail-tab-intro {
+    font-size:10.5px !important;
+  }
+  /* Kind labels remain in accessible choice labels and the level tooltip;
+   * collapse their duplicate heading rows on shorter portrait screens. */
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-kind { display:none !important; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button { min-height:46px !important; padding:4px !important; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-path { gap:4px; }
+}
+@media (max-height:520px) {
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is([data-tab="talents"],[data-tab="skills"]) { flex:none !important; overflow:visible !important; }
+}
+

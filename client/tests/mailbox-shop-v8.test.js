@@ -73,13 +73,14 @@ test("repair has a shared crescent, no gameplay balance change and a short title
   assert.ok(app.includes("return GridshardModuleCardView.iconFor(module)"));
 });
 
-test("season mailbox protocol is explicit and leaves other engagement routes unchanged", () => {
+test("season stock protocol is explicit and confirmed tier rewards get a reveal", () => {
   const source = fs.readFileSync(path.join(root, "src/relay-client.js"), "utf8");
-  assert.ok(source.includes('["tiers", "premium-tiers"].includes(kind) ? "?chest_delivery=inbox-v1" : ""'));
+  assert.ok(source.includes('["tiers", "premium-tiers"].includes(kind) ? "?chest_delivery=stock-v1" : ""'));
   const start = app.indexOf("async function claimEngagementReward");
   assert.ok(start > 0);
   const handler = app.slice(start, app.indexOf("\n  function ", start));
-  assert.ok(!handler.includes("showChestOpening("));
+  assert.ok(handler.includes("if (isSeasonTrack) showChestOpening("));
+  assert.ok(handler.includes('item?.delivery === "inventory"'));
 });
 
 test("new labels translate in both directions", () => {

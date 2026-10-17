@@ -6161,9 +6161,9 @@ def _tier_advanced_payload(
 
 
 def _uses_chest_mailbox(protocol: str) -> bool:
-    if protocol not in {"", "inbox-v1"}:
+    if protocol not in {"", "inbox-v1", "stock-v1"}:
         raise HTTPException(status_code=422, detail="Bilinmeyen sandık teslim yöntemi.")
-    return protocol == "inbox-v1"
+    return protocol in {"inbox-v1", "stock-v1"}
 
 
 @app.post("/profile/{player_id}/engagement/tiers/{tier}/claim")
@@ -6208,8 +6208,14 @@ def claim_season_tier_reward(
     delivery = None
     if reward and reward.get("chest_tier") and replayed:
         chest_receipt = profile.chest_receipts.get(chest_request_id)
+        if chest_delivery == "stock-v1" and not chest_receipt:
+            delivery = meta_progression_service.stock_reward_chest(
+                profile, chest_definition_ids[str(reward["chest_tier"])],
+                f"season-tier:{profile.active_meta_season_id}:{tier}", chest_request_id)
     elif reward and reward.get("chest_tier"):
-        award = meta_progression_service.deliver_reward_chest if use_mailbox else meta_progression_service.award_instant_chest
+        award = (meta_progression_service.stock_reward_chest if chest_delivery == "stock-v1"
+                 else meta_progression_service.deliver_reward_chest if use_mailbox
+                 else meta_progression_service.award_instant_chest)
         result = award(
             profile,
             chest_definition_ids[str(reward["chest_tier"])],
@@ -6220,7 +6226,7 @@ def claim_season_tier_reward(
             delivery = result
         else:
             chest_receipt = result
-    if reward and reward.get("chest_tier") and replayed and not chest_receipt:
+    if reward and reward.get("chest_tier") and replayed and not chest_receipt and not delivery:
         delivery = {"message_id": chest_request_id, "definition_id": chest_definition_ids[str(reward["chest_tier"])], "delivered": True}
     persist_player_data(player_id)
     view = profile.to_view()
@@ -6299,8 +6305,15 @@ def _claim_premium_season_tier_reward(
             chest_request_id = f"season-premium-tier:{profile.player_id}:{profile.active_meta_season_id}:{tier}:{index}"
             if replayed:
                 receipt = profile.chest_receipts.get(chest_request_id)
+                if chest_delivery == "stock-v1" and not receipt:
+                    chest_deliveries.append(meta_progression_service.stock_reward_chest(
+                        profile, chest_definition_ids[str(reward["chest_tier"])],
+                        f"season-premium-tier:{profile.active_meta_season_id}:{tier}:{index}",
+                        chest_request_id, origin=premium_origin(profile)))
             elif use_mailbox:
-                chest_deliveries.append(meta_progression_service.deliver_reward_chest(
+                award = (meta_progression_service.stock_reward_chest if chest_delivery == "stock-v1"
+                         else meta_progression_service.deliver_reward_chest)
+                chest_deliveries.append(award(
                     profile,
                     chest_definition_ids[str(reward["chest_tier"])],
                     f"season-premium-tier:{profile.active_meta_season_id}:{tier}:{index}",
@@ -6318,7 +6331,7 @@ def _claim_premium_season_tier_reward(
                     chest_request_id,
                 )
                 record_reward_delta(profile, f"tier:{tier}:chest:{index}", premium_before)
-            if replayed and not receipt:
+            if replayed and not receipt and chest_delivery != "stock-v1":
                 chest_deliveries.append({"message_id": chest_request_id, "definition_id": chest_definition_ids[str(reward["chest_tier"])], "delivered": True})
             if receipt:
                 chest_receipts.append(receipt)
@@ -6632,6 +6645,9 @@ async def health() -> dict:
         "status": "ok" if ready else "degraded",
         "version": VERSION,
         "pvp_protocol_version": PVP_PROTOCOL_VERSION,
+        # Explicit rollout signal: a client must never silently downgrade a
+        # closed-inventory season chest into the legacy instant-open protocol.
+        "season_chest_delivery_protocols": ["inbox-v1", "stock-v1"],
         "persistence": {
             "player_data":
                 player_persistence,

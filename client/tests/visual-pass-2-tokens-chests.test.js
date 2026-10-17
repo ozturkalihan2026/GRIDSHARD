@@ -33,7 +33,7 @@ function svgElement(tag) {
 function tokenSandbox() {
   const sandbox = { createModulePuzzlePiece: () => ({ outerHTML: "<span data-piece></span>" }) };
   vm.runInNewContext(`${slice("  const tokenFacets = ", "  // Maliyet rozeti:")}
-${slice("  function resourceSymbolMarkup(kind) {", "  // Modül kartı parçaları her yerde")}
+${slice("  function resourceSymbolMarkup(kind) {", "  // Legacy helper name retained")}
 Object.assign(this, { RESOURCE_TOKEN_SVG, RESOURCE_TOKEN_CLASS, resourceTokenVisual, resourceTokenMarkup, resourceSymbolMarkup });`, sandbox);
   return sandbox;
 }
@@ -60,6 +60,11 @@ test("Akı, Devre Kredisi ve diğer kaynaklar dolu çizilir; her birinin rengi t
     }
     const markup = sandbox.resourceTokenMarkup(kind);
     if (kind === "trophy") assert.ok(markup.includes('rating-trophy-v1/rating-trophy.webp') && !markup.includes('<svg'));
+    else if (kind === "experience") {
+      assert.ok(markup.includes('<span class="experience-art" aria-hidden="true"></span>'));
+      assert.ok(!markup.includes("<svg"));
+      assert.equal(drawing,undefined,"Deneyimde eski SVG paralel kaynak değildir");
+    }
     else if (kind === "flux" || kind === "credit") {
       assert.ok(markup.includes(`<span class="currency-art" data-currency="${kind}" aria-hidden="true"></span>`));
       assert.ok(!markup.includes("<svg"));
@@ -178,32 +183,24 @@ test("mağazada sandık fiyatı kaynağın simgesiyle yazılır", () => {
 });
 
 // --- Yapboz parçası ------------------------------------------------------------------
-test("modül parçası dolu çizilir: gövde, gölge, ışık ve kontur", () => {
+test("modül parçası yapboz değil, ortak modül görselini taşıyan küçük karttır", () => {
   const sandbox = {
     document: { createElement: svgElement, createElementNS: (_, tag) => svgElement(tag) },
+    uiIconMarkup:()=>'<i class="ui-icon">cards</i>',
   };
-  vm.runInNewContext(`${slice("  const MODULE_PIECE_OUTLINE = ", "  function moduleShardSymbolMarkup(")}
-Object.assign(this, { createModulePuzzlePiece, MODULE_PIECE_OUTLINE });`, sandbox);
+  vm.runInNewContext(`${slice("  function createModulePuzzlePiece(", "  function moduleShardSymbolMarkup(")}
+Object.assign(this, { createModulePuzzlePiece });`, sandbox);
   const piece = sandbox.createModulePuzzlePiece({ category: "savunma", glyph: "<svg></svg>" });
-  assert.equal(piece.className, "resource-symbol resource-symbol-module-piece");
+  assert.equal(piece.className, "resource-symbol module-reward-card");
   assert.equal(piece.dataset.category, "savunma");
-  const [svg, glyph] = piece.children;
-  assert.deepEqual(svg.children.map((child) => child.attributes.class), ["mp-body", "mp-shade", "mp-shine", "mp-outline"]);
-  assert.equal(svg.children[0].attributes.d, sandbox.MODULE_PIECE_OUTLINE);
-  assert.equal(svg.children[3].attributes.d, sandbox.MODULE_PIECE_OUTLINE);
-  // Parçanın üstünde modülün amblemi durur (SVG; bkz. visual-pass-5-module-emblems.test.js).
-  assert.equal(glyph.innerHTML, "<svg></svg>");
-  assert.equal(glyph.className, "mp-emblem");
-  // Evrensel parça yıldızlıdır; simgesiz parça yalnız şekildir.
+  assert.equal(piece.innerHTML,"<svg></svg>");
   const universal = sandbox.createModulePuzzlePiece({ universal: true, category: "saldırı" });
   assert.equal(universal.dataset.category, "universal");
-  assert.equal(universal.children[1].textContent, "✦");
-  assert.equal(sandbox.createModulePuzzlePiece().children.length, 1);
-  // Gövde sınıf rengiyle doludur; kontur koyudur (eskiden yalnız renkli çizgiydi).
-  assert.match(css, /\.resource-symbol-module-piece > svg \.mp-body \{ fill:var\(--piece-color\); \}/);
-  assert.match(css, /\.resource-symbol-module-piece > svg \.mp-outline \{ stroke:#0a1024;stroke-width:3;stroke-linejoin:round; \}/);
+  assert.equal(universal.innerHTML,'<i class="ui-icon">cards</i>');
+  const cardCss=read("src","visual-polish-v9.css");
+  assert.ok(!app.includes("const MODULE_PIECE_OUTLINE"));
   for (const category of ["saldırı", "savunma", "destek", "sabotaj", "universal"]) {
-    assert.match(css, new RegExp(`\\.resource-symbol-module-piece\\[data-category="${category}"\\] \\{ --piece-color:#[0-9a-f]{6}; \\}`), category);
+    assert.match(cardCss, new RegExp(`\\.module-reward-card\\[data-category="${category}"\\] \\{ --card-accent:#[0-9a-f]{6}; \\}`), category);
   }
 });
 

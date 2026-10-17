@@ -1,0 +1,159 @@
+/* Shared finishing pass. Existing approved art, accessible controls and all
+ * receipt/claim/selection owners are retained; no new bitmap dependency. */
+.ui-art[data-ui-art="team-tournament"] { --ui-art-image:url("../assets/ui/dock-casual-v1/team.webp"); }
+.event-hub-emblem > .ui-art { width:100%; height:100%; }
+:root body[data-app-screen] .module-reward-card {
+  --card-accent:#69d5cf; box-sizing:border-box;
+  display:inline-grid; place-items:center; width:1.45em; height:1.7em; flex:0 0 auto;
+  padding:2px; border:1.5px solid var(--card-accent); border-radius:5px;
+  background:linear-gradient(145deg,#1c3d53,#081724);
+  box-shadow:inset 0 1px #ffffff33,0 2px #020a16; vertical-align:middle;
+}
+.module-reward-card[data-category="saldırı"] { --card-accent:#ff6279; }
+.module-reward-card[data-category="savunma"] { --card-accent:#68b1ff; }
+.module-reward-card[data-category="destek"] { --card-accent:#76e097; }
+.module-reward-card[data-category="sabotaj"] { --card-accent:#c67cff; }
+.module-reward-card[data-category="universal"] { --card-accent:#ffdc75; }
+:root body[data-app-screen] .module-reward-card > :is(.module-emblem,.ui-icon) {
+  position:static !important; width:100% !important; height:100% !important;
+  margin:0 !important; transform:none !important; object-fit:contain;
+}
+:root body[data-app-screen] .arena-reward-node.is-claimable,
+:root body[data-app-screen] .arena-league-chest-stop .is-claimable {
+  border:2px solid #ffe79a !important; opacity:1 !important;
+  background:linear-gradient(135deg,#356960,#16394b) !important;
+  box-shadow:inset 0 1px #fff3b455,0 0 14px #ffcf6840,0 3px #040e1c !important;
+  cursor:pointer;
+}
+:root body[data-app-screen] .arena-reward-node.is-claimable > i { filter:brightness(1.15); }
+:root body[data-app-screen] .arena-reward-node:focus-visible { outline:3px solid #fff1ae; outline-offset:3px; }
+:root body[data-app-screen] .arena-league-chest-stop .is-claimable .reward-chest-button { filter:brightness(1.15); }
+
+/* Modal surfaces share the same dark ink, crisp rim and shallow physical lip.
+ * Do not override display/open/hidden, positioning, scrolling or focus traps. */
+:root body[data-app-screen] dialog {
+  color:#eef6ff; border:2px solid #446b80 !important; border-radius:18px !important;
+  background:linear-gradient(145deg,#153447,#091b2c 68%) !important;
+  box-shadow:inset 0 1px #9bc8d52b,0 6px 0 #030d18,0 20px 60px #0009 !important;
+}
+:root body[data-app-screen] dialog::backdrop { background:#020813b8; }
+:root body[data-app-screen] dialog > header,
+:root body[data-app-screen] .event-detail-header {
+  border-bottom:1px solid #70cec54d !important;
+  background:linear-gradient(135deg,#25485e,#112839) !important;
+  box-shadow:inset 0 1px #ffffff14 !important;
+}
+:root body[data-app-screen] dialog :is(h2,h3),
+:root body[data-app-screen] .event-detail-header h2 { color:#f2f8ff; text-shadow:0 2px #04111b; }
+:root body[data-app-screen] :is(dialog,.module-quick-actions,.arena-path-footer,.event-detail-header) button:not(.reward-chest-button):not(.arena-reward-node):not(.inbox-message-read) {
+  clip-path:none !important; border-radius:9px !important;
+  border:1px solid #548799 !important; border-bottom:3px solid #061522 !important;
+  background:linear-gradient(#2d5c73,#193b52) !important; color:#effaff !important;
+  box-shadow:inset 0 1px #c8efff30,0 2px #020b16 !important;
+}
+:root body[data-app-screen] :is(dialog,.module-quick-actions) button:disabled { opacity:.5; }
+:root body[data-app-screen] :is(#chest-reveal-card,.reward-preview-panel,.module-quick-actions,.daily-meta-stage) {
+  border:1px solid #5f8c9b !important; border-radius:14px !important;
+  background:linear-gradient(145deg,#1d3c4d,#0b1c2c 72%) !important;
+  box-shadow:inset 0 1px #cee8db22,0 4px #040d18 !important;
+}
+:root body[data-app-screen] :is(.arena-detail-back-button,.refresh-back-button,#leaderboard-back) {
+  display:inline-grid !important; place-items:center; min-width:42px; min-height:42px;
+  padding:7px !important;
+}
+:root body[data-app-screen] :is(.refresh-back-button,#leaderboard-back) .ui-icon { margin:0; width:26px; height:26px; }
+:root body[data-app-screen] #arena-leaderboard-button { display:flex; align-items:center; justify-content:center; gap:9px; }
+#arena-leaderboard-button .trophy-value-icon { width:28px; height:28px; }
+.ui-icon.is-artwork > :is(.core-emblem,.trophy-value-icon) { display:block; width:100%; height:100%; object-fit:contain; }
+:root body[data-app-screen] #daily-meta-card {
+  border:1px solid #548288 !important; border-radius:12px !important;
+  background:linear-gradient(125deg,#203f45,#102633) !important;
+  box-shadow:inset 0 1px #beefd91a,0 3px #030f1c !important;
+}
+:root body[data-app-screen] #daily-meta-card .event-hub-emblem { filter:none; }
+:root body[data-app-screen] .team-directory-name {
+  display:block; padding:3px 2px 5px !important; line-height:1.4 !important;
+  min-height:1.7em; clip-path:none !important; box-shadow:none !important;
+  overflow:visible !important;
+}
+:root body[data-app-screen] .team-directory-copy { min-width:0; padding-block:2px; overflow:visible; }
+:root body[data-app-screen] .team-directory-name::before,
+:root body[data-app-screen] .team-directory-name::after { display:none !important; }
+
+/* Compact mailbox: one title line + claim at its end; content expands below. */
+:root body[data-app-screen] #reward-inbox-dialog .reward-inbox-card {
+  display:grid !important; grid-template-columns:38px minmax(0,1fr) auto !important;
+  align-items:start !important; gap:9px !important; padding:12px !important;
+  border:1px solid #3c6476 !important; border-radius:10px !important;
+  background:linear-gradient(135deg,#1b3b4d,#102638) !important;
+  box-shadow:inset 0 1px #b9dbdf18,0 2px #030d18 !important;
+}
+:root body[data-app-screen] #reward-inbox-dialog .reward-inbox-card > div { min-width:0; }
+:root body[data-app-screen] #reward-inbox-dialog .inbox-message-title {
+  display:block; padding:5px 0; cursor:pointer; line-height:1.35; font-size:13px;
+}
+:root body[data-app-screen] #reward-inbox-dialog .inbox-message-title:focus-visible { outline:2px solid #ffe8a1; outline-offset:2px; }
+:root body[data-app-screen] #reward-inbox-dialog .inbox-message-read {
+  width:38px !important; height:38px !important; min-width:0 !important;
+  border:0 !important; padding:1px !important; background:none !important;
+  box-shadow:none !important; clip-path:none !important;
+}
+:root body[data-app-screen] #reward-inbox-dialog .inbox-message-read::before,
+:root body[data-app-screen] #reward-inbox-dialog .inbox-message-read::after { display:none !important; }
+:root body[data-app-screen] #reward-inbox-dialog .inbox-message-read .ui-art { width:100%; height:100%; }
+:root body[data-app-screen] #reward-inbox-dialog .inbox-message-content { margin-top:7px; padding-top:9px; border-top:1px solid #57899544; }
+:root body[data-app-screen] #reward-inbox-dialog .inbox-message-content[hidden] { display:none !important; }
+:root body[data-app-screen] #reward-inbox-dialog .reward-inbox-card > button:not(.inbox-message-read),
+:root body[data-app-screen] #inbox-collect-all {
+  align-self:start; margin:0 !important; min-height:32px; padding:5px 10px;
+  background:linear-gradient(#8be5a0,#39a76c) !important; color:#04221b !important;
+  border-color:#a2efb8 !important; border-bottom-color:#12613f !important;
+}
+:root body[data-app-screen] #reward-inbox-dialog [hidden] { display:none !important; }
+.season-stock-reward { display:flex; align-items:center; gap:12px; padding:10px; border:1px solid #c6a46266; border-radius:9px; background:#071827; }
+.season-stock-reward > span { font:600 13px/1.4 var(--gs-font-copy); color:#f9dfa4; }
+:root body[data-app-screen] dialog :is(button[aria-selected="true"],button[aria-pressed="true"],button.is-active) {
+  color:#04251f !important; border-color:#a6f4dd !important;
+  background:linear-gradient(#84ead6,#35baa9) !important;
+}
+:root body[data-app-screen] :is(#chest-reveal-close,#module-detail-upgrade) {
+  color:#362207 !important; border-color:#ffe6a4 !important;
+  background:linear-gradient(#ffe68d,#ffc04d) !important;
+}
+/* Seç/Çıkar share one element. Its approved face already changes via
+ * data-action=add/remove; no gold (or blue) backing may peek around that face. */
+:root body[data-app-screen] #module-quick-select {
+  background:transparent !important; border:0 !important; box-shadow:none !important;
+  color:var(--gs2-letter) !important;
+}
+:root body[data-app-screen] dialog button[data-variant="danger"] {
+  color:#fff1f4 !important; border-color:#f2839a !important;
+  background:linear-gradient(#985268,#602b44) !important;
+}
+
+/* Collected is an achievement, not a locked reward. Keep the real disabled
+ * state (no repeat claim), but do not inherit generic disabled dimming. */
+:root body[data-app-screen] #arena-detail-dialog .arena-reward-node.is-claimed {
+  opacity:1 !important; filter:none !important; cursor:default !important;
+  border:2px solid #63dcb2 !important; color:#dbfff0 !important;
+  background:linear-gradient(135deg,#214c48,#123343) !important;
+  box-shadow:inset 0 1px #caffdf33,0 0 9px #4acb9226,0 3px #040e1c !important;
+}
+:root body[data-app-screen] #arena-detail-dialog .arena-reward-node.is-claimed > :is(i,strong,.arena-reward-trophy) {
+  opacity:1 !important; filter:none !important;
+}
+:root body[data-app-screen] #arena-detail-dialog .arena-reward-node.is-claimed > strong { color:#a5ffcf !important; }
+:root body[data-app-screen] #arena-detail-dialog .arena-reward-node.is-claimed > .arena-reward-trophy { color:#f1dfa4 !important; }
+:root body[data-app-screen] #arena-detail-dialog .arena-reward-node.is-claimed :is(.module-emblem,.module-reward-card,.resource-symbol,.reward-chest-button,.league-chest-button,.chest-visual) {
+  opacity:1 !important; filter:none !important;
+}
+/* Override older footer grid/column rules as well as generic modal buttons. */
+:root body[data-app-screen] #arena-detail-dialog #arena-leaderboard-button {
+  display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important;
+  align-items:center !important; justify-content:center !important;
+  gap:9px !important; white-space:nowrap;
+}
+:root body[data-app-screen] #arena-detail-dialog #arena-leaderboard-button > .trophy-value-icon {
+  display:block; flex:0 0 26px; width:26px !important; height:26px !important;
+  margin:0 !important; object-fit:contain;
+}

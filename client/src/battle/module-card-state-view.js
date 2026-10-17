@@ -86,6 +86,7 @@
       this.toggle(card, "enemy-module-card", model.enemy);
       this.toggle(card, "fixed-module", model.core && !model.enemy);
       this.toggle(card, "battle-module-card", true);
+      this.toggle(card, "physical-module-card", Boolean(model.physical));
       this.toggle(card, "core-power-target", model.targeting);
       this.toggle(card, "core-charge-card", model.core && !model.enemy);
       this.toggle(card, "core-power-ready", model.core && !model.enemy && model.coreReady);
@@ -121,7 +122,7 @@
         this.hidden(view.tooltip, !model.powerMessage);
         this.text(view.tooltip, model.powerMessage || "");
       }
-      const heatVisible = !model.core && (model.heat > 0 || model.overheated);
+      const heatVisible = !model.core && (model.physical || model.heat > 0 || model.overheated);
       this.toggle(card, "has-heat-bar", heatVisible);
       if (heatVisible && !view.heat) {
         view.heat = this.element("span", "module-heat-bar");

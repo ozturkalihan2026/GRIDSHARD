@@ -205,7 +205,7 @@ def defense_profile(
                 target_id if target_id in BLOCK_BASE_RATIO else "shield", effect, efficiency
             )
     elif mechanic_id == "armor":
-        defense_type = "Zırh"
+        defense_type = "Sönümleyici"
         multiplier = 1 - passive_reduction("armor", effect, efficiency)
     elif mechanic_id == "reflector" and target.is_powered:
         defense_type = "Yansıtıcı"

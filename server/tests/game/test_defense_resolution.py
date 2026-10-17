@@ -39,7 +39,7 @@ def test_armor_is_passive_while_operational():
     pulse=add(e,"p1","pulse","pulse_cannon",1,1)
     armor=add(e,"p2","armor","armor",2,1,powered=True)
     r=resolve_attack("p1",pulse,"p2",armor)
-    assert r.defense_type=="Zırh"
+    assert r.defense_type=="Sönümleyici"
     assert r.final_damage<r.raw_damage
 
 def test_reflector_requires_energy_and_reflects():

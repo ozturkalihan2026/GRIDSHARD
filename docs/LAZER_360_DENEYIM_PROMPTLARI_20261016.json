@@ -1,0 +1,61 @@
+{
+  "mode": "built-in image_gen",
+  "transparent": true,
+  "assets": [
+    {
+      "id": "experience",
+      "prompt": "Use case: stylized-concept. GRIDSHARD game asset. Match reference's chunky painted 3D cartoon metal, saturated colors, thick near-black contour, crisp broad bevel highlights, clear silhouette at 48 pixels. No pastel, no realistic grunge, no low-poly look, no navy body. Single isolated object, actual transparent background, no labels, no scene, no tile, no border, no shadow on a floor. Subject: a bright emerald and turquoise hexagonal experience/rank medallion with thick polished gold beveled frame and two bold ascending golden chevrons. Distinct from a five-point talent star and from currency. Front-facing slightly chunky 3D, centered square composition, 10 percent transparent padding.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/detail-icons-v1/talent.webp"
+      ],
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-4273eaf8-7781-40ef-b841-73e0618d99c5.png"
+    },
+    {
+      "id": "laser-head",
+      "prompt": "Use case: precise-object-edit. Image 1 is edit target, Image 2 is top-down mounting style reference. Fix the camera of Image 1 to a STRICT OVERHEAD SPRITE: camera exactly vertically above the turret. Keep its vivid red and silver chunky bevel painted cartoon design, but redraw it in true plan view so it can rotate on the plane. IMPORTANT: the round gold SIDE HINGE in Image 1 must NOT be visible as a circle, because from directly above you cannot see the side hinge. Similarly do NOT show a front-facing round muzzle/lens on the right: muzzle appears as a narrow red luminous slit/end cap in top view. Main rotating housing is a squat RED ROUND/SQUARED DOME centered at exactly canvas (50%,50%), a ONE rectangular silver-and-red laser barrel extends from its right edge towards canvas (88%,50%). Symmetric top and bottom edges of the housing/barrel. Rear body occupies left of pivot. Above view like a strategy game turret viewed straight down, NO isometric or side perspective whatsoever. No base, no legs, no side-on pipes. All artwork must stay within a radius of 43% of square canvas around pivot so full rotation stays in frame. True transparent background, no text or grid or beam. Preserve strong dark outline and upper-left bright bevel highlights, NO navy body.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/modules-physical-v1/laser.webp"
+      ],
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-5cfe88ab-7461-4511-85ed-33124e0294ed.png"
+    },
+    {
+      "id": "laser-base",
+      "prompt": "Use case: stylized-concept. GRIDSHARD game asset. Match reference's chunky painted 3D cartoon metal, saturated colors, thick near-black contour, crisp broad bevel highlights, clear silhouette at 48 pixels. No pastel, no realistic grunge, no low-poly look, no navy body. Single isolated object, actual transparent background, no labels, no scene, no tile, no border, no shadow on a floor. Image 1 is style reference ONLY. Create ONLY a stationary ROUND turret mounting pedestal seen from STRICT VERTICAL TOP DOWN ORTHOGRAPHIC camera, zero side perspective/tilt. Small red and silver chunky mechanical circular base with four broad symmetric silver stabilizer feet, circular central mounting bearing, subtle gold contacts. Strong clean mechanical silhouette, same art as red laser. Top-view circle centered exactly x=50%,y=50%, outer radius40% of square canvas, symmetric all directions. NO gun/barrel/head, no beam, no floor, no cast shadow. True transparent background.",
+      "refs": [
+        "D:/Projects/GRIDSHARD/client/assets/ui/modules-physical-v1/turret-base.webp"
+      ],
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-4f89633b-56e2-4502-8f71-8e995b38cacc.png"
+    }
+  ],
+  "rejectedHead": {
+    "reason": "Side hinge / side camera unsuitable for screen-plane rotation",
+    "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-5f3c2a18-a78c-4527-bf45-f7995be3c60a.png",
+    "prompt": "Use case: stylized-concept. GRIDSHARD game asset. Match reference's chunky painted 3D cartoon metal, saturated colors, thick near-black contour, crisp broad bevel highlights, clear silhouette at 48 pixels. No pastel, no realistic grunge, no low-poly look, no navy body. Single isolated object, actual transparent background, no labels, no scene, no tile, no border, no shadow on a floor. Image 1 is a design/style reference ONLY. Reconstruct ONLY the rotating upper laser gun assembly from a STRICT VERTICAL TOP DOWN orthographic camera: looking straight down along rotation axis, ZERO side perspective or tilt. Red armored turret body with silver bevels, small gold energy accents, ONE stout barrel extending horizontally RIGHT (east), perfectly on y=50% horizontal centerline, not diagonally. Rotation bearing/pivot centered exactly at canvas x=50%,y=50%; body behind it towards left, barrel muzzle tip at x=91%,y=50%. All pixels fit inside circle radius 45% around canvas center so can spin fully. Compact turret silhouette, visually recognizable as the red laser reference from above. Do NOT include pedestal/base, legs or floor, beam, flame, projectiles, text or diagrams. Keep 1024 square framing and genuine alpha. The head alone will be rotated as a 2D game sprite."
+  },
+  "registration": {
+    "head": {
+      "sourcePivot": [
+        516,
+        625
+      ],
+      "sourceMuzzle": [
+        1168,
+        625
+      ],
+      "resize": 201,
+      "left": 47,
+      "top": 30,
+      "size": 256
+    },
+    "base": {
+      "sourcePivot": [
+        627,
+        611
+      ],
+      "resize": 226,
+      "left": 17,
+      "top": 20,
+      "size": 256
+    }
+  }
+}

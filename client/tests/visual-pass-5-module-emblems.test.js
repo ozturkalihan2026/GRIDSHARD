@@ -13,6 +13,7 @@ const block = css.slice(css.indexOf("/* === Görsel tur 5 "));
 
 function cardView() {
   const sandbox = {};
+  vm.runInNewContext(read("src", "module-device-art.js"), sandbox);
   vm.runInNewContext(read("src", "battle", "module-card-view.js"), sandbox);
   vm.runInNewContext(read("src", "canon-data.js"), sandbox);
   return { view: sandbox.GridshardModuleCardView, modules: sandbox.GRIDSHARD_CANON_MODULES };
@@ -24,11 +25,12 @@ test("her modülün kendi amblemi vardır ve sınıfının rengini taşır", () 
   const fallback = view.emblemFor({ nameTr: "Bilinmeyen" });
   const drawings = new Set();
   for (const module of modules) {
-    const svg = view.emblemFor({ nameTr: module.name_tr });
-    assert.ok(svg.startsWith(`<svg class="module-emblem" data-cat="${module.category}" viewBox="0 0 48 48"`), module.name_tr);
-    assert.ok(svg.includes('class="me-ink"') || svg.includes('class="me-rail"'), `${module.name_tr}: kontur`);
+    const svg = view.emblemFor({ definition_id:module.id, nameTr: module.name_tr });
+    const physical = svg.includes('class="module-emblem module-device-icon"');
+    assert.ok(physical || svg.startsWith(`<svg class="module-emblem" data-cat="${module.category}" viewBox="0 0 48 48"`), module.name_tr);
+    assert.ok(physical || svg.includes('class="me-ink"') || svg.includes('class="me-rail"'), `${module.name_tr}: kontur`);
     assert.notEqual(svg.slice(svg.indexOf(">")), fallback.slice(fallback.indexOf(">")), `${module.name_tr}: genel yonga değil`);
-    drawings.add(svg.slice(svg.indexOf(">")));
+    drawings.add(physical ? svg : svg.slice(svg.indexOf(">")));
   }
   assert.equal(drawings.size, 36, "her çizim farklı");
   // Çekirdek, koleksiyondaki "Onarım Modülü" adı ve tanım kimliği de çizimini bulur.
@@ -50,12 +52,12 @@ test("oyun modülü her yerde amblemle çizer; tek harfli simge yalnız yedek yo
   assert.equal((app.match(/moduleIconFor\(/g) || []).length, 2);
   assert.ok(app.includes("element.textContent = moduleIconFor(module);"));
   assert.equal((app.match(/mountModuleEmblem\(/g) || []).length, 18);
-  assert.ok(app.includes('} else mountModuleEmblem(icon, model.module);'), "both battle boards share the persistent artwork path");
+  assert.ok(app.includes('else mountModuleEmblem(icon, model.module);'), "both battle boards share the persistent artwork path");
   assert.ok(app.includes('element.innerHTML = moduleEmblemMarkup(module);'));
   assert.ok(app.includes('element.classList.add("has-module-emblem");'));
-  // Yapboz parçasındaki amblem ayrı sınıf taşır; evrensel parça yıldızlı kalır.
-  assert.ok(app.includes('symbol.className = "mp-emblem";'));
-  assert.ok(app.includes('symbol.textContent = "✦";'));
+  // Parça kaynağı artık yapboz değil karttır; evrensel kart ortak deste çizimidir.
+  assert.ok(app.includes('piece.className = "resource-symbol module-reward-card";'));
+  assert.ok(app.includes('piece.innerHTML = glyph || uiIconMarkup("deck");'));
 });
 
 test("amblem stilleri: sınıf renkleri, yapboz parçası, bilgi penceresi", () => {

@@ -164,10 +164,10 @@ test("profil: Devre Koleksiyonu yalnız kazanılmış kupa/rozetleri, boşken me
   assert.match(rule('.profile-honor-item[data-earned="false"]'), /--honor-color:#54698a;/);
 });
 
-test("Devre Yolu: alınabilir durakta AL rozeti, lig sandığında yeşil AL düğmesi", () => {
-  assert.equal((app.match(/chip\.className = "arena-reward-claim-chip";/g) || []).length, 2, "arena ve lig durakları");
-  assert.match(rule(".arena-league-chest-claim,\n.arena-reward-claim-chip"), /--b-a:#74d384;\n  --b-b:#31a95d;/);
-  assert.match(block, /\n\.arena-reward-claim-chip \{\n  position:absolute;[^}]*pointer-events:none;/);
+test("Devre Yolu: parlak alınabilir durak ve sandık doğrudan tıklanır, AL rozeti yok", () => {
+  assert.equal((app.match(/chip\.className = "arena-reward-claim-chip";/g) || []).length,0);
+  assert.ok(app.includes('chest.addEventListener("click", () => claimLeagueNode(node, chest))'));
+  assert.match(read("src","visual-polish-v9.css"),/\.arena-reward-node\.is-claimable/);
 });
 
 test("takım ve turnuva sayfaları yüzey dilindedir", () => {

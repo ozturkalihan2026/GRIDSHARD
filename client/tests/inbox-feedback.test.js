@@ -69,9 +69,9 @@ test("single/bulk delete is category-scoped, recoverable, and stale reads cannot
   assert.ok(app.includes('remove.className = "inbox-message-delete"'));
   assert.ok(app.includes('all_in_category:all, restore'));
   assert.ok(app.includes('lastInboxDismiss.playerId !== participantPlayerId'));
-  assert.ok(app.includes('version !== inboxMutationVersion || inboxDismissBusy || playerId !== participantPlayerId'));
+  assert.ok(app.includes('version !== inboxMutationVersion || inboxDismissBusy || inboxClaimBusy || playerId !== participantPlayerId'));
   const controls = app.slice(app.indexOf("  function renderInboxDismissControls("), app.indexOf("  async function dismissInboxMessages("));
-  assert.match(controls, /\["purchase", "system"\]\.includes\(activeInboxTab\)/);
+  assert.match(controls, /const removable = activeInboxTab === "purchase"/);
   const bindings = app.slice(app.indexOf('  document.getElementById("inbox-delete-all")?.addEventListener'), app.indexOf('  for (const tab of document.querySelectorAll("[data-inbox-tab]"))'));
   assert.ok(!bindings.includes("window.confirm"));
   assert.ok(bindings.includes("pending.playerId !== participantPlayerId"));

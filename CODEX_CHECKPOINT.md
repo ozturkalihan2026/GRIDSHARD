@@ -2,6 +2,70 @@
 
 Güncelleme tarihi: 16 Ekim 2026
 
+## Güncel uygulama — 8A kaynaklara bağlı, kullanıcı görsel denemesi bekleniyor
+
+Son düzeltme turu: `docs/GORSEL_DUZELTMELER_20261016.md`. VS aralığı, oyuncu
+Çekirdeği CAN maskesi, raf adı/resmi, yalnız Lazer hedef kilidi, kart biçimli
+modül parçası, açılır mesaj satırları/Hepsini Topla, soft-currency satın alım
+mesajı ayrımı, sezon için kapalı `stock-v1` teslimi ve ortak pencere/simge dili.
+124 sunucu testi geçti; istemci odaklı kontroller başarılı. Yeni protokol için
+kullanıcı yerel Python sunucusunu yeniden başlatmalı, istemciyi yenilemeli.
+Canlı sunucu/tarayıcı/dağıtım değiştirilmedi; görsel kabul bekleniyor.
+
+Son ek: kullanıcı cihaz görünürlüğünü teyit etti. 5×3 hücreler gerçek arena
+alanına göre büyür; grafit/petrol devre yuvası, bakır temaslar ve sabit
+turkuaz/kehribar kablolar eklendi. Isı üst, CAN alt iç kenarda. Akan kablo
+şeritleri kaldırıldı; tek güzergâh görsel bus, mekanik değişmedi. Detay ve
+kontroller hareket planının ilk bölümünde; yerel görüntü/telefon testi kullanıcıda.
+
+Son karar: kullanıcı teknik 3D Lazer görünümünü reddetti; pilotun betik ve savaş
+bağlantıları kaldırıldı. Çizilmiş cihazlar, açık kutu ölçüleri ve mevcut dört
+yönlü hareket korunur. Deney kodu oyuna yüklenmez. Yeni saha görseli onaysız
+bağlanmayacak. Hareket planı ilk bölümü günceldir; oyun denemesi kullanıcıda.
+
+Sönümleyici onaylandı. İlk 10 fiziksel cihaz; 5 cihaz × 4 yön, ayrı kaideler,
+Onarım çalışma pozları ve fan kareleri kaynaklara bağlandı. 39 WebP 999.974 bayt,
+25 yalıtılmış kontrol başarılı; sunucu/oyun tarayıcısı/dağıtım/commit çalıştırılmadı.
+Güncel kapsam: `docs/GORSEL_DONUSUM_PAKET08A_HAREKET_PLANI_20261016.md`.
+
+## Önceki kayıt — 8A fiziksel cihaz pilotu, henüz bağlı değil
+
+Kullanıcı amblem yerine gerçek fiziksel modül istedi; eski yıldırım/hilal/artı
+siluet zorunlulukları artık geçerli değil. 10 cihaz built-in imagegen ile ayrı
+üretildi: kırmızı lazer silahı, mavi kalkan jeneratörü, yeşil fan soğutucu,
+turkuaz güç bankası, yeşil çift bobin güçlendirici, mor EMP, yeşil bakım robotu,
+mavi göğüslük, kırmızı ağır darbe topu ve dolu füze rafı. v2:
+`artifacts/visual-refresh-pack08a-20261016/rev2-physical/` (443.434 bayt WebP).
+Kullanıcı sınıfların görsel rengini gerekirse değiştirmeye izin verdi; bu tur
+mevcut 5 sınıf rengi/değer/ID korundu. Örnekler kopya değil kavram referansı.
+
+Son ek yönlendirme: hücrede kart çerçevesi kalkacak, fiziksel cihaz + sabit
+can/ısı çubukları; saldırı cihazları/Onarım/Soğutucu hedefe yönelmeli; Onarım
+kolları kalkmalı, Soğutucu döner alt eklentide durmalı. VFX ayrı. Zırh göğüslüğü
+uygun bulunmadı; öneri **Sönümleyici / Dampener**, aynı `armor` ID ve mevcut
+kendi hasar azaltması/kendi onarımı. Başlangıç %25 azaltma, 3sn/5 CAN, 180 CAN
+katalogdan doğrulandı. Başkalarını koruyan yeni mekanik eklenmez. İsim/görsel
+adayı henüz üretim kataloglarına işlenmedi.
+
+v3'te 6 yeni çıktı: Onarım raised pozu, döner kaideli Soğutucu, Sönümleyici ve
+Lazer için 3 ek yön. İlk sağ üstle toplam 4 yön pozu. Arşiv:
+`artifacts/visual-refresh-pack08a-20261016/rev3-motion-concepts/`, WebP 244.872 bayt.
+Yön pozları tam rig/atlas değildir; kaide/pivot hizalaması, ara yönler ve gerçek
+olay bağları hâlâ gerekli. Diğer cihaz dönüşleri henüz hazır değil. VFX yapılmadı.
+
+270.620 bayt yalıtılmış poz/yerleşim örneği:
+`C:/Users/SERVER/.codex/visualizations/2026/08/28/01a04791-3fa9-7633-b06a-cd2d504f3465/gridshard-module-motion.html`
+(aynı dosya v3 arşivinde). Lazerin 4 pozu, Onarım idle/active, model seçimi,
+yerleştir/kaldır ve sabit can/ısı göstergeleri var; 5×3 alan yalnız örnek.
+İzole mantık/alpha/kayıt/geri yükleme kontrolü geçti, önceki 10 master aynı.
+Tarayıcı/test sunucusu, oyun/birim testleri, istemci/sunucu runtime düzenlemesi,
+dist/native/AAB/dağıtım/commit/push yapılmadı. 8B/8C/8D ve çekirdekler bekliyor.
+Güncel teknik kapsam/onay sırası/prompt bağlantıları:
+`docs/GORSEL_DONUSUM_PAKET08A_HAREKET_PLANI_20261016.md`.
+
+**Onay öncesi önizleme; oyuna bağlama.** Devamda önce fiziksel tasarım/isim
+kararı ve gerçek parça/pivot/yön pilotu; kullanıcı yerel oyun denemelerini yapar.
+
 ## EN GÜNCEL — 7 bağlı; 8A ilk on modül önizlemesi onay bekliyor
 
 16 Ekim son kullanıcı "bağla ve diğer adıma geç" onayıyla Paket 7 kaynaklara
