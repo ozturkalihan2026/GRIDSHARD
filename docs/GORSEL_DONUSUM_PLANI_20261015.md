@@ -3,6 +3,35 @@
 Tarih: 15 Ekim 2026. Kullanıcı planın ayrı kaydedilmesini ve ilk paketin
 başlatılmasını istedi. Bu belge paketlerin sırasını ve onay durumunu izler.
 
+## 18 Ekim güncel durum — eski Paket 8 satırının yerine geçer
+
+**V19 en son durum:** İlk 10 cihazın gerçek 3B saha denemesi bağlı; Lazer
+180°, diğer yönlü başlıklar 360°, pasif gövdeler sabit. Soğutucu gerçek üç
+hedefe sıralı yönelir ve hava sesi yenilendi. 193 test ve 3B dosyası eksikken
+açılış testi geçti. Görsel/oyun kabulü bekleniyor. Güncel kayıt:
+`ILK10_3B_SOGUTUCU_V19_20261018.md`. Paket 8B'nin yeni 10'u bağlı değil.
+
+**Son güncelleme:** Hedefleme Bilgisayarı 3B v2 geliştirildi. Kullanıcının
+talimatıyla Lazer'in gerçek 3B modeli savaş alanına deneme için bağlandı:
+karşı devreye 180° hedefleme, aynı kamera ile namlu ucu ışını, ortak canvas.
+Yeni açı atlası yok; diğer cihazlar mevcut resimli görünümde. 188 statik test
+geçti, kullanıcının yerel oyun/görsel kabulü bekliyor. Ayrıntılar:
+`MODUL_GERCEK_3B_PILOT_20261018.md`. Aşağıdaki 16-yön kararları tarihçedir.
+
+8A ilk 10 cihaz, 30° ortak devre kamerası ve 8 yön atlaslarıyla bağlıdır;
+VFX/ses ve bilgi kartı rötuşları V17, soğutucu bulutu V18 kayıtlarındadır.
+Eski dört-yön/360 yok/VFX yok notları tarihçedir.
+8B sonraki 10 fiziksel cihaz çizimi hazır ve görsel onayı bekliyor:
+`GORSEL_DONUSUM_PAKET08B_20261018.md`. Yeni hedef **16 yön / 22,5°**.
+Tek cihazda iki 16-yön pilotu yön sırası tutarsızlığı nedeniyle kabul edilmedi;
+henüz oyun bağlantısı ve tamamlanmış 16-yön atlası yok. Nano Sağlıkçı için
+Nano Onarım İstasyonu adı önerildi, oyun metinleri henüz değişmedi.
+
+18 Ekim sonraki yön: kullanıcı çizimlerden gerçek 3B istedi. Hedefleme
+Bilgisayarı için yerel hacimli model, ayrı başlık animasyonu ve GLB hazır;
+görsel kalite onayı/oyun bağlantısı bekliyor. Bu teknik deneme çizimin birebir
+kaplamalı 3B dönüşümü değildir. Kayıt: MODUL_GERCEK_3B_PILOT_20261018.md.
+
 ## Hedef ve sabit görsel dil
 
 Oyunun bütün görsel alanlarını son onaylı kılıçlar, keskin köşeli sandıklar,

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GRIDSHARD · Hedefleme Bilgisayarı 3B denemesi</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#081923;color:#edfaff;font:16px Arial,sans-serif}main{max-width:1100px;margin:auto;padding:24px}h1{font-size:25px}p{line-height:1.5;color:#afc8d4}.layout{display:grid;grid-template-columns:2fr 1fr;gap:20px}.scene,aside{background:#122d3b;border:1px solid #466b80;border-radius:18px;padding:16px}canvas{display:block;width:100%;aspect-ratio:1;touch-action:none;cursor:grab;background:radial-gradient(ellipse at 50% 60%,#254654,transparent 65%)}canvas:active{cursor:grabbing}aside img{width:100%;max-height:300px;object-fit:contain}label{display:grid;grid-template-columns:160px 1fr 60px;align-items:center;gap:10px;margin:16px 0}input{width:100%;accent-color:#38dba5}button,a{display:inline-block;padding:12px 16px;background:#247661;color:#fff;border:1px solid #6adbbb;border-radius:9px;text-decoration:none;font:inherit;cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #ffdc70}small{display:block;color:#a6c7d6;margin-top:12px}.warning{color:#ffda84}#error{color:#ffc7c7}@media(max-width:720px){.layout{grid-template-columns:1fr}aside{display:grid;grid-template-columns:140px 1fr;gap:12px}label{grid-template-columns:115px 1fr 45px}main{padding:12px}}</style></head>
+<body><main><h1>Hedefleme Bilgisayarı · gerçek 3B model denemesi</h1><p>Çizimi referans alarak yerelde modellenmiş hacimli cihaz. Gövdeyi sürükleyerek inceleyebilir, optik başlığı kaideden bağımsız döndürebilirsin.</p><div class="layout"><section class="scene"><canvas id="scene" width="900" height="900" aria-label="Döndürülebilir 3B Hedefleme Bilgisayarı"></canvas><p id="error" role="status"></p><label>Gövde açısı <input id="yaw" aria-label="Gövde açısı" type="range" min="-180" max="180" step="0.5" value="-35"><output id="yawValue">−35°</output></label><label>Başlık dönüşü <input id="head" aria-label="Başlık dönüşü" type="range" min="-180" max="180" step="0.5" value="0"><output id="headValue">0°</output></label><label>Tepeden eğim <input id="tilt" aria-label="Tepeden kamera eğimi" type="range" min="0" max="70" step="1" value="30"><output id="tiltValue">30°</output></label><button id="play" type="button" aria-pressed="false">Başlığı döndür</button> <button id="reset" type="button">Görünümü sıfırla</button><small>Dönüş başlatılmadığında sürekli çizim yapılmaz. Bu bağımsız önizlemedir, oyuna bağlı değildir.</small></section><aside><img src="../targeting_computer.webp" alt="Referans alınan iki boyutlu çizim"><div><h2>Referans çizim</h2><p class="warning">İlk geometrik deneme. Çizimdeki boyanmış parlaklık, kontur ve yüzey ayrıntıları henüz birebir değil.</p><p>Yeşil gövde, çift optik mercek, radar, sabit ayaklar ve ayrı dönen başlık. Arka yüz bu deneme için tasarlandı.</p><a href="targeting-computer-v1.glb" download>3B modeli indir · GLB</a><p>GLB içinde başlık dönüş animasyonu ve optik çıkış noktası bulunur. Blender gibi bir 3B düzenleyicide açılıp geliştirilebilir.</p></div></aside></div></main>
+<script>
+"use strict";
+const model=__MODEL_DATA__;
+const canvas=document.querySelector("canvas"),error=document.querySelector("#error");
+const controls=Object.fromEntries(["yaw","head","tilt"].map(k=>[k,document.getElementById(k)]));
+const vertex=`attribute vec3 a_p;attribute vec3 a_n;attribute vec3 a_c;attribute float a_part;
+uniform float u_yaw;uniform float u_head;uniform float u_elevation;uniform float u_pivot;
+varying vec3 v_n;varying vec3 v_c;
+vec3 rot(vec3 p,float a){return vec3(cos(a)*p.x+sin(a)*p.z,p.y,-sin(a)*p.x+cos(a)*p.z);}
+void main(){vec3 p=rot(a_p,u_head*a_part);p.y+=u_pivot*a_part;p=rot(p,u_yaw);p.y-=.9;
+float c=cos(u_elevation),s=sin(u_elevation);gl_Position=vec4(p.x/1.425,(c*p.y-s*p.z)/1.425,-(s*p.y+c*p.z)/5.,1.);
+v_n=rot(rot(a_n,u_head*a_part),u_yaw);v_c=a_c;}`;
+const fragment=`precision mediump float;varying vec3 v_n;varying vec3 v_c;uniform float u_elevation;
+void main(){vec3 n=normalize(v_n),l=normalize(vec3(-.6,.9,.8)),v=vec3(0.,sin(u_elevation),cos(u_elevation));
+float d=.48+.62*max(dot(n,l),0.);float h=.15*pow(max(dot(n,normalize(l+v)),0.),34.);
+vec3 col=v_c*d+vec3(h);gl_FragColor=vec4(pow(clamp(col,0.,1.),vec3(1./2.2)),1.);}`;
+let gl,program,buffer,uniforms,count,raf=0,playing=false,last=0;
+function init(){
+  gl=canvas.getContext("webgl",{alpha:true,antialias:true,premultipliedAlpha:false});if(!gl)throw Error("Bu cihazda WebGL kullanılamıyor. GLB dosyasını bir 3B görüntüleyicide açabilirsin.");
+  function compile(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s}
+  program=gl.createProgram();const v=compile(gl.VERTEX_SHADER,vertex),f=compile(gl.FRAGMENT_SHADER,fragment);gl.attachShader(program,v);gl.attachShader(program,f);gl.linkProgram(program);gl.deleteShader(v);gl.deleteShader(f);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
+  gl.useProgram(program);buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(model.vertices),gl.STATIC_DRAW);count=model.vertices.length/10;
+  for(const[n,size,offset]of[["a_p",3,0],["a_n",3,12],["a_c",3,24],["a_part",1,36]]){const a=gl.getAttribLocation(program,n);gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,size,gl.FLOAT,false,40,offset)}
+  uniforms=Object.fromEntries(["yaw","head","elevation","pivot"].map(k=>[k,gl.getUniformLocation(program,"u_"+k)]));gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.clearColor(0,0,0,0);draw();
+}
+function draw(){if(!gl||document.hidden)return;gl.viewport(0,0,canvas.width,canvas.height);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.uniform1f(uniforms.yaw,+controls.yaw.value*Math.PI/180);gl.uniform1f(uniforms.head,+controls.head.value*Math.PI/180);gl.uniform1f(uniforms.elevation,(90-controls.tilt.value)*Math.PI/180);gl.uniform1f(uniforms.pivot,model.pivot);gl.drawArrays(gl.TRIANGLES,0,count);
+  for(const k in controls)document.getElementById(k+"Value").value=controls[k].value+"°";
+}
+function stop(){playing=false;last=0;cancelAnimationFrame(raf);raf=0;document.getElementById("play").textContent="Başlığı döndür";document.getElementById("play").setAttribute("aria-pressed","false")}
+function tick(t){if(!playing||document.hidden){stop();return}if(last){let v=+controls.head.value+Math.min(t-last,60)*.04;if(v>180)v-=360;controls.head.value=v}last=t;draw();raf=requestAnimationFrame(tick)}
+for(const c of Object.values(controls))c.addEventListener("input",draw);
+document.getElementById("play").onclick=()=>{if(playing){stop();return}playing=true;document.getElementById("play").textContent="Durdur";document.getElementById("play").setAttribute("aria-pressed","true");raf=requestAnimationFrame(tick)};
+document.getElementById("reset").onclick=()=>{stop();controls.yaw.value=-35;controls.head.value=0;controls.tilt.value=30;draw()};
+let drag=null;canvas.addEventListener("pointerdown",e=>{drag={x:e.clientX,yaw:+controls.yaw.value};canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener("pointermove",e=>{if(!drag)return;controls.yaw.value=((drag.yaw+(e.clientX-drag.x)*.6+540)%360)-180;draw()});for(const event of["pointerup","pointercancel","lostpointercapture"])canvas.addEventListener(event,()=>{drag=null});
+document.addEventListener("visibilitychange",()=>{stop();if(!document.hidden)draw()});window.addEventListener("pagehide",stop);
+canvas.addEventListener("webglcontextlost",e=>{e.preventDefault();stop();gl=null;error.textContent="3B bağlamı kesildi; geri gelmesi bekleniyor."});
+canvas.addEventListener("webglcontextrestored",()=>{try{error.textContent="";init()}catch(e){error.textContent=e.message}});
+try{init()}catch(e){error.textContent=e.message}
+</script></body></html>

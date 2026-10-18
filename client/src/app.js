@@ -2881,7 +2881,8 @@
   const CORE_EMBLEM_SPARK = '<svg class="core-emblem-spark" viewBox="0 0 120 120" focusable="false" aria-hidden="true">'
     + '<path d="m42 40 1.800 4.200 4.200 1.800-4.200 1.800L42 52l-1.800-4.200L36 46l4.200-1.800Z"/></svg>';
   function coreEmblemMarkup(coreId) {
-    return `<span class="core-emblem-set">${CORE_EMBLEM_ORBITS}${coreEmblemSvg(coreId)}${CORE_EMBLEM_SPARK}</span>`;
+    const id = CORE_VISUALS[coreId] ? coreId : "core_resonance";
+    return `<span class="core-emblem-set"><img class="core-physical-art" src="./assets/ui/cores-physical-v1/${id}.webp" alt="" aria-hidden="true" draggable="false"></span>`;
   }
   // Bir öğeyi çekirdek amblemine çevirir. Aynı çekirdek zaten çiziliyse dokunmaz
   // (savaşta her sunucu mesajında çağrılır).
@@ -9391,11 +9392,22 @@
     element:document.getElementById("battle-start-countdown"),
     onChange:() => { renderShelf(); renderCorePowerControl(); },
   });
+  // Optional presentation must never block menus/tutorial startup when an old
+  // cached document has not loaded the new renderer script yet.
+  const laser3DPilot = typeof globalThis.GridshardLaser3DPilot === "function" ? new GridshardLaser3DPilot({
+    document, root:document.getElementById("duel-arena"),
+    rectFor:id => battleAnchorRects().modules.get(String(id)),
+    enabled:() => document.body.dataset.appScreen === "play" && battleGraphicsQuality() !== "dusuk",
+    reduced:() => window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true,
+    dpr:() => window.devicePixelRatio || 1,
+  }) : {anchor:()=>null,aimAt:()=>null,aim(){},attach(){},detach(){},invalidate(){},suspend(){},render(){},needsPresent:false};
   const moduleMotion = new GridshardModuleMotion({
     now:() => performance.now(),
     hidden:() => document.hidden || document.body.dataset.appScreen !== "play",
     reduced:() => battleGraphicsQuality() === "dusuk" || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true,
     pointFor:record => {
+      const anchor=laser3DPilot.anchor(record.domId);
+      if(anchor)return anchor.center;
       const batch=battleAnchorRects();
       const laser=(batch.devices || batch.lasers).get(String(record.domId));
       if (laser) return GridshardLaserAim.project(laser.plane,GridshardLaserAim.PIVOT);
@@ -9409,6 +9421,7 @@
       const icon = card.querySelector(".module-icon.has-module-device");
       const batch=battleAnchorRects();
       const plane=(batch.devices || batch.lasers).get(String(record.domId))?.plane;
+      laser3DPilot.aim(record.domId,pose,performance.now());
       return icon ? GridshardModuleDeviceArt.pose(icon, {...pose,plane}) : true;
     },
   });
@@ -11294,6 +11307,12 @@
     const batch=battleAnchorRects(),layer=batch.layer,entry=batch.devices.get(String(moduleId));
     const rect=batch.modules.get(String(moduleId));if(!layer||!rect)return null;
     const local=p=>({x:p.x-layer.left,y:p.y-layer.top});
+    if(entry && globalThis.GridshardDevice3DSpecs?.[entry.definition]) {
+      const anchor=aimAt
+        ? laser3DPilot.aimAt(moduleId,{x:aimAt.x+layer.left,y:aimAt.y+layer.top},performance.now())
+        : laser3DPilot.anchor(moduleId);
+      if(anchor)return {center:local(anchor.center),emitter:local(anchor.emitter),pair:anchor.pair?.map(local)||null,definition:entry.definition};
+    }
     let center={x:rect.left+rect.width/2,y:rect.top+rect.height/2},emitter=center,pair=null;
     if(entry){
       center=GridshardLaserAim.project(entry.plane,GridshardLaserAim.PIVOT) || center;
@@ -13046,6 +13065,7 @@
   // durumu (tahta, Akım, Çekirdek gücü) yerinde kalır.
   function clearBattleEffects() {
     moduleMotion.reset();
+    laser3DPilot.suspend();
     pendingModuleVfx=null;
     moduleVfx.reset();
     battleVisualGeneration += 1;
@@ -13077,6 +13097,7 @@
   function handleBattleVisibilityChange() {
     if (document.hidden) {
       moduleMotion.clear();
+      laser3DPilot.suspend();
       pendingModuleVfx=null;
       moduleVfx.clearEffects();
       battleHiddenAt = performance.now();
@@ -16726,6 +16747,7 @@
     battleLayoutEpoch += 1;
     battleAnchorBatch=null;
     moduleMotion.invalidateGeometry();
+    laser3DPilot.invalidate();
     requestBattleMotionFrame();
     if (battleLayoutRefreshQueued) return;
     battleLayoutRefreshQueued = true;
@@ -17121,12 +17143,17 @@
   const battleCardStateView = new GridshardBattleCardStateView({
     document,
     mountIcon:(icon, model, card) => {
+      const domId=String(model.id); // Already the rendered own/enemy DOM identity.
+      laser3DPilot.detach(domId);
       icon.classList.remove("has-module-device");
       if (model.core) {
         mountCoreEmblem(icon, model.coreType);
         applyCoreVisualIdentity(card, model.coreType);
+        if(globalThis.GridshardDevice3DSpecs?.[model.coreType])laser3DPilot.attach(domId,icon,model.enemy,model.coreType);
       } else if (model.physical) {
         GridshardModuleDeviceArt.mount(icon, model.module, model.enemy);
+        const definition=GridshardModuleDeviceArt.idFor(model.module);
+        if(globalThis.GridshardDevice3DSpecs?.[definition])laser3DPilot.attach(domId,icon,model.enemy,definition);
       }
       else mountModuleEmblem(icon, model.module);
     },
@@ -20624,7 +20651,7 @@
   let battleClockTimer = null;
 
   function requestBattleMotionFrame() {
-    if (document.hidden || !moduleMotion.needsFrame) return;
+    if (document.hidden || !(moduleMotion.needsFrame || laser3DPilot.needsPresent)) return;
     if (battleClockTimer !== null) { window.clearTimeout(battleClockTimer); battleClockTimer = null; }
     if (battleClockFrame === null) battleClockFrame = requestAnimationFrame(updateClock);
   }
@@ -20723,7 +20750,8 @@
     }
 
     moduleMotion.tick(now);
-    if (frameSampling || moduleMotion.needsFrame || typeof window.setTimeout !== "function") {
+    laser3DPilot.render(now);
+    if (frameSampling || moduleMotion.needsFrame || laser3DPilot.needsPresent || typeof window.setTimeout !== "function") {
       battleClockFrame = requestAnimationFrame(updateClock);
     } else {
       // rAF sekme arka plandayken bekler; zamanlayıcı yalnız aralığı belirler.

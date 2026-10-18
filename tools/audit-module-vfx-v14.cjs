@@ -4,6 +4,11 @@ const esbuild=require("esbuild"),{readBuildBlock,compressedAudioReplacements}=re
 const root=path.resolve(__dirname,".."),client=path.join(root,"client");
 const tests=["battle-sound-clarity-v15","module-vfx","modules-yaw-v12","season-delivery-version","laser-yaw-v11","detail-cards-v10","visual-polish-v9","module-motion","circuit-deck-view","inbox-feedback","mailbox-shop-v8","visual-pass-2-tokens-chests","visual-pass-4-emblem-surfaces","visual-pass-5-module-emblems","laser-3d-pilot","relay-client","battle-persistent-cards","module-card-state-view","battle-presentation","signature-frame-batch","home-interface-v3","gridshard-audio","gridshard-audio-browser-lifecycle","battle-lifecycle"];
 function main(){
+  // Execute the actual app startup as well as isolated renderer tests. An old
+  // cached document missing the optional 3D script must still show the menus.
+  for(const missing3d of [false,true])execFileSync(process.execPath,["client/tests/app-startup.test.js"],{
+    cwd:root,encoding:"utf8",windowsHide:true,env:{...process.env,GRIDSHARD_TEST_NO_3D:missing3d?"1":"0"},
+  });
   const html=fs.readFileSync(path.join(client,"index.html"),"utf8"),scripts=readBuildBlock(html,"scripts").inputs,styles=readBuildBlock(html,"styles").inputs;
   assert.ok(scripts.indexOf("./src/battle/module-vfx.js")<scripts.indexOf("./src/app.js"));
   assert.equal(styles.at(-1),"./src/module-vfx-v14.css");
@@ -21,6 +26,7 @@ function main(){
   const output=execFileSync(process.execPath,["--test","--test-reporter=tap",...tests.map(n=>`client/tests/${n}.test.js`)],{cwd:root,encoding:"utf8",windowsHide:true,maxBuffer:4*1024*1024});
   const count=Number(output.match(/# tests (\d+)/)?.[1]),pass=Number(output.match(/# pass (\d+)/)?.[1]);assert.ok(count>150);assert.equal(pass,count);
   const report={date:"2026-10-17",passed:true,tests:count,passedTests:pass,failedTests:0,scripts:scripts.length,styles:styles.length,cssWarnings:0,existingJsWarnings:20,
+    appStartupVerified:true,missingOptional3dStartupVerified:true,
     firstTenVfxBound:true,serverMechanicsChanged:false,actualFireCadenceChanged:false,laserVisualDurationMs:1000,
     cleanupOnDeathSessionHidden:true,sharedPostPresentationMicrotask:true,perDeviceRafOrTimer:false,
     camera:{degreesFromOverhead:30,centerScale:.98,previousScale:.92,distancePixels:1400},

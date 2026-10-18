@@ -35,10 +35,10 @@
     static travelFor(definition){return Number.isFinite(weaponTimes[definition])?weaponTimes[definition]:null;}
     constructor({doc,layer,anchor,boardRect,rigFor,domId,now,schedule,sound,quality=()=>"orta",reduced=()=>false,hidden=()=>false,load=()=>0}){
       Object.assign(this,{doc,layer,anchor,boardRect,rigFor,domId,now,schedule,sound,quality,reduced,hidden,load});
-      this.effects=new Map();this.ambient=new Map();this.seen=new Set();this.destroyed=new Map();this.liveIds=null;this.generation=0;this.session=null;this.latest=-Infinity;
+      this.effects=new Map();this.ambient=new Map();this.seen=new Set();this.destroyed=new Map();this.coolingCycles=new Map();this.liveIds=null;this.generation=0;this.session=null;this.latest=-Infinity;
     }
     svg(tag,attrs={},parent){const n=this.doc.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,String(v));if(parent)parent.appendChild(n);return n;}
-    clearEffects(){this.generation++;for(const e of this.effects.values())e.node.remove();this.effects.clear();for(const e of this.ambient.values())e.remove();this.ambient.clear();}
+    clearEffects(){this.generation++;this.coolingCycles.clear();for(const e of this.effects.values())e.node.remove();this.effects.clear();for(const e of this.ambient.values())e.remove();this.ambient.clear();}
     reset(){this.clearEffects();this.seen.clear();this.destroyed.clear();this.liveIds=null;this.session=null;this.latest=-Infinity;}
     forget(id){for(const[k,e]of this.effects)if(e.refs.includes(id)){e.node.remove();this.effects.delete(k);}this.ambient.get(id)?.remove();this.ambient.delete(id);}
     put(key,node,duration,refs=[]){
@@ -143,15 +143,45 @@
       }
       return travel;
     }
+    coolingMist(from,to,sourceId,targetId){
+      const key=`support:cool:${sourceId}:${targetId}`,cap=this.quality()==="dusuk"?8:this.quality()==="orta"?16:24;
+      if(this.effects.size>=cap&&!this.effects.has(key))return;
+      const dx=to.x-from.x,dy=to.y-from.y,distance=Math.max(1,Math.hypot(dx,dy));
+      const spread=Math.min(34,Math.max(18,distance*.14));
+      // Local fan coordinates rotate with the real outlet/target. Bounds also
+      // include the cloud's final expansion, not just the connecting line.
+      const tip={x:from.x+dx*1.15,y:from.y+dy*1.15},pad=spread+28;
+      const svg=this.surface("cool",[{x:from.x-pad,y:from.y-pad},{x:from.x+pad,y:from.y+pad},
+        {x:tip.x-pad,y:tip.y-pad},{x:tip.x+pad,y:tip.y+pad}]);
+      const defs=this.svg("defs",{},svg),id=`vfx-cold-${++GridshardModuleVfx.serial}`;
+      const gradient=this.svg("radialGradient",{id,cx:"45%",cy:"45%",r:"58%"},defs);
+      for(const[offset,color,opacity]of[[0,"#efffff",.42],[.38,"#c9f7ff",.3],[.72,"#85dce9",.12],[1,"#78d4ed",0]])
+        this.svg("stop",{offset,"stop-color":color,"stop-opacity":opacity},gradient);
+      const fan=this.svg("g",{transform:`translate(${from.x} ${from.y}) rotate(${Math.atan2(dy,dx)*180/Math.PI})`},svg);
+      this.svg("path",{d:`M0 -3C${distance*.25} -6 ${distance*.45} ${-spread*.7} ${distance*.8} ${-spread}
+        C${distance*1.08} ${-spread} ${distance*1.18} ${-spread*.35} ${distance*1.15} 0
+        C${distance*1.18} ${spread*.55} ${distance} ${spread} ${distance*.8} ${spread}
+        C${distance*.45} ${spread*.7} ${distance*.25} 6 0 3Z`,fill:`url(#${id})`,class:"vfx-cold-plume"},fan);
+      // At most five soft lobed clouds, not one particle per frame/cell.
+      // Gradients replace expensive blur/noise filters. CSS owns travel only;
+      // the existing shared effect queue owns expiry, replay and cancellation.
+      const count=this.reduced()?1:this.quality()==="dusuk"?2:this.quality()==="orta"?4:5;
+      for(let i=0;i<count;i++){
+        const end=distance*(.82+.07*i),side=(i%2?1:-1)*spread*(.18+.08*i);
+        const cloud=this.svg("g",{class:"vfx-cold-cloud",transform:`translate(${end*.65} ${side*.65}) scale(1.1)`},fan);
+        cloud.style.setProperty("--mist-dx",`${end}px`);cloud.style.setProperty("--mist-dy",`${side}px`);
+        cloud.style.setProperty("--mist-delay",`${i*65}ms`);
+        this.svg("path",{d:"M-19 3C-27-2-22-11-14-10C-16-21-2-24 4-16C13-24 25-15 21-7C33-5 31 9 20 11C18 22 4 23-2 16C-12 24-25 17-21 9C-28 9-28 4-19 3Z",fill:`url(#${id})`},cloud);
+      }
+      this.put(key,svg,this.reduced()?200:980,[sourceId,targetId]);
+    }
     support(type,sourceId,targetId){
+      if(this.hidden()||this.load()>=2)return;
       const target=this.anchor(targetId),source=target&&this.anchor(sourceId,target.center);if(!source||!target)return;
       const from=source.emitter,to=target.center;
+      if(type==="cool"){this.coolingMist(from,to,sourceId,targetId);return;}
       const pair=source.pair||[from,from],svg=this.surface(type,[from,to,...pair]);
-      if(type==="cool"){
-        const dx=to.x-from.x,dy=to.y-from.y,n=Math.max(1,Math.hypot(dx,dy)),nx=-dy/n*12,ny=dx/n*12;
-        this.svg("path",{d:`M${from.x} ${from.y}L${to.x+nx} ${to.y+ny}L${to.x-nx} ${to.y-ny}Z`,class:"vfx-cold-cone"},svg);
-        for(const k of [-1,0,1])this.svg("path",{d:`M${from.x} ${from.y}Q${(from.x+to.x)/2+nx*k*.8} ${(from.y+to.y)/2+ny*k*.8} ${to.x+nx*k*.7} ${to.y+ny*k*.7}`,class:"vfx-cold-wisp"},svg);
-      }else if(type==="emp"){
+      if(type==="emp"){
         const join={x:(pair[0].x+pair[1].x)/2,y:(pair[0].y+pair[1].y)/2};
         for(const p of pair)this.line(svg,p,join,"vfx-eye-arc",true);this.line(svg,join,to,"vfx-electric",true);
       }else{
@@ -185,6 +215,7 @@
         if(alive(m)&&deadAt<elapsed){records.set(id,m);this.syncAmbient(id,m);}else this.forget(id);
       }
       this.liveIds=new Set(records.keys());
+      for(const[id,cycle]of this.coolingCycles)if(!records.has(id)||this.now()-cycle.started>1200)this.coolingCycles.delete(id);
       for(const id of this.ambient.keys())if(!records.has(id)){this.ambient.get(id).remove();this.ambient.delete(id);}
       for(const[k,e]of this.effects)if(e.refs.some(id=>!records.has(id))){e.node.remove();this.effects.delete(k);}
       const find=(player,id)=>snapshot.players[player]?.modules?.find(m=>m.instance_id===id&&records.has(this.domId(player,m)));
@@ -207,7 +238,17 @@
         }else if(e.type==="module_repaired"&&source.definition_id==="repair"&&Number(d.repair)>0&&alive(target)){
           this.support("repair",sourceId,targetId);this.sound("repair_beam");
         }else if(e.type==="module_cooled"&&source.definition_id==="cooler"&&Number(d.heat_before)>Number(d.heat_after)&&alive(target)){
-          this.support("cool",sourceId,targetId);this.sound("cooling_air");
+          let cycle=this.coolingCycles.get(sourceId);
+          if(!cycle||cycle.stamp!==e.at_ms){cycle={stamp:e.at_ms,started:this.now(),targets:[],generation:this.generation};this.coolingCycles.set(sourceId,cycle);}
+          if(cycle.targets.includes(targetId)||cycle.targets.length>=3)continue;
+          const index=cycle.targets.length;cycle.targets.push(targetId);
+          const due=this.now()+index*240;
+          const emit=()=>{
+            if(this.coolingCycles.get(sourceId)!==cycle||cycle.generation!==this.generation||this.hidden()||this.now()-due>150||!this.liveIds?.has(sourceId)||!this.liveIds.has(targetId))return;
+            this.support("cool",sourceId,targetId);
+            if(index===0)this.sound("cooling_air");
+          };
+          if(index===0)emit();else this.schedule(index*240,emit);
         }else if(e.type==="sabotage_applied"&&source.definition_id==="emp"&&Number(d.duration_ms)>0&&alive(target)){
           this.support("emp",sourceId,targetId);this.sound("emp");
         }else if(e.type==="amplifier_pulse"&&source.definition_id==="amplifier"){

@@ -1,0 +1,162 @@
+{
+  "date": "2026-10-18",
+  "mode": "built-in image_gen",
+  "status": "10-concepts-approved-by-user-20261018",
+  "cameraDegreesFromOverhead": 30,
+  "targetViewCount": 16,
+  "references": [
+    "client/assets/ui/modules-physical-v1/laser.webp",
+    "client/assets/ui/modules-physical-v1/cooler.webp",
+    "client/assets/ui/modules-physical-v1/battery.webp"
+  ],
+  "assets": [
+    {
+      "number": 1,
+      "id": "targeting_computer",
+      "currentName": "Hedefleme Bilgisayarı",
+      "proposedName": "Hedefleme Bilgisayarı",
+      "category": "destek",
+      "subject": "A compact precision targeting computer: an upright green-armored swiveling optical sensor head with one large amber glass eye and small side sensor, mounted over a low processor pedestal with a tilted cyan radar display. It is a targeting device, not a gun, no barrel. Simple broad geometry, emerald green main panels, silver armor.",
+      "mechanic": "Tüm saldırılara paylaşılan hız kilidi",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-c22f7a4d-24b3-42cf-81df-a42777916875.png",
+      "prompt": "Use case: stylized-concept. Create a single NEW physical game module design for GRIDSHARD, consistent with the attached approved machine references. Input images are ONLY style/material/shape-language references, not devices to repeat. One isolated complete compact physical machine on TRUE transparent alpha, centered in a square with 8% clear padding, no text, watermark, card frame, ground plane, atmospheric glow or drop shadow outside silhouette. Vivid saturated casual mobile strategy game painted-3D illustration: clean dark indigo edge lines, chunky smooth colored enamel armor, broad silver bevels, restrained gold contact accents, crisp upper-left lighting, very readable at 48px. Not realistic grungy machinery, no tiny screws/wires. Camera is orthographic 60 degrees ABOVE horizontal ground, exactly 30 degrees away from straight overhead; upright vertical structures remain upright, top surfaces prominent, front vertical faces foreshortened. Front points toward lower right. This is design approval artwork, not a rendered game screenshot. Subject: A compact precision targeting computer: an upright green-armored swiveling optical sensor head with one large amber glass eye and small side sensor, mounted over a low processor pedestal with a tilted cyan radar display. It is a targeting device, not a gun, no barrel. Simple broad geometry, emerald green main panels, silver armor.",
+      "workspaceMaster": "artifacts/visual-refresh-pack08b-20261018/masters/targeting_computer.png",
+      "previewAsset": "artifacts/visual-refresh-pack08b-20261018/targeting_computer.webp"
+    },
+    {
+      "number": 2,
+      "id": "barrier",
+      "currentName": "Bariyer",
+      "proposedName": "Bariyer",
+      "category": "savunma",
+      "subject": "A compact defense barrier generator: two stout upright cobalt-blue buttress pylons framing a solid upright segmented silver-blue intercepting armor panel, planted on a low mechanical base. Distinct from the existing dome shield; no bubble. Broad blue faces, short gold contact strips, one small cyan node. The structure visibly intercepts attacks.",
+      "mechanic": "Saldırıları kendine çekme, sabotajı kısaltma",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-ad050660-c6d2-48a2-8d64-49dad6ad0bdc.png",
+      "prompt": "Use case: stylized-concept. Create a single NEW physical game module design for GRIDSHARD, consistent with the attached approved machine references. Input images are ONLY style/material/shape-language references, not devices to repeat. One isolated complete compact physical machine on TRUE transparent alpha, centered in a square with 8% clear padding, no text, watermark, card frame, ground plane, atmospheric glow or drop shadow outside silhouette. Vivid saturated casual mobile strategy game painted-3D illustration: clean dark indigo edge lines, chunky smooth colored enamel armor, broad silver bevels, restrained gold contact accents, crisp upper-left lighting, very readable at 48px. Not realistic grungy machinery, no tiny screws/wires. Camera is orthographic 60 degrees ABOVE horizontal ground, exactly 30 degrees away from straight overhead; upright vertical structures remain upright, top surfaces prominent, front vertical faces foreshortened. Front points toward lower right. This is design approval artwork, not a rendered game screenshot. Subject: A compact defense barrier generator: two stout upright cobalt-blue buttress pylons framing a solid upright segmented silver-blue intercepting armor panel, planted on a low mechanical base. Distinct from the existing dome shield; no bubble. Broad blue faces, short gold contact strips, one small cyan node. The structure visibly intercepts attacks.",
+      "workspaceMaster": "artifacts/visual-refresh-pack08b-20261018/masters/barrier.png",
+      "previewAsset": "artifacts/visual-refresh-pack08b-20261018/barrier.webp"
+    },
+    {
+      "number": 3,
+      "id": "arc_cannon",
+      "currentName": "Ark Topu",
+      "proposedName": "Ark Topu",
+      "category": "saldırı",
+      "subject": "A compact RED ARC CANNON on a swivel footing, two thick forward-curving silver electrode prongs surrounding a small cyan electric chamber. The red armored rear is chunky. A tiny contained electric spark only BETWEEN the two prongs, no outward projectile. Distinct forked weapon silhouette, red main shell, silver prongs, controlled cyan energy.",
+      "mechanic": "Sıradaki hedefe %45 zincir",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-b688191f-ee17-4638-ab6a-52b8ba1ace5f.png",
+      "prompt": "Use case: stylized-concept. Create a single NEW physical game module design for GRIDSHARD, consistent with the attached approved machine references. Input images are ONLY style/material/shape-language references, not devices to repeat. One isolated complete compact physical machine on TRUE transparent alpha, centered in a square with 8% clear padding, no text, watermark, card frame, ground plane, atmospheric glow or drop shadow outside silhouette. Vivid saturated casual mobile strategy game painted-3D illustration: clean dark indigo edge lines, chunky smooth colored enamel armor, broad silver bevels, restrained gold contact accents, crisp upper-left lighting, very readable at 48px. Not realistic grungy machinery, no tiny screws/wires. Camera is orthographic 60 degrees ABOVE horizontal ground, exactly 30 degrees away from straight overhead; upright vertical structures remain upright, top surfaces prominent, front vertical faces foreshortened. Front points toward lower right. This is design approval artwork, not a rendered game screenshot. Subject: A compact RED ARC CANNON on a swivel footing, two thick forward-curving silver electrode prongs surrounding a small cyan electric chamber. The red armored rear is chunky. A tiny contained electric spark only BETWEEN the two prongs, no outward projectile. Distinct forked weapon silhouette, red main shell, silver prongs, controlled cyan energy.",
+      "workspaceMaster": "artifacts/visual-refresh-pack08b-20261018/masters/arc_cannon.png",
+      "previewAsset": "artifacts/visual-refresh-pack08b-20261018/arc_cannon.webp"
+    },
+    {
+      "number": 4,
+      "id": "capacitor",
+      "currentName": "Kapasitör",
+      "proposedName": "Kapasitör",
+      "category": "sistem",
+      "subject": "A squat single CYAN capacitor drum, one broad upright cylindrical energy reservoir, amber glass center with stacked thick silver conductive rings, two large gold terminals on top linked to chunky side conductors, compact cyan industrial base. ONE fat drum not a cluster of three batteries. Main armor vibrant turquoise cyan, gold contacts and silver bands.",
+      "mechanic": "Ani enerji rezervi",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-6a5fcd57-444f-422a-ad70-533c4e31824f.png",
+      "prompt": "Use case: stylized-concept. Create a single NEW physical game module design for GRIDSHARD, consistent with the attached approved machine references. Input images are ONLY style/material/shape-language references, not devices to repeat. One isolated complete compact physical machine on TRUE transparent alpha, centered in a square with 8% clear padding, no text, watermark, card frame, ground plane, atmospheric glow or drop shadow outside silhouette. Vivid saturated casual mobile strategy game painted-3D illustration: clean dark indigo edge lines, chunky smooth colored enamel armor, broad silver bevels, restrained gold contact accents, crisp upper-left lighting, very readable at 48px. Not realistic grungy machinery, no tiny screws/wires. Camera is orthographic 60 degrees ABOVE horizontal ground, exactly 30 degrees away from straight overhead; upright vertical structures remain upright, top surfaces prominent, front vertical faces foreshortened. Front points toward lower right. This is design approval artwork, not a rendered game screenshot. Subject: A squat single CYAN capacitor drum, one broad upright cylindrical energy reservoir, amber glass center with stacked thick silver conductive rings, two large gold terminals on top linked to chunky side conductors, compact cyan industrial base. ONE fat drum not a cluster of three batteries. Main armor vibrant turquoise cyan, gold contacts and silver bands.",
+      "workspaceMaster": "artifacts/visual-refresh-pack08b-20261018/masters/capacitor.png",
+      "previewAsset": "artifacts/visual-refresh-pack08b-20261018/capacitor.webp"
+    },
+    {
+      "number": 5,
+      "id": "drone_bay",
+      "currentName": "Dron Üssü",
+      "proposedName": "Dron Üssü",
+      "category": "saldırı",
+      "subject": "A compact RED armored DRONE BAY: a low open launch cradle with a single small red-silver combat drone visibly docked in its center, two broad angled launch rails, the little drone has two short winglets and a central amber lens. ONE small docked drone, no swarm, no flying detached pieces. Red shell with silver bevels. Readable as one compact machine.",
+      "mechanic": "Sık atış, sıradaki hedefe %25 sıçrama",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-432bbd71-72cc-4769-a067-39271bfc3eb4.png",
+      "prompt": "Use case: stylized-concept. Create a single NEW physical game module design for GRIDSHARD, consistent with the attached approved machine references. Input images are ONLY style/material/shape-language references, not devices to repeat. One isolated complete compact physical machine on TRUE transparent alpha, centered in a square with 8% clear padding, no text, watermark, card frame, ground plane, atmospheric glow or drop shadow outside silhouette. Vivid saturated casual mobile strategy game painted-3D illustration: clean dark indigo edge lines, chunky smooth colored enamel armor, broad silver bevels, restrained gold contact accents, crisp upper-left lighting, very readable at 48px. Not realistic grungy machinery, no tiny screws/wires. Camera is orthographic 60 degrees ABOVE horizontal ground, exactly 30 degrees away from straight overhead; upright vertical structures remain upright, top surfaces prominent, front vertical faces foreshortened. Front points toward lower right. This is design approval artwork, not a rendered game screenshot. Subject: A compact RED armored DRONE BAY: a low open launch cradle with a single small red-silver combat drone visibly docked in its center, two broad angled launch rails, the little drone has two short winglets and a central amber lens. ONE small docked drone, no swarm, no flying detached pieces. Red shell with silver bevels. Readable as one compact machine.",
+      "workspaceMaster": "artifacts/visual-refresh-pack08b-20261018/masters/drone_bay.png",
+      "previewAsset": "artifacts/visual-refresh-pack08b-20261018/drone_bay.webp"
+    },
+    {
+      "number": 6,
+      "id": "jammer",
+      "currentName": "Sinyal Bozucu",
+      "proposedName": "Sinyal Bozucu",
+      "category": "sabotaj",
+      "subject": "A PURPLE signal jammer with one upright broad three-faceted antenna dish / directional transmitter on a short swiveling mast. The dish has thick violet outer rim and magenta central emitter with three silver ribs; low purple processor base. One short stub antenna at rear. Distinct from an EMP horseshoe tower. No radiating rings or beam.",
+      "mechanic": "Destek ve kontrol kartını bozma",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-780eb113-c3b2-4541-9aec-eca6fd93e6aa.png",
+      "prompt": "Use case: stylized-concept. Create a single NEW physical game module design for GRIDSHARD, consistent with the attached approved machine references. Input images are ONLY style/material/shape-language references, not devices to repeat. One isolated complete compact physical machine on TRUE transparent alpha, centered in a square with 8% clear padding, no text, watermark, card frame, ground plane, atmospheric glow or drop shadow outside silhouette. Vivid saturated casual mobile strategy game painted-3D illustration: clean dark indigo edge lines, chunky smooth colored enamel armor, broad silver bevels, restrained gold contact accents, crisp upper-left lighting, very readable at 48px. Not realistic grungy machinery, no tiny screws/wires. Camera is orthographic 60 degrees ABOVE horizontal ground, exactly 30 degrees away from straight overhead; upright vertical structures remain upright, top surfaces prominent, front vertical faces foreshortened. Front points toward lower right. This is design approval artwork, not a rendered game screenshot. Subject: A PURPLE signal jammer with one upright broad three-faceted antenna dish / directional transmitter on a short swiveling mast. The dish has thick violet outer rim and magenta central emitter with three silver ribs; low purple processor base. One short stub antenna at rear. Distinct from an EMP horseshoe tower. No radiating rings or beam.",
+      "workspaceMaster": "artifacts/visual-refresh-pack08b-20261018/masters/jammer.png",
+      "previewAsset": "artifacts/visual-refresh-pack08b-20261018/jammer.webp"
+    },
+    {
+      "number": 7,
+      "id": "railgun",
+      "currentName": "Ray Topu",
+      "proposedName": "Ray Topu",
+      "category": "saldırı",
+      "subject": "A RED railgun turret: two long parallel thick silver electromagnetic rails forming a forward horizontal barrel gap, three chunky gold rail clamps, bright red armored rear power block, compact sturdy swivel pedestal. Slimmer and longer than a normal cannon but still fits a square icon. Amber charge light BETWEEN rails near muzzle. No firing beam.",
+      "mechanic": "Savunmanın %40'ını delen ağır atış",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-01956129-46ee-4b5e-90c6-ec47c11fd7c7.png",
+      "prompt": "Use case: stylized-concept. Create a single NEW physical game module design for GRIDSHARD, consistent with the attached approved machine references. Input images are ONLY style/material/shape-language references, not devices to repeat. One isolated complete compact physical machine on TRUE transparent alpha, centered in a square with 8% clear padding, no text, watermark, card frame, ground plane, atmospheric glow or drop shadow outside silhouette. Vivid saturated casual mobile strategy game painted-3D illustration: clean dark indigo edge lines, chunky smooth colored enamel armor, broad silver bevels, restrained gold contact accents, crisp upper-left lighting, very readable at 48px. Not realistic grungy machinery, no tiny screws/wires. Camera is orthographic 60 degrees ABOVE horizontal ground, exactly 30 degrees away from straight overhead; upright vertical structures remain upright, top surfaces prominent, front vertical faces foreshortened. Front points toward lower right. This is design approval artwork, not a rendered game screenshot. Subject: A RED railgun turret: two long parallel thick silver electromagnetic rails forming a forward horizontal barrel gap, three chunky gold rail clamps, bright red armored rear power block, compact sturdy swivel pedestal. Slimmer and longer than a normal cannon but still fits a square icon. Amber charge light BETWEEN rails near muzzle. No firing beam.",
+      "workspaceMaster": "artifacts/visual-refresh-pack08b-20261018/masters/railgun.png",
+      "previewAsset": "artifacts/visual-refresh-pack08b-20261018/railgun.webp"
+    },
+    {
+      "number": 8,
+      "id": "current_balancer",
+      "currentName": "Akım Dengeleyici",
+      "proposedName": "Akım Dengeleyici",
+      "category": "sistem",
+      "subject": "A CYAN current-balancing power distributor: squat triangular mechanical hub with central upright silver control spindle and three broad turquoise converter lobes, thick gold insulated busbars joining the three lobes in a closed triangle. Small green charge indicators, sturdy integrated base. No floating symbols, no gauge text. One coherent compact routing device, distinct from capacitor cylinder and battery bank.",
+      "mechanic": "Aksiyon ve bakım maliyetini azaltma",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-4356ca2b-e641-44e1-a9fe-60a491230a6c.png",
+      "prompt": "Use case: stylized-concept. Create a single NEW physical game module design for GRIDSHARD, consistent with the attached approved machine references. Input images are ONLY style/material/shape-language references, not devices to repeat. One isolated complete compact physical machine on TRUE transparent alpha, centered in a square with 8% clear padding, no text, watermark, card frame, ground plane, atmospheric glow or drop shadow outside silhouette. Vivid saturated casual mobile strategy game painted-3D illustration: clean dark indigo edge lines, chunky smooth colored enamel armor, broad silver bevels, restrained gold contact accents, crisp upper-left lighting, very readable at 48px. Not realistic grungy machinery, no tiny screws/wires. Camera is orthographic 60 degrees ABOVE horizontal ground, exactly 30 degrees away from straight overhead; upright vertical structures remain upright, top surfaces prominent, front vertical faces foreshortened. Front points toward lower right. This is design approval artwork, not a rendered game screenshot. Subject: A CYAN current-balancing power distributor: squat triangular mechanical hub with central upright silver control spindle and three broad turquoise converter lobes, thick gold insulated busbars joining the three lobes in a closed triangle. Small green charge indicators, sturdy integrated base. No floating symbols, no gauge text. One coherent compact routing device, distinct from capacitor cylinder and battery bank.",
+      "workspaceMaster": "artifacts/visual-refresh-pack08b-20261018/masters/current_balancer.png",
+      "previewAsset": "artifacts/visual-refresh-pack08b-20261018/current_balancer.webp"
+    },
+    {
+      "number": 9,
+      "id": "reflector",
+      "currentName": "Yansıtıcı",
+      "proposedName": "Yansıtıcı",
+      "category": "savunma",
+      "subject": "A BLUE reflector defense device: upright concave hexagonal silver-blue mirror dish held by two chunky cobalt-blue side pivots above a short blue swivel pedestal. Mirror surface has three large clear icy-blue facets, center bright cyan and thick silver rim. Looks like a mechanical energy reflector, NOT a shield badge or dome. Single broad reflective dish, no beam.",
+      "mechanic": "Saldırıyı üzerine çekip bir kısmını yansıtma",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-6f25aebd-e545-4537-8c9c-f0a2150b8bee.png",
+      "prompt": "Use case: stylized-concept. Create a single NEW physical game module design for GRIDSHARD, consistent with the attached approved machine references. Input images are ONLY style/material/shape-language references, not devices to repeat. One isolated complete compact physical machine on TRUE transparent alpha, centered in a square with 8% clear padding, no text, watermark, card frame, ground plane, atmospheric glow or drop shadow outside silhouette. Vivid saturated casual mobile strategy game painted-3D illustration: clean dark indigo edge lines, chunky smooth colored enamel armor, broad silver bevels, restrained gold contact accents, crisp upper-left lighting, very readable at 48px. Not realistic grungy machinery, no tiny screws/wires. Camera is orthographic 60 degrees ABOVE horizontal ground, exactly 30 degrees away from straight overhead; upright vertical structures remain upright, top surfaces prominent, front vertical faces foreshortened. Front points toward lower right. This is design approval artwork, not a rendered game screenshot. Subject: A BLUE reflector defense device: upright concave hexagonal silver-blue mirror dish held by two chunky cobalt-blue side pivots above a short blue swivel pedestal. Mirror surface has three large clear icy-blue facets, center bright cyan and thick silver rim. Looks like a mechanical energy reflector, NOT a shield badge or dome. Single broad reflective dish, no beam.",
+      "workspaceMaster": "artifacts/visual-refresh-pack08b-20261018/masters/reflector.png",
+      "previewAsset": "artifacts/visual-refresh-pack08b-20261018/reflector.webp"
+    },
+    {
+      "number": 10,
+      "id": "nano_medic",
+      "currentName": "Nano Sağlıkçı",
+      "proposedName": "Nano Onarım İstasyonu",
+      "category": "destek",
+      "subject": "A GREEN dual nano-repair station: one short upright transparent emerald nano-fluid tank within chunky green/silver armor and two symmetrical articulated SHORT dispenser arms ending in small cyan nozzle heads. Stable compact green footing. Friendly autonomous industrial machine, no face, no person, no medical cross. Two distinct service nozzles represent repair to two modules. No emitted beam or particles.",
+      "mechanic": "İki modüle dağıtılmış onarım",
+      "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-0e8e5cd4-f232-4bcb-a205-257457c98337.png",
+      "prompt": "Use case: stylized-concept. Create a single NEW physical game module design for GRIDSHARD, consistent with the attached approved machine references. Input images are ONLY style/material/shape-language references, not devices to repeat. One isolated complete compact physical machine on TRUE transparent alpha, centered in a square with 8% clear padding, no text, watermark, card frame, ground plane, atmospheric glow or drop shadow outside silhouette. Vivid saturated casual mobile strategy game painted-3D illustration: clean dark indigo edge lines, chunky smooth colored enamel armor, broad silver bevels, restrained gold contact accents, crisp upper-left lighting, very readable at 48px. Not realistic grungy machinery, no tiny screws/wires. Camera is orthographic 60 degrees ABOVE horizontal ground, exactly 30 degrees away from straight overhead; upright vertical structures remain upright, top surfaces prominent, front vertical faces foreshortened. Front points toward lower right. This is design approval artwork, not a rendered game screenshot. Subject: A GREEN dual nano-repair station: one short upright transparent emerald nano-fluid tank within chunky green/silver armor and two symmetrical articulated SHORT dispenser arms ending in small cyan nozzle heads. Stable compact green footing. Friendly autonomous industrial machine, no face, no person, no medical cross. Two distinct service nozzles represent repair to two modules. No emitted beam or particles.",
+      "workspaceMaster": "artifacts/visual-refresh-pack08b-20261018/masters/nano_medic.png",
+      "previewAsset": "artifacts/visual-refresh-pack08b-20261018/nano_medic.webp"
+    }
+  ],
+  "pilot": {
+    "id": "targeting_computer",
+    "status": "reviewed-rejected-not-runtime-ready",
+    "reason": "16 cells exist but several consecutive yaw steps repeat similar headings; cell15 incorrectly shows front in rear quadrant. Camera and registration still need calibration. No runtime atlas or 360 claim.",
+    "attempts": [
+      {
+        "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-350c9a95-daa3-445d-8834-73b0983b9b04.png",
+        "prompt": "Use case: stylized-concept. Asset type: exact SIXTEEN-frame game turntable sprite atlas of the SINGLE targeting computer in the reference. Reference is device identity and material reference. Keep its single large amber eye, smaller side eye, green/silver head, gold side pivots and low pedestal with cyan radar display. Produce a square 2048x2048 transparent image with exactly FOUR columns by FOUR rows of evenly spaced individual whole devices, one per equal square cell. There must be SIXTEEN distinct consecutive yaw angles, NOT eight views repeated. Camera fixed at 60 degrees ABOVE horizontal ground, 30 degrees from straight overhead. Emphasize top surfaces and foreshorten vertical faces; keep machine upright. Rotate the entire machine around its VERTICAL axis, never rotate a flat illustration in screen plane. Reading order cell1-16: clockwise headings E (right), ESE22.5, SE45, SSE67.5, S90 (toward viewer), SSW112.5, SW135, WSW157.5, W180 (left), WNW202.5, NW225, NNW247.5, N270 (away), NNE292.5, NE315, ENE337.5. The amber front eye AND front radar panel face these directions together. Last four include genuine rear surfaces and right side as appropriate; front eye hidden in rear views. Equal visual scale, identical geometry, same anchored ground center, fixed upper-left world lighting, consistent proportions and details across all16. Blank margin around each device, zero-alpha gutters and background. No text, numbers, arrows, floor, checkerboard, effects or cast ground shadow. Vivid saturated chunky casual mobile-game painted3D, crisp silver bevels and dark narrow outlines. This is a controlled yaw sequence of ONE same design, not a collection of design alternatives.",
+        "archive": "artifacts/visual-refresh-pack08b-20261018/pilot/targeting-16-attempt1.png"
+      },
+      {
+        "source": "C:\\Users\\SERVER\\.codex\\generated_images\\01a04791-3fa9-7633-b06a-cd2d504f3465\\exec-108a4b1a-50f0-45bf-83c2-8cf2b031697b.png",
+        "prompt": "Use case: stylized-concept. Asset type: exact SIXTEEN-frame game turntable sprite atlas of the SINGLE targeting computer in the reference. Reference is device identity and material reference. Keep its single large amber eye, smaller side eye, green/silver head, gold side pivots and low pedestal with cyan radar display. Produce a square 2048x2048 transparent image with exactly FOUR columns by FOUR rows of evenly spaced individual whole devices, one per equal square cell. There must be SIXTEEN distinct consecutive yaw angles, NOT eight views repeated. Camera fixed at 60 degrees ABOVE horizontal ground, 30 degrees from straight overhead. Emphasize top surfaces and foreshorten vertical faces; keep machine upright. Rotate the entire machine around its VERTICAL axis, never rotate a flat illustration in screen plane. Reading order cell1-16: clockwise headings E (right), ESE22.5, SE45, SSE67.5, S90 (toward viewer), SSW112.5, SW135, WSW157.5, W180 (left), WNW202.5, NW225, NNW247.5, N270 (away), NNE292.5, NE315, ENE337.5. The amber front eye AND front radar panel face these directions together. Last four include genuine rear surfaces and right side as appropriate; front eye hidden in rear views. Equal visual scale, identical geometry, same anchored ground center, fixed upper-left world lighting, consistent proportions and details across all16. Blank margin around each device, zero-alpha gutters and background. No text, numbers, arrows, floor, checkerboard, effects or cast ground shadow. Vivid saturated chunky casual mobile-game painted3D, crisp silver bevels and dark narrow outlines. This is a controlled yaw sequence of ONE same design, not a collection of design alternatives.\nCORRECTION from first attempt: leave a full 8% margin INSIDE EVERY CELL; absolutely no clipped top edges. The previous atlas had nearly identical front-right images in cells2,3,4 and wrong front images in cells15,16. Each consecutive cell must turn by a visibly different small 22.5-degree step. In row1: true right side, slightly turned to camera, halfway to camera, almost frontal. Row2: exact front, slightly left, diagonal left-front, nearly true left. Row3: exact left, left slightly rear, left-back diagonal, nearly rear. Row4: EXACT REAR, slightly right rear, right-back diagonal (AMBER FRONT EYE HIDDEN), almost right side from behind (EYE barely visible at right edge). No front three-quarter views anywhere in row4. Keep green rear armor and dark rear ventilation panel consistent. Fixed STEEP camera elevation60degrees aboveground, not low isometric; eye circular face vertically flattened in frontal views. 4x4 square grid, SIXTEEN, true alpha.",
+        "archive": "artifacts/visual-refresh-pack08b-20261018/pilot/targeting-16-attempt2.png"
+      }
+    ],
+    "next": "After design approval, author controlled directional subsets/individual views with visible angle guides; inspect16 unique headings, fixed camera and emitter/pivot registration before connecting."
+  }
+}

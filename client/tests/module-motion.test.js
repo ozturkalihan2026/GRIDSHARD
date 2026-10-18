@@ -20,6 +20,23 @@ function setup(definition="laser") {
   const attack=()=>event("attack_performed",{attacker_player_id:"own",attacker_module_id:"same",target_player_id:"rival",target_module_id:"same"});
   return {motion,snapshot,draws,receive,event,attack,setTime:v=>{now=v;},setHidden:v=>{hidden=v;},setReduced:v=>{reduced=v;},setMissing:v=>{missing=v;}};
 }
+test("new support and reflector events retain the actual server target",()=>{
+  for(const [definition,type,rival] of [["overclock_unit","module_overclocked",false],["phoenix_repair","phoenix_rebirth",false],["nano_medic","module_repaired",false],["reflector","damage_reflected",true]]){
+    const s=setup(definition), target=rival?"same":"friend",player=rival?"rival":"own";
+    s.receive([s.event(type,{player_id:"own",source_player_id:"own",source_module_id:"same",target_player_id:player,target_module_id:target})]);
+    s.motion.tick();
+    assert.equal(s.motion.actions.get('["own","same"]').target,JSON.stringify([player,target]),definition);
+    s.setTime(600);s.motion.tick();
+    assert.equal(s.motion.aimLocks.get('["own","same"]').target,JSON.stringify([player,target]),definition);
+  }
+});
+test("extended attacker contribution does not replace the primary shot target",()=>{
+  const s=setup("plasma_mortar");
+  s.snapshot.players.rival.modules.push(moduleAt("splash","shield",2,0));
+  s.receive([s.attack(),s.event("module_contribution",{source_player_id:"own",source_module_id:"same",target_player_id:"rival",target_module_id:"splash"})]);
+  s.motion.tick();
+  assert.equal(s.motion.actions.get('["own","same"]').target,'["rival","same"]');
+});
 test("four screen-space quadrants and axial ties",()=>{
   const from={x:100,y:100};
   assert.equal(headingFor(from,{x:200,y:0}),"ne");
@@ -28,6 +45,19 @@ test("four screen-space quadrants and axial ties",()=>{
   assert.equal(headingFor(from,{x:0,y:200}),"sw");
   assert.equal(headingFor(from,{x:100,y:0},"nw"),"nw");
   assert.equal(headingFor(from,from,"se"),"se");
+});
+
+test("cooler visits each real target once per pulse and keeps the final lock",()=>{
+  const s=setup("cooler");
+  s.snapshot.players.own.modules.push({...s.snapshot.players.own.modules[1],instance_id:"friend2",x:2,y:0},
+    {...s.snapshot.players.own.modules[1],instance_id:"friend3",x:0,y:2});
+  const ids=["friend","friend2","friend3"];
+  s.receive(ids.map(id=>s.event("module_cooled",{player_id:"own",source_module_id:"same",target_module_id:id,heat_before:20,heat_after:15})));
+  for(const [i,id]of ids.entries()){
+    s.setTime(i*240);s.motion.tick();assert.equal([...s.motion.actions.values()][0].target,JSON.stringify(["own",id]));
+  }
+  s.setTime(1000);s.motion.tick();assert.equal(s.motion.actions.size,0);
+  assert.equal(s.motion.aimLocks.get('["own","same"]').target,'["own","friend3"]');
 });
 test("actual attack IDs, aim/work/recover/rest, no state mutation or redraw per frame",()=>{
   const s=setup(), before=JSON.stringify(s.snapshot);
@@ -93,7 +123,8 @@ test("stable ID artwork, legacy armor alias, other definitions and phase armor p
   assert.equal(art.idFor({definitionId:"armor"}),"armor");
   assert.equal(art.idFor({nameTr:"Zırh"}),"armor");
   assert.equal(art.idFor({nameTr:"Sönümleyici"}),"armor");
-  assert.equal(art.idFor({definitionId:"phase_armor",nameTr:"Zırh"}),null);
+  assert.equal(art.idFor({definitionId:"phase_armor",nameTr:"Zırh"}),"phase_armor");
+  assert.match(art.markup({definitionId:"phase_armor"}),/modules-physical-v2\/phase_armor.webp/);
   assert.equal(art.markup({definitionId:"core"}),null);
   assert.match(art.markup({definitionId:"repair"}),/modules-physical-v1\/repair.webp/);
 });

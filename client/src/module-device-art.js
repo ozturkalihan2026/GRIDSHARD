@@ -9,7 +9,8 @@
     "Güçlendirici":"amplifier", "EMP":"emp", "Onarım":"repair", "Onarım Modülü":"repair",
     "Zırh":"armor", "Sönümleyici":"armor", "Darbe Topu":"pulse_cannon", "Füze Fırlatıcı":"missile_launcher",
   });
-  const IDS = new Set(Object.values(NAMES));
+  const ATLAS_IDS = new Set(Object.values(NAMES));
+  const IDS = new Set([...ATLAS_IDS,"targeting_computer","barrier","arc_cannon","capacitor","drone_bay","jammer","railgun","current_balancer","reflector","nano_medic","virus","overclock_unit","plasma_mortar","guardian_dome","quantum_repeater","chrono_relay","phase_armor","swarm_fabricator","precision_matrix","ion_spear","prism_shield","disruptor","phoenix_repair","quantum_cannon","omega_amplifier","singularity_projector"]);
   const DIRECTIONS = new Set(["ne", "nw", "se", "sw"]);
   const views = new WeakMap();
   // Numeric yaw remains continuous. Illustrated volume is sampled at 45°:
@@ -22,7 +23,7 @@
     if (model?.definition_id || model?.definitionId) return null;
     return NAMES[model?.nameTr || model?.name_tr] || null;
   }
-  const url = name => ROOT + name + ".webp";
+  const url = name => (ATLAS_IDS.has(name) ? ROOT : "./assets/ui/modules-physical-v2/") + name + ".webp";
   function image(doc, className, src) {
     const img = doc.createElement("img");
     img.className = className; img.alt = ""; img.draggable = false;
@@ -41,12 +42,12 @@
     rig.className = "module-device-rig"; rig.dataset.device = id;
     const heading = enemy ? "se" : "ne";
     rig.dataset.yaw="continuous";
-    rig.dataset.renderer="views8";
+    rig.dataset.renderer=ATLAS_IDS.has(id)?"views8":"static";
     const shadow=doc.createElement("span"); shadow.className="module-device-ground-shadow";
     rig.appendChild(shadow);
     const billboard=doc.createElement("span"); billboard.className="module-device-billboard";
     const window=doc.createElement("span"); window.className="module-view-window";
-    window.appendChild(image(doc,"module-view-atlas",VIEW_ROOT+id+".webp"));
+    window.appendChild(image(doc,ATLAS_IDS.has(id)?"module-view-atlas":"module-device-icon",ATLAS_IDS.has(id)?VIEW_ROOT+id+".webp":url(id)));
     billboard.appendChild(window);
     rig.appendChild(billboard);
     for (const point of ["tl","tr","br","bl"]) {

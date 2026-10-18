@@ -1,13 +1,15 @@
 {
   "date": "2026-10-17",
   "passed": true,
-  "tests": 183,
-  "passedTests": 183,
+  "tests": 197,
+  "passedTests": 197,
   "failedTests": 0,
-  "scripts": 40,
+  "scripts": 42,
   "styles": 18,
   "cssWarnings": 0,
   "existingJsWarnings": 20,
+  "appStartupVerified": true,
+  "missingOptional3dStartupVerified": true,
   "firstTenVfxBound": true,
   "serverMechanicsChanged": false,
   "actualFireCadenceChanged": false,
@@ -26,7 +28,7 @@
       "name": "cooling_air",
       "bytes": 20330,
       "seconds": 0.46,
-      "peak": 0.5
+      "peak": 0.211151123046875
     },
     {
       "name": "repair_beam",

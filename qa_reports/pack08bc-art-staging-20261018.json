@@ -1,0 +1,206 @@
+{
+  "count": 33,
+  "bytes": 1300560,
+  "runtimeConnected": false,
+  "threeDModels": false,
+  "files": [
+    {
+      "id": "targeting_computer",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/targeting_computer.webp",
+      "bytes": 38190
+    },
+    {
+      "id": "barrier",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/barrier.webp",
+      "bytes": 36272
+    },
+    {
+      "id": "arc_cannon",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/arc_cannon.webp",
+      "bytes": 43674
+    },
+    {
+      "id": "capacitor",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/capacitor.webp",
+      "bytes": 35668
+    },
+    {
+      "id": "drone_bay",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/drone_bay.webp",
+      "bytes": 39284
+    },
+    {
+      "id": "jammer",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/jammer.webp",
+      "bytes": 35554
+    },
+    {
+      "id": "railgun",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/railgun.webp",
+      "bytes": 36628
+    },
+    {
+      "id": "current_balancer",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/current_balancer.webp",
+      "bytes": 38444
+    },
+    {
+      "id": "reflector",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/reflector.webp",
+      "bytes": 35348
+    },
+    {
+      "id": "nano_medic",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/nano_medic.webp",
+      "bytes": 38472
+    },
+    {
+      "id": "virus",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/virus.webp",
+      "bytes": 44170
+    },
+    {
+      "id": "overclock_unit",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/overclock_unit.webp",
+      "bytes": 43376
+    },
+    {
+      "id": "plasma_mortar",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/plasma_mortar.webp",
+      "bytes": 39966
+    },
+    {
+      "id": "guardian_dome",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/guardian_dome.webp",
+      "bytes": 39180
+    },
+    {
+      "id": "quantum_repeater",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/quantum_repeater.webp",
+      "bytes": 39002
+    },
+    {
+      "id": "chrono_relay",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/chrono_relay.webp",
+      "bytes": 45320
+    },
+    {
+      "id": "phase_armor",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/phase_armor.webp",
+      "bytes": 34796
+    },
+    {
+      "id": "swarm_fabricator",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/swarm_fabricator.webp",
+      "bytes": 45206
+    },
+    {
+      "id": "precision_matrix",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/precision_matrix.webp",
+      "bytes": 38582
+    },
+    {
+      "id": "ion_spear",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/ion_spear.webp",
+      "bytes": 37526
+    },
+    {
+      "id": "prism_shield",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/prism_shield.webp",
+      "bytes": 31374
+    },
+    {
+      "id": "disruptor",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/disruptor.webp",
+      "bytes": 37268
+    },
+    {
+      "id": "phoenix_repair",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/phoenix_repair.webp",
+      "bytes": 43984
+    },
+    {
+      "id": "quantum_cannon",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/quantum_cannon.webp",
+      "bytes": 42488
+    },
+    {
+      "id": "omega_amplifier",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/omega_amplifier.webp",
+      "bytes": 40366
+    },
+    {
+      "id": "singularity_projector",
+      "kind": "module",
+      "path": "client/assets/ui/modules-physical-v2/singularity_projector.webp",
+      "bytes": 39854
+    },
+    {
+      "id": "core_resonance",
+      "kind": "core",
+      "path": "client/assets/ui/cores-physical-v1/core_resonance.webp",
+      "bytes": 41486
+    },
+    {
+      "id": "core_guardian",
+      "kind": "core",
+      "path": "client/assets/ui/cores-physical-v1/core_guardian.webp",
+      "bytes": 38770
+    },
+    {
+      "id": "core_overdrive",
+      "kind": "core",
+      "path": "client/assets/ui/cores-physical-v1/core_overdrive.webp",
+      "bytes": 38322
+    },
+    {
+      "id": "core_disruptor",
+      "kind": "core",
+      "path": "client/assets/ui/cores-physical-v1/core_disruptor.webp",
+      "bytes": 42550
+    },
+    {
+      "id": "core_capacitor",
+      "kind": "core",
+      "path": "client/assets/ui/cores-physical-v1/core_capacitor.webp",
+      "bytes": 37884
+    },
+    {
+      "id": "core_phoenix",
+      "kind": "core",
+      "path": "client/assets/ui/cores-physical-v1/core_phoenix.webp",
+      "bytes": 38760
+    },
+    {
+      "id": "core_quantum",
+      "kind": "core",
+      "path": "client/assets/ui/cores-physical-v1/core_quantum.webp",
+      "bytes": 42796
+    }
+  ]
+}

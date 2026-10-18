@@ -40,16 +40,16 @@ test("profesyonel dokunuş: tur 3 yüzeyleri ince konturlu ve alçak dudaklıdı
   assert.match(block3, /--gs3-slab-shadow:inset 0 1px 0 rgba\(255,255,255,\.14\),inset 0 -1px 0 rgba\(3,10,24,\.34\),0 0 0 1px var\(--gs3-ink\),0 2px 0 1px #06173a,0 6px 14px rgba\(1,8,22,\.3\);/);
 });
 
-test("Çekirdek amblemi üç katmandır ve her yerde aynı işlevle çizilir", () => {
+test("Çekirdek amblemi onaylı fiziksel çizimdir ve her yerde aynı işlevle çizilir", () => {
   const start = app.indexOf("  const CORE_EMBLEM_MARKS = Object.freeze({");
   const end = app.indexOf("  function renderHomeCoreHero() {");
   assert.ok(start > 0 && end > start);
-  const sandbox = {};
+  const sandbox = {CORE_VISUALS:{core_phoenix:{},core_resonance:{}}};
   vm.runInNewContext(`${app.slice(start, end)}\nObject.assign(this, { coreEmblemSvg, coreEmblemMarkup, CORE_EMBLEM_ORBITS, CORE_EMBLEM_SPARK });`, sandbox);
   const markup = sandbox.coreEmblemMarkup("core_phoenix");
-  assert.match(markup, /^<span class="core-emblem-set"><svg class="core-emblem-orbits" viewBox="0 0 120 120"/);
-  assert.ok(markup.includes(sandbox.coreEmblemSvg("core_phoenix")), "gövde aynı çizim");
-  assert.match(markup, /<svg class="core-emblem-spark" viewBox="0 0 120 120"[^>]*><path d="[^"]+"\/><\/svg><\/span>$/);
+  assert.match(markup, /cores-physical-v1\/core_phoenix.webp/);
+  assert.doesNotMatch(markup, /<svg|core-emblem-orbits|core-emblem-spark/);
+  assert.match(sandbox.coreEmblemMarkup("unknown"), /cores-physical-v1\/core_resonance.webp/);
   // Hareketli parçalar gövdenin içinde değildir (gövde yeniden çizilmez).
   assert.equal(/ce-orbits|ce-spark/.test(sandbox.coreEmblemSvg("core_resonance")), false);
   assert.equal((sandbox.CORE_EMBLEM_ORBITS.match(/<ellipse /g) || []).length, 2);

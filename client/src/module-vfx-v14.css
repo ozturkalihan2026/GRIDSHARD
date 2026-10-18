@@ -14,8 +14,8 @@
 .vfx-eye-arc { stroke:#f0b5ff; stroke-width:2; }
 .module-vfx-repair .vfx-ray { stroke-dasharray:10 4; animation:gs-vfx-flow 300ms linear infinite; }
 .module-vfx-boost .vfx-ray { stroke-width:2; }
-.vfx-cold-cone { fill:#9defff; fill-opacity:.14; stroke:none; }
-.vfx-cold-wisp { fill:none; stroke:#c1faff; stroke-width:2; stroke-dasharray:12 14; animation:gs-vfx-flow 360ms linear infinite; }
+.vfx-cold-plume { stroke:none; opacity:.48; }
+.vfx-cold-cloud { stroke:none; opacity:0; animation:gs-cool-cloud 700ms cubic-bezier(.18,.5,.45,1) both; animation-delay:var(--mist-delay,0ms); }
 .vfx-support-pulse { fill:none; stroke:var(--vfx-color); stroke-width:2; stroke-opacity:.8; }
 .vfx-impact-ring { fill:var(--vfx-color); fill-opacity:.25; stroke:var(--vfx-color); stroke-width:2; transform-box:fill-box; transform-origin:center; animation:gs-vfx-impact 320ms ease-out both; }
 .vfx-impact-rays { fill:none; stroke:var(--vfx-color); stroke-width:2; stroke-linecap:round; }
@@ -37,12 +37,20 @@
 @keyframes gs-vfx-electric { 0%,49% { opacity:1; } 50%,100% { opacity:.4; } }
 @keyframes gs-vfx-impact { from { transform:scale(.35); } to { transform:scale(1.9); } }
 @keyframes gs-vfx-projectile { 0% { transform:translateX(-12px); opacity:1; } 99% { opacity:1; } 100% { transform:translateX(calc(var(--projectile-distance) - 12px)); opacity:0; } }
+@keyframes gs-cool-cloud {
+  0% { transform:translate(0,0) scale(.24); opacity:0; }
+  16% { opacity:.8; }
+  55% { opacity:.6; }
+  100% { transform:translate(var(--mist-dx),var(--mist-dy)) scale(1.65); opacity:0; }
+}
 /* Ambient electricity stops when hidden, reduced or unpowered; one-shots keep
  * a short static color cue. Projectiles still reach their true impact point. */
 body[data-graphics="dusuk"] .module-vfx-ambient { display:none; }
-body[data-graphics="dusuk"] :is(.vfx-electric,.vfx-eye-arc,.vfx-cold-wisp,.module-vfx-repair .vfx-ray) { animation:none; }
+body[data-graphics="dusuk"] :is(.vfx-electric,.vfx-eye-arc,.module-vfx-repair .vfx-ray) { animation:none; }
+body[data-graphics="dusuk"] .vfx-cold-cloud { animation:none; opacity:.45; }
 @media (prefers-reduced-motion:reduce) {
   .module-vfx-ambient .vfx-ambient-electric { animation:none; opacity:.45; }
-  .module-vfx :is(.vfx-electric,.vfx-cold-wisp,.vfx-ray,.vfx-impact-ring) { animation:none; }
+  .module-vfx :is(.vfx-electric,.vfx-ray,.vfx-impact-ring) { animation:none; }
+  .module-vfx .vfx-cold-cloud { animation:none; opacity:.45; }
   .vfx-flying-projectile { animation:none; transform:translateX(calc(var(--projectile-distance) - 12px)); }
 }

@@ -67,6 +67,7 @@ const document = {
   addEventListener() {},
   getElementById: getElement,
   createElement: (tag) => new FakeElement(tag),
+  createTextNode: text => ({nodeType:3,textContent:String(text),nodeValue:String(text)}),
   createElementNS: (_namespace, tag) => new FakeElement(tag),
   querySelector(selector) {
     if (selector === '[data-open-screen="play"]') return menuButtons[0];
@@ -131,6 +132,13 @@ for (const relativePath of [
   ["src", "tutorial", "tutorial-controller.js"],
   ["src", "tutorial", "onboarding.js"],
   ["src", "battle", "board-view.js"],
+  ["src", "battle", "laser-aim.js"],
+  ["src", "battle", "device-models-extended.js"],
+  ["src", "battle", "laser-3d-pilot.js"],
+  ["src", "module-view-data.js"],
+  ["src", "module-device-art.js"],
+  ["src", "battle", "module-motion.js"],
+  ["src", "battle", "module-vfx.js"],
   ["src", "battle", "module-card-view.js"],
   ["src", "battle", "module-card-state-view.js"],
   ["src", "battle", "graphics-tier.js"],
@@ -138,7 +146,11 @@ for (const relativePath of [
   ["src", "battle", "battle-countdown.js"],
   ["src", "battle", "battle-lifecycle.js"],
   ["src", "social", "safe-chat.js"],
+  ["src", "home-interface-view.js"],
+  ["src", "competition-chest-art.js"],
+  ["src", "detail-card-layout.js"],
 ]) {
+  if(process.env.GRIDSHARD_TEST_NO_3D === "1" && relativePath.at(-1) === "laser-3d-pilot.js")continue;
   const moduleSource = fs.readFileSync(
     path.join(CLIENT_ROOT, ...relativePath),
     "utf8"

@@ -81,4 +81,6 @@ Ortamda pytest yok; pytest koleksiyonları çalıştırılmış sayılmamalı. S
 
 ## Devam edecek araç için
 
+18 Ekim ek işi: Soğutucunun üç çizgili efekti bulutumsu soğuk hava akışına dönüştürüldü. Ayrıntılar ve kullanıcı onayı: [Soğutucu V18](SOGUTUCU_SOGUK_HAVA_V18_20261018.md). İlgili 17 VFX kontrolü ve 185 odaklı regresyon geçti; oyun içi görsel kabul henüz yapılmadı.
+
 Çalışma dizini `D:\Projects\GRIDSHARD`. Mevcut yerel değişiklikleri koru. Önce bu listedeki işaretlenmemiş maddeleri ve ilgili diff'leri incele. Kullanıcı oyun içi denemeleri kendisi yapıyor; otomatik test başarısını görsel/ses onayı diye sunma. Yeni efekt için savaş devresini yeniden kurma, modül başına döngü/zamanlayıcı ekleme.

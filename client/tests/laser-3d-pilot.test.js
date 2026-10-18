@@ -1,6 +1,17 @@
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
-const {GridshardLaser3DPilot,laserMesh,yawForAngle,shortest,transformVertex,TILT}=require("../src/battle/laser-3d-pilot.js");
+const {GridshardLaser3DPilot,laserMesh,yawForAngle,shortest,transformVertex,forwardYaw,projectPoint,MUZZLE,TILT,SPECS}=require("../src/battle/laser-3d-pilot.js");
+test("all approved artwork is packaged and the extended model script precedes its consumer",()=>{
+  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+  assert.ok(html.indexOf('src="./src/battle/device-models-extended.js"')<html.indexOf('src="./src/battle/laser-3d-pilot.js"'));
+  const ext=require("../src/battle/device-models-extended.js");
+  assert.equal(Object.keys(ext.specs).length,33);
+  for(const id of Object.keys(ext.specs)){
+    const asset="assets/ui/"+(id.startsWith("core_")?"cores-physical-v1/":"modules-physical-v2/")+id+".webp";
+    assert.ok(fs.statSync(path.join(__dirname,"..",asset)).size>0,id);
+    assert.ok(html.includes(asset),id);
+  }
+});
 function fixture({supported=true,reduced=false}={}){
   const counts={canvas:0,draws:0,contexts:0,programs:0,buffers:0},listeners={};
   const gl={VERTEX_SHADER:1,FRAGMENT_SHADER:2,COMPILE_STATUS:3,LINK_STATUS:4,ARRAY_BUFFER:5,STATIC_DRAW:6,FLOAT:7,
@@ -70,10 +81,10 @@ test("context loss, hidden page and disabled quality restore fallback; disconnec
 });
 test("aim interpolation settles and reduced motion snaps without continuous recoil",()=>{
   const f=fixture(),h=f.host();f.pilot.attach("a",h);f.pilot.render(0);
-  f.pilot.aim("a",{angle:.233,heading:"se",phase:"work"},0);
+  f.pilot.aim("a",{angle:-.233,heading:"ne",phase:"aim"},0);
   f.pilot.render(16);assert.equal(f.pilot.animating,true);
   for(let time=32;time<1000;time+=16)f.pilot.render(time);
-  assert.ok(Math.abs(shortest(f.pilot.entries.get("a").yaw,yawForAngle(.233)))<.002);
+  assert.ok(Math.abs(shortest(f.pilot.entries.get("a").yaw,yawForAngle(-.233)))<.002);
   assert.equal(f.pilot.animating,false);
   const reduced=fixture({reduced:true});reduced.pilot.attach("a",reduced.host());reduced.pilot.aim("a",{angle:.233,phase:"work"},0);reduced.pilot.render(16);
   assert.equal(reduced.pilot.animating,false);
@@ -83,14 +94,14 @@ test("deployed artwork has explicit non-intrinsic host and rig dimensions",()=>{
   const host=css.match(/\.module-icon\.has-module-device\s*\{([^}]+)\}/)[1];
   assert.match(host,/inline-size:calc\(100% - 14px\) !important/);assert.match(host,/block-size:calc\(100% - 14px\) !important/);
   assert.match(host,/justify-self:stretch !important/);assert.match(host,/grid-area:auto !important/);
-  const rig=css.match(/\.module-device-rig\s*\{([^}]+)\}/)[1];
+  const rig=css.match(/^\.module-device-rig\s*\{([^}]+)\}/m)[1];
   assert.match(rig,/width:100%/);assert.match(rig,/height:100%/);assert.doesNotMatch(rig,/width:auto/);
 });
 test("motion wakes the existing clock once; it does not create duplicate frame owners",()=>{
   const vm=require("node:vm"),source=fs.readFileSync(path.join(__dirname,"../src/app.js"),"utf8");
   const body=source.match(/function requestBattleMotionFrame\(\) \{[\s\S]*?\n  \}/)[0];
   let requests=0,cancels=0;
-  const context=vm.createContext({document:{hidden:false},moduleMotion:{needsFrame:true},
+  const context=vm.createContext({document:{hidden:false},moduleMotion:{needsFrame:true},laser3DPilot:{needsPresent:false},
     window:{clearTimeout:id=>{assert.equal(id,7);cancels++;}},requestAnimationFrame:()=>{requests++;return 42;},updateClock:()=>{}});
   vm.runInContext(`let battleClockTimer=7,battleClockFrame=null;${body};requestBattleMotionFrame();requestBattleMotionFrame();`,context);
   assert.equal(requests,1);assert.equal(cancels,1);
@@ -99,12 +110,90 @@ test("motion wakes the existing clock once; it does not create duplicate frame o
   assert.doesNotMatch(hud,/!frameSampling/,"Short motion frames must not bypass the HUD throttle");
 });
 
-test("rejected 3D pilot is disconnected; illustrated devices remain the only battlefield renderer",()=>{
+test("first ten 3D devices load with illustrated fallback and shared clock",()=>{
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
   const source=fs.readFileSync(path.join(__dirname,"../src/app.js"),"utf8");
   const css=fs.readFileSync(path.join(__dirname,"../src/module-device-v8.css"),"utf8");
-  assert.doesNotMatch(html,/src="[^"]*laser-3d-pilot/);
-  assert.doesNotMatch(source,/laser3DPilot|GridshardLaser3DPilot/);
-  assert.doesNotMatch(css,/data-device-renderer="webgl"|module-device-3d-layer/);
+  assert.match(html,/src="[^"]*laser-3d-pilot/);
+  assert.match(source,/laser3DPilot\.render\(now\)/);
+  assert.match(source,/GridshardDevice3DSpecs\?\.\[definition\]\)laser3DPilot.attach\(domId,icon,model.enemy,definition\)/);
+  assert.match(css,/data-device-renderer="webgl"/);
   assert.match(source,/GridshardModuleDeviceArt\.mount\(icon, model\.module, model\.enemy\)/);
+});
+
+test("43 distinct finite volumetric meshes share a context and allocate buffers only once per type",()=>{
+  const f=fixture(),fingerprints=new Set();
+  for(const id of Object.keys(SPECS)){
+    const mesh=laserMesh(id);assert.equal(mesh.length%30,0);assert.ok(mesh.length/30<6000);
+    assert.ok([...mesh].every(Number.isFinite));
+    fingerprints.add(require("node:crypto").createHash("sha256").update(Buffer.from(mesh.buffer)).digest("hex"));
+    f.pilot.attach(id,f.host(),false,id);
+  }
+  assert.equal(fingerprints.size,43);f.pilot.render(0);
+  assert.equal(f.counts.contexts,1);assert.equal(f.counts.buffers,43);assert.equal(f.counts.draws,43);
+  f.pilot.invalidate();f.pilot.render(16);assert.equal(f.counts.buffers,43);
+});
+
+test("device heads obey their mechanical range; passive chassis stay fixed",()=>{
+  const f=fixture({reduced:true});
+  for(const id of Object.keys(SPECS).filter(id=>id!=="laser")){
+    f.pilot.attach(id,f.host(),false,id);const seen=new Set();
+    for(let d=0;d<360;d+=5){f.pilot.aim(id,{angle:d*Math.PI/180,phase:"rest"},d);f.pilot.render(d);const yaw=f.pilot.entries.get(id).yaw;seen.add(Math.atan2(Math.sin(yaw),Math.cos(yaw)).toFixed(3));}
+    assert.equal(seen.size,SPECS[id].fixed?1:SPECS[id].limit?37:72,id);
+  }
+});
+
+test("all 36 canon devices have explicit rotation policies and registered meshes",()=>{
+  require("../src/canon-data.js");
+  const {ROTATION_RULES}=require("../src/battle/laser-3d-pilot.js");
+  assert.deepEqual(Object.keys(ROTATION_RULES).sort(),globalThis.GRIDSHARD_CANON_MODULES.map(m=>m.id).sort());
+  assert.equal(Object.keys(ROTATION_RULES).length,36);
+  for(const [id,rule] of Object.entries(ROTATION_RULES)){
+    assert.ok(Object.isFrozen(rule));assert.equal(rule.idleScan,false);
+    assert.equal(rule.degrees,rule.targetDomain==="enemy"?180:rule.targetDomain==="allies"?360:0,id);
+    if(!SPECS[id])assert.throws(()=>laserMesh(id),/Unknown 3D device/);
+  }
+  assert.equal(Object.keys(SPECS).length,43,"36 modules and seven fixed cores are registered");
+  for(const id of Object.keys(SPECS).filter(id=>id.startsWith("core_"))){
+    assert.equal(SPECS[id].fixed,true);
+    const mesh=laserMesh(id);
+    for(let i=9;i<mesh.length;i+=10)assert.equal(mesh[i],0,id);
+  }
+});
+
+test("cooler fan is bounded to work and repair nozzles follow the raised arms",()=>{
+  const f=fixture();f.pilot.attach("c",f.host(),false,"cooler");f.pilot.aimAt("c",{x:300,y:100},0);
+  assert.equal(f.pilot.animating,true);f.pilot.render(600);assert.equal(f.pilot.animating,false);
+  f.pilot.aim("c",{phase:"rest"},650);f.pilot.render(650);assert.equal(f.pilot.animating,false);
+  f.pilot.attach("r",f.host(),false,"repair");const a=f.pilot.aimAt("r",{x:300,y:100},700);
+  assert.equal(a.pair.length,2);assert.ok(a.pair.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));
+  f.pilot.aim("r",{phase:"rest"},800);f.pilot.render(800);assert.ok(f.pilot.anchor("r").emitter.y>a.emitter.y);
+});
+
+test("180 degree aiming stays in the opponent half for both players",()=>{
+  assert.equal(TILT,Math.PI/3);
+  for(const enemy of [true,false])for(let d=-720;d<=720;d++){
+    const yaw=forwardYaw(d*Math.PI/180,enemy),center=enemy?0:Math.PI;
+    assert.ok(yaw>=center-Math.PI/2-1e-9 && yaw<=center+Math.PI/2+1e-9);
+  }
+});
+
+test("shot starts at the real muzzle and points at the target, without recoil or rest reset",()=>{
+  for(const enemy of [false,true])for(const x of [-100,55,250]){
+    const f=fixture(),h=f.host();f.pilot.attach("a",h,enemy);
+    const target={x,y:enemy?300:-200},a=f.pilot.aimAt("a",target,0);
+    assert.ok(a);const e=f.pilot.entries.get("a"),yaw=e.yaw;
+    assert.deepEqual(a.emitter,projectPoint(f.pilot.rectFor("a"),MUZZLE,yaw));
+    const u={x:a.emitter.x-a.center.x,y:a.emitter.y-a.center.y},v={x:target.x-a.center.x,y:target.y-a.center.y};
+    assert.ok(Math.abs(u.x*v.y-u.y*v.x)<1e-8);assert.ok(u.x*v.x+u.y*v.y>0);
+    f.pilot.aim("a",{phase:"rest"},100);f.pilot.render(100);
+    assert.equal(e.yaw,yaw);assert.deepEqual(f.pilot.anchor("a").emitter,a.emitter);
+    assert.equal(f.pilot.needsPresent,false);
+  }
+});
+
+test("detach restores fallback and repeated attachment does not reset the aim",()=>{
+  const f=fixture(),h=f.host();f.pilot.attach("a",h);f.pilot.aimAt("a",{x:0,y:-100},0);
+  const yaw=f.pilot.entries.get("a").yaw;f.pilot.attach("a",h);assert.equal(f.pilot.entries.get("a").yaw,yaw);
+  f.pilot.detach("a");f.pilot.render(1);assert.equal(h.dataset.deviceRenderer,undefined);assert.equal(f.pilot.canvas.hidden,true);
 });

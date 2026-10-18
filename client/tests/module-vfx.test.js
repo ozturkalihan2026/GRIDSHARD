@@ -33,6 +33,17 @@ test("laser is one red 1s beam per source, replaced on new target with no invent
   f.advance(1200);assert.equal(f.fx.effects.has("weapon:own:laser"),false);
   assert.equal(f.sounds.length,0,"weapon cues remain owned by the existing attack handler");
 });
+
+test("cooling distributes real targets at 240ms intervals with one sound and no late target snap",()=>{
+  const f=fixture(),ids=["laser","repair","emp"];
+  const events=ids.map(id=>f.event("module_cooled",{player_id:"own",source_module_id:"cooler",target_module_id:id,heat_before:20,heat_after:15}));
+  f.fx.receive(events,f.snapshot);
+  const count=()=>[...f.fx.effects.keys()].filter(k=>k.startsWith("support:cool")).length;
+  assert.equal(count(),1);f.advance(240);assert.equal(count(),2);f.advance(480);assert.equal(count(),3);
+  assert.deepEqual(f.sounds,["cooling_air"]);
+  const g=fixture();g.fx.receive(events,g.snapshot);g.fx.clearEffects();g.advance(480);assert.equal(g.fx.effects.size,0);
+  const h=fixture();h.fx.receive(events,h.snapshot);h.advance(1000);assert.equal(h.fx.effects.size,0,"Late queue does not replay obsolete turns");
+});
 test("cannon and missile hit after travel even when the shared queue drains 200ms late",()=>{
   for(const[weapon,travel]of[["pulse_cannon",340],["missile_launcher",500]]){
     const f=fixture();assert.equal(f.fx.attack("own:laser","enemy:target",weapon),travel);
@@ -69,6 +80,46 @@ test("only actual repair/cooling/EMP/charge events emit targeted support effects
   assert.deepEqual(f.sounds,["repair_beam","cooling_air","emp","energy_transfer"]);
   const nodes=f.layer.children.slice();f.fx.receive(events,f.snapshot);assert.deepEqual(f.layer.children,nodes);assert.equal(f.sounds.length,4);
   assert.equal(JSON.stringify(f.snapshot),before);
+});
+test("cooling is an outlet-oriented soft cloud fan, with bounded nodes and shared replacement cleanup",()=>{
+  const f=fixture(),count=n=>1+n.children.reduce((sum,c)=>sum+count(c),0);
+  const key="support:cool:own:cooler:own:laser",rig=f.rigs.get("own:cooler"),billboard=rig.children[0];
+  f.fx.support("cool","own:cooler","own:laser");const first=f.fx.effects.get(key).node;
+  const fan=first.children.find(n=>n.tag==="g"),clouds=fan.children.filter(n=>n.attrs.class==="vfx-cold-cloud");
+  assert.equal(clouds.length,5);assert.ok(count(first)<=20);
+  assert.equal(fan.attrs.transform,"translate(350 420) rotate(90)");
+  assert.equal(first.style["--module-vfx-ms"],"980ms");
+  assert.ok(fan.children.some(n=>n.attrs.class==="vfx-cold-plume"));
+  assert.equal(first.querySelector("filter"),null);assert.equal(first.querySelector("radialGradient").children.at(-1).attrs["stop-opacity"],"0");
+  assert.ok(clouds.every(n=>parseFloat(n.style["--mist-dx"])>0));
+  assert.equal(f.queue.entries.length,1,"one shared expiry per root, no per-cloud timers");
+  f.advance(100);f.fx.support("cool","own:cooler","own:laser");assert.equal(first.parentElement,null);
+  f.advance(980);assert.ok(f.fx.effects.has(key),"old expiry cannot erase the replacement");
+  f.advance(1080);assert.equal(f.fx.effects.has(key),false);assert.equal(f.layer.children.length,0);
+  assert.equal(rig.children[0],billboard,"mist never rebuilds board/module art");
+  const code=fs.readFileSync(path.join(__dirname,"../src/battle/module-vfx.js"),"utf8");
+  assert.doesNotMatch(code,/vfx-cold-wisp|vfx-cold-cone|requestAnimationFrame|setTimeout|setInterval|replaceChildren/);
+});
+test("cooling cloud quality, hidden/load gates, death, session reset and reduced motion remain bounded",()=>{
+  const descendants=n=>[n,...n.children.flatMap(descendants)];
+  for(const[quality,expected]of[["yuksek",5],["orta",4],["dusuk",2]]){
+    const f=fixture();f.setQuality(quality);f.fx.support("cool","own:cooler","own:laser");
+    assert.equal(descendants(f.layer).filter(n=>n.attrs.class==="vfx-cold-cloud").length,expected);
+  }
+  const r=fixture();r.fx.reduced=()=>true;r.fx.support("cool","own:cooler","own:laser");
+  assert.equal(descendants(r.layer).filter(n=>n.attrs.class==="vfx-cold-cloud").length,1);
+  r.advance(200);assert.equal(r.layer.children.length,0);
+  for(const stop of [f=>f.fx.forget("own:laser"),f=>f.fx.reset(),f=>{f.setHidden(true);f.fx.receive([],f.snapshot);}]){
+    const f=fixture();f.fx.support("cool","own:cooler","own:laser");stop(f);assert.equal(f.layer.children.length,0);f.advance(2000);assert.equal(f.layer.children.length,0);
+  }
+  for(const gate of [f=>f.setHidden(true),f=>f.setLoad(2)]){
+    const f=fixture();gate(f);f.fx.support("cool","own:cooler","own:laser");assert.equal(f.layer.children.length,0);assert.equal(f.queue.entries.length,0);assert.equal(f.anchorCalls.length,0);
+  }
+  const f=fixture();f.setQuality("dusuk");for(let i=0;i<100;i++)f.fx.support("cool","cooler"+i,"own:laser");
+  assert.equal(f.fx.effects.size,8);assert.equal(f.layer.children.length,8);assert.equal(f.queue.entries.length,8);
+  const css=fs.readFileSync(path.join(__dirname,"../src/module-vfx-v14.css"),"utf8");
+  assert.match(css,/@keyframes gs-cool-cloud/);assert.doesNotMatch(css,/vfx-cold-wisp|filter:blur|feTurbulence/);
+  assert.match(css,/\.vfx-cold-cloud \{ animation:none; opacity:\.45; \}/);
 });
 test("zero work and windup do not fabricate VFX; completed last-energy events still show",()=>{
   const f=fixture();f.snapshot.players.own.modules.find(m=>m.instance_id==="repair").is_powered=false;

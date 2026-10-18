@@ -33,8 +33,9 @@ async function main(){
   const scripts=readBuildBlock(html,"scripts"),styles=readBuildBlock(html,"styles");
   assert.ok(scripts.inputs.indexOf("./src/module-device-art.js")<scripts.inputs.indexOf("./src/battle/module-card-view.js"));
   assert.ok(scripts.inputs.indexOf("./src/battle/module-motion.js")<scripts.inputs.indexOf("./src/app.js"));
-  assert.equal(scripts.inputs.includes("./src/battle/laser-3d-pilot.js"),false,"Rejected technical art must not ship");
-  assert.doesNotMatch(fs.readFileSync(path.join(client,"src/app.js"),"utf8"),/laser3DPilot|GridshardLaser3DPilot/);
+  assert.ok(scripts.inputs.includes("./src/battle/laser-3d-pilot.js"),"Authorized real 3D trial must load before app startup");
+  assert.match(fs.readFileSync(path.join(client,"src/app.js"),"utf8"),/laser3DPilot\.attach/);
+  assert.ok(scripts.inputs.indexOf("./src/battle/device-models-extended.js")<scripts.inputs.indexOf("./src/battle/laser-3d-pilot.js"));
   assert.equal(styles.inputs.at(-1),"./src/module-vfx-v14.css");
   assert.ok(scripts.inputs.indexOf("./src/battle/laser-aim.js")<scripts.inputs.indexOf("./src/module-device-art.js"));
   assert.ok(scripts.inputs.indexOf("./src/detail-card-layout.js")<scripts.inputs.indexOf("./src/app.js"));
@@ -65,7 +66,7 @@ class NormalizeDisplay(ast.NodeTransformer):
     def visit_Constant(self,n):
         if n.value=='Sönümleyici': n.value='Zırh'
         return n
-old=ast.dump(ast.parse(sources['combat.py']['before']),include_attributes=False)
+old=ast.dump(NormalizeDisplay().visit(ast.parse(sources['combat.py']['before'])),include_attributes=False)
 new=ast.dump(NormalizeDisplay().visit(ast.parse(sources['combat.py']['after'])),include_attributes=False)
 assert old==new
 for entry in sources.values(): ast.parse(entry['after'])
@@ -80,8 +81,8 @@ print(json.dumps({'catalogMechanicsUnchanged':True,'combatOnlyDisplayRename':Tru
     checks:["all runtime paths allowlisted for web/native","real alpha and decoded dimensions","four distinct yaw views for five devices", "four repair working poses", "fan frame assets present", "script/style order", "JS/CSS target syntax"],
     existingBuildWarnings:warnings,files:assets};
   report.serverChecks=mechanics;
-  report.threeDPilot={module:"laser",gameBound:false,loadedByClient:false,
-    status:"rejected visual style; disconnected from runtime",gpuVisualTestRun:false,realDevicePerformanceMeasured:false};
+  report.threeDPilot={modules:36,cores:7,gameBound:true,loadedByClient:true,
+    status:"approved artwork converted to volumetric prototypes; fine art matching and gameplay acceptance pending",gpuVisualTestRun:false,realDevicePerformanceMeasured:false};
   const appSource=fs.readFileSync(path.join(client,"src/app.js"),"utf8");
   const deviceCss=fs.readFileSync(path.join(client,"src/module-device-v8.css"),"utf8");
   assert.doesNotMatch(appSource,/function createCircuitCableFlow|function ensureBoardFlowLayer/);

@@ -1,5 +1,11 @@
 # Görsel dönüşüm — Paket 8A / ilk on modül
 
+18 Ekim durum notu: Aşağıdaki dört-yön/üstten Lazer/eksik VFX notları tarihçedir.
+İlk 10 cihazın güncel sunumu 30° ortak kamera + 8-yön atlasıdır:
+`MODUL_KAMERA_VFX_20261017.md`, son rötuşlar V17 ve Soğutucu V18 kayıtlarıdır.
+Sonraki 10 cihaz için `GORSEL_DONUSUM_PAKET08B_20261018.md` açıldı;
+tekli çizimler onay bekliyor, hedef 16 yöndür.
+
 ## Güncel yön — amblem yerine fiziksel cihaz ve hareket
 
 **23:21 sonrası ek:** Yalnız saha Lazer'i artık sabit kaide üzerinde üstten

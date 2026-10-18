@@ -52,7 +52,7 @@
   },
   "assets": 39,
   "assetBytes": 999974,
-  "scripts": 40,
+  "scripts": 42,
   "styles": 18,
   "browserStarted": false,
   "serverStarted": false,
@@ -470,10 +470,11 @@
     "pythonSyntax": true
   },
   "threeDPilot": {
-    "module": "laser",
-    "gameBound": false,
-    "loadedByClient": false,
-    "status": "rejected visual style; disconnected from runtime",
+    "modules": 36,
+    "cores": 7,
+    "gameBound": true,
+    "loadedByClient": true,
+    "status": "approved artwork converted to volumetric prototypes; fine art matching and gameplay acceptance pending",
     "gpuVisualTestRun": false,
     "realDevicePerformanceMeasured": false
   },

@@ -4,7 +4,7 @@
   // Presentation only. No combat mutations, timers, rAF ownership or DOM reads.
   // First ten devices share continuous aim geometry and upright view atlases.
   // Events, never local guesses, supply their targets. The board owns camera.
-  const MOVING = new Set(["laser", "pulse_cannon", "missile_launcher", "repair", "cooler", "emp", "shield", "battery", "amplifier", "armor"]);
+  const MOVING = new Set(["laser", "pulse_cannon", "missile_launcher", "repair", "cooler", "emp", "shield", "battery", "amplifier", "armor","targeting_computer","barrier","arc_cannon","capacitor","drone_bay","jammer","railgun","current_balancer","reflector","nano_medic","virus","overclock_unit","plasma_mortar","guardian_dome","quantum_repeater","chrono_relay","phase_armor","swarm_fabricator","precision_matrix","ion_spear","prism_shield","disruptor","phoenix_repair","quantum_cannon","omega_amplifier","singularity_projector"]);
   const keyFor = (player, instance) => JSON.stringify([player, instance]);
   const alive = module => module && module.status === "active" && Number(module.hp) > 0
     && module.x != null && module.y != null;
@@ -131,10 +131,15 @@
             targetPlayer = data.target_player_id || Object.keys(snapshot.players).find(p => p !== player);
             targetId = data.target_module_id; windup = true; break;
           case "module_repaired":
+          case "module_overclocked":
+          case "phoenix_rebirth":
           case "module_cooled":
             player = data.player_id; sourceId = data.source_module_id;
             targetPlayer = data.target_player_id || player;
             targetId = data.target_module_id || data.module_id; break;
+          case "damage_reflected":
+            player=data.source_player_id; sourceId=data.source_module_id;
+            targetPlayer=data.target_player_id; targetId=data.target_module_id; break;
           case "module_damaged":
             player=data.player_id; sourceId=data.module_id;
             if (!["shield","armor"].includes(records.get(keyFor(player,sourceId))?.definition)) continue;
@@ -148,7 +153,7 @@
             player = data.source_player_id || data.player_id; sourceId = data.source_module_id;
             // Contributions for active attackers/support repeat their primary
             // event. Passive devices may face their real contribution receiver.
-            if (["laser","pulse_cannon","missile_launcher","repair","cooler","emp"].includes(records.get(keyFor(player, sourceId))?.definition)) continue;
+            if (["laser","pulse_cannon","missile_launcher","repair","cooler","emp","arc_cannon","drone_bay","jammer","railgun","reflector","nano_medic","virus","overclock_unit","plasma_mortar","quantum_repeater","swarm_fabricator","ion_spear","disruptor","phoenix_repair","quantum_cannon","singularity_projector"].includes(records.get(keyFor(player, sourceId))?.definition)) continue;
             targetPlayer=data.target_player_id || player;
             targetId=data.target_module_id;
             break;
@@ -170,7 +175,16 @@
           candidate.heading = lock.heading; candidate.angle = lock.angle;
           candidate.targetPoint = lock.targetPoint;
         }
-        const previous = chosen.get(key);
+        const running=this.actions.get(key);
+        const previous = chosen.get(key) || (source.definition==="cooler" && running?.stamp===candidate.stamp ? running : null);
+        if(source.definition === "cooler" && event.type === "module_cooled"){
+          candidate.targets=[candidate.target];
+          if(previous?.targets && previous.stamp===candidate.stamp){
+            if(!previous.targets.includes(candidate.target) && previous.targets.length<3)previous.targets.push(candidate.target);
+            chosen.set(key,previous);
+            continue;
+          }
+        }
         // Multi-target support: one action, first real target in this tick; never
         // queue simultaneous repairs as sequential extra gameplay actions.
         if (!previous || candidate.stamp > previous.stamp || (previous.windup && !windup)) chosen.set(key, candidate);
@@ -181,12 +195,20 @@
       this.geometryDirty = false;
       if (this.hidden()) { this.clear(); return; }
       for (const [key, action] of this.actions) {
-        const source = this.records.get(key), target = action.target ? this.records.get(action.target) : null;
+        const source = this.records.get(key);
+        let age = time - action.start;
+        const sequence=action.targets?.length>1;
+        if(sequence){
+          const index=Math.min(action.targets.length-1,Math.max(0,Math.floor(age/240)));
+          const next=action.targets[index];
+          if(action.target!==next){action.target=next;action.heading=null;action.phase=null;this.dirty.add(key);}
+          age-=index*240;
+        }
+        const target = action.target ? this.records.get(action.target) : null;
         if (!source || this.disabled(source) || (action.target && !target)) {
           this.actions.delete(key); this.dirty.add(key); continue;
         }
-        const age = time - action.start;
-        const work = source.definition === "repair" ? 340 : source.definition === "cooler" ? 450 : 170;
+        const work = source.definition === "repair" ? 340 : source.definition === "cooler" ? 150 : 170;
         if (age < 0 || age > action.aim + (action.windup ? 120 : work + 150)) {
           this.actions.delete(key); this.dirty.add(key); continue;
         }
