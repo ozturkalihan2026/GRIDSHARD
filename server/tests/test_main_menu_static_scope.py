@@ -13,7 +13,8 @@ def test_main_menu_and_shared_shell_keep_the_current_five_section_scope():
     assert 'id="home-battle-button"' in html
     assert 'id="app-progress-ribbon"' in html
     assert 'id="lobby-circuit-credits"' in html
-    assert '<span class="menu-action-title">EV</span>' in html
+    assert '<span class="menu-action-title">SAVAŞ</span>' in html
+    assert './assets/ui/dock-casual-v1/battle-swords-v2.webp' in html
     for retired in ('data-open-screen="laboratory"', 'id="laboratory-screen"',
                     'data-roadmap-feature=', 'data-open-screen="education"'):
         assert retired not in html

@@ -12,7 +12,13 @@ const html = read("index.html");
 test("approved shared controls precede the screen-specific package in web/native", () => {
   const styles = html.match(/<!-- build:styles -->([\s\S]*?)<!-- \/build:styles -->/)[1];
   const links = [...styles.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(links.slice(-7), ["./src/ui-components-v2.css", "./src/home-interface-v3.css", "./src/competition-v4.css", "./src/reward-chest-art-v5.css", "./src/social-profile-v5.css", "./src/shop-rewards-v6.css", "./src/battle-utility-v7.css"]);
+  const shared = ["./src/ui-components-v2.css", "./src/home-interface-v3.css", "./src/competition-v4.css", "./src/reward-chest-art-v5.css", "./src/social-profile-v5.css", "./src/shop-rewards-v6.css", "./src/battle-utility-v7.css"];
+  const start = links.indexOf(shared[0]);
+  assert.ok(start >= 0);
+  assert.deepEqual(links.slice(start, start + shared.length), shared);
+  for (const skin of ["module-device-v8", "visual-polish-v9", "detail-cards-v10", "modules-yaw-v12", "module-layers-v15"]) {
+    assert.ok(links.indexOf(`./src/${skin}.css`) > start + shared.length - 1);
+  }
   assert.equal(links.filter((name) => name.includes("ui-components-v2")).length, 1);
   for (const label of ["01–03 /", "04 /", "05 /", "06 /", "07 /", "08 /", "09 /", "10 /"]) assert.ok(css.includes(label));
 });

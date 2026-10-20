@@ -17,7 +17,9 @@ def test_online_combat_fx_audio_and_enemy_board_scaffold_are_wired():
     assert 'triggerGridshardCue(' in source
     assert 'sourceModule?.definition_id' in source
     assert '"laser_fire"' in source
-    assert '"shield_hit"' in source
+    assert '"shield_absorb"' in source
+    audio = client.get("/src/gridshard-audio.js").text
+    assert 'shield_absorb:' in audio
     assert '"core_hit"' in source
     assert "if (!enemyBoard.children?.length)" in source
     assert "createEnemyBoard();" in source

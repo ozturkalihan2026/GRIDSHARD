@@ -56,7 +56,7 @@ test("her değer anahtarının simgesi ve tonu tanımlıdır", () => {
   const sandbox = iconSandbox();
   const tones = new Set([...css.matchAll(/\.ui-icon\[data-tone="([a-z]+)"\]/g)].map((match) => match[1]));
   for (const [key, [icon, tone]] of Object.entries(sandbox.STAT_ICONS)) {
-    assert.ok(sandbox.UI_ICON_PATHS[icon], `${key}: ${icon} simgesi yok`);
+    assert.ok(sandbox.UI_ICON_PATHS[icon] || sandbox.UI_ART_ICONS[icon], `${key}: ${icon} simgesi yok`);
     assert.ok(tones.has(tone), `${key}: ${tone} tonu stil dosyasında yok`);
   }
   // Sunucunun gönderdiği her modüle özgü değerin kendi simgesi vardır.
@@ -64,7 +64,8 @@ test("her değer anahtarının simgesi ve tonu tanımlıdır", () => {
   assert.ok(serverKeys.size >= 25);
   for (const key of serverKeys) assert.ok(sandbox.STAT_ICONS[key], `${key} değerinin simgesi yok`);
   const markup = sandbox.uiIconMarkup("shield", "blue");
-  assert.match(markup, /^<i class="ui-icon" data-icon="shield" data-tone="blue" aria-hidden="true"><svg viewBox="0 0 24 24"/);
+  assert.match(markup, /^<i class="ui-icon is-artwork" data-icon="shield" data-tone="blue" aria-hidden="true">/);
+  assert.ok(markup.includes('data-ui-art="detail-guard"'));
   // Bilinmeyen simge boş çizmez.
   assert.ok(sandbox.uiIconMarkup("yok").includes(sandbox.UI_ICON_PATHS.star));
 });
@@ -105,7 +106,7 @@ test("maliyet rozeti para biriminin adını değil simgesini gösterir", () => {
 test("bilgi penceresinde bedeller ve yetenek Akı'sı simgeyle yazılır", () => {
   assert.match(app, /setCostButtonLabel\(upgrade, localizedUiText\(cost \? "YÜKSELT" : "AZAMİ SEVİYE"\), cost \? \[\["flux", cost\.flux_shards\]\] : \[\]\);/);
   assert.match(app, /level\.append\(levelValue, createCostChip\("flux", node\.flux_cost\)\);/);
-  assert.match(app, /setCostButtonLabel\(resetButton, localizedUiText\("YETENEKLERİ SIFIRLA"\), \[\["flux", resetCost\]\]\);/);
+  assert.match(app, /setCostButtonLabel\(resetButton, localizedUiText\("SIFIRLA"\), \[\["flux", resetCost\]\]\);/);
   assert.ok(!app.includes("levelCost.textContent = `${node.flux_cost} Akı`;"));
   assert.equal(en("YETENEKLERİ SIFIRLA"), "RESET TALENTS");
 });
@@ -121,7 +122,8 @@ test("istatistik sekmesi soyut çarpan yerine modülün kendi değerlerini ve fa
   // Hasar karosu yalnız hasar veren modülde çıkar.
   assert.match(tiles, /\.\.\.\(Number\(stats\.base_damage\) > 0\s*\? \[\{ key:"damage", icon:"damage", tone:"red", label:"HASAR"/);
   assert.match(tiles, /const gain = createStatGain\(tile\.current, tile\.next, tile\.unit\);\s*if \(gain\) value\.append\(" ", gain\);/);
-  assert.match(tiles, /name\.append\(createUiIcon\(tile\.icon, tile\.tone\), document\.createTextNode\(tile\.label\)\);/);
+  assert.match(tiles, /name\.textContent = tile\.label;/);
+  assert.match(tiles, /row\.append\(createUiIcon\(tile\.icon, tile\.tone\), name, value\);/);
   for (const [label, expected] of [["ÇALIŞMA", "OPERATION"], ["SÜREKLİ", "ALWAYS ON"]]) assert.equal(en(label), expected);
 });
 
@@ -148,7 +150,7 @@ test("başlıklar, sekmeler ve menü satırları eşleşen simgeyle süslenir", 
   // Kullanıcının örneği: "Arkadaşlar" yazısının solunda iki kişi.
   assert.match(html, /<h3 data-ui-icon="people:green">Arkadaşlar<\/h3>/);
   assert.match(html, /<h3 id="chest-store-title" data-ui-icon="chest:gold">Sandık Satın Al<\/h3>/);
-  assert.match(html, /<span data-ui-glyph="swords">SAVAŞ<\/span>/);
+  assert.match(html, /id="home-battle-button"[\s\S]*?src="\.\/assets\/ui\/dock-casual-v1\/battle-swords-v2\.webp"[\s\S]*?<span>SAVAŞ<\/span>/);
 
   const decorate = slice("  function decorateStaticIcons() {", "  decorateStaticIcons();");
   for (const [selector, icon] of [
@@ -303,5 +305,11 @@ this.serverCopy = serverCopy;`, sandbox);
   assert.equal(sandbox.serverCopy("Türkçe", "English"), "English");
   // Eski sunucu İngilizce alan göndermez: sözlükten çevrilir.
   assert.equal(sandbox.serverCopy("Türkçe", ""), "~Türkçe");
-  assert.match(app, /text\.textContent = serverCopy\(item\.description_tr, item\.description_en\) \|\| item\.strategic_role \|\| item\.name_tr;/);
+  assert.ok(app.includes('text.textContent = GridshardDetailPages.description(item, {english:document.documentElement.lang === "en"});'));
+  assert.ok(app.includes('text.title = serverCopy(item.description_tr, item.description_en);'));
+  const detailPages=require('../src/detail-card-layout.js');
+  const item={definition_id:'laser',description_tr:'Türkçe açıklama. İkinci cümle.',description_en:'English description. Second sentence.'};
+  assert.equal(detailPages.description(item,{english:true}),'English description.');
+  assert.equal(detailPages.description({...item,description_en:''},{english:true}),'Türkçe açıklama.');
+  assert.equal(detailPages.description({name_tr:'Onarım'},{english:true}),'Onarım');
 });

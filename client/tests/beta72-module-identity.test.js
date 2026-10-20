@@ -7,10 +7,11 @@ const css = fs.readFileSync("./src/canon.css", "utf8");
 // Enderlik kanunu: bilgi ekranı enderliği bir güç avantajı olarak göstermez.
 assert.ok(!app.includes("Nadirlik avantajı"));
 assert.ok(/function createModuleIdentityPanel\(\s*item,/.test(app));
-assert.ok(app.includes("host.appendChild(createModuleIdentityPanel(item));"));
+assert.ok(app.includes("const signature = createStatSignature(item);"));
+assert.ok(app.includes("if (signature) host.appendChild(signature);"));
 assert.ok(app.includes("Enderlik CAN, hasar, bekleme veya enerji avantajı vermez."));
 assert.ok(app.includes("item.shared_behavior_tr"));
-assert.ok(app.includes("Yetenekler seviye ilerlemesidir, enderlik bonusu değildir."));
+assert.ok(app.includes("Seviye ve yeteneklerle gelişir; enderlik güç katmaz."));
 
 // Koyu zeminli içerik kartlarında (tur 4) yazı/zemin kontrastı en az 4.5:1 olmalı.
 function rgb(hex) {

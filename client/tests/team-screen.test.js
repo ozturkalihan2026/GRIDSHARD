@@ -146,7 +146,7 @@ this.loadTeamView = loadTeamView;`, sandbox);
   // --- Alt sekme çubuğu yerinde ------------------------------------------------
   const tabs = hub.slice(hub.indexOf('<nav class="team-tabs"'));
   assert.deepEqual(
-    [...tabs.matchAll(/<button type="button" data-team-tab="([a-z]+)"(?: class="is-active")?>([^<]+)<\/button>/g)].map((match) => [match[1], match[2]]),
+    [...tabs.matchAll(/<button type="button" data-team-tab="([a-z]+)"(?: class="is-active")?>([\s\S]*?)<\/button>/g)].map((match) => [match[1], match[2].replace(/<[^>]+>/g, '').trim()]),
     [["profile", "PROFİL"], ["members", "ÜYELER"], ["requests", "İSTEK"], ["chat", "SOHBET"], ["battle", "SAVAŞ"]]
   );
   assert.equal((html.match(/data-team-tab="/g) || []).length, 5);

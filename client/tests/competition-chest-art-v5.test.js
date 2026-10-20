@@ -30,7 +30,7 @@ test('social ownership and safe chat remain intact; avatars use physical art',()
   assert.ok(app.includes('button.disabled = !unlocked.has(avatar.id)'));
   assert.ok(app.includes('option.disabled = locked'));
   assert.ok(app.includes('const messageText = presetMessageText(message)'));
-  assert.ok(app.includes('inboxDismissBusy || !removable'));
+  assert.ok(app.includes('inboxDismissBusy || inboxClaimBusy || !removable'));
   assert.ok(!app.includes('glyph.textContent = avatar.glyph'));
 });
 

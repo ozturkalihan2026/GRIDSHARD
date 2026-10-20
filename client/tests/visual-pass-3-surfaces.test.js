@@ -113,7 +113,7 @@ test("Çekirdek amblemi yedi çekirdek için çizilir ve ev ekranına konur", ()
 
 test("enderlik rengi tek dildir: sıradan çelik, ender mavi, destansı mor, efsanevi altın", () => {
   assert.ok(app.includes('const RARITY_ICON_TONES = Object.freeze({ common:"steel", rare:"blue", epic:"violet", legendary:"gold" });'));
-  assert.ok(app.includes('"is-rarity", "gem", RARITY_ICON_TONES[rarity] || "steel"],'), "kimlik satırının simgesi enderliğin renginde");
+  assert.ok(app.includes('"is-rarity", "rarity", RARITY_ICON_TONES[rarity] || "steel"],'), "kimlik satırının simgesi enderliğin renginde");
   assert.ok(app.includes('setRarityBadge("module-detail-rarity", String(item.rarity || "common").toLowerCase(),'));
   assert.ok(app.includes('setRarityBadge("core-detail-rarity", String(core.rarity || "common").toLowerCase(),'));
   assert.match(block, /#module-detail-rarity\[data-rarity="epic"\],\n#core-detail-rarity\[data-rarity="epic"\] \{ --r-a:#ba95ef;--r-b:#915ddd;/);

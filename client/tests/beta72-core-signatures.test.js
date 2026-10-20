@@ -6,9 +6,11 @@ const css = fs.readFileSync("./src/canon.css", "utf8");
 const i18n = fs.readFileSync("./src/i18n.js", "utf8");
 
 // Çekirdek enderliği güç eğrisi değildir; bilgi ekranı imzayı gösterir.
-assert.ok(app.includes('"Enderlik CAN, enerji üretimi, dolum hızı veya güç etkisi avantajı vermez."'));
-assert.ok(app.includes("host.appendChild(createModuleIdentityPanel(core, {"));
-assert.ok(app.includes('["İMZA", core.signature_name_tr || "—", "bolt", "cyan"]'));
+const coreDetail = app.slice(app.indexOf("  function renderCoreDetailTab("), app.indexOf("  function openCoreDetail("));
+assert.ok(coreDetail.includes("Seviye ve yeteneklerle gelişir; enderlik güç katmaz."));
+assert.ok(coreDetail.includes("const signature = createStatSignature(core);"));
+assert.ok(coreDetail.includes("if (signature) host.appendChild(signature);"));
+assert.ok(app.includes("const signature = item.signature_mechanic || item.shared_behavior_tr;"));
 
 // Motorun çekirdek imza olayı sahnede ve şeritte görünür.
 assert.ok(app.includes('"core_signature_triggered"'));

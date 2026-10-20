@@ -1,6 +1,16 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 16 Ekim 2026
+Güncelleme tarihi: 20 Ekim 2026
+
+## Son işlem — kırmızı CI düzeltmeleri hazır; commit/push kullanıcıda
+
+`833b9f3` / Quality #59 hataları güncel onaylı arayüz ve davranışlarla
+eşleştirildi. Görseller veya oyun mekanikleri geri alınmadı. İstemci 597,
+sunucu 1590 (44 koşullu atlandı), paketleme 10, operatör araçları 22 kontrol
+geçti; import taraması 408 dosyada temiz. Ayrı artifact içinde gerçek web
+derlemesi başarılı (611 varlık); mevcut `dist/` korunuyor. Gerçek PostgreSQL /
+Redis ve oyun E2E doğrulaması push sonrası CI'de bekleniyor. Üretim dağıtımı
+ve commit/push yapılmadı. Ayrıntı: `docs/CI_DUZELTMELERI_20261020.md`.
 
 ## Güncel uygulama — 8A kaynaklara bağlı, kullanıcı görsel denemesi bekleniyor
 

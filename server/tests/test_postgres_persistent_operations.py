@@ -138,7 +138,7 @@ def test_mailbox_collect_and_open_roll_back_and_replay_without_recreating_stock(
     assert not gateway.player_profile_service.get_or_create(player).chest_slots
 
 
-def test_purchase_notice_wallet_and_receipt_commit_or_roll_back_together(social_db, monkeypatch):
+def test_soft_currency_purchase_wallet_chest_and_receipt_commit_or_roll_back_together(social_db, monkeypatch):
     _, players, _, (player, _, _) = social_db
     profile = gateway.player_profile_service.get_or_create(player)
     profile.circuit_credits = 10000
@@ -154,10 +154,23 @@ def test_purchase_notice_wallet_and_receipt_commit_or_roll_back_together(social_
         with pytest.raises(RuntimeError, match="purchase notice rollback"):
             gateway.buy_store_chest(player, "field_3h", request)
     assert players.load(player).profile == before
-    gateway.buy_store_chest(player, "field_3h", request)
-    assert len(gateway.get_reward_inbox(player)["purchases"]) == 1
-    gateway.buy_store_chest(player, "field_3h", request)
-    assert len(gateway.get_reward_inbox(player)["purchases"]) == 1
+    purchased = gateway.buy_store_chest(player, "field_3h", request)
+    after = deepcopy(players.load(player).profile)
+    assert after != before
+    before_meta = before["meta_progression_state"]
+    after_meta = after["meta_progression_state"]
+    receipt = purchased["receipt"]
+    assert after_meta["circuit_credits"] == (
+        before_meta["circuit_credits"] - receipt["cost"] + receipt["rewards"]["circuit_credits"]
+    )
+    # Store chests open immediately; neither a closed slot nor a purchase notice remains.
+    assert after_meta["chest_slots"] == before_meta["chest_slots"]
+    assert after_meta["shop_receipts"][request.request_id] == receipt
+    assert gateway.get_reward_inbox(player)["purchases"] == []
+    replay = gateway.buy_store_chest(player, "field_3h", request)
+    assert replay["receipt"]["chest"]["chest_id"] == receipt["chest"]["chest_id"]
+    assert players.load(player).profile == after
+    assert gateway.get_reward_inbox(player)["purchases"] == []
 
 
 def test_v7_default_query_preserves_previous_economic_hash_and_v8_delivery_replay(social_db, request):

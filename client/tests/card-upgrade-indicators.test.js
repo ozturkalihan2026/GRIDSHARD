@@ -236,7 +236,7 @@ sandbox.setDetailTabUpgradeArrow(null, true);
 // --- Bağlantılar: göstergeler ve düğmeler aynı kuralı kullanır --------------
 assert.ok(app.includes("const reason = moduleUpgradeBlockReason(item);"));
 assert.ok(app.includes("const canChoose = moduleTalentSelectable(item, node);"));
-assert.ok(app.includes("const canUpgrade = coreUpgradeAvailable(core);"));
+assert.ok(app.includes("const canUpgrade = metaIndicatorsLive() && coreUpgradeAvailable(core);"));
 assert.ok(app.includes("const canLearn = coreSkillLearnable(core, skill);"));
 assert.ok(app.includes('const needsAttention = cardNeedsAttention("module", item);'));
 assert.ok(app.includes('const needsAttention = cardNeedsAttention("core", core);'));
@@ -290,7 +290,7 @@ Object.assign(this, { serverCopy, specialDisplayValue, moduleCycleEntry, special
     { specials:[{ key:"block", label_tr:"BLOK", label_en:"BLOCK", value:60, unit:"percent" }, { key:"yeni", label_tr:"YENİ", value:1, unit:"hp" }] },
     { specials:[{ key:"block", value:61.24, unit:"percent" }] },
   );
-  assert.deepEqual({ ...block }, { key:"block", label:"BLOK", value:"%60", current:60, next:61.24, unit:"percent", icon:"shield", tone:"blue" });
+  assert.deepEqual({ ...block }, { key:"block", label:"BLOK", value:"%60", current:60, next:61.24, unit:"percent", times:undefined, icon:"shield", tone:"blue" });
   assert.equal(unknown.icon, "star");
   cycleSandbox.document.documentElement.lang = "en";
   assert.equal(cycleSandbox.moduleCycleEntry({ cooldown_ms:1200, cycle_label_tr:"BLOK ARALIĞI", cycle_label_en:"BLOCK INTERVAL" }, null).label, "BLOCK INTERVAL");

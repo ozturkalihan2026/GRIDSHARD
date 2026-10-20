@@ -443,9 +443,10 @@ test("yol ekranı çekirdeği ayrı satırda, lig sonu sandığını hücresiz �
   // İçerik sandığın altında yazmaz; diğer sandıklardaki önizleme paneliyle görünür.
   assert.match(road, /bindRewardPreview\(chest, \{ title:rewardDescription, reward:node\.rewards \|\| \{\} \}\);/);
   assert.ok(!road.includes("arena-chest-contents") && !app.includes("leagueChestContents"));
-  // Sandığa dokunmak önizlemeyi açar; almak için ayrı düğme vardır.
-  assert.match(road, /claim\.className = "arena-league-chest-claim";/);
-  assert.match(road, /claim\.addEventListener\("click", \(\) => claimLeagueNode\(node, claim\)\);/);
+  // Alınabilir sandık doğrudan alınır; diğerleri aynı görselden önizlenir.
+  assert.match(road, /if \(!node\.claimable\) bindRewardPreview\(chest,/);
+  assert.match(road, /chest\.addEventListener\("click", \(\) => claimLeagueNode\(node, chest\)\);/);
+  assert.ok(!road.includes('claim.className = "arena-league-chest-claim"'));
   assert.match(road, /chestStop\.className = "arena-league-chest-stop";/);
   assert.match(road, /if \(leagueRoad\.childElementCount\) section\.appendChild\(leagueRoad\);\s*if \(chestStop\) section\.appendChild\(chestStop\);/);
   // Lig sandığı mağaza sandığının çizimini kullanmaz; mağaza sandığı veren arena durağı ise
@@ -504,7 +505,9 @@ Object.assign(this, { LEAGUE_EMBLEMS, leagueChestMarkup });`, sandbox);
   const shared = slice("  function createRewardChestButton({", "  document.addEventListener(\"pointerdown\", (event) => {");
   assert.match(shared, /bindRewardPreview\(button, \{ title, reward, note \}\);\s*return button;/);
   assert.match(shared, /function bindRewardPreview\(button, options\) \{/);
-  assert.match(shared, /if \(event\.pointerType === "mouse"\) showRewardPreview\(button, options\);/);
+  assert.match(shared, /event\.pointerType === "mouse" \|\| event\.pointerType === "pen"\) showRewardPreview\(button, options\);/);
+  assert.ok(shared.includes('button.addEventListener("mouseenter"'));
+  assert.ok(shared.includes('button.addEventListener("focus"'));
   for (const [nameTr, nameEn] of [
     ["Kıvılcım Sandığı", "Spark Chest"], ["Voltaj Sandığı", "Voltage Chest"], ["Reaktör Sandığı", "Reactor Chest"],
     ["Kuantum Sandığı", "Quantum Chest"], ["Nexus Sandığı", "Nexus Chest"],

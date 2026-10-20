@@ -14,7 +14,10 @@ test("Beta 38.1 FCT and audio ownership", async ({ page }) => {
   await expect(page.locator("body")).toHaveAttribute("data-local-status", "battle");
   await expect(page.locator("body")).toHaveAttribute("data-audio-state", /^(battle_intro|battle|battle_pressure|critical_core)$/);
 
-  await page.locator("#board").click({ position:{ x:4, y:4 } });
+  // The countdown deliberately blocks input. The 2.5D board's bounding-box
+  // corner is not a cell hit target after perspective/scale transforms.
+  await expect(page.locator("#battle-start-countdown")).toBeHidden();
+  await page.locator("#board .board-cell").first().click();
   await expect.poll(async () => page.evaluate(
     () => window.__GRIDSHARD_TEST_API.getAudioPlaybackStatus()?.gestureObserved
   )).toBe(true);

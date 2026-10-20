@@ -182,7 +182,8 @@ test("startup artwork and the entire animation CSS block are unchanged", () => {
   const block = css.slice(css.indexOf("/* === Beta.72 tur 17: yükleme ekranı"),css.indexOf("/* Operator title progression */")).trim();
   assert.equal(hash(block),"5b9f8d3a4997e2ab33751e004528d92094dddb02236a996c4c7c1390dbbff009");
   const html = fs.readFileSync("index.html","utf8");
-  assert.ok(html.includes('src="./assets/branding/gridshard-emblem.webp"'));
+  assert.ok(html.includes('src="./assets/branding/gridshard-emblem-v2.webp"'));
+  assert.ok(fs.existsSync('assets/branding/gridshard-emblem-v2.webp'));
   assert.ok(html.indexOf('src="./src/boot-screen.js"') < html.indexOf('src="./src/startup-loading.js"'));
   assert.equal(html.match(/id="boot-version"[^>]*>Sürüm: ([^<]+)/)[1], JSON.parse(fs.readFileSync(path.join(__dirname,"../../package.json"),"utf8")).version);
   const app = fs.readFileSync("src/app.js","utf8");

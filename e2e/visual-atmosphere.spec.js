@@ -21,17 +21,22 @@ test("devre atmosferi, ortak dock ve kazanılmış profil koleksiyonu", async ({
   for(const screen of ["menu","shop","modules","team","events"]) {
     await page.locator(`[data-shell-screen="${screen}"]`).click();
     await expect(page.locator("body")).toHaveAttribute("data-app-screen",screen);
+    // Approved dock art is now painted WebP, not SVG .de-body paths. Verify
+    // every distinct asset actually loads and remains inside its physical key.
+    await expect.poll(()=>page.locator("#app-bottom-dock .lobby-dock-icon").evaluateAll(
+      icons=>icons.length===5 && icons.every(icon=>icon instanceof HTMLImageElement
+        && icon.complete && icon.naturalWidth>0 && icon.naturalHeight>0)
+    )).toBe(true);
     const material=await page.locator("#app-bottom-dock .menu-action").evaluateAll(buttons=>buttons.map(button=>{
-      const style=getComputedStyle(button), icon=button.querySelector(".lobby-dock-icon");
-      return {background:style.backgroundImage,icon:getComputedStyle(icon).color,
-        fill:getComputedStyle(icon.querySelector(".de-body")).fill,
-        stroke:getComputedStyle(icon.querySelector(".de-body")).stroke};
+      const icon=button.querySelector(".lobby-dock-icon"), box=icon.getBoundingClientRect();
+      const key=button.getBoundingClientRect();
+      return {src:icon.getAttribute("src"),fit:getComputedStyle(icon).objectFit,
+        inside:box.width>0 && box.height>0 && box.left>=key.left-1 && box.right<=key.right+1};
     }));
-    expect(new Set(material.map(item=>item.background)).size).toBe(1);
-    expect(new Set(material.map(item=>item.icon)).size).toBe(5);
-    expect(new Set(material.map(item=>item.fill)).size).toBe(5);
-    expect(new Set(material.map(item=>item.stroke)).size).toBe(1);
-    expect(material.every(item=>item.fill!=="none")).toBe(true);
+    expect(new Set(material.map(item=>item.src)).size).toBe(5);
+    expect(material.every(item=>item.fit==="contain" && item.inside)).toBe(true);
+    await expect(page.locator("#app-bottom-dock .menu-action.is-active")).toHaveCount(1);
+    await expect(page.locator("#app-bottom-dock .menu-action.is-active .menu-action-title")).toBeVisible();
     const fits=await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1);
     expect(fits).toBe(true);
     await page.screenshot({path:testInfo.outputPath(`${screen}.png`)});
@@ -43,7 +48,10 @@ test("devre atmosferi, ortak dock ve kazanılmış profil koleksiyonu", async ({
         x:dockBox.x,y:top,width:dockBox.width,height:dockBox.height+dockBox.y-top}});
     }
   }
-  await expect(page.locator("#events-screen .event-hub-emblem svg")).toHaveCount(3);
+  await expect(page.locator('#events-screen [data-event-emblem="wheel"] > svg')).toHaveCount(1);
+  const eventTrophy=page.locator('#events-screen [data-event-emblem="trophy"] > img');
+  await expect.poll(()=>eventTrophy.evaluate(icon=>icon.complete && icon.naturalWidth>0)).toBe(true);
+  await expect(page.locator('#events-screen [data-event-emblem="banner"] > [data-ui-art="team-tournament"]')).toHaveCount(1);
   const events=await page.evaluate(()=>[...document.querySelectorAll("#events-screen .event-directory .event-hub-emblem")].map(element=>{
     const box=element.getBoundingClientRect(),parent=element.parentElement.getBoundingClientRect();
     return box.width>=55 && box.height>=55 && box.left>=parent.left && box.right<=parent.right;
@@ -67,8 +75,11 @@ test("devre atmosferi, ortak dock ve kazanılmış profil koleksiyonu", async ({
   await expect(page.locator("#events-screen .event-directory")).toHaveAccessibleName("Tournaments");
   await page.evaluate(()=>GridshardI18n.apply("tr"));
   const tournamentBackgrounds=await page.locator("#events-screen .event-directory button").evaluateAll(buttons=>buttons.map(button=>getComputedStyle(button).backgroundImage));
-  expect(tournamentBackgrounds[0]).not.toBe(tournamentBackgrounds[1]);
-  expect(tournamentBackgrounds.every(background=>background.includes("data:image/svg+xml"))).toBe(true);
+  // Package 4 uses the shared physical surface; tournament identity belongs
+  // to the distinct trophy/team emblems, not the retired SVG backgrounds.
+  expect(tournamentBackgrounds).toHaveLength(2);
+  expect(tournamentBackgrounds[0]).toBe(tournamentBackgrounds[1]);
+  expect(tournamentBackgrounds.every(background=>background!=="none")).toBe(true);
   const originalViewport=page.viewportSize();
   await page.setViewportSize({width:320,height:700});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

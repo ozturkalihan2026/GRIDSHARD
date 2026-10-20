@@ -29,16 +29,20 @@ test("all ten approved UI icons are lightweight WebP files with one CSS source",
 });
 test("legacy and canonical icon names share the approved art without old plates or injected attributes",()=>{
   const ctx=helpers();
+  const detailCss=fs.readFileSync(path.join(root,"src/detail-cards-v10.css"),"utf8");
+  const details=[...detailCss.matchAll(/\.ui-art\[data-ui-art="([^"]+)"\] \{ --ui-art-image:url\("([^"]+)"\); \}/g)];
+  assert.ok(details.length>=10);
+  for(const [,name,asset] of details){assert.ok(name.startsWith("detail-"));assert.ok(fs.existsSync(path.resolve(root,"src",asset)));}
+  const known=new Set([...names,"battle","deck","purchase","chest",...details.map(m=>m[1])]);
   for(const [alias,name] of Object.entries(ctx.UI_ART_ICONS)){
-    assert.ok([...names,"battle","deck","purchase","chest"].includes(name));
+    assert.ok(known.has(name), `${alias}: ${name} has no registered physical artwork`);
     const markup=ctx.uiIconMarkup(alias,'blue" onclick="bad()');
     assert.ok(markup.includes('class="ui-icon is-artwork"'));
     assert.ok(markup.includes(`data-ui-art="${name}"`));
     assert.ok(!markup.includes("<svg")&&!markup.includes("onclick"));
-    if (names.includes(name)) assert.equal(ctx.UI_ICON_PATHS[alias],undefined);
   }
   assert.ok(ctx.uiIconMarkup("__proto__").includes('data-icon="star"'));
-  assert.ok(ctx.uiIconMarkup("shield","blue").includes("<svg"));
+  assert.ok(ctx.uiIconMarkup("shield","blue").includes('data-ui-art="detail-guard"'));
   assert.ok(ctx.uiIconMarkup("flux").includes('class="currency-art"'));
 });
 test("independent message/menu/settings/profile and empty-state icons also use the common source",()=>{
