@@ -38,23 +38,30 @@ test("wrap uses shortest turn; invalid/zero distance geometry cannot emit NaNs",
   const m=math.plane(null,{left:0,top:0,width:80,height:80});
   assert.equal(math.aim(m,{x:40,y:40}),null);
 });
-test("laser samples real yaw views without rotating the upright art; nodes and deck artwork survive",()=>{
+test("laser shows one of its 16 painted ground headings; no allocation, no screen rotation; nodes and deck artwork survive",()=>{
   let allocations=0;
   class Element{
     constructor(doc){allocations++;this.ownerDocument=doc;this.children=[];this.dataset={};this.attrs={};this.style={setProperty:(k,v)=>{this.attrs[k]=v;}};this.classList={add(){}};}
     appendChild(n){this.children.push(n);}replaceChildren(...n){this.children=n;}
     setAttribute(k,v){this.attrs[k]=v;}getAttribute(k){return this.attrs[k]||null;}
   }
+  const wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
   const doc={createElement:()=>new Element(doc)},host=new Element(doc);
   art.mount(host,{definitionId:"laser"});
-  const rig=host.children[0],base=rig.children[0],window=rig.children[1].children[0],head=window.children[0],count=allocations;
+  const rig=host.children[0],shadow=rig.children[0],stage=rig.children[1].children[0].children[0];
+  const head=stage.children.at(-1),count=allocations,seen=new Set();
   const m=math.plane(null,{left:0,top:0,width:80,height:80});
-  for(let degree=0;degree<360;degree+=10){
+  for(let degree=0;degree<360;degree+=5){
     const a=degree*Math.PI/180,target={x:40+200*Math.cos(a),y:40+200*Math.sin(a)};
-    const aimed=art.aimLaser(host,m,target);near(Math.cos(aimed.angle),Math.cos(a));assert.ok(aimed);
-    assert.equal(base,rig.children[0]);assert.equal(head,window.children[0]);assert.equal(allocations,count);
+    const aimed=art.aimLaser(host,m,target);assert.ok(aimed&&aimed.muzzle);near(Math.cos(aimed.angle),Math.cos(a));
+    assert.equal(head,stage.children.at(-1));assert.equal(allocations,count);
+    const m16=head.src.match(/modules-physical-v1\/laser-y(\d\d)\.webp$/);assert.ok(m16,head.src);seen.add(m16[1]);
+    // the shown painting is within half a step (11.25°) + hysteresis of the target's ground heading
+    assert.ok(Math.abs(wrap(aimed.angle-Number(m16[1])*Math.PI/8))<=Math.PI/16+4*Math.PI/180+1e-9,`${degree}° -> y${m16[1]}`);
+    assert.ok(!head.style.transform);
   }
-  assert.equal(base.className,"module-device-ground-shadow");assert.match(head.src,/modules-views-v3\/laser.webp$/);
+  assert.equal(seen.size,16);
+  assert.equal(rig.dataset.renderer,"layers");assert.equal(shadow.className,"module-device-ground-shadow");
   assert.match(art.markup({definitionId:"laser"}),/modules-physical-v1\/laser.webp/);
   assert.equal(rig.children.filter(n=>n.className==="laser-plane-point").length,4);
 });

@@ -9394,7 +9394,10 @@
   });
   // Optional presentation must never block menus/tutorial startup when an old
   // cached document has not loaded the new renderer script yet.
-  const laser3DPilot = typeof globalThis.GridshardLaser3DPilot === "function" ? new GridshardLaser3DPilot({
+  // 19 Ekim 2026 kullanıcı kararı: savaşta onaylı çizimler (katmanlı kaide +
+  // yön başlığı) kullanılır; WebGL 3B cihaz çizicisi kapalıdır.
+  const DEVICE_3D_ENABLED = false;
+  const laser3DPilot = DEVICE_3D_ENABLED && typeof globalThis.GridshardLaser3DPilot === "function" ? new GridshardLaser3DPilot({
     document, root:document.getElementById("duel-arena"),
     rectFor:id => battleAnchorRects().modules.get(String(id)),
     enabled:() => document.body.dataset.appScreen === "play" && battleGraphicsQuality() !== "dusuk",
@@ -9425,8 +9428,15 @@
       return icon ? GridshardModuleDeviceArt.pose(icon, {...pose,plane}) : true;
     },
   });
-  const moduleVfx = new GridshardModuleVfx({
+  // v15 canvas effects for the first ten modules; ticked by the battle loop.
+  const moduleFx = typeof globalThis.GridshardModuleFxCanvas === "function" ? new GridshardModuleFxCanvas({
     doc:document, now:() => performance.now(),
+    layer:() => document.getElementById("battle-effect-layer"),
+    quality:battleGraphicsQuality,
+    wake:() => requestBattleMotionFrame(),
+  }) : null;
+  const moduleVfx = new GridshardModuleVfx({
+    doc:document, now:() => performance.now(), fx:moduleFx,
     layer:() => document.getElementById("battle-effect-layer"),
     anchor:moduleVfxAnchor,
     boardRect:id => {
@@ -9437,7 +9447,7 @@
     rigFor:id => (battleAnchorRects().devices.get(String(id)))?.host?.querySelector(".module-device-rig"),
     domId:serverModuleDomId,
     schedule:(delay,run) => scheduleBattleSweep(delay,run),
-    sound:cue => triggerGridshardCue(cue),
+    sound:(cue,options) => triggerGridshardCue(cue,options),
     quality:battleGraphicsQuality,
     reduced:() => battleGraphicsQuality() === "dusuk" || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true,
     hidden:() => document.hidden || document.body.dataset.appScreen !== "play",
@@ -9599,6 +9609,8 @@
     },
   });
 
+  const CRAFTED_WEAPON_IDS = new Set(["laser","shield","cooler","battery","amplifier","emp","repair","armor","pulse_cannon","missile_launcher"]);
+
   function weaponPresentation(
     definitionId
   ) {
@@ -9612,13 +9624,16 @@
   function weaponCue(
     definitionId
   ) {
+    // v15: the first ten keep their crafted WAVs; later modules use their own cue.
+    if(!CRAFTED_WEAPON_IDS.has(definitionId)&&globalThis.GridshardModulePresentation?.[definitionId])return globalThis.GridshardModulePresentation[definitionId].cue;
     return weaponPresentation(
       definitionId
     ).cue;
   }
 
   function attackImpactCue({sourceDefinitionId=null, defended=false, targetDefinitionId=null}={}) {
-    if (defended) return "shield_absorb";
+    if (defended) return CRAFTED_WEAPON_IDS.has(targetDefinitionId)||!globalThis.GridshardModulePresentation?.[targetDefinitionId] ? "shield_absorb" : globalThis.GridshardModulePresentation[targetDefinitionId].cue;
+    if(!CRAFTED_WEAPON_IDS.has(sourceDefinitionId)&&globalThis.GridshardModulePresentation?.[sourceDefinitionId])return null; // One quiet, complete shot sound, no layered impact ping.
     const presentation=WEAPON_PRESENTATION[String(sourceDefinitionId || "").trim().replaceAll("-", "_")];
     if (presentation && Object.hasOwn(presentation, "impactCue")) return presentation.impactCue;
     return targetDefinitionId === "core" ? "core_hit" : "module_hit";
@@ -9629,6 +9644,7 @@
     defended=false,
     targetDefinitionId=null,
     travelMs=0,
+    pan=0,
   }={}) {
     const cue=attackImpactCue({sourceDefinitionId, defended, targetDefinitionId});
     if (!cue) return;
@@ -9645,8 +9661,15 @@
       ) {
         return;
       }
-      triggerGridshardCue(cue);
+      triggerGridshardCue(cue,{pan});
     });
+  }
+
+  // Left/right placement of a battle sound from its device on screen (±0.6).
+  function battleCuePan(domId) {
+    const rect=battleAnchorRects().modules.get(String(domId)),width=window.innerWidth || 0;
+    if (!rect || !(width > 0)) return 0;
+    return Math.max(-1,Math.min(1,(rect.left+rect.width/2)/width*2-1))*.6;
   }
 
   function selectedBattlePoolDefinitionIds() {
@@ -9994,7 +10017,10 @@
       coreCard.classList.toggle("core-power-ready", corePowerReady);
       coreCard.classList.add("core-charge-card");
       coreCard.setAttribute("aria-label", `Çekirdek gücü · ${corePowerReady ? "Hazır" : "%" + charge}`);
-      mountCoreEmblem(coreCard.querySelector(".module-icon"), selectedCore);
+      // v15: keep the upright core painting; rebuild only when the core type changes.
+      const coreIcon=coreCard.querySelector(".module-icon");
+      const standing=coreIcon?.querySelector('.module-device-rig[data-core="true"]')?.dataset.device === selectedCore;
+      if (coreIcon && !standing && !GridshardModuleDeviceArt.mountCore?.(coreIcon, selectedCore)) mountCoreEmblem(coreIcon, selectedCore);
     }
     applyCoreVisualIdentity(board, selectedCore);
     corePowerButtonEl.dataset.targeting=String(corePowerTargeting);
@@ -10514,7 +10540,8 @@
   requestOwnedAudioState("audio_director_ready", {}, { force:true });
 
   function triggerGridshardCue(
-    cueName
+    cueName,
+    options
   ) {
     if (
       gridshardAudioDirector
@@ -10523,7 +10550,8 @@
     ) {
       return gridshardAudioDirector
         .triggerCue(
-          cueName
+          cueName,
+          options
         );
     }
     return {
@@ -11274,7 +11302,7 @@
             });
             cached={epoch:battleLayoutEpoch,width:cardRect.width,height:cardRect.height,
               relative:measureRelative(".laser-plane-point"),
-              sprite:rig.dataset.renderer === "views8" ? measureRelative(".sprite-plane-point") : []};
+              sprite:["views8","layers"].includes(rig.dataset.renderer) ? measureRelative(".sprite-plane-point") : []};
             devicePlaneCache.set(rig,cached);
           }
           const points=cached.relative.map(p=>({x:p.x+cardRect.left,y:p.y+cardRect.top}));
@@ -11311,7 +11339,7 @@
       const anchor=aimAt
         ? laser3DPilot.aimAt(moduleId,{x:aimAt.x+layer.left,y:aimAt.y+layer.top},performance.now())
         : laser3DPilot.anchor(moduleId);
-      if(anchor)return {center:local(anchor.center),emitter:local(anchor.emitter),pair:anchor.pair?.map(local)||null,definition:entry.definition};
+      if(anchor)return {center:local(anchor.center),emitter:local(anchor.emitter),pair:anchor.pair?.map(local)||null,definition:entry.definition,size:Math.min(rect.width,rect.height)};
     }
     let center={x:rect.left+rect.width/2,y:rect.top+rect.height/2},emitter=center,pair=null;
     if(entry){
@@ -11319,12 +11347,17 @@
       if(aimAt)GridshardModuleDeviceArt.aimDevice(entry.host,entry.plane,{x:aimAt.x+layer.left,y:aimAt.y+layer.top});
       const rig=entry.host.querySelector(".module-device-rig"),frame=Number(rig?.dataset.view||0);
       const data=globalThis.GridshardModuleViewData?.[entry.definition];
-      if(entry.plane.sprite&&data){
+      const layered=entry.plane.sprite&&GridshardModuleDeviceArt.emitter?.(entry.host);
+      if(layered){
+        emitter=GridshardLaserAim.project(entry.plane.sprite,layered) || center;
+        const coils=GridshardModuleDeviceArt.pair?.(entry.host);
+        if(coils)pair=coils.map(p=>local(GridshardLaserAim.project(entry.plane.sprite,p)));
+      }else if(entry.plane.sprite&&data){
         emitter=GridshardLaserAim.project(entry.plane.sprite,data.emitters[frame]) || center;
         if(data.pairs?.[frame])pair=data.pairs[frame].map(p=>local(GridshardLaserAim.project(entry.plane.sprite,p)));
       }else emitter=center;
     }
-    return {center:local(center),emitter:local(emitter),pair,definition:entry?.definition};
+    return {center:local(center),emitter:local(emitter),pair,definition:entry?.definition,size:Math.min(rect.width,rect.height)};
   }
 
   function rememberModuleAnchor(moduleId, rect) {
@@ -12515,7 +12548,8 @@
       triggerGridshardCue(
         weaponCue(
           sourceModule?.definition_id
-        )
+        ),
+        {pan:battleCuePan(sourceId)}
       );
       scheduleAttackImpactCue({
         sourceDefinitionId:sourceModule?.definition_id,
@@ -12523,6 +12557,7 @@
         targetDefinitionId:
           targetModule?.definition_id,
         travelMs,
+        pan:battleCuePan(targetId),
       });
     }
   }
@@ -17147,7 +17182,9 @@
       laser3DPilot.detach(domId);
       icon.classList.remove("has-module-device");
       if (model.core) {
-        mountCoreEmblem(icon, model.coreType);
+        // v15: deployed core stands as its approved upright painting, larger than modules.
+        delete icon.dataset.coreEmblem;
+        if (!GridshardModuleDeviceArt.mountCore?.(icon, model.coreType)) mountCoreEmblem(icon, model.coreType);
         applyCoreVisualIdentity(card, model.coreType);
         if(globalThis.GridshardDevice3DSpecs?.[model.coreType])laser3DPilot.attach(domId,icon,model.enemy,model.coreType);
       } else if (model.physical) {
@@ -20651,7 +20688,7 @@
   let battleClockTimer = null;
 
   function requestBattleMotionFrame() {
-    if (document.hidden || !(moduleMotion.needsFrame || laser3DPilot.needsPresent)) return;
+    if (document.hidden || !(moduleMotion.needsFrame || laser3DPilot.needsPresent || moduleFx?.active)) return;
     if (battleClockTimer !== null) { window.clearTimeout(battleClockTimer); battleClockTimer = null; }
     if (battleClockFrame === null) battleClockFrame = requestAnimationFrame(updateClock);
   }
@@ -20661,6 +20698,23 @@
   function trackAutoGraphics(now, sampling) {
     if (graphicsTier.trackFrame(now, { sampling, hidden:document.hidden })) {
       applyGraphicsQuality();
+    }
+  }
+
+  // Deployed cores "work" in battle: motes rise from the stone every 220 ms
+  // (inside the battle loop; off on low graphics via moduleFx.coreIdle).
+  let lastCoreIdleAt = 0;
+  function emitCoreIdleMotes(now) {
+    if (!moduleFx || !Number.isFinite(now) || now - lastCoreIdleAt < 220 || battleGraphicsQuality() === "dusuk") return;
+    lastCoreIdleAt = now;
+    const layer = document.getElementById("battle-effect-layer")?.getBoundingClientRect();
+    if (!layer?.width) return;
+    for (const pulse of document.querySelectorAll('.module-device-rig[data-core="true"] .module-core-pulse')) {
+      const r = pulse.getBoundingClientRect();
+      if (!r.width) continue;
+      const card = pulse.closest("[data-module-id]"), accent = card ? getComputedStyle(card).getPropertyValue("--core-accent").trim() : "";
+      moduleFx.coreIdle({ x:r.left + r.width / 2 - layer.left, y:r.top + r.height / 2 - layer.top },
+        { color:accent || "#56f1df", k:Math.max(.6, Math.min(1.6, r.width / 40)), ready:!!card?.classList.contains("core-power-ready") });
     }
   }
 
@@ -20751,7 +20805,9 @@
 
     moduleMotion.tick(now);
     laser3DPilot.render(now);
-    if (frameSampling || moduleMotion.needsFrame || laser3DPilot.needsPresent || typeof window.setTimeout !== "function") {
+    if (!document.hidden) emitCoreIdleMotes(now);
+    if (document.hidden) moduleFx?.clear(); else moduleFx?.tick(now);
+    if (frameSampling || moduleMotion.needsFrame || laser3DPilot.needsPresent || moduleFx?.active || typeof window.setTimeout !== "function") {
       battleClockFrame = requestAnimationFrame(updateClock);
     } else {
       // rAF sekme arka plandayken bekler; zamanlayıcı yalnız aralığı belirler.

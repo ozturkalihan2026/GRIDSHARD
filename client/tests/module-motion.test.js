@@ -145,7 +145,7 @@ test("cooler painted rotor advances only during work; hidden rest is idempotent"
   s.setHidden(true);s.motion.tick();const count=s.draws.length;
   s.motion.tick();assert.equal(s.draws.length,count);
 });
-test("direction/action retain the same view atlas, shadow and host",()=>{
+test("direction/action swap only the painted head frame; shadow and host stay",()=>{
   let made=0;
   class Element {
     constructor(doc){made++;this.ownerDocument=doc;this.children=[];this.dataset={};this.attrs=new Map();this.classList={add:()=>{}};}
@@ -155,11 +155,16 @@ test("direction/action retain the same view atlas, shadow and host",()=>{
   }
   const doc={createElement:()=>new Element(doc)},host=new Element(doc);
   assert.equal(art.mount(host,{definitionId:"repair"}),true);
-  const rig=host.children[0],base=rig.children[0],window=rig.children[1].children[0],head=window.children[0],count=made,baseUrl=base.src;
+  const rig=host.children[0],shadow=rig.children[0],stage=rig.children[1].children[0].children[0];
+  // 16 painted yaw frames: the whole robot is one head image (no separate base).
+  const head=stage.children[0],count=made;
+  assert.equal(stage.children.length,1);
+  assert.match(head.src,/modules-physical-v1\/repair-y14\.webp$/); // own default heading = NE
   art.pose(host,{heading:"sw",phase:"work"});
-  assert.equal(made,count);assert.equal(host.children[0],rig);assert.equal(rig.children[0],base);assert.equal(window.children[0],head);
-  assert.equal(base.src,baseUrl);assert.match(head.src,/modules-views-v3\/repair.webp$/);
-  art.pose(host,{heading:"sw",phase:"rest"});assert.match(head.src,/modules-views-v3\/repair.webp$/);
+  assert.equal(made,count);assert.equal(host.children[0],rig);assert.equal(rig.children[0],shadow);assert.equal(stage.children[0],head);
+  // Yaw comes from the ground aim (plane + target), not the legacy heading name; work has no own frame.
+  assert.match(head.src,/modules-physical-v1\/repair-y14\.webp$/);
+  art.pose(host,{heading:"sw",phase:"rest"});assert.match(head.src,/modules-physical-v1\/repair-y14\.webp$/);
   assert.equal(made,count);
 });
 test("waiting for next energy charge does not suppress an already-completed server attack",()=>{

@@ -14,6 +14,7 @@
   };
   const MUZZLE = [0,-.02,.754];
   const extended = global.GridshardExtendedDeviceModels || (typeof module !== "undefined" && module.exports ? require("./device-models-extended.js") : null);
+  const referenceDetails = global.GridshardDeviceReferenceDetails || (typeof module !== "undefined" && module.exports ? require("./device-reference-details.js") : null);
   // All 36 canon devices have an explicit mechanical policy. This is NOT a
   // model availability list: unbuilt devices must never inherit another mesh.
   const ROTATION_RULES = Object.freeze(Object.fromEntries([
@@ -62,6 +63,11 @@
     dark:color("#101c2d"), gold:color("#ffbc30"), orange:color("#ff881f"), lens:color("#fff277"),
     green:color("#08ce83"),lime:color("#87ed0b"),cyan:color("#20e5f6"),blue:color("#137af4"),
     purple:color("#8e37eb"),pink:color("#f449fa"),white:color("#f4ffff") };
+  // Painted bevel bands: retain saturated faces, silver edges and deep seams.
+  for(const [name,rgb] of Object.entries({...PALETTE})){
+    PALETTE[name+"Edge"]=rgb.map(v=>Math.min(1,v*.78+.20));
+    PALETTE[name+"Shade"]=rgb.map(v=>v*.58);
+  }
 
   function laserMesh(definition="laser") {
     if(!SPECS[definition])throw new Error("Unknown 3D device: "+definition);
@@ -85,7 +91,7 @@
         [hz-b,outline(hx,hy)],[hz,outline(hx-b*.45,hy-b*.45)]]
         .map(([dz,xy])=>xy.map(([px,py])=>[x+px,y+py,z+dz]));
       face(rings[0],tone,part,center);face(rings[3],tone,part,center);
-      for(let r=0;r<3;r++)for(let i=0;i<8;i++)face([rings[r][i],rings[r][(i+1)%8],rings[r+1][(i+1)%8],rings[r+1][i]],tone,part,center);
+      for(let r=0;r<3;r++)for(let i=0;i<8;i++)face([rings[r][i],rings[r][(i+1)%8],rings[r+1][(i+1)%8],rings[r+1][i]],r===2?tone+"Edge":r===0?tone+"Shade":tone,part,center);
     }
     function cylinder(center,radius,length,axis,tone,part,sides=16) {
       const point=(theta,t)=>{
@@ -124,8 +130,15 @@
       }
       cylinder([0,-.38,0],.30,.20,"y","metal",0,24);
       cylinder([0,-.27,0],.23,.10,"y","silver",0,24);
+      // Front/rear power sockets anchor the same readable feet as the paintings.
+      for(const z of[-.56,.56]){
+        bevelBox([0,-.51,z],[.22,.11,.055],"dark",0,.02);
+        bevelBox([0,-.50,z*1.025],[.15,.045,.025],"gold",0,.01);
+      }
     }
-    if(extended?.build(definition,{box:bevelBox,cylinder,pipe,face,base,cap,fixed:SPECS[definition].fixed}))return new Float32Array(data);
+    const geometryApi={box:bevelBox,cylinder,pipe,face,base,cap,fixed:SPECS[definition].fixed};
+    const finish=()=>{referenceDetails?.build(definition,geometryApi);return new Float32Array(data);};
+    if(extended?.build(definition,geometryApi))return finish();
     if(definition==="cooler"){
       base("green");
       bevelBox([0,.07,-.06],[.93,.90,.48],"dark",1,.13);
@@ -212,7 +225,7 @@
       cylinder([0,.34,0],.17,.04,"y","cyan",0,24);
       for(const x of[-.45,.45]){bevelBox([x,-.02,0],[.29,.86,.73],"blue",0,.12);for(const y of[-.24,.19])pipe([x,y,0],[x*.4,y,0],.09,"metal",0);}
     }
-    if(definition!=="laser" && definition!=="pulse_cannon")return new Float32Array(data);
+    if(definition!=="laser" && definition!=="pulse_cannon")return finish();
     // Fixed footing/spindle (part 0). All upper mechanics are part 1.
     cylinder([0,-.69,0],.64,.17,"y","dark",0,12);
     cylinder([0,-.57,0],.54,.16,"y","red",0,12);
@@ -263,7 +276,7 @@
       cylinder([0,-.02,.76],.28,.10,"z","gold",1,24);
       cylinder([0,-.02,.82],.18,.02,"z","lens",1,24);
     }
-    return new Float32Array(data);
+    return finish();
   }
   const VERTEX = `
     attribute vec3 a_position; attribute vec3 a_normal; attribute vec3 a_color; attribute float a_part;
@@ -285,10 +298,11 @@
     precision mediump float; varying mediump vec3 v_color; varying mediump vec3 v_normal; uniform float u_dim;
     void main() {
       vec3 n=normalize(v_normal), l=normalize(vec3(-0.6,0.9,0.8));
-      float light=0.40+0.60*max(dot(n,l),0.0);
-      float gloss=0.24*pow(max(dot(n,normalize(l+vec3(0.,0.8660254,0.5))),0.),24.);
+      float diffuse=max(dot(n,l),0.0);
+      float light=0.38+0.48*diffuse+0.13*smoothstep(.58,.72,diffuse);
+      float gloss=0.16*pow(max(dot(n,normalize(l+vec3(0.,0.8660254,0.5))),0.),32.);
       float facing=abs(dot(n,vec3(0.,0.8660254,0.5)));
-      float contour=smoothstep(.0,.18,facing)*.20+.80;
+      float contour=smoothstep(.0,.24,facing)*.38+.62;
       gl_FragColor=vec4(clamp((v_color*light+vec3(gloss))*contour,0.,1.)*u_dim,1.0);
     }`;
   function compile(gl,type,source) {

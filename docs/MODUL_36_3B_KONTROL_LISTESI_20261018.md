@@ -1,5 +1,9 @@
 # 36 modül — onaylı çizimden gerçek 3B
 
+19 Ekim güncellemesi: modül başına VFX/ses, yerel kalkan ve 3B kenar/panel
+iyileştirmeleri bağlandı. 201 test geçti. Güncel ayrıntılar:
+MODUL_VFX_SES_SANAT_20261019.md. Birebir sanat eşleşmesi ve gerçek oyun kabulü açık.
+
 18 Ekim 2026. Kullanıcı isteği: 36 modülün onaylı çizimle aynı görünüme
 yaklaştırılması ve her birinin mekanik ihtiyacına göre dönmesi.
 

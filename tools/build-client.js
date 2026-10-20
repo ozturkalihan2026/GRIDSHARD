@@ -124,6 +124,19 @@ function runtimeAssets(source, html, scripts, omittedWav) {
     if (!omittedWav.has(file)) assets.add(relative);
   };
   for (const match of html.matchAll(/(?:src|href)="(\.\/assets\/[^"\s]+)"/g)) add(match[1]);
+  // Painted yaw frames are selected from generated data, so their paths do not
+  // appear as HTML img tags. Include the actual registry in web/mobile bundles.
+  if(scripts.includes("./src/module-layer-data.js")){
+    const context=vm.createContext({});
+    vm.runInContext(readText(sourceFile(source,"./src/module-layer-data.js")),context,{timeout:1000});
+    const pending=[context.GridshardModuleLayerData];
+    while(pending.length){const item=pending.pop();if(!item||typeof item!=="object")continue;
+      for(const [key,value]of Object.entries(item)){
+        if(key==="src"&&typeof value==="string")add("./"+value.replace(/^\.\//,""));
+        else if(value&&typeof value==="object")pending.push(value);
+      }
+    }
+  }
   const webManifest = JSON.parse(readText(sourceFile(source, "./manifest.webmanifest")));
   for (const icon of webManifest.icons || []) add(icon.src);
   if (scripts.includes("./src/gridshard-audio.js")) {
@@ -265,7 +278,7 @@ async function buildClient({ root = path.resolve(__dirname, ".."), mobile = fals
   }
 }
 
-module.exports = { apiBaseForBuild, readBuildBlock, compressedAudioReplacements, buildClient };
+module.exports = { apiBaseForBuild, readBuildBlock, compressedAudioReplacements, runtimeAssets, buildClient };
 
 if (require.main === module) {
   buildClient().then(({ destination, manifest }) => {

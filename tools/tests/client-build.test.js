@@ -70,6 +70,17 @@ function fixture(t, { audio = false } = {}) {
   return { root, write };
 }
 
+test("veri kaydındaki yön kareleri HTML etiketi olmadan pakete girer", async(t)=>{
+  const {root,write}=fixture(t);
+  const html=fs.readFileSync(path.join(root,"client/index.html"),"utf8");
+  write("index.html",html.replace('<script src="./src/last.js"></script>','<script src="./src/module-layer-data.js"></script>\n<script src="./src/last.js"></script>'));
+  write("src/module-layer-data.js",'globalThis.GridshardModuleLayerData={virus:{heads:{y00:{src:"assets/virus-y00.webp"},y12:{src:"assets/virus-y12.webp"}}}};');
+  write("assets/virus-y00.webp","front-frame");write("assets/virus-y12.webp","rear-frame");
+  const {destination}=await buildClient({root,environment:{}});
+  assert.equal(fs.readFileSync(path.join(destination,"assets/virus-y00.webp"),"utf8"),"front-frame");
+  assert.equal(fs.readFileSync(path.join(destination,"assets/virus-y12.webp"),"utf8"),"rear-frame");
+});
+
 test("API ayarı web için aynı origin'e izin verir, mobilde açık adres ister", () => {
   assert.equal(apiBaseForBuild({}, false), "");
   assert.throws(() => apiBaseForBuild({}, true), /zorunludur/);

@@ -4,26 +4,31 @@ require("../src/module-view-data.js");
 const vm=require("node:vm");
 const {GridshardModuleMotion}=require("../src/battle/module-motion.js");
 const ids=["laser","shield","battery","amplifier","emp","repair","armor","cooler","pulse_cannon","missile_launcher"];
-test("all ten devices retain continuous aim with upright eight-view art, no allocations or texture swaps",()=>{
+test("all registered painted devices keep continuous aim without allocating new elements",()=>{
   let made=0;
   class Element{
     constructor(){made++;this.children=[];this.dataset={};this.attrs={};this.ownerDocument=doc;this.classList={add(){}};this.style={setProperty:(k,v)=>this.attrs[k]=v};}
     appendChild(n){this.children.push(n);}replaceChildren(...n){this.children=n;}setAttribute(k,v){this.attrs[k]=v;}getAttribute(k){return this.attrs[k];}
   }
+  const layers=require("../src/module-layer-data.js");
   const doc={createElement:()=>new Element()},matrix=math.plane([{x:0,y:0},{x:80,y:0},{x:78,y:69},{x:2,y:69}]);
-  for(const id of ids){
+  const testedIds=[...new Set([...ids,...Object.entries(layers).filter(([,v])=>v.heads?.y00).map(([id])=>id)])];
+  for(const id of testedIds){
     const host=new Element();art.mount(host,{definitionId:id});
-    const rig=host.children[0],shadow=rig.children[0],window=rig.children[1].children[0],atlas=window.children[0],src=atlas.src,count=made;
-    const turns=new Set();
+    const rig=host.children[0],shadow=rig.children[0],stage=rig.children[1].children[0].children[0],count=made;
+    const layered=layers[id].kind==="layered",art0=stage.children[0].src,headIndex=stage.children.length-1;
+    const turns=new Set(),heads=new Set();
     for(let deg=0;deg<720;deg++){
       const r=deg*Math.PI/180,target=math.project(matrix,{x:.5+4*Math.cos(r),y:.5+4*Math.sin(r)}),aim=art.aimDevice(host,matrix,target);
       assert.ok(Math.abs(Math.cos(aim.angle)-Math.cos(r))<1e-8);turns.add(rig.dataset.view);
-      assert.equal(atlas.src,src);
+      if(!layered||layers[id].base)assert.equal(stage.children[0].src,art0,"base / single painting never swaps");
+      if(layered)heads.add(stage.children[headIndex].src);
     }
     assert.equal(turns.size,8,id);assert.equal(made,count);assert.equal(rig.children[0],shadow);
-    assert.match(src,new RegExp(`modules-views-v3/${id}\\.webp`));
-    assert.equal(rig.dataset.renderer,"views8");
-    assert.equal(rig.dataset.yaw,"continuous");
+    assert.equal(rig.dataset.renderer,"layers");assert.equal(rig.dataset.yaw,"continuous");
+    if(layered){const n=Object.keys(layers[id].heads).filter(k=>!k.endsWith("-work")).length;assert.equal(heads.size,n,id);
+      for(const src of heads)assert.match(src,new RegExp(`modules-physical-v1/${id}-(ne|nw|se|sw|y\\d\\d)(-work)?\\.webp$`));}
+    else assert.match(art0,new RegExp(`modules-physical-v1/${id}\\.webp$`));
   }
 });
 test("EMP uses the real sabotage target and passives do not invent a new aim on self-contribution",()=>{
@@ -50,16 +55,25 @@ test("the board owns the shared 30 degree camera; upright art counter-tilts only
   for(const id of ids)assert.match(art.markup({definitionId:id}),new RegExp(`modules-physical-v1/${id}\\.webp`));
 });
 
-test("a painted per-view muzzle is projected on the billboard, not a flat rotor radius",()=>{
+test("devices turn only about their vertical axis: nearest painted GROUND heading, never rotated on screen",()=>{
+  const layers=require("../src/module-layer-data.js");
   const doc={createElement:()=>({ownerDocument:doc,children:[],dataset:{},classList:{add(){}},style:{setProperty(){}},setAttribute(){},appendChild(n){this.children.push(n);},replaceChildren(...n){this.children=n;}})};
-  const host=doc.createElement();art.mount(host,{definitionId:"laser"});
-  const m=math.plane(null,{left:200,top:300,width:60,height:50});
-  m.sprite=math.plane([{x:200,y:290},{x:260,y:290},{x:260,y:350},{x:200,y:350}]);
-  for(let degree=0;degree<360;degree+=3){
-    const r=degree*Math.PI/180,target=math.project(m,{x:.5+5*Math.cos(r),y:.5+5*Math.sin(r)});
-    const aimed=art.aimLaser(host,m,target),frame=art.frameFor(aimed.angle);
-    const expected=math.project(m.sprite,globalThis.GridshardModuleViewData.laser.emitters[frame]);
-    assert.ok(Math.abs(expected.x-aimed.muzzle.x)<1e-8);assert.ok(Math.abs(expected.y-aimed.muzzle.y)<1e-8);
+  const S=art.stage,Y=art.groundYaw,wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
+  for(const [id,layer]of Object.entries(layers).filter(([,v])=>v.heads?.y00)){
+    const host=doc.createElement();art.mount(host,{definitionId:id});const rig=host.children[0],head=rig.children[1].children[0].children[0].children.at(-1);
+    const m=math.plane(null,{left:200,top:300,width:60,height:60});
+    m.sprite=math.plane([{x:200,y:300},{x:260,y:300},{x:260,y:360},{x:200,y:360}]);
+    const painted=Object.keys(layers[id].heads);
+    for(let degree=0;degree<360;degree+=3){
+      const r=degree*Math.PI/180,target=math.project(m,{x:.5+5*Math.cos(r),y:.5+5*Math.sin(r)});
+      const aimed=art.aimDevice(host,m,target),h=rig.dataset.heading;
+      // within hysteresis of the nearest painted ground heading
+      const nearest=Math.min(...painted.map(k=>Math.abs(wrap(aimed.angle-Y[k]))));
+      assert.ok(Math.abs(wrap(aimed.angle-Y[h]))<=nearest+6*Math.PI/180+1e-9,`${id} ${degree}° ${h}`);
+      assert.ok(!head.style.transform,"no screen-plane rotation of the painting");
+      const e=layers[id].heads[h].emitter,expected=math.project(m.sprite,{x:S.left+e.x*S.size,y:S.top+e.y*S.size});
+      assert.ok(Math.abs(expected.x-aimed.muzzle.x)<1e-8&&Math.abs(expected.y-aimed.muzzle.y)<1e-8);
+    }
   }
 });
 

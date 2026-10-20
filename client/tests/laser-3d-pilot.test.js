@@ -1,6 +1,14 @@
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
 const {GridshardLaser3DPilot,laserMesh,yawForAngle,shortest,transformVertex,forwardYaw,projectPoint,MUZZLE,TILT,SPECS}=require("../src/battle/laser-3d-pilot.js");
+test("all 36 modules have locally authored reference details loaded before the renderer",()=>{
+  const details=require("../src/battle/device-reference-details.js");
+  assert.deepEqual([...details.ids].sort(),Object.keys(SPECS).filter(id=>!id.startsWith("core_")).sort());
+  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+  const index=html.indexOf('src="./src/battle/device-reference-details.js"');
+  assert.ok(index>=0 && index<html.indexOf('src="./src/battle/laser-3d-pilot.js"'));
+  assert.equal(details.build("unknown",{}),false);
+});
 test("all approved artwork is packaged and the extended model script precedes its consumer",()=>{
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
   assert.ok(html.indexOf('src="./src/battle/device-models-extended.js"')<html.indexOf('src="./src/battle/laser-3d-pilot.js"'));

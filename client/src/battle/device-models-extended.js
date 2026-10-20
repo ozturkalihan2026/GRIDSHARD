@@ -49,9 +49,17 @@
       b([0,.04,-.17],[width,.49,length],"metal");b([0,.07,-.17],[width+.035,.49,length-.03],t);
       b([0,.335,-.20],[width*.7,.06,length*.7],"silver");
       for(const x of[-1,1]){c([x*(width/2+.03),-.08,-.13],.16,.08,"x","silver");c([x*(width/2+.08),-.08,-.13],.10,.035,"x","gold");}
+      // Painted reference language: inset vents, panel seams, raised silver trim.
+      b([0,.371,-.20],[width*.48,.016,length*.42],t);
+      for(const side of[-1,1])for(let i=0;i<3;i++){
+        b([side*(width/2+.024),.15,-.35+i*.10],[.025,.10,.045],"dark");
+      }
+      b([0,-.13,-.17-length/2],[width*.5,.10,.025],"dark");
     }
     function muzzle(z,r,t="cyan",y=.08,x=0){
       c([x,y,z-.10],r*1.16,.16,"z","silver");c([x,y,z-.008],r,.035,"z","dark");c([x,y,z+.014],r*.75,.02,"z",t);
+      c([x-r*.15,y+r*.16,z+.026],r*.30,.008,"z","white");
+      for(let i=0;i<6;i++){const a=i*Math.PI/3;b([x+Math.cos(a)*r*1.08,y+Math.sin(a)*r*1.08,z-.01],[r*.12,r*.12,.025],"metal");}
     }
     function arms(t="green",z=.57){
       for(const side of[-1,1]){
@@ -121,13 +129,14 @@
       case "current_balancer":
         cell(0,-.02,0,.17,.34,"green");
         for(let i=0;i<3;i++){const a=i*Math.PI*2/3,x=.42*Math.cos(a),z=.42*Math.sin(a);b([x,-.22,z],[.31,.27,.31],"cyan");link([x,-.10,z],[0,-.10,0],.07,"gold");}
-        ring([0,-.07,0],.40,"gold","y");break;
+        for(let i=0;i<3;i++){const a=i*Math.PI*2/3,z=(i+1)*Math.PI*2/3;link([.42*Math.cos(a),-.07,.42*Math.sin(a)],[.42*Math.cos(z),-.07,.42*Math.sin(z)],.065,"gold");}break;
       case "arc_cannon":
       case "disruptor":
       case "virus":{
         housing(tone);muzzle(id==="virus"?.80:.70,.13,id==="virus"?"lime":id==="arc_cannon"?"cyan":"pink");
         if(id==="virus"){c([0,.08,-.12],.28,.61,"z","pink");for(const z of[-.46,.20])c([0,.08,z],.32,.09,"z","silver");}
-        for(const s of[-1,1]){link([0,.08+s*.22,.13],[0,.08+s*.31,.50],.10,"silver");link([0,.08+s*.31,.50],[0,.08+s*.19,.77],.10,"silver");}
+        const claws=id==="virus"?3:2;
+        for(let i=0;i<claws;i++){const a=i*Math.PI*2/claws,point=(r,z)=>[Math.cos(a)*r,.08+Math.sin(a)*r,z];link(point(.23,.13),point(.32,.49),id==="arc_cannon"?.14:.10,"silver");link(point(.32,.49),point(.18,.77),id==="arc_cannon"?.14:.10,"silver");}
         break;
       }
       case "railgun":
@@ -147,11 +156,20 @@
         housing("red",.77,.71);muzzle(.706,.36,"purple");c([0,.08,.72],.15,.025,"z","cyan");
         for(const x of[-.27,.27]){c([x,.36,-.25],.13,.56,"z","gold");for(const z of[-.55,.06])c([x,.36,z],.16,.08,"z","silver");}break;
       case "drone_bay":launchBay(0,.10,1.6);b([0,.20,-.39],[.77,.31,.18],"red");break;
-      case "swarm_fabricator":launchBay(0,.29,.85);launchBay(-.33,-.23,.85);launchBay(.33,-.23,.85);break;
+      case "swarm_fabricator":
+        for(const [x,z] of[[0,.29],[-.33,-.23],[.33,-.23]]){
+          c([x,-.06,z],.25,.23,"y","red",part,6);c([x,.065,z],.25,.055,"y","silver",part,6);
+          c([x,.10,z],.19,.025,"y","dark",part,6);
+          b([x,.16,z],[.12,.11,.25],"red");
+          for(const s of[-1,1])b([x+s*.10,.16,z],[.06,.06,.20],"silver");
+          c([x,.15,z+.14],.04,.04,"z","gold");
+        }break;
       case "jammer":
       case "singularity_projector":
         ring([0,.20,0],.42,"silver");ring([0,.20,.05],.33,"purple");c([0,.20,.14],id==="jammer"?.10:.18,.10,"z",id==="jammer"?"pink":"dark");
-        if(id==="jammer"){for(let i=0;i<3;i++){const a=i*Math.PI*2/3;link([0,.20,.05],[.38*Math.cos(a),.20+.38*Math.sin(a),.05],.045,"silver");}cell(-.44,-.09,-.17,.07,.38,"purple");}
+        if(id==="jammer"){
+          for(let i=0;i<12;i++){const a=i*Math.PI/6,z=(i+1)*Math.PI/6;face([[0,.20,-.12],[.39*Math.cos(a),.20+.39*Math.sin(a),.025],[.39*Math.cos(z),.20+.39*Math.sin(z),.025]],i%2?"purple":"purpleShade",part,[0,.20,-.20]);}
+          for(let i=0;i<3;i++){const a=i*Math.PI*2/3;link([0,.20,.05],[.38*Math.cos(a),.20+.38*Math.sin(a),.05],.045,"silver");}cell(-.44,-.09,-.17,.07,.38,"purple");}
         else ring([0,.20,.17],.17,"pink");break;
       case "reflector":
         for(const x of[-.50,.50])c([x,.22,0],.12,.09,"x","gold");
@@ -161,14 +179,19 @@
       case "phoenix_repair":cell(0,.13,-.04,.25,.72,"gold");arms("green",.59);for(const s of[-1,1])b([s*.47,.26,-.08],[.16,.63,.31],"green");break;
       case "overclock_unit":
         housing("green",.65,.64);
-        for(const x of[-.33,.33])for(let i=0;i<5;i++)c([x,.18,-.34+i*.13],.19,.055,"z","gold");muzzle(.626,.20,"gold");break;
+        for(const x of[-.33,.33])for(let i=0;i<5;i++)c([x,.18,-.34+i*.13],.19,.055,"z","gold");
+        c([0,.08,.55],.24,.16,"z","silver",part,6);c([0,.08,.64],.18,.025,"z","gold",part,6);c([0,.08,.66],.11,.025,"z","orange",part,6);break;
       case "chrono_relay":
-        ring([0,.23,0],.44,"gold");ring([0,.23,0],.38,"gold","x");crystal([0,.05,0],.16,.34,"cyan");crystal([0,.40,0],.16,.34,"cyan");
+        ring([0,.23,0],.44,"gold");ring([0,.23,0],.38,"gold","x");
+        for(const sign of[-1,1])for(let i=0;i<12;i++){const a=i*Math.PI/6,z=(i+1)*Math.PI/6,pt=(r,y,t)=>[r*Math.cos(t),y,r*Math.sin(t)];face([pt(.045,.23,a),pt(.18,.23+sign*.26,a),pt(.18,.23+sign*.26,z),pt(.045,.23,z)],i%3===0?"white":"cyan",part,[0,.23,0]);}
         for(const x of[-.46,.46])c([x,.23,0],.13,.10,"x","silver");break;
       case "phase_armor":
       case "prism_shield":
         crystal([0,.20,0],id==="prism_shield"?.25:.16,id==="prism_shield"?.88:.51,"cyan");
-        for(let i=0;i<(id==="phase_armor"?4:3);i++){const a=i*Math.PI*2/(id==="phase_armor"?4:3),x=.42*Math.cos(a),z=.42*Math.sin(a);b([x,.04,z],[.20,.79,.23],"silver");b([x,.05,z+.03],[.14,.68,.22],"blue");}break;
+        for(let i=0;i<(id==="phase_armor"?4:3);i++){
+          const a=i*Math.PI*2/(id==="phase_armor"?4:3),point=(t,offset)=>{const r=.24+.23*Math.sin(Math.PI*t);return[r*Math.cos(a+offset),-.34+t*.86,r*Math.sin(a+offset)];};
+          for(let j=0;j<5;j++){const t=j/5,u=(j+1)/5;face([point(t,-.25),point(t,.25),point(u,.25),point(u,-.25)],"blue",part,[0,.05,0]);link(point(t,-.25),point(u,-.25),.035,"silver");link(point(t,.25),point(u,.25),.035,"silver");}
+        }break;
       case "guardian_dome":
         cap([0,-.13,0],.25,.40,"cyan",part);
         for(let i=0;i<3;i++){const a=i*Math.PI*2/3;cell(.44*Math.cos(a),.03,.44*Math.sin(a),.14,.65,"cyan");b([.44*Math.cos(a),.44,.44*Math.sin(a)],[.30,.20,.30],"blue");}break;

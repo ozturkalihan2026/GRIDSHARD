@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="./src/laser-yaw-v11.css" />
   <link rel="stylesheet" href="./src/modules-yaw-v12.css" />
   <link rel="stylesheet" href="./src/module-vfx-v14.css" />
+  <link rel="stylesheet" href="./src/module-layers-v15.css" />
   <!-- /build:styles -->
 </head>
 <!-- Açılış ekranı betikler yüklenmeden de Ev düzeninde çizilir (Ev'e özgü
@@ -90,6 +91,42 @@
     <img src="./assets/ui/modules-physical-v1/cooler-base.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/repair-base.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/laser.webp" alt="">
+    <audio src="./assets/audio/modules/laser.wav"></audio>
+    <audio src="./assets/audio/modules/shield.wav"></audio>
+    <audio src="./assets/audio/modules/cooler.wav"></audio>
+    <audio src="./assets/audio/modules/battery.wav"></audio>
+    <audio src="./assets/audio/modules/amplifier.wav"></audio>
+    <audio src="./assets/audio/modules/emp.wav"></audio>
+    <audio src="./assets/audio/modules/repair.wav"></audio>
+    <audio src="./assets/audio/modules/armor.wav"></audio>
+    <audio src="./assets/audio/modules/pulse_cannon.wav"></audio>
+    <audio src="./assets/audio/modules/missile_launcher.wav"></audio>
+    <audio src="./assets/audio/modules/targeting_computer.wav"></audio>
+    <audio src="./assets/audio/modules/barrier.wav"></audio>
+    <audio src="./assets/audio/modules/arc_cannon.wav"></audio>
+    <audio src="./assets/audio/modules/capacitor.wav"></audio>
+    <audio src="./assets/audio/modules/drone_bay.wav"></audio>
+    <audio src="./assets/audio/modules/jammer.wav"></audio>
+    <audio src="./assets/audio/modules/railgun.wav"></audio>
+    <audio src="./assets/audio/modules/current_balancer.wav"></audio>
+    <audio src="./assets/audio/modules/reflector.wav"></audio>
+    <audio src="./assets/audio/modules/nano_medic.wav"></audio>
+    <audio src="./assets/audio/modules/virus.wav"></audio>
+    <audio src="./assets/audio/modules/overclock_unit.wav"></audio>
+    <audio src="./assets/audio/modules/plasma_mortar.wav"></audio>
+    <audio src="./assets/audio/modules/guardian_dome.wav"></audio>
+    <audio src="./assets/audio/modules/quantum_repeater.wav"></audio>
+    <audio src="./assets/audio/modules/chrono_relay.wav"></audio>
+    <audio src="./assets/audio/modules/phase_armor.wav"></audio>
+    <audio src="./assets/audio/modules/swarm_fabricator.wav"></audio>
+    <audio src="./assets/audio/modules/precision_matrix.wav"></audio>
+    <audio src="./assets/audio/modules/ion_spear.wav"></audio>
+    <audio src="./assets/audio/modules/prism_shield.wav"></audio>
+    <audio src="./assets/audio/modules/disruptor.wav"></audio>
+    <audio src="./assets/audio/modules/phoenix_repair.wav"></audio>
+    <audio src="./assets/audio/modules/quantum_cannon.wav"></audio>
+    <audio src="./assets/audio/modules/omega_amplifier.wav"></audio>
+    <audio src="./assets/audio/modules/singularity_projector.wav"></audio>
     <img src="./assets/ui/modules-physical-v2/targeting_computer.webp" alt="">
     <img src="./assets/ui/modules-physical-v2/barrier.webp" alt="">
     <img src="./assets/ui/modules-physical-v2/arc_cannon.webp" alt="">
@@ -1945,10 +1982,14 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
   <script src="./src/battle/board-view.js"></script>
   <script src="./src/battle/laser-aim.js"></script>
   <script src="./src/battle/device-models-extended.js"></script>
+  <script src="./src/battle/device-reference-details.js"></script>
   <script src="./src/battle/laser-3d-pilot.js"></script>
   <script src="./src/module-view-data.js"></script>
+  <script src="./src/module-layer-data.js"></script>
   <script src="./src/module-device-art.js"></script>
   <script src="./src/battle/module-motion.js"></script>
+  <script src="./src/battle/module-presentation-profiles.js"></script>
+  <script src="./src/battle/module-fx-canvas.js"></script>
   <script src="./src/battle/module-vfx.js"></script>
   <script src="./src/battle/module-card-view.js"></script>
   <script src="./src/battle/module-card-state-view.js"></script>

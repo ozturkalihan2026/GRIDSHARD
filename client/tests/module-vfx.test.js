@@ -25,6 +25,52 @@ function fixture(){
   const event=(type,data,at=1000)=>({type,at_ms:at,data});
   return{fx,layer,rigs,snapshot,event,sounds,anchorCalls,setTime:t=>now=t,advance:t=>{now=t;queue.flush(now);},setHidden:v=>hidden=v,setQuality:v=>quality=v,setLoad:v=>load=v,queue};
 }
+
+test("36 canon profiles own unique quiet WAVs and are present in the web/native asset list",()=>{
+  const profiles=require("../src/battle/module-presentation-profiles.js"),crypto=require("node:crypto");
+  require("../src/canon-data.js");
+  assert.deepEqual(Object.keys(profiles).sort(),globalThis.GRIDSHARD_CANON_MODULES.map(m=>m.id).sort());
+  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8"),hashes=new Set();
+  require("../src/gridshard-audio.js");
+  for(const p of Object.values(profiles)){
+    assert.ok(html.includes(p.asset),p.id);
+    assert.equal(globalThis.GRIDSHARD_SFX_CUES[p.cue].asset,p.asset);
+    assert.ok(globalThis.GRIDSHARD_SFX_CUES[p.cue].gain<=.5);
+    const bytes=fs.readFileSync(path.join(__dirname,"..",p.asset));
+    assert.equal(bytes.toString("ascii",0,4),"RIFF");assert.equal(bytes.readUInt32LE(24),22050);
+    assert.ok(bytes.length<23000);assert.equal(bytes.readInt16LE(44),0);
+    let peak=0;for(let i=44;i<bytes.length;i+=2)peak=Math.max(peak,Math.abs(bytes.readInt16LE(i))/32768);
+    assert.ok(peak>0&&peak<.23,p.id);
+    hashes.add(crypto.createHash("sha256").update(bytes).digest("hex"));
+  }
+  assert.equal(hashes.size,36);
+});
+test("shield remains inside a device-sized footprint even on a wide board",()=>{
+  const f=fixture();f.fx.boardRect=()=>{throw Error("shield must not measure the board");};
+  const dome=f.fx.dome("own:shield",400);
+  assert.ok(dome.rx<32&&dome.ry<45);
+  assert.equal(dome.x,350);
+  f.advance(500);assert.equal(f.fx.effects.size,0);
+});
+test("every added weapon has bounded signature geometry and cleanup without a second sound owner",()=>{
+  const profiles=require("../src/battle/module-presentation-profiles.js");
+  for(const p of Object.values(profiles).filter(p=>p.travel!==null)){
+    const f=fixture();assert.equal(f.fx.attack("own:laser","enemy:target",p.id),p.travel);
+    assert.ok(f.fx.effects.has("weapon:own:laser"),p.id);
+    assert.equal(f.sounds.length,0,p.id);
+    f.advance(1600);assert.equal(f.fx.effects.size,0,p.id);
+  }
+});
+test("passive module events are bounded, replay-safe and keep music priority",()=>{
+  const f=fixture();
+  f.snapshot.players.own.modules.push({instance_id:"chrono",definition_id:"chrono_relay",x:1,y:1,hp:100,status:"active"});
+  const e=f.event("module_cycle_pulse",{player_id:"own",module_id:"chrono",kind:"speed"});
+  f.fx.receive([e],f.snapshot);
+  assert.deepEqual(f.sounds,["module_chrono_relay"]);
+  const node=f.fx.effects.get("signature:own:chrono:own:chrono").node;
+  f.fx.receive([e],f.snapshot);assert.equal(f.fx.effects.get("signature:own:chrono:own:chrono").node,node);
+  f.setHidden(true);f.fx.receive([],f.snapshot);assert.equal(f.fx.effects.size,0);
+});
 test("laser is one red 1s beam per source, replaced on new target with no invented cadence",()=>{
   const f=fixture();f.fx.attack("own:laser","enemy:target","laser");
   const first=f.fx.effects.get("weapon:own:laser").node;assert.equal(first.style["--module-vfx-ms"],"1000ms");
@@ -142,7 +188,7 @@ test("a destruction ahead of the snapshot cannot resurrect ambient; later active
   f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.has("own:battery"),false);
   f.snapshot.elapsed_ms=1200;f.fx.receive([],f.snapshot);assert.ok(f.fx.ambient.has("own:battery"));
 });
-test("shield ray meets its board dome; damper field is only on the actual defense event",()=>{
+test("shield ray meets its local device shield; damper field is only on the actual defense event",()=>{
   const p=ellipseHit({x:0,y:0},{x:100,y:0},{x:100,y:0,rx:20,ry:10});assert.equal(p.x,80);assert.equal(p.y,0);
   const f=fixture();f.fx.attack("enemy:target","own:shield","laser",true);assert.ok(f.fx.effects.has("shield:own:shield"));
   f.fx.receive([f.event("module_contribution",{player_id:"own",source_module_id:"armor",contribution_kind:"damage_prevented",value:4})],f.snapshot);

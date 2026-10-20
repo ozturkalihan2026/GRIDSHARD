@@ -17,6 +17,12 @@
 .vfx-cold-plume { stroke:none; opacity:.48; }
 .vfx-cold-cloud { stroke:none; opacity:0; animation:gs-cool-cloud 700ms cubic-bezier(.18,.5,.45,1) both; animation-delay:var(--mist-delay,0ms); }
 .vfx-support-pulse { fill:none; stroke:var(--vfx-color); stroke-width:2; stroke-opacity:.8; }
+.vfx-signature-stroke { fill:none; stroke:var(--vfx-color); stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+.vfx-signature-transfer { fill:none; stroke:var(--vfx-color); stroke-width:1.5; stroke-opacity:.6; stroke-dasharray:4 7; }
+.vfx-signature-flight { animation:gs-signature-flight var(--travel-ms,300ms) ease-in both; }
+.vfx-signature-contact { animation:gs-signature-contact 220ms ease-out both; animation-delay:var(--contact-delay,0ms); }
+@keyframes gs-signature-contact { from { opacity:0; } 10%,60% { opacity:1; } to { opacity:0; } }
+@keyframes gs-signature-flight { from { transform:translate(0,0); } to { transform:translate(var(--flight-x),var(--flight-y)); } }
 .vfx-impact-ring { fill:var(--vfx-color); fill-opacity:.25; stroke:var(--vfx-color); stroke-width:2; transform-box:fill-box; transform-origin:center; animation:gs-vfx-impact 320ms ease-out both; }
 .vfx-impact-rays { fill:none; stroke:var(--vfx-color); stroke-width:2; stroke-linecap:round; }
 .module-vfx-dampen .vfx-impact-ring { fill:#1464ce; fill-opacity:.5; stroke-width:3; }
@@ -53,4 +59,6 @@ body[data-graphics="dusuk"] .vfx-cold-cloud { animation:none; opacity:.45; }
   .module-vfx :is(.vfx-electric,.vfx-ray,.vfx-impact-ring) { animation:none; }
   .module-vfx .vfx-cold-cloud { animation:none; opacity:.45; }
   .vfx-flying-projectile { animation:none; transform:translateX(calc(var(--projectile-distance) - 12px)); }
+  .vfx-signature-flight { animation:none; transform:translate(var(--flight-x),var(--flight-y)); }
+  .vfx-signature-contact { animation:none; opacity:.7; }
 }

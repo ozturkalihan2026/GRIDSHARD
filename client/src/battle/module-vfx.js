@@ -1,9 +1,14 @@
 (function(root){
   "use strict";
   const NS="http://www.w3.org/2000/svg";
-  const weaponTimes={laser:0,pulse_cannon:340,missile_launcher:500};
+  const profiles=root.GridshardModulePresentation || (typeof module!=="undefined"&&module.exports?require("./module-presentation-profiles.js"):{});
+  const weaponTimes=Object.fromEntries(Object.values(profiles).filter(p=>p.travel!==null).map(p=>[p.id,p.travel]));
   const alive=m=>m && m.status==="active" && Number(m.hp)>0 && m.x!=null && m.y!=null;
   const operational=m=>alive(m) && m.is_powered!==false && !m.overheated;
+  // v15: the first ten modules use the approved crafted WAVs (not the
+  // synthesized module_* blips) and the canvas effect set.
+  const CRAFTED_CUES=Object.freeze({repair:"repair_beam",cooler:"cooling_air",emp:"emp",amplifier:"energy_transfer",battery:"energy_transfer"});
+  const FIRST_TEN=new Set(["laser","shield","cooler","battery","amplifier","emp","repair","armor","pulse_cannon","missile_launcher"]);
   function ellipseHit(from,to,ellipse){
     const dx=to.x-from.x,dy=to.y-from.y,rx=ellipse.rx,ry=ellipse.ry;
     if(!(rx>0&&ry>0))return to;
@@ -33,13 +38,25 @@
   }
   class GridshardModuleVfx {
     static travelFor(definition){return Number.isFinite(weaponTimes[definition])?weaponTimes[definition]:null;}
-    constructor({doc,layer,anchor,boardRect,rigFor,domId,now,schedule,sound,quality=()=>"orta",reduced=()=>false,hidden=()=>false,load=()=>0}){
-      Object.assign(this,{doc,layer,anchor,boardRect,rigFor,domId,now,schedule,sound,quality,reduced,hidden,load});
-      this.effects=new Map();this.ambient=new Map();this.seen=new Set();this.destroyed=new Map();this.coolingCycles=new Map();this.liveIds=null;this.generation=0;this.session=null;this.latest=-Infinity;
+    constructor({doc,layer,anchor,boardRect,rigFor,domId,now,schedule,sound,quality=()=>"orta",reduced=()=>false,hidden=()=>false,load=()=>0,fx=null}){
+      Object.assign(this,{doc,layer,anchor,boardRect,rigFor,domId,now,schedule,sound,quality,reduced,hidden,load,fx});
+      this.effects=new Map();this.ambient=new Map();this.seen=new Set();this.destroyed=new Map();this.coolingCycles=new Map();this.cueTimes=new Map();this.signatureTimes=new Map();this.liveIds=null;this.generation=0;this.session=null;this.latest=-Infinity;
     }
     svg(tag,attrs={},parent){const n=this.doc.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,String(v));if(parent)parent.appendChild(n);return n;}
-    clearEffects(){this.generation++;this.coolingCycles.clear();for(const e of this.effects.values())e.node.remove();this.effects.clear();for(const e of this.ambient.values())e.remove();this.ambient.clear();}
-    reset(){this.clearEffects();this.seen.clear();this.destroyed.clear();this.liveIds=null;this.session=null;this.latest=-Infinity;}
+    useFx(id){return Boolean(this.fx)&&FIRST_TEN.has(id)&&!this.reduced()&&this.quality()!=="dusuk"&&this.load()<2;}
+    scale(a){return Math.max(.55,Math.min(1.15,(a?.size||48)/64));}
+    pan(point){const w=this.layer()?.clientWidth||0;return w>0&&point?Math.max(-1,Math.min(1,point.x/w*2-1))*.6:0;}
+    strike(id,delay=0){
+      const run=()=>{const rig=this.rigFor(id);if(!rig||this.hidden())return;rig.classList.remove("is-struck");void rig.offsetWidth;rig.classList.add("is-struck");
+        this.schedule(230,()=>rig.classList.remove("is-struck"));};
+      if(delay>0)this.schedule(delay,run);else run();
+    }
+    clearEffects(){this.fx?.clear();this.generation++;this.coolingCycles.clear();this.signatureTimes.clear();for(const e of this.effects.values())e.node.remove();this.effects.clear();for(const e of this.ambient.values())e.remove();this.ambient.clear();}
+    reset(){this.clearEffects();this.cueTimes.clear();this.seen.clear();this.destroyed.clear();this.liveIds=null;this.session=null;this.latest=-Infinity;}
+    cue(id,at=null){
+      const p=profiles[id];if(!p||this.hidden()||this.now()-(this.cueTimes.get(id)??-Infinity)<320)return;
+      this.cueTimes.set(id,this.now());this.sound(CRAFTED_CUES[id]||p.cue,{pan:this.pan(at)});
+    }
     forget(id){for(const[k,e]of this.effects)if(e.refs.includes(id)){e.node.remove();this.effects.delete(k);}this.ambient.get(id)?.remove();this.ambient.delete(id);}
     put(key,node,duration,refs=[]){
       if(this.hidden()||!this.layer())return null;
@@ -74,8 +91,10 @@
       this.put(`impact:${refs.join(":")}`,svg,this.reduced()?120:320,refs);
     }
     dome(targetId,duration){
-      const rect=this.boardRect(targetId);if(!rect)return null;
-      const dome={x:rect.left+rect.width*.5,y:rect.top+rect.height*.76,rx:rect.width*.51,ry:rect.height*1.1,baseRy:rect.height*.23};
+      const anchor=this.anchor(targetId);if(!anchor)return null;
+      // Protect the individual device, never cover the entire PCB.
+      const size=Math.max(24,Math.min(96,anchor.size||64));
+      const dome={x:anchor.center.x,y:anchor.center.y+size*.18,rx:size*.46,ry:size*.64,baseRy:size*.14};
       const {x,y,rx,ry,baseRy}=dome;
       const silhouette=`M${x-rx} ${y}A${rx} ${ry} 0 0 1 ${x+rx} ${y}A${rx} ${baseRy} 0 0 1 ${x-rx} ${y}Z`;
       const svg=this.surface("shield",[{x:x-rx,y:y-ry},{x:x+rx,y:y+baseRy}]);
@@ -107,9 +126,24 @@
         const dome=this.dome(targetId,travel+500);if(dome)destination=domeHit(source.emitter,destination,dome);
       }
       if(defended&&target.definition==="armor"){
-        this.impact(target.emitter,"dampen",[targetId]);destination=target.emitter;
+        if(this.useFx("armor"))this.fx.dampen(target.emitter,{k:this.scale(target)});
+        else this.impact(target.emitter,"dampen",[targetId]);
+        destination=target.emitter;
       }
       const from=source.emitter,key=`weapon:${sourceId}`,refs=[sourceId,targetId];
+      if(this.useFx(definition)&&["laser","pulse_cannon","missile_launcher"].includes(definition)){
+        const k=this.scale(target),blocked=defended;
+        if(definition==="laser")this.fx.laser(from,destination,{k,blocked});
+        else if(definition==="pulse_cannon")this.fx.pulse(from,destination,travel,{k,blocked});
+        else this.fx.missiles(from,destination,travel,{k,blocked});
+        if(defended&&target.definition==="shield")this.fx.later(travel,()=>this.fx.shieldHit(destination,{k}));
+        if(!defended)this.strike(targetId,travel);
+        return travel;
+      }
+      if(!["laser","pulse_cannon","missile_launcher"].includes(definition)){
+        this.signature(definition,sourceId,targetId,true,from,destination);
+        return travel;
+      }
       if(definition==="laser"){
         const svg=this.surface("laser",[from,destination]);
         this.line(svg,from,destination,"vfx-ray-halo");this.line(svg,from,destination);this.line(svg,from,destination,"vfx-ray-core");
@@ -178,8 +212,15 @@
     support(type,sourceId,targetId){
       if(this.hidden()||this.load()>=2)return;
       const target=this.anchor(targetId),source=target&&this.anchor(sourceId,target.center);if(!source||!target)return;
-      const from=source.emitter,to=target.center;
-      if(type==="cool"){this.coolingMist(from,to,sourceId,targetId);return;}
+      const from=source.emitter,to=target.center,fxId={repair:"repair",emp:"emp",boost:"amplifier",cool:"cooler"}[type];
+      if(type==="cool"){this.coolingMist(from,to,sourceId,targetId);if(this.useFx("cooler"))this.fx.cool(from,to,{k:this.scale(target)});return;}
+      if(fxId&&this.useFx(fxId)){
+        const k=this.scale(target);
+        if(type==="repair")this.fx.repair(from,to,{k});
+        else if(type==="emp")this.fx.emp(from,to,{k});
+        else this.fx.boost(source.pair||[from],to,{k});
+        return;
+      }
       const pair=source.pair||[from,from],svg=this.surface(type,[from,to,...pair]);
       if(type==="emp"){
         const join={x:(pair[0].x+pair[1].x)/2,y:(pair[0].y+pair[1].y)/2};
@@ -190,6 +231,95 @@
         this.svg("circle",{cx:to.x,cy:to.y,r:8,class:"vfx-support-pulse"},svg);
       }
       this.put(`support:${type}:${sourceId}:${targetId}`,svg,this.reduced()?160:560,[sourceId,targetId]);
+    }
+    signature(id,sourceId,targetId,attack=false,fromOverride=null,toOverride=null){
+      const p=profiles[id];if(!p||this.hidden()||this.load()>=2)return;
+      const key=`${attack?"weapon":"signature"}:${sourceId}${attack?"":":"+targetId}`;
+      if(!attack&&this.now()-(this.signatureTimes.get(key)??-Infinity)<220)return;
+      if(this.signatureTimes.size>=128)this.signatureTimes.delete(this.signatureTimes.keys().next().value);
+      this.signatureTimes.set(key,this.now());
+      const target=this.anchor(targetId||sourceId),source=target&&this.anchor(sourceId,attack?target.center:null);
+      if(!source||!target)return;
+      const from=fromOverride||source.emitter,to=toOverride||target.center,refs=[sourceId,...(targetId?[targetId]:[])];
+      const svg=this.surface("signature",[from,{x:to.x-20,y:to.y-20},{x:to.x+20,y:to.y+20}]);
+      svg.dataset.module=id;svg.dataset.shape=p.shape;svg.style.setProperty("--vfx-color",p.color);
+      const shape=p.shape,travel=Math.max(80,p.travel||220);
+      let detail=svg;
+      const path=d=>this.svg("path",{d,class:"vfx-signature-stroke"},detail);
+      const ring=(r,cls="vfx-signature-stroke")=>this.svg("circle",{cx:to.x,cy:to.y,r,class:cls},detail);
+      const polygon=(n,r,offset=0)=>"M"+Array.from({length:n},(_,i)=>{const a=offset+i*Math.PI*2/n;return `${to.x+Math.cos(a)*r} ${to.y+Math.sin(a)*r}`;}).join("L")+"Z";
+      if(attack){
+        if(["arc","rail","spear","double"].includes(shape)){
+          this.line(svg,from,to,shape==="arc"?"vfx-electric":"vfx-signature-stroke",shape==="arc");
+          if(shape==="double")this.line(svg,{x:from.x+4,y:from.y},{x:to.x+4,y:to.y},"vfx-signature-stroke");
+          if(shape==="spear")path(polygon(4,9,Math.PI/4));
+        }else{
+          const dx=to.x-from.x,dy=to.y-from.y;
+          const count=shape==="swarm"?3:1;
+          for(let i=0;i<count;i++){
+            const g=this.svg("g",{class:"vfx-signature-flight"},svg);
+            g.style.setProperty("--flight-x",dx+"px");g.style.setProperty("--flight-y",dy+"px");
+            g.style.setProperty("--travel-ms",travel+"ms");
+            if(["drone","swarm"].includes(shape)){
+              const x=from.x+(i-1)*6,y=from.y+(i-1)*4;
+              this.svg("path",{d:`M${x-7} ${y}l7 -5 7 5 -7 5Z M${x-10} ${y-3}v6 M${x+10} ${y-3}v6`,class:"vfx-signature-stroke"},g);
+            }else{
+              this.svg("circle",{cx:from.x,cy:from.y,r:shape==="plasma"?7:6,fill:p.color},g);
+              this.svg("circle",{cx:from.x-2,cy:from.y-2,r:2,fill:"#f4ffff"},g);
+            }
+          }
+        }
+      }else if(targetId&&targetId!==sourceId){
+        if(["waves","fracture","vortex"].includes(shape))this.line(svg,from,to,"vfx-signature-stroke",shape==="fracture");
+        else if(shape==="packets"){
+          for(let i=1;i<=4;i++){const x=from.x+(to.x-from.x)*i/5,y=from.y+(to.y-from.y)*i/5;
+            path(`M${x-3} ${y-3}h6v6h-6Z`);}
+        }else this.line(svg,from,to,"vfx-signature-transfer");
+      }
+      // Finite, small glyphs identify the actual mechanic without obscuring cells.
+      if(attack){
+        detail=this.svg("g",{class:"vfx-signature-contact"},svg);
+        detail.style.setProperty("--contact-delay",travel+"ms");
+      }
+      if(shape==="bars"){
+        for(const y of[-10,0,10])path(`M${to.x-14} ${to.y+y}h28`);
+        path(`M${to.x-16} ${to.y-15}v30M${to.x+16} ${to.y-15}v30`);
+      }else if(shape==="packets"){
+        for(const [x,y] of[[-9,-7],[4,-2],[-3,8]])path(`M${to.x+x} ${to.y+y}h5v5h-5Z`);
+      }else if(shape==="fracture"){
+        path(`M${to.x-15} ${to.y-12}l10 6 -4 12M${to.x+15} ${to.y+12}l-10 -6 4 -12`);
+      }else if(shape==="waves"){
+        for(const r of[6,11,17])path(`M${to.x-r} ${to.y-6}q${-r*.4} 6 0 12M${to.x+r} ${to.y-6}q${r*.4} 6 0 12`);
+      }else if(["hex","prism","triad","mirror","phase","plates"].includes(shape)){
+        path(polygon(shape==="triad"?3:shape==="prism"?4:6,16,Math.PI/6));
+        if(shape==="phase")path(polygon(6,11,Math.PI/6));
+        if(shape==="plates")path(`M${to.x-13} ${to.y-5}h26M${to.x-13} ${to.y+5}h26`);
+        if(shape==="mirror")path(`M${to.x-9} ${to.y+8}l18 -16M${to.x-3} ${to.y+10}l12 -11`);
+      }else if(shape==="reticle"){
+        ring(11);path(`M${to.x-19} ${to.y}h11m16 0h11M${to.x} ${to.y-19}v11m0 16v11`);
+        if(id==="precision_matrix")for(const [x,y]of[[-4,3],[4,3],[0,-4]])this.svg("circle",{cx:to.x+x,cy:to.y+y,r:2,fill:p.color},detail);
+      }else if(shape==="clock"){
+        ring(15);path(`M${to.x} ${to.y-10}v10l7 4`);
+      }else if(["heal","phoenix"].includes(shape)){
+        path(`M${to.x-9} ${to.y}h18M${to.x} ${to.y-9}v18`);
+        if(shape==="phoenix")path(`M${to.x-18} ${to.y+9}l-5 -20 15 9M${to.x+18} ${to.y+9}l5 -20 -15 9`);
+      }else if(shape==="chevrons"){
+        for(const y of[-7,2,11])path(`M${to.x-9} ${to.y+y}l9 -7 9 7`);
+      }else if(shape==="charge"){
+        path(`M${to.x+3} ${to.y-15}l-12 17h9l-3 13 13 -20h-10Z`);
+        if(id==="capacitor")path(`M${to.x-15} ${to.y-12}v24M${to.x+15} ${to.y-12}v24`);
+      }else if(shape==="coil"){
+        const count=id==="omega_amplifier"?3:2;
+        for(let i=0;i<count;i++){
+          const a=i*Math.PI*2/count;
+          this.svg("circle",{cx:to.x+Math.cos(a)*11,cy:to.y+Math.sin(a)*11,r:5,class:"vfx-signature-stroke"},detail);
+        }ring(4);
+      }else if(shape==="vortex"){
+        for(let i=0;i<3;i++){const r=6+i*5;path(`M${to.x-r} ${to.y}a${r} ${r} 0 1 1 ${r} ${r}`);}
+      }else{
+        ring(9);if(["coil","waves","quantum"].includes(shape))ring(16);
+      }
+      this.put(key,svg,this.reduced()?180:travel+280,refs);
     }
     syncAmbient(id,module){
       if(!["amplifier","battery"].includes(module.definition_id)||!operational(module)||this.hidden()||this.quality()==="dusuk"){
@@ -224,7 +354,13 @@
         const d=e.data||{},tag=JSON.stringify([e.type,e.at_ms,d]);
         if(this.seen.has(tag)||!Number.isFinite(e.at_ms)||e.at_ms<fresh-500)continue;
         this.seen.add(tag);if(this.seen.size>512)this.seen.delete(this.seen.values().next().value);
-        if(e.type==="module_destroyed"){const m=find(d.player_id,d.module_id);if(m)this.forget(this.domId(d.player_id,m));continue;}
+        if(e.type==="module_destroyed"){
+          // The destroyed device is no longer a live record; resolve it from the snapshot.
+          const m=find(d.player_id,d.module_id)||snapshot.players[d.player_id]?.modules?.find(x=>x.instance_id===d.module_id);
+          if(m){const id=this.domId(d.player_id,m),a=this.fx&&!this.reduced()&&this.quality()!=="dusuk"&&this.anchor(id);
+            if(a)this.fx.destroy(a.center,{k:this.scale(a)});this.forget(id);}
+          continue;
+        }
         const player=d.source_player_id||d.player_id||d.attacker_player_id;
         // A completed server event remains real even if it consumed the last
         // charge/energy. Operational state gates ambient effects, not that event.
@@ -232,11 +368,11 @@
         const sourceId=this.domId(player,source),targetPlayer=d.target_player_id||player;
         const target=find(targetPlayer,d.target_module_id),targetId=target&&this.domId(targetPlayer,target);
         if(e.type==="module_contribution"&&d.contribution_kind==="damage_prevented"&&Number(d.value)>0&&source.definition_id==="armor"){
-          const a=this.anchor(sourceId);if(a)this.impact(a.emitter,"dampen",[sourceId]);
+          const a=this.anchor(sourceId);if(a){if(this.useFx("armor"))this.fx.dampen(a.emitter,{k:this.scale(a)});else this.impact(a.emitter,"dampen",[sourceId]);}
         }else if(e.type==="module_contribution"&&d.contribution_kind==="damage_prevented"&&Number(d.value)>0&&source.definition_id==="shield"){
-          this.dome(sourceId,500);
+          const dome=this.dome(sourceId,500);if(dome&&this.useFx("shield"))this.fx.shieldHit({x:dome.x,y:dome.y-dome.ry*.55},{k:this.scale(this.anchor(sourceId))});
         }else if(e.type==="module_repaired"&&source.definition_id==="repair"&&Number(d.repair)>0&&alive(target)){
-          this.support("repair",sourceId,targetId);this.sound("repair_beam");
+          this.support("repair",sourceId,targetId);this.cue("repair",this.anchor(sourceId)?.center);
         }else if(e.type==="module_cooled"&&source.definition_id==="cooler"&&Number(d.heat_before)>Number(d.heat_after)&&alive(target)){
           let cycle=this.coolingCycles.get(sourceId);
           if(!cycle||cycle.stamp!==e.at_ms){cycle={stamp:e.at_ms,started:this.now(),targets:[],generation:this.generation};this.coolingCycles.set(sourceId,cycle);}
@@ -246,15 +382,26 @@
           const emit=()=>{
             if(this.coolingCycles.get(sourceId)!==cycle||cycle.generation!==this.generation||this.hidden()||this.now()-due>150||!this.liveIds?.has(sourceId)||!this.liveIds.has(targetId))return;
             this.support("cool",sourceId,targetId);
-            if(index===0)this.sound("cooling_air");
+            if(index===0)this.cue("cooler",this.anchor(sourceId)?.center);
           };
           if(index===0)emit();else this.schedule(index*240,emit);
         }else if(e.type==="sabotage_applied"&&source.definition_id==="emp"&&Number(d.duration_ms)>0&&alive(target)){
-          this.support("emp",sourceId,targetId);this.sound("emp");
+          this.support("emp",sourceId,targetId);this.cue("emp",this.anchor(targetId)?.center);
         }else if(e.type==="amplifier_pulse"&&source.definition_id==="amplifier"){
           let count=0;for(const id of (d.charged_module_ids||[]).slice(0,15)){const m=find(player,id);if(alive(m)){this.support("boost",sourceId,this.domId(player,m));count++;}}
-          if(count)this.sound("energy_transfer");
-        }else if(e.type==="module_cycle_pulse"&&source.definition_id==="battery")this.sound("energy_transfer");
+          if(count)this.cue("amplifier",this.anchor(sourceId)?.center);
+        }else if(e.type==="module_cycle_pulse"&&source.definition_id==="battery"){
+          const a=this.useFx("battery")&&this.anchor(sourceId);
+          if(a)this.fx.battery(a.center,{k:this.scale(a)});else this.signature("battery",sourceId,sourceId);
+          this.cue("battery",a?.center);
+        }else if(profiles[source.definition_id] && !FIRST_TEN.has(source.definition_id) && (
+          (e.type==="module_cycle_pulse"&&profiles[source.definition_id].travel===null) || e.type==="module_overclocked" || e.type==="phoenix_rebirth" ||
+          e.type==="damage_reflected" || (e.type==="module_repaired"&&Number(d.repair)>0) ||
+          (e.type==="sabotage_applied"&&Number(d.duration_ms)>0) ||
+          (e.type==="module_contribution"&&Number(d.value)>0&&profiles[source.definition_id].travel===null)
+        )){
+          this.signature(source.definition_id,sourceId,targetId||sourceId);this.cue(source.definition_id);
+        }
       }
     }
     static syncArt(rig){

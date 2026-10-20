@@ -241,6 +241,7 @@
   });
 
   const GRIDSHARD_SFX_CUES = Object.freeze({
+    ...Object.fromEntries(Object.values(global.GridshardModulePresentation || {}).map(p=>[p.cue,{asset:p.asset,gain:p.gain,identity:p.id+" · "+p.shape}])),
     cooling_air:{
       asset:"./assets/audio/cooling_air.wav",
       identity:"kısa, yumuşak soğuk hava üflemesi",
@@ -1059,7 +1060,7 @@
       return context.state === "running";
     }
 
-    async _playAudioBuffer(asset,{channel="sfx",outcome=null,gain=1,resultGeneration=null,sfxGeneration=this._sfxPlaybackGeneration}={}) {
+    async _playAudioBuffer(asset,{channel="sfx",outcome=null,gain=1,resultGeneration=null,sfxGeneration=this._sfxPlaybackGeneration,pan=0}={}) {
       if (!this._appActive) return false;
       const context=this._ensureAudioContext();
       const destination=channel === "result"
@@ -1080,6 +1081,19 @@
         const source=context.createBufferSource();
         source.buffer=buffer;
         source.loop=false;
+        // Battle SFX: small natural pitch spread so repeated shots never sound copied.
+        if (channel === "sfx" && source.playbackRate && typeof source.playbackRate.value === "number") {
+          source.playbackRate.value=1+(Math.random()-.5)*.06;
+        }
+        // Optional left/right placement from the device's screen position.
+        let panner=null,output=destination;
+        const panValue=Math.max(-1,Math.min(1,Number(pan) || 0));
+        if (channel === "sfx" && panValue !== 0 && typeof context.createStereoPanner === "function") {
+          panner=context.createStereoPanner();
+          panner.pan.value=panValue;
+          panner.connect(destination);
+          output=panner;
+        }
         let voiceGain=null;
         if ((gain !== 1 || channel === "result") && typeof context.createGain === "function") {
           voiceGain=context.createGain();
@@ -1091,9 +1105,9 @@
             voiceGain.gain.value=target;
           }
           source.connect(voiceGain);
-          voiceGain.connect(destination);
+          voiceGain.connect(output);
         } else {
-          source.connect(destination);
+          source.connect(output);
         }
         this._activeBufferSources.add(source);
         if (channel === "result") {
@@ -1106,6 +1120,9 @@
           try { source.disconnect(); } catch (_) {}
           if (voiceGain) {
             try { voiceGain.disconnect(); } catch (_) {}
+          }
+          if (panner) {
+            try { panner.disconnect(); } catch (_) {}
           }
           if (this._resultBufferSource === source) {
             this._resultBufferSource=null;
@@ -2223,7 +2240,7 @@
       this._publishPlaybackState();
     }
 
-    triggerCue(name) {
+    triggerCue(name,{pan=0}={}) {
       const cue=GRIDSHARD_SFX_CUES[name];
 
       if (!cue) {
@@ -2244,7 +2261,7 @@
         const gain=this._cueGain(name);
         if (this._ensureAudioContext()) {
           const sfxGeneration=this._sfxPlaybackGeneration;
-          this._playAudioBuffer(cue.asset,{channel:"sfx",gain,sfxGeneration})
+          this._playAudioBuffer(cue.asset,{channel:"sfx",gain,sfxGeneration,pan})
             .then((played)=>{
               if (!played && sfxGeneration===this._sfxPlaybackGeneration) this._playHtmlCue(cue,{gain});
             });

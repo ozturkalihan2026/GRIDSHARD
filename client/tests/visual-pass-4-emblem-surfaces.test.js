@@ -60,7 +60,7 @@ test("Çekirdek amblemi onaylı fiziksel çizimdir ve her yerde aynı işlevle �
     "mountCoreEmblem(art, core.id);",
     "mountCoreEmblem(coreGlyph, coreType);",
     'mountCoreEmblem(corePowerButtonEl.querySelector(".core-power-glyph"), selectedCore);',
-    'mountCoreEmblem(coreCard.querySelector(".module-icon"), selectedCore);',
+    "if (coreIcon && !standing && !GridshardModuleDeviceArt.mountCore?.(coreIcon, selectedCore)) mountCoreEmblem(coreIcon, selectedCore);",
     'mountCoreEmblem(icon, model.coreType);',
     'mountCoreEmblem(document.getElementById("profile-featured-core-glyph"), core?.id || "core_resonance");',
     'mountCoreEmblem(coreGlyph, payload.selected_core?.id || "core_resonance");',
@@ -92,7 +92,8 @@ test("savaşta çekirdek amblemi hücrenin ortasındadır", () => {
   assert.match(icon, /grid-area:auto !important;/);
   assert.match(icon, /inset:12% !important;/);
   assert.match(icon, /justify-self:stretch !important;[^}]*align-self:stretch !important;/);
-  assert.ok(app.includes('if (model.core) {\n        mountCoreEmblem(icon, model.coreType);'));
+  // v15: savaşta çekirdek onaylı dik çizimle durur; çizim yüklenemezse aynı amblem kullanılır.
+  assert.ok(app.includes("if (!GridshardModuleDeviceArt.mountCore?.(icon, model.coreType)) mountCoreEmblem(icon, model.coreType);"));
   assert.ok(app.includes('const coreType = enemy ? mockEnemyCoreType : metaProgressionState?.cores?.selected_core_type || "core_resonance";'));
 });
 

@@ -1,3 +1,29 @@
+# Claude devir notu — 19 Ekim 2026 (iş bilgisayarı): onaylı çizimler savaşa bağlandı
+
+**En güncel bölüm budur; aşağıdaki 14 Ekim notu eski kayıttır.** Commit yok; çalışma ağacında
+Codex'in commit edilmemiş 3B/VFX/ses işi de duruyor (16–19 Ekim). Bu oturum aynı dosyaların
+bir kısmına dokundu: `app.js`, `module-vfx.js`, `gridshard-audio.js`, `module-device-art.js`, `index.html`.
+
+- Kullanıcı modül/çekirdek için 3B'yi ikinci kez reddetti. Karar: onaylı boyalı çizimler.
+  Örnek `artifacts/savas-ornegi-20261019/` sayfasında onaylandı ("Bu yön doğru").
+- İlk 10 modül savaşa bağlandı: katmanlı çizim, 3B kapalı, tuval efektleri, özgün WAV sesler
+  ve sağ/sol yerleşim. Ayrıntı, testler ve açık işler:
+  `docs/GORSEL_DENETIM_VE_SAVAS_ORNEGI_20261019.md` (sayfa denetimi bulguları da orada).
+- **19 Ekim öğleden sonra:** Lazer 16 boyalı yönle bağlandı (Canva, kullanıcı onaylı). Ekran
+  düzleminde döndürme yasak; yalnız zemin yönüne göre kare seçimi. **Sıradaki iş ve tam
+  akış:** `docs/TUM_MODULLER_16_YON_VE_CEKIRDEK_PLANI_20261019.md` (21 dönen modül +
+  14 sabit + çekirdek animasyonu).
+- **19 Ekim akşamı (yan oturum):** 16 yön bağlandı ve 8 yönde doğrulandı: Lazer, Darbe Topu,
+  Füze, Soğutucu, Tamir, arc_cannon, drone_bay, jammer, railgun, reflector. EMP sırası bozuk
+  geldi, tek çizimde kaldı. 10 sabit v2 modül büyük dik çizimde. Çekirdeklerde çalışma
+  animasyonu var (renkli taş nabzı + enerji zerreleri). **Kalan 11 v2 modül ve EMP**
+  Canva kredi kotası yüzünden üretilemedi. Durum, Canva akışı (tasarım kopyası üzerinden
+  1264 px dışa aktarım) ve kimlikler: `docs/TUM_MODULLER_16_YON_VE_CEKIRDEK_PLANI_20261019.md`
+  sonundaki "Durum" bölümü ve `artifacts/moduller16-20261019/canva-ids.json`.
+- **Eski sıradaki (kısmen tamamlandı):** çekirdekler ve kalan 26 modülün katmanlı çizimleri
+  (26'sının yön karesi yok; üretilmesi gerek). Ardından el kartlarına çizim ve denetimdeki
+  sayfa bulguları. Kullanıcı yerelde ve telefonda deneyecek.
+
 # Claude devir notu — 14 Ekim 2026 (ev bilgisayarı, dokuzuncu oturum)
 
 Bu not ev bilgisayarında, 13 Ekim akşamı başlayıp 14 Ekim gecesi biten dokuzuncu oturumun sonunda yazıldı. Depo `83f6052` (`main` = `origin/main`) ve **üstünde commit edilmemiş üç iş var:** sekizinci oturumun görsel tur 6'sı, bu oturumun denetimi (güvenlik, savaş performansı, gezinti) ve aynı saatlerde Codex'in aynı çalışma ağacında yaptığı arayüz düzeltmeleri (13 Ekim 20:36 – 14 Ekim 00:41; kaydı `CODEX_CHECKPOINT.md`, `docs/PROFESSIONAL_VISUAL_POLISH_20261013.md` ve `docs/UI_FEEDBACK_20261013.md` içinde). Codex'in dokunduğu yerler: `client/src/canon.css` sonundaki "Profesyonel rötuş" ve "Görsel geri bildirim düzeltmeleri" blokları, `client/src/app.js` içinde mesaj kutusu ve sosyal bölüm, `client/index.html`, `client/src/i18n.js`, `server/app/main.py`, `player_profile.py`, `player_data_store.py`, `reward_delivery.py`, `client/tests/inbox-feedback.test.js`, `professional-polish.test.js`, `server/tests/test_inbox_dismissal.py`; `artifacts/ui-feedback-20261013/` klasörü ve 8892 kapısında açık kalan önizleme sunucusu da ondandır. İki oturum `app.js`, `canon.css` ve `main.py` dosyalarını aynı anda düzenledi; değişiklikler farklı bölgelerdedir ve ikisi de yerindedir. Claude, Codex'in değişikliklerine dokunmadı ve onları ayrıca doğrulamadı; aşağıdaki test sayıları onları da içerir. Commit ve push'u kullanıcı yapar. Canlıda sunucu r16 ve kapalı testte v8 paketi var (Codex'in kaydı, `CODEX_CHECKPOINT.md`; Claude doğrulamadı; depoda sürüm kodu hâlâ 8); gerçek test kullanıcıları oynuyor. `CODEX_CHECKPOINT.md` dosyasına ve Codex'in değişikliklerine dokunulmaz.

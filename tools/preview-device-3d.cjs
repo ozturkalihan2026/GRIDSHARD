@@ -4,7 +4,7 @@ const fs=require("node:fs"),path=require("node:path");
 const sharp=require(process.env.GRIDSHARD_SHARP_MODULE||"sharp");
 const {triangles,render}=require("./build-targeting-3d-pilot.cjs");
 const {laserMesh,transformVertex,SPECS}=require("../client/src/battle/laser-3d-pilot.js");
-const out=path.resolve(__dirname,"../artifacts/real3d-all43-20261018");
+const out=path.resolve(__dirname,"../artifacts/real3d-art-pass-20261019");
 const names={laser:"Lazer",pulse_cannon:"Darbe Topu",missile_launcher:"Füze Fırlatıcı",cooler:"Soğutucu",repair:"Onarım",emp:"EMP",shield:"Kalkan",battery:"Batarya",amplifier:"Güçlendirici",armor:"Sönümleyici"};
 async function main(){
   fs.mkdirSync(out,{recursive:true});const layers=[],report=[];
