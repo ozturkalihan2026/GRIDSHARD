@@ -41,6 +41,32 @@ class PvPConnection:
 @dataclass(slots=True)
 class PvPConnectionRegistry:
     connections: dict[str, PvPConnection] = field(default_factory=dict)
+    _active_by_session: dict[str, dict[str, PvPConnection]] = field(default_factory=dict, init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        for connection in self.connections.values():
+            if connection.connected:
+                self._index(connection)
+
+    def _index(self, connection: PvPConnection) -> None:
+        self._active_by_session.setdefault(connection.session_id, {})[connection.connection_id] = connection
+
+    def _unindex(self, connection: PvPConnection) -> None:
+        bucket = self._active_by_session.get(connection.session_id)
+        if bucket is None or bucket.get(connection.connection_id) is not connection:
+            return
+        del bucket[connection.connection_id]
+        if not bucket:
+            del self._active_by_session[connection.session_id]
+
+    def clear(self) -> None:
+        """Reset a quiescent registry, including its match-local lookup."""
+        self.connections.clear()
+        self._active_by_session.clear()
+
+    def active_for_session(self, session_id: str) -> tuple[PvPConnection, ...]:
+        # Snapshot before awaiting sends: reconnect/disconnect may mutate it.
+        return tuple(self._active_by_session.get(session_id, {}).values())
 
     def bind(self, connection: PvPConnection) -> None:
         old = self.connections.get(connection.connection_id)
@@ -48,7 +74,11 @@ class PvPConnectionRegistry:
             raise PvPSessionError(
                 "Aynı bağlantı kimliği zaten aktif."
             )
+        if old is not None:
+            self._unindex(old)
         self.connections[connection.connection_id] = connection
+        if connection.connected:
+            self._index(connection)
 
     def get(self, connection_id: str) -> PvPConnection:
         try:
@@ -61,6 +91,7 @@ class PvPConnectionRegistry:
     def unbind(self, connection_id: str) -> PvPConnection:
         connection = self.get(connection_id)
         connection.connected = False
+        self._unindex(connection)
         return connection
 
     def active_for_player(
@@ -70,10 +101,8 @@ class PvPConnectionRegistry:
     ) -> tuple[PvPConnection, ...]:
         return tuple(
             connection
-            for connection in self.connections.values()
-            if connection.connected
-            and connection.session_id == session_id
-            and connection.player_id == player_id
+            for connection in self.active_for_session(session_id)
+            if connection.player_id == player_id
         )
 
     def prune_disconnected(
@@ -89,7 +118,7 @@ class PvPConnectionRegistry:
             and now - connection.last_seen_at >= retention_seconds
         ]
         for connection_id in stale_ids:
-            self.connections.pop(connection_id, None)
+            self._unindex(self.connections.pop(connection_id))
         return len(stale_ids)
 
 
@@ -366,9 +395,7 @@ class PvPWebSocketAdapter:
 
     def _queue_broadcast(self, session_id: str, kind: str) -> int:
         queued = 0
-        for connection in tuple(self.registry.connections.values()):
-            if not connection.connected or connection.session_id != session_id:
-                continue
+        for connection in self.registry.active_for_session(session_id):
             if kind == "snapshot" and kind in connection.pending_broadcasts:
                 connection.coalesced_snapshots += 1
             # At most two dirty flags per socket, not one envelope per tick.
@@ -477,8 +504,7 @@ class PvPWebSocketAdapter:
                 # The normal grace/reconnect path supplies authoritative state.
                 await self.connection_lost(connection.connection_id)
                 return 0
-        connections = [c for c in list(self.registry.connections.values())
-                       if c.connected and c.session_id == session_id]
+        connections = self.registry.active_for_session(session_id)
         return sum(await asyncio.gather(*(deliver(c) for c in connections)))
 
     async def broadcast_snapshot(self, session_id: str) -> int:
@@ -535,16 +561,12 @@ class PvPWebSocketAdapter:
             session_id
         )
 
-        for connection in list(
-            self.registry.connections.values()
-        ):
-            if (
-                not connection.connected
-                or connection.session_id != session_id
-            ):
+        for connection in self.registry.active_for_session(session_id):
+            # Another socket may have disconnected while the previous close
+            # awaited transport I/O; the session snapshot is intentionally fixed.
+            if not connection.connected:
                 continue
-
-            connection.connected = False
+            self.registry.unbind(connection.connection_id)
             connection.last_seen_at = self.now_func()
             await self._stop_broadcasts(connection)
             try:

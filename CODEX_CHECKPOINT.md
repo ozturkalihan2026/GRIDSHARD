@@ -1,6 +1,88 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 20 Ekim 2026
+Güncelleme tarihi: 21 Ekim 2026
+
+## Son işlem — üçüncü performans taraması; akşamki yayın öncesi doğrulama
+
+Çevrimdışı istemci telemetrisi sınırlandı (varsayılan 256 olay); yeni olayın
+yeniden deneme beklemesini atlaması, gönderim sırasında gelenlerin kuyrukta
+kalması ve takılan HTTP isteği düzeltildi. İstek süresi 10 saniye, kaynak
+temizliği testli. Ödeme/iade/ödül verileri bu tanılama kuyruğundan ayrıdır.
+Savaşta isim okumak için bütün profili kopyalama ve kare ölçümünde ayar modeli
+oluşturma kaldırıldı. Sunucunun sık sabotaj kontrolü geçici generator üretmez.
+32 etki kombinasyonu ve 16 uzun simülasyonda eski/yeni savaş durumu ve olaylar
+aynı; oyun kuralları değişmedi. 7 istemci + 48 sunucu regresyonu eklendi.
+
+Güncel tam sonuç: **636 istemci, 1657 sunucu geçti (44 koşullu atlandı),
+10 paketleme, 22 araç; 415 Python dosyası / 0 import sorunu**. Web çıktısı:
+`artifacts/ci-fix-20261020/web-YQDdCZ/dist/`, build `834d7821769e7308`, 619 varlık.
+Yerel profil ölçümü ve sınırlamaları performans raporuna yazıldı.
+
+Kullanıcı bu akşam sunucu güncellemesi ve yeni AAB planlıyor. Henüz commit/push,
+canlı sunucu/site/Play Console değişikliği veya AAB üretimi yapılmadı.
+Sıradaki yayın kapısı: kullanıcı cihazda uzun savaş/ağ/arka plan geçişini
+deneyecek; kullanıcı commit/push sonrası gerçek servis + tarayıcı CI yeşil
+olmalı. Ardından aynı doğrulanmış commit'ten yedekli sunucu geçişi ve AAB.
+Mevcut görseller korunuyor; bilgisayar kullanım aracı/tarayıcı açılmadı.
+
+## Son işlem — ikinci derin performans/bellek analizi
+
+Ek beş düzeltme tamamlandı: maç bazlı WebSocket bağlantı indeksi; çevrimiçi
+kaydının her istekte bütün listeyi kopyalamamasını sağlayan süreli temizlik;
+savaş müziğinde hatalı/yarım başlayan katman grubunun temiz ve eşzamanlı
+yeniden denenmesi; GPU hata/bağlam kaybında merkezi kaynak temizliği ve
+2D yedeğe dönüş; yavaş ağda tek sosyal yenileme grubu.
+
+İzole karşılaştırmada 1000 maç yayın turu 2 milyon genel bağlantı ziyaretinden
+yalnız 2000 hedef alıcıya indi; 2000 çevrimiçi kaydında saat okuması
+2.003.000 → 2000. Bunlar gerçek FPS/yük kapasitesi iddiası değildir.
+Son doğrulama: **629 istemci, 1609 sunucu (44 koşullu atlandı), 10 paketleme,
+22 araç testi geçti; 414 Python dosyası / 0 import sorunu**. Web paketi
+`artifacts/ci-fix-20261020/web-cRCgGF/dist/`, build `0a751295bc211011`, 619 varlık.
+İlk geçici derleme Windows EPERM verdi; ayrı yeni dizinde tekrar başarılı.
+
+Önceki eğitim, performans ve müzik değişiklikleri korundu. Tüm değişiklikler
+henüz commit/push edilmedi; canlı sunucu/site/Play Console ve AAB değişmedi.
+Tarayıcı açılmadı. Cihazda uzun savaş/menü geçişleri, arka plan/ağ kopması
+denemeleri kullanıcıda; gerçek servis ve E2E kontrolleri push sonrası CI'de.
+Ayrıntılar: `docs/PERFORMANS_BELLEK_DENETIMI_20261021.md`.
+
+## Son işlem — performans/kaynak ömrü denetimi ve yeni savaş müzikleri
+
+Savaşta çoğalan çizim zinciri tek kare sahipliğiyle düzeltildi. Canvas efekt
+kuyrukları sınırlı; eski gecikmiş görseller bırakılır. Darbe animasyonu, WebSocket,
+Web Audio (efekt + müzik bağlantıları), başarısız ses yükleme önbelleği ve
+sunucu oturum/telemetri belleği yaşam döngüleri düzeltildi. Yeni regresyonlar
+önce hataları üretti, ardından geçti. Detay:
+`docs/PERFORMANS_BELLEK_DENETIMI_20261021.md`.
+
+Menü v8 enstrümanlarıyla yeni eşleştirme (32 sn / 120 BPM) ve yedi savaş
+katmanı (30 sn / 128 BPM) üretildi ve aktif kaynağa bağlandı. Menü parçaları,
+oyun kuralları ve görseller korunuyor. OGG/AAC türevleri güncel. Dinleme
+dosyaları `artifacts/music-v9-20261021/`; teslim notu:
+`docs/MUZIK_V9_TESLIM_20261021.md`.
+
+Son yerel doğrulama: **621 istemci, 1604 sunucu (44 koşullu atlandı),
+10 paketleme ve 22 araç testi geçti**; 412 Python dosyasında import hatası yok.
+24 müzik WAV/OGG/AAC çözümleme/süre/seviye kontrolü geçti. Gerçek web derlemesi
+ayrı artifact'te `02b57680aac603a5`, 619 varlık. Gerçek servis ve tarayıcı E2E
+kontrolleri push sonrası CI'de; cihaz akıcılığı ve müzik beğenisi kullanıcıda.
+Commit/push, canlı sunucu/site yayını ve AAB üretimi yapılmadı. Sıradaki adım:
+kullanıcı denemesi + commit/push; ardından CI doğrulanıp yeni sürüm paketi.
+
+## Son düzeltme — eğitim açılınca arayüzün kaybolması
+
+Kullanıcı önceki CI'nin yeşil olduğunu bildirdi. Ardından eğitim katmanının
+menü/modül görünümünü kapatması düzeltildi: `visual-polish-v9.css` içindeki
+ortak opak `dialog` yüzeyi ve backdrop kuralı artık `.guide-overlay` hariç
+uygulanır. Eğitim kendi saydam zeminini, hedef deliğini ve karartma durumlarını
+korur; akış/tıklama/savaş kuralları değişmedi. 598 istemci testi ve ayrı artifact
+içindeki gerçek web derlemesi geçti (build `9bcba4c90e08e58c`, 611 varlık).
+Yeni `e2e/onboarding-visibility.spec.js` gerçek stil sırası ve gerçek eğitim
+çizicisiyle saydamlık/hedef tıklaması/normal pencere görünümünü kontrol eder;
+CI'ye ve üç Playwright projesine eklendi, `--list` ile 3 kontrol keşfedildi.
+Tarayıcı testi yerelde çalıştırılmadı; görsel kabul kullanıcıda, yeni kontrol
+sonucu push sonrası CI'de. AAB/canlı sunucu/site yayını ve commit/push yapılmadı.
 
 ## Son işlem — kırmızı CI düzeltmeleri hazır; commit/push kullanıcıda
 

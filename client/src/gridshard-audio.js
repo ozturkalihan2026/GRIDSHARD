@@ -26,7 +26,7 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"shardglass-seamless-v17",
+    version:"shardglass-seamless-v18",
     crossfadeMs:1200,
     menuPoolCrossfadeMs:480,
     resultCrossfadeMs:320,
@@ -118,19 +118,19 @@
   const GRIDSHARD_MUSIC_ASSETS = Object.freeze({
     menu:GRIDSHARD_MENU_PLAYLIST[0],
     pool:"./assets/audio/pool_ensemble_v6.wav",
-    matchmaking:"./assets/audio/matchmaking_rise.wav",
+    matchmaking:"./assets/audio/matchmaking_v9_akis.wav",
     // Savaş durumları katmanlı çalar; buradaki değer o durumu tanımlayan
     // imza stem'idir. Durumlar artık aynı dosyayı paylaşmaz.
-    battle_intro:"./assets/audio/battle_tension_v7_02_pulse.wav",
-    battle:"./assets/audio/battle_tension_v7_04_ostinato.wav",
-    battle_pressure:"./assets/audio/battle_tension_v7_06_dissonance.wav",
-    critical_core:"./assets/audio/battle_tension_v7_07_pressure.wav",
+    battle_intro:"./assets/audio/battle_v9_02_pulse.wav",
+    battle:"./assets/audio/battle_v9_04_ostinato.wav",
+    battle_pressure:"./assets/audio/battle_v9_06_dissonance.wav",
+    critical_core:"./assets/audio/battle_v9_07_pressure.wav",
     victory:"./assets/audio/victory_sting.wav",
     defeat:"./assets/audio/defeat_sting.wav",
   });
 
   const GRIDSHARD_CRITICAL_LAYER =
-    "./assets/audio/battle_tension_v7_07_pressure.wav";
+    "./assets/audio/battle_v9_07_pressure.wav";
 
   const GRIDSHARD_CONTINUOUS_LOOP_SECONDS = 32;
   const GRIDSHARD_BATTLE_MUSIC_ENABLED = true;
@@ -212,14 +212,29 @@
     return load(resolved).catch(() => load(asset));
   }
 
+  function gridshardCachedAudioBuffer(context, cache, asset) {
+    if (!cache.has(asset)) {
+      const pending=gridshardDecodeAudioAsset(context,asset).catch(error=>{
+        // Share concurrent loads, but never cache a transient failure forever.
+        if (cache.get(asset)===pending) cache.delete(asset);
+        throw error;
+      });
+      cache.set(asset,pending);
+    }
+    return cache.get(asset);
+  }
+
   const GRIDSHARD_BATTLE_LAYERS = Object.freeze([
-    {id:"sub", asset:"./assets/audio/battle_tension_v7_01_sub.wav", baseGain:.41, pressureGain:.10},
-    {id:"pulse", asset:"./assets/audio/battle_tension_v7_02_pulse.wav", baseGain:.35, pressureGain:.14},
-    {id:"percussion", asset:"./assets/audio/battle_tension_v7_03_percussion.wav", baseGain:.31, pressureGain:.18},
-    {id:"ostinato", asset:"./assets/audio/battle_tension_v7_04_ostinato.wav", baseGain:.28, pressureGain:.20},
-    {id:"shards", asset:"./assets/audio/battle_tension_v7_05_shards.wav", baseGain:.18, pressureGain:.24},
-    {id:"dissonance", asset:"./assets/audio/battle_tension_v7_06_dissonance.wav", baseGain:.15, pressureGain:.27},
-    {id:"pressure", asset:"./assets/audio/battle_tension_v7_07_pressure.wav", baseGain:.07, pressureGain:.36},
+    // Menu-v8 instruments; 16 whole bars at 128 BPM (30 s, not the menu's
+    // 32 s grid). Playback uses each decoded buffer's actual duration.
+    // Seven voices / low-memory subset and all mix gains remain unchanged.
+    {id:"sub", asset:"./assets/audio/battle_v9_01_sub.wav", baseGain:.41, pressureGain:.10},
+    {id:"pulse", asset:"./assets/audio/battle_v9_02_pulse.wav", baseGain:.35, pressureGain:.14},
+    {id:"percussion", asset:"./assets/audio/battle_v9_03_percussion.wav", baseGain:.31, pressureGain:.18},
+    {id:"ostinato", asset:"./assets/audio/battle_v9_04_ostinato.wav", baseGain:.28, pressureGain:.20},
+    {id:"shards", asset:"./assets/audio/battle_v9_05_shards.wav", baseGain:.18, pressureGain:.24},
+    {id:"dissonance", asset:"./assets/audio/battle_v9_06_dissonance.wav", baseGain:.15, pressureGain:.27},
+    {id:"pressure", asset:"./assets/audio/battle_v9_07_pressure.wav", baseGain:.07, pressureGain:.36},
   ]);
 
   // Savaşta iki tarafın her saldırısı ateş ve isabet efekti çalar; yığılan
@@ -428,7 +443,8 @@
       this.preload = "auto";
       this._gain = context.createGain();
       this._gain.gain.value = 0;
-      this._gain.connect(output || context.destination);
+      this._output = output || context.destination;
+      this._gainConnected = false;
     }
 
     get volume() {
@@ -477,24 +493,17 @@
     }
 
     _loadBuffer() {
-      if (!this._bufferCache.has(this.src)) {
-        this._bufferCache.set(
-          this.src,
-          gridshardDecodeAudioAsset(this.context, this.src)
-        );
-      }
-      return this._bufferCache.get(this.src);
+      return gridshardCachedAudioBuffer(this.context,this._bufferCache,this.src);
     }
 
     _stopSource() {
       const source = this._source;
       this._source = null;
-      if (!source) return;
-      try {
-        source.stop();
-        source.disconnect();
-      } catch (_) {
-        // AudioBufferSourceNode may already be stopped by the browser.
+      try { source?.stop(); } catch (_) {}
+      try { source?.disconnect(); } catch (_) {}
+      if (this._gainConnected) {
+        try { this._gain.disconnect(); } catch (_) {}
+        this._gainConnected = false;
       }
     }
 
@@ -507,10 +516,17 @@
       source.loopStart = 0;
       source.loopEnd = this._buffer.duration;
       source.playbackRate.value = this._playbackRate;
-      source.connect(this._gain);
-      this._startedAt = Math.max(when, this.context.currentTime);
-      source.start(when, this._offset % this._buffer.duration);
       this._source = source;
+      try {
+        this._gain.connect(this._output);
+        this._gainConnected = true;
+        source.connect(this._gain);
+        this._startedAt = Math.max(when, this.context.currentTime);
+        source.start(when, this._offset % this._buffer.duration);
+      } catch (error) {
+        this._stopSource();
+        throw error;
+      }
     }
 
     // Katman grubunun bütün stem'leri aynı bağlam zamanında başlar; bağlam
@@ -566,6 +582,7 @@
       this.currentTrack = null;
       this.criticalLayerTrack = null;
       this.battleLayerTracks = [];
+      this._battleLayerStart = null;
       this._battleLayerState = null;
       this.battlePressure = .32;
       this._fadeTimers = new Set();
@@ -1009,13 +1026,7 @@
       if (!context || typeof global.fetch !== "function") {
         return Promise.reject(new Error("Web Audio is unavailable."));
       }
-      if (!this._musicBufferCache.has(asset)) {
-        this._musicBufferCache.set(
-          asset,
-          gridshardDecodeAudioAsset(context,asset)
-        );
-      }
-      return this._musicBufferCache.get(asset);
+      return gridshardCachedAudioBuffer(context,this._musicBufferCache,asset);
     }
 
     _preloadAudioBuffers(assets=[]) {
@@ -1067,6 +1078,21 @@
         ? this._resultGainNode
         : this._sfxGainNode;
       if (!context || !destination) return false;
+      let source=null, voiceGain=null, panner=null, released=false;
+      const release=()=>{
+        if (!source || released) return;
+        released=true;
+        source.onended=null;
+        this._activeBufferSources.delete(source);
+        for (const node of [source,voiceGain,panner]) {
+          try { node?.disconnect(); } catch (_) {}
+        }
+        if (this._resultBufferSource===source) {
+          this._resultBufferSource=null;
+          this._resultPlaybackPromise=null;
+        }
+        this._publishPlaybackState();
+      };
       try {
         const buffer=await this._loadAudioBuffer(asset);
         if (!this._appActive) return false;
@@ -1078,7 +1104,7 @@
         if (channel === "sfx" && sfxGeneration !== this._sfxPlaybackGeneration) return false;
         // A stop/new battle can occur while decode or context resume awaits.
         if (channel === "result" && (this._resultSuppressed || this._resultBufferOutcome !== outcome || this._resultPlaybackGeneration !== resultGeneration)) return false;
-        const source=context.createBufferSource();
+        source=context.createBufferSource();
         source.buffer=buffer;
         source.loop=false;
         // Battle SFX: small natural pitch spread so repeated shots never sound copied.
@@ -1086,7 +1112,7 @@
           source.playbackRate.value=1+(Math.random()-.5)*.06;
         }
         // Optional left/right placement from the device's screen position.
-        let panner=null,output=destination;
+        let output=destination;
         const panValue=Math.max(-1,Math.min(1,Number(pan) || 0));
         if (channel === "sfx" && panValue !== 0 && typeof context.createStereoPanner === "function") {
           panner=context.createStereoPanner();
@@ -1094,7 +1120,6 @@
           panner.connect(destination);
           output=panner;
         }
-        let voiceGain=null;
         if ((gain !== 1 || channel === "result") && typeof context.createGain === "function") {
           voiceGain=context.createGain();
           const target=Math.max(0,Number(gain) || 0);
@@ -1115,25 +1140,12 @@
           this._pendingResultOutcome=null;
         }
         this._publishPlaybackState();
-        source.onended=()=>{
-          this._activeBufferSources.delete(source);
-          try { source.disconnect(); } catch (_) {}
-          if (voiceGain) {
-            try { voiceGain.disconnect(); } catch (_) {}
-          }
-          if (panner) {
-            try { panner.disconnect(); } catch (_) {}
-          }
-          if (this._resultBufferSource === source) {
-            this._resultBufferSource=null;
-            this._resultPlaybackPromise=null;
-          }
-          this._publishPlaybackState();
-        };
+        source.onended=release;
         source.start(0);
         this._lastPlaybackError=null;
         return true;
       } catch (error) {
+        release();
         this._lastPlaybackError = {
           name:String(error?.name || "AudioBufferPlaybackError"),
           message:String(error?.message || error || "Audio buffer could not play."),
@@ -1300,8 +1312,18 @@
           ...this.battleLayerTracks,
         ].filter((audio) => audio && audio.paused !== false),
       ]);
+      // A Web Audio score is one synchronized unit, including after a failed
+      // download. Individual gesture retries would start stems out of phase.
+      const battleTracks = this.battleLayerTracks;
+      const webBattle = battleTracks[0] instanceof GridshardSeamlessLoopTrack;
+      if (webBattle) {
+        for (const track of battleTracks) candidates.delete(track);
+      }
+      const battleRetry = webBattle && (
+        this._battleLayerStart || battleTracks.some(track => track.paused)
+      ) ? this._startBattleLayerTracks(battleTracks) : null;
       const results = await Promise.all(
-        [...candidates].map((audio) => this._safePlay(audio))
+        [...candidates].map((audio) => this._safePlay(audio)).concat(battleRetry ? [battleRetry] : [])
       );
       if (
         contextReady
@@ -1372,7 +1394,7 @@
         gestureObserved:this._gestureObserved,
         pending:this._pendingPlayback.size,
         contextState:this._musicContext?.state || "unavailable",
-        decodedAssets:[...this._musicBufferCache.keys()].length,
+        decodedAssets:this._musicBufferCache.size,
         activeSfx:this._activeBufferSources.size,
         currentAsset:String(
           (
@@ -1629,6 +1651,7 @@
 
     _stopBattleLayers({fade=true}={}) {
       const tracks = [...this.battleLayerTracks];
+      this._battleLayerStart = null;
       this.battleLayerTracks = [];
       this._battleLayerState = null;
       if (tracks.includes(this.currentTrack)) this.currentTrack = null;
@@ -1669,33 +1692,45 @@
     }
 
     _startBattleLayerTracks(tracks) {
-      if (!tracks.length) return;
+      if (!tracks.length || this.battleLayerTracks !== tracks || !this._appActive) return Promise.resolve(false);
       if (!(tracks[0] instanceof GridshardSeamlessLoopTrack)) {
         // Web Audio yoksa HTML öğeleri ayrı başlar; senkron garanti edilmez.
-        for (const track of tracks) this._safePlay(track);
-        return;
+        return Promise.all(tracks.map(track => this._safePlay(track))).then(results => results.every(Boolean));
       }
+      if (this._battleLayerStart?.tracks === tracks) return this._battleLayerStart.promise;
+      const start = { tracks, promise:null };
+      this._battleLayerStart = start;
       // Stem'ler tek tek oynatılırsa çözümleme süreleri faz kayması yaratır.
       // Hepsi çözülene kadar beklenir ve aynı bağlam zamanında başlatılır.
       // paused=false, unlock() yolunun stem'leri tek tek başlatmasını önler.
       for (const track of tracks) track.paused = false;
       const context = tracks[0].context;
-      Promise.all(tracks.map(track => track._loadBuffer()))
+      start.promise = Promise.all(tracks.map(track => track._loadBuffer()))
         .then((buffers) => {
-          if (this.battleLayerTracks !== tracks) return;
+          if (this._battleLayerStart !== start || this.battleLayerTracks !== tracks || !this._appActive) return false;
           const when = context.currentTime + .05;
           tracks.forEach((track, index) => track.startAt(buffers[index], when, 0));
           this._lastPlaybackError = null;
+          return true;
         })
         .catch((error) => {
+          if (this._battleLayerStart !== start || this.battleLayerTracks !== tracks) return false;
+          // startAt may fail after earlier stems have started. Release the
+          // whole group, and leave it paused so the next gesture can retry.
+          for (const track of tracks) track.pause();
           this._lastPlaybackError = {
             name:String(error?.name || "AudioBufferError"),
             message:String(error?.message || error || "Battle layers could not be loaded."),
             src:"battle_layers",
             at:Date.now(),
           };
+          return false;
+        })
+        .finally(() => {
+          if (this._battleLayerStart === start) this._battleLayerStart = null;
         });
       this._resumeAudioContext();
+      return start.promise;
     }
 
     _transitionToBattleLayers(state) {
@@ -1715,6 +1750,9 @@
             ? this._battleLayerTrack("pressure")
             : null;
         this._applyBattleLayerMix(pressure, {fade:true});
+        if (this.battleLayerTracks.some(track => track.paused)) {
+          this._startBattleLayerTracks(this.battleLayerTracks);
+        }
         return;
       }
 
@@ -1979,14 +2017,7 @@
         this._publishPlaybackState();
         return;
       }
-      this._activeBufferSources.delete(source);
-      try {
-        source.onended=null;
-        source.stop();
-        source.disconnect();
-      } catch (_) {
-        // AudioBufferSourceNode may already have completed.
-      }
+      this._stopBufferSource(source);
       this._publishPlaybackState();
     }
 
@@ -2215,23 +2246,34 @@
         audio.addEventListener("error",release);
       }
       return this._safePlay(audio).then((played)=>{
-        if (!played && !this._pendingPlayback.has(audio)) release();
+        // Short combat cues have no value after a later gesture/network
+        // recovery. Keep music retryable, but never retain/replay failed shots.
+        if (!played) {
+          this._stopAudio(audio);
+          release();
+        }
         return played;
       });
+    }
+
+    _stopBufferSource(source) {
+      // Keep the owner's cleanup before detaching onended: stopping only the
+      // source leaves its per-voice gain/panner connected to the audio graph.
+      const release=source.onended;
+      source.onended=null;
+      try { source.stop(); } catch (_) {}
+      if (typeof release==="function") release();
+      else {
+        this._activeBufferSources.delete(source);
+        try { source.disconnect(); } catch (_) {}
+      }
     }
 
     _stopActiveSfx() {
       this._sfxPlaybackGeneration++;
       for (const source of [...this._activeBufferSources]) {
         if (source === this._resultBufferSource) continue;
-        this._activeBufferSources.delete(source);
-        try {
-          source.onended=null;
-          source.stop();
-          source.disconnect();
-        } catch (_) {
-          // The short-lived source may already have completed.
-        }
+        this._stopBufferSource(source);
       }
       for (const audio of [...this._activeSfx]) {
         this._activeSfx.delete(audio);

@@ -587,6 +587,11 @@
       ];
     }
 
+    // Hot HUD reads must not clone the complete progression/cosmetics model.
+    get displayName() {
+      return this.profile?.display_name;
+    }
+
     applyProfile(profile) {
       if (!profile || !profile.player_id) {
         throw new Error(
@@ -784,6 +789,10 @@
       this.settings = null;
     }
 
+    get analyticsConsent() {
+      return this.settings?.analytics_consent === true;
+    }
+
     applySettings(settings) {
       if (!settings || !settings.player_id) {
         throw new Error(
@@ -964,6 +973,7 @@
       reconnectBaseDelayMs = 1000,
       reconnectMaxDelayMs = 8000,
       maxReconnectAttempts = 8,
+      maxQueuedMessages = 64,
       onStatusChange = null,
       onMessageApplied = null,
     }) {
@@ -980,6 +990,8 @@
       this.reconnectBaseDelayMs = reconnectBaseDelayMs;
       this.reconnectMaxDelayMs = reconnectMaxDelayMs;
       this.maxReconnectAttempts = maxReconnectAttempts;
+      this.maxQueuedMessages = Number.isFinite(maxQueuedMessages)
+        ? Math.max(1, Math.floor(maxQueuedMessages)) : 64;
       this.onStatusChange = onStatusChange;
       this.onMessageApplied = onMessageApplied;
 
@@ -1001,8 +1013,10 @@
         throw new Error("WebSocket adresi zorunludur.");
       }
 
+      if (this.url && this.url !== url) this.clearOutgoingQueue();
       this.url = url;
       this.manualClose = false;
+      this.reconnectAttempts = 0;
       this._clearReconnectTimer();
       this._openSocket(false);
     }
@@ -1011,20 +1025,14 @@
       this.manualClose = true;
       this._clearHeartbeatTimer();
       this._clearReconnectTimer();
-
-      if (
-        this.socket &&
-        typeof this.socket.close === "function"
-      ) {
-        this.socket.close(1000, "client_disconnect");
-      }
-
-      this.socket = null;
+      this.clearOutgoingQueue();
+      this._closeSocket("client_disconnect");
       this.pvpState.markDisconnected();
       this._setStatus(WS_CONNECTION_STATUS.CLOSED);
     }
 
     sendEnvelope(envelope) {
+      if (this.manualClose) return { ok:false, queued:false, reason:"Bağlantı kapalı." };
       const serialized = JSON.stringify(envelope);
 
       if (this._socketIsOpen()) {
@@ -1035,6 +1043,9 @@
         };
       }
 
+      if (this.outgoingQueue.length >= this.maxQueuedMessages) {
+        return { ok:false, queued:false, reason:"Bağlantı beklenirken komut sınırına ulaşıldı." };
+      }
       this.outgoingQueue.push(serialized);
       return {
         ok: true,
@@ -1087,15 +1098,27 @@
       let sent = 0;
       while (this.outgoingQueue.length) {
         this.socket.send(
-          this.outgoingQueue.shift()
+          this.outgoingQueue[0]
         );
+        this.outgoingQueue.shift();
         sent += 1;
       }
       return sent;
     }
 
+    _closeSocket(reason) {
+      const socket = this.socket;
+      this.socket = null;
+      if (!socket) return;
+      // A replaced transport must not keep its listeners/connection alive or
+      // close the new session when its asynchronous close event arrives.
+      socket.onopen = socket.onmessage = socket.onerror = socket.onclose = null;
+      try { socket.close?.(1000, reason); } catch (_) {}
+    }
+
     _openSocket(isReconnect) {
       this._clearHeartbeatTimer();
+      this._closeSocket("client_replaced");
 
       this._setStatus(
         isReconnect
@@ -2714,16 +2737,25 @@
         clearTimeout(id),
       retryBaseDelayMs = 1000,
       retryMaxDelayMs = 10000,
+      maxPending = 256,
+      requestTimeoutMs = 10000,
       onStatusChange = null,
     } = {}) {
+      this.setTimer = setTimer;
+      this.clearTimer = clearTimer;
+      this.maxPending = Number.isFinite(maxPending)
+        ? Math.max(1, Math.min(4096, Math.floor(maxPending))) : 256;
+      this.requestTimeoutMs = Number.isFinite(requestTimeoutMs)
+        ? Math.max(1, requestTimeoutMs) : 10000;
       this.requestJson =
         requestJson
         || (async (event) => {
-          const response =
-            await fetch(
-              "/telemetry/events",
-              {
+          const controller = new AbortController();
+          const timer = this.setTimer(() => controller.abort(), this.requestTimeoutMs);
+          try {
+            const response = await fetch("/telemetry/events", {
                 method: "POST",
+                signal: controller.signal,
                 headers: {
                   "content-type":
                     "application/json",
@@ -2731,24 +2763,23 @@
                 body: JSON.stringify(
                   event
                 ),
-              }
-            );
+            });
 
-          if (!response.ok) {
-            const error = new Error(
-              `Telemetri gönderimi başarısız: ${response.status}`
-            );
-            error.permanent = response.status >= 400
-              && response.status < 500
-              && ![408, 429].includes(response.status);
-            throw error;
+            if (!response.ok) {
+              const error = new Error(
+                `Telemetri gönderimi başarısız: ${response.status}`
+              );
+              error.permanent = response.status >= 400
+                && response.status < 500
+                && ![408, 429].includes(response.status);
+              throw error;
+            }
+            return await response.json();
+          } finally {
+            this.clearTimer(timer);
           }
-
-          return response.json();
         });
 
-      this.setTimer = setTimer;
-      this.clearTimer = clearTimer;
       this.retryBaseDelayMs =
         retryBaseDelayMs;
       this.retryMaxDelayMs =
@@ -2757,6 +2788,7 @@
         onStatusChange;
 
       this.pending = new Map();
+      this.droppedEvents = 0;
       this.retryAttempts = 0;
       this.retryTimer = null;
       this.inFlight = false;
@@ -2781,6 +2813,12 @@
           event.event_id
         )
       ) {
+        // Best-effort diagnostics only: never retain unlimited events offline.
+        // Keep existing IDs (including the in-flight event) stable for deduplication.
+        if (this.pending.size >= this.maxPending) {
+          this.droppedEvents += 1;
+          return { ok:false, reason:"Telemetri kuyruğu dolu.", pending:this.pending.size };
+        }
         this.pending.set(
           event.event_id,
           {
@@ -2804,6 +2842,7 @@
     async flush() {
       if (
         this.inFlight
+        || this.retryTimer !== null
         || this.pending.size === 0
       ) {
         if (
@@ -2821,7 +2860,6 @@
         };
       }
 
-      this._clearRetry();
       this.inFlight = true;
       this._setStatus(
         TELEMETRY_TRANSPORT_STATUS.SENDING
@@ -2849,7 +2887,7 @@
 
         return {
           ok: true,
-          pending: 0,
+          pending: this.pending.size,
         };
       } catch (error) {
         this.retryAttempts += 1;
@@ -2866,6 +2904,9 @@
         };
       } finally {
         this.inFlight = false;
+        // Events may arrive while awaiting a request. Drain them in another
+        // bounded batch, yielding to rendering and retaining retry backoff.
+        if (this.pending.size && this.retryTimer === null) this._scheduleFlush(0);
       }
     }
 
@@ -2897,6 +2938,10 @@
         TELEMETRY_TRANSPORT_STATUS.RETRY_WAIT
       );
 
+      this._scheduleFlush(delay);
+    }
+
+    _scheduleFlush(delay) {
       this.retryTimer =
         this.setTimer(
           () => {
@@ -2919,6 +2964,7 @@
     }
 
     _setStatus(status) {
+      if (this.status === status) return;
       this.status = status;
 
       if (

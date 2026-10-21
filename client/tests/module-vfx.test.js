@@ -6,7 +6,7 @@ require("../src/module-view-data.js");
 function fixture(){
   let now=0,hidden=false,quality="yuksek",load=0;
   class Element{
-    constructor(tag){this.tag=tag;this.children=[];this.dataset={};this.attrs={};this.classes=new Set();this.classList={add:(...n)=>n.forEach(v=>this.classes.add(v))};this.style={setProperty:(k,v)=>this.style[k]=v};}
+    constructor(tag){this.tag=tag;this.children=[];this.dataset={};this.attrs={};this.classes=new Set();this.classList={add:(...n)=>n.forEach(v=>this.classes.add(v)),remove:(...n)=>n.forEach(v=>this.classes.delete(v))};this.style={setProperty:(k,v)=>this.style[k]=v};}
     setAttribute(k,v){this.attrs[k]=String(v);}appendChild(n){this.children.push(n);n.parentElement=this;return n;}
     addEventListener(name,fn){(this.listeners||={})[name]=fn;}
     remove(){if(this.parentElement){const p=this.parentElement;p.children=p.children.filter(n=>n!==this);this.parentElement=null;}}
@@ -252,4 +252,26 @@ test("one post-presentation microtask coalesces VFX and cannot draw through rese
   microtasks.shift()();assert.equal(context.battleAnchorBatch,null);assert.equal(calls[0][0].length,2);assert.equal(calls[0][1].elapsed_ms,2);assert.equal(calls.length,2);
   context.enqueue([],{elapsed_ms:3});context.battleVisualGeneration++;microtasks.shift()();assert.equal(calls.length,2);
   context.enqueue([],{elapsed_ms:4});context.document.hidden=true;microtasks.shift()();assert.equal(calls.length,2);
+});
+
+test("delayed strikes cannot replay after reset, hide/resume, destruction or a long stall",()=>{
+  for(const cancel of [f=>f.fx.reset(),f=>f.fx.clearEffects(),f=>f.fx.forget("own:laser"),()=>{}]){
+    const f=fixture(),rig=f.rigs.get("own:laser");
+    f.fx.strike("own:laser",100);cancel(f);f.advance(1000);
+    assert.equal(rig.classes.has("is-struck"),false);
+  }
+  const f=fixture(),rig=f.rigs.get("own:laser");
+  f.fx.strike("own:laser",100);f.fx.clearEffects();f.advance(100);
+  assert.equal(rig.classes.has("is-struck"),false);
+});
+
+test("old strike cleanup cannot remove a newer hit; clearing effects releases the class",()=>{
+  const f=fixture(),rig=f.rigs.get("own:laser");
+  f.fx.strike("own:laser");
+  f.advance(100);f.fx.strike("own:laser");
+  f.advance(230);assert.equal(rig.classes.has("is-struck"),true);
+  f.advance(330);assert.equal(rig.classes.has("is-struck"),false);
+  f.fx.strike("own:laser");f.fx.clearEffects();
+  assert.equal(rig.classes.has("is-struck"),false);
+  assert.equal(f.fx.strikes.size,0);
 });

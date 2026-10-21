@@ -209,6 +209,7 @@ class PvPTickRunner:
         except Exception:
             pass  # Oturum zaten temizlenmiş olabilir.
         self.service.delete_session(session_id)
+        self._stats.pop(session_id, None)
 
     async def run_ticks(self,session_id: str,count: int) -> int:
         executed=0

@@ -7,6 +7,24 @@ const vm = require("node:vm");
 
 const ROOT = path.join(__dirname, "..");
 
+test("ortak pencere kaplaması tam ekran eğitim katmanına uygulanmaz", () => {
+  const polish = fs.readFileSync(path.join(ROOT, "src/visual-polish-v9.css"), "utf8");
+  const canon = fs.readFileSync(path.join(ROOT, "src/canon.css"), "utf8");
+  // A solid dialog background used to hide the entire app under the guide.
+  // Keep the actual panel treatment, but exclude BOTH the guide and backdrop.
+  assert.match(polish, /dialog:not\(\.guide-overlay\)\s*\{[^}]*background:linear-gradient\([^;]+\) !important;/);
+  assert.match(polish, /dialog:not\(\.guide-overlay\)::backdrop\s*\{\s*background:#020813b8;/);
+  assert.doesNotMatch(polish, /\]\s+dialog\s*(?:::backdrop\s*)?\{/);
+  const canvas = canon.match(/\n\.guide-overlay\s*\{([^}]+)\}/)?.[1];
+  assert.ok(canvas);
+  assert.match(canvas, /background:transparent;/);
+  assert.match(canvas, /border:0;/);
+  assert.match(canon, /\.guide-overlay::backdrop\s*\{\s*background:transparent;/);
+  // Intentional dimming still belongs to the guide's own shade/target state.
+  assert.match(canon, /\.guide-overlay\[data-target="false"\]\[data-shade="full"\]\s*\{\s*background:rgba\(2,8,17,\.74\);/);
+  assert.match(canon, /\.guide-overlay\[data-shade="none"\] \.guide-hole\s*\{\s*box-shadow:none;/);
+});
+
 function loadFlow(extra = {}) {
   const sandbox = { ...extra };
   sandbox.globalThis = sandbox;

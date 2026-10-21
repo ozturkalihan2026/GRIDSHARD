@@ -30,13 +30,15 @@
 :root body[data-app-screen] .arena-league-chest-stop .is-claimable .reward-chest-button { filter:brightness(1.15); }
 
 /* Modal surfaces share the same dark ink, crisp rim and shallow physical lip.
+ * The full-screen guide is a transparent spotlight, not a panel. Its own
+ * shade/hole rules must stay in charge so the app remains visible underneath.
  * Do not override display/open/hidden, positioning, scrolling or focus traps. */
-:root body[data-app-screen] dialog {
+:root body[data-app-screen] dialog:not(.guide-overlay) {
   color:#eef6ff; border:2px solid #446b80 !important; border-radius:18px !important;
   background:linear-gradient(145deg,#153447,#091b2c 68%) !important;
   box-shadow:inset 0 1px #9bc8d52b,0 6px 0 #030d18,0 20px 60px #0009 !important;
 }
-:root body[data-app-screen] dialog::backdrop { background:#020813b8; }
+:root body[data-app-screen] dialog:not(.guide-overlay)::backdrop { background:#020813b8; }
 :root body[data-app-screen] dialog > header,
 :root body[data-app-screen] .event-detail-header {
   border-bottom:1px solid #70cec54d !important;

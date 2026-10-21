@@ -15,7 +15,7 @@ client = TestClient(app)
 
 def reset_gateway():
     pvp_service._sessions.clear()
-    pvp_websocket_adapter.registry.connections.clear()
+    pvp_websocket_adapter.registry.clear()
 
 
 def create_and_join(session_id="web", players=("a", "b")):

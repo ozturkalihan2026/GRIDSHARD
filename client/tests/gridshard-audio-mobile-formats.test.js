@@ -44,7 +44,7 @@ class FakeAudioContext {
     this.sources.push(source);
     return source;
   }
-  decodeAudioData(bytes) { return Promise.resolve({duration: 32, bytes}); }
+  decodeAudioData(bytes) { return Promise.resolve({duration: 30, bytes}); }
   resume() { return Promise.resolve(); }
 }
 
@@ -54,7 +54,7 @@ global.AudioContext = FakeAudioContext;
 global.fetch = async (src) => {
   fetched.push(src);
   // Pulse stem'inin mobil türevi sunucuda yokmuş gibi davranır.
-  if (src.endsWith("battle_tension_v7_02_pulse.ogg")) return {ok: false};
+  if (src.endsWith("battle_v9_02_pulse.ogg")) return {ok: false};
   return {ok: true, arrayBuffer: async () => new ArrayBuffer(8)};
 };
 global.GRIDSHARD_AUDIO_ENCODINGS = {
@@ -64,13 +64,13 @@ global.GRIDSHARD_AUDIO_ENCODINGS = {
       "menu_v8_01_durgun_devre",
       "menu_v8_02_akim_hatti",
       "menu_v8_03_cekirdek_odasi",
-      "battle_tension_v7_01_sub",
-      "battle_tension_v7_02_pulse",
-      "battle_tension_v7_03_percussion",
-      "battle_tension_v7_04_ostinato",
-      "battle_tension_v7_05_shards",
-      "battle_tension_v7_06_dissonance",
-      "battle_tension_v7_07_pressure",
+      "battle_v9_01_sub",
+      "battle_v9_02_pulse",
+      "battle_v9_03_percussion",
+      "battle_v9_04_ostinato",
+      "battle_v9_05_shards",
+      "battle_v9_06_dissonance",
+      "battle_v9_07_pressure",
     ],
     m4a: [],
   },
@@ -120,13 +120,14 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
   const context = director._musicContext;
   assert.strictEqual(context.sources.length, 7);
+  assert.ok(context.sources.every(source => source.loopEnd === 30), "Yeni savaş katmanları 30 sn / 16 tam ölçü döner");
   const starts = new Set(context.sources.map((source) => source.startedAt));
   assert.strictEqual(starts.size, 1, "Yedi stem aynı bağlam zamanında başlamalı");
   assert.ok([...starts][0] > context.currentTime);
 
-  assert.ok(fetched.includes("./assets/audio/mobile/battle_tension_v7_02_pulse.ogg"));
+  assert.ok(fetched.includes("./assets/audio/mobile/battle_v9_02_pulse.ogg"));
   assert.ok(
-    fetched.includes("./assets/audio/battle_tension_v7_02_pulse.wav"),
+    fetched.includes("./assets/audio/battle_v9_02_pulse.wav"),
     "Eksik mobil türev WAV'a düşmeli"
   );
 

@@ -3305,7 +3305,7 @@ function createClient() {
   assert.ok(css.includes(".quick-loadout-badges"));
   assert.ok(audio.includes("GRIDSHARD_AUDIO_MIX"));
   assert.ok(audio.includes("crossfadeMs:1200"));
-  assert.ok(audio.includes("battle_tension_v7_07_pressure.wav"));
+  assert.ok(audio.includes("battle_v9_07_pressure.wav"));
   assert.ok(audio.includes("GRIDSHARD_BATTLE_LAYERS"));
 }
 

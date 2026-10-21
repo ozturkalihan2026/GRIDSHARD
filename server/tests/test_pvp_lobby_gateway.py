@@ -4,7 +4,7 @@ client=TestClient(app)
 
 def reset():
     pvp_service._sessions.clear()
-    pvp_websocket_adapter.registry.connections.clear()
+    pvp_websocket_adapter.registry.clear()
 
 def test_lobby_endpoint_reports_slots_and_auto_start():
     reset()

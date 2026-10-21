@@ -101,7 +101,7 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-seamless-v17"
+  "shardglass-seamless-v18"
 );
 assert.strictEqual(global.GRIDSHARD_BATTLE_LAYERS.length, 7);
 assert.strictEqual(
@@ -126,7 +126,7 @@ assert.deepStrictEqual(
 );
 assert.ok(
   global.GRIDSHARD_CRITICAL_LAYER
-    .includes("battle_tension_v7_07_pressure.wav")
+    .includes("battle_v9_07_pressure.wav")
 );
 assert.strictEqual(
   director.previewMusic("menu").ok,

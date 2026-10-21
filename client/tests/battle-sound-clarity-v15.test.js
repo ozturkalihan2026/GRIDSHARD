@@ -57,13 +57,19 @@ test("new original sounds are short mono PCM, bounded in size/peak and not stale
   const {readBuildBlock,compressedAudioReplacements}=require("../../tools/build-client.js");
   const client=path.resolve(__dirname,".."),html=fs.readFileSync(path.join(client,"index.html"),"utf8");
   const omitted=compressedAudioReplacements(client,readBuildBlock(html,"scripts").inputs,{});
+  const manifest=JSON.parse(fs.readFileSync(path.join(client,"assets/audio/mobile/manifest.json"),"utf8"));
   let total=0;
   for(const name of ["laser_pulse_v2","rocket_launch","missile_explosion","kinetic_hit","electrical_hit","shield_absorb","cooling_air"]){
     const file=path.join(client,"assets/audio",name+".wav"),b=fs.readFileSync(file);
     assert.equal(b.toString("ascii",0,4),"RIFF");assert.equal(b.readUInt32LE(24),22050);assert.equal(b.readUInt16LE(22),1);assert.equal(b.readUInt16LE(34),16);
     assert.ok(b.length<33000);total+=b.length;
     let peak=0;for(let i=44;i<b.length;i+=2)peak=Math.max(peak,Math.abs(b.readInt16LE(i))/32768);
-    assert.ok(peak>.15&&peak<=.51);assert.equal(omitted.has(fs.realpathSync(file)),false);
+    assert.ok(peak>.15&&peak<=.51);
+    // v9 encoding now includes these previously WAV-only cues. Shipping a
+    // compressed replacement is safe only when it belongs to this exact master.
+    const digest=require("node:crypto").createHash("sha256").update(b).digest("hex");
+    assert.equal(manifest.sources[name]?.sha256,digest);
+    assert.equal(omitted.has(fs.realpathSync(file)),true);
   }
   assert.ok(total<150000);
   for(const cue of ["laser_fire","missile_fire","missile_explosion","kinetic_hit","electrical_hit","shield_absorb","cooling_air"]){

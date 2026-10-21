@@ -177,6 +177,7 @@ jobs:
           e2e/menu-navigation.spec.js e2e/beta33-season.spec.js
           e2e/persistent-render.spec.js
           e2e/visual-atmosphere.spec.js
+          e2e/onboarding-visibility.spec.js
           e2e/beta381-battle-events.spec.js e2e/battle-density.spec.js
           e2e/mobile-battle.spec.js
       - name: Two real browser clients and reconnect (explicit human fixture)

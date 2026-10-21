@@ -6,7 +6,7 @@ client=TestClient(app)
 
 def reset_gateway():
     pvp_service._sessions.clear()
-    pvp_websocket_adapter.registry.connections.clear()
+    pvp_websocket_adapter.registry.clear()
 
 def test_mobile_reconnect_grace_defaults_to_thirty_seconds():
     assert pvp_websocket_adapter.grace_period_seconds == 30.0

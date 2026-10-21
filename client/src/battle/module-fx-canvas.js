@@ -7,6 +7,10 @@
   // layer-local CSS pixels the module VFX anchors use. Event gating, caps,
   // hidden/session resets stay with GridshardModuleVfx (the single owner).
   const TAU=Math.PI*2;
+  // Bound every queue, including closures waiting for a projectile/impact.
+  // These are presentation budgets only; authoritative combat is untouched.
+  const LIMITS=Object.freeze({parts:260,rings:32,beams:24,shots:48,arcs:32,timers:512});
+  const LATE_EFFECT_MS=300;
   const rnd=(a,b)=>a+Math.random()*(b-a), clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
   class GridshardModuleFxCanvas {
     constructor({doc,layer,now=()=>performance.now(),quality=()=>"orta",wake=()=>{},dpr=()=>root.devicePixelRatio||1}){
@@ -16,6 +20,16 @@
     }
     get active(){return this.parts.length+this.rings.length+this.beams.length+this.shots.length+this.arcs.length+this.timers.length>0;}
     get budget(){return this.quality()==="yuksek"?520:260;}
+    enqueue(kind,item){
+      const list=this[kind],limit=LIMITS[kind]*(this.quality()==="yuksek"?2:1);
+      if(list.length>=limit)return false;
+      const wasActive=this.active;
+      item.born=this.now();list.push(item);
+      // Publish work before waking the owner (start() used to wake an empty
+      // queue, so the first effect waited for the next slow HUD poll).
+      if(!wasActive)this.wake();
+      return true;
+    }
     ensure(){
       const layer=this.layer();if(!layer)return false;
       if(!this.canvas||this.canvas.parentElement!==layer){
@@ -31,21 +45,21 @@
       }
       return true;
     }
-    start(){if(!this.ensure())return false;this.wake();return true;}
+    start(){return this.ensure();}
     clear(){
       this.parts.length=this.rings.length=this.beams.length=this.shots.length=this.arcs.length=this.timers.length=0;
       if(this.ctx)this.ctx.clearRect(0,0,this.w,this.h);this.last=null;
     }
-    later(ms,run){this.timers.push({at:this.now()+ms,run});}
+    later(ms,run){this.enqueue("timers",{at:this.now()+ms,run});}
     // ---------- primitives ----------
-    spark(x,y,o){if(this.parts.length>=this.budget)return;this.parts.push(Object.assign({x,y,vx:0,vy:0,life:0,max:500,size:2,color:"#fff",grav:0,drag:.98,add:true,grow:0,kind:"dot",alpha:1},o));}
+    spark(x,y,o){this.enqueue("parts",Object.assign({x,y,vx:0,vy:0,life:0,max:500,size:2,color:"#fff",grav:0,drag:.98,add:true,grow:0,kind:"dot",alpha:1},o));}
     burst(x,y,n,o){
       for(let i=0;i<n;i++){const a=rnd(0,TAU),v=rnd(o.vmin||40,o.vmax||220);
         this.spark(x,y,Object.assign({},o,{vx:Math.cos(a)*v,vy:Math.sin(a)*v*(o.flat||1)-(o.up||0),max:rnd(o.lmin||250,o.lmax||600),size:rnd(o.smin||1.2,o.smax||3)}));}
     }
     smoke(x,y,n,k,o={}){for(let i=0;i<n;i++)this.spark(x+rnd(-6,6)*k,y+rnd(-5,5)*k,Object.assign({kind:"smoke",add:false,color:"#262c33bb",size:5*k,grow:16*k,vx:rnd(-14,14),vy:rnd(-34,-14),max:rnd(700,1200),drag:.985},o));}
-    ring(x,y,o){this.rings.push(Object.assign({x,y,life:0,max:380,r0:3,r1:30,color:"#fff",w:3,flat:.55},o));}
-    arc(a,b,o){this.arcs.push(Object.assign({x0:a.x,y0:a.y,x1:b.x,y1:b.y,life:0,max:220,color:"#fff",w:1.6,jit:5},o));}
+    ring(x,y,o){this.enqueue("rings",Object.assign({x,y,life:0,max:380,r0:3,r1:30,color:"#fff",w:3,flat:.55},o));}
+    arc(a,b,o){this.enqueue("arcs",Object.assign({x0:a.x,y0:a.y,x1:b.x,y1:b.y,life:0,max:220,color:"#fff",w:1.6,jit:5},o));}
     orb(g,x,y,r,core,glow){
       const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,core);gr.addColorStop(.35,glow);gr.addColorStop(1,"rgba(0,0,0,0)");
       g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,TAU);g.fill();
@@ -54,7 +68,7 @@
     laser(from,to,{k=1,blocked=false,ms=560}={}){
       if(!this.start())return;
       for(let i=0;i<10;i++){const a=rnd(0,TAU),r=rnd(6,14)*k;this.spark(from.x+Math.cos(a)*r,from.y+Math.sin(a)*r,{vx:-Math.cos(a)*r*5,vy:-Math.sin(a)*r*5,max:200,color:"#ff7a80",size:1.4*k,drag:1});}
-      this.beams.push({x0:from.x,y0:from.y,x1:to.x,y1:to.y,life:0,max:ms,w:3.2*k,c0:"#ff2a44",c1:"#ff8a8f"});
+      this.enqueue("beams",{x0:from.x,y0:from.y,x1:to.x,y1:to.y,life:0,max:ms,w:3.2*k,c0:"#ff2a44",c1:"#ff8a8f"});
       const color=blocked?"#bff7ff":"#ffd0a0";
       const sprinkle=()=>this.burst(to.x,to.y,3,{color,vmin:50,vmax:170*k,grav:420,up:70,lmax:380,kind:"streak",smin:.9,smax:1.6*k});
       for(let t=60;t<ms-80;t+=55)this.later(t,sprinkle);
@@ -65,7 +79,7 @@
       this.burst(from.x,from.y,10,{color:"#ffc46a",vmin:70,vmax:220*k,lmax:200,kind:"streak",smax:1.8*k});
       this.ring(from.x,from.y,{color:"#ffb34a",r1:12*k,max:180,flat:1,w:2});
       const lift=Math.min(22,Math.hypot(to.x-from.x,to.y-from.y)*.08);
-      this.shots.push({life:0,max:Math.max(120,travel),draw:(t,g)=>{
+      this.enqueue("shots",{life:0,max:Math.max(120,travel),draw:(t,g)=>{
         const x=lerp(from.x,to.x,t),y=lerp(from.y,to.y,t)-Math.sin(t*Math.PI)*lift;
         this.spark(x,y,{max:240,color:"#ff9a3a",size:2.6*k,vx:rnd(-8,8),vy:rnd(-8,8)});
         g.globalCompositeOperation="lighter";this.orb(g,x,y,9*k,"#fff","#ffbf4a");
@@ -79,7 +93,7 @@
         let px=from.x,py=from.y;
         this.later(delay,()=>{
           this.burst(from.x,from.y,5,{color:"#ffc46a",vmin:40,vmax:120,lmax:180,kind:"streak"});
-          this.shots.push({life:0,max:Math.max(200,travel-delay),draw:(t,g)=>{
+          this.enqueue("shots",{life:0,max:Math.max(200,travel-delay),draw:(t,g)=>{
             const e=t*t*(3-2*t),x=(1-e)*(1-e)*from.x+2*(1-e)*e*cx+e*e*tx,y=(1-e)*(1-e)*from.y+2*(1-e)*e*cy+e*e*ty;
             this.spark(x,y,{kind:"smoke",add:false,color:"#c9d3dc77",size:2*k,grow:7*k,max:600,vx:rnd(-5,5),vy:rnd(-5,5)});
             this.spark(x,y,{max:110,color:"#ffb14a",size:2.2*k});
@@ -156,12 +170,15 @@
     }
     // ---------- frame ----------
     tick(now){
+      if(!Number.isFinite(now))return this.active;
       if(!this.active){this.last=null;return false;}
       if(!this.ensure()){this.clear();return false;}
       const dt=this.last===null?1/60:clamp((now-this.last)/1000,0,.05);this.last=now;
-      for(let i=this.timers.length-1;i>=0;i--)if(this.timers[i].at<=now){const t=this.timers[i];this.timers.splice(i,1);t.run();}
-      const g=this.ctx,ms=dt*1000;g.clearRect(0,0,this.w,this.h);
-      for(let i=this.parts.length-1;i>=0;i--){const p=this.parts[i];p.life+=ms;if(p.life>=p.max){this.parts.splice(i,1);continue;}
+      for(let i=this.timers.length-1;i>=0;i--)if(this.timers[i].at<=now){const t=this.timers[i];this.timers.splice(i,1);if(now-t.at<=LATE_EFFECT_MS)t.run();}
+      const g=this.ctx;g.clearRect(0,0,this.w,this.h);
+      // Clamp physics integration, not visual lifetime: stale effects must
+      // expire after a stall instead of replaying in slow motion on recovery.
+      for(let i=this.parts.length-1;i>=0;i--){const p=this.parts[i];p.life=Math.max(0,now-p.born);if(p.life>=p.max){this.parts.splice(i,1);continue;}
         p.vx*=p.drag;p.vy=p.vy*p.drag+p.grav*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;const f=p.life/p.max;
         g.globalCompositeOperation=p.add?"lighter":"source-over";g.globalAlpha=(1-f)*p.alpha;
         if(p.kind==="smoke"){const r=p.size+p.grow*f;this.orb(g,p.x,p.y,r,p.color,p.color);}
@@ -169,13 +186,15 @@
         else if(p.kind==="plus"){g.fillStyle=p.color;const s=p.size;g.fillRect(p.x-s,p.y-s/3,s*2,s*2/3);g.fillRect(p.x-s/3,p.y-s,s*2/3,s*2);}
         else{g.fillStyle=p.color;g.beginPath();g.arc(p.x,p.y,p.size*(1-f*.5),0,TAU);g.fill();}
       }
-      for(let i=this.rings.length-1;i>=0;i--){const r=this.rings[i];r.life+=ms;if(r.life>=r.max){this.rings.splice(i,1);continue;}
+      for(let i=this.rings.length-1;i>=0;i--){const r=this.rings[i];r.life=Math.max(0,now-r.born);if(r.life>=r.max){this.rings.splice(i,1);continue;}
         const f=r.life/r.max,e=1-Math.pow(1-f,3),rad=lerp(r.r0,r.r1,e);g.globalCompositeOperation="lighter";g.globalAlpha=1-f;
         g.strokeStyle=r.color;g.lineWidth=r.w*(1-f)+.5;g.beginPath();g.ellipse(r.x,r.y,rad,rad*r.flat,0,0,TAU);g.stroke();
         if(r.fill){g.globalAlpha=(1-f)*.3;g.fillStyle=r.fill;g.fill();}}
-      for(let i=this.beams.length-1;i>=0;i--){const b=this.beams[i];b.life+=ms;if(b.life>=b.max){this.beams.splice(i,1);continue;}this.drawBeam(g,b);}
-      for(let i=this.shots.length-1;i>=0;i--){const s=this.shots[i];s.life+=ms;const t=Math.min(1,s.life/s.max);s.draw(t,g);if(t>=1){this.shots.splice(i,1);s.done?.();}}
-      for(let i=this.arcs.length-1;i>=0;i--){const a=this.arcs[i];a.life+=ms;if(a.life>=a.max){this.arcs.splice(i,1);continue;}
+      for(let i=this.beams.length-1;i>=0;i--){const b=this.beams[i];b.life=Math.max(0,now-b.born);if(b.life>=b.max){this.beams.splice(i,1);continue;}this.drawBeam(g,b);}
+      for(let i=this.shots.length-1;i>=0;i--){const s=this.shots[i];s.life=Math.max(0,now-s.born);
+        if(s.life>s.max+LATE_EFFECT_MS){this.shots.splice(i,1);continue;}
+        const t=Math.min(1,s.life/s.max);s.draw(t,g);if(t>=1){this.shots.splice(i,1);s.done?.();}}
+      for(let i=this.arcs.length-1;i>=0;i--){const a=this.arcs[i];a.life=Math.max(0,now-a.born);if(a.life>=a.max){this.arcs.splice(i,1);continue;}
         const f=a.life/a.max;g.globalCompositeOperation="lighter";g.globalAlpha=(1-f)*(Math.random()<.3?.4:1);g.strokeStyle=a.color;g.lineWidth=a.w;g.lineJoin="round";
         g.beginPath();g.moveTo(a.x0,a.y0);for(let j=1;j<7;j++){const t=j/7;g.lineTo(lerp(a.x0,a.x1,t)+rnd(-a.jit,a.jit),lerp(a.y0,a.y1,t)+rnd(-a.jit,a.jit));}g.lineTo(a.x1,a.y1);g.stroke();}
       g.globalCompositeOperation="source-over";g.globalAlpha=1;

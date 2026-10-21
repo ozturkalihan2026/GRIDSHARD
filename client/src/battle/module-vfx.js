@@ -41,23 +41,34 @@
     constructor({doc,layer,anchor,boardRect,rigFor,domId,now,schedule,sound,quality=()=>"orta",reduced=()=>false,hidden=()=>false,load=()=>0,fx=null}){
       Object.assign(this,{doc,layer,anchor,boardRect,rigFor,domId,now,schedule,sound,quality,reduced,hidden,load,fx});
       this.effects=new Map();this.ambient=new Map();this.seen=new Set();this.destroyed=new Map();this.coolingCycles=new Map();this.cueTimes=new Map();this.signatureTimes=new Map();this.liveIds=null;this.generation=0;this.session=null;this.latest=-Infinity;
+      this.strikes=new Map();
     }
     svg(tag,attrs={},parent){const n=this.doc.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,String(v));if(parent)parent.appendChild(n);return n;}
     useFx(id){return Boolean(this.fx)&&FIRST_TEN.has(id)&&!this.reduced()&&this.quality()!=="dusuk"&&this.load()<2;}
     scale(a){return Math.max(.55,Math.min(1.15,(a?.size||48)/64));}
     pan(point){const w=this.layer()?.clientWidth||0;return w>0&&point?Math.max(-1,Math.min(1,point.x/w*2-1))*.6:0;}
     strike(id,delay=0){
-      const run=()=>{const rig=this.rigFor(id);if(!rig||this.hidden())return;rig.classList.remove("is-struck");void rig.offsetWidth;rig.classList.add("is-struck");
-        this.schedule(230,()=>rig.classList.remove("is-struck"));};
+      const generation=this.generation,due=this.now()+delay,entry={rig:this.strikes.get(id)?.rig};
+      this.strikes.set(id,entry);
+      const run=()=>{
+        if(this.strikes.get(id)!==entry)return;
+        if(generation!==this.generation||this.hidden()||this.now()-due>300||(this.liveIds&&!this.liveIds.has(id))){this.clearStrike(id);return;}
+        const rig=this.rigFor(id);if(!rig){this.clearStrike(id);return;}
+        if(entry.rig&&entry.rig!==rig)entry.rig.classList.remove("is-struck");
+        entry.rig=rig;
+        rig.classList.remove("is-struck");void rig.offsetWidth;rig.classList.add("is-struck");
+        this.schedule(230,()=>{if(this.strikes.get(id)===entry)this.clearStrike(id);});
+      };
       if(delay>0)this.schedule(delay,run);else run();
     }
-    clearEffects(){this.fx?.clear();this.generation++;this.coolingCycles.clear();this.signatureTimes.clear();for(const e of this.effects.values())e.node.remove();this.effects.clear();for(const e of this.ambient.values())e.remove();this.ambient.clear();}
+    clearStrike(id){this.strikes.get(id)?.rig?.classList.remove("is-struck");this.strikes.delete(id);}
+    clearEffects(){this.fx?.clear();this.generation++;this.coolingCycles.clear();this.signatureTimes.clear();for(const id of this.strikes.keys())this.clearStrike(id);for(const e of this.effects.values())e.node.remove();this.effects.clear();for(const e of this.ambient.values())e.remove();this.ambient.clear();}
     reset(){this.clearEffects();this.cueTimes.clear();this.seen.clear();this.destroyed.clear();this.liveIds=null;this.session=null;this.latest=-Infinity;}
     cue(id,at=null){
       const p=profiles[id];if(!p||this.hidden()||this.now()-(this.cueTimes.get(id)??-Infinity)<320)return;
       this.cueTimes.set(id,this.now());this.sound(CRAFTED_CUES[id]||p.cue,{pan:this.pan(at)});
     }
-    forget(id){for(const[k,e]of this.effects)if(e.refs.includes(id)){e.node.remove();this.effects.delete(k);}this.ambient.get(id)?.remove();this.ambient.delete(id);}
+    forget(id){this.clearStrike(id);for(const[k,e]of this.effects)if(e.refs.includes(id)){e.node.remove();this.effects.delete(k);}this.ambient.get(id)?.remove();this.ambient.delete(id);}
     put(key,node,duration,refs=[]){
       if(this.hidden()||!this.layer())return null;
       this.effects.get(key)?.node.remove();this.effects.delete(key);
@@ -345,6 +356,7 @@
         if(alive(m)&&deadAt<elapsed){records.set(id,m);this.syncAmbient(id,m);}else this.forget(id);
       }
       this.liveIds=new Set(records.keys());
+      for(const id of this.strikes.keys())if(!records.has(id))this.clearStrike(id);
       for(const[id,cycle]of this.coolingCycles)if(!records.has(id)||this.now()-cycle.started>1200)this.coolingCycles.delete(id);
       for(const id of this.ambient.keys())if(!records.has(id)){this.ambient.get(id).remove();this.ambient.delete(id);}
       for(const[k,e]of this.effects)if(e.refs.some(id=>!records.has(id))){e.node.remove();this.effects.delete(k);}

@@ -36,7 +36,7 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-seamless-v17"
+  "shardglass-seamless-v18"
 );
 
 assert.strictEqual(
@@ -68,7 +68,7 @@ assert.strictEqual(director.criticalLayerTrack, null);
 const pressureLayer = battleLayers.find(
   (track) => track._gridshardLayer.id === "pressure"
 );
-assert.ok(pressureLayer.src.includes("battle_tension_v7_07_pressure.wav"));
+assert.ok(pressureLayer.src.includes("battle_v9_07_pressure.wav"));
 
 director.setState("critical_core");
 assert.strictEqual(director.battleLayerTracks.length, 7);

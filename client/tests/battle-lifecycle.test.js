@@ -126,3 +126,88 @@ test("a socket lost during result persistence reconnects until the published res
   assert.equal(manager.reconnectTimer, null);
   manager.disconnect();
 });
+
+test("replacing a socket closes and detaches the previous owner; stale callbacks cannot reconnect", () => {
+  const sockets = [], timers = new Map();
+  let next = 0;
+  const manager = new RelayWebSocketConnectionManager({
+    pvpState:new RelayPvPClientState({ playerId:"a", sessionId:"m" }),
+    createWebSocket:() => {
+      const socket = { readyState:1, closed:0, send() {}, close() { this.closed++; } };
+      sockets.push(socket); return socket;
+    },
+    setTimer:run => { timers.set(++next, run); return next; },
+    clearTimer:id => timers.delete(id),
+  });
+  for (let i = 0; i < 50; i++) {
+    const old = sockets.at(-1), staleClose = old?.onclose;
+    manager.connect("ws://test");
+    sockets.at(-1).onopen();
+    if (old) {
+      assert.equal(old.closed, 1);
+      for (const key of ["onopen", "onmessage", "onerror", "onclose"]) assert.equal(old[key], null);
+      staleClose({ code:1006 });
+    }
+    assert.equal(manager.status, "open");
+    assert.equal(timers.size, 1, "one heartbeat, no stale reconnect");
+  }
+  manager.disconnect();
+  assert.equal(timers.size, 0);
+  assert.ok(sockets.every(s => s.closed === 1));
+});
+
+test("offline command queues are bounded, kept during reconnect, and cleared on explicit exit", () => {
+  const sockets = [];
+  let reconnect;
+  const manager = new RelayWebSocketConnectionManager({
+    pvpState:new RelayPvPClientState({ playerId:"a", sessionId:"m" }), maxQueuedMessages:4,
+    createWebSocket:() => {
+      const socket = { readyState:0, sent:[], send(v) { this.sent.push(v); }, close() {} };
+      sockets.push(socket); return socket;
+    },
+    setTimer:run => { reconnect = run; return 1; }, clearTimer() {},
+  });
+  manager.connect("ws://test");
+  for (let i = 0; i < 100; i++) {
+    const result = manager.sendEnvelope({ type:"command", sequence:i });
+    assert.equal(result.ok, i < 4);
+    assert.equal(result.queued, i < 4);
+  }
+  assert.equal(manager.outgoingQueue.length, 4);
+  sockets[0].onclose({ code:1006 });
+  reconnect();
+  assert.equal(manager.outgoingQueue.length, 4);
+  sockets[1].readyState = 1;
+  sockets[1].onopen();
+  assert.equal(manager.outgoingQueue.length, 0);
+  assert.equal(sockets[1].sent.length, 5); // reconnect request + four accepted commands
+  sockets[1].readyState = 0;
+  manager.sendEnvelope({ type:"command", sequence:101 });
+  manager.disconnect();
+  assert.equal(manager.outgoingQueue.length, 0);
+  assert.equal(manager.sendEnvelope({ type:"command" }).ok, false);
+  manager.connect("ws://next-battle");
+  assert.equal(manager.outgoingQueue.length, 0);
+  manager.sendEnvelope({ type:"command" });
+  manager.connect("ws://another-battle");
+  assert.equal(manager.outgoingQueue.length, 0);
+  manager.disconnect();
+});
+
+test("a failed queue send retains the unsent envelope instead of silently dropping it", () => {
+  let fail = true;
+  const socket = { readyState:0, send() { if (fail) throw new Error("transport failed"); }, close() {} };
+  const manager = new RelayWebSocketConnectionManager({
+    pvpState:new RelayPvPClientState({ playerId:"a", sessionId:"m" }),
+    createWebSocket:() => socket,
+  });
+  manager.connect("ws://test");
+  manager.sendEnvelope({ type:"command", sequence:1 });
+  socket.readyState = 1;
+  assert.throws(() => manager.flushQueue(), /transport failed/);
+  assert.equal(manager.outgoingQueue.length, 1);
+  fail = false;
+  assert.equal(manager.flushQueue(), 1);
+  assert.equal(manager.outgoingQueue.length, 0);
+  manager.disconnect();
+});

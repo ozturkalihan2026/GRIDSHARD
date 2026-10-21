@@ -323,7 +323,7 @@ async def _runtime_maintenance_pass() -> None:
     await pvp_websocket_adapter.sweep_connection_health()
     expired_session_ids = pvp_service.cleanup_expired_sessions()
     for session_id in expired_session_ids:
-        await pvp_tick_runner.stop_session(session_id)
+        await pvp_tick_runner.discard_session(session_id)
         await runtime_coordinator.delete_session(session_id)
     if runtime_coordinator.redis is None:
         matchmaking_service.cleanup_expired()
@@ -399,7 +399,10 @@ async def application_lifespan(_app: FastAPI):
                 await asyncio.to_thread(
                     apply_json_store_migrations, ACTIVE_JSON_STORE_PATHS, auto_apply=False
                 )
-                telemetry_service = InMemoryTelemetryService(repository=telemetry_repository)
+                telemetry_service = InMemoryTelemetryService(
+                    repository=telemetry_repository,
+                    max_events=TELEMETRY_MEMORY_MAX_EVENTS,
+                )
         await runtime_coordinator.open()
         worker_lease_task = asyncio.create_task(_runtime_worker_lease_loop(), name="runtime-worker-lease")
         if RUNTIME_STRICT:

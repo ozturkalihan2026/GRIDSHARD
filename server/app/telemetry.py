@@ -516,25 +516,16 @@ class InMemoryTelemetryService:
             if repository is not None
             else []
         )
-        max_events = (
-            repository.max_events
-            if repository is not None
-            and hasattr(
-                repository,
-                "max_events",
-            )
-            else None
-        )
-        if (
-            max_events is not None
-            and len(self._events)
-            > max_events
-        ):
-            self._events = (
-                self._events[
-                    -max_events:
-                ]
-            )
+        # Apply both limits on restart too. The RAM window can be smaller than
+        # persistent retention; trimming this copy never deletes stored events.
+        limits = [
+            limit for limit in (
+                self.memory_max_events,
+                getattr(repository, "max_events", None),
+            ) if limit is not None
+        ]
+        if limits:
+            self._events = self._events[-min(limits):]
 
         self._event_ids: set[str] = {
             event.event_id

@@ -17341,7 +17341,7 @@
 
   function renderBattleIdentityPanels() {
     const playerName=
-      profileState.viewModel()?.displayName
+      profileState.displayName
       || "Oyuncu";
     const opponentName=opponentBattleDisplayName();
     const canOpenProfile = isPublicProfileTarget(enemyBattlePlayerId)
@@ -19469,28 +19469,40 @@
 
   let socialPollTimer = null;
   let socialPollTick = 0;
+  let socialPollPending = false;
 
   // Mesaj kutusu ve arkadaş bildirimleri arka planda tazelenir; savaş
   // sırasında ya da sekme gizliyken istek atılmaz. Gönderilmiş bir davet
   // varken kabulü hızlı yakalamak için sıklık artar.
   function startSocialPolling() {
     if (socialPollTimer) return;
-    socialPollTimer = window.setInterval(() => {
-      if (document.hidden || document.body.dataset.appScreen === "play") return;
+    socialPollTimer = window.setInterval(() => { void refreshSocialPolling(); }, 5000);
+  }
+
+  async function refreshSocialPolling() {
+    if (socialPollPending || document.hidden || document.body.dataset.appScreen === "play") return;
+    socialPollPending = true;
+    try {
       socialPollTick += 1;
+      const requests = [];
       // Açık sohbet her turda tazelenir; karşı tarafın mesajı birkaç saniyede görünür.
       if (
         activeDirectMessagePeerId
         && activeFriendsTab === "messages"
         && document.body.dataset.appScreen === "friends"
       ) {
-        void loadDirectMessageThread();
+        requests.push(loadDirectMessageThread());
       }
       const urgent = recentBattleInviteTargets.size > 0;
-      if (!urgent && socialPollTick % 4 !== 0) return;
-      void loadRewardInbox({ quiet:true });
-      void loadSocialView({ quiet:true });
-    }, 5000);
+      if (urgent || socialPollTick % 4 === 0) {
+        requests.push(loadRewardInbox({ quiet:true }), loadSocialView({ quiet:true }));
+      }
+      // A slow network must not stack new requests every five seconds or
+      // continually invalidate chat replies before they can be displayed.
+      await Promise.allSettled(requests);
+    } finally {
+      socialPollPending = false;
+    }
   }
 
   async function loadRewardInbox({ open=false, quiet=false } = {}) {
@@ -20686,9 +20698,12 @@
   let renderedClockOvertime = null;
   let battleClockFrame = null;
   let battleClockTimer = null;
+  let battleClockUpdating = false;
 
   function requestBattleMotionFrame() {
-    if (document.hidden || !(moduleMotion.needsFrame || laser3DPilot.needsPresent || moduleFx?.active)) return;
+    // Effects can wake us from inside tick(). The current frame owns that
+    // handoff; queuing here as well would multiply rAF chains every core pulse.
+    if (battleClockUpdating || document.hidden || !(moduleMotion.needsFrame || laser3DPilot.needsPresent || moduleFx?.active)) return;
     if (battleClockTimer !== null) { window.clearTimeout(battleClockTimer); battleClockTimer = null; }
     if (battleClockFrame === null) battleClockFrame = requestAnimationFrame(updateClock);
   }
@@ -20721,6 +20736,27 @@
   function updateClock(now) {
     battleClockFrame = null;
     battleClockTimer = null;
+    battleClockUpdating = true;
+    let frameSampling = false;
+    try {
+      frameSampling = renderBattleFrame(now);
+    } finally {
+      // A transient render error must remain visible to error reporting, but
+      // must not permanently kill the clock while transport/audio keep running.
+      battleClockUpdating = false;
+      if (frameSampling || moduleMotion.needsFrame || laser3DPilot.needsPresent || moduleFx?.active || typeof window.setTimeout !== "function") {
+        battleClockFrame = requestAnimationFrame(updateClock);
+      } else {
+        // rAF waits in background tabs; the timer only sets the HUD interval.
+        battleClockTimer = window.setTimeout(
+          () => { battleClockTimer = null; battleClockFrame = requestAnimationFrame(updateClock); },
+          BATTLE_HUD_RENDER_INTERVAL_MS - 16
+        );
+      }
+    }
+  }
+
+  function renderBattleFrame(now) {
     const analyticsBattleActive = activePlayMode === "online"
       ? document.body.dataset.onlineStatus === "battle"
       : activePlayMode === "local" && localBattleStarted && !localBattleFinished;
@@ -20728,7 +20764,7 @@
     sampleBattlePerformance(now, frameSampling);
     syncFirstMatchTutorial(now);
     trackAutoGraphics(now, frameSampling);
-    if (frameSampling && !document.hidden && settingsState.viewModel()?.analyticsConsent === true) {
+    if (frameSampling && !document.hidden && settingsState.analyticsConsent) {
       // Yalnız ölçüm penceresindeki ardışık kareler sayılır.
       const gap = analyticsLastFrameAt === null ? null : now - analyticsLastFrameAt;
       analyticsLastFrameAt = now;
@@ -20807,15 +20843,7 @@
     laser3DPilot.render(now);
     if (!document.hidden) emitCoreIdleMotes(now);
     if (document.hidden) moduleFx?.clear(); else moduleFx?.tick(now);
-    if (frameSampling || moduleMotion.needsFrame || laser3DPilot.needsPresent || moduleFx?.active || typeof window.setTimeout !== "function") {
-      battleClockFrame = requestAnimationFrame(updateClock);
-    } else {
-      // rAF sekme arka plandayken bekler; zamanlayıcı yalnız aralığı belirler.
-      battleClockTimer = window.setTimeout(
-        () => { battleClockTimer = null; battleClockFrame = requestAnimationFrame(updateClock); },
-        BATTLE_HUD_RENDER_INTERVAL_MS - 16
-      );
-    }
+    return frameSampling;
   }
 
   // Savaş saati, HUD, raf ve tahta denetimi; süresi dolan efektleri de süpürür.

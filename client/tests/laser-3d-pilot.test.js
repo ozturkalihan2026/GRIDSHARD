@@ -22,12 +22,16 @@ test("all approved artwork is packaged and the extended model script precedes it
 });
 function fixture({supported=true,reduced=false}={}){
   const counts={canvas:0,draws:0,contexts:0,programs:0,buffers:0},listeners={};
+  const live={shaders:new Set(),programs:new Set(),buffers:new Set()};
+  const allocate=kind=>{const item={};live[kind].add(item);return item;};
   const gl={VERTEX_SHADER:1,FRAGMENT_SHADER:2,COMPILE_STATUS:3,LINK_STATUS:4,ARRAY_BUFFER:5,STATIC_DRAW:6,FLOAT:7,
     DEPTH_TEST:8,CULL_FACE:9,SCISSOR_TEST:10,COLOR_BUFFER_BIT:1,DEPTH_BUFFER_BIT:2,TRIANGLES:11,NO_ERROR:0,
-    createShader:()=>({}),getShaderParameter:()=>true,createProgram:()=>{counts.programs++;return{};},getProgramParameter:()=>true,
-    createBuffer:()=>{counts.buffers++;return{};},getAttribLocation:()=>0,getUniformLocation:(_,n)=>n,getError:()=>0,
+    createShader:()=>allocate("shaders"),getShaderParameter:()=>true,getShaderInfoLog:()=>"shader failed",
+    deleteShader:item=>live.shaders.delete(item),deleteProgram:item=>live.programs.delete(item),deleteBuffer:item=>live.buffers.delete(item),
+    createProgram:()=>{counts.programs++;return allocate("programs");},getProgramParameter:()=>true,
+    createBuffer:()=>{counts.buffers++;return allocate("buffers");},getAttribLocation:()=>0,getUniformLocation:(_,n)=>n,getError:()=>0,
     drawArrays:()=>{counts.draws++;}};
-  for(const name of["shaderSource","compileShader","deleteShader","attachShader","linkProgram","bindBuffer","bufferData","useProgram",
+  for(const name of["shaderSource","compileShader","attachShader","linkProgram","bindBuffer","bufferData","useProgram",
     "enableVertexAttribArray","vertexAttribPointer","enable","disable","clearColor","clear","viewport","scissor","uniform1f"])gl[name]=()=>{};
   const document={hidden:false,createElement:tag=>{assert.equal(tag,"canvas");counts.canvas++;
     return{hidden:true,width:0,height:0,setAttribute:()=>{},addEventListener:(name,fn)=>{listeners[name]=fn;},
@@ -36,8 +40,44 @@ function fixture({supported=true,reduced=false}={}){
   let enabled=true;
   const pilot=new GridshardLaser3DPilot({document,root,rectFor:()=>({left:20,top:40,width:70,height:70}),enabled:()=>enabled,reduced:()=>reduced,dpr:()=>3});
   const host=()=>({isConnected:true,dataset:{}});
-  return{pilot,document,counts,listeners,host,gl,setEnabled:value=>{enabled=value;}};
+  return{pilot,document,counts,listeners,host,gl,live,setEnabled:value=>{enabled=value;}};
 }
+
+test("GPU setup and draw failures release allocated resources and stop retry churn",()=>{
+  for(const failure of ["fragment","link","attribute","upload","draw","gpu-error"]){
+    const f=fixture(),host=f.host();
+    if(failure==="fragment") {let compiled=0;f.gl.getShaderParameter=()=>++compiled===1;}
+    if(failure==="link") f.gl.getProgramParameter=()=>false;
+    if(failure==="attribute") f.gl.getAttribLocation=()=>-1;
+    if(failure==="upload") f.gl.bufferData=()=>{throw new Error("upload failed");};
+    if(failure==="draw") f.gl.drawArrays=()=>{throw new Error("draw failed");};
+    if(failure==="gpu-error") f.gl.getError=()=>1285;
+    f.pilot.attach("a",host);
+    assert.doesNotThrow(()=>f.pilot.render(0),failure);
+    assert.equal(f.pilot.failed,true,failure);
+    assert.equal(host.dataset.deviceRenderer,undefined,failure);
+    assert.equal(f.pilot.canvas.hidden,true,failure);
+    for(const [kind,items] of Object.entries(f.live)) assert.equal(items.size,0,`${failure}: ${kind}`);
+    for(let frame=1;frame<=100;frame++) f.pilot.render(frame*16);
+    assert.equal(f.counts.contexts,1,failure);
+  }
+});
+
+test("lost GPU context waits for restoration without trying to rebuild every frame",()=>{
+  const f=fixture(),host=f.host();f.pilot.attach("a",host);f.pilot.render(0);
+  f.listeners.webglcontextlost({preventDefault(){}});
+  // The browser releases GPU objects on context loss; drop only our handles.
+  for(const resources of Object.values(f.live)) resources.clear();
+  assert.equal(f.pilot.program,null);
+  assert.equal(f.pilot.meshes.size,0);
+  assert.equal(f.pilot.needsPresent,false);
+  for(let frame=1;frame<=100;frame++) f.pilot.render(frame*16);
+  assert.equal(f.counts.contexts,1);
+  f.listeners.webglcontextrestored();
+  assert.equal(f.pilot.render(2000),true);
+  assert.equal(f.counts.contexts,2);
+  assert.equal(host.dataset.deviceRenderer,"webgl");
+});
 test("one mesh has finite triangles, unit normals, colors and separate base/head groups",()=>{
   const mesh=laserMesh();assert.ok(mesh.length>1000);assert.equal(mesh.length%30,0);
   const groups=new Set();
@@ -111,7 +151,7 @@ test("motion wakes the existing clock once; it does not create duplicate frame o
   let requests=0,cancels=0;
   const context=vm.createContext({document:{hidden:false},moduleMotion:{needsFrame:true},laser3DPilot:{needsPresent:false},
     window:{clearTimeout:id=>{assert.equal(id,7);cancels++;}},requestAnimationFrame:()=>{requests++;return 42;},updateClock:()=>{}});
-  vm.runInContext(`let battleClockTimer=7,battleClockFrame=null;${body};requestBattleMotionFrame();requestBattleMotionFrame();`,context);
+  vm.runInContext(`let battleClockTimer=7,battleClockFrame=null,battleClockUpdating=false;${body};requestBattleMotionFrame();requestBattleMotionFrame();`,context);
   assert.equal(requests,1);assert.equal(cancels,1);
   context.document.hidden=true;vm.runInContext("requestBattleMotionFrame()",context);assert.equal(requests,1);
   const hud=source.slice(source.indexOf("// HUD ve tahta denetimi her karede çalışmaz:"),source.indexOf("moduleMotion.tick(now)"));

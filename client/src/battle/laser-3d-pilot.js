@@ -306,17 +306,24 @@
       gl_FragColor=vec4(clamp((v_color*light+vec3(gloss))*contour,0.,1.)*u_dim,1.0);
     }`;
   function compile(gl,type,source) {
-    const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);
-    if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS)){
-      const log=gl.getShaderInfoLog(shader);gl.deleteShader(shader);throw new Error(log || "Laser shader compile failed");
+    const shader=gl.createShader(type);
+    try {
+      gl.shaderSource(shader,source);gl.compileShader(shader);
+      if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS)){
+        throw new Error(gl.getShaderInfoLog(shader) || "Laser shader compile failed");
+      }
+      return shader;
+    } catch(error) {
+      gl.deleteShader(shader);
+      throw error;
     }
-    return shader;
   }
 
   class GridshardLaser3DPilot {
     constructor({document,root,rectFor,enabled=()=>true,reduced=()=>false,dpr=()=>1}) {
       Object.assign(this,{document,root,rectFor,enabled,reduced,dpr});
       this.entries=new Map();this.dirty=false;this.failed=false;this.canvas=null;this.gl=null;
+      this.meshes=new Map();this.program=null;this.contextLost=false;this.lastError=null;
       this.animating=false;
       this.lastTime=null;this.lastGeometry="";
     }
@@ -367,49 +374,74 @@
       return {center:projectPoint(rect,[0,spec.emitter[1],0]),emitter:projectPoint(rect,raised(spec.emitter),entry.yaw),pair:spec.pair?.map(p=>projectPoint(rect,raised(p),entry.yaw))};
     }
     invalidate(){this.dirty=true;}
-    get needsPresent(){return this.dirty && this.entries.size > 0 && !this.failed && this.enabled();}
+    get needsPresent(){return this.dirty && this.entries.size > 0 && !this.failed && !this.contextLost && this.enabled();}
     fallback(entry){delete entry.host.dataset.deviceRenderer;}
     suspend(){
       for(const entry of this.entries.values())this.fallback(entry);
       if(this.canvas)this.canvas.hidden=true;
       this.lastTime=null;this.dirty=true;this.animating=false;
     }
+    releaseGraphics({lost=false}={}) {
+      const gl=this.gl;
+      if(gl && !lost){
+        // Deleting a bound program defers its release until it is unbound.
+        try{gl.useProgram(null);gl.bindBuffer(gl.ARRAY_BUFFER,null);}catch(_){}
+        for(const mesh of this.meshes.values()){
+          try{gl.deleteBuffer(mesh.buffer);}catch(_){}
+        }
+        try{if(this.program)gl.deleteProgram(this.program);}catch(_){}
+      }
+      this.meshes.clear();this.program=null;this.gl=null;this.attributes=[];this.checked=false;
+    }
+    fail(error) {
+      this.lastError=String(error?.message || error || "Device rendering failed");
+      this.releaseGraphics();this.failed=true;this.suspend();return false;
+    }
     init() {
+      if(this.contextLost)return false;
       if(this.gl || this.failed)return Boolean(this.gl);
       try {
         if(!this.canvas){
           const canvas=this.document.createElement("canvas");canvas.className="module-device-3d-layer";
           canvas.setAttribute("aria-hidden","true");canvas.hidden=true;
-          canvas.addEventListener("webglcontextlost",event=>{event.preventDefault();this.gl=null;this.suspend();});
-          canvas.addEventListener("webglcontextrestored",()=>{this.failed=false;this.gl=null;this.checked=false;this.invalidate();});
+          canvas.addEventListener("webglcontextlost",event=>{event.preventDefault();this.contextLost=true;this.releaseGraphics({lost:true});this.suspend();});
+          canvas.addEventListener("webglcontextrestored",()=>{this.contextLost=false;this.failed=false;this.invalidate();});
           this.root.appendChild(canvas);this.canvas=canvas;
         }
         const gl=this.canvas.getContext("webgl",{alpha:true,antialias:true,premultipliedAlpha:true,preserveDrawingBuffer:false,powerPreference:"low-power"});
         if(!gl)throw new Error("WebGL unavailable");
-        const program=gl.createProgram(),v=compile(gl,gl.VERTEX_SHADER,VERTEX),f=compile(gl,gl.FRAGMENT_SHADER,FRAGMENT);
-        gl.attachShader(program,v);gl.attachShader(program,f);gl.linkProgram(program);
-        gl.deleteShader(v);gl.deleteShader(f);
+        this.gl=gl;
+        const program=this.program=gl.createProgram(),shaders=[];
+        try {
+          shaders.push(compile(gl,gl.VERTEX_SHADER,VERTEX));
+          shaders.push(compile(gl,gl.FRAGMENT_SHADER,FRAGMENT));
+          for(const shader of shaders)gl.attachShader(program,shader);
+          gl.linkProgram(program);
+        } finally {
+          for(const shader of shaders)gl.deleteShader(shader);
+        }
         if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error("Laser program link failed");
-        this.meshes=new Map();
         gl.useProgram(program);
         this.attributes=[["a_position",3,0],["a_normal",3,12],["a_color",3,24],["a_part",1,36]].map(([name,size,offset])=>{
           const loc=gl.getAttribLocation(program,name);if(loc<0)throw new Error("Device attribute missing");
           gl.enableVertexAttribArray(loc);return {loc,size,offset};
         });
         gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.clearColor(0,0,0,0);
-        this.gl=gl;this.program=program;
         this.yawUniform=gl.getUniformLocation(program,"u_yaw");this.recoilUniform=gl.getUniformLocation(program,"u_recoil");
         this.dimUniform=gl.getUniformLocation(program,"u_dim");
         this.workUniform=gl.getUniformLocation(program,"u_work");this.spinUniform=gl.getUniformLocation(program,"u_spin");
-        this.checked=false;return true;
-      }catch(_error){this.failed=true;this.gl=null;this.suspend();return false;}
+        this.checked=false;this.lastError=null;return true;
+      }catch(error){return this.fail(error);}
     }
     render(time) {
+      try{return this.renderFrame(time);}catch(error){return this.fail(error);}
+    }
+    renderFrame(time) {
       for(const [id,entry]of this.entries){if(!entry.host.isConnected){this.fallback(entry);this.entries.delete(id);this.dirty=true;}}
       if(!this.entries.size || !this.enabled() || this.document.hidden){
         if(this.canvas && !this.canvas.hidden)this.suspend();return false;
       }
-      if(!this.dirty || this.failed)return false;
+      if(!this.dirty || this.failed || this.contextLost)return false;
       // All geometry reads precede canvas sizing and DOM visibility writes.
       const area=this.root.getBoundingClientRect();
       if(!(area.width>0 && area.height>0))return false;
@@ -432,7 +464,12 @@
       let moving=false;
       for(const {entry,rect}of items){
         let mesh=this.meshes.get(entry.definition);
-        if(!mesh){const data=laserMesh(entry.definition),buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);mesh={buffer,count:data.length/10};this.meshes.set(entry.definition,mesh);}
+        if(!mesh){
+          const data=laserMesh(entry.definition),buffer=gl.createBuffer();
+          // Record ownership before upload: a failed bufferData must release it.
+          mesh={buffer,count:data.length/10};this.meshes.set(entry.definition,mesh);
+          gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);
+        }
         gl.bindBuffer(gl.ARRAY_BUFFER,mesh.buffer);
         for(const {loc,size,offset}of this.attributes)gl.vertexAttribPointer(loc,size,gl.FLOAT,false,40,offset);
         const delta=entry.target-entry.yaw;
@@ -453,7 +490,7 @@
         gl.drawArrays(gl.TRIANGLES,0,mesh.count);
       }
       // One startup error check, not a blocking GPU query on every frame.
-      if(!this.checked){this.checked=true;if(gl.getError()!==gl.NO_ERROR){this.failed=true;this.gl=null;this.suspend();return false;}}
+      if(!this.checked){this.checked=true;if(gl.getError()!==gl.NO_ERROR)return this.fail("Device GPU startup error");}
       for(const {entry}of items)if(entry.host.dataset.deviceRenderer!=="webgl")entry.host.dataset.deviceRenderer="webgl";
       this.dirty=moving;this.animating=moving;return true;
     }

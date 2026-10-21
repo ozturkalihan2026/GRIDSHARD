@@ -13,10 +13,9 @@ DISABLING_SABOTAGE_DEBUFF_IDS = frozenset({
 
 
 def has_disabling_sabotage(module: BattleModule) -> bool:
-    return any(
-        effect_id in module.debuffs
-        for effect_id in DISABLING_SABOTAGE_DEBUFF_IDS
-    )
+    # This predicate runs many times per tick; avoid allocating a generator for
+    # every card/system check. Read current keys, never cache mutable debuffs.
+    return bool(module.debuffs) and not DISABLING_SABOTAGE_DEBUFF_IDS.isdisjoint(module.debuffs)
 
 
 def module_is_operational(module: BattleModule) -> bool:

@@ -74,6 +74,7 @@ class RuntimeCoordinator:
         self._lease_deadline = 0.0
         self._lease_lost = False
         self._online_until = {}
+        self._next_presence_cleanup = 0.0
 
     @property
     def owns_worker(self):
@@ -123,11 +124,25 @@ class RuntimeCoordinator:
     async def touch_player(self, player_id, ttl_seconds=90):
         if self.redis is not None:
             await self.redis.set(f"{self.namespace}:presence:{player_id}", self.owner_id, ex=ttl_seconds)
-        self._online_until[player_id] = self.now_func() + ttl_seconds
-        self._online_until = {owner: expiry for owner, expiry in self._online_until.items() if expiry > self.now_func()}
+        now = self.now_func()
+        self._prune_presence(now)
+        self._online_until[player_id] = now + ttl_seconds
+
+    def _prune_presence(self, now):
+        # Presence is touched on authenticated requests. Sweeping on each one
+        # made N simultaneous players cost O(N²); expiry checks stay exact,
+        # while dead entries are reclaimed at most once per ten seconds.
+        if now < self._next_presence_cleanup:
+            return
+        self._next_presence_cleanup = now + 10.0
+        expired = [owner for owner, expiry in self._online_until.items() if expiry <= now]
+        for owner in expired:
+            del self._online_until[owner]
 
     def player_online(self, player_id):
-        return self._online_until.get(player_id, 0) > self.now_func()
+        now = self.now_func()
+        self._prune_presence(now)
+        return self._online_until.get(player_id, 0) > now
 
     async def open(self) -> None:
         if not self.redis_url:

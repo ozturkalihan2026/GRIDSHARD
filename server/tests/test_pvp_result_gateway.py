@@ -19,7 +19,7 @@ def destroy_core(engine, player_id):
 
 def reset():
     pvp_service._sessions.clear()
-    pvp_websocket_adapter.registry.connections.clear()
+    pvp_websocket_adapter.registry.clear()
 
 
 def test_result_endpoint_returns_terminal_server_result():

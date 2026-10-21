@@ -59,6 +59,54 @@
       "ogg_bytes": 172675,
       "m4a_bytes": 563009
     },
+    "battle_v9_01_sub": {
+      "sha256": "3576954abbfb12d54b16f085a1ed343e1ac34f559fdb038c49ef32102981f454",
+      "wav_bytes": 2646044,
+      "ogg_bytes": 152029,
+      "m4a_bytes": 435221
+    },
+    "battle_v9_02_pulse": {
+      "sha256": "1166b3085c2ea7b2fa962feaad4976f52770393613c3ff7b83ce8f545e58be4b",
+      "wav_bytes": 2646044,
+      "ogg_bytes": 234514,
+      "m4a_bytes": 526825
+    },
+    "battle_v9_03_percussion": {
+      "sha256": "d170b561bad88cf07cf9c20fe5eb2d76e6f81bf51279a9699c7ad35c83f7fcb3",
+      "wav_bytes": 2646044,
+      "ogg_bytes": 175092,
+      "m4a_bytes": 494342
+    },
+    "battle_v9_04_ostinato": {
+      "sha256": "712be7b517d0a2d6844176010b7264f70a3a561879dda255f45bd59ced0d8b9a",
+      "wav_bytes": 2646044,
+      "ogg_bytes": 193303,
+      "m4a_bytes": 441467
+    },
+    "battle_v9_05_shards": {
+      "sha256": "3e8c394d74a96e5c1685cad472e55368ade24b46757978a2e929201c719e67c1",
+      "wav_bytes": 2646044,
+      "ogg_bytes": 146743,
+      "m4a_bytes": 481802
+    },
+    "battle_v9_06_dissonance": {
+      "sha256": "43ec3d0d84726a9958618601dc9c26e7e155fb5abfe95975d225fd0423671e7e",
+      "wav_bytes": 2646044,
+      "ogg_bytes": 198440,
+      "m4a_bytes": 447062
+    },
+    "battle_v9_07_pressure": {
+      "sha256": "000886f1a87a3ed7c8e89cdc23aaa5f71e2cccec803656cb1b54c681c02b0c5a",
+      "wav_bytes": 2646044,
+      "ogg_bytes": 111809,
+      "m4a_bytes": 476979
+    },
+    "cooling_air": {
+      "sha256": "823d49e85a5d3f3100ede2742a2cf58f4bb582fb5f3045d1296eb288fc693782",
+      "wav_bytes": 20330,
+      "ogg_bytes": 5615,
+      "m4a_bytes": 4001
+    },
     "core_hit": {
       "sha256": "8f27bc13d6ab801ac85ccbadcdb2f2f3e0a855f37b3231f7311c22571bcc7698",
       "wav_bytes": 37528,
@@ -83,6 +131,12 @@
       "ogg_bytes": 9479,
       "m4a_bytes": 5464
     },
+    "electrical_hit": {
+      "sha256": "caa2a23c5b0bcfb18caba838e04e005a947a16c215972e6986cc1d38ceccb3cb",
+      "wav_bytes": 12392,
+      "ogg_bytes": 5055,
+      "m4a_bytes": 2941
+    },
     "emp": {
       "sha256": "9d43c8d644e4710ca52120c72180944097ca7ac0f2a4e37d7770a9c70dd1f053",
       "wav_bytes": 25622,
@@ -95,17 +149,41 @@
       "ogg_bytes": 4034,
       "m4a_bytes": 3761
     },
+    "kinetic_hit": {
+      "sha256": "062c3e2246c7360def0746e00ed32682ffdc7e45a2f0890894a855ba9b16742a",
+      "wav_bytes": 9746,
+      "ogg_bytes": 4636,
+      "m4a_bytes": 2621
+    },
+    "laser_burn": {
+      "sha256": "fb1428224a3cd580e3deeade9a7ec4241f81be72df1d8bf99b5de723647d3c0e",
+      "wav_bytes": 31796,
+      "ogg_bytes": 7238,
+      "m4a_bytes": 5688
+    },
     "laser_fire": {
       "sha256": "f4661f2dacde0165cedbbc12855f8fd436de35b32a3f4b2f27c96c6dd35bdb98",
       "wav_bytes": 45908,
       "ogg_bytes": 7437,
       "m4a_bytes": 4457
     },
+    "laser_pulse_v2": {
+      "sha256": "dd2d3fb686070cd5931202b2dd90987246f9020a990d1c58c6de0b96c09614ec",
+      "wav_bytes": 10628,
+      "ogg_bytes": 3909,
+      "m4a_bytes": 2741
+    },
     "matchmaking_rise": {
       "sha256": "75dd103aede81d1d2449525a7ee9ff31b017d40a05b4111c4feaa0bb1e9e2e7e",
       "wav_bytes": 264644,
       "ogg_bytes": 17951,
       "m4a_bytes": 53299
+    },
+    "matchmaking_v9_akis": {
+      "sha256": "cc68218bda0ca79e259ca26a6c1f1d418e64763d14beef661cd52fd0c2f0be6e",
+      "wav_bytes": 2822444,
+      "ogg_bytes": 264435,
+      "m4a_bytes": 545336
     },
     "menu_ensemble_v6": {
       "sha256": "c64b3bffc398688524f9c6d54a7b348b80d18e7f102247a234d68e3b208b4a3d",
@@ -130,6 +208,12 @@
       "wav_bytes": 11289644,
       "ogg_bytes": 1062819,
       "m4a_bytes": 2306507
+    },
+    "missile_explosion": {
+      "sha256": "2d5026886b88c1ad4c7c5a47af0e8f3f12ac81faaf18f05c9ca9833c594fb8b9",
+      "wav_bytes": 29150,
+      "ogg_bytes": 6730,
+      "m4a_bytes": 5420
     },
     "missile_fire": {
       "sha256": "4090cbe9e7546b2a468bbb2e33a387a614390e72d196e0be95107a7c67bc6efe",
@@ -160,6 +244,24 @@
       "wav_bytes": 54728,
       "ogg_bytes": 8112,
       "m4a_bytes": 5087
+    },
+    "repair_beam": {
+      "sha256": "52c86e9582e511280bde0b1b2e3d053177b38ca2348ea556c10b5a211cc1acaa",
+      "wav_bytes": 18566,
+      "ogg_bytes": 4129,
+      "m4a_bytes": 3797
+    },
+    "rocket_launch": {
+      "sha256": "c8aad6985b4ed1ba983c423cb6434f7dcc64a1256e69f790061e34fa934873e5",
+      "wav_bytes": 15038,
+      "ogg_bytes": 5389,
+      "m4a_bytes": 3272
+    },
+    "shield_absorb": {
+      "sha256": "19e1a916afc59291b529e6d8b669b6a7faeb14fda4bbfe6b4b6f68cf87097fcf",
+      "wav_bytes": 13274,
+      "ogg_bytes": 5084,
+      "m4a_bytes": 3213
     },
     "shield_hit": {
       "sha256": "54d06cf3dc7cee95cd520ca8c8943dee0992fa6a8142e8bdcbdb03bf19d4248b",
