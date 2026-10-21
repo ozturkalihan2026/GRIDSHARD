@@ -22636,6 +22636,8 @@
       weight:12,
       done:(c) => c.finished,
       present:(c) => {
+        // Leave the error/return action reachable; resume this step on home.
+        if (c.status === "error") return null;
         // Eşleştirme iptal edildiyse ok yeniden SAVAŞ düğmesini gösterir.
         if (!c.inMatchFlow) return c.screen === "menu" ? ONBOARDING_START_BATTLE : null;
         if (!c.snapshotReady || !c.directed) return null;

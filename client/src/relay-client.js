@@ -2191,13 +2191,6 @@
         };
       }
 
-      this.connectionManager.sendSetup(
-        this.pendingSetup
-      );
-      this.connectionManager.sendReady(
-        true
-      );
-
       this._setStatus(
         ONLINE_PLAY_STATUS.MATCHED
       );
@@ -2213,6 +2206,16 @@
       );
       this.connectionManager.connect(
         wsUrl
+      );
+
+      // connect() reopens sending and clears the previous URL's queue. Only
+      // then enqueue this session's handshake; disconnect() rejects sends.
+      // The socket's onopen sends request_lobby and flushes setup -> ready.
+      this.connectionManager.sendSetup(
+        this.pendingSetup
+      );
+      this.connectionManager.sendReady(
+        true
       );
 
       this._setStatus(

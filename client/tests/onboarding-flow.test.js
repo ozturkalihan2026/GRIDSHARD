@@ -72,6 +72,30 @@ function build(steps, { storage = memoryStorage(), clock = { now: 0 } } = {}) {
 
 const target = (name) => ({ name, disabled: false });
 
+test("eşleştirme hatasında eğitim hata panelini serbest bırakır; iptal sonrası sürer", () => {
+  const app = fs.readFileSync(path.join(ROOT, "src/app.js"), "utf8").replace(/\r\n/g, "\n");
+  const start = app.indexOf('    {\n      id:"battle",');
+  const end = app.indexOf('    {\n      id:"victory",', start);
+  assert.ok(start > 0 && end > start);
+  const battleStep = vm.runInNewContext(`(${app.slice(start, end).trim().replace(/,$/, "")})`, {
+    ONBOARDING_START_BATTLE:{key:"start", target:target("battle"), mode:"tap"},
+    directedBattleView:() => ({key:"arena", title:"Savaş", mode:"wait"}),
+  });
+  const { flow, overlay, storage } = build([battleStep]);
+  flow.startAt("battle");
+  const base = {screen:"menu", status:"idle", inMatchFlow:false};
+  flow.update(base);
+  assert.ok(overlay.current);
+  flow.update({...base, status:"error"});
+  assert.equal(overlay.current, null, "guide must not cover the visible error/return action");
+  assert.equal(flow.active, true);
+  assert.equal(storage.getItem("done"), null);
+  flow.update({...base, status:"cancelled"});
+  assert.ok(overlay.current, "guide resumes after returning to the home screen");
+  flow.update({...base, status:"readying", inMatchFlow:true});
+  assert.equal(overlay.current, null);
+});
+
 test("oyuncu işi yapınca akış kendiliğinden ilerler ve kaldığı adımı saklar", () => {
   const shop = target("shop");
   const { flow, overlay, storage } = build([

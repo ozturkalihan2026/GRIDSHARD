@@ -2,6 +2,37 @@
 
 Güncelleme tarihi: 21 Ekim 2026
 
+## Son düzeltme — CI #61 ve kabul edilen soketten sonra başlamayan savaş
+
+Kullanıcı `6a757f3` commit'ini push etti. CI #61 istemci/sunucu ve gerçek
+PostgreSQL/Redis/üretim imajı kontrollerinde geçti; tarayıcı işinde masaüstü
+savaş yoğunluğu, Android ve iPhone savaş açılışı testleri `battle` yerine
+`error` aldığı için kırıldı. Kullanıcının yerel sorunu aynı akıştı.
+
+Önceki bağlantı temizliği `disconnect()` sonrası gönderimi reddediyor ve URL
+değişiminde eski kuyruğu boşaltıyordu. Koordinatör yeni oturuma ait setup/ready
+mesajlarını `connect()` öncesinde gönderdiğinden bu ikisi kayboluyordu.
+`_activateMatch()` artık önce yeni bağlantıyı kurar, sonra setup -> ready
+kuyruğunu oluşturur; soket açılınca lobby -> setup -> ready gönderilir.
+Kopmuş/eski soket temizliği ve kuyruk sınırı korunur. Eşleştirme hatasında
+eğitim kartı da gizlenir; ANA EKRANA DÖN erişilebilir, adım dönüşte sürer.
+
+Beş yeni gerçek koordinatör/bağlantı yöneticisi entegrasyon testi ve eğitim
+hata kurtarma regresyonu eski kodda başarısızdı, düzeltmeyle geçti.
+**642 istemci testi, 10 paketleme ve 9 hedefli tarayıcı E2E geçti**:
+3 cihaz projesinde savaş açılışı + eğitim hatasından tekrar deneme (6);
+arkadaş odası, iki oyunculu sonuç, yeniden bağlanma/rematch (3).
+E2E ayrı localhost 8891 / geçici veriler / headless test profilleriyle yapıldı;
+kullanıcının açık tarayıcısı ve geliştirici sunucusu yönetilmedi. Test sunucusu
+otomatik kapandı. Önceki sunucu sonucu 1657/44 ve CI sunucu işi yeşil.
+Web build `84f6d6e7d09376c0`, 619 varlık:
+`artifacts/ci-fix-20261020/web-c97lPV/dist/`.
+
+Yerelde güncel kaynak için Ctrl+F5 ile kullanıcı yeniden deneyebilir.
+Düzeltme henüz commit/push edilmedi; kullanıcı commit/push yaptıktan sonra yeni
+CI doğrulanmalı. CI #61 hâlâ eski commit'in kırmızı sonucudur. Sunucu geçişi,
+imzalı AAB ve Play Console sürümü bekliyor; bu turda yayın yapılmadı.
+
 ## Son işlem — üçüncü performans taraması; akşamki yayın öncesi doğrulama
 
 Çevrimdışı istemci telemetrisi sınırlandı (varsayılan 256 olay); yeni olayın

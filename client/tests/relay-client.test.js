@@ -1552,14 +1552,18 @@ function createClient() {
     );
     assert.strictEqual(
       sent[0].type,
-      "setup"
+      "connect"
     );
     assert.strictEqual(
       sent[1].type,
+      "setup"
+    );
+    assert.strictEqual(
+      sent[2].type,
       "ready"
     );
     assert.strictEqual(
-      sent[2].url,
+      sent[0].url,
       "wss://node-b.example.test/mm-1"
     );
     assert.strictEqual(

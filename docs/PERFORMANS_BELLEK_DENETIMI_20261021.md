@@ -21,18 +21,22 @@ veya bütün uygulamada hiçbir hata kalmadığı iddiası değildir.
 
 ## Doğrulama
 
-- Müzik entegrasyonu ve üç tur derin inceleme dahil **636 istemci testi geçti**.
+- Müzik entegrasyonu, üç tur derin inceleme ve eşleştirme düzeltmesi dahil
+  **642 istemci testi geçti**.
 - Sunucu: **1657 geçti, 44 koşullu atlandı**. Gerçek PostgreSQL/Redis gibi
   dış servis koşullarına bağlı kontroller bu yerel sonuçla doğrulanmış sayılmaz.
 - Paketleme sözleşmeleri: **10 geçti**; mevcut `dist/` korunarak ayrı dizinde
-  gerçek web derlemesi: `834d7821769e7308`, 619 varlık (yeni müzikler dahil).
-  Konum: `artifacts/ci-fix-20261020/web-YQDdCZ/dist/`. Üçüncü tur derlemesi
-  ilk denemede geçti. İkinci turdaki Windows `EPERM` olayı tekrar etmedi.
+  gerçek web derlemesi: `84f6d6e7d09376c0`, 619 varlık (yeni müzikler dahil).
+  Konum: `artifacts/ci-fix-20261020/web-c97lPV/dist/`. Son derleme ilk denemede
+  geçti. İkinci turdaki Windows `EPERM` olayı tekrar etmedi.
 - Yardımcı araçlar: **22 geçti**; Python import taraması **415 dosya / 0 sorun**.
 - Yeni müziklerin 24 WAV/OGG/AAC dosyası çevrimdışı çözüldü, süre/katman
   eşzamanlılığı/seviye kontrolleri geçti. 47 sesin mobil manifesti güncel.
-- Eğitim görünürlüğü E2E testi üç tarayıcı projesinde keşfedildi; tarayıcı
-  başlatılmadı ve oyun sunucusu çalıştırılmadı. Gerçek E2E sonucu CI'de bekleniyor.
+- CI #61'de önceki eğitim görünürlüğü testleri geçti; savaş açılışı üç projede
+  kırıldı. Aşağıdaki düzeltmeden sonra ayrı localhost/geçici verilerle **9 hedefli
+  tarayıcı E2E geçti** (6 AI/eğitim + 3 iki oyunculu). Otomatik testler kişisel
+  tarayıcı profili kullanmadı; gerçek cihaz kontrolü ve yeni commit'in tam CI'si
+  ayrıca bekleniyor.
 - Bilinen tek test uyarısı: Starlette/httpx test istemcisi kullanımdan kalkma
   uyarısı. Bu tur bağımlılık yükseltmesi yapılmadı.
 
@@ -81,6 +85,37 @@ Yeni testler: `telemetry-retention.test.js` (5), `battle-hot-state.test.js` (2),
 `test_operational_predicate_equivalence.py` (48). Kare döngüsü fixture'ı model
 kopyası yapılırsa hata verecek şekilde güçlendirildi. Tanılama kuyruğu ödeme,
 iade veya kalıcı ödül kuyruğu değildir; bu kayıtlar silinmez/değiştirilmez.
+
+## Yayın öncesi regresyon — eşleşme var, savaş başlamıyor
+
+CI #61 / `6a757f3`: üç tarayıcı testi `data-online-status="battle"` beklerken
+`error` gördü. Kullanıcının kaydında HTTP join ve WebSocket accept başarılıydı.
+Kaynak, önceki kaynak ömrü değişikliğinin koordinatörle etkileşimiydi:
+`disconnect()` artık gönderimi reddediyor, `connect()` ise URL değiştiğinde eski
+kuyruğu siliyordu. Yeni maça ait `submit_setup` / `set_ready` daha önce bu iki
+çağrı arasında oluşturulduğu için sunucuya ulaşmıyordu. Soket açık olsa da maç
+kurulumu tamamlanmıyor ve 15 saniyelik hazır olma süresi hata veriyordu.
+
+Koordinatör önce yeni URL'ye `connect()` çağırıp sonra bu maça ait setup -> ready
+mesajlarını kuyruğa koyar. Gerçek soket açılınca lobby -> setup -> ready sırası
+korunur. Yeni maç, iptal/yeni maç, sorguyla bulunan eğitim maçı, özel oda ve
+ilk açılıştan önce bağlantı kopması beş gerçek sınıf entegrasyon testiyle
+doğrulandı. Önceki mock bağlantı her gönderimi başarılı kabul ettiği için bu
+etkileşimi yakalamıyordu; yeni testler gerçek yöneticiyi çalıştırır.
+
+İkinci hata: eşleştirme `error` durumuna geçince eğitim tekrar SAVAŞ düğmesini
+gösteriyor ve görünür hata/geri dönüş eylemini örtüyordu. Eğitim bu hata sırasında
+gizlenir; kullanıcı ana ekrana dönünce aynı adım devam eder. Eğitim tamamlandı
+sayılmaz ve ilerleme silinmez.
+
+İki regresyon da eski kodda yeniden üretildi. Düzeltmeyle 642 istemci testi ve
+9 hedefli headless E2E geçti: masaüstü yoğun savaş yerleşimi, Android/iPhone
+savaş yerleşimi; üç projede eğitim hatası -> geri dön -> ilk savaşı aç akışı;
+arkadaş odası, iki oyunculu sonuç ve yeniden bağlantı/rematch. E2E localhost 8891
+ve geçici depolama kullandı, test sunucusu sonunda kapandı. Sunucu kodu bu
+düzeltmede değişmedi; önceki 1657/44 sonucu ve CI sunucu işleri başarılı.
+Yeni commit/push kullanıcıda; CI #61'in kırmızı durumu henüz yeni CI sonucu
+ile değiştirilmedi. Canlı geçiş ve AAB hâlâ bekliyor.
 
 ## Korunanlar ve yayın öncesi kalanlar
 

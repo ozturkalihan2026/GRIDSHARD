@@ -1,6 +1,7 @@
 const { test, expect } = require("@playwright/test");
 const fs = require("node:fs");
 const path = require("node:path");
+const { waitForParticipantReady } = require("./ui-helpers");
 
 const client = path.resolve(__dirname, "../client");
 const html = fs.readFileSync(path.join(client, "index.html"), "utf8");
@@ -67,4 +68,41 @@ test("eğitim katmanı arayüzü örtmez; normal pencereler panel stilini korur"
   const panel = page.locator("#guide-fixture-panel");
   await expect(panel).toHaveCSS("border-top-width", "2px");
   expect(await panel.evaluate(element => getComputedStyle(element).backgroundImage)).toContain("linear-gradient");
+});
+
+test("eşleştirme hatası eğitim altında kilitlenmez; tekrar denemede ilk savaş açılır", async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = [];
+  page.on("pageerror", error => errors.push(String(error)));
+  let failJoin = true;
+  await page.route("**/matchmaking/join", route => failJoin
+    ? route.fulfill({status:503, contentType:"application/json", body:'{"detail":"Fixture connection failure"}'})
+    : route.continue());
+  await page.addInitScript(() => {
+    localStorage.removeItem("gridshard.tutorial.v1");
+    localStorage.setItem("gridshard.onboarding.step.v1", "battle");
+  });
+  await page.goto("/?e2e=1&onboarding=1", {waitUntil:"domcontentloaded"});
+  await waitForParticipantReady(page);
+  const guide = page.locator("dialog.guide-overlay");
+  const tapBattleTarget = async () => {
+    await expect(guide).toBeVisible();
+    await expect(guide).toHaveAttribute("data-step", "battle:start");
+    const hole = await guide.locator(".guide-hole").boundingBox();
+    expect(hole).not.toBeNull();
+    await page.mouse.click(hole.x + hole.width / 2, hole.y + hole.height / 2);
+  };
+  await tapBattleTarget();
+  await expect(page.locator("body")).toHaveAttribute("data-online-status", "error");
+  await expect(guide).not.toBeVisible();
+  await expect(page.locator("#home-matchmaking-copy")).toContainText("Fixture connection failure");
+  await page.locator("#home-matchmaking-cancel").click();
+  await expect(page.locator("#home-matchmaking-overlay")).toBeHidden();
+  failJoin = false;
+  await tapBattleTarget();
+  await expect(page.locator("body")).toHaveAttribute("data-online-status", "battle", {timeout:40_000});
+  await expect(page.locator("#home-matchmaking-overlay")).toBeHidden();
+  await expect(page.locator("#board .module-card").first()).toBeVisible();
+  await expect(guide).toHaveAttribute("data-step", "battle:arena");
+  expect(errors).toEqual([]);
 });
