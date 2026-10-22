@@ -52,6 +52,7 @@
       this.cachedAutoTier = null;
       this.window = null;
       this.badWindows = 0;
+      this.longFrameStreak = 0;
     }
 
     read(key) {
@@ -112,17 +113,28 @@
 
     // Savaşta her kare için çağrılır. Kademe indiyse yeni kademeyi döndürür.
     trackFrame(now, { sampling = true, hidden = false } = {}) {
-      if (!sampling || hidden || !Number.isFinite(now)) return this.closeWindow();
+      if (!sampling || hidden || !Number.isFinite(now)) {
+        this.longFrameStreak = 0;
+        return this.closeWindow();
+      }
       if (!this.window) {
         this.window = { start: now, last: now, frames: 0, slow: 0 };
         return null;
       }
       const gap = now - this.window.last;
       if (gap < 0 || gap > RESUME_GAP_MS) {
-        // Arka plandan dönüş: pencere baştan başlar.
-        this.window = null;
+        // One long gap may be a resume/debugger pause. Repeated foreground
+        // one-second frames are overload: discarding each one locked High.
+        this.longFrameStreak = gap > RESUME_GAP_MS ? this.longFrameStreak + 1 : 0;
+        this.window = { start: now, last: now, frames: 0, slow: 0 };
+        if (this.longFrameStreak >= 3) {
+          this.longFrameStreak = 0;
+          this.badWindows = 0;
+          return this.lower();
+        }
         return null;
       }
+      this.longFrameStreak = 0;
       this.window.last = now;
       this.window.frames += 1;
       if (gap > SLOW_FRAME_MS) this.window.slow += 1;
@@ -135,7 +147,9 @@
       if (!current) return null;
       const elapsed = current.last - current.start;
       // Çok kısa pencere hüküm vermez: ne kötü sayılır ne de sayacı sıfırlar.
-      if (elapsed < MIN_WINDOW_MS || current.frames < MIN_WINDOW_FRAMES) return null;
+      // A full 4s window with fewer than ten frames is severe overload, not
+      // missing evidence. Discarding it kept 1–2 FPS devices on High forever.
+      if (elapsed < MIN_WINDOW_MS || (current.frames < MIN_WINDOW_FRAMES && elapsed < WINDOW_MS)) return null;
       const bad =
         elapsed / current.frames > SLOW_AVERAGE_MS
         || current.slow / current.frames > SLOW_FRAME_RATIO;

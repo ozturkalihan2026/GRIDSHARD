@@ -6,7 +6,7 @@ require("../src/module-view-data.js");
 function fixture(){
   let now=0,hidden=false,quality="yuksek",load=0;
   class Element{
-    constructor(tag){this.tag=tag;this.children=[];this.dataset={};this.attrs={};this.classes=new Set();this.classList={add:(...n)=>n.forEach(v=>this.classes.add(v)),remove:(...n)=>n.forEach(v=>this.classes.delete(v))};this.style={setProperty:(k,v)=>this.style[k]=v};}
+    constructor(tag){this.tag=tag;this.children=[];this.dataset={};this.attrs={};this.classes=new Set();this.classList={contains:n=>this.classes.has(n),add:(...n)=>n.forEach(v=>this.classes.add(v)),remove:(...n)=>n.forEach(v=>this.classes.delete(v))};this.style={setProperty:(k,v)=>this.style[k]=v};}
     setAttribute(k,v){this.attrs[k]=String(v);}appendChild(n){this.children.push(n);n.parentElement=this;return n;}
     addEventListener(name,fn){(this.listeners||={})[name]=fn;}
     remove(){if(this.parentElement){const p=this.parentElement;p.children=p.children.filter(n=>n!==this);this.parentElement=null;}}
@@ -175,11 +175,11 @@ test("zero work and windup do not fabricate VFX; completed last-energy events st
   assert.deepEqual(f.sounds,["repair_beam"]);assert.equal([...f.fx.effects.keys()].filter(k=>k.startsWith("support")).length,1);
 });
 test("battery/amplifier ambient is persistent, updates registered coil pairs, and stops on unpowered/hidden",()=>{
-  const f=fixture();f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,2);
+  const f=fixture();f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,3);
   const svg=f.fx.ambient.get("own:amp"),first=svg.querySelector("path").attrs.d;
   f.rigs.get("own:amp").dataset.view="3";GridshardModuleVfx.syncArt(f.rigs.get("own:amp"));assert.notEqual(svg.querySelector("path").attrs.d,first);
   f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.get("own:amp"),svg);
-  f.snapshot.players.own.modules.find(m=>m.instance_id==="battery").is_powered=false;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,1);
+  f.snapshot.players.own.modules.find(m=>m.instance_id==="battery").is_powered=false;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,2);
   f.setHidden(true);f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,0);assert.equal(f.layer.children.length,0);
 });
 test("a destruction ahead of the snapshot cannot resurrect ambient; later active rebirth may restore it",()=>{
@@ -232,8 +232,23 @@ test("shield is a raised cap with visible honeycomb, bounded SVG nodes and indep
 });
 test("effects stay bounded under a burst and low quality/hidden paths do not spin ambient work",()=>{
   const f=fixture();for(let i=0;i<100;i++)f.fx.attack("source"+i,"enemy:target","laser");assert.ok(f.fx.effects.size<=24);assert.ok(f.layer.children.length<=24);
-  f.fx.reset();f.setQuality("dusuk");f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,0);
+  f.fx.reset();f.setQuality("dusuk");f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,1);
+  assert.equal(f.fx.ambient.get("own:shield").dataset.kind,"shield");
   f.setLoad(2);f.fx.attack("own:laser","enemy:target","laser");assert.equal(f.layer.children.length,0);
+});
+
+test("a powered shield keeps one stable shell even at low quality and releases it on disable/death",()=>{
+  const f=fixture();f.setQuality("dusuk");f.fx.receive([],f.snapshot);
+  const svg=f.fx.ambient.get("own:shield"),shape=svg.querySelector("path").attrs.d;
+  for(let i=0;i<1000;i++)f.fx.receive([],f.snapshot);
+  assert.equal(f.fx.ambient.get("own:shield"),svg);
+  GridshardModuleVfx.syncArt(f.rigs.get("own:shield"));
+  assert.equal(svg.querySelector("path").attrs.d,shape,"electricity updates cannot replace shield geometry");
+  const shield=f.snapshot.players.own.modules.find(m=>m.instance_id==="shield");
+  shield.is_powered=false;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,0);
+  shield.is_powered=true;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,1);
+  shield.hp=0;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,0);
+  f.fx.reset();assert.equal(f.queue.entries.length,0);
 });
 test("client integration has a single first-ten VFX owner and preserves native audio asset resolution",()=>{
   const app=fs.readFileSync(path.join(__dirname,"../src/app.js"),"utf8"),html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
@@ -274,4 +289,13 @@ test("old strike cleanup cannot remove a newer hit; clearing effects releases th
   f.fx.strike("own:laser");f.fx.clearEffects();
   assert.equal(rig.classes.has("is-struck"),false);
   assert.equal(f.fx.strikes.size,0);
+});
+
+test("overlapping hit feedback never forces layout or restarts the per-device class",()=>{
+  const f=fixture(),rig=f.rigs.get("own:laser");let adds=0;
+  Object.defineProperty(rig,"offsetWidth",{get(){throw new Error("hit must not force layout");}});
+  const add=rig.classList.add;rig.classList.add=(...values)=>{adds++;add(...values);};
+  for(let i=0;i<20;i++){f.fx.strike("own:laser");f.advance(i*5);}
+  assert.equal(adds,1);assert.equal(rig.classes.has("is-struck"),true);
+  f.advance(400);assert.equal(rig.classes.has("is-struck"),false);
 });

@@ -146,15 +146,15 @@ test("late HTML play rejection after ad stop cannot become a gesture-unlock retr
   assert.equal(d.currentTrack,null);
 });
 
-test("v17 lowers combat VFX while preserving music and noncombat volume", () => {
+test("v19 restores readable combat effects while preserving music and menu volume", () => {
   const {director:d,sandbox} = fixture();
   assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.battleMusicGain,2.85);
-  assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.battleSfxGain,.16);
-  assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.resultMusicGain,.55);
+  assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.battleSfxGain,.42);
+  assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.resultMusicGain,.80);
   assert.equal(d._musicTargetVolume(),.504);
   assert.equal(d._sfxTargetVolume(),.55,"menu effects are unchanged");
   for(const state of ["battle","battle_pressure","critical_core","victory","defeat"]){
-    d.state=state;assert.ok(Math.abs(d._sfxTargetVolume()-.088)<1e-12,state);
+    d.state=state;assert.ok(Math.abs(d._sfxTargetVolume()-.231)<1e-12,state);
   }
   assert.equal(d._musicTargetVolume(),.504,"the music slider/base gain is unchanged");
 });
@@ -173,7 +173,7 @@ test("laser-specific trim is shared by HTML and WebAudio instead of being lost i
     }else{
       d.triggerCue("laser_fire");await f.flush();
       const track=f.audio.find(a=>a.src?.includes("laser_pulse_v2"));assert.ok(track);
-      assert.ok(Math.abs(track.volume-.088*.65)<1e-12);
+      assert.ok(Math.abs(track.volume-.231*.65)<1e-12);
     }
   }
 });

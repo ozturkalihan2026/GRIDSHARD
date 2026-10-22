@@ -100,7 +100,9 @@ def test_health_is_the_current_readiness_contract_not_a_legacy_release_stamp():
     response = TestClient(main.app).get("/health")
     assert response.status_code == 200
     body = response.json()
-    assert body["version"] == VERSION
+    from app.version import LEGACY_HEALTH_VERSION
+    assert body["version"] == LEGACY_HEALTH_VERSION
+    assert body["release_version"] == VERSION
     assert body["pvp_protocol_version"] == 1
     assert {"player_data", "telemetry"} <= body["persistence"].keys()
     assert "release_ready" not in body

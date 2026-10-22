@@ -36,7 +36,7 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-seamless-v18"
+  "shardglass-seamless-v19"
 );
 
 assert.strictEqual(
@@ -96,7 +96,7 @@ setTimeout(() => {
   const victoryTrack = director.currentTrack;
   assert.ok(
     victoryTrack.src.includes(
-      "victory_sting.wav"
+      "victory_v9_devre.wav"
     )
   );
   assert.strictEqual(

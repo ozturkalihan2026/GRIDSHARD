@@ -8,8 +8,17 @@
     "Lazer":"laser", "Kalkan":"shield", "Soğutucu":"cooler", "Batarya":"battery",
     "Güçlendirici":"amplifier", "EMP":"emp", "Onarım":"repair", "Onarım Modülü":"repair",
     "Zırh":"armor", "Sönümleyici":"armor", "Darbe Topu":"pulse_cannon", "Füze Fırlatıcı":"missile_launcher",
+    "Hedefleme Bilgisayarı":"targeting_computer", "Bariyer":"barrier", "Ark Topu":"arc_cannon",
+    "Kapasitör":"capacitor", "Dron Üssü":"drone_bay", "Sinyal Bozucu":"jammer",
+    "Ray Topu":"railgun", "Akım Dengeleyici":"current_balancer", "Yansıtıcı":"reflector",
+    "Nano Sağlıkçı":"nano_medic", "Virüs":"virus", "Aşırı Hızlandırıcı":"overclock_unit",
+    "Plazma Havanı":"plasma_mortar", "Muhafız Kubbesi":"guardian_dome", "Kuantum Tekrarlayıcı":"quantum_repeater",
+    "Krono Rölesi":"chrono_relay", "Faz Zırhı":"phase_armor", "Sürü Fabrikatörü":"swarm_fabricator",
+    "Hassasiyet Matrisi":"precision_matrix", "İyon Mızrağı":"ion_spear", "Prizma Kalkanı":"prism_shield",
+    "Kesici":"disruptor", "Anka Onarım":"phoenix_repair", "Kuantum Topu":"quantum_cannon",
+    "Omega Güçlendirici":"omega_amplifier", "Tekillik Projektörü":"singularity_projector",
   });
-  const ATLAS_IDS = new Set(Object.values(NAMES));
+  const ATLAS_IDS = new Set(["laser","shield","cooler","battery","amplifier","emp","repair","armor","pulse_cannon","missile_launcher"]);
   const IDS = new Set([...ATLAS_IDS,"targeting_computer","barrier","arc_cannon","capacitor","drone_bay","jammer","railgun","current_balancer","reflector","nano_medic","virus","overclock_unit","plasma_mortar","guardian_dome","quantum_repeater","chrono_relay","phase_armor","swarm_fabricator","precision_matrix","ion_spear","prism_shield","disruptor","phoenix_repair","quantum_cannon","omega_amplifier","singularity_projector"]);
   const DIRECTIONS = new Set(["ne", "nw", "se", "sw"]);
   // Approved paintings as layers: fixed base + painted heading head (8A v1).
@@ -17,10 +26,10 @@
   const LAYERS = global.GridshardModuleLayerData || (typeof module !== "undefined" && module.exports ? require("./module-layer-data.js") : null);
   // The painted stage is a little larger than the cell and rises above it,
   // like an upright object standing on its socket. Square, bottom anchored.
-  // Modules stand ~1.45 cells wide; the core is the board's centrepiece and
-  // stands clearly larger (user request, 19 Oct: core > modules).
-  const STAGE = Object.freeze({ left:-.35, top:-.7, size:1.7 });
-  const CORE_STAGE = Object.freeze({ left:-.375, top:-.75, size:1.75 });
+  // Both stand on one socket. The reactor is the visual anchor, rather than
+  // shrinking it into the floor while ordinary devices tower over it.
+  const STAGE = Object.freeze({ left:-.2, top:-.4, size:1.4 });
+  const CORE_STAGE = Object.freeze({ left:-.25, top:-.42, size:1.5 });
   // Both circuits lie on one GROUND plane seen by the fixed battle camera.
   // A device turns only about its vertical axis: the painting whose ground
   // yaw is nearest to the target's ground direction is shown, never rotated
@@ -70,7 +79,12 @@
   function mountCore(host, coreType) {
     const layer=LAYERS?.[coreType];
     if (!layer?.core) return false;
-    return build(host, coreType, false, layer, CORE_STAGE);
+    // Bounds are measured offline from opaque pixels, not the padded canvas.
+    // Limit the painted silhouette, not its transparent square. Some height
+    // above the socket is intentional; its footprint remains on that socket.
+    const size=layer.bounds ? Math.min(CORE_STAGE.size,1.34/layer.bounds.width,1.50/layer.bounds.height) : CORE_STAGE.size;
+    const frame={left:(1-size)/2,top:1.08-size,size};
+    return build(host, coreType, false, layer, frame);
   }
   function build(host, id, enemy, layer, frame) {
     const doc = host.ownerDocument;
@@ -136,15 +150,19 @@
       if (view.layer?.kind === "layered") applyLayer(view, phase);
       const yawFrame=frameFor(view.angle);
       if (view.frame !== yawFrame) {
-        view.window.style?.setProperty("--view-x",`${-(yawFrame % 4)*100}%`);
-        view.window.style?.setProperty("--view-y",`${-Math.floor(yawFrame / 4)*100}%`);
+        if (!view.layer) {
+          view.window.style?.setProperty("--view-x",`${-(yawFrame % 4)*100}%`);
+          view.window.style?.setProperty("--view-y",`${-Math.floor(yawFrame / 4)*100}%`);
+        }
         view.rig.dataset.view=String(yawFrame); view.frame=yawFrame;
         global.GridshardModuleVfx?.syncArt?.(view.rig);
       }
       const key=`${view.angle}:${phase}:${frame}:${Boolean(disabled)}`;
       if (view.pose === key) return true;
       view.pose=key;
-      view.rig.dataset.phase=phase; view.rig.dataset.frame=String(frame); view.rig.dataset.disabled=String(Boolean(disabled));
+      if (view.rig.dataset.phase!==phase) view.rig.dataset.phase=phase;
+      if (view.rig.dataset.frame!==String(frame)) view.rig.dataset.frame=String(frame);
+      if (view.rig.dataset.disabled!==String(Boolean(disabled))) view.rig.dataset.disabled=String(Boolean(disabled));
       return true;
     }
     return true;
@@ -167,17 +185,12 @@
       const part=view.layer.heads[key];
       boxStyle(view.head,part);
       view.head.src="./"+part.src;
-      const turned=view.rig.dataset.heading && view.rig.dataset.heading !== heading;
       view.headKey=key; view.rig.dataset.heading=heading; view.rig.dataset.headPose=key;
       const yaw=GROUND_YAW[heading];
       view.rig.style?.setProperty?.("--layer-recoil-x",`${Math.round(-Math.cos(yaw)*40)/10}%`);
       view.rig.style?.setProperty?.("--layer-recoil-y",`${Math.round(-Math.sin(yaw)*20)/10}%`);
-      // A turn between painted headings reads as a quick swivel, not a cut.
-      if (turned && view.head.style && typeof global.setTimeout === "function") {
-        view.head.style.scale=".84 1.06";
-        global.clearTimeout?.(view.swivel);
-        view.swivel=global.setTimeout(()=>{ view.head.style.scale=""; },70);
-      }
+      // No per-device squash timer on a heading change. A 70ms squeeze on
+      // every painted view switch made a steady aim look like dropped frames.
     }
   }
   // Window-normalised muzzle/outlet of the CURRENT painting (rotated with the

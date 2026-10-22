@@ -56,7 +56,9 @@
         const rig=this.rigFor(id);if(!rig){this.clearStrike(id);return;}
         if(entry.rig&&entry.rig!==rig)entry.rig.classList.remove("is-struck");
         entry.rig=rig;
-        rig.classList.remove("is-struck");void rig.offsetWidth;rig.classList.add("is-struck");
+        // Coalesce overlapping hits and extend their expiry. Restarting via
+        // offsetWidth forced a full layout between every damage event.
+        if(!rig.classList.contains("is-struck"))rig.classList.add("is-struck");
         this.schedule(230,()=>{if(this.strikes.get(id)===entry)this.clearStrike(id);});
       };
       if(delay>0)this.schedule(delay,run);else run();
@@ -333,13 +335,20 @@
       this.put(key,svg,this.reduced()?180:travel+280,refs);
     }
     syncAmbient(id,module){
-      if(!["amplifier","battery"].includes(module.definition_id)||!operational(module)||this.hidden()||this.quality()==="dusuk"){
+      const shield=module.definition_id==="shield";
+      if(!["amplifier","battery","shield"].includes(module.definition_id)||!operational(module)||this.hidden()||(!shield&&this.quality()==="dusuk")){
         this.ambient.get(id)?.remove();this.ambient.delete(id);return;
       }
       const rig=this.rigFor(id);if(!rig)return;
       let svg=this.ambient.get(id);
       if(svg?.parentElement?.parentElement!==rig){svg?.remove();svg=this.svg("svg",{viewBox:"0 0 128 128","aria-hidden":"true"});svg.classList.add("module-vfx-ambient");
-        this.svg("path",{class:"vfx-ambient-electric"},svg);rig.querySelector(".module-device-billboard")?.appendChild(svg);this.ambient.set(id,svg);}
+        if(shield){
+          svg.dataset.kind="shield";
+          this.svg("path",{d:"M-3 108A67 100 0 0 1 131 108Q64 137-3 108Z",class:"vfx-shield-shell"},svg);
+          this.svg("path",{d:"M8 62Q20 4 67 9M-3 108Q64 133 131 108M64 8Q30 62 64 122Q98 62 64 8",class:"vfx-shield-shell-rim"},svg);
+          this.svg("path",{d:"M32 40l10-6 10 6v12l-10 6-10-6ZM64 60l10-6 10 6v12l-10 6-10-6ZM37 82l10-6 10 6v12l-10 6-10-6Z",class:"vfx-shield-shell-hex"},svg);
+        }else this.svg("path",{class:"vfx-ambient-electric"},svg);
+        rig.querySelector(".module-device-billboard")?.appendChild(svg);this.ambient.set(id,svg);}
       GridshardModuleVfx.syncArt(rig);
     }
     receive(events,snapshot){
@@ -417,7 +426,7 @@
       }
     }
     static syncArt(rig){
-      const svg=rig.querySelector?.(".module-vfx-ambient");if(!svg||svg.dataset.view===rig.dataset.view)return;
+      const svg=rig.querySelector?.(".module-vfx-ambient");if(!svg||svg.dataset.kind==="shield"||svg.dataset.view===rig.dataset.view)return;
       const id=rig.dataset.device,frame=Number(rig.dataset.view||0),pair=root.GridshardModuleViewData?.[id]?.pairs?.[frame];
       let d="M22 88 14 77 24 69 17 58M105 86 115 73 105 64 114 52";
       if(id==="amplifier"&&pair){const[a,b]=pair.map(p=>({x:p.x*128,y:p.y*128}));d=`M${a.x} ${a.y}L${(a.x+b.x)/2-4} ${(a.y+b.y)/2+3}L${(a.x+b.x)/2+4} ${(a.y+b.y)/2-3}L${b.x} ${b.y}`;}

@@ -21,40 +21,26 @@
     battle: { bpm:[126,132], intensity:0.75 },
     battle_pressure: { bpm:[126,132], intensity:0.88 },
     critical_core: { bpm:[126,132], intensity:1.00 },
-    victory: { bpm:[142,146], stingSeconds:[9,11], intensity:1.00 },
+    victory: { bpm:[118,122], stingSeconds:[9,11], intensity:1.00 },
     defeat: { stingSeconds:[5,7], intensity:0.72 },
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"shardglass-seamless-v18",
+    version:"shardglass-seamless-v19",
     crossfadeMs:1200,
     menuPoolCrossfadeMs:480,
     resultCrossfadeMs:320,
     // Menü çalma listesinde bir parçadan sıradakine geçiş.
     playlistCrossfadeMs:2400,
     musicBaseGain:0.72,
-    // v11: savaş efektleri müziği bastırmasın; efektler kısık, savaş
-    // müziği açık, efekt kanalı sıkıştırıcıdan geçer.
     sfxBaseGain:0.55,
-    // v12: savaşta katmanlı müzik baskın, silah/darbe efektleri arka planda.
-    // Müzik kazancı yükseldi; efekt kanalı savaş durumlarında ayrıca kısılır.
-    // Katman toplamı kırpılmasın diye müzik hattı sınırlayıcıdan geçer.
-    // v13: savaş müziği ayrı bir Web Audio kanalında 1'in üstüne çıkabilir
-    // (önceden iz sesi 0–1 aralığında kırpıldığı için artış duyulmuyordu).
-    // Savaşta efekt sıkıştırıcısının tarayıcıdaki otomatik "makeup" kazancı
-    // (~+6,4 dB) geri alınır; rutin efektler bir kademe daha kısıldı, önemli
-    // olaylar (bkz. GRIDSHARD_SFX_VOICE_LIMIT.priorityCues) duyulur kalır.
-    // v14: savaş müziği bir kademe daha açık (+1,5 dB), rutin efektler bir
-    // kademe daha kısık (−2,4 dB); rutin efekt yoğunluğu ve sık tekrarlanan
-    // öncelikli olaylar (çekirdek isabeti) ayrıca seyreltildi.
-    // v15: +0.8 dB battle music, -1.2 dB combat SFX. Keep the combat
-    // attenuation through the result so an explosion tail cannot jump up.
-    // Result stings have their own -5.2 dB trim and 320 ms soft attack.
-    // v17: effects another ~2.8 dB behind the music. Laser also gets its own
-    // quiet, short tonal pulse, not the previous sustained noisy sizzle.
+    // Battle stems use a limited music bus; combat SFX use a separate
+    // compressed bus with makeup compensation and bounded voice density.
     battleMusicGain:2.85,
-    battleSfxGain:0.16,
-    resultMusicGain:0.55,
+    // v19: the physical devices need readable attack/defence feedback again.
+    // Voice limits and compressor remain; +8.4 dB restores the audible bus.
+    battleSfxGain:0.42,
+    resultMusicGain:0.80,
     battlePriorityCueGain:1.4,
     sfxCompressor:Object.freeze({ threshold:-20, knee:12, ratio:4, attack:.004, release:.22 }),
     musicLimiter:Object.freeze({ threshold:-3, knee:0, ratio:20, attack:.003, release:.25 }),
@@ -125,8 +111,8 @@
     battle:"./assets/audio/battle_v9_04_ostinato.wav",
     battle_pressure:"./assets/audio/battle_v9_06_dissonance.wav",
     critical_core:"./assets/audio/battle_v9_07_pressure.wav",
-    victory:"./assets/audio/victory_sting.wav",
-    defeat:"./assets/audio/defeat_sting.wav",
+    victory:"./assets/audio/victory_v9_devre.wav",
+    defeat:"./assets/audio/defeat_v9_devre.wav",
   });
 
   const GRIDSHARD_CRITICAL_LAYER =

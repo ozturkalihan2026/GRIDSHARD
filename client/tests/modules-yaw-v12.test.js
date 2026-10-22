@@ -83,6 +83,45 @@ test("view wrap is stable at zero and both directions cover front, sides and rea
   assert.equal(art.frameFor(Math.PI*2-1e-7),0);assert.equal(art.frameFor(-1e-7),0);
 });
 
+test("painted aim frames do not allocate per-device timers or rewrite unchanged state attributes",()=>{
+  let stateWrites=0;
+  const sandbox={GridshardModuleLayerData:require("../src/module-layer-data.js"),
+    setTimeout(){throw new Error("no per-device turn timer");}};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,"../src/module-device-art.js"),"utf8"),sandbox);
+  const doc={createElement:()=>({ownerDocument:doc,children:[],dataset:new Proxy({}, {set(target,key,value){
+    if(["phase","frame","disabled"].includes(key))stateWrites++;target[key]=value;return true;
+  }}),classList:{add(){}},style:{setProperty(){}},setAttribute(){},appendChild(n){this.children.push(n);},replaceChildren(...n){this.children=n;}})};
+  const host=doc.createElement();sandbox.GridshardModuleDeviceArt.mount(host,{definitionId:"laser"});stateWrites=0;
+  for(let i=0;i<100;i++)sandbox.GridshardModuleDeviceArt.pose(host,{angle:i*.02,phase:"aim",frame:0,disabled:false});
+  assert.equal(stateWrites,1,"only rest→aim changes; frame/disabled stay stable");
+});
+
+test("all seven reactor registrations remain prominent, bottom anchored and bounded",()=>{
+  const layers=require("../src/module-layer-data.js");
+  const doc={createElement:()=>({ownerDocument:doc,children:[],dataset:{},classList:{add(){}},style:{setProperty(){}},setAttribute(){},appendChild(n){this.children.push(n);},replaceChildren(...n){this.children=n;}})};
+  for(const[id,layer]of Object.entries(layers).filter(([,data])=>data.core)){
+    const host=doc.createElement();art.mountCore(host,id);
+    const stage=host.children[0].children[1].children[0].children[0],size=parseFloat(stage.style.width)/100;
+    assert.ok(size>=1.1,id);assert.ok(layer.bounds.width*size<=1.341,id);assert.ok(layer.bounds.height*size<=1.501,id);
+    assert.ok(Math.abs(parseFloat(stage.style.top)/100+size-1.08)<.001,id);
+  }
+});
+
+test("aim drawing reuses its projection until layout changes or the rig is replaced",()=>{
+  const source=fs.readFileSync(path.join(__dirname,"../src/app.js"),"utf8").replace(/\r\n/g,"\n");
+  const start=source.indexOf("    draw:(record, pose) => {",source.indexOf("const moduleMotion ="));
+  const end=source.indexOf("\n    },\n  });",start);
+  let rig={},reads=0;const plane={id:"stable"};
+  const icon={querySelector:()=>rig},card={dataset:{moduleId:"one"},querySelector:()=>icon};
+  const sandbox={motionPlaneCache:new WeakMap(),moduleAnchorCells:new Map([["one",{querySelector:()=>card}]]),battleLayoutEpoch:0,
+    battleAnchorRects:()=>{reads++;return {devices:new Map([["one",{plane}]])};},laser3DPilot:{aim(){}},performance:{now:()=>0},
+    GridshardModuleDeviceArt:{pose:(_icon,pose)=>{assert.equal(pose.plane,plane);return true;}}};
+  vm.runInNewContext("this.draw="+source.slice(start+9,end+6),sandbox);
+  for(let i=0;i<100;i++)sandbox.draw({domId:"one"},{phase:"aim"});assert.equal(reads,1);
+  sandbox.battleLayoutEpoch++;sandbox.draw({domId:"one"},{});assert.equal(reads,2);
+  rig={};sandbox.draw({domId:"one"},{});assert.equal(reads,3);
+});
+
 test("enemy and own board rotations share the VS axis; ground compresses but billboard stays upright",()=>{
   const theta=Math.PI/6,scale=.98,distance=1400;
   const enemyTop=100,height=232,gap=52,ownTop=enemyTop+height+gap;

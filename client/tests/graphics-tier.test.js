@@ -130,6 +130,30 @@ test("araya giren iyi ölçüm sayacı sıfırlar", () => {
   assert.equal(playWindow(controller, { start: 30000, frameMs: SLOW }), "orta");
 });
 
+test("tam dört saniyelik çok yavaş pencere yetersiz kare diye atılmaz",()=>{
+  const {controller}=build({device:FLAGSHIP});const lowered=[];
+  for(let now=0;now<=19_000;now+=480){const tier=controller.trackFrame(now);if(tier)lowered.push(tier);}
+  assert.deepEqual(lowered,["orta","dusuk"]);
+  assert.equal(controller.tier(),"dusuk");
+});
+
+test("art arda ön plandaki bir saniye üstü kareler otomatiği kilitlemez",()=>{
+  const {controller}=build({device:FLAGSHIP});const lowered=[];
+  for(let now=0;now<=8400;now+=1200){const tier=controller.trackFrame(now);if(tier)lowered.push(tier);}
+  assert.deepEqual(lowered,["orta","dusuk"]);
+  const manual=build({device:FLAGSHIP}).controller;manual.setMode("manual");
+  for(let now=0;now<=8400;now+=1200)assert.equal(manual.trackFrame(now),null);
+  assert.equal(manual.tier(),"yuksek");
+});
+
+test("gizli sekme uzun kare serisini keser",()=>{
+  const {controller}=build({device:FLAGSHIP});
+  for(const now of [0,1200,2400])controller.trackFrame(now);
+  controller.trackFrame(3600,{hidden:true});
+  for(const now of [4800,6000,7200])assert.equal(controller.trackFrame(now),null);
+  assert.equal(controller.tier(),"yuksek");
+});
+
 test("ortalama iyi olsa da takılan kare oranı %8'i aşarsa ölçüm kötüdür", () => {
   const { controller } = build({ device: FLAGSHIP });
 

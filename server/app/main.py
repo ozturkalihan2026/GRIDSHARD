@@ -95,7 +95,7 @@ from .game.tutorial import (
 )
 from .safe_chat import team_description_text, visible_message
 from .match_accounting import TUTORIAL_TRAINING_MATCH_TYPE
-from .version import VERSION
+from .version import VERSION, LEGACY_HEALTH_VERSION
 from .player_profile import (
     PlayerProfileError,
     PlayerProfileService,
@@ -3603,10 +3603,10 @@ def _settle_competition_rewards(player_id: str) -> None:
 # turnuvası maç saati) okuma anında oyuncunun durumundan üretilir.
 INBOX_UPDATE_NOTICES: tuple[dict, ...] = (
     {
-        "notice_id": "update-beta72",
+        "notice_id": "update-2-1-1",
         "kind": "update",
-        "title_tr": "Beta.72 güncellemesi",
-        "body_tr": "Modül ve çekirdek imza mekanikleri, yeni savaş efektleri, sezon ödüllerinde ücretli geçiş sütunu ve arkadaş savaşı davetleri oyuna eklendi.",
+        "title_tr": "GRIDSHARD 2.1.1 güncellemesi",
+        "body_tr": "Yeni fiziksel modül ve sandık görselleri, savaş efektleri ve müzikleri yenilendi. Savaş akıcılığı ve mesaj kutusu iyileştirildi.",
     },
 )
 
@@ -6646,7 +6646,8 @@ async def health() -> dict:
 
     payload = {
         "status": "ok" if ready else "degraded",
-        "version": VERSION,
+        "version": LEGACY_HEALTH_VERSION,
+        "release_version": VERSION,
         "pvp_protocol_version": PVP_PROTOCOL_VERSION,
         # Explicit rollout signal: a client must never silently downgrade a
         # closed-inventory season chest into the legacy instant-open protocol.

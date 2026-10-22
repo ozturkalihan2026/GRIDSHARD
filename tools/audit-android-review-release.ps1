@@ -1,17 +1,21 @@
 [CmdletBinding()]
-param([string]$Directory = 'D:\Projects\GRIDSHARD\artifacts\android-production-20261005-v2', [int]$VersionCode = 2,
+param([string]$Directory, [int]$VersionCode = 0,
     [string]$JavaHome, [string]$AndroidSdkRoot, [string]$BuildToolsVersion = '36.0.0')
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $taskRoot = Split-Path -Parent $PSScriptRoot
+$taskReleaseConfig = Get-Content -LiteralPath (Join-Path $taskRoot 'config\android-production.json') -Raw | ConvertFrom-Json
+if (!$Directory) { throw 'Specify the signed artifact directory explicitly; legacy releases are never selected by default.' }
+if (!$VersionCode) { $VersionCode = [int]$taskReleaseConfig.versionCode }
 . (Join-Path $PSScriptRoot 'android-toolchain.ps1')
 $taskTools = Resolve-GridshardAndroidToolchain -JavaHome $JavaHome -AndroidSdkRoot $AndroidSdkRoot -BuildToolsVersion $BuildToolsVersion
 $taskCert = Get-Content -LiteralPath (Join-Path $taskRoot 'secrets\android-release\public-certificate.json') -Raw | ConvertFrom-Json
 $taskCredential = Import-Clixml -LiteralPath (Join-Path $taskRoot 'secrets\play-review-20261005-vault\credential.dpapi.xml')
 $taskPassword = $taskCredential.GetNetworkCredential().Password
 $taskVerifier = Get-Content -LiteralPath (Join-Path $taskRoot 'secrets\play-review-20261005-vault\review-config.json') -Raw | ConvertFrom-Json
-$taskApk = Join-Path $Directory "GRIDSHARD-2.1.0-beta.72-v$VersionCode.apk"
-$taskAab = Join-Path $Directory "GRIDSHARD-2.1.0-beta.72-v$VersionCode.aab"
+$taskReleaseVersion = $taskReleaseConfig.versionName
+$taskApk = Join-Path $Directory "GRIDSHARD-$taskReleaseVersion-v$VersionCode.apk"
+$taskAab = Join-Path $Directory "GRIDSHARD-$taskReleaseVersion-v$VersionCode.aab"
 $taskCounts = @{}
 $taskFonts = @{}
 $taskSourceFonts = @(Get-ChildItem -LiteralPath (Join-Path $taskRoot 'client\assets\fonts') -Filter '*.woff2').Count
@@ -71,7 +75,8 @@ try {
     if ($LASTEXITCODE -ne 0 -or ($taskAabCertificate -join "`n") -notmatch [regex]::Escape($taskCert.sha256)) { throw 'AAB signer mismatch' }
     $taskBadging = & $taskTools.Aapt dump badging $taskApk
     $taskBadgingText = $taskBadging -join "`n"
-    if ($LASTEXITCODE -ne 0 -or $taskBadgingText -notmatch "package: name='com.gridshardgame.app' versionCode='$VersionCode' versionName='2\.1\.0-beta\.72'" -or $taskBadgingText -match 'application-debuggable|uses-permission.*(AD_ID|ACCESS_ADSERVICES)') { throw 'Release identity/permission gate failed' }
+    $taskExpectedVersionPattern = [regex]::Escape($taskReleaseVersion)
+    if ($LASTEXITCODE -ne 0 -or $taskBadgingText -notmatch "package: name='com.gridshardgame.app' versionCode='$VersionCode' versionName='$taskExpectedVersionPattern'" -or $taskBadgingText -match 'application-debuggable|uses-permission.*(AD_ID|ACCESS_ADSERVICES)') { throw 'Release identity/permission gate failed' }
     # Firebase must not start by itself: no registration token before the player turns notifications on.
     $taskManifest = (& $taskTools.Aapt dump xmltree $taskApk AndroidManifest.xml) -join "`n"
     if ($LASTEXITCODE -ne 0) { throw 'Packaged manifest could not be read' }
@@ -79,7 +84,7 @@ try {
         if ($taskManifest -notmatch ('"' + $taskFlag + '"[^\n]*\n[^\n]*android:value[^\n]*(\(type 0x12\)0x0(?![0-9a-f])|="false")')) { throw "Startup flag is not disabled in the packaged manifest: $taskFlag" }
     }
     $taskReceipt = [ordered]@{
-        package_name = 'com.gridshardgame.app'; version_code = $VersionCode; version_name = '2.1.0-beta.72';
+        package_name = 'com.gridshardgame.app'; version_code = $VersionCode; version_name = $taskReleaseVersion;
         apk_sha256 = (Get-FileHash -LiteralPath $taskApk -Algorithm SHA256).Hash.ToLower();
         aab_sha256 = (Get-FileHash -LiteralPath $taskAab -Algorithm SHA256).Hash.ToLower();
         certificate_sha256 = $taskCert.sha256; matched_packaged_web_assets = $taskCounts;

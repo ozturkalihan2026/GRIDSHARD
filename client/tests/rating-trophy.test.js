@@ -45,7 +45,7 @@ test("devre yolu ve takım koşulundaki kupa miktarı simgeyle okunur",()=>{
   assert.equal(target.children[1].children[0].textContent,"7 / 300");
   assert.equal(target.children[2].textContent," · 0 / 4 eşik");
   assert.ok(source.includes('renderTrophyValue("arena-detail-rating", rating)'));
-  assert.ok(source.includes('localizedMessage("team.minimum_value"'));
+  assert.ok(source.includes('new GridshardTrophySelect(requirement'));
 });
 test("aynı onaylı kupa görseli kullanılır; ödül sahipliği ayrı sunucu kimlikleriyle kalır",()=>{
   const asset=fs.readFileSync(path.join(__dirname,"../assets/ui/rating-trophy-v1/rating-trophy.webp"));

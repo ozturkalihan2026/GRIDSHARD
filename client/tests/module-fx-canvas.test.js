@@ -9,7 +9,8 @@ function fixture(quality = "orta") {
   const gradient = { addColorStop() {} };
   const ctx = new Proxy({}, { get: (target, key) =>
     target[key] ?? (key === "createRadialGradient" ? () => gradient : () => {}) });
-  const layer = { clientWidth:300, clientHeight:500, appendChild(c) { c.parentElement = this; } };
+  let layoutReads=0;
+  const layer = {get clientWidth(){layoutReads++;return 300;}, get clientHeight(){layoutReads++;return 500;}, appendChild(c) { c.parentElement = this; } };
   const fx = new CanvasFx({
     doc:{ createElement:() => ({ setAttribute() {}, remove() {}, getContext:() => ctx }) },
     layer:() => visible ? layer : null, now:() => now, quality:() => quality,
@@ -19,7 +20,7 @@ function fixture(quality = "orta") {
     const a = { x:80, y:400 }, b = { x:120, y:80 };
     fx.laser(a,b); fx.missiles(a,b,500); fx.emp(a,b); fx.repair(a,b); fx.cool(a,b);
   };
-  return { fx, attack, get wakes() { return wakes; }, get activeOnWake() { return activeOnWake; },
+  return { fx, attack, layer, ctx, get layoutReads(){return layoutReads;}, get wakes() { return wakes; }, get activeOnWake() { return activeOnWake; },
     setTime(time) { now = time; }, tick(time) { now = time; return fx.tick(time); },
     hide() { visible = false; },
   };
@@ -35,6 +36,25 @@ test("an effect publishes its work before waking an idle clock, and coalesces fu
   f.fx.clear();
   f.fx.coreIdle({ x:10, y:20 });
   assert.equal(f.wakes, 2);
+});
+
+test("canvas dimensions are read once per layout epoch, not once per effect/frame",()=>{
+  const f=fixture();f.attack();const reads=f.layoutReads;
+  assert.equal(reads,2);
+  for(let i=1;i<20;i++){f.fx.laser({x:1,y:1},{x:10,y:10});f.tick(i*16);}
+  assert.equal(f.layoutReads,reads);
+  f.fx.invalidateLayout();f.tick(336);assert.equal(f.layoutReads,reads+2);
+  f.fx.clear();f.fx.coreIdle({x:1,y:1});assert.equal(f.layoutReads,reads+4);
+});
+
+test("soft glow tiles are reused, bounded and released on effect reset",()=>{
+  const f=fixture();let gradients=0;
+  f.ctx.createRadialGradient=()=>{gradients++;return {addColorStop(){}};};
+  for(let i=0;i<1000;i++)f.fx.orb(f.ctx,i,10,4+i%10,"#fff","#aaf");
+  assert.equal(gradients,1);assert.equal(f.fx.glows.size,1);
+  for(let i=0;i<100;i++)f.fx.orb(f.ctx,1,2,3,`rgb(${i},0,0)`,"#fff");
+  assert.equal(f.fx.glows.size,24);
+  f.fx.clear();assert.equal(f.fx.glows.size,0);
 });
 
 test("all six effect queues stay bounded even if frames stop while events arrive", () => {

@@ -1,6 +1,7 @@
 import pytest
 
 from app import main as gateway
+UPDATE_NOTICE_ID = gateway.INBOX_UPDATE_NOTICES[-1]["notice_id"]
 from app.meta_progression import archive_and_soft_reset_season
 from app.platform_services import PlatformService
 from app.player_data_store import InMemoryPlayerDataRepository
@@ -167,13 +168,13 @@ def test_update_notice_and_direct_messages_are_unread_until_seen(isolated_gatewa
     try:
         _befriend(sender_id, recipient_id)
         inbox = gateway.get_reward_inbox(recipient_id)
-        notice = next(item for item in inbox["notices"] if item["notice_id"] == "update-beta72")
+        notice = next(item for item in inbox["notices"] if item["notice_id"] == UPDATE_NOTICE_ID)
         assert notice["seen"] is False
         seen = gateway.mark_reward_inbox_notices_seen(
             recipient_id,
-            gateway.InboxNoticeSeenRequest(player_id=recipient_id, notice_ids=["update-beta72"]),
+            gateway.InboxNoticeSeenRequest(player_id=recipient_id, notice_ids=[UPDATE_NOTICE_ID]),
         )
-        assert next(item for item in seen["notices"] if item["notice_id"] == "update-beta72")["seen"] is True
+        assert next(item for item in seen["notices"] if item["notice_id"] == UPDATE_NOTICE_ID)["seen"] is True
         assert seen["unread_count"] == inbox["unread_count"] - 1
 
         gateway.send_direct_message(

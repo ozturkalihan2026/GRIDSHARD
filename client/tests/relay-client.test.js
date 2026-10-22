@@ -2143,7 +2143,7 @@ function createClient() {
   const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");
   assert.ok(
     html.includes(
-      "2.1.0-beta.72"
+      require("../../package.json").version
     )
   );
   assert.ok(

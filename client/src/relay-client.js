@@ -1705,7 +1705,7 @@
         };
       }
 
-      this.version = health.version || null;
+      this.version = health.release_version || health.version || null;
       this.protocolVersion =
         health.pvp_protocol_version ?? null;
       this.ready = health.status === "ok";
@@ -3096,7 +3096,7 @@
 
         const versionMatches =
           !this.expectedVersion
-          || health.version
+          || (health.release_version || health.version)
           === this.expectedVersion;
 
         const protocolMatches =
@@ -3115,7 +3115,7 @@
 
         if (!versionMatches) {
           this.lastError =
-            `Sürüm uyuşmazlığı: istemci ${this.expectedVersion}, sunucu ${health.version}`;
+            `Sürüm uyuşmazlığı: istemci ${this.expectedVersion}, sunucu ${health.release_version || health.version}`;
         } else if (
           !protocolMatches
         ) {

@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from app import main as gateway
+UPDATE_NOTICE_ID = gateway.INBOX_UPDATE_NOTICES[-1]["notice_id"]
 from app.auth import JsonIdentityRepository, ParticipantAuthService
 from app.player_data_store import InMemoryPlayerDataRepository
 from app.player_profile import PlayerProfileService
@@ -67,15 +68,15 @@ def test_bulk_clears_the_whole_category_not_only_the_visible_twenty(inbox):
 
 def test_system_delete_survives_reload_and_undo_does_not_reset_seen(inbox):
     profile, profiles, _ = inbox
-    profile.seen_inbox_notice_ids = ("update-beta72",)
-    result = dismiss(profile, "system", notice_ids=["update-beta72"])
+    profile.seen_inbox_notice_ids = (UPDATE_NOTICE_ID,)
+    result = dismiss(profile, "system", notice_ids=[UPDATE_NOTICE_ID])
     assert result["notices"] == [] and result["purchases"]
     profiles._profiles.clear()
     gateway.player_data_store_service.load_player(profile.player_id)
     restored = profiles.get(profile.player_id)
-    assert restored.dismissed_inbox_notice_ids == ("update-beta72",)
+    assert restored.dismissed_inbox_notice_ids == (UPDATE_NOTICE_ID,)
     assert gateway._inbox_notices(restored) == []
-    result = dismiss(restored, "system", notice_ids=["update-beta72"], restore=True)
+    result = dismiss(restored, "system", notice_ids=[UPDATE_NOTICE_ID], restore=True)
     assert result["notices"][0]["seen"] is True
 
 
@@ -103,7 +104,7 @@ def test_actionable_rewards_and_invitations_cannot_be_bulk_deleted(inbox, catego
 def test_unknown_or_cross_category_id_is_atomic_and_other_player_is_forbidden(inbox):
     profile, _, _ = inbox
     identity = mailbox_messages(profile)[1][0]["notice_id"]
-    for ids in [[identity, "foreign"], ["update-beta72"]]:
+    for ids in [[identity, "foreign"], [UPDATE_NOTICE_ID]]:
         with pytest.raises(HTTPException) as caught:
             dismiss(profile, notice_ids=ids)
         assert caught.value.status_code == 404

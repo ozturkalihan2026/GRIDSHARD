@@ -16,6 +16,7 @@
     constructor({doc,layer,now=()=>performance.now(),quality=()=>"orta",wake=()=>{},dpr=()=>root.devicePixelRatio||1}){
       Object.assign(this,{doc,layer,now,quality,wake,dpr});
       this.canvas=null;this.ctx=null;this.w=0;this.h=0;this.last=null;
+      this.layoutDirty=true;this.glows=new Map();
       this.parts=[];this.rings=[];this.beams=[];this.shots=[];this.arcs=[];this.timers=[];
     }
     get active(){return this.parts.length+this.rings.length+this.beams.length+this.shots.length+this.arcs.length+this.timers.length>0;}
@@ -35,20 +36,24 @@
       if(!this.canvas||this.canvas.parentElement!==layer){
         this.canvas?.remove();
         const c=this.doc.createElement("canvas");c.className="module-fx-canvas";c.setAttribute("aria-hidden","true");
-        layer.appendChild(c);this.canvas=c;this.ctx=c.getContext("2d");this.w=this.h=0;
+        layer.appendChild(c);this.canvas=c;this.ctx=c.getContext("2d");this.w=this.h=0;this.layoutDirty=true;
       }
-      const w=layer.clientWidth,h=layer.clientHeight,r=Math.min(2,Math.max(1,Number(this.dpr())||1));
+      const r=Math.min(2,Math.max(1,Number(this.dpr())||1));
+      if(!this.layoutDirty&&r===this.r&&this.ctx)return true;
+      const w=layer.clientWidth,h=layer.clientHeight;
       if(!(w>0&&h>0)||!this.ctx)return false;
       if(w!==this.w||h!==this.h||r!==this.r){
         this.canvas.width=Math.round(w*r);this.canvas.height=Math.round(h*r);this.w=w;this.h=h;this.r=r;
         this.ctx.setTransform(r,0,0,r,0,0);
       }
+      this.layoutDirty=false;
       return true;
     }
+    invalidateLayout(){this.layoutDirty=true;}
     start(){return this.ensure();}
     clear(){
       this.parts.length=this.rings.length=this.beams.length=this.shots.length=this.arcs.length=this.timers.length=0;
-      if(this.ctx)this.ctx.clearRect(0,0,this.w,this.h);this.last=null;
+      if(this.ctx)this.ctx.clearRect(0,0,this.w,this.h);this.last=null;this.glows.clear();this.layoutDirty=true;
     }
     later(ms,run){this.enqueue("timers",{at:this.now()+ms,run});}
     // ---------- primitives ----------
@@ -61,6 +66,23 @@
     ring(x,y,o){this.enqueue("rings",Object.assign({x,y,life:0,max:380,r0:3,r1:30,color:"#fff",w:3,flat:.55},o));}
     arc(a,b,o){this.enqueue("arcs",Object.assign({x0:a.x,y0:a.y,x1:b.x,y1:b.y,life:0,max:220,color:"#fff",w:1.6,jit:5},o));}
     orb(g,x,y,r,core,glow){
+      // Reuse the same soft glow for smoke/beam particles. Drawing a gradient
+      // for each particle on every frame was the canvas hot path. At most
+      // 24 tiny RGBA tiles (~384 KiB), released with the battle effects.
+      const key=core+"|"+glow;
+      let tile=this.glows.get(key);
+      if(!tile){
+        tile=this.doc.createElement("canvas");tile.width=tile.height=64;
+        const ctx=tile.getContext("2d");
+        if(ctx){
+          const gradient=ctx.createRadialGradient(32,32,0,32,32,32);
+          gradient.addColorStop(0,core);gradient.addColorStop(.35,glow);gradient.addColorStop(1,"rgba(0,0,0,0)");
+          ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);
+          if(this.glows.size>=24)this.glows.delete(this.glows.keys().next().value);
+          this.glows.set(key,tile);
+        }else tile=null;
+      }
+      if(tile&&typeof g.drawImage==="function"){g.drawImage(tile,x-r,y-r,r*2,r*2);return;}
       const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,core);gr.addColorStop(.35,glow);gr.addColorStop(1,"rgba(0,0,0,0)");
       g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,TAU);g.fill();
     }

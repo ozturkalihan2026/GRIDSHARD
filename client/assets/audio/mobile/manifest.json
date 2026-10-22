@@ -125,6 +125,12 @@
       "ogg_bytes": 10946,
       "m4a_bytes": 41938
     },
+    "defeat_v9_devre": {
+      "sha256": "6b9fdfb70d0c1b6f3c46a835f0e6b38d1d72cf4e4433cbbd0059fb0a08784525",
+      "wav_bytes": 529244,
+      "ogg_bytes": 45320,
+      "m4a_bytes": 92027
+    },
     "drone_fire": {
       "sha256": "89eff8878e32c402065eb368d237f6cbc48141d0eb5bff9d4ebb48587cd937ff",
       "wav_bytes": 61782,
@@ -280,6 +286,12 @@
       "wav_bytes": 1764044,
       "ogg_bytes": 105578,
       "m4a_bytes": 173987
+    },
+    "victory_v9_devre": {
+      "sha256": "242f03a8c6ae60e42a302c7c4775e5d1807a91ace1787c5fea0bb271cad26dfe",
+      "wav_bytes": 882044,
+      "ogg_bytes": 67962,
+      "m4a_bytes": 153702
     },
     "virus_glitch": {
       "sha256": "3595ecabc35ef0c428275e8ba72f91a4479751ac52249202fefe7f41d5290d0e",

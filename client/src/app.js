@@ -7783,11 +7783,17 @@
         const option = document.createElement("option");
         option.value = String(value);
         option.textContent = Number(value) > 0
-          ? localizedMessage("team.minimum_value", { count:localizedNumber(value) })
+          ? localizedNumber(value)
           : "Şart yok";
         requirement.appendChild(option);
       }
       if (options.map(String).includes(previous)) requirement.value = previous;
+    }
+    if (requirement && typeof globalThis.GridshardTrophySelect === "function") {
+      requirement._trophyPicker ||= new GridshardTrophySelect(requirement, {
+        formatNumber:localizedNumber, trophyLabel:() => localizedUiText("Kupa"),
+      });
+      requirement._trophyPicker.update();
     }
     // Açıklama serbest yazı değildir; hazır seçenekler bir kez doldurulur.
     const description = document.getElementById("team-create-description");
@@ -8634,7 +8640,7 @@
       healthState:
         serverHealthState,
       expectedVersion:
-        "2.1.0-beta.72",
+        "2.1.1",
       expectedProtocolVersion: 1,
     });
   const playReadinessGate =
@@ -8676,7 +8682,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.1.0-beta.72",
+    build: "2.1.1",
   });
 
   const postMatchSync =
@@ -8727,6 +8733,7 @@
 
   function resetPostMatchReveal() {
     window.clearTimeout(postMatchRevealTimer);
+    document.getElementById("battle-ended-banner")?.remove();
     postMatchRevealTimer = null;
     postMatchRevealKey = null;
     postMatchRevealReady = false;
@@ -8742,12 +8749,21 @@
     postMatchRevealKey = normalizedKey;
     postMatchRevealReady = !waitForCoreExplosion;
     if (!waitForCoreExplosion) {
+      document.getElementById("battle-ended-banner")?.remove();
       renderPlayModeUi();
       return;
+    }
+    const arena=document.getElementById("duel-arena");
+    if(arena && !document.getElementById("battle-ended-banner")) {
+      const banner=document.createElement("div");
+      banner.id="battle-ended-banner";banner.setAttribute("role","status");
+      banner.textContent=localizedUiText("SAVAŞ SONA ERDİ");
+      arena.appendChild(banner);
     }
     postMatchRevealTimer = window.setTimeout(() => {
       postMatchRevealTimer = null;
       postMatchRevealReady = true;
+      document.getElementById("battle-ended-banner")?.remove();
       renderPlayModeUi();
     }, POST_MATCH_CORE_EXPLOSION_HOLD_MS);
   }
@@ -9404,6 +9420,7 @@
     reduced:() => window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true,
     dpr:() => window.devicePixelRatio || 1,
   }) : {anchor:()=>null,aimAt:()=>null,aim(){},attach(){},detach(){},invalidate(){},suspend(){},render(){},needsPresent:false};
+  const motionPlaneCache = new WeakMap();
   const moduleMotion = new GridshardModuleMotion({
     now:() => performance.now(),
     hidden:() => document.hidden || document.body.dataset.appScreen !== "play",
@@ -9422,8 +9439,15 @@
       const card = cell?.querySelector(".module-card");
       if (!card || card.dataset.moduleId !== String(record.domId)) return false;
       const icon = card.querySelector(".module-icon.has-module-device");
-      const batch=battleAnchorRects();
-      const plane=(batch.devices || batch.lasers).get(String(record.domId))?.plane;
+      const rig=icon?.querySelector(".module-device-rig");
+      let projection=rig && motionPlaneCache.get(rig);
+      if(rig && (!projection || projection.epoch!==battleLayoutEpoch)) {
+        const batch=battleAnchorRects();
+        projection={epoch:battleLayoutEpoch,plane:(batch.devices || batch.lasers).get(String(record.domId))?.plane};
+        // Missing geometry is retried on a later draw, never cached as valid.
+        if(projection.plane)motionPlaneCache.set(rig,projection);
+      }
+      const plane=projection?.plane;
       laser3DPilot.aim(record.domId,pose,performance.now());
       return icon ? GridshardModuleDeviceArt.pose(icon, {...pose,plane}) : true;
     },
@@ -9444,7 +9468,8 @@
       const batch=battleAnchorRects(),rect=batch.boards.get(root),layer=batch.layer;
       return rect && layer ? {left:rect.left-layer.left,top:rect.top-layer.top,width:rect.width,height:rect.height} : null;
     },
-    rigFor:id => (battleAnchorRects().devices.get(String(id)))?.host?.querySelector(".module-device-rig"),
+    // Ambient art needs the persistent DOM, not a successfully projected muzzle.
+    rigFor:id => moduleAnchorCells.get(String(id))?.querySelector(".module-device-rig"),
     domId:serverModuleDomId,
     schedule:(delay,run) => scheduleBattleSweep(delay,run),
     sound:(cue,options) => triggerGridshardCue(cue,options),
@@ -14198,6 +14223,11 @@
     effect.dataset.category = core
       ? "core"
       : String(targetElement?.dataset.category || "module");
+    effect.dataset.material = "painted-device";
+    if (core && targetElement) {
+      const accent = getComputedStyle(targetElement).getPropertyValue("--core-accent").trim();
+      if (accent) effect.style.setProperty("--explosion-color", accent);
+    }
     effect.style.left =
       `${targetRect.left + targetRect.width / 2 - layerRect.left}px`;
     effect.style.top =
@@ -14214,11 +14244,14 @@
       const secondaryShockwave = document.createElement("span");
       secondaryShockwave.className = "explosion-shockwave explosion-shockwave-secondary";
       effect.appendChild(secondaryShockwave);
+      const collapse=document.createElement("span");collapse.className="core-collapse-ring";
+      effect.appendChild(collapse);
     }
 
-    const particleCount = battleParticleBudget(core ? 30 : 16);
+    const particleCount = battleParticleBudget(core ? 20 : 12);
     for (let index = 0; index < particleCount; index += 1) {
       const particle = document.createElement("i");
+      particle.dataset.fragment = index % 3 === 0 ? "casing" : index % 3 === 1 ? "crystal" : "spark";
       particle.style.setProperty(
         "--particle-angle",
         `${(360 / particleCount) * index + (index % 3) * 7}deg`
@@ -16782,6 +16815,7 @@
     battleLayoutEpoch += 1;
     battleAnchorBatch=null;
     moduleMotion.invalidateGeometry();
+    moduleFx?.invalidateLayout();
     laser3DPilot.invalidate();
     requestBattleMotionFrame();
     if (battleLayoutRefreshQueued) return;
@@ -17182,7 +17216,7 @@
       laser3DPilot.detach(domId);
       icon.classList.remove("has-module-device");
       if (model.core) {
-        // v15: deployed core stands as its approved upright painting, larger than modules.
+        // Deployed core uses the approved upright painting, fitted to one socket.
         delete icon.dataset.coreEmblem;
         if (!GridshardModuleDeviceArt.mountCore?.(icon, model.coreType)) mountCoreEmblem(icon, model.coreType);
         applyCoreVisualIdentity(card, model.coreType);
@@ -17240,8 +17274,10 @@
     const title = enemy ? name + " · HP " + Math.max(0, Math.round(moduleLike.hp)) + "/" + moduleLike.maxHp
       : targeting ? "Çekirdek Rezonansını kullan" : core ? name + " sabit başlangıç modülüdür." : name + " · savaş sırasında sabit";
     const coreCharge = Math.max(0, Math.min(100, Math.round(corePowerCharge)));
-    const physical = !core && moduleLike.status === "active" && Boolean(moduleLike.position)
-      && Boolean(GridshardModuleDeviceArt.idFor(moduleLike));
+    // Cores use physical paintings too. Leaving the legacy card plate active
+    // intersects the upright enemy reactor and hides its upper half.
+    const physical = core || (moduleLike.status === "active" && Boolean(moduleLike.position)
+      && Boolean(GridshardModuleDeviceArt.idFor(moduleLike)));
     return {
       module:moduleLike, id:moduleLike.instanceId ?? moduleLike.id, enemy, core, coreType, targeting, physical,
       category:moduleLike.category ?? moduleLike.kind ?? "", name:battleUiText(name),
@@ -19505,6 +19541,22 @@
     }
   }
 
+  function preferredRewardInboxTab() {
+    const candidates=[];
+    const add=(tab,item)=>candidates.push({tab,at:Date.parse(item.created_at || item.created_at_utc || "") || 0});
+    for(const item of rewardInboxState?.invitations || [])if(item.incoming && item.status === "pending")add("battle",item);
+    for(const item of rewardInboxState?.messages || [])if(item.status === "unclaimed")add(item.category === "battle" ? "battle" : "reward",item);
+    for(const [tab,items] of [["purchase",rewardInboxState?.purchases],["system",rewardInboxState?.notices]])
+      for(const item of items || [])if(!item.seen && !inboxReadStore.has(inboxReadKey(item,"notice")))add(tab,item);
+    if(!candidates.length) {
+      for(const [tab,items] of [["battle",rewardInboxState?.invitations],["purchase",rewardInboxState?.purchases],["system",rewardInboxState?.notices]])
+        for(const item of items || [])add(tab,item);
+      if(!candidates.length)return activeInboxTab;
+      if(candidates.some(item=>item.tab===activeInboxTab))return activeInboxTab;
+    }
+    return candidates.reduce((latest,item)=>item.at>latest.at ? item : latest).tab;
+  }
+
   async function loadRewardInbox({ open=false, quiet=false } = {}) {
     const status = document.getElementById("reward-inbox-status");
     const playerId = participantPlayerId;
@@ -19525,6 +19577,7 @@
       if (status && !quiet) status.textContent = error instanceof Error ? error.message : String(error);
     }
     if (open) {
+      setRewardInboxTab(preferredRewardInboxTab());
       const dialog = document.getElementById("reward-inbox-dialog");
       if (dialog?.showModal && !dialog.open) dialog.showModal();
       else dialog?.setAttribute("open", "");
@@ -20839,9 +20892,10 @@
       renderBattleHud(now);
     }
 
+    // Read the rare idle-emitter geometry before movement writes in this frame.
+    if (!document.hidden) emitCoreIdleMotes(now);
     moduleMotion.tick(now);
     laser3DPilot.render(now);
-    if (!document.hidden) emitCoreIdleMotes(now);
     if (document.hidden) moduleFx?.clear(); else moduleFx?.tick(now);
     return frameSampling;
   }
@@ -22064,6 +22118,19 @@
     !== "undefined"
   ) {
     window.__GRIDSHARD_TEST_API={
+      startRenderCostProbe:() => {
+        if(window.__battlePhaseCost)return;
+        const stats=window.__battlePhaseCost={};
+        const wrap=(name,fn)=>{const s=stats[name]={calls:0,totalMs:0,maxMs:0};return function(...args){const start=performance.now();try{return fn.apply(this,args);}finally{const ms=performance.now()-start;s.calls++;s.totalMs+=ms;s.maxMs=Math.max(s.maxMs,ms);}};};
+        renderBattleFrame=wrap("frame",renderBattleFrame);
+        renderBattleHud=wrap("hud",renderBattleHud);
+        syncOnlineServerBattle=wrap("snapshot",syncOnlineServerBattle);
+        renderEnemyBoard=wrap("enemy",renderEnemyBoard);
+        renderBoard=wrap("board",renderBoard);
+        renderShelf=wrap("shelf",renderShelf);
+        syncFirstMatchTutorial=wrap("tutorial",syncFirstMatchTutorial);
+        renderPlayerCoreSummary=wrap("coreSummary",renderPlayerCoreSummary);
+      },
       startQuickLocalBattle,
       fillBattlePoolForQuickTest,
       // Visual-only chest previews. This API is removed by production builds.
@@ -22106,6 +22173,7 @@
       }),
       emitFloatingFeedback:(moduleId, text, variant="neutral") =>
         emitFloatingBattleFeedback(moduleId, text, variant),
+      emitModuleExplosion,
       deployModule:(definitionId) => {
         const module = clientModuleForDefinitionId(definitionId);
         return Boolean(module && deployDeckModule(module));

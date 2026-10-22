@@ -2714,6 +2714,10 @@ globalThis.GridshardModuleLayerData = Object.freeze({
  "core_capacitor": {
   "kind": "single",
   "core": true,
+  "bounds": {
+   "width": 0.94,
+   "height": 1.0575
+  },
   "art": {
    "src": "assets/ui/cores-physical-v1/core_capacitor.webp",
    "left": -0.0785,
@@ -2728,6 +2732,10 @@ globalThis.GridshardModuleLayerData = Object.freeze({
  "core_disruptor": {
   "kind": "single",
   "core": true,
+  "bounds": {
+   "width": 0.94,
+   "height": 0.9998
+  },
   "art": {
    "src": "assets/ui/cores-physical-v1/core_disruptor.webp",
    "left": -0.0469,
@@ -2742,6 +2750,10 @@ globalThis.GridshardModuleLayerData = Object.freeze({
  "core_guardian": {
   "kind": "single",
   "core": true,
+  "bounds": {
+   "width": 0.94,
+   "height": 1.0575
+  },
   "art": {
    "src": "assets/ui/cores-physical-v1/core_guardian.webp",
    "left": -0.0785,
@@ -2756,6 +2768,10 @@ globalThis.GridshardModuleLayerData = Object.freeze({
  "core_overdrive": {
   "kind": "single",
   "core": true,
+  "bounds": {
+   "width": 0.94,
+   "height": 1.0835
+  },
   "art": {
    "src": "assets/ui/cores-physical-v1/core_overdrive.webp",
    "left": -0.0904,
@@ -2770,6 +2786,10 @@ globalThis.GridshardModuleLayerData = Object.freeze({
  "core_phoenix": {
   "kind": "single",
   "core": true,
+  "bounds": {
+   "width": 0.94,
+   "height": 1.1222
+  },
   "art": {
    "src": "assets/ui/cores-physical-v1/core_phoenix.webp",
    "left": -0.1139,
@@ -2784,6 +2804,10 @@ globalThis.GridshardModuleLayerData = Object.freeze({
  "core_quantum": {
   "kind": "single",
   "core": true,
+  "bounds": {
+   "width": 0.94,
+   "height": 1.1222
+  },
   "art": {
    "src": "assets/ui/cores-physical-v1/core_quantum.webp",
    "left": -0.1139,
@@ -2798,6 +2822,10 @@ globalThis.GridshardModuleLayerData = Object.freeze({
  "core_resonance": {
   "kind": "single",
   "core": true,
+  "bounds": {
+   "width": 0.94,
+   "height": 1.1826
+  },
   "art": {
    "src": "assets/ui/cores-physical-v1/core_resonance.webp",
    "left": -0.1469,

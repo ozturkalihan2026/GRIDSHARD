@@ -1,6 +1,85 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 21 Ekim 2026
+Güncelleme tarihi: 22 Ekim 2026
+
+## Son heartbeat — 2.1.1/v9 adayı; yayın performans kapısında
+
+Çekirdek finali güçlendirildi (tek büyük ışık/halka, 2.5s beklemede savaş
+bitti etiketi, azaltılmış hareket ve reset temizliği). Mesaj kutusu en yeni
+okunmamış/işlem bekleyen mesajın alanını, yoksa dolu bir alanı açar.
+Otomatik kalite >1 saniyelik art arda ön plan karelerinde de kilitlenmez.
+Aktif sürüm kaynakları/açılış/ayarlar 2.1.1, Android kodu 9 adayıdır.
+Kurulu v8'i engellememek için /health.version wire alias korunur; gerçek
+sürüm release_version'dadır, yeni istemci/başlatıcı bunu doğrular.
+
+658 istemci, 1659 sunucu (44 koşullu atlandı), 10 paketleme, 22 araç geçti;
+417 Python dosyası / 0 import sorunu. İzole build 80f76fbd4d5328d2 / 619
+varlık: artifacts/web-2.1.1-h5FJ1n/dist/. Üretimde test/profil API'si yok.
+Son E2E matrisi 8 geçti / 1 başarısız (Windows WebKit FPS bütçesi).
+Mesaj düğmesinin Sistem alanına gerçek tıklamayla açılması da sonradan
+üç tarayıcıda geçti. Windows WebKit bağımsız RAF ölçümü de ~2 FPS;
+JS aşamaları birkaç ms iken çizim aralığı ~500–600 ms. Birleşik statik
+çizim kontrolü ~18 FPS, tek container/DPR/iz kaydı denemeleri çözmedi.
+Başarısız FPS bütçesi korunur; gerçek telefon onayı yerine geçmez.
+Kullanıcıya mevcut kaynakla Ctrl+F5/savaş/cihaz kontrolü soruldu, yanıt yok.
+
+Yerleşik image_gen ile yeni ikon ve özellik grafiği üretildi; 8 gerçek oyun
+ekranı çekim aracı ve mağaza adayları artifacts/store-2.1.1-20261022/'de.
+Mağaza ZIP'i (ikon + özellik görseli + 8 gerçek 1080x1920 ekran + promptlar):
+artifacts/GRIDSHARD-2.1.1-magaza-gorselleri-20261022.zip (12 dosya,
+11283416 bayt). SHA256: 43636164af3b280f3504406ae0cd608822ae016be74298306b3f0f5dc2b800ba.
+Görseller inceleme adayıdır: savaşta çekirdek diğer cihazlardan yumuşak
+görünüyor. Kaynak tarayıcıda 384x384 yükleniyor; ek GPU yüzeyi denemesi
+iyileştirmedi, geri alındı. Core-art-raster tanısı E2E kanıtına eklendi.
+FPS ve çekirdek örnekleme/keskinlik işi açık. Commit/push, yeni CI, canlı
+geçiş ve AAB yapılmadı. CUA kullanılmadı. Son üretim build'i tekrar
+80f76fbd4d5328d2 çıktı; deneysel CSS kalmadı.
+Ayrıntı ve sonraki sıra: docs/SURUM_2_1_1_YAYIN_NOTLARI.md.
+
+## Son takip — 23:10 çekirdek ölçeği ve savaş takılması
+
+Önceki çekirdek sınırı fazla küçüktü: çekirdek yeniden merkezi/baskın ölçeğe
+alındı; sıradan cihaz sahnesi 1.70→1.40 küçültüldü. Eski kesen kart zemini
+geri gelmedi; arka plan/kamera korunur. Vurgu başına zorunlu layout kaldırıldı,
+nişan projeksiyonu ve canvas ölçüleri layout dönemiyle önbelleklenir. Duman
+gradientleri 24 küçük tile ile sınırlı/cache'li; yön değişimindeki sıkışma
+timer'ı ve gereksiz veri yazımları kaldırıldı. Sürekli cihaz zıplaması yok;
+ateş/çalışma tepkisi ve çekirdek ışık nabzı sürer. Çok yavaş otomatik kalite
+penceresinin <10 kare diye sürekli atılması düzeltildi, manuel kalite korunur.
+
+650 istemci ve 10 paketleme geçti. Son savaş/çekirdek E2E tekrarı sürüyor.
+Masaüstü headless ön/son koşuda zorunlu rig genişlik okumaları 21→0,
+dikdörtgen okumaları 6508→1399, hareket/canvas maliyeti azaldı. Bu, gerçek
+telefon performans onayı değildir; Windows WebKit savaş çizimi ayrıca yavaştı.
+Ayrıntı/sınırlar: `docs/SAVAS_OLCEK_AKICILIK_20261021.md`.
+Son izole build `02116cdd22c588c4`, 619 varlık:
+`artifacts/ci-fix-20261020/web-gUzgU0/dist/`.
+Kullanıcı yerelde tekrar deneyecek. Commit/push, canlı geçiş veya AAB yok.
+
+## Son işlem — savaş çekirdeği, ses/efektler ve son ekran geri bildirimleri
+
+`ae003f5` sonrasındaki yerel test geri bildirimleri kaynakta düzeltildi.
+Rakip çekirdeğinin üstünü kesen eski kart zemini kaldırıldı; çekirdekler
+opak sınırlarına göre bir hücreye sığar. Kalkan kubbesi geri geldi; fiziksel
+patlamalar, duyulur SFX, menü/savaş ailesinde yeni sonuç müzikleri ve düşük
+kalitede de renkli sandık açılışı bağlandı. Koleksiyonda yalnız adıyla gelen
+36 modül de artık yeni fiziksel çizimi bulur. Günlük meta sıkıştırılıp
+çarkıfelek simgesine döndü; turnuva yazıları ortalandı ve ayrı temalı
+arka planlar eklendi. Takım şartlarında sayı+kupa görseli var; mağaza ve
+Savaş Destesi başlıklarının sarı sol şeritleri kaldırıldı.
+
+643 istemci, 1659 sunucu (44 koşullu atlandı), 10 paketleme geçti;
+417 Python dosyası / 0 import sorunu, 49 ses manifesti güncel.
+Savaş görselleri üç emüle tarayıcıda geçti. Son mobil meta sıkıştırmasının
+menü/atmosfer tekrar kontrolü de geçti; 10 farklı hedefli tarayıcı senaryosu
+ayrı koşularda doğrulandı. Ayrıntı ve sınırlar:
+`docs/GORSEL_SES_DUZELTMELERI_20261021.md`.
+Son izole web build `918787c92008ddfc`, 619 varlık:
+`artifacts/ci-fix-20261020/web-mvKZs6/dist/`.
+
+Kullanıcı yerelde yeniden test edecek. Bu tur commit/push, canlı sunucu
+geçişi, AAB veya Play Console yayını yapılmadı; test onayından ve yeşil CI'dan
+önce yayın kapısı açılmamalı. Kullanıcının açık tarayıcısı yönetilmedi.
 
 ## Son düzeltme — CI #61 ve kabul edilen soketten sonra başlamayan savaş
 

@@ -39,6 +39,7 @@ def test_manifest_endpoint():
 
     assert response.status_code==410
     body=client.get("/health").json()
-    from app.version import VERSION
-    assert body["version"]==VERSION
+    from app.version import VERSION, LEGACY_HEALTH_VERSION
+    assert body["version"]==LEGACY_HEALTH_VERSION
+    assert body["release_version"]==VERSION
     assert body["pvp_protocol_version"]==PVP_PROTOCOL_VERSION

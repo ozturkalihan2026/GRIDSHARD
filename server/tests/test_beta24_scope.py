@@ -92,8 +92,8 @@ def test_beta24_result_audio_assets_are_wired():
     app_source = client.get("/src/app.js").text
     audio_source = client.get("/src/gridshard-audio.js").text
 
-    assert "victory_sting.wav" in audio_source
-    assert "defeat_sting.wav" in audio_source
+    assert "victory_v9_devre.wav" in audio_source
+    assert "defeat_v9_devre.wav" in audio_source
     assert '? "victory"' in app_source
     assert ': "defeat"' in app_source
     assert 'id="battle-time"' in html

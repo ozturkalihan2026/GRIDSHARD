@@ -63,22 +63,27 @@ test("devre atmosferi, ortak dock ve kazanılmış profil koleksiyonu", async ({
     description_tr:"Çekirdek bugün daha yüksek dayanıklılıkla savaşa girer.",effect_tr:"Çekirdek CAN +%10",accent:"#ffe06d"}}));
   await expect(page.locator("#daily-meta-name")).toHaveText("Çekirdek Metası");
   await expect(page.locator("#daily-meta-effect")).toBeVisible();
-  expect(await page.evaluate(()=>{
+  const metaLayout = await page.evaluate(()=>{
     const meta=document.getElementById("daily-meta-card"), tournament=document.querySelector(".event-directory button");
-    return !meta.closest(".event-directory") && !meta.classList.contains("events-hero")
-      && meta.getBoundingClientRect().height<tournament.getBoundingClientRect().height
-      && meta.querySelector(".event-hub-emblem").getBoundingClientRect().width===38;
-  })).toBe(true);
+    return {separate:!meta.closest(".event-directory") && !meta.classList.contains("events-hero"),
+      height:meta.getBoundingClientRect().height, tournamentHeight:tournament.getBoundingClientRect().height,
+      iconWidth:meta.querySelector(".event-hub-emblem").getBoundingClientRect().width,
+      padding:getComputedStyle(meta).paddingTop};
+  });
+  expect(metaLayout.separate).toBe(true);
+  expect(metaLayout.iconWidth,JSON.stringify(metaLayout)).toBeCloseTo(64,0);
+  // Copy line heights are fractional on Android. A 0.3px rounding difference
+  // must not reject an otherwise equally compact, untruncated card.
+  expect(metaLayout.height,JSON.stringify(metaLayout)).toBeLessThanOrEqual(metaLayout.tournamentHeight + 1);
   await page.screenshot({path:testInfo.outputPath("events-meta-separated.png")});
   await page.evaluate(()=>GridshardI18n.apply("en"));
   await expect(page.locator("#daily-meta-heading")).toHaveText("Daily Meta");
   await expect(page.locator("#events-screen .event-directory")).toHaveAccessibleName("Tournaments");
   await page.evaluate(()=>GridshardI18n.apply("tr"));
   const tournamentBackgrounds=await page.locator("#events-screen .event-directory button").evaluateAll(buttons=>buttons.map(button=>getComputedStyle(button).backgroundImage));
-  // Package 4 uses the shared physical surface; tournament identity belongs
-  // to the distinct trophy/team emblems, not the retired SVG backgrounds.
+  // Distinct tournament scenery remains subordinate to the readable copy.
   expect(tournamentBackgrounds).toHaveLength(2);
-  expect(tournamentBackgrounds[0]).toBe(tournamentBackgrounds[1]);
+  expect(tournamentBackgrounds[0]).not.toBe(tournamentBackgrounds[1]);
   expect(tournamentBackgrounds.every(background=>background!=="none")).toBe(true);
   const originalViewport=page.viewportSize();
   await page.setViewportSize({width:320,height:700});

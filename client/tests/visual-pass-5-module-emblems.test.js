@@ -27,6 +27,11 @@ test("her modülün kendi amblemi vardır ve sınıfının rengini taşır", () 
   for (const module of modules) {
     const svg = view.emblemFor({ definition_id:module.id, nameTr: module.name_tr });
     const physical = svg.includes('class="module-emblem module-device-icon"');
+    assert.ok(physical, `${module.name_tr}: approved physical painting`);
+    assert.equal(view.emblemFor({nameTr:module.name_tr}), svg, `${module.id}: name-only collection path`);
+    assert.equal(view.emblemFor({name_tr:module.name_tr}), svg, `${module.id}: server reward path`);
+    const asset = /src="\.\/([^"]+)"/.exec(svg)?.[1];
+    assert.ok(asset && fs.existsSync(path.join(root, asset)), `${module.id}: physical asset exists`);
     assert.ok(physical || svg.startsWith(`<svg class="module-emblem" data-cat="${module.category}" viewBox="0 0 48 48"`), module.name_tr);
     assert.ok(physical || svg.includes('class="me-ink"') || svg.includes('class="me-rail"'), `${module.name_tr}: kontur`);
     assert.notEqual(svg.slice(svg.indexOf(">")), fallback.slice(fallback.indexOf(">")), `${module.name_tr}: genel yonga değil`);

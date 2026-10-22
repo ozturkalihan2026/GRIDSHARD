@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 chcp 65001 >nul
 
-set "GRIDSHARD_EXPECTED_VERSION=2.1.0-beta.72"
+set "GRIDSHARD_EXPECTED_VERSION=2.1.1"
 
 echo ============================================================
 echo GRIDSHARD %GRIDSHARD_EXPECTED_VERSION% - HIZLI SAVAS TESTI
@@ -25,7 +25,7 @@ echo [GRIDSHARD] %GRIDSHARD_EXPECTED_VERSION% test portu: %GRIDSHARD_WEB_PORT%
 start "GRIDSHARD Web Test Sunucusu" cmd /k call "%~dp0BASLAT_WEB_TEST.bat"
 
 rem Tarayiciyi yalnizca secilen port gercekten beklenen /health yaniti verirse ac.
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$url='http://127.0.0.1:%GRIDSHARD_WEB_PORT%/health'; for($i=0;$i -lt 120;$i++){ try { $r=Invoke-RestMethod -Uri $url -TimeoutSec 2; if($r.version -eq '%GRIDSHARD_EXPECTED_VERSION%'){ exit 0 }; if($r.version){ Write-Host ('[HATA] Beklenen %GRIDSHARD_EXPECTED_VERSION%, bulunan ' + $r.version); exit 2 } } catch {}; Start-Sleep -Milliseconds 500 }; exit 1"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$url='http://127.0.0.1:%GRIDSHARD_WEB_PORT%/health'; for($i=0;$i -lt 120;$i++){ try { $r=Invoke-RestMethod -Uri $url -TimeoutSec 2; $gridshardRelease=if($r.release_version){$r.release_version}else{$r.version}; if($gridshardRelease -eq '%GRIDSHARD_EXPECTED_VERSION%'){ exit 0 }; if($gridshardRelease){ Write-Host ('[HATA] Beklenen %GRIDSHARD_EXPECTED_VERSION%, bulunan ' + $gridshardRelease); exit 2 } } catch {}; Start-Sleep -Milliseconds 500 }; exit 1"
 set "GRIDSHARD_HEALTH_EXIT=%ERRORLEVEL%"
 
 if "%GRIDSHARD_HEALTH_EXIT%"=="2" (
@@ -42,5 +42,5 @@ if not "%GRIDSHARD_HEALTH_EXIT%"=="0" (
 start "" "http://127.0.0.1:%GRIDSHARD_WEB_PORT%/"
 echo Tarayici dogrulanmis %GRIDSHARD_EXPECTED_VERSION% sunucusunda acildi: http://127.0.0.1:%GRIDSHARD_WEB_PORT%/
 echo EV ^> SAVAS yolunu kullan.
-echo Beta surumunde arena ve kupa araligina uygun sunucu AI rakibi dogrudan atanir.
+echo Testte arena ve kupa araligina uygun sunucu AI rakibi dogrudan atanir.
 exit /b 0
