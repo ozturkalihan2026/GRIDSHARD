@@ -182,6 +182,17 @@ jobs:
           e2e/battle-render-budget.spec.js
           e2e/beta381-battle-events.spec.js e2e/battle-density.spec.js
           e2e/mobile-battle.spec.js
+      - name: Preserve browser performance and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridshard-browser-evidence-${{ github.sha }}
+          path: |
+            qa_reports/playwright-results.json
+            test-results/
+            playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Two real browser clients and reconnect (explicit human fixture)
         env:
           GRIDSHARD_E2E_HUMAN_MATCHMAKING: '1'

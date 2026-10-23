@@ -57,12 +57,15 @@ test("savaş hareketleri ve VFX aynı kare bütçesinde kalır", async ({page}, 
   const evidence=await page.evaluate(()=>({...window.__battleCost,performance:window.__GRIDSHARD_PERF?.current,
     nativeFrames:window.__battleNativeFrames,quality:document.body.dataset.graphics,perspective:document.body.dataset.battlePerspective,
     phases:window.__battlePhaseCost,
+    animations:document.getAnimations().map(a=>({name:a.animationName,state:a.playState,
+      target:a.effect?.target?.getAttribute('class'),iterations:String(a.effect?.getTiming().iterations)})),
     devices:document.querySelectorAll(".vertical-circuit-arena .module-device-rig").length,
     effects:document.querySelectorAll("#battle-effect-layer *").length}));
   if(before&&after){const previous=new Map(before.metrics.map(m=>[m.name,m.value]));evidence.browser=Object.fromEntries(after.metrics
     .filter(m=>["LayoutCount","RecalcStyleCount","LayoutDuration","RecalcStyleDuration","ScriptDuration","TaskDuration"].includes(m.name))
     .map(m=>[m.name,m.value-(previous.get(m.name)||0)]));}
   await info.attach("battle-render-cost",{body:JSON.stringify(evidence,null,2),contentType:"application/json"});
+  console.log('BATTLE_RENDER_BUDGET',JSON.stringify({project:info.project.name,...evidence}));
   await page.screenshot({path:info.outputPath("battle-proportions.png")});
   expect(evidence.devices).toBeGreaterThanOrEqual(5);
   expect(evidence.rigLayoutReads).toBe(0);

@@ -1,6 +1,52 @@
 const { test, expect } = require("@playwright/test");
 const {waitForParticipantReady} = require("./ui-helpers");
 
+test("tekrarlı menü gezinmesi DOM ve dinleyici birikimi oluşturmaz", async ({page}, info) => {
+  // A deliberate 150-navigation soak, not a larger timeout for a failing UI test.
+  test.setTimeout(210_000);
+  const errors = []; page.on('pageerror', error => errors.push(String(error)));
+  await page.addInitScript(() => localStorage.setItem('gridshard.tutorial.v1', 'complete'));
+  await page.goto('/?e2e=1', {waitUntil:'domcontentloaded'});
+  await waitForParticipantReady(page);
+  const cdp = await page.context().newCDPSession(page);
+  const screens = ['shop','modules','profile','avatar','friends','team','events','weekly-event',
+    'team-event','daily','daily-rewards','daily-missions','rewards','settings','menu'];
+  const navigate = async rounds => {
+    for (let i=0;i<rounds;i++) for (const screen of screens) {
+      // Exercise the application's real bound route handler without timing
+      // this memory probe against pointer actionability / animation frames.
+      await page.evaluate(screen => {
+        const target = document.querySelector(`button[data-open-screen="${screen}"]`);
+        if (!target) throw new Error(`Missing route button: ${screen}`);
+        target.click();
+      }, screen);
+      await expect(page.locator('body')).toHaveAttribute('data-app-screen', screen);
+      await page.waitForTimeout(650); // allow the normal 360ms navigation settle + async response
+    }
+  };
+  const sample = async () => {
+    await page.waitForTimeout(1200); // allow transition cleanup, then count retained objects
+    await cdp.send('HeapProfiler.collectGarbage');
+    const dom = await cdp.send('Memory.getDOMCounters');
+    const heap = await cdp.send('Runtime.getHeapUsage');
+    return {...dom, heapBytes:heap.usedSize};
+  };
+  await navigate(2);
+  const baseline = await sample();
+  await navigate(4);
+  const middle = await sample();
+  await navigate(4);
+  const final = await sample();
+  const evidence = {navigations:150, baseline, middle, final};
+  await info.attach('menu-retained-memory', {body:JSON.stringify(evidence,null,2),contentType:'application/json'});
+  console.log('MENU_RETAINED_MEMORY', JSON.stringify(evidence));
+  expect(final.documents).toBeLessThanOrEqual(baseline.documents);
+  expect(final.nodes).toBeLessThanOrEqual(baseline.nodes + 250);
+  expect(final.jsEventListeners).toBeLessThanOrEqual(baseline.jsEventListeners + 100);
+  expect(final.heapBytes).toBeLessThanOrEqual(baseline.heapBytes + 2 * 1024 * 1024);
+  expect(errors).toEqual([]);
+});
+
 test("Ana menü güncel alt gezintideki ekranlara gidip geri döner", async ({ page }) => {
   await page.addInitScript(() =>
     localStorage.setItem("gridshard.tutorial.v1", "complete")

@@ -244,7 +244,12 @@
         this._setBodyState("ready");
         for (const target of this.inertTargets) target.inert = false;
         await this.wait(this.fadeMs);
-        if (this.root) this.root.hidden = true;
+        if (this.root) {
+          this.root.hidden = true;
+          // WebKit can retain running pseudo-element animations on a hidden
+          // splash. Release their timelines after the fade, never during load.
+          for (const animation of this.root.getAnimations?.({subtree:true}) || []) animation.cancel();
+        }
         this._resolveFinished();
       })();
       return this._finishing;

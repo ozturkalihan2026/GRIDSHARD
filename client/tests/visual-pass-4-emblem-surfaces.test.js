@@ -45,14 +45,13 @@ test("Çekirdek amblemi onaylı fiziksel çizimdir ve her yerde aynı işlevle �
   const end = app.indexOf("  function renderHomeCoreHero() {");
   assert.ok(start > 0 && end > start);
   const sandbox = {CORE_VISUALS:{core_phoenix:{},core_resonance:{}}};
-  vm.runInNewContext(`${app.slice(start, end)}\nObject.assign(this, { coreEmblemSvg, coreEmblemMarkup, CORE_EMBLEM_ORBITS, CORE_EMBLEM_SPARK });`, sandbox);
+  vm.runInNewContext(`${app.slice(start, end)}\nObject.assign(this, { coreEmblemSvg, coreEmblemMarkup });`, sandbox);
   const markup = sandbox.coreEmblemMarkup("core_phoenix");
   assert.match(markup, /cores-physical-v1\/core_phoenix.webp/);
   assert.doesNotMatch(markup, /<svg|core-emblem-orbits|core-emblem-spark/);
   assert.match(sandbox.coreEmblemMarkup("unknown"), /cores-physical-v1\/core_resonance.webp/);
-  // Hareketli parçalar gövdenin içinde değildir (gövde yeniden çizilmez).
+  // Kaynak kartındaki statik SVG'nin kendi animasyon katmanı yoktur.
   assert.equal(/ce-orbits|ce-spark/.test(sandbox.coreEmblemSvg("core_resonance")), false);
-  assert.equal((sandbox.CORE_EMBLEM_ORBITS.match(/<ellipse /g) || []).length, 2);
 
   for (const call of [
     "mountCoreEmblem(glyph, coreId);",
@@ -74,11 +73,7 @@ test("Çekirdek amblemi onaylı fiziksel çizimdir ve her yerde aynı işlevle �
   assert.ok(app.includes('moduleSignature:module => battleModuleRenderSignature(module) + "|" + language + "|" + mockEnemyCoreType,'));
 });
 
-test("amblemin hareketi katmanlardadır; hareket azaltma ve düşük grafikte durur", () => {
-  assert.match(rule(".core-emblem-orbits"), /animation:ce-orbit 16s linear infinite;will-change:transform;/);
-  assert.match(rule(".core-emblem-spark"), /animation:ce-spark 2\.6s ease-in-out infinite;/);
-  assert.match(block, /@media \(prefers-reduced-motion:reduce\) \{\n  \.core-emblem-orbits,\n  \.core-emblem-spark \{ animation:none; \}/);
-  assert.match(block, /body\[data-graphics="dusuk"\] \.core-emblem-orbits,\nbody\[data-graphics="dusuk"\] \.core-emblem-spark \{ animation:none; \}/);
+test("çekirdek resmi taşıyan yüzeylerde mükerrer filtre yoktur", () => {
   // Dönen katmanı taşıyan öğelerde süzgeç yoktur (her karede yeniden boyama olmasın).
   assert.match(rule(".home-core-hero-glyph.is-emblem"), /filter:none !important;/);
   assert.match(rule('body[data-app-screen="play"] .core-power-button .core-power-glyph.is-emblem'), /filter:none !important;/);
@@ -109,7 +104,7 @@ test("savaşta emoji düğmesi savaş alanının içinde, sağ alt köşededir",
 
 test("Kartlar → Çekirdek: karolar aynı boydadır, kilitli çekirdeğin amblemi durur", () => {
   assert.match(rule(".core-rarity-list > .core-collection-tile:only-child"), /width:100% !important;justify-self:stretch !important;/);
-  assert.match(rule('.core-collection-tile[data-locked="true"] .core-emblem-orbits'), /animation:none;/);
+  assert.match(rule('.core-collection-tile[data-locked="true"]', css), /opacity:\.46;filter:grayscale\(\.75\);/);
   // Bilgi penceresinde amblem arkada, aşağıda ortadadır (görsel tur 5; tur 4'te soldaydı).
   assert.match(rule(".core-detail-dialog .core-detail-art.is-emblem"), /inset:0 !important;\n  z-index:2;/);
 });
@@ -135,7 +130,7 @@ test("alt çubuk amblemleri: Ev ve Takımın renk kimliği ayrıdır", () => {
 
 test("profil: Devre Koleksiyonu yalnız kazanılmış kupa/rozetleri, boşken metni gösterir", () => {
   const start = app.indexOf("  const PROFILE_HONOR_ICONS = Object.freeze({");
-  const end = app.indexOf("  function deckDisplayName(deck) {");
+  const end = app.indexOf("  function renderProfileHighlights() {");
   assert.ok(start > 0 && end > start);
   const element = (tag) => ({ tag, dataset:{}, attributes:{}, children:[], className:"", textContent:"", innerHTML:"", setAttribute(name, value) { this.attributes[name] = value; }, append(...items) { this.children.push(...items); }, appendChild(item) { this.children.push(item); }, replaceChildren() { this.children = []; } });
   const sandbox = { document:{ createElement:element }, localizedUiText:(text) => text, COMPETITION_TROPHY_ASSET:"./assets/ui/rating-trophy-v1/rating-trophy.webp" };

@@ -37,7 +37,6 @@ function fixture({ effects = true, motion = false, sampling = false } = {}) {
     lastBattleHudRenderAt:-Infinity, BATTLE_HUD_RENDER_INTERVAL_MS:250,
     renderBattleHud(time) { hudRenders++; context.lastBattleHudRenderAt = time; },
     moduleMotion:{ needsFrame:motion, tick() {} },
-    laser3DPilot:{ needsPresent:false, render() {} },
     moduleFx:null, emitCoreIdleMotes() {},
     requestAnimationFrame(run) { frames.set(++serial, run); return serial; },
     window:{
@@ -146,4 +145,14 @@ test("continuous performance sampling owns one frame even without effects", () =
     assert.equal(f.frames.size, 1);
     assert.equal(f.timers.size, 0);
   }
+});
+
+test("deployed artwork keeps non-intrinsic host and rig dimensions after renderer cleanup",()=>{
+  const css=fs.readFileSync(path.join(__dirname,"../src/module-device-v8.css"),"utf8");
+  const host=css.match(/\.module-icon\.has-module-device\s*\{([^}]+)\}/)[1];
+  assert.match(host,/inline-size:calc\(100% - 14px\) !important/);
+  assert.match(host,/block-size:calc\(100% - 14px\) !important/);
+  assert.match(host,/justify-self:stretch !important/);assert.match(host,/grid-area:auto !important/);
+  const rig=css.match(/^\.module-device-rig\s*\{([^}]+)\}/m)[1];
+  assert.match(rig,/width:100%/);assert.match(rig,/height:100%/);
 });

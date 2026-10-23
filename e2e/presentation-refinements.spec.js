@@ -8,13 +8,39 @@ test.beforeEach(async ({page}) => {
 });
 
 
-test("mağaza, düşük kalite sandık ışığı, kupa seçimi ve günlük meta aynı görsel dili kullanır", async ({page}, info) => {
+test("mesaj kutusu doğru sekmeyi açar ve gerçek geri eylemiyle kapanır", async ({page}) => {
   test.setTimeout(90_000);
   await page.locator('#reward-inbox-button').click();
   await expect(page.locator('#reward-inbox-dialog')).toBeVisible();
   await expect(page.locator('#inbox-tab-system')).toHaveAttribute('aria-selected','true');
   await expect(page.locator('#reward-inbox-notices')).toContainText('GRIDSHARD 2.1.1');
   await page.locator('#reward-inbox-close').click();
+  await expect(page.locator('#reward-inbox-dialog')).not.toBeVisible();
+});
+
+test("devre yolu çekirdekleri yalnız görselle sunar ve gerçek geri eylemiyle kapanır", async ({page}) => {
+  test.setTimeout(90_000);
+  await page.locator('#home-arena-card').click();
+  await expect(page.locator('#arena-detail-dialog')).toBeVisible();
+  // One browser snapshot avoids 4 IPC/layout round trips per unlock on
+  // software WebKit; every unlock still has all four visual/accessibility checks.
+  const coreUnlocks=await page.locator('.arena-core-unlocks button').evaluateAll(buttons=>buttons.map(button=>{
+    const rect=button.getBoundingClientRect(),img=button.querySelector('img'),art=img?.getBoundingClientRect();
+    return {text:button.textContent.trim(),label:button.getAttribute('aria-label'),
+      imageVisible:Boolean(art?.width && art?.height && getComputedStyle(img).visibility==='visible'),
+      square:rect.width>0 && Math.abs(rect.width-rect.height)<2};
+  }));
+  expect(coreUnlocks.length).toBeGreaterThan(0);
+  for(const core of coreUnlocks) {
+    expect(core.text).toBe(''); expect(core.label).toMatch(/.+/);
+    expect(core.imageVisible).toBe(true); expect(core.square).toBe(true);
+  }
+  await page.locator('#arena-detail-close').click();
+  await expect(page.locator('#arena-detail-dialog')).not.toBeVisible();
+});
+
+test("mağaza başlıkları ve düşük kalite sandık açılışı mevcut görsel dili korur", async ({page}) => {
+  test.setTimeout(90_000);
   await page.locator('[data-shell-screen="shop"]').click();
   for (const heading of await page.locator(".shop-section > .mobile-section-heading").all()) {
     await expect(heading).toHaveCSS("border-left-width", "0px");
@@ -30,6 +56,10 @@ test("mağaza, düşük kalite sandık ışığı, kupa seçimi ve günlük meta
     await expect.poll(() => page.locator("#chest-reveal-visual .casual-chest-burst").evaluate(node => Number(getComputedStyle(node).opacity))).toBeGreaterThan(.25);
     await page.locator("#chest-reveal-close").click();
   }
+});
+
+test("kupa seçimi, günlük meta ve tüm modül çizimleri mevcut arayüze bağlıdır", async ({page},info) => {
+  test.setTimeout(90_000);
   await page.locator('[data-shell-screen="team"]').click();
   await page.locator('[data-team-lobby-tab="create"]').click();
   const picker = page.locator("#team-create-min-trophies-button");
@@ -139,6 +169,21 @@ test("çekirdek baskın ölçekte sokete oturur, isabette kırpılmaz; kalkan ve
   await expect.poll(() => page.evaluate(() => window.__GRIDSHARD_TEST_API.getOnlineBattleState().elapsedMs), {timeout:10_000}).toBeGreaterThan(0);
   await expect.poll(() => page.evaluate(() => window.__GRIDSHARD_TEST_API.deployModule("shield")), {timeout:15_000}).toBe(true);
   await expect(page.locator('[data-device="shield"] .module-vfx-ambient[data-kind="shield"]').first()).toBeVisible();
+  const shield=page.locator('[data-device="shield"]').first();
+  await expect(shield.locator('.module-layer-stage > .module-vfx-ambient[data-kind="shield"]')).toHaveCount(1);
+  for(const quality of ['dusuk','yuksek']) {
+    await page.evaluate(quality=>document.body.dataset.graphics=quality,quality);
+    const shell=shield.locator('.module-vfx-ambient[data-kind="shield"]');
+    await expect(shell).toBeVisible();
+    const registered=await shell.evaluate(svg=>{
+      const stage=svg.parentElement.getBoundingClientRect(),shell=svg.getBoundingClientRect();
+      const socket=svg.closest('.module-device-billboard').getBoundingClientRect();
+      return {widthRatio:shell.width/stage.width,top:shell.top,socketTop:socket.top,height:socket.height};
+    });
+    expect(registered.widthRatio).toBeGreaterThan(.95);
+    expect(registered.widthRatio).toBeLessThan(1.05);
+    expect(registered.top).toBeLessThan(registered.socketTop-registered.height*.15);
+  }
   const coreId = await page.locator('#board .module-card:has([data-core="true"])').getAttribute("data-module-id");
   await page.screenshot({path:info.outputPath("core-and-shield.png")});
   await page.evaluate(id => window.__GRIDSHARD_TEST_API.emitModuleExplosion(id, {core:true}), coreId);

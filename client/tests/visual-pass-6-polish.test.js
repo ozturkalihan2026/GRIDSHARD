@@ -87,7 +87,7 @@ test("ev ekranında deste çekirdeğin zemininde durur; arkadaki soluk çekirdek
   const tray = slice(pass6, 'body[data-app-screen="menu"] .home-loadout-front {', "}");
   assert.match(tray, /background:none !important;/);
   assert.match(tray, /box-shadow:none !important;/);
-  assert.match(pass6, /\.lobby-backdrop \{ display:none !important; \}/);
+  assert.ok(!html.includes('class="lobby-backdrop"'));
   assert.ok(!app.includes("lobby-parallax"));
 });
 

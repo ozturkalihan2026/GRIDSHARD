@@ -6,10 +6,8 @@ const css = fs.readFileSync("./src/canon.css", "utf8");
 
 // Enderlik kanunu: bilgi ekranı enderliği bir güç avantajı olarak göstermez.
 assert.ok(!app.includes("Nadirlik avantajı"));
-assert.ok(/function createModuleIdentityPanel\(\s*item,/.test(app));
 assert.ok(app.includes("const signature = createStatSignature(item);"));
 assert.ok(app.includes("if (signature) host.appendChild(signature);"));
-assert.ok(app.includes("Enderlik CAN, hasar, bekleme veya enerji avantajı vermez."));
 assert.ok(app.includes("item.shared_behavior_tr"));
 assert.ok(app.includes("Seviye ve yeteneklerle gelişir; enderlik güç katmaz."));
 
@@ -41,8 +39,6 @@ ${selector} {`);
 }
 
 for (const [label, foreground, background] of [
-  ["kimlik etiketi", ruleColor(".module-identity-row > span", "color"), "#10263f"],
-  ["kimlik değeri", ruleColor(".module-identity-row > strong", "color"), "#10263f"],
   ["genel kart etiketi", ruleColor(".module-overview-grid span", "color"), "#10263f"],
   ["yetenek alt yazısı", ruleColor(".module-talent-choices button small", "color"), "#143150"],
   ["kullanılamaz yetenek", ruleColor(".module-talent-node .module-talent-choices button.is-unavailable:not(.is-selected)", "color"), "#0c1f35"],

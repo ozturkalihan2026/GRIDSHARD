@@ -70,6 +70,26 @@ assert.strictEqual(
   false
 );
 
+// The amplifier reused the full-scale UI/energy source (~0.466 RMS), much
+// louder than the other crafted module WAVs. Its own alias trims both audio
+// backends through _cueGain without changing the shared source or bus.
+const amplifierCue=global.GRIDSHARD_SFX_CUES.amplifier_charge;
+assert.strictEqual(amplifierCue.asset,global.GRIDSHARD_SFX_CUES.energy_transfer.asset);
+assert.strictEqual(director._cueGain("amplifier_charge"),0.18);
+assert.strictEqual(director._cueGain("energy_transfer"),1);
+function wavRms(asset) {
+  const fs=require("node:fs"),path=require("node:path");
+  const bytes=fs.readFileSync(path.resolve(__dirname,"..",asset));
+  let chunk=12;
+  while(bytes.toString("ascii",chunk,chunk+4)!=="data")chunk+=8+bytes.readUInt32LE(chunk+4)+(bytes.readUInt32LE(chunk+4)%2);
+  const length=bytes.readUInt32LE(chunk+4);let sum=0;
+  for(let i=chunk+8;i<chunk+8+length;i+=2)sum+=(bytes.readInt16LE(i)/32768)**2;
+  return Math.sqrt(sum/(length/2));
+}
+const amplifierRms=wavRms(amplifierCue.asset)*director._cueGain("amplifier_charge");
+const repairRms=wavRms(global.GRIDSHARD_SFX_CUES.repair_beam.asset);
+assert.ok(amplifierRms<=repairRms && amplifierRms>=repairRms*.5,"support pulse stays audible without dominating repair");
+
 
 
 const preferences=

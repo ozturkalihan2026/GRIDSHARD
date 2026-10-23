@@ -35,17 +35,9 @@ body[data-graphics="dusuk"] .module-device-rig[data-renderer="layers"] { --devic
   30% { translate:var(--layer-recoil-x,0) var(--layer-recoil-y,0); scale:1.04 .95; }
   100% { translate:0 0; scale:1; }
 }
-/* Idle breathing: tiny, per-device phase so a board never pulses in sync. */
-:root body[data-app-screen="play"] .module-layer-stage { animation:gs-layer-idle 2.8s ease-in-out infinite; }
-.module-device-rig[data-device="shield"] .module-layer-stage { animation-delay:-.4s; }
-.module-device-rig[data-device="battery"] .module-layer-stage { animation-delay:-1.1s; }
-.module-device-rig[data-device="cooler"] .module-layer-stage { animation-delay:-1.7s; }
-.module-device-rig[data-device="repair"] .module-layer-stage { animation-delay:-2.2s; }
-.module-device-rig[data-device="pulse_cannon"] .module-layer-stage { animation-delay:-.9s; }
-@keyframes gs-layer-idle { 50% { translate:0 -1.6%; } }
-/* Struck device: brief white flash + jolt (class set by the effect owner). */
-.module-device-rig.is-struck .module-layer-stage { animation:gs-layer-struck 220ms ease-out; filter:brightness(1.8) saturate(.7); }
-@keyframes gs-layer-struck { 30% { translate:1.5% 2%; scale:1.03 .96; } 100% { translate:0 0; scale:1; } }
+/* Stable pedestal. Real aiming/recoil belongs to the head, not an idle bob
+ * or the retired whole-device squash. The hit owner keeps a short flash. */
+.module-device-rig.is-struck .module-layer-stage { filter:brightness(1.8) saturate(.7); }
 .module-device-rig[data-disabled="true"] .module-layer-stage,
 body[data-graphics="dusuk"] .module-layer-stage { animation:none !important; }
 body[data-graphics="dusuk"] .module-layer-head { transition:none; }
@@ -128,14 +120,13 @@ body[data-graphics="dusuk"] .module-layer-head { transition:none; }
   border-radius:7px !important; background:#0b6f5ecc !important; box-shadow:0 0 0 1px #43f0c8aa !important;
 }
 
-/* Working core (battle): stone pulse in the core's colour; faster and brighter
- * while the core power is ready. Energy motes come from module-fx-canvas.js. */
+/* Working crystal: static coloured light; the shared canvas animates its
+ * motes and ready-state activity without a second per-device CSS clock. */
 .module-core-pulse { position:absolute; width:46%; aspect-ratio:1; translate:-50% -50%; border-radius:50%; pointer-events:none;
   background:radial-gradient(circle, #fff 0 6%, var(--core-accent,#56f1df) 18%, color-mix(in srgb, var(--core-accent,#56f1df) 40%, transparent) 42%, transparent 70%);
-  mix-blend-mode:screen; opacity:.35; animation:gs-core-pulse 1.6s ease-in-out infinite; }
-.core-power-ready .module-core-pulse { width:58%; animation-duration:.8s; }
+  mix-blend-mode:normal; opacity:.4; scale:1; animation:none; }
+.core-power-ready .module-core-pulse { width:58%; }
 .core-power-ready .module-device-rig[data-core="true"] .module-layer-art { filter:drop-shadow(0 0 6px var(--core-accent,#56f1df)); }
-@keyframes gs-core-pulse { 0%,100% { opacity:.22; scale:.82; } 50% { opacity:.72; scale:1.08; } }
 .module-device-rig.is-struck .module-core-pulse { animation:gs-core-crack 220ms ease-out; opacity:1; }
 @keyframes gs-core-crack { 0% { opacity:1; scale:1.25; } 100% { opacity:.3; scale:.9; } }
 body[data-graphics="dusuk"] .module-core-pulse { animation:none; opacity:.4; scale:1; }

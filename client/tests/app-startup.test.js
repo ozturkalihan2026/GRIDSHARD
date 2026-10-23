@@ -133,9 +133,6 @@ for (const relativePath of [
   ["src", "tutorial", "onboarding.js"],
   ["src", "battle", "board-view.js"],
   ["src", "battle", "laser-aim.js"],
-  ["src", "battle", "device-models-extended.js"],
-  ["src", "battle", "device-reference-details.js"],
-  ["src", "battle", "laser-3d-pilot.js"],
   ["src", "module-view-data.js"],
   ["src", "module-device-art.js"],
   ["src", "battle", "module-motion.js"],
@@ -152,7 +149,6 @@ for (const relativePath of [
   ["src", "competition-chest-art.js"],
   ["src", "detail-card-layout.js"],
 ]) {
-  if(process.env.GRIDSHARD_TEST_NO_3D === "1" && relativePath.at(-1) === "laser-3d-pilot.js")continue;
   const moduleSource = fs.readFileSync(
     path.join(CLIENT_ROOT, ...relativePath),
     "utf8"

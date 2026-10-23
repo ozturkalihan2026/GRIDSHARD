@@ -4,15 +4,14 @@
 :root body[data-app-screen="play"] .module-device-rig[data-renderer="layers"] .module-device-billboard {
   transform:translateZ(max(2px,var(--device-height,7px))) rotateX(var(--gs-camera-counter,0deg));
 }
-:root body[data-app-screen="play"] .module-device-rig[data-core="true"] .module-layer-stage {
-  animation:none;
+/* The shared canvas already animates the working crystal and real charge
+   pulses. Do not also run independent CSS clocks on every painted device.
+   In software WebKit those clocks repaint the whole nested board scene. */
+:root body[data-app-screen="play"] .vertical-circuit-arena .module-card.physical-module-card,
+:root body[data-app-screen="play"] .vertical-circuit-arena .physical-module-card .module-live-status {
+  animation:none !important;
 }
-/* Aim/fire still respond to real events; sockets do not bob continuously.
-   Painted view changes no longer squeeze the device on every turn. */
-:root body[data-app-screen="play"] .module-device-rig[data-renderer="layers"] .module-layer-stage { animation:none !important; }
-.module-core-pulse { mix-blend-mode:normal; scale:1; animation-name:gs-core-light; }
-@keyframes gs-core-light { 0%,100% { opacity:.24; } 50% { opacity:.65; } }
-.module-vfx-ambient[data-kind="shield"] { z-index:4; }
+.module-vfx-ambient[data-kind="shield"] { z-index:4; transform:translateZ(1px); }
 .vfx-shield-shell { fill:#4ab9f4; fill-opacity:.15; stroke:#7fe9ff; stroke-width:1.8; }
 .vfx-shield-shell-rim { fill:none; stroke:#d5fbff; stroke-width:1.5; stroke-opacity:.7; }
 .vfx-shield-shell-hex { fill:#70e3ff; fill-opacity:.1; stroke:#8feaff; stroke-width:1; stroke-opacity:.5; }

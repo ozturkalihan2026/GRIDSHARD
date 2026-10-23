@@ -123,7 +123,7 @@ test("only actual repair/cooling/EMP/charge events emit targeted support effects
     f.event("amplifier_pulse",{player_id:"own",module_id:"amp",charged_module_ids:["laser","repair"]})];
   const before=JSON.stringify(f.snapshot);f.fx.receive(events,f.snapshot);
   for(const type of["repair","cool","emp","boost"])assert.ok([...f.fx.effects.keys()].some(k=>k.startsWith("support:"+type)));
-  assert.deepEqual(f.sounds,["repair_beam","cooling_air","emp","energy_transfer"]);
+  assert.deepEqual(f.sounds,["repair_beam","cooling_air","emp","amplifier_charge"]);
   const nodes=f.layer.children.slice();f.fx.receive(events,f.snapshot);assert.deepEqual(f.layer.children,nodes);assert.equal(f.sounds.length,4);
   assert.equal(JSON.stringify(f.snapshot),before);
 });
@@ -249,6 +249,22 @@ test("a powered shield keeps one stable shell even at low quality and releases i
   shield.is_powered=true;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,1);
   shield.hp=0;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,0);
   f.fx.reset();assert.equal(f.queue.entries.length,0);
+});
+
+test("shield shell follows the raised painting stage, survives repeated snapshots and rig replacement",()=>{
+  const f=fixture(),rig=f.rigs.get("own:shield"),billboard=rig.children[0];
+  const stage=f.fx.doc.createElement("span");stage.classList.add("module-layer-stage");billboard.appendChild(stage);
+  f.fx.receive([],f.snapshot);
+  const shell=f.fx.ambient.get("own:shield");assert.equal(shell.parentElement,stage);
+  for(let i=0;i<1000;i++)f.fx.receive([],f.snapshot);
+  assert.equal(f.fx.ambient.get("own:shield"),shell);
+  assert.equal(stage.children.length,1);assert.equal(f.queue.entries.length,0,"static shell needs no animation timers");
+  stage.remove();f.fx.receive([],f.snapshot);
+  assert.equal(shell.parentElement,null,"old painted stage cannot retain a ghost dome");
+  assert.equal(f.fx.ambient.get("own:shield").parentElement,billboard,"legacy atlas fallback still works");
+  f.setHidden(true);f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,0);
+  f.setHidden(false);f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,3);
+  f.fx.reset();assert.equal(f.fx.ambient.size,0);
 });
 test("client integration has a single first-ten VFX owner and preserves native audio asset resolution",()=>{
   const app=fs.readFileSync(path.join(__dirname,"../src/app.js"),"utf8"),html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");

@@ -121,7 +121,7 @@ test("actual core dialog counts legacy shards and requires level resources and l
   state.unavailable=false;f.core.next_upgrade_cost=null;f.context.openCore();assert.equal(button.disabled,true);
 });
 test("all numeric stat rows have a direct left icon and the same label/value columns as class/rarity",()=>{
-  const f=appFixture();vm.runInContext(between("  function createModuleStatTiles(","  // Güçlü, zayıf")+"\nthis.tiles=createModuleStatTiles;",f.context);
+  const f=appFixture();vm.runInContext(between("  function createModuleStatTiles(","  // Three distinct views:")+"\nthis.tiles=createModuleStatTiles;",f.context);
   const list=f.context.tiles(f.item);assert.ok(list.children.length>=4);
   for(const row of list.children){assert.equal(row.children[0].className,"ui-icon");assert.equal(row.children[1].tag,"dt");assert.equal(row.children[2].tag,"dd");}
   assert.match(css,/\.module-stat-chips small,.module-stat-tiles dt/);assert.match(css,/\.module-stat-chips strong,.module-stat-tiles dd/);
@@ -190,7 +190,7 @@ test("damage, DPS, energy and deployment current resolve to distinct semantic ar
 test("signature mechanics appear in both Statistics views, including locked modules",()=>{
   const f=appFixture();f.item.signature_mechanic="Hedefe kesintisiz odaklanır.";f.item.unlocked=false;
   f.core.signature_mechanic="Devreye özel enerji desteği.";
-  vm.runInContext(between("  function createModuleStatTiles(","  // Güçlü, zayıf")+
+  vm.runInContext(between("  function createModuleStatTiles(","  // Three distinct views:")+
     between("  function renderModuleDetailTab(","  function openModuleDetail(")+
     between("  function renderCoreDetailTab(","  function openCoreDetail(")+"\nthis.renderModule=renderModuleDetailTab;this.renderCore=renderCoreDetailTab;",f.context);
   f.context.renderModule("stats");f.context.renderCore("stats");

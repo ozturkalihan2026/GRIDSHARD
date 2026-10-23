@@ -82,6 +82,19 @@ test("source fade and ready hold finish before deferred dialogs are released", a
   assert.equal(loading.root.hidden,true, "late profile refresh does not restart the splash");
 });
 
+test("the completed splash releases hidden animation timelines only after its fade",async()=>{
+  const {loading,waits}=setup();let cancelled=0;
+  loading.root.getAnimations=options=>{
+    assert.equal(options.subtree,true);assert.equal(loading.root.hidden,true);
+    assert.deepEqual(waits,[1200,460]);
+    return [{cancel(){cancelled++;}},{cancel(){cancelled++;}}];
+  };
+  loading.begin();
+  for(const step of loading.required)loading.complete(step);
+  assert.equal(cancelled,0);await loading.finish();assert.equal(cancelled,2);
+  await loading.finish();assert.equal(cancelled,2,'late refresh cannot restart/cancel a completed splash again');
+});
+
 test("retry button resumes the guarded server startup", () => {
   const {loading} = setup();
   let attempts = 0;

@@ -218,12 +218,6 @@ body[data-app-screen="play"] .power-state-chip { display:none !important; }
 .module-overview-grid > div { min-height:70px;padding:10px;display:grid;align-content:center;gap:5px;border:1px solid #acc4ce;border-radius:10px;background:#d7e7eb; }
 .module-overview-grid span { color:#3e566b;font:800 .45rem var(--gs-font-display); }
 .module-overview-grid strong { color:#223b52;font-size:.66rem;line-height:1.35; }
-.module-counter-grid { grid-column:1/-1;display:grid;gap:7px; }
-.module-counter-grid section { padding:9px;display:grid;gap:4px;border-left:4px solid #54d7bc;border-radius:7px;background:#d2e1e7; }
-.module-counter-grid section.is-weak { border-color:#e06879; }
-.module-counter-grid section.is-synergy { border-color:#6c91e5; }
-.module-counter-grid strong { font-size:.48rem; }
-.module-counter-grid span { font-size:.63rem; }
 .module-talent-node { overflow:visible; }
 .module-talent-node::before { content:"";position:absolute;z-index:0;left:50%;top:-18px;bottom:-18px;width:4px;transform:translateX(-50%);background:#8195a0; }
 .module-talent-node:first-of-type::before { top:16px; }
@@ -774,8 +768,6 @@ body[data-home-matchmaking="true"] .play-online-panel { visibility:hidden !impor
 .module-overview-grid > div { min-height:52px !important;padding:7px !important; }
 .module-detail-tab-content dl { gap:4px !important; }
 .module-detail-tab-content dl > div { padding:5px 0 !important; }
-.module-counter-grid { gap:4px !important; }
-.module-counter-grid section { padding:6px !important; }
 .module-talent-node { margin:5px 0 !important;padding:0 0 5px !important;gap:3px !important; }
 .module-talent-node > strong { padding:3px 8px !important;font-size:.55rem !important; }
 .module-talent-connector { height:7px !important;margin:-3px auto !important; }
@@ -2781,31 +2773,6 @@ body[data-app-screen="play"] .module-shelf .module-card .current-cost-badge {
   font-size:.68rem;
   letter-spacing:.1em;
 }
-.module-effect-panel {
-  display:grid;
-  gap:7px;
-  margin-top:10px;
-  padding:10px 12px;
-  border:1px solid rgba(86,241,223,.2);
-  border-radius:10px;
-  background:rgba(5,22,40,.68);
-}
-.module-effect-panel > strong {
-  color:#71e8db;
-  font-size:.7rem;
-  letter-spacing:.08em;
-}
-.module-effect-panel ul {
-  display:grid;
-  gap:5px;
-  margin:0;
-  padding-left:18px;
-}
-.module-effect-panel li {
-  color:#d9e9f5;
-  font-size:.78rem;
-  line-height:1.35;
-}
 
 /* Beta.46 — the result sheet is the useful part of the battle recap.  Keep
    the outcome IDs for screen-reader copy/JS compatibility, but remove the
@@ -3347,26 +3314,6 @@ body[data-app-screen="play"] .module-explosion.core-explosion::after {
     visibility:visible !important;
   }
 }
-
-/* Beta.72 — modül kimlik paneli. İçerik alanı açık zeminlidir; enderlik rengi
-   yalnız kenarlıkta kullanılır, yazı hep koyu kalır (en az 6:1 kontrast). */
-.module-identity-panel { display:grid;gap:6px;margin:0 0 8px; }
-.module-identity-row {
-  --identity-accent:#6f8797;
-  display:grid;
-  gap:3px;
-  padding:7px 9px;
-  border:1px solid #acc4ce;
-  border-left:4px solid var(--identity-accent);
-  border-radius:9px;
-  background:#d7e7eb;
-}
-.module-identity-row[data-rarity="rare"] { --identity-accent:#3d7fd1; }
-.module-identity-row[data-rarity="epic"] { --identity-accent:#9a5ad8; }
-.module-identity-row[data-rarity="legendary"] { --identity-accent:#c99a1c; }
-.module-identity-row > span { color:#34506a;font:800 .5rem var(--gs-font-display);letter-spacing:.06em; }
-.module-identity-row > strong { color:#172d46;font-size:.66rem;line-height:1.35; }
-
 
 /* Beta.72 — imza efektleri, arena sarsıntısı ve kart imza rozetleri.
    Yazılar hep koyu, opak zemin (#06111f) üzerinde açık renktir; her renk
@@ -4875,30 +4822,7 @@ html[lang="en"] body[data-home-match-transition="true"] .battle-shell::after { c
   font:900 .5rem/1 var(--gs-font-display);
 }
 
-/* Genel: kimlik satırları, özet karoları ve savaş etkileri. */
-.module-detail-tab-content .module-identity-panel { gap:6px;margin:0 0 9px; }
-.module-identity-row {
-  --identity-accent:#7f9bb3;
-  padding:8px 10px;
-  border:1px solid rgba(120,170,210,.18);
-  border-left:3px solid var(--identity-accent);
-  border-radius:9px;
-  background:#10263f;
-}
-.module-identity-row[data-rarity="rare"] { --identity-accent:#4f9bff; }
-.module-identity-row[data-rarity="epic"] { --identity-accent:#b77cff; }
-.module-identity-row[data-rarity="legendary"] { --identity-accent:#ffc94d; }
-.module-identity-row > span {
-  color:#8fdcd3;
-  font:800 .48rem var(--gs-font-display);
-  letter-spacing:.08em;
-}
-.module-identity-row > strong {
-  color:#e6f0f9;
-  font-size:.62rem;
-  font-weight:600;
-  line-height:1.4;
-}
+/* Genel: etkin ayrıntı penceresinin özet karoları. */
 .module-detail-tab-content .module-overview-grid { gap:6px !important;margin-bottom:9px; }
 .module-detail-tab-content .module-overview-grid > div {
   position:relative;
@@ -4925,23 +4849,6 @@ html[lang="en"] body[data-home-match-transition="true"] .battle-shell::after { c
   letter-spacing:.08em;
 }
 .module-overview-grid strong { color:#eef6fd;font-size:.6rem;line-height:1.35; }
-.module-detail-tab-content .module-effect-panel {
-  margin-top:0;
-  padding:9px 10px;
-  border-color:rgba(111,241,224,.22);
-  background:#0f2742;
-}
-.module-detail-tab-content .module-effect-panel > strong { color:#8fdcd3;font:800 .48rem var(--gs-font-display);letter-spacing:.1em; }
-.module-detail-tab-content .module-effect-panel ul { gap:5px;padding-left:0;list-style:none; }
-.module-detail-tab-content .module-effect-panel li { position:relative;padding-left:14px;color:#e3eef8;font-size:.6rem; }
-.module-detail-tab-content .module-effect-panel li::before {
-  content:"ϟ";
-  position:absolute;
-  left:0;
-  top:0;
-  color:var(--detail-accent);
-  font-weight:900;
-}
 
 /* İstatistik: sınıf/enderlik etiketleri, değer karoları ve karşılıklar. */
 .module-stat-chips { margin-bottom:8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px; }
@@ -4993,40 +4900,6 @@ html[lang="en"] body[data-home-match-transition="true"] .battle-shell::after { c
 }
 .module-detail-tab-content dl.core-stat-tiles > div { grid-template-columns:1fr; }
 .core-stat-tiles dd { font-size:.62rem;line-height:1.35;white-space:normal; }
-.module-detail-tab-content .module-counter-grid { gap:6px !important;margin:0; }
-.module-detail-tab-content .module-counter-grid section {
-  padding:8px 9px !important;
-  display:grid;
-  gap:6px;
-  border:1px solid rgba(120,170,210,.18);
-  border-left:3px solid #54d7bc;
-  border-radius:9px;
-  background:#10263f;
-}
-.module-detail-tab-content .module-counter-grid section.is-weak { border-left-color:#ff7189; }
-.module-detail-tab-content .module-counter-grid section.is-synergy { border-left-color:#6f9bff; }
-.module-detail-tab-content .module-counter-grid section > strong { color:#8fdcd3;font:800 .46rem var(--gs-font-display);letter-spacing:.08em; }
-.module-detail-tab-content .module-counter-grid section.is-weak > strong { color:#ff9fb0; }
-.module-detail-tab-content .module-counter-grid section.is-synergy > strong { color:#a9c3ff; }
-.module-counter-chips { display:flex;flex-wrap:wrap;gap:5px; }
-.module-counter-chip {
-  --chip-color:#6ff1e0;
-  min-height:24px;
-  padding:3px 8px 3px 3px;
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-  border:1px solid color-mix(in srgb,var(--chip-color) 45%,transparent);
-  border-radius:999px;
-  background:#0b2037;
-}
-.module-counter-chip[data-category="saldırı"] { --chip-color:#ff7a92; }
-.module-counter-chip[data-category="savunma"] { --chip-color:#86bbff; }
-.module-counter-chip[data-category="destek"] { --chip-color:#96ed88; }
-.module-counter-chip[data-category="sabotaj"] { --chip-color:#c88cff; }
-.module-counter-chip > b { width:18px;height:18px;display:grid;place-items:center;border-radius:50%;color:var(--chip-color);background:#07172b;font:900 .56rem/1 var(--gs-font-display); }
-.module-counter-chip > em { color:#e8f1fa;font-size:.54rem;font-style:normal;font-weight:700; }
-.module-counter-empty { color:#a9c0d3;font-size:.54rem;font-style:normal; }
 
 /* Yetenekler: seviye rozeti iki dalın ortasında; alan kendi içinde kayar,
    son satır sekme çubuğunun altında kalmaz. */
@@ -6164,11 +6037,6 @@ body[data-graphics="dusuk"][data-app-screen="play"] .battle-effect-layer span::a
   filter:none !important;
 }
 body[data-graphics="dusuk"][data-app-screen="play"] .duel-arena[class*="fx-arena-pulse-"] {
-  animation:none !important;
-}
-body[data-graphics="dusuk"] .lobby-backdrop .lobby-core-orbit,
-body[data-graphics="dusuk"] .lobby-backdrop .shard-core-mark,
-body[data-graphics="dusuk"] .lobby-backdrop .shard-core-mark * {
   animation:none !important;
 }
 .settings-graphics-note { display:block; margin-top:6px; color:#a9bfd0; font-size:.72rem; line-height:1.4; }
@@ -7400,18 +7268,16 @@ body[data-graphics="dusuk"] .module-unlock-card { animation:none; }
 .arena-core-unlocks > span { color:#ffd98a; }
 .arena-core-unlocks button {
   --arena-module:#56f1df;
-  width:auto !important;
-  height:auto !important;
-  min-height:40px;
-  max-width:100%;
-  padding:5px 12px 5px 6px !important;
-  display:inline-flex !important;
-  align-items:center;
-  gap:8px;
-  border-radius:20px !important;
+  width:46px;
+  height:46px;
+  padding:0;
+  display:inline-grid;
+  place-items:center;
+  border:0;
+  background:none;
+  box-shadow:none;
 }
 .arena-core-unlocks button > i { width:30px;height:30px;flex:none;display:grid;place-items:center;border:1px solid var(--arena-module);border-radius:50%;color:var(--arena-module);background:#0b1f38;font:900 .95rem var(--gs-font-display);font-style:normal;box-shadow:0 0 10px color-mix(in srgb,var(--arena-module) 40%,transparent); }
-.arena-core-unlocks button > strong { min-width:0;color:#eaf6ff;font:800 .6rem var(--gs-font-display);overflow-wrap:anywhere;text-align:left; }
 
 .arena-league-chest-stop { position:relative;display:grid;justify-items:center;padding-top:26px; }
 .arena-league-chest-stop::before { content:"";position:absolute;left:50%;top:2px;width:4px;height:20px;transform:translateX(-50%);border-radius:4px;background:repeating-linear-gradient(180deg,#3d6485 0 5px,transparent 5px 9px); }
@@ -7824,22 +7690,6 @@ button.has-cost-chips .cost-chip {
 .module-detail-tabs button > .upgrade-arrow { top:3px;right:calc(50% - 30px); }
 
 /* --- Sekme içerikleri: renkli karolar --------------------------------------- */
-.module-detail-tab-content .module-identity-row {
-  display:grid;
-  grid-template-columns:auto minmax(0,1fr);
-  align-items:center;
-  gap:2px 9px;
-  background:linear-gradient(100deg,color-mix(in srgb,var(--identity-accent) 13%,#10263f),#10263f 62%);
-}
-.module-identity-row.is-signature { --identity-accent:#5ef0de; }
-.module-identity-row.is-telegraph { --identity-accent:#7dc0ff; }
-.module-identity-row.is-counter { --identity-accent:#ff8296; }
-.module-identity-row > .ui-icon { grid-row:1 / span 2;align-self:center;font-size:1rem; }
-.module-detail-tab-content .module-identity-row > span,
-.module-detail-tab-content .module-identity-row > strong { grid-column:2; }
-.module-identity-row.is-signature > span { color:#8ff5e6; }
-.module-identity-row.is-telegraph > span { color:#a9d4ff; }
-.module-identity-row.is-counter > span { color:#ffa9b6; }
 .module-detail-tab-content .module-overview-grid > div {
   padding:8px 9px !important;
   display:grid !important;
@@ -8065,7 +7915,6 @@ body[data-app-screen="menu"] #main-menu-panel {
     linear-gradient(180deg,#14427c,#0d2f62 52%,#0a2452) !important;
 }
 body[data-app-screen="menu"] #main-menu-panel::after { opacity:.5; }
-body[data-app-screen="menu"] .lobby-backdrop { opacity:.38; }
 .mobile-hub-screen {
   background:
     var(--gs-pattern-diamond),
@@ -9263,7 +9112,6 @@ body[data-graphics="dusuk"] .cost-chip-icon.is-token { filter:none !important; }
 #module-detail-rarity[data-rarity="legendary"],
 #core-detail-rarity[data-rarity="legendary"] { --r-a:#fbd26f;--r-b:#f0ad35;--r-ink:#4a2504; }
 .module-detail-title { justify-items:center; }
-.module-identity-row[data-rarity="common"] { --identity-accent:#b7c7d8; }
 
 /* --- Parça ve evrensel parça ayrı ---------------------------------------------- */
 #module-detail-dialog .module-detail-level-row div { grid-template-columns:auto auto minmax(0,1fr) auto !important; }
@@ -9505,14 +9353,11 @@ body[data-app-screen="rewards"] .season-reward-panel > .reward-back-link {
 }
 .boot-title { font-family:var(--gs-font-brand) !important; }
 
-/* --- Çekirdek amblemi: tek çizim, üç katman ---------------------------------------
-   Gövde durur; yörünge ve parıltı ayrı katmanda döner (tarayıcı gövdeyi yeniden
-   çizmez). Rengi taşıyan öğenin `--core-accent` değeridir. */
+/* Çekirdek fiziksel resmi; küçük kaynak kartları için kullanılan statik SVG. */
 .core-emblem-set { position:relative;display:block;width:100%;height:100%;aspect-ratio:1;pointer-events:none; }
 .core-emblem-set > svg { position:absolute;inset:0;display:block;width:100%;height:100%;overflow:visible; }
 .is-emblem { font-size:0 !important;line-height:0 !important;text-shadow:none !important; }
 .is-emblem > svg.core-emblem { display:block;width:100%;height:100%;overflow:visible; }
-.core-emblem-orbits { fill:none;stroke:var(--core-accent,#56f1df);stroke-width:2.2;opacity:.6;animation:ce-orbit 16s linear infinite;will-change:transform; }
 .core-emblem .ce-frame { fill:#8195b1; }
 .core-emblem .ce-frame-light { fill:#dce7f3;opacity:.62; }
 .core-emblem .ce-frame-dark { fill:#2a3d5c;opacity:.74; }
@@ -9525,15 +9370,6 @@ body[data-app-screen="rewards"] .season-reward-panel > .reward-back-link {
 .core-emblem .ce-mark-cut { fill:#0a1024;stroke:#0a1024;stroke-width:2.2;stroke-linecap:round;opacity:.8; }
 .core-emblem .ce-mark-line { fill:none;stroke:#ffffff;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 0 #0a1024); }
 .core-emblem .ce-bolt { fill:#eef4fb;stroke:#0a1024;stroke-width:1.3; }
-.core-emblem-spark { fill:#ffffff;opacity:.9;transform-origin:35% 38.3%;animation:ce-spark 2.6s ease-in-out infinite; }
-@keyframes ce-orbit { to { transform:rotate(360deg); } }
-@keyframes ce-spark { 50% { opacity:.25;transform:scale(.6); } }
-@media (prefers-reduced-motion:reduce) {
-  .core-emblem-orbits,
-  .core-emblem-spark { animation:none; }
-}
-body[data-graphics="dusuk"] .core-emblem-orbits,
-body[data-graphics="dusuk"] .core-emblem-spark { animation:none; }
 
 /* --- Ev ekranı ----------------------------------------------------------------------
    Çekirdek amblemi küçülür (ekran yüksekliğinin yaklaşık yedide biri, en çok 132
@@ -9708,8 +9544,6 @@ body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .lobby-dock-ico
 .core-detail-art.is-emblem .core-emblem,
 .post-match-core-card > i.is-emblem .core-emblem,
 .profile-featured-core-glyph.is-emblem .core-emblem { filter:drop-shadow(0 2px 0 rgba(3,10,24,.42)); }
-.core-collection-tile[data-locked="true"] .core-emblem-orbits { animation:none;opacity:.28; }
-.core-collection-tile[data-locked="true"] .core-emblem-spark { animation:none;opacity:0; }
 .core-collection-copy strong { color:#f4f9ff !important; }
 .core-collection-copy em { color:#b9cfe6 !important; }
 .core-rarity-group {
@@ -9860,8 +9694,6 @@ body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-
   transform:none !important;
 }
 body[data-app-screen="play"] .module-card.battle-module-card > .module-icon.is-emblem .core-emblem-set { width:100%;height:100%;aspect-ratio:auto; }
-body[data-app-screen="play"] .module-card.battle-module-card[data-hp-state="destroyed"] .core-emblem-orbits,
-body[data-app-screen="play"] .module-card.battle-module-card[data-hp-state="destroyed"] .core-emblem-spark { animation:none;opacity:.2; }
 
 /* Emoji düğmesi savaş alanının içinde, sağ alt köşededir (kullanıcı, 13 Ekim 2026). */
 body[data-app-screen="play"] #duel-arena > .battle-emoji-button {
@@ -10429,8 +10261,6 @@ body[data-app-screen="play"] .core-power-button[data-ready="true"]::after {
 .statistics-deck-module.has-module-emblem .module-emblem { width:60%; height:auto; max-width:30px; }
 .arena-module-unlocks button.has-module-emblem { display:inline-grid; place-items:center; vertical-align:top; }
 .arena-module-unlocks button.has-module-emblem .module-emblem { width:27px; height:27px; }
-.module-counter-chip > b.has-module-emblem { background:none; }
-.module-counter-chip > b.has-module-emblem .module-emblem { width:18px; height:18px; }
 .module-unlock-card > i.has-module-emblem .module-emblem { width:62%; height:auto; }
 .post-match-damage-icon.has-module-emblem { display:grid; place-items:center; }
 .post-match-damage-icon.has-module-emblem .module-emblem { width:72%; height:auto; }
@@ -10563,7 +10393,6 @@ html, body, * { scrollbar-width:none !important; }
 
 /* Ev ekranı: desenli zeminin arkasındaki soluk çekirdek, yörüngeler ve eğik tahta kalktı
    (imleçle kayıyor ve nefes alıyordu; zeminin altında seçilmiyordu). */
-.lobby-backdrop { display:none !important; }
 
 /* Alt çubuk: seçilen düğme yerine anında oturur; hareket yalnız transform ve
    opaklıkla yapılır. Genişlik ve yükseklik geçişi düzen hesabı istiyor, ekran
@@ -10774,7 +10603,6 @@ body[data-app-screen="menu"] #home-active-deck .unified-module-tile {
 
 /* Sekme içeriği: açıklama ve kimlik satırları bir kademe küçük (mesaj kutusundaki ölçü). */
 .module-detail-tab-content .module-detail-tab-intro { font-size:.55rem !important; line-height:1.35 !important; }
-.module-identity-panel .module-identity-row > strong { font-size:.55rem !important; line-height:1.35 !important; }
 .module-overview-grid > div > strong { font-size:.55rem !important; line-height:1.3 !important; }
 .module-stat-chips > span > strong { font-size:.58rem !important; }
 .module-detail-tab-content dl.module-stat-tiles dd { font-size:.66rem !important; }
@@ -11165,9 +10993,7 @@ body:not([data-app-screen="play"]) :is(.daily-refresh-copy,.friends-hero > small
 .shop-screen .paid-product-card small,
 .settings-summary-panel .profile-name-form > small,
 .module-detail-tab-content .module-detail-tab-intro,
-.module-detail-tab-content .module-identity-panel .module-identity-row > strong,
 .module-detail-tab-content .module-overview-grid > div > strong,
-.module-detail-tab-content .module-effect-panel li,
 .module-detail-tab-content dl.core-stat-tiles > div[data-wide="true"] > dd {
   font-family:var(--gs-font-copy) !important;
   font-size:var(--gs-polish-copy) !important;
@@ -11242,9 +11068,7 @@ body:not([data-app-screen="play"]) :is(.daily-refresh-copy,.friends-hero > small
 .module-detail-stats > div > strong { font-size:.75rem !important; font-weight:700 !important; }
 .module-detail-stats .stat-next-gain { font-size:.625rem !important; font-weight:600 !important; }
 .module-detail-tabs button > small,
-.module-detail-tab-content .module-identity-row > span,
 .module-detail-tab-content .module-overview-grid > div > span,
-.module-detail-tab-content .module-effect-panel > strong,
 .module-detail-tab-content .module-stat-tiles dt {
   font-size:.625rem !important;
   font-weight:700 !important;
@@ -11327,10 +11151,7 @@ body:not([data-app-screen="play"]) .reward-inbox-tabs button {
 }
 .shop-screen .shop-chest-action:disabled,
 .shop-screen .paid-product-card > button:disabled { box-shadow:inset 0 0 0 1px var(--gs-polish-line) !important; }
-.module-detail-dialog .module-identity-row,
 .module-detail-dialog .module-overview-grid > div,
-.module-detail-dialog .module-effect-panel,
-.core-detail-dialog .module-identity-row,
 .core-detail-dialog .module-overview-grid > div {
   background:#102b49 !important;
   box-shadow:inset 0 0 0 1px rgba(153,190,224,.16) !important;
@@ -11379,10 +11200,9 @@ body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .menu-action-ti
 
 /* Küçük SVG varyantı: aynı siluet ve iç mekanik işaretleri. Ayrıntı penceresinin
    büyük amblemi değişmez; çizimin küçük slotlarda parlaması / kirlenmesi azalır. */
-:is(#home-active-deck,#module-deck-strip,#module-shelf,#enemy-deck-preview,.collection-module-tile,.module-counter-chip,.profile-deck-module,.statistics-deck-module,.arena-module-unlocks) .module-emblem :is(.me-shine,.me-light,.me-dark) { display:none; }
-:is(#home-active-deck,#module-deck-strip,#module-shelf,#enemy-deck-preview,.collection-module-tile,.module-counter-chip,.profile-deck-module,.statistics-deck-module,.arena-module-unlocks) .module-emblem .me-ink { stroke-width:2.2; }
+:is(#home-active-deck,#module-deck-strip,#module-shelf,#enemy-deck-preview,.collection-module-tile,.profile-deck-module,.statistics-deck-module,.arena-module-unlocks) .module-emblem :is(.me-shine,.me-light,.me-dark) { display:none; }
+:is(#home-active-deck,#module-deck-strip,#module-shelf,#enemy-deck-preview,.collection-module-tile,.profile-deck-module,.statistics-deck-module,.arena-module-unlocks) .module-emblem .me-ink { stroke-width:2.2; }
 :is(#home-active-deck,#module-deck-strip,#module-shelf,#enemy-deck-preview) .module-emblem { filter:none !important; }
-.module-counter-chip .core-emblem :is(.ce-bolt,.ce-frame-light,.ce-frame-dark,.ce-gem-light,.ce-gem-dark),
 .core-power-button .core-emblem :is(.ce-bolt,.ce-frame-light,.ce-frame-dark) { display:none; }
 
 /* Savaş metni incelir. Sıradan atışta kontursuz kıvılcım; ağır darbe ve çekirdek

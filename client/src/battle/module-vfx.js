@@ -7,7 +7,7 @@
   const operational=m=>alive(m) && m.is_powered!==false && !m.overheated;
   // v15: the first ten modules use the approved crafted WAVs (not the
   // synthesized module_* blips) and the canvas effect set.
-  const CRAFTED_CUES=Object.freeze({repair:"repair_beam",cooler:"cooling_air",emp:"emp",amplifier:"energy_transfer",battery:"energy_transfer"});
+  const CRAFTED_CUES=Object.freeze({repair:"repair_beam",cooler:"cooling_air",emp:"emp",amplifier:"amplifier_charge",battery:"energy_transfer"});
   const FIRST_TEN=new Set(["laser","shield","cooler","battery","amplifier","emp","repair","armor","pulse_cannon","missile_launcher"]);
   function ellipseHit(from,to,ellipse){
     const dx=to.x-from.x,dy=to.y-from.y,rx=ellipse.rx,ry=ellipse.ry;
@@ -340,15 +340,20 @@
         this.ambient.get(id)?.remove();this.ambient.delete(id);return;
       }
       const rig=this.rigFor(id);if(!rig)return;
+      // Layered paintings rise above the socket. A shell on the old 1x1
+      // billboard surrounded only the feet and disappeared behind the body.
+      // Share the painting's registered stage; never measure/rebuild per frame.
+      const host=(shield&&rig.querySelector(".module-layer-stage"))||rig.querySelector(".module-device-billboard");
+      if(!host){this.ambient.get(id)?.remove();this.ambient.delete(id);return;}
       let svg=this.ambient.get(id);
-      if(svg?.parentElement?.parentElement!==rig){svg?.remove();svg=this.svg("svg",{viewBox:"0 0 128 128","aria-hidden":"true"});svg.classList.add("module-vfx-ambient");
+      if(svg?.parentElement!==host){svg?.remove();svg=this.svg("svg",{viewBox:"0 0 128 128","aria-hidden":"true"});svg.classList.add("module-vfx-ambient");
         if(shield){
           svg.dataset.kind="shield";
           this.svg("path",{d:"M-3 108A67 100 0 0 1 131 108Q64 137-3 108Z",class:"vfx-shield-shell"},svg);
           this.svg("path",{d:"M8 62Q20 4 67 9M-3 108Q64 133 131 108M64 8Q30 62 64 122Q98 62 64 8",class:"vfx-shield-shell-rim"},svg);
           this.svg("path",{d:"M32 40l10-6 10 6v12l-10 6-10-6ZM64 60l10-6 10 6v12l-10 6-10-6ZM37 82l10-6 10 6v12l-10 6-10-6Z",class:"vfx-shield-shell-hex"},svg);
         }else this.svg("path",{class:"vfx-ambient-electric"},svg);
-        rig.querySelector(".module-device-billboard")?.appendChild(svg);this.ambient.set(id,svg);}
+        host.appendChild(svg);this.ambient.set(id,svg);}
       GridshardModuleVfx.syncArt(rig);
     }
     receive(events,snapshot){

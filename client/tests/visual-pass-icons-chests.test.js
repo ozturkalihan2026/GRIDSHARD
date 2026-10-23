@@ -113,7 +113,7 @@ test("bilgi penceresinde bedeller ve yetenek Akı'sı simgeyle yazılır", () =>
 
 // --- Modüle özgü değer karoları ------------------------------------------------
 test("istatistik sekmesi soyut çarpan yerine modülün kendi değerlerini ve farkını yazar", () => {
-  const tiles = slice("  function createModuleStatTiles(item) {", "  // Güçlü, zayıf ve uyumlu olduğu modüller");
+  const tiles = slice("  function createModuleStatTiles(item) {", "  // Three distinct views:");
   assert.match(tiles, /const cycle = moduleCycleEntry\(stats, nextStats\);/);
   assert.match(tiles, /const specials = specialEntries\(stats, nextStats\);/);
   assert.match(tiles, /\.\.\.\(specials\.length\s*\? specials\.map\(\(special\) => \(\{ \.\.\.special, key:`special-\$\{special\.key\}` \}\)\)/);

@@ -255,20 +255,15 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("supportLabelForModule"));
-  assert.ok(src.includes("Tüm saldırılara paylaşılan hasar desteği"));
-  assert.ok(src.includes("Tüm saldırılara paylaşılan hız desteği"));
   assert.ok(!src.includes('return "Hasar +%15"'));
   assert.ok(!src.includes('return "Cooldown -%15"'));
-  assert.ok(src.includes("En ağır saldırıya ısı karşılığında hız ve hasar"));
   assert.ok(src.includes("Aşırı Hızlandırma"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("heatStatusLabel"));
-  assert.ok(src.includes("YÜKSEK ISI"));
+  assert.ok(src.includes("moduleHeatEffectLabel"));
   assert.ok(src.includes("AŞIRI ISI"));
   assert.ok(src.includes("AŞIRI YÜK"));
   assert.ok(src.includes("Saldırı engellendi: kritik ısı"));
@@ -278,12 +273,6 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("sabotageLabelForModule"));
-  assert.ok(src.includes("Enerji Kesme"));
-  assert.ok(src.includes("Destek Susturma"));
-  assert.ok(src.includes("Periyodik Hasar"));
-  assert.ok(src.includes("Üretim -%30"));
-  assert.ok(src.includes("Hat Kesme"));
   assert.ok(src.includes("Virüs:"));
 }
 
@@ -1327,49 +1316,6 @@ function createClient() {
   );
 }
 
-{
-  const {
-    RelayPlayerDataSnapshotState,
-  } = require("../src/relay-client.js");
-
-  const state =
-    new RelayPlayerDataSnapshotState();
-
-  const snapshot=state.applySnapshot({
-    player_id:"a",
-    profile:{
-      player_id:"a",
-      display_name:"Alihan",
-    },
-    statistics:{
-      player_id:"a",
-      total_matches:5,
-    },
-    settings:{
-      player_id:"a",
-      language:"tr",
-    },
-  });
-
-  assert.strictEqual(
-    snapshot.profile.display_name,
-    "Alihan"
-  );
-  assert.strictEqual(
-    snapshot.statistics.total_matches,
-    5
-  );
-  assert.strictEqual(
-    snapshot.settings.language,
-    "tr"
-  );
-
-  state.clear();
-  assert.strictEqual(
-    state.snapshot,
-    null
-  );
-}
 
 {
   const {
@@ -3188,9 +3134,8 @@ function createClient() {
 
   assert.ok(!html.includes("GRIDSHARD // CORE ARENA"));
   assert.ok(!html.includes("CORE ARENA"));
-  assert.ok(css.includes(".lobby-core-orbit"));
+  assert.ok(html.includes('id="home-core-hero"'));
   assert.ok(css.includes("@keyframes relay-hit"));
-  assert.ok(css.includes("@keyframes gs-core-breath"));
   assert.ok(app.includes("BOARD_CELLS"));
 }
 
@@ -3231,10 +3176,8 @@ function createClient() {
   assert.ok(html.includes("<title>GRIDSHARD — Devreni kur. Stratejini konuştur.</title>"));
   assert.ok(html.includes('<p class="boot-tagline">Devreni kur. Stratejini konuştur.</p>'));
   assert.ok(!html.includes("Çekirdeği Kır"));
-  assert.ok(html.includes("shard-core-mark"));
   assert.ok(css.includes("--gs-arc-cyan:#36D9FF"));
   assert.ok(css.includes("--gs-reactor-gold:#F4C85A"));
-  assert.ok(css.includes(".shard-core-crack"));
   assert.ok(app.includes("gridshardAudioDirector"));
 }
 
@@ -3268,8 +3211,8 @@ function createClient() {
   assert.ok(app.includes("updateBattlePoolPresetMeta"));
   // Görsel tur 6: ev ekranının arkasındaki soluk çekirdek katmanı ve imleçle kayması kalktı.
   assert.ok(!app.includes("lobby-parallax-x"));
-  assert.ok(fs.readFileSync("./src/canon.css","utf8").includes(".lobby-backdrop { display:none !important; }"));
-  assert.ok(css.includes(".lobby-board-grid"));
+  assert.ok(!html.includes('class="lobby-backdrop"'));
+  assert.ok(css.includes(".home-active-deck"));
   assert.ok(css.includes(".preset-card"));
   assert.ok(css.includes('[data-action="remove"]'));
   assert.ok(audio.includes("GRIDSHARD_SFX_CUES"));

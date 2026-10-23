@@ -756,6 +756,14 @@ body[data-app-screen="play"] .battle-pool-panel:not([hidden]) {
   display: none !important;
 }
 
+/* Hidden views have no visual work. Explicitly release CSS timelines too:
+   software WebKit can keep old pseudo/child animations alive off screen. */
+[hidden], [hidden]::before, [hidden]::after,
+[hidden] *, [hidden] *::before, [hidden] *::after {
+  animation:none !important;
+  transition:none !important;
+}
+
 
 .post-match-panel {
   border: 1px solid currentColor;
@@ -1633,44 +1641,6 @@ body[data-app-screen="menu"] .main-menu-panel {
   box-shadow:0 36px 100px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.035);
 }
 
-.lobby-backdrop {
-  position:absolute;
-  inset:0;
-  z-index:-1;
-  overflow:hidden;
-  background:
-    linear-gradient(90deg, transparent 0 48%, rgba(29,70,107,.1) 72%, transparent 100%),
-    repeating-linear-gradient(90deg, transparent 0 89px, rgba(102,166,218,.025) 90px),
-    repeating-linear-gradient(0deg, transparent 0 89px, rgba(102,166,218,.022) 90px);
-}
-
-.lobby-core-mark {
-  position:absolute;
-  left:57%;
-  top:48%;
-  width:250px;
-  height:250px;
-  display:grid;
-  place-items:center;
-  transform:translate(-50%,-50%) rotate(-8deg);
-  border:1px solid rgba(117,210,255,.19);
-  border-radius:34px;
-  background:radial-gradient(circle, rgba(116,220,255,.2), rgba(31,73,112,.04) 55%, transparent 56%);
-  color:rgba(158,228,255,.16);
-  font-size:9rem;
-  font-weight:900;
-}
-
-.lobby-core-orbit {
-  position:absolute;
-  left:57%;
-  top:48%;
-  border:1px solid rgba(105,191,237,.13);
-  border-radius:50%;
-  transform:translate(-50%,-50%);
-}
-.lobby-core-orbit.orbit-a { width:430px; height:430px; }
-.lobby-core-orbit.orbit-b { width:590px; height:590px; border-style:dashed; }
 
 .lobby-kicker,.screen-kicker,.player-card-label {
   color:var(--relay-cyan);
@@ -1759,7 +1729,6 @@ body[data-app-screen="menu"] .main-scope-nav .menu-action:hover {
 
 @media (max-width:900px) {
   body[data-app-screen="menu"] .main-menu-panel { grid-template-columns:1fr; min-height:auto; }
-  .lobby-core-mark,.lobby-core-orbit { left:78%; opacity:.6; }
 
 }
 @media (max-width:620px) {
@@ -2100,86 +2069,6 @@ body {
   border-top-color:var(--gs-sabotage);
 }
 
-/* GRIDSHARD logo / Shard Core */
-.shard-core-mark {
-  position:absolute;
-  left:57%;
-  top:48%;
-  width:260px;
-  height:260px;
-  transform:translate(-50%,-50%) rotate(-8deg);
-  border:0;
-  border-radius:50%;
-  background:
-    radial-gradient(circle,rgba(103,244,255,.14),rgba(54,217,255,.025) 46%,transparent 67%);
-  color:transparent;
-  box-shadow:
-    0 0 80px rgba(54,217,255,.12),
-    inset 0 0 46px rgba(54,217,255,.05);
-}
-
-.shard-core-center {
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:96px;
-  height:96px;
-  transform:translate(-50%,-50%) rotate(45deg);
-  border:2px solid rgba(103,244,255,.72);
-  background:
-    linear-gradient(135deg,rgba(54,217,255,.18),rgba(12,22,37,.94));
-  box-shadow:
-    0 0 24px rgba(54,217,255,.2),
-    inset 0 0 18px rgba(103,244,255,.08);
-}
-
-.shard-core-gate {
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:28px;
-  height:72px;
-  border:1px solid rgba(54,217,255,.56);
-  background:linear-gradient(180deg,rgba(54,217,255,.16),rgba(19,34,56,.88));
-  box-shadow:0 0 16px rgba(54,217,255,.08);
-}
-
-.shard-core-gate.gate-north {
-  transform:translate(-50%,-158px);
-}
-.shard-core-gate.gate-south {
-  transform:translate(-50%,86px);
-}
-.shard-core-gate.gate-east {
-  width:72px;
-  height:28px;
-  transform:translate(86px,-50%);
-}
-.shard-core-gate.gate-west {
-  width:72px;
-  height:28px;
-  transform:translate(-158px,-50%);
-}
-
-.shard-core-crack {
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:5px;
-  height:136px;
-  transform:translate(-50%,-50%) rotate(28deg);
-  background:
-    linear-gradient(
-      180deg,
-      transparent,
-      var(--gs-reactor-gold) 18%,
-      var(--gs-plasma-cyan) 48%,
-      var(--gs-reactor-gold) 76%,
-      transparent
-    );
-  box-shadow:0 0 16px rgba(244,200,90,.42);
-  clip-path:polygon(38% 0,100% 17%,48% 45%,88% 64%,23% 100%,47% 68%,0 52%,53% 29%);
-}
 
 .gridshard-tagline {
   display:block;
@@ -2337,65 +2226,6 @@ body {
 }
 
 
-/* beta.15 — kimlik kararlarının tamamlanması + preset kart galerisi */
-body[data-app-screen="menu"] .main-menu-panel {
-  --lobby-parallax-x:0px;
-  --lobby-parallax-y:0px;
-}
-
-.lobby-board-grid {
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:min(640px,58vw);
-  aspect-ratio:5/4;
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  grid-template-rows:repeat(4,1fr);
-  gap:7px;
-  transform:
-    translate(
-      calc(-50% + var(--lobby-parallax-x)),
-      calc(-50% + var(--lobby-parallax-y))
-    )
-    perspective(900px)
-    rotateX(58deg)
-    rotateZ(-4deg);
-  opacity:.25;
-  transition:transform .18s ease-out;
-  pointer-events:none;
-}
-
-.lobby-board-grid span {
-  border:1px solid rgba(54,217,255,.17);
-  background:
-    linear-gradient(
-      145deg,
-      rgba(54,217,255,.045),
-      rgba(7,11,20,.12)
-    );
-  box-shadow:
-    inset 0 0 12px rgba(54,217,255,.025);
-}
-
-.lobby-core-mark,
-.lobby-core-orbit {
-  transform:
-    translate(
-      calc(-50% + var(--lobby-parallax-x)),
-      calc(-50% + var(--lobby-parallax-y))
-    )
-    rotate(-8deg);
-  transition:transform .22s ease-out;
-}
-
-.lobby-core-orbit {
-  transform:
-    translate(
-      calc(-50% + var(--lobby-parallax-x)),
-      calc(-50% + var(--lobby-parallax-y))
-    );
-}
 
 .preset-compat-select {
   position:absolute !important;
@@ -2533,10 +2363,6 @@ body[data-app-screen="menu"] .main-menu-panel {
     grid-column:auto;
   }
 
-  .lobby-board-grid {
-    width:min(600px,86vw);
-    opacity:.16;
-  }
 }
 
 
@@ -2949,31 +2775,6 @@ body.battle-hud-settings-open .battle-hud-settings-panel {
 
 /* beta.24 — tek viewport hazırlık, kompakt arena ve canlı çekirdek */
 
-.lobby-core-mark,
-.lobby-core-orbit {
-  animation:gs-core-breath 3.8s ease-in-out infinite;
-}
-
-.lobby-core-orbit.orbit-b { animation-delay:-1.9s; }
-.shard-core-center {
-  animation:gs-core-center-pulse 2.4s ease-in-out infinite;
-}
-
-@keyframes gs-core-breath {
-  0%,100% {
-    opacity:.46;
-    filter:drop-shadow(0 0 8px rgba(54,217,255,.16));
-  }
-  50% {
-    opacity:1;
-    filter:drop-shadow(0 0 30px rgba(54,217,255,.58));
-  }
-}
-
-@keyframes gs-core-center-pulse {
-  0%,100% { box-shadow:0 0 18px rgba(54,217,255,.3); transform:scale(.96); }
-  50% { box-shadow:0 0 52px rgba(54,217,255,.82); transform:scale(1.05); }
-}
 
 .lobby-player-card {
   align-content:center;
@@ -3387,9 +3188,6 @@ body[data-local-finished="true"] .module-card {
 }
 
 @media (prefers-reduced-motion:reduce) {
-  .lobby-core-mark,
-  .lobby-core-orbit,
-  .shard-core-center,
   .duel-player-side[data-core-critical="true"] {
     animation:none !important;
   }
@@ -4164,19 +3962,6 @@ body {
     linear-gradient(180deg,var(--gs-reactor-blue),var(--gs-void-navy) 72%);
 }
 
-body::before {
-  content:"";
-  position:fixed;
-  inset:0;
-  z-index:-1;
-  pointer-events:none;
-  opacity:.32;
-  background:
-    repeating-linear-gradient(90deg,transparent 0 79px,rgba(143,163,191,.045) 80px),
-    repeating-linear-gradient(0deg,transparent 0 79px,rgba(143,163,191,.035) 80px);
-  mask-image:linear-gradient(115deg,transparent 5%,#000 38%,#000 72%,transparent 96%);
-}
-
 .arena-panel,
 .shelf-panel,
 .battle-pool-panel,
@@ -4194,20 +3979,6 @@ body::before {
 
 button { border-radius:3px 11px 3px 11px; }
 
-/* Wordmark and core geometry share one exact centre; the pulse never
-   replaces the centring transform, preventing the Beta.24 vertical jump. */
-.lobby-core-mark,
-.lobby-core-orbit { top:50%; }
-@keyframes gs-core-center-pulse {
-  0%,100% {
-    box-shadow:0 0 18px rgba(53,229,210,.3);
-    transform:translate(-50%,-50%) rotate(45deg) scale(.96);
-  }
-  50% {
-    box-shadow:0 0 56px rgba(53,229,210,.84);
-    transform:translate(-50%,-50%) rotate(45deg) scale(1.05);
-  }
-}
 
 /* Preparation is a real one-viewport workspace: the return control takes
    its own row, the three columns shrink, and the primary action is pinned. */
@@ -5099,9 +4870,6 @@ body[data-app-screen="menu"] .main-menu-panel {
   overflow:hidden;
 }
 
-body[data-app-screen="menu"] .lobby-core-mark { left:50%;top:50%;width:310px;height:310px;opacity:.88; }
-body[data-app-screen="menu"] .lobby-core-orbit { left:50%;top:50%;opacity:.74; }
-body[data-app-screen="menu"] .lobby-board-grid { left:50%;top:52%;opacity:.30; }
 
 body[data-app-screen="profile"] .battle-shell,
 body[data-app-screen="daily"] .battle-shell,
@@ -8214,11 +7982,6 @@ body[data-app-screen="menu"] #main-menu-panel {
   overflow:hidden !important;
 }
 
-body[data-app-screen="menu"] .lobby-backdrop {
-  position:absolute !important;
-  inset:0 !important;
-  opacity:.72;
-}
 
 .mobile-home-hub {
   position:relative;

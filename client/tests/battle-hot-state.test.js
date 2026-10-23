@@ -27,7 +27,7 @@ test("primitive state reads track replacements without copying profile collectio
 test("repeated battle identity renders never construct a profile view model", () => {
   const source = fs.readFileSync(path.join(__dirname, "../src/app.js"), "utf8");
   const start = source.indexOf("  let renderedBattleIdentitySignature = null;");
-  const end = source.indexOf("  function appendCellDebris", start);
+  const end = source.indexOf("  function renderRemoteDataStatus", start);
   assert.ok(start >= 0 && end > start);
   const profile = new RelayProfileClientState();
   profile.viewModel = () => { throw new Error("HUD copied profile"); };

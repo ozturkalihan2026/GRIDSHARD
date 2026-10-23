@@ -1014,6 +1014,7 @@
         loadTeamView();
       }
       if (screen === "friends") {
+        renderFriendsScreen();
         void loadSocialView();
         if (activeDirectMessagePeerId) void loadDirectMessageThread();
       }
@@ -1021,6 +1022,7 @@
         if (screen === "weekly-event") activeWeeklyEventTab = "overview";
         if (screen === "team-event") activeTeamEventTab = "overview";
         renderEventSubpages();
+        renderEventsHub();
         loadEventsView();
       }
     } else if (
@@ -1273,14 +1275,6 @@
     return stage.order ? `ARENA ${stage.order}` : "KİLİTLİ";
   }
 
-  function moduleUnlockRequirement(item) {
-    const stage = moduleUnlockStage(item);
-    return stage.league && stage.leagueNameTr
-      ? localizedMessage("module.unlock_requirement_league", {
-        league:localizedUiText(stage.leagueNameTr), trophies:stage.trophies,
-      })
-      : `Arena ${item.unlock_arena} · ${item.unlock_trophies} Kupa`;
-  }
 
   function moduleTalentSelectable(item, node) {
     return Boolean(item?.unlocked)
@@ -2646,12 +2640,11 @@
           card.dataset.coreType = core.id;
           card.style.setProperty("--arena-module", visual.accent);
           card.setAttribute("aria-label", localizedUiText(core.name_tr || visual.nameTr));
+          card.title = localizedUiText(core.name_tr || visual.nameTr);
           const glyph = document.createElement("i");
           glyph.setAttribute("aria-hidden", "true");
           mountCoreEmblem(glyph, core.id);
-          const name = document.createElement("strong");
-          name.textContent = localizedUiText(core.name_tr || visual.nameTr);
-          card.append(glyph, name);
+          card.appendChild(glyph);
           card.addEventListener("click", () => {
             selectedCollectionCoreId = core.id;
             openCoreDetail();
@@ -2827,9 +2820,6 @@
     core_phoenix: Object.freeze({ nameTr:"Anka Çekirdeği", glyph:"✹", accent:"#ffb85e" }),
     core_quantum: Object.freeze({ nameTr:"Kuantum Çekirdeği", glyph:"✧", accent:"#f28cff" }),
   });
-  const CORE_GLYPHS = Object.freeze(Object.fromEntries(
-    Object.entries(CORE_VISUALS).map(([coreId, visual]) => [coreId, visual.glyph])
-  ));
 
   function applyCoreVisualIdentity(element, coreId) {
     const normalizedId = CORE_VISUALS[coreId] ? coreId : "core_resonance";
@@ -2873,13 +2863,6 @@
       + '<circle class="ce-bolt" cx="60" cy="105" r="2.400"/><circle class="ce-bolt" cx="21.500" cy="82.500" r="2.400"/><circle class="ce-bolt" cx="21.500" cy="37.500" r="2.400"/>'
       + '</svg>';
   }
-  // Hareketli iki parça (dönen yörünge, yanıp sönen parıltı) gövdeden ayrı
-  // katmandadır: tarayıcı yalnız o katmanı döndürür, gövdeyi yeniden çizmez. Savaşta
-  // üç amblem aynı anda döner; hareket azaltma ve düşük grafik ayarında durur.
-  const CORE_EMBLEM_ORBITS = '<svg class="core-emblem-orbits" viewBox="0 0 120 120" focusable="false" aria-hidden="true">'
-    + '<ellipse cx="60" cy="60" rx="57" ry="19" transform="rotate(-30 60 60)"/><ellipse cx="60" cy="60" rx="57" ry="19" transform="rotate(30 60 60)"/></svg>';
-  const CORE_EMBLEM_SPARK = '<svg class="core-emblem-spark" viewBox="0 0 120 120" focusable="false" aria-hidden="true">'
-    + '<path d="m42 40 1.800 4.200 4.200 1.800-4.200 1.800L42 52l-1.800-4.200L36 46l4.200-1.800Z"/></svg>';
   function coreEmblemMarkup(coreId) {
     const id = CORE_VISUALS[coreId] ? coreId : "core_resonance";
     return `<span class="core-emblem-set"><img class="core-physical-art" src="./assets/ui/cores-physical-v1/${id}.webp" alt="" aria-hidden="true" draggable="false"></span>`;
@@ -3583,6 +3566,7 @@
           // Geri sayım zamanlayıcısı kartı bu iki öznitelikle bulur.
           card.dataset.definitionId = gift.id;
           card.dataset.claimRemaining = String(remaining);
+          card.dataset.claimReadyAt = String(Date.now() + remaining * 1000);
         }
         if (gift && remaining > 0) {
           const timer = document.createElement("small");
@@ -3748,11 +3732,16 @@
   function ensureShopCountdownTimer() {
     if (shopCountdownTimer) return;
     shopCountdownTimer = window.setInterval(() => {
-      if (document.body.dataset.appScreen !== "shop") return;
+      if (document.hidden || document.body.dataset.appScreen !== "shop") return;
       let becameAvailable = false;
       for (const card of document.querySelectorAll("[data-definition-id][data-claim-remaining]")) {
         const previous = Math.max(0, Number(card.dataset.claimRemaining || 0));
-        const next = Math.max(0, previous - 1);
+        // Background tabs throttle timers: elapsed time, not callback count,
+        // determines the display. The server still decides when a gift is claimable.
+        const readyAt = Number(card.dataset.claimReadyAt);
+        const next = Number.isFinite(readyAt)
+          ? Math.max(0, Math.ceil((readyAt - Date.now()) / 1000))
+          : Math.max(0, previous - 1);
         card.dataset.claimRemaining = String(next);
         const timer = card.querySelector(".chest-gift-countdown");
         if (timer && next > 0) timer.textContent = giftChestActionLabel(next);
@@ -4535,23 +4524,6 @@
     }
   }
 
-  async function openGiftChest(chestId) {
-    const status = document.getElementById("shop-action-status");
-    const chest = metaProgressionState?.chests?.slots?.find((item) => item.chest_id === chestId);
-    const definition = metaProgressionState?.chests?.definitions?.find((item) => item.id === chest?.definition_id);
-    showChestOpening({ tier: chestTier(definition || chest || {}), title: definition?.name_tr || chest?.name_tr || "Sandık", visualId:chest?.chest_visual_id || definition?.chest_visual_id || "" });
-    try {
-      const payload = await metaProgressionMutation(
-        `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression/chests/${encodeURIComponent(chestId)}/open`
-      );
-      if (status) status.textContent = "";
-      showChestReveal(payload.receipt);
-    } catch (error) {
-      if (status) status.textContent = error instanceof Error ? error.message : String(error);
-      restoreShopAction({ chestId });
-      showChestFailure(error);
-    }
-  }
 
   async function openAllAvailableChests(definitionId) {
     const status = document.getElementById("shop-action-status");
@@ -4702,25 +4674,6 @@
       .find((item) => item.definition_id === selectedCollectionModuleId) || null;
   }
 
-  function createModuleEffectList(effectLines = []) {
-    const section = document.createElement("section");
-    section.className = "module-effect-panel";
-    const heading = document.createElement("strong");
-    heading.textContent = "GERÇEK SAVAŞ ETKİLERİ";
-    const list = document.createElement("ul");
-    for (const effectLine of effectLines) {
-      const item = document.createElement("li");
-      item.textContent = localizedUiText(effectLine);
-      list.appendChild(item);
-    }
-    if (!list.childElementCount) {
-      const item = document.createElement("li");
-      item.textContent = "Bu modülün ek sayısal etkisi yok.";
-      list.appendChild(item);
-    }
-    section.append(heading, list);
-    return section;
-  }
 
   // Enderliğin rengi her yerde aynıdır: sıradan çelik, ender mavi, destansı mor,
   // efsanevi altın (bilgi penceresinin başlığı, kimlik satırı ve değer rozetleri).
@@ -4730,63 +4683,6 @@
     if (!badge) return;
     badge.textContent = String(label);
     badge.dataset.rarity = RARITY_ICON_TONES[rarity] ? rarity : "common";
-  }
-
-  const MODULE_RARITY_RULE_TR = {
-    common: "Tek ve net davranış.",
-    rare: "Temel davranışa oyuncunun kurduğu bir koşul ekler.",
-    epic: "Zamanla biriken bir durum ya da risk–ödül taşır.",
-    legendary: "Savaşın bir kuralını değiştiren imza mekaniği taşır.",
-  };
-
-  function createModuleIdentityPanel(
-    item,
-    { noAdvantageTr="Enderlik CAN, hasar, bekleme veya enerji avantajı vermez." }={}
-  ) {
-    const panel = document.createElement("section");
-    panel.className = "module-identity-panel";
-    const rarity = String(item.rarity || "common").toLowerCase();
-    const signature = item.signature_mechanic
-      || (item.shared_behavior_tr ? `Şimdilik ${item.shared_behavior_tr} ile aynı temel davranışı kullanır.` : "");
-    const rows = [
-      [`ENDERLİK · ${moduleRarityLabel(rarity).toLocaleUpperCase("tr-TR")}`, `${MODULE_RARITY_RULE_TR[rarity] || MODULE_RARITY_RULE_TR.common} ${noAdvantageTr}`, "is-rarity", "rarity", RARITY_ICON_TONES[rarity] || "steel"],
-      ["İMZA MEKANİĞİ", signature, "is-signature", "bolt", "cyan"],
-      ["SAVAŞTA NASIL GÖRÜLÜR", item.telegraph_tr, "is-telegraph", "eye", "blue"],
-      ["KARŞI OYUN", item.counterplay_tr, "is-counter", "swords", "red"],
-    ];
-    for (const [label, value, className, icon, tone] of rows) {
-      if (!value) continue;
-      const row = document.createElement("div");
-      row.className = `module-identity-row${className ? ` ${className}` : ""}`;
-      row.dataset.rarity = rarity;
-      const name = document.createElement("span");
-      name.textContent = label;
-      const copy = document.createElement("strong");
-      copy.textContent = localizedUiText(value);
-      row.append(createUiIcon(icon, tone), name, copy);
-      panel.appendChild(row);
-    }
-    return panel;
-  }
-
-  // One concise source of identity copy; no repeated rarity tutorial, role or
-  // numeric effects already present in the Stats tab. Preserve full mechanics.
-  function createCompactIdentityPanel(item) {
-    const panel = document.createElement("section");
-    panel.className = "module-identity-panel";
-    for (const [label, value, icon] of [
-      ["İMZA", item.signature_mechanic || item.shared_behavior_tr, "star"],
-      ["KARŞI HAMLE", item.counterplay_tr, "swords"],
-    ]) {
-      if (!value) continue;
-      const row = document.createElement("div");
-      row.className = "module-identity-row";
-      const name = document.createElement("span"), copy = document.createElement("strong");
-      name.textContent = label; copy.textContent = localizedUiText(value);
-      row.append(createUiIcon(icon), name, copy);
-      panel.append(row);
-    }
-    return panel;
   }
 
   // Sunucudan iki dilde gelen metin; İngilizcesi yoksa çeviri sözlüğünden geçer.
@@ -4930,44 +4826,6 @@
       list.appendChild(row);
     }
     return list;
-  }
-
-  // Güçlü, zayıf ve uyumlu olduğu modüller simgeli etiketler olarak dizilir.
-  function createModuleCounterGrid(item) {
-    const collection = metaProgressionState?.module_collection || [];
-    const counters = document.createElement("div");
-    counters.className = "module-counter-grid";
-    for (const [label, ids, className] of [["GÜÇLÜ OLDUĞU", item.strong_against, "is-strong"], ["ZAYIF OLDUĞU", item.weak_against, "is-weak"], ["UYUMLU OLDUĞU", item.synergy_with, "is-synergy"]]) {
-      const card = document.createElement("section");
-      card.className = className;
-      const heading = document.createElement("strong");
-      heading.textContent = label;
-      const chips = document.createElement("span");
-      chips.className = "module-counter-chips";
-      for (const id of ids || []) {
-        const collectionItem = collection.find((module) => module.definition_id === id);
-        const definition = moduleDefinitions.find((module) => module.definitionId === id);
-        const chip = document.createElement("span");
-        chip.className = "module-counter-chip";
-        chip.dataset.category = collectionItem?.category || definition?.category || "";
-        const glyph = document.createElement("b");
-        glyph.setAttribute("aria-hidden", "true");
-        mountModuleEmblem(glyph, definition || { nameTr:collectionItem?.name_tr || id });
-        const name = document.createElement("em");
-        name.textContent = collectionItem?.name_tr || definition?.nameTr || id;
-        chip.append(glyph, name);
-        chips.appendChild(chip);
-      }
-      if (!chips.childElementCount) {
-        const none = document.createElement("em");
-        none.className = "module-counter-empty";
-        none.textContent = "Özel karşılık yok";
-        chips.appendChild(none);
-      }
-      card.append(heading, chips);
-      counters.appendChild(card);
-    }
-    return counters;
   }
 
   // Three distinct views: static art + next level, full stats, talent cards.
@@ -6126,11 +5984,7 @@
       closeDirectMessageThread();
     }
     activeFriendsTab = next;
-    renderSocialNotificationDots();
-    if (activeFriendsTab === "messages") {
-      renderDirectMessageInbox();
-      renderDirectMessageThread();
-    }
+    renderFriendsScreen();
   }
 
   function openDirectMessageThread(playerId) {
@@ -6147,7 +6001,9 @@
   }
 
   function renderFriendsScreen() {
-    if (!socialState) return;
+    // Notification ownership stays live even when the friends page is closed.
+    renderSocialNotificationDots();
+    if (!socialState || document.hidden || document.body.dataset.appScreen !== "friends") return;
     const summary = document.getElementById("friends-summary");
     if (summary) summary.textContent = `${socialState.friends?.length || 0} / ${socialState.friend_limit || 100} arkadaş`;
 
@@ -6165,7 +6021,7 @@
     }
 
     const friends = document.getElementById("friend-list");
-    if (friends) {
+    if (friends && activeFriendsTab === "friends") {
       friends.replaceChildren();
       for (const player of sortedFriendsForBattle()) {
         friends.appendChild(createSocialPlayerCard(player, socialClosed ? [] : [
@@ -6181,7 +6037,7 @@
     }
 
     const requests = document.getElementById("friend-request-list");
-    if (requests) {
+    if (requests && activeFriendsTab === "incoming") {
       requests.replaceChildren();
       for (const player of socialState.incoming_requests || []) {
         requests.appendChild(createSocialPlayerCard(player, [
@@ -6195,7 +6051,7 @@
     }
 
     const outgoing = document.getElementById("friend-outgoing-list");
-    if (outgoing) {
+    if (outgoing && activeFriendsTab === "outgoing") {
       outgoing.replaceChildren();
       for (const player of socialState.outgoing_requests || []) {
         outgoing.appendChild(createSocialPlayerCard(player, [
@@ -6208,7 +6064,7 @@
     }
 
     const battleList = document.getElementById("friend-battle-list");
-    if (battleList) {
+    if (battleList && activeFriendsTab === "battle") {
       battleList.replaceChildren();
       const pendingTargets = new Set(
         (socialState.battle_invites || [])
@@ -6248,7 +6104,7 @@
     }
 
     const invites = document.getElementById("friend-battle-invites");
-    if (invites) {
+    if (invites && activeFriendsTab === "battle") {
       invites.replaceChildren();
       for (const invite of [...(socialState.battle_invites || [])].reverse()) {
         if (!["pending", "accepted"].includes(invite.status)) continue;
@@ -6288,9 +6144,10 @@
       }
     }
 
-    renderDirectMessageInbox();
-    renderDirectMessageThread();
-    renderSocialNotificationDots();
+    if (activeFriendsTab === "messages") {
+      renderDirectMessageInbox();
+      renderDirectMessageThread();
+    }
   }
 
   // Arama kutusunu ve sonuç panelini kapatır (× düğmesi ve istek gönderimi).
@@ -6470,6 +6327,7 @@
       ["SIRAN", participant ? `#${participant.position}` : "Henüz yok"],
       ["KAZANILAN KUPA", participant ? participant.trophies_earned || participant.points : 0, true],
     ]);
+    if (activeWeeklyEventTab !== "standings") return;
     const host = document.getElementById("weekly-tournament-standings");
     if (!host) return;
     host.replaceChildren();
@@ -6549,9 +6407,9 @@
       ["HAFTA", `${Number(tournament.week || 1)} / ${Number(tournament.weeks_total || 4)}`],
       ["TAKIM PUANI", viewerTeam ? `${viewerTeam.points} P` : viewer.team_id ? "Kayıtlı değil" : "Takımın yok"],
     ]);
-    renderTeamTournamentCalendar(tournament);
+    if (activeTeamEventTab === "overview") renderTeamTournamentCalendar(tournament);
     const standings = document.getElementById("team-tournament-standings");
-    if (standings) {
+    if (standings && activeTeamEventTab === "standings") {
       standings.replaceChildren();
       for (const row of standingsRows.slice(0, 12)) {
         const item = document.createElement("li");
@@ -6574,8 +6432,8 @@
         standings.appendChild(item);
       }
     }
-    renderTeamContributions(tournament, viewer, viewerTeam);
-    renderTeamFixtures(state);
+    if (activeTeamEventTab === "standings") renderTeamContributions(tournament, viewer, viewerTeam);
+    if (activeTeamEventTab === "fixtures") renderTeamFixtures(state);
   }
 
   function renderTeamTournamentCalendar(tournament) {
@@ -6808,13 +6666,21 @@
 
   // Açık eşleşme sayfasında maç saati gelince düğme sayfa yenilenmeden açılır.
   window.setInterval(() => {
-    if (document.body.dataset.appScreen === "team-event" && activeTeamEventTab === "fixtures" && eventsState) {
+    if (!document.hidden && document.body.dataset.appScreen === "team-event" && activeTeamEventTab === "fixtures" && eventsState) {
       renderTeamFixtures(eventsState);
     }
   }, 20000);
 
   function renderEventsHub() {
     if (!eventsState) return;
+    const screen = document.body.dataset.appScreen;
+    if (document.hidden || !["events", "weekly-event", "team-event"].includes(screen)) return;
+    if (screen === "weekly-event" || screen === "team-event") {
+      if (screen === "weekly-event") renderWeeklyTournament(eventsState);
+      else renderTeamTournament(eventsState);
+      renderEventSubpages();
+      return;
+    }
     renderDailyMetaCard();
     const weekly = eventsState.weekly_tournament || {};
     const team = eventsState.team_tournament || {};
@@ -6826,9 +6692,6 @@
     if (weeklyLinkPeriod) weeklyLinkPeriod.textContent = `${eventDateLabel(weekly.period?.starts_at)} — ${eventDateLabel(weekly.period?.ends_at)}`;
     if (teamLinkName) teamLinkName.textContent = team.name_tr || "Takımlar Arası Turnuva";
     if (teamLinkPeriod) teamLinkPeriod.textContent = `${Number(team.week || 1)}. hafta · ${eventDateLabel(team.period?.ends_at)} tarihinde yenilenir`;
-    renderWeeklyTournament(eventsState);
-    renderTeamTournament(eventsState);
-    renderEventSubpages();
   }
 
   async function loadEventsView() {
@@ -7417,12 +7280,12 @@
 
   function renderTeamManagement() {
     const panel = document.querySelector('[data-team-panel="management"]');
-    if (!panel || !teamState?.joined || !teamState.is_owner) return;
+    if (!panel || !teamState?.joined || !teamState.is_owner || activeTeamTab !== "management") return;
     for (const section of panel.querySelectorAll("[data-team-management-panel]")) {
       section.hidden = section.dataset.teamManagementPanel !== activeTeamManagementTab;
     }
-    renderTeamAppearanceEditor();
-    renderTeamMemberManagement();
+    if (activeTeamManagementTab === "cosmetics") renderTeamAppearanceEditor();
+    else renderTeamMemberManagement();
   }
 
   // --- Takım: modül parçası isteği ----------------------------------------
@@ -7857,6 +7720,7 @@
 
     noteTeamApplicationsFromTeamState();
     renderTeamNotificationLights();
+    if (document.hidden || document.body.dataset.appScreen !== "team") return;
     if (!teamState.joined) {
       renderTeamLobby();
       return;
@@ -7900,16 +7764,18 @@
 
     const members = teamState.members || [];
     const memberList = document.getElementById("team-member-list");
-    if (memberList) {
+    if (memberList && activeTeamTab === "members") {
       memberList.replaceChildren();
       members.forEach((member, index) => memberList.appendChild(createTeamMemberRow(member, index, { manageable:true })));
     }
 
-    renderTeamRequestComposer();
-    renderTeamRequestList();
+    if (activeTeamTab === "requests") {
+      renderTeamRequestComposer();
+      renderTeamRequestList();
+    }
 
     const messageList = document.getElementById("team-message-list");
-    if (messageList) {
+    if (messageList && activeTeamTab === "chat") {
       messageList.replaceChildren();
       const messages = (teamState.messages || []).filter((message) => presetMessageText(message));
       if (!messages.length) {
@@ -7934,12 +7800,12 @@
       }
       messageList.scrollTop = messageList.scrollHeight;
     }
-    renderPresetMessagePicker("team-message-picker", sendTeamMessage);
+    if (activeTeamTab === "chat") renderPresetMessagePicker("team-message-picker", sendTeamMessage);
     const teamMessagePicker = document.getElementById("team-message-picker");
     if (teamMessagePicker) teamMessagePicker.hidden = Boolean(teamState.social_closed);
 
     const opponent = document.getElementById("team-training-opponent");
-    if (opponent) {
+    if (opponent && activeTeamTab === "battle") {
       const previous = opponent.value;
       opponent.replaceChildren();
       const options = teamState.online_opponents || [];
@@ -7957,7 +7823,7 @@
     }
 
     const trainingList = document.getElementById("team-training-list");
-    if (trainingList) {
+    if (trainingList && activeTeamTab === "battle") {
       trainingList.replaceChildren();
       const challenges = teamState.training_challenges || [];
       if (!challenges.length) {
@@ -8021,18 +7887,17 @@
     }
   }
 
-  // Merkez ekranları. Her veri tazelemesinde ve ekran geçişinde hepsini baştan
-  // kurmak düşük donanımda geçişleri ağırlaştırıyor, savaş başında da
-  // takılma yaratıyordu. Görünen ekran hemen çizilir; diğerleri kirli
-  // işaretlenip tarayıcı boştayken sırayla çizilir. Savaş ekranında bekletilir.
+  // Veri değişikliği gizli ekranları yalnız kirli işaretler. Sıra onlara
+  // gelmeden DOM kurmayız: eski idle kuyruğu her tazelemede mağaza, kartlar,
+  // profil ve takımı oyuncu bakmasa da yeniden çiziyordu.
   const META_HUB_SECTIONS = Object.freeze([
     { id:"home", screens:["menu"], render:() => renderHomeHub() },
     {
       id:"cards",
       screens:["modules"],
       render:() => {
-        renderModuleCollection();
-        renderCoreCollection();
+        if (activeCardPage === "cores") renderCoreCollection();
+        else renderModuleCollection();
       },
     },
     { id:"shop", screens:["shop"], render:() => renderShop() },
@@ -8049,21 +7914,20 @@
   const metaHubDirtySections = new Set();
   let metaHubFlushHandle = null;
 
-  function flushMetaHubSections({ all=false }={}) {
+  function flushMetaHubSections() {
     metaHubFlushHandle = null;
-    if (!all && appRouter.currentScreen === RelayAppScreen.PLAY) return;
+    const current = appRouter.currentScreen;
+    if (document.hidden || current === RelayAppScreen.PLAY) return;
     for (const section of META_HUB_SECTIONS) {
-      if (!metaHubDirtySections.has(section.id)) continue;
+      if (!section.screens.includes(current) || !metaHubDirtySections.has(section.id)) continue;
       metaHubDirtySections.delete(section.id);
       section.render();
-      if (!all) break;
     }
-    scheduleMetaHubFlush();
   }
 
   // Ev ekranı görünmüyorken (ör. savaş başlarken) çizimi ekrana dönüşe bırakır.
   function renderHomeHubWhenVisible() {
-    if (appRouter.currentScreen === RelayAppScreen.PLAY) {
+    if (document.hidden || appRouter.currentScreen !== RelayAppScreen.MENU) {
       metaHubDirtySections.add("home");
       return;
     }
@@ -8073,7 +7937,9 @@
 
   function scheduleMetaHubFlush() {
     if (metaHubFlushHandle !== null || !metaHubDirtySections.size) return;
-    if (appRouter.currentScreen === RelayAppScreen.PLAY) return;
+    const current = appRouter.currentScreen;
+    if (document.hidden || current === RelayAppScreen.PLAY) return;
+    if (!META_HUB_SECTIONS.some(section => section.screens.includes(current) && metaHubDirtySections.has(section.id))) return;
     const settleWait = navigationSettleUntil - performance.now();
     if (settleWait > 0) {
       // Geçiş bitene kadar görünmeyen ekranlar çizilmez.
@@ -8091,7 +7957,7 @@
   function renderMetaHubScreens() {
     const current = appRouter.currentScreen;
     for (const section of META_HUB_SECTIONS) {
-      if (section.screens.includes(current)) {
+      if (!document.hidden && section.screens.includes(current)) {
         metaHubDirtySections.delete(section.id);
         section.render();
       } else {
@@ -8109,6 +7975,17 @@
     scheduleMetaHubFlush();
   }
 
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      // Data may have arrived while hidden. Repaint only the resumed surface.
+      const screen = document.body.dataset.appScreen;
+      if (screen === "team") metaHubDirtySections.add("team");
+      scheduleMetaHubFlush();
+      if (screen === "friends") renderFriendsScreen();
+      else if (["events", "weekly-event", "team-event"].includes(screen)) renderEventsHub();
+    }
+  });
+
   document.querySelectorAll("[data-team-tab]").forEach((button) => {
     button.addEventListener("click", () => {
       activeTeamTab = button.dataset.teamTab || "profile";
@@ -8123,12 +8000,14 @@
     button.addEventListener("click", () => {
       activeWeeklyEventTab = button.dataset.weeklyEventTab || "overview";
       renderEventSubpages();
+      renderEventsHub();
     });
   });
   document.querySelectorAll("[data-team-event-tab]").forEach((button) => {
     button.addEventListener("click", () => {
       activeTeamEventTab = button.dataset.teamEventTab || "overview";
       renderEventSubpages();
+      renderEventsHub();
     });
   });
   document.getElementById("weekly-tournament-register")?.addEventListener("click", () =>
@@ -8625,9 +8504,6 @@
 
   const progressionState =
     new RelayProgressionClientState();
-
-  const playerDataSnapshotState =
-    new RelayPlayerDataSnapshotState();
 
   const playRecoveryState =
     new RelayPlayRecoveryState();
@@ -9408,26 +9284,13 @@
     element:document.getElementById("battle-start-countdown"),
     onChange:() => { renderShelf(); renderCorePowerControl(); },
   });
-  // Optional presentation must never block menus/tutorial startup when an old
-  // cached document has not loaded the new renderer script yet.
-  // 19 Ekim 2026 kullanıcı kararı: savaşta onaylı çizimler (katmanlı kaide +
-  // yön başlığı) kullanılır; WebGL 3B cihaz çizicisi kapalıdır.
-  const DEVICE_3D_ENABLED = false;
-  const laser3DPilot = DEVICE_3D_ENABLED && typeof globalThis.GridshardLaser3DPilot === "function" ? new GridshardLaser3DPilot({
-    document, root:document.getElementById("duel-arena"),
-    rectFor:id => battleAnchorRects().modules.get(String(id)),
-    enabled:() => document.body.dataset.appScreen === "play" && battleGraphicsQuality() !== "dusuk",
-    reduced:() => window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true,
-    dpr:() => window.devicePixelRatio || 1,
-  }) : {anchor:()=>null,aimAt:()=>null,aim(){},attach(){},detach(){},invalidate(){},suspend(){},render(){},needsPresent:false};
+  // Approved painted devices are the sole deployed-art renderer.
   const motionPlaneCache = new WeakMap();
   const moduleMotion = new GridshardModuleMotion({
     now:() => performance.now(),
     hidden:() => document.hidden || document.body.dataset.appScreen !== "play",
     reduced:() => battleGraphicsQuality() === "dusuk" || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true,
     pointFor:record => {
-      const anchor=laser3DPilot.anchor(record.domId);
-      if(anchor)return anchor.center;
       const batch=battleAnchorRects();
       const laser=(batch.devices || batch.lasers).get(String(record.domId));
       if (laser) return GridshardLaserAim.project(laser.plane,GridshardLaserAim.PIVOT);
@@ -9448,7 +9311,6 @@
         if(projection.plane)motionPlaneCache.set(rig,projection);
       }
       const plane=projection?.plane;
-      laser3DPilot.aim(record.domId,pose,performance.now());
       return icon ? GridshardModuleDeviceArt.pose(icon, {...pose,plane}) : true;
     },
   });
@@ -11360,12 +11222,6 @@
     const batch=battleAnchorRects(),layer=batch.layer,entry=batch.devices.get(String(moduleId));
     const rect=batch.modules.get(String(moduleId));if(!layer||!rect)return null;
     const local=p=>({x:p.x-layer.left,y:p.y-layer.top});
-    if(entry && globalThis.GridshardDevice3DSpecs?.[entry.definition]) {
-      const anchor=aimAt
-        ? laser3DPilot.aimAt(moduleId,{x:aimAt.x+layer.left,y:aimAt.y+layer.top},performance.now())
-        : laser3DPilot.anchor(moduleId);
-      if(anchor)return {center:local(anchor.center),emitter:local(anchor.emitter),pair:anchor.pair?.map(local)||null,definition:entry.definition,size:Math.min(rect.width,rect.height)};
-    }
     let center={x:rect.left+rect.width/2,y:rect.top+rect.height/2},emitter=center,pair=null;
     if(entry){
       center=GridshardLaserAim.project(entry.plane,GridshardLaserAim.PIVOT) || center;
@@ -12093,6 +11949,13 @@
         }
       }
     } else if (type === "module_cycle_pulse" || type === "amplifier_pulse") {
+      const source = findSnapshotModule(snapshot, ownerId, data.module_id);
+      if ((type === "amplifier_pulse" && source?.definition_id === "amplifier")
+        || (type === "module_cycle_pulse" && source?.definition_id === "battery")) {
+        // moduleVfx.receive already owns their physical/canvas pulses. The old
+        // generic ring/link was a second presentation of the same server event.
+        return true;
+      }
       const sourceId = own(data.module_id);
       const presentation = CYCLE_PULSE_PRESENTATION[data.kind];
       if (!presentation) {
@@ -13125,7 +12988,6 @@
   // durumu (tahta, Akım, Çekirdek gücü) yerinde kalır.
   function clearBattleEffects() {
     moduleMotion.reset();
-    laser3DPilot.suspend();
     pendingModuleVfx=null;
     moduleVfx.reset();
     battleVisualGeneration += 1;
@@ -13157,7 +13019,6 @@
   function handleBattleVisibilityChange() {
     if (document.hidden) {
       moduleMotion.clear();
-      laser3DPilot.suspend();
       pendingModuleVfx=null;
       moduleVfx.clearEffects();
       battleHiddenAt = performance.now();
@@ -16816,7 +16677,6 @@
     battleAnchorBatch=null;
     moduleMotion.invalidateGeometry();
     moduleFx?.invalidateLayout();
-    laser3DPilot.invalidate();
     requestBattleMotionFrame();
     if (battleLayoutRefreshQueued) return;
     battleLayoutRefreshQueued = true;
@@ -17212,19 +17072,14 @@
   const battleCardStateView = new GridshardBattleCardStateView({
     document,
     mountIcon:(icon, model, card) => {
-      const domId=String(model.id); // Already the rendered own/enemy DOM identity.
-      laser3DPilot.detach(domId);
       icon.classList.remove("has-module-device");
       if (model.core) {
         // Deployed core uses the approved upright painting, fitted to one socket.
         delete icon.dataset.coreEmblem;
         if (!GridshardModuleDeviceArt.mountCore?.(icon, model.coreType)) mountCoreEmblem(icon, model.coreType);
         applyCoreVisualIdentity(card, model.coreType);
-        if(globalThis.GridshardDevice3DSpecs?.[model.coreType])laser3DPilot.attach(domId,icon,model.enemy,model.coreType);
       } else if (model.physical) {
         GridshardModuleDeviceArt.mount(icon, model.module, model.enemy);
-        const definition=GridshardModuleDeviceArt.idFor(model.module);
-        if(globalThis.GridshardDevice3DSpecs?.[definition])laser3DPilot.attach(domId,icon,model.enemy,definition);
       }
       else mountModuleEmblem(icon, model.module);
     },
@@ -17427,34 +17282,6 @@
     }
   }
 
-  function appendCellDebris(boardElement, debrisItems) {
-    for (const debris of debrisItems || []) {
-      const cell = boardElement.querySelector(
-        `.board-cell[data-x="${Number(debris.x)}"][data-y="${Number(debris.y)}"]`
-      );
-      if (!cell) continue;
-      const seconds = Math.max(
-        1,
-        Math.ceil(Number(debris.remaining_ms || 0) / 1000)
-      );
-      cell.dataset.debris = "true";
-      cell.classList.add("debris-cell");
-      const marker = document.createElement("span");
-      marker.className = "cell-debris";
-      marker.setAttribute("role", "status");
-      marker.setAttribute(
-        "aria-label",
-        `Enkaz: ${seconds}`
-      );
-      const shards = document.createElement("span");
-      shards.className = "cell-debris-shards";
-      shards.setAttribute("aria-hidden", "true");
-      const countdown = document.createElement("strong");
-      countdown.textContent = `${seconds} sn`;
-      marker.append(shards, countdown);
-      cell.appendChild(marker);
-    }
-  }
 
   function renderRemoteDataStatus() {
     const mapping = {
@@ -18208,7 +18035,7 @@
 
     renderProfileHighlights();
     renderProfileHonorShowcase();
-    renderAvatarCustomization(activeTitle);
+    renderAvatarCustomization();
     renderEngagementSummary(view.engagement);
   }
 
@@ -18293,12 +18120,6 @@
     }
   }
 
-  function deckDisplayName(deck) {
-    if (!deck?.module_ids?.length) return "Henüz maç yok";
-    return deck.module_ids
-      .map((id) => moduleDefinitions.find((module) => module.definitionId === id)?.nameTr || id)
-      .join(" · ");
-  }
 
   function renderProfileHighlights() {
     const view = profileState.viewModel();
@@ -18335,11 +18156,16 @@
     }
   }
 
+  const renderedAvatarArt = new WeakMap();
   function applyAvatarVisual(element, avatarId, frameId) {
     if (!element) return;
     const avatar = PROFILE_AVATARS.find((item) => item.id === avatarId) || PROFILE_AVATARS[0];
-    element.dataset.avatar = avatar.id;
-    element.dataset.frame = frameId || "none";
+    const source = PROFILE_AVATAR_ART[avatar.id];
+    const previous = renderedAvatarArt.get(element);
+    if (element.dataset.avatar !== avatar.id) element.dataset.avatar = avatar.id;
+    const frame = frameId || "none";
+    if (element.dataset.frame !== frame) element.dataset.frame = frame;
+    if (previous?.id === avatar.id && previous.source === source && previous.art === element.firstElementChild) return;
     if (avatar.id === "default") {
       const artwork = document.createElement("span");
       artwork.className = "ui-art";
@@ -18355,6 +18181,7 @@
       artwork.setAttribute("aria-hidden", "true");
       element.replaceChildren(artwork);
     }
+    renderedAvatarArt.set(element, {id:avatar.id, source, art:element.firstElementChild});
   }
 
   async function selectProfileCosmetic(kind, id) {
@@ -18384,7 +18211,8 @@
     }
   }
 
-  function renderAvatarCustomization(activeTitle = null) {
+  let renderedCosmeticChoices = null;
+  function renderAvatarCustomization() {
     const view = profileState.viewModel();
     if (!view) return;
     const cosmetics = view.cosmetics || {};
@@ -18396,6 +18224,13 @@
     applyAvatarVisual(document.getElementById("profile-hero-avatar"), avatarId, frameId);
     document.getElementById("app-progress-ribbon")?.setAttribute("data-profile-background", backgroundId);
     document.querySelector(".profile-identity-card")?.setAttribute("data-profile-background", backgroundId);
+
+    const choiceSignature = JSON.stringify([cosmetics, document.documentElement.lang]);
+    const choiceHosts = ["avatar-choice-list", "avatar-frame-choice-list", "battle-emoji-choice-list", "profile-background-choice-list"]
+      .map(id => document.getElementById(id));
+    if (renderedCosmeticChoices?.signature === choiceSignature && choiceHosts.every((host, index) =>
+      host === renderedCosmeticChoices.hosts[index].host && host?.firstElementChild === renderedCosmeticChoices.hosts[index].first
+    )) return;
 
     const avatarHost = document.getElementById("avatar-choice-list");
     if (avatarHost) {
@@ -18488,6 +18323,8 @@
         backgroundHost.appendChild(button);
       }
     }
+    renderedCosmeticChoices = {signature:choiceSignature,
+      hosts:choiceHosts.map(host => ({host, first:host?.firstElementChild}))};
   }
 
   function isPublicProfileTarget(playerId, player = null) {
@@ -18777,9 +18614,14 @@
     }
   }
 
+  let publicProfileRequestVersion = 0;
   async function openPublicProfile(playerId) {
     if (!isPublicProfileTarget(playerId)) return;
+    const requestVersion = ++publicProfileRequestVersion;
+    const viewerId = participantPlayerId;
     const dialog = document.getElementById("public-profile-dialog");
+    const isCurrent = () => requestVersion === publicProfileRequestVersion
+      && viewerId === participantPlayerId && activePublicProfileId === playerId && Boolean(dialog?.open);
     const status = document.getElementById("public-profile-status");
     const content = document.getElementById("public-profile-content");
     const sourceDialog = ["leaderboard-dialog", "arena-detail-dialog", "team-profile-dialog"]
@@ -18801,16 +18643,19 @@
         { cache: "no-store" },
         8000
       );
+      if (!isCurrent()) return;
       if (status) status.textContent = "";
       renderPublicProfile(payload);
       if (!payload.is_bot) await loadSocialView();
+      if (!isCurrent()) return;
       renderPublicProfileFriendAction(payload);
     } catch (error) {
-      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      if (isCurrent() && status) status.textContent = error instanceof Error ? error.message : String(error);
     }
   }
 
   function closePublicProfile() {
+    publicProfileRequestVersion += 1;
     const dialog = document.getElementById("public-profile-dialog");
     if (dialog?.close) dialog.close();
     else dialog?.removeAttribute("open");
@@ -18887,10 +18732,15 @@
     host.appendChild(membersSection);
   }
 
+  let teamProfileRequestVersion = 0;
   async function openTeamProfile(teamId) {
     const cleanTeamId = String(teamId || "").trim();
     if (!cleanTeamId) return;
+    const requestVersion = ++teamProfileRequestVersion;
+    const viewerId = participantPlayerId;
     const dialog = document.getElementById("team-profile-dialog");
+    const isCurrent = () => requestVersion === teamProfileRequestVersion
+      && viewerId === participantPlayerId && Boolean(dialog?.open);
     const status = document.getElementById("team-profile-status");
     const content = document.getElementById("team-profile-content");
     const sourceDialog = ["leaderboard-dialog", "public-profile-dialog"]
@@ -18909,16 +18759,18 @@
         { cache:"no-store" },
         8000
       );
+      if (!isCurrent()) return;
       const title = document.getElementById("team-profile-title");
       if (title) title.textContent = payload.name || "Takım Profili";
       if (status) status.textContent = "";
       renderTeamProfile(payload);
     } catch (error) {
-      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      if (isCurrent() && status) status.textContent = error instanceof Error ? error.message : String(error);
     }
   }
 
   function closeTeamProfile() {
+    teamProfileRequestVersion += 1;
     const dialog = document.getElementById("team-profile-dialog");
     if (dialog?.close) dialog.close();
     else dialog?.removeAttribute("open");
@@ -19266,6 +19118,18 @@
     return id ? `${kind}:${id}` : "";
   }
 
+  function pruneInboxExpansionState() {
+    if (!rewardInboxState || !inboxExpanded.size) return;
+    // Expansion is presentation-only. Keep it for present messages, never
+    // retain every message/account ever opened during a long app session.
+    const current = new Set();
+    for (const [kind, items] of [
+      ["invitation", rewardInboxState.invitations], ["reward", rewardInboxState.messages],
+      ["notice", rewardInboxState.purchases], ["notice", rewardInboxState.notices],
+    ]) for (const item of items || []) current.add(`${participantPlayerId}:${inboxReadKey(item, kind)}`);
+    for (const key of inboxExpanded) if (!current.has(key)) inboxExpanded.delete(key);
+  }
+
   function createInboxReadButton(card, item, kind, copy) {
     const key = inboxReadKey(item, kind);
     const playerId = participantPlayerId;
@@ -19420,6 +19284,7 @@
 
   function renderRewardInbox() {
     noteTeamApplicationsFromInbox();
+    pruneInboxExpansionState();
     const button = document.getElementById("reward-inbox-button");
     const notification = document.getElementById("reward-inbox-notification");
     const unclaimed = Number(rewardInboxState?.unclaimed_count || 0);
@@ -19436,6 +19301,9 @@
     if (button) {
       button.title = unread > 0 ? `Mesaj Kutusu · ${unread} yeni` : "Mesaj Kutusu";
     }
+    // Kapalı kutunun içindeki bütün sekmeleri her sosyal yoklamada kurmayız.
+    // Üstteki sayaçlar canlı kalır; içerik kutu açılınca son veriden kurulur.
+    if (!document.getElementById("reward-inbox-dialog")?.open) return;
     const fill = (hostId, items, createCard, emptyCopy) => {
       const host = document.getElementById(hostId);
       if (!host) return;
@@ -19581,6 +19449,7 @@
       const dialog = document.getElementById("reward-inbox-dialog");
       if (dialog?.showModal && !dialog.open) dialog.showModal();
       else dialog?.setAttribute("open", "");
+      renderRewardInbox();
       void markInboxNoticesSeen();
     }
   }
@@ -19636,14 +19505,6 @@
 
   // Günlük devre emirleri: her emir tek satırdır. Solda emrin simgesi,
   // ortada ilerleme çubuğu, sağda ödül rozetleri ve durum düğmesi durur.
-  const DAILY_MISSION_ICONS = Object.freeze({
-    complete_battles:'<path d="M13 2 4 14h7l-1 8 9-12h-7Z"/>',
-    deal_damage:'<circle cx="12" cy="12" r="3"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5M5 5l3.5 3.5M15.5 15.5 19 19M19 5l-3.5 3.5M8.5 15.5 5 19"/>',
-    circuit_actions:'<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><path d="M17 14v6M14 17h6"/>',
-    win_battles:'<path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M10 17h4"/>',
-    destroy_modules:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="m13 4-3 6 4 3-3 7"/>',
-    core_power:'<path d="m12 3 6 9-6 9-6-9Z"/><path d="M2 12h3M19 12h3"/>',
-  });
   const DAILY_MISSION_STATE_ORDER = Object.freeze({ claimable:0, active:1, claimed:2 });
 
   function dailyMissionState(mission) {
@@ -20474,32 +20335,8 @@
     return card;
   }
 
-  function sabotageLabelForModule(module) {
-    if (module.nameTr === "EMP") return "Enerji Kesme";
-    if (module.nameTr === "Sinyal Bozucu") return "Destek Susturma";
-    if (module.nameTr === "Virüs") return "Periyodik Hasar";
-    if (module.nameTr === "Enerji Sömürücü") return "Üretim -%30";
-    if (module.nameTr === "Kesici") return "Hat Kesme";
-    return "";
-  }
 
-  function heatStatusLabel(module) {
-    const heat = Number(module.heat || 0);
-    const heatEffect = moduleHeatEffectLabel(module);
-    const suffix = heatEffect ? ` · ${heatEffect}` : "";
-    if (module.overheated || heat >= MODULE_MAX_HEAT) return `AŞIRI ISI %${heat.toFixed(0)}`;
-    if (heat >= MODULE_HEAT_HIGH) return `YÜKSEK ISI %${heat.toFixed(0)}${suffix}`;
-    return `Isı %${heat.toFixed(0)}${suffix}`;
-  }
 
-  function supportLabelForModule(module) {
-    if (module.nameTr === "Onarım Modülü") return "Onarım";
-    if (module.nameTr === "Soğutucu") return "Soğutma";
-    if (module.nameTr === "Güçlendirici") return "Tüm saldırılara paylaşılan hasar desteği";
-    if (module.nameTr === "Hedefleme Bilgisayarı") return "Tüm saldırılara paylaşılan hız desteği";
-    if (module.nameTr === "Aşırı Hızlandırıcı") return "En ağır saldırıya ısı karşılığında hız ve hasar";
-    return "";
-  }
 
   function renderCredits() {
     setHudText(
@@ -20756,7 +20593,7 @@
   function requestBattleMotionFrame() {
     // Effects can wake us from inside tick(). The current frame owns that
     // handoff; queuing here as well would multiply rAF chains every core pulse.
-    if (battleClockUpdating || document.hidden || !(moduleMotion.needsFrame || laser3DPilot.needsPresent || moduleFx?.active)) return;
+    if (battleClockUpdating || document.hidden || !(moduleMotion.needsFrame || moduleFx?.active)) return;
     if (battleClockTimer !== null) { window.clearTimeout(battleClockTimer); battleClockTimer = null; }
     if (battleClockFrame === null) battleClockFrame = requestAnimationFrame(updateClock);
   }
@@ -20797,7 +20634,7 @@
       // A transient render error must remain visible to error reporting, but
       // must not permanently kill the clock while transport/audio keep running.
       battleClockUpdating = false;
-      if (frameSampling || moduleMotion.needsFrame || laser3DPilot.needsPresent || moduleFx?.active || typeof window.setTimeout !== "function") {
+      if (frameSampling || moduleMotion.needsFrame || moduleFx?.active || typeof window.setTimeout !== "function") {
         battleClockFrame = requestAnimationFrame(updateClock);
       } else {
         // rAF waits in background tabs; the timer only sets the HUD interval.
@@ -20895,7 +20732,6 @@
     // Read the rare idle-emitter geometry before movement writes in this frame.
     if (!document.hidden) emitCoreIdleMotes(now);
     moduleMotion.tick(now);
-    laser3DPilot.render(now);
     if (document.hidden) moduleFx?.clear(); else moduleFx?.tick(now);
     return frameSampling;
   }
@@ -21190,7 +21026,7 @@
   });
   // Açık günlük emir ekranında yenilenme sayacı dakikada bir güncellenir.
   window.setInterval(() => {
-    if (document.body.dataset.appScreen === "daily-missions") updateDailyMissionReset();
+    if (!document.hidden && document.body.dataset.appScreen === "daily-missions") updateDailyMissionReset();
   }, 30000);
 
   const monthlyLoginTrack = document.getElementById("monthly-login-track");

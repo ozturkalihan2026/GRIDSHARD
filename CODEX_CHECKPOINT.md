@@ -1,6 +1,158 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 22 Ekim 2026
+Güncelleme tarihi: 23 Ekim 2026
+
+## Son devam — sosyal/turnuva çizimleri, bellek ölçümü ve görünmeyen dekor
+
+Kapalı arkadaş sayfası yoklamada kart kurmuyor; bildirimler korunur. Açık
+arkadaş/takım sayfasında yalnız seçili liste, sohbet, istek, antrenman veya
+yönetim editörü kurulur. Turnuva dizini sıralama/fikstür kurmaz; turnuvada
+yalnız açık alt panel kurulur. Sekme geçişi ve sekmeden dönüş güncel veriyi
+çizer. Mesaj açılım kümesi yalnız mevcut hesabın mevcut mesajlarını korur;
+silinmiş mesaj/eski hesap UI anahtarları birikmez. Ödül/okundu kaydı silinmez.
+7 sosyal/panel, görünürlük dönüşü ve 1000 eski mesaj anahtarı davranış testi
+eklendi. Son istemci testi 664/664, paketleme 10/10 geçti.
+
+150 bağlı menü yönlendirmeli Chrome bellek koşusu geçti (2 dakika). GC sonrası
+DOM 20220/20220/20220; dinleyici 1081/1081/1081; document 7/7/7 olarak kaldı.
+Heap 9664640 -> 9856196 -> 9991916 bayt (+0.31 MiB). Bu kısa menü koşusu
+uzun savaş/fiziksel cihaz sızıntı testi değildir. Yeni regresyon menu-navigation'da.
+
+Eski body::before 80px ızgara/maske katmanı güncel opak zemin arkasında kalıyor
+ama WebKit'te çizim maliyeti yaratıyordu. Kaldırılması minimal sahnede VE gerçek
+menünün dondurulmuş 1179x1977 çekiminde 0 piksel fark üretti. Yalnız bu eski
+kural silindi; güncel arka plan korundu. Tek kırmızı nokta + bütün CSS ~10 FPS,
+yalnız eski pseudo kaldırılınca ~19 FPS, tüm kök dekorlar kaldırılınca ~65 FPS.
+Son seçenek tasarımı değiştirdiği için uygulanmadı. Kök katman zorlama ve
+perspektif-kapalı düzleştirme deneyleri yararsızdı, üretime eklenmedi.
+
+Son izole build 1c7c305b4db6e2ba / 44 betik / 619 varlık. Son 18 tarayıcı
+kontrolü 17 geçti / 1 başarısız: yalnız Windows WebKit savaş FPS bütçesi.
+Mesaj/arena geri eylemleri bağımsız gerçek tıklamalı testlerde geçiyor; eski
+birleşik testin toplam süre aşımı düğmeye özgü ürün hatası olarak gösterilmemeli.
+Zaman aşımı artırılmadı, force-click eklenmedi, kapsam/eşik azaltılmadı.
+Bu E2E'den sonra yalnız gizli sekmede gelen takım verisinin dönüşte çizilmesi
+koruması tamamlandı; son kaynakla 664/664 istemci testi tekrar geçti.
+Son savaş ölçümü Chrome masaüstü 131.9 FPS, Android Chrome öykünmesi 140.2 FPS;
+ikisinde p95 7.5ms ve 0 donma. WebKit 2.7 FPS, p95 389.5ms ve 0 donma AMA
+bütçe başarısız. Önceki ~0.7 FPS/15 donmaya göre iyileşme yayın onayı değildir.
+
+Kanıtlar artifacts/cleanup-20261023 altında: e2e-final-18-results.json,
+e2e-menu-memory-results.json, e2e-webkit-separated-results.json,
+paint-probe-menu-pixel-results.json ve paint-probe-*-results.json.
+Ayrıntılar docs/ARAYUZ_CALISMA_YUKU_DENETIMI_20261023.md'de.
+Sunucu görev/oturum/bağlantı temizliği salt okunur incelendi; yeni sunucu yaması
+yok. Commit/push, CI koşusu, sunucu geçişi veya AAB yapılmadı. Kalan öncelik
+WebKit repaint maliyeti, gerçek cihaz/uzun savaş ölçümü ve yayın kapılarıdır.
+
+## Son çalışma — görünmeyen arayüz yükü ve ölü kod denetimi
+
+Mevcut resimli arayüz/ana arka plan korunarak temizlik sürdürüldü. Profil
+yenilemesinin ziyaret edilmemiş beş menüyü boşta yeniden kurması kaldırıldı;
+yalnız açık kirli bölüm ve Kartlar'da seçili koleksiyon çizilir. Kapalı mesaj
+kutusunda bildirim/ödül sahipliği sayaçları güncellenir, mesaj kartları kurulmaz.
+Avatar görselleri WeakMap, kozmetik seçenekleri tek sınırlı önbellekle korunur;
+sahiplik, dil, seçim veya DOM değişirse yenilenir. Görünmeyen sekmede mağaza,
+fikstür ve görev periyodik çizimleri durur. Hediye saati geçen gerçek zamandan
+hesaplanır; sekme uyuyunca süre uzamaz ve ödül yine sunucu doğrulaması ister.
+
+11 çağrısız uygulama işlevi, bunların kullanılmayan CSS'i, eski simge tabloları,
+hiç kullanılmayan RelayPlayerDataSnapshotState sınıfı ve zaten kalıcı olarak
+gizlenmiş eski lobby-backdrop/çizgi çekirdek alt ağacı kaldırıldı. Aktif resimli
+çekirdek, deste, nişan/geri tepme ve kaynak simgesi fallback'leri korunur.
+Oyuncu/takım profilinde geç HTTP yanıtı yeni ziyaretin, kapanmış pencerenin
+veya başka hesabın ekranına yazamaz. Yeni davranış testleri tekrar çizim,
+gizli sekme, önbellek geçersizleştirme ve yanıt yarışlarını kapsar.
+
+Son kaynak doğrulaması: 654/654 istemci ve 10/10 paketleme testi geçti;
+git diff --check temiz. İzole build 2f255d2103c78816 / 44 betik / 619 varlık,
+artifacts/web-2.1.1-h5FJ1n/dist/. Sunucu kuralları değişmedi. Önceki sunucu
+sonucu 1659 geçti / 44 koşullu atlandı; bu turda tekrar çalıştırılmadı.
+
+Tarayıcı matrisi 30 geçti / 2 başarısız (32 vaka). Son hedefli tekrar 3 geçti /
+2 başarısız: Windows iPhone/WebKit savaş FPS bütçesi ve arena geri düğmesinde
+kararlılık bekleyen tıklama zaman aşımı hâlâ açık. Chrome masaüstü son ölçüm
+121.5 FPS, p95 14.5 ms, 0 donma; Android önceki aynı tur ölçümü 119.7 FPS,
+p95 15.5 ms, 0 donma. WebKit ~0.7 FPS / 15 donma. Kısa öykünme ölçümleri
+gerçek cihaz veya uzun bellek testi değildir. Arena kontrollerinin toplu DOM
+okuması ikinci sorunu çözmedi; zorla tıklama/zaman aşımı artışı uygulanmadı.
+
+Betiksiz sahne/tek görünür animasyon deneyleri de WebKit'te yavaştı; bu
+gözlem sürücü hatası veya tek bir VFX'in suçlu olduğunun kanıtı değildir.
+Eski dekor kaldırma denemesinde test noktasının da saydamlaşması sonucu
+etkilemişti; o deneyden neden-sonuç çıkarılmamalı. Görsel bozan veya yararsız
+deneyler ve geçici teşhis testi tutulmadı, FPS eşikleri gevşetilmedi.
+
+Kanıtlar: artifacts/cleanup-20261023/e2e-32-results.json ve
+e2e-targeted-results.json. Ayrıntılı alan denetimi:
+docs/ARAYUZ_CALISMA_YUKU_DENETIMI_20261023.md. Takım alt panelleri ve kapalı
+arkadaş listesinin sosyal yoklamada kurulması sonraki odaklı inceleme adayıdır;
+tüm performans sorunları bitmiş sayılmaz. Commit/push, yeni CI koşusu,
+sunucu geçişi veya AAB yapılmadı. Sürüm 2.1.1 / Android kod 9 adayı kalır.
+Sonraki öncelik WebKit çizim/tıklama sorununu gerçek cihazla karşılaştırarak
+ayırt etmek; yayın kapıları yeşil olmadan üretim başlatılmamalı.
+
+## Son çalışma — kırmızı CI incelemesi ve eski görsel runtime temizliği
+
+Kullanıcı mevcut arayüz dışında "belki lazım olur" diye tutulan kodun
+silinmesini istedi. Kapatılmış eski WebGL deneyi tamamen kaldırıldı:
+3 runtime betiği, uygulamadaki no-op çağrıları, eski CSS katmanı, eski test
+ve 4 tarihsel önizleme/denetim aracı. Toplam 8 takipli dosya Git'ten
+geri alınabilir; güncel boyut/kare-döngüsü kontrolleri korundu/taşındı.
+Legacy idle/bob/squash keyframe'leri kaynaktan temizlendi; batarya ve
+güçlendiricinin yeni VFX yanında üretilen eski genel halkası kaldırıldı.
+Gizli açılışta çalışan eski boot-stripes çizelgesi kapatıldı; solma sonrası
+alt animasyonlar iptal edilir, gizli ekran animasyonları durur. Gerçek
+head aim/recoil, isabet ışığı, canvas çekirdek moteleri, kalkan kubbesi kalır.
+
+İlk temizlikte 643 istemci testi ve 10 paketleme testi, 22 araç sözleşmesi geçti.
+Test sayısının düşmesi silinen 3B mesh/prototip testlerindendir; WebKit FPS
+testi silinmedi/atlanmadı ve eşikleri değişmedi. Yeni legacy-runtime ve
+açılış animasyon temizliği sözleşmeleri eklendi. İzole web build:
+91c1070edf36a7a0 / 44 betik / 619 varlık; eski 3B betikleri pakette yok.
+Sunucu ve AAB değişmedi. Silme ayrıntıları ve saklanan bağımlılıklar:
+docs/ESKI_GORSEL_KOD_TEMIZLIGI_20261022.md.
+
+İncelenen gerçek CI: 023a1e8 / koşu 39715140349. Server/client/migration
+işleri yeşil; browser 41 geçti / yalnız iPhone-WebKit battle-render-budget
+başarısız. CI kanıt yüklemesi ve token içermeyen kare/animasyon sayaçları
+eklendi. Betiksiz aynı WebKit sahnesi ~2–3 FPS, animasyon durunca ~52 FPS;
+kalan maliyetin tek sahibi henüz kanıtlanmadı. Eski kod
+temizliği tek başına FPS kapısını kapatmadı. İşe yaramayan paint-containment
+ve kırpma deneyleri geri alındı; geçici teşhis testi kaldırıldı. CI yeşil,
+yayına hazır veya gerçek cihaz doğrulandı denemez. Commit/push yapılmadı.
+
+Devam turunda çağrılmayan iki ses ön yükleyicisi ve boş HTML ses havuzu
+kaldırıldı; etkin decode önbelleği ve talep anında ses çalma korunur.
+Ses/legacy-runtime odaklı 49 kontrol geçti. Önceki arayüz/açılış kaynağında
+27/27 E2E üç tarayıcıda geçti; uzun tek senaryo kapsam kaybetmeden üçe
+ayrıldı (zaman aşımı eşiği artırılmadı). Son ses sadeleştirmesi sonrası
+tam istemci ve kare bütçesi doğrulaması devam ediyor.
+
+## Son kullanıcı düzeltmeleri — devre yolu, güçlendirici sesi, kalkan kubbesi
+
+Devre yolunun arena çekirdek açılışlarında yalnız görseller kaldı; adlar
+erişilebilir etiket/tooltip olarak korunur, bilgi penceresi tıklaması değişmedi.
+Eski uzun isim kapsülü yerine zeminsiz kare görsel hedefi kullanılır.
+Güçlendirici artık ortak energy_transfer sesini kendi amplifier_charge
+kimliği ve 0.18 kazançla kullanır (~14.9 dB azaltım); diğer modüller, çekirdek
+hazır/UI sesleri ve genel savaş ses seviyesi değişmedi. Kaynak RMS ~0.466,
+trim sonrası ~0.084; onarım kaynağı ~0.104 RMS ile testte karşılaştırıldı.
+Kalkanın kalıcı kubbesi eski hücre boyutundaki billboard yerine fiziksel
+çizimin kayıtlı module-layer-stage alanına bağlandı; böylece gövdenin
+arkasında/ayak hizasında kalmaz. Düşük kalite, güç kesilmesi, ölüm,
+gizleme/reset ve eski atlas fallback davranışı korunur. Yeni RAF/timer yok;
+1000 tekrarlı snapshot aynı SVG'yi koruyor.
+
+Doğrulama: 659 istemci + 10 paketleme testi geçti. Masaüstü Chrome ve
+Android Chrome öykünmesinde 4/4 işlevsel E2E geçti; arena görsel hedefleri
+ve kalkanın fiziksel çizimle hizası düşük/yüksek kalitede doğrulandı,
+core-and-shield.png çekimi görsel incelendi. Sandbox'ın hard-link/rename
+ve yerel soket kısıtlarına takılan denemeler normal yerel izinle yeniden
+çalıştırıldı; testler atlanmadı. Bu kapsam sunucu oyun kurallarını değiştirmez.
+Yeni commit/push, sunucu geçişi veya AAB yapılmadı. Aşağıdaki eski FPS
+yayın kapısı kapanmış sayılmaz; önceki mağaza ZIP'i bu son değişikliklerden
+önceki inceleme adayıdır.
 
 ## Son heartbeat — 2.1.1/v9 adayı; yayın performans kapısında
 

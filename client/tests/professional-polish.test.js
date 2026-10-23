@@ -31,7 +31,7 @@ test("copy, labels and prices have distinct readable sizes and supported weights
   for (const token of ["--gs-polish-copy:.75rem", "--gs-polish-label:.6875rem", "--gs-polish-action:.875rem", "--gs-polish-title:1rem"]) {
     assert.ok(polish.includes(token), token);
   }
-  assert.ok(polish.includes(".module-detail-tab-content .module-effect-panel li,"));
+  assert.ok(polish.includes(".module-detail-tab-content .module-overview-grid > div > strong,"));
   assert.ok(polish.includes(".shop-screen .paid-product-card > button,"));
   assert.ok(!/font-weight:(?:850|900)/.test(polish));
 });

@@ -36,7 +36,7 @@
 .module-vfx-projectile-track { height:0; transform-origin:0 0; }
 .vfx-flying-projectile { position:absolute; left:0; top:-7px; overflow:visible; animation:gs-vfx-projectile var(--travel-ms,500ms) linear both; }
 .module-vfx-ambient { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
-.vfx-ambient-electric { fill:none; stroke:#affc68; stroke-width:1.6; stroke-linecap:round; vector-effect:non-scaling-stroke; animation:gs-vfx-electric 160ms steps(2,end) infinite; }
+.vfx-ambient-electric { fill:none; stroke:#affc68; stroke-width:1.6; stroke-linecap:round; vector-effect:non-scaling-stroke; animation:none; opacity:.7; }
 [data-device="battery"] .vfx-ambient-electric { stroke:#ffe46d; }
 @keyframes gs-module-vfx-life { 0%,78% { opacity:1; } 100% { opacity:0; } }
 @keyframes gs-vfx-flow { to { stroke-dashoffset:-26; } }

@@ -5,7 +5,7 @@ const vm = require("node:vm");
 
 const app = fs.readFileSync("src/app.js", "utf8");
 const render = app.slice(app.indexOf("  function renderPostMatchAdReward()"), app.indexOf("  function playTestRewardAd("));
-const claimAndWatch = app.slice(app.indexOf("  async function claimAdReward("), app.indexOf("  async function openGiftChest("));
+const claimAndWatch = app.slice(app.indexOf("  async function claimAdReward("), app.indexOf("  async function openAllAvailableChests("));
 const receipt = {circuit_credits:10, xp:20};
 const failure = (status = 422) => Object.assign(new Error("fixture verification pending"), {status});
 

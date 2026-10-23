@@ -193,7 +193,7 @@ body:is([data-app-screen="shop"],[data-app-screen="modules"]) { --gs-shell-top:5
 .boot-title { -webkit-text-stroke:0; text-shadow:0 2px #061326; }
 .boot-bar { border:0; border-radius:4px; background:#07172b; box-shadow:none; }
 .boot-bar-fill { min-width:0; background:linear-gradient(180deg,#91efdc,#39b6a2); box-shadow:none; }
-.boot-bar-fill::after { display:none; }
+.boot-bar-fill::after { display:none; animation:none; }
 
 /* An explicit, separate read action; never a claim/delete/invite action. */
 :root body[data-app-screen] .reward-inbox-card { grid-template-columns:44px minmax(0,1fr) auto; }

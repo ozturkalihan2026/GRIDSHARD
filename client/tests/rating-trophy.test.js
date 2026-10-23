@@ -53,7 +53,7 @@ test("aynı onaylı kupa görseli kullanılır; ödül sahipliği ayrı sunucu k
   assert.ok(source.includes('renderTrophyValue(points, row.trophies_earned || row.points)'));
   assert.ok(source.includes('localizedMessage("team.directory_members"'));
   const start=source.indexOf("  const PROFILE_HONOR_ICONS = Object.freeze({");
-  const end=source.indexOf("  function deckDisplayName(",start);
+  const end=source.indexOf("  function renderProfileHighlights(",start);
   assert.ok(start>0 && end>start);
   assert.ok(source.slice(start,end).includes('group.kind === "trophy"'));
   assert.ok(source.slice(start,end).includes('src="${COMPETITION_TROPHY_ASSET}"'));

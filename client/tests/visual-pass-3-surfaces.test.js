@@ -108,19 +108,17 @@ test("Çekirdek amblemi yedi çekirdek için çizilir ve ev ekranına konur", ()
   assert.equal(sandbox.coreEmblemSvg("bilinmeyen"), sandbox.coreEmblemSvg("core_resonance"));
   assert.ok(app.includes("mountCoreEmblem(glyph, coreId);"));
   assert.match(rule(".core-emblem .ce-gem"), /fill:var\(--core-accent,#56f1df\);/);
-  assert.match(block, /@media \(prefers-reduced-motion:reduce\) \{\n  \.core-emblem-orbits,\n  \.core-emblem-spark \{ animation:none; \}/);
 });
 
 test("enderlik rengi tek dildir: sıradan çelik, ender mavi, destansı mor, efsanevi altın", () => {
   assert.ok(app.includes('const RARITY_ICON_TONES = Object.freeze({ common:"steel", rare:"blue", epic:"violet", legendary:"gold" });'));
-  assert.ok(app.includes('"is-rarity", "rarity", RARITY_ICON_TONES[rarity] || "steel"],'), "kimlik satırının simgesi enderliğin renginde");
   assert.ok(app.includes('setRarityBadge("module-detail-rarity", String(item.rarity || "common").toLowerCase(),'));
   assert.ok(app.includes('setRarityBadge("core-detail-rarity", String(core.rarity || "common").toLowerCase(),'));
   assert.match(block, /#module-detail-rarity\[data-rarity="epic"\],\n#core-detail-rarity\[data-rarity="epic"\] \{ --r-a:#ba95ef;--r-b:#915ddd;/);
   assert.match(block, /#module-detail-rarity\[data-rarity="legendary"\],\n#core-detail-rarity\[data-rarity="legendary"\] \{ --r-a:#fbd26f;--r-b:#f0ad35;/);
   // Rozet: sahte belgeyle çalıştırılır.
   const start = app.indexOf("  const RARITY_ICON_TONES = Object.freeze(");
-  const end = app.indexOf("  const MODULE_RARITY_RULE_TR = {");
+  const end = app.indexOf("  function serverCopy(",start);
   const badge = { textContent:"", dataset:{} };
   const sandbox = { document:{ getElementById:(id) => (id === "var" ? badge : null) } };
   vm.runInNewContext(`${app.slice(start, end)}\nObject.assign(this, { setRarityBadge });`, sandbox);

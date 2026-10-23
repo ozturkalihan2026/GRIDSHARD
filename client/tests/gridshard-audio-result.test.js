@@ -237,10 +237,8 @@ test("pending SFX decode cannot replay old hits after background/foreground or f
   assert.equal(f.audio.length,0);
 });
 
-test("a reusable preloaded result starts a fresh attack at the same preference volume", async () => {
+test("a new on-demand HTML result starts a fresh attack without retaining the previous voice", async () => {
   const f=fixture(), d=f.director;
-  const asset=f.sandbox.GRIDSHARD_MUSIC_ASSETS.victory;
-  d._preloadedAudio.set(asset,new f.sandbox.Audio(asset));
   d.setState("victory");
   await d.ensureResultPlayback("victory");
   const track=d.currentTrack;
@@ -250,7 +248,10 @@ test("a reusable preloaded result starts a fresh attack at the same preference v
   d.setState("battle");
   d.setState("victory");
   await d.ensureResultPlayback("victory");
-  assert.equal(d.currentTrack,track);
+  assert.notEqual(d.currentTrack,track);
+  assert.equal(track.paused,true);
+  assert.equal(d.currentTrack.preload,"none");
+  assert.equal(d.currentTrack.volume,0);
   f.advance(320);
-  assert.equal(track.volume,d._resultMusicTargetVolume());
+  assert.equal(d.currentTrack.volume,d._resultMusicTargetVolume());
 });

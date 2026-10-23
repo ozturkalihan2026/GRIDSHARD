@@ -107,7 +107,7 @@ const rules = {
 };
 rules.globalThis = rules;
 vm.runInNewContext(`${slice("  function moduleUpgradeBlockReason(item) {", "  function moduleTalentSelectable(")}
-Object.assign(this, { moduleUpgradeBlockReason, moduleUnlockStage, moduleUnlockBadge, moduleUnlockRequirement });`, rules);
+Object.assign(this, { moduleUpgradeBlockReason, moduleUnlockStage, moduleUnlockBadge });`, rules);
 
 test("kilitli kart arenada arena numarasını, ligde ligin adını yazar", () => {
   const repair = { definition_id:"repair", unlock_arena:2, unlock_trophies:300, unlock_stage_kind:"arena" };
@@ -117,11 +117,10 @@ test("kilitli kart arenada arena numarasını, ligde ligin adını yazar", () =>
   };
   assert.equal(rules.moduleUnlockBadge(repair, "repair"), "ARENA 2");
   assert.equal(rules.moduleUnlockBadge(spear, "ion_spear"), "KIVILCIM");
-  assert.equal(rules.moduleUnlockRequirement(repair), "Arena 2 · 300 Kupa");
-  assert.equal(rules.moduleUnlockRequirement(spear), "Kıvılcım Ligi · 5400 Kupa");
+  assert.equal(rules.moduleUnlockStage(repair).trophies, 300);
+  assert.equal(rules.moduleUnlockStage(spear).leagueNameTr, "Kıvılcım Ligi");
   rules.document.documentElement.lang = "en";
   assert.equal(rules.moduleUnlockBadge(spear, "ion_spear"), "SPARK");
-  assert.equal(rules.moduleUnlockRequirement(spear), "Spark League · 5400 trophies");
   rules.document.documentElement.lang = "tr";
 });
 
@@ -129,7 +128,6 @@ test("sunucu aşama adını göndermese de lig modülü tablodan tanınır", () 
   // Eski kayıtlı görünüm: yalnız kimlik var; sıra ve kupa istemci tablosundan gelir.
   assert.equal(rules.moduleUnlockBadge({ definition_id:"omega_amplifier" }, "omega_amplifier"), "KIVILCIM");
   assert.equal(rules.moduleUnlockStage({ definition_id:"omega_amplifier" }).trophies, 5400);
-  assert.equal(rules.moduleUnlockRequirement({ definition_id:"omega_amplifier" }), "Kıvılcım Ligi · 5400 Kupa");
   assert.equal(rules.moduleUnlockBadge({ definition_id:"barrier" }, "barrier"), "ARENA 4");
 });
 

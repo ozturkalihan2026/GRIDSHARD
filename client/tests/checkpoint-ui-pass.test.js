@@ -60,12 +60,10 @@ assert.ok(app.includes("function openAllAvailableChests"));
 assert.ok(app.includes("function showBulkChestReveal"));
 assert.match(css, /\[data-open-screen\]\.has-persistent-notification::after/);
 assert.match(css, /\.bulk-chest-reward/);
-assert.ok(app.includes("function createModuleEffectList"));
 // Genel kart kısa, tam sunucu açıklaması title'da; sayısal etkiler İstatistik'te.
 assert.ok(app.includes('text.textContent = GridshardDetailPages.description(item, {english:document.documentElement.lang === "en"});'));
 assert.ok(app.includes('text.title = serverCopy(item.description_tr, item.description_en);'));
 assert.ok(app.includes('host.appendChild(createModuleStatTiles(item));'));
-assert.match(css, /\.module-effect-panel/);
 assert.ok(html.includes('id="team-onboarding"'));
 assert.ok(html.includes('data-team-tab="profile" class="is-active"'));
 assert.ok(html.includes('data-team-panel="profile" class="team-panel team-profile-panel is-active"'));

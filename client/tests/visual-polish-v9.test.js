@@ -32,6 +32,21 @@ function fixture(messages=[]){
   return{context,marks,requests,applied,status,setFail:id=>{failId=id;}};
 }
 const message=(id,category="battle")=>({message_id:id,category,status:"unclaimed",chest:{chest_name_tr:"Gümüş Sandık"}});
+
+test('inbox expansion retains only present messages for the current account, without dismissing rewards',()=>{
+  const f=fixture([message('keep')]);
+  for(let i=0;i<1000;i++) f.context.inboxExpanded.add(`own:notice:old-${i}`);
+  f.context.inboxExpanded.add('other:reward:keep');
+  f.context.inboxExpanded.add('own:reward:keep');
+  f.context.rewardInboxState.purchases=[{notice_id:'purchase'}];
+  f.context.inboxExpanded.add('own:notice:purchase');
+  f.context.pruneInboxExpansionState();
+  assert.deepEqual([...f.context.inboxExpanded],['own:reward:keep','own:notice:purchase']);
+  assert.equal(f.context.rewardInboxState.messages[0].status,'unclaimed');
+  assert.equal(f.requests.length,0,'pruning presentation never makes a server mutation');
+  f.context.participantPlayerId='other'; f.context.pruneInboxExpansionState();
+  assert.equal(f.context.inboxExpanded.size,0);
+});
 test("system/purchase messages start closed, title and envelope toggle content without read-state copy",()=>{
   const f=fixture();
   const card=f.context.notice({notice_id:"notice",title_tr:"Bakım",body_tr:"Açıklama",seen:false});

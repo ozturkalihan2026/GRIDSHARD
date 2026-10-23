@@ -255,6 +255,13 @@
       asset:"./assets/audio/energy_transfer.wav",
       identity:"kısa dijital akım",
     },
+    amplifier_charge:{
+      asset:"./assets/audio/energy_transfer.wav",
+      // This sustained source is ~13 dB louder in RMS than repair_beam.
+      // Trim only the amplifier, not the battle bus or core-ready/UI cues.
+      gain:0.18,
+      identity:"dengelenmiş güçlendirici akım darbesi",
+    },
     laser_fire:{
       asset:"./assets/audio/laser_pulse_v2.wav",
       gain:0.65,
@@ -593,7 +600,6 @@
       this._sfxPlaybackGeneration = 0;
       this._sfxLastTriggeredAt = new Map();
       this._routineSfxStarts = [];
-      this._preloadedAudio = new Map();
       this._resultTrack = null;
       this._lastPlaybackError = null;
       this._unlockTarget = null;
@@ -1015,20 +1021,6 @@
       return gridshardCachedAudioBuffer(context,this._musicBufferCache,asset);
     }
 
-    _preloadAudioBuffers(assets=[]) {
-      if (!this._ensureAudioContext()) return;
-      for (const asset of new Set(assets.filter(Boolean))) {
-        this._loadAudioBuffer(asset).catch((error)=>{
-          this._lastPlaybackError = {
-            name:String(error?.name || "AudioBufferError"),
-            message:String(error?.message || error || "Audio buffer could not be loaded."),
-            src:String(asset),
-            at:Date.now(),
-          };
-        });
-      }
-    }
-
     async _resumeAudioContext() {
       if (!this._appActive) return false;
       const context=this._ensureAudioContext();
@@ -1142,43 +1134,9 @@
       }
     }
 
-    _preloadAudioAssets(assets=[]) {
-      if (!this._canPlayAudio()) return;
-      for (const asset of new Set(assets.filter(Boolean))) {
-        if (this._preloadedAudio.has(asset)) continue;
-        const audio=this._createHtmlAudio(asset);
-        audio.preload="auto";
-        this._preloadedAudio.set(asset,audio);
-        if (typeof audio.load === "function") {
-          try {
-            audio.load();
-          } catch (_) {
-            // Preload desteği olmayan ortamlarda normal oynatma yolu kullanılır.
-          }
-        }
-      }
-    }
-
-    _createPreloadedAudio(asset) {
-      const template=this._preloadedAudio.get(asset);
-      if (
-        template
-        && template.paused !== false
-        && !this._activeSfx.has(template)
-        && template!==this._resultTrack
-      ) {
-        try {
-          template.currentTime=0;
-        } catch (_) {
-          // Metadata henüz hazır değilse play() başlangıç konumunu belirler.
-        }
-        return template;
-      }
-      if (template && typeof template.cloneNode === "function") {
-        const clone=template.cloneNode(true);
-        clone.preload="none";
-        return clone;
-      }
+    _createPlaybackAudio(asset) {
+      // HTML fallback voices are created on demand. Web Audio owns its own
+      // bounded decoded-buffer cache; no second, unused preload pool is needed.
       const audio=this._createHtmlAudio(asset);
       audio.preload="none";
       return audio;
@@ -2011,7 +1969,7 @@
       if (this._resultSuppressed || !this._appActive || !this._canPlayAudio()) return Promise.resolve(false);
       this._stopResultTrack();
       const asset=GRIDSHARD_MUSIC_ASSETS[outcome];
-      const track=this._createPreloadedAudio(asset);
+      const track=this._createPlaybackAudio(asset);
       track._gridshardState=outcome;
       track._gridshardAsset=asset;
       track.loop=false;
@@ -2217,7 +2175,7 @@
 
     _playHtmlCue(cue,{gain=1}={}) {
       if (!this._appActive || !cue || !this._canPlayAudio()) return Promise.resolve(false);
-      const audio=this._createPreloadedAudio(cue.asset);
+      const audio=this._createPlaybackAudio(cue.asset);
       audio.volume=Math.min(1,this._sfxTargetVolume() * gain);
       this._activeSfx.add(audio);
       const release=()=>{

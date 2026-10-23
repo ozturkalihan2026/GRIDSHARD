@@ -114,7 +114,7 @@ test("aim drawing reuses its projection until layout changes or the rig is repla
   let rig={},reads=0;const plane={id:"stable"};
   const icon={querySelector:()=>rig},card={dataset:{moduleId:"one"},querySelector:()=>icon};
   const sandbox={motionPlaneCache:new WeakMap(),moduleAnchorCells:new Map([["one",{querySelector:()=>card}]]),battleLayoutEpoch:0,
-    battleAnchorRects:()=>{reads++;return {devices:new Map([["one",{plane}]])};},laser3DPilot:{aim(){}},performance:{now:()=>0},
+    battleAnchorRects:()=>{reads++;return {devices:new Map([["one",{plane}]])};},performance:{now:()=>0},
     GridshardModuleDeviceArt:{pose:(_icon,pose)=>{assert.equal(pose.plane,plane);return true;}}};
   vm.runInNewContext("this.draw="+source.slice(start+9,end+6),sandbox);
   for(let i=0;i<100;i++)sandbox.draw({domId:"one"},{phase:"aim"});assert.equal(reads,1);
