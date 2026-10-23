@@ -99,10 +99,11 @@ test("alt çubukta gezinme: yol yalnız açıkken çizilir, tazeleme geçiş bit
   assert.match(open, /renderHomeArena\(\);\s*if \(!arenaDetailDialog\?\.open\) renderArenaPath\(\);/);
   assert.match(app, /const NAVIGATION_SETTLE_MS = 360;/);
   const navigate = slice(app, "  function openAppScreen(", "  async function markScreenNotificationsSeen(");
-  assert.match(navigate, /if \(screen !== previousScreen\) navigationSettleUntil = performance\.now\(\) \+ NAVIGATION_SETTLE_MS;/);
-  assert.match(navigate, /\.then\(\(\) => afterNavigationSettle\(\(\) => \{/);
+  assert.match(navigate, /syncScreenLifecycle\(screen\);/);
+  assert.match(slice(app,"  function syncScreenLifecycle(","  function afterNavigationSettle("), /navigationSettleUntil = performance\.now\(\) \+ NAVIGATION_SETTLE_MS;/);
+  assert.match(navigate, /if\(requestRevision !== navigationRevision\)return;\s*afterNavigationSettle\(\(\) => \{/);
   assert.match(navigate, /loadMetaProgression\(\{ afterSettle:true \}\);/);
-  assert.match(slice(app, "  function scheduleMetaHubFlush() {", "  function renderMetaHubScreens() {"), /const settleWait = navigationSettleUntil - performance\.now\(\);/);
+  assert.match(slice(app, "  function scheduleMetaHubFlush() {", "  function renderMetaHubScreens("), /const settleWait = navigationSettleUntil - performance\.now\(\);/);
   // Hareket yalnız transform ve opaklıkla yapılır; genişlik ve yükseklik geçişi yoktur.
   assert.match(pass6, /#app-bottom-dock \.menu-action \{ transition:transform \.12s ease !important; \}/);
   assert.match(pass6, /@keyframes gs6-dock-rise \{ from \{ transform:translateY\(7px\) scale\(\.94\); \} \}/);

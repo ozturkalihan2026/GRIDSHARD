@@ -38,7 +38,14 @@
       this.document.body.dataset.appScreen = current;
 
       for (const panel of this.document.querySelectorAll("[data-screen-panel]")) {
-        panel.hidden = panel.dataset.screenPanel !== current;
+        const hidden=panel.dataset.screenPanel !== current;
+        if(hidden && !panel.hidden){
+          // Native modal dialogs live in the top layer, outside normal hidden
+          // layout. Explicitly close the outgoing panel's dialogs as well.
+          for(const dialog of panel.querySelectorAll?.("dialog[open]") || [])dialog.close?.();
+        }
+        if(panel.hidden !== hidden)panel.hidden=hidden;
+        if(panel.inert !== hidden)panel.inert=hidden;
       }
 
       const menu = this.document.getElementById("main-menu-panel");

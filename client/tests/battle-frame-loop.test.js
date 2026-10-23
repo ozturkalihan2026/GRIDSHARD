@@ -25,7 +25,7 @@ function fixture({ effects = true, motion = false, sampling = false } = {}) {
     target[key] ?? (key === "createRadialGradient" ? () => gradient : () => {}) });
   const layer = { clientWidth:300, clientHeight:500, appendChild(c) { c.parentElement = this; } };
   const document = {
-    hidden:false, body:{ dataset:{ onlineStatus:"battle" } },
+    hidden:false, body:{ dataset:{ onlineStatus:"battle",appScreen:"play" } },
     createElement:() => ({ setAttribute() {}, remove() {}, getContext:() => ctx }),
   };
   const context = vm.createContext({
@@ -36,7 +36,8 @@ function fixture({ effects = true, motion = false, sampling = false } = {}) {
     analyticsLastFrameAt:null, analyticsFrameDurationMs:0, analyticsFrameCount:0,
     lastBattleHudRenderAt:-Infinity, BATTLE_HUD_RENDER_INTERVAL_MS:250,
     renderBattleHud(time) { hudRenders++; context.lastBattleHudRenderAt = time; },
-    moduleMotion:{ needsFrame:motion, tick() {} },
+    moduleMotion:{ needsFrame:motion, tick() {},clear(){this.needsFrame=false;} },
+    battlePerformanceSampler:null,
     moduleFx:null, emitCoreIdleMotes() {},
     requestAnimationFrame(run) { frames.set(++serial, run); return serial; },
     window:{
@@ -49,7 +50,8 @@ function fixture({ effects = true, motion = false, sampling = false } = {}) {
     wake:() => context.requestBattleMotionFrame(),
   });
   vm.runInContext(
-    between("  let battleClockFrame = null;", "  // Otomatik grafik kademesi:")
+    between("  let battleClockFrame = null;", "  function renderAppScreen()")
+    + between("  function requestBattleMotionFrame()", "  // Otomatik grafik kademesi:")
     + between("  function updateClock(now) {", "  // Savaş saati, HUD,")
     + "\nbattleClockFrame = requestAnimationFrame(updateClock);", context);
   return {
@@ -116,14 +118,14 @@ test("an idle HUD timer is cancelled by motion and wakes coalesce", () => {
   assert.equal(f.timers.size, 0);
 });
 
-test("hidden effects clear and an empty surface falls back to idle polling", () => {
+test("hidden effects clear and suspend polling until the visibility owner wakes it", () => {
   const f = fixture();
   f.context.moduleFx.coreIdle({ x:100, y:200 });
   f.context.document.hidden = true;
   f.step(16);
   assert.equal(f.context.moduleFx.active, false);
   assert.equal(f.frames.size, 0);
-  assert.equal(f.timers.size, 1);
+  assert.equal(f.timers.size, 0);
   f.context.requestBattleMotionFrame();
   assert.equal(f.frames.size, 0);
 });

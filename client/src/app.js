@@ -937,8 +937,14 @@
     if (event.key === "Escape") closeDropdownMenus({ restoreFocus:true });
   });
 
+  let battleClockFrame = null;
+  let battleClockTimer = null;
+  let battleClockUpdating = false;
+
   function renderAppScreen() {
     const current = screenController.render();
+    syncScreenLifecycle(current);
+    syncBattleClockVisibility();
     syncAudioStateForCurrentView();
     if (current !== RelayAppScreen.MODULES) {
       document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
@@ -958,11 +964,38 @@
   // çizimi bekletilir; aynı karede yapılınca geçiş takılarak görünüyordu.
   const NAVIGATION_SETTLE_MS = 360;
   let navigationSettleUntil = 0;
+  let navigationRevision = 0;
+  const navigationTasks = new Set();
+  let lifecycleScreen = null;
+
+  function syncScreenLifecycle(screen){
+    const previousScreen=lifecycleScreen;
+    lifecycleScreen=screen;
+    if(previousScreen===null || screen===previousScreen)return;
+    navigationRevision += 1;
+    for (const timer of navigationTasks) window.clearTimeout(timer);
+    navigationTasks.clear();
+    navigationSettleUntil = performance.now() + NAVIGATION_SETTLE_MS;
+    hideRewardPreview();
+    for(const id of ["module-detail-dialog","core-detail-dialog","chest-odds-dialog","battle-pool-preset-dialog"]){
+      const dialog=document.getElementById(id);
+      if(dialog?.open)dialog.close?.();
+    }
+    if(previousScreen === "play")clearBattleEffects();
+    if(screen !== "shop")stopShopCountdownTimer();
+  }
 
   function afterNavigationSettle(task) {
     const wait = navigationSettleUntil - performance.now();
     if (wait <= 0) task();
-    else window.setTimeout(task, wait);
+    else {
+      const revision=navigationRevision;
+      const timer=window.setTimeout(()=>{
+        navigationTasks.delete(timer);
+        if(revision===navigationRevision && !document.hidden)task();
+      },wait);
+      navigationTasks.add(timer);
+    }
   }
 
   function openAppScreen(screen, { keepSubTab=false }={}) {
@@ -972,7 +1005,8 @@
       logClientMessage(result.reason);
       return result;
     }
-    if (screen !== previousScreen) navigationSettleUntil = performance.now() + NAVIGATION_SETTLE_MS;
+    syncScreenLifecycle(screen);
+    const requestRevision=navigationRevision;
     closeDropdownMenus();
     if (!keepSubTab) resetScreenSubTabs(screen, previousScreen);
 
@@ -999,12 +1033,15 @@
     if (["profile", "avatar", "friends", "daily", "daily-rewards", "daily-missions", "rewards", "shop", "modules", "team", "events", "weekly-event", "team-event", "menu"].includes(screen)) {
       accountDataLoader
         .loadProfile()
-        .then(() => markScreenNotificationsSeen(screen))
-        .then(() => afterNavigationSettle(() => {
+        .then(() => requestRevision === navigationRevision ? markScreenNotificationsSeen(screen) : null)
+        .then(() => {
+          if(requestRevision !== navigationRevision)return;
+          afterNavigationSettle(() => {
           renderProfileSummary();
-          renderMetaHubScreens();
+          renderMetaHubScreens({defer:true});
           renderRemoteDataStatus();
-        }));
+          });
+        });
       if (["shop", "modules", "team", "menu"].includes(screen)) {
         loadMetaProgression({ afterSettle:true });
       }
@@ -1031,6 +1068,7 @@
       accountDataLoader
         .loadStatistics()
         .then(() => {
+          if(requestRevision !== navigationRevision)return;
           renderStatisticsSummary();
           renderRemoteDataStatus();
         });
@@ -1040,6 +1078,7 @@
       accountDataLoader
         .loadSettings()
         .then(() => {
+          if(requestRevision !== navigationRevision)return;
           renderSettingsForm();
           renderRemoteDataStatus();
         });
@@ -1128,8 +1167,8 @@
         if (status) status.textContent = "Hesap verileri yüklenemedi. Sunucu bağlantısını kontrol edip sayfayı yenile.";
       }
     }
-    if (afterSettle) afterNavigationSettle(renderMetaHubScreens);
-    else renderMetaHubScreens();
+    if (afterSettle) afterNavigationSettle(() => renderMetaHubScreens({defer:true}));
+    else renderMetaHubScreens({defer:true});
     return metaProgressionState;
   }
 
@@ -3729,8 +3768,12 @@
   }
 
   let shopCountdownTimer = null;
+  function stopShopCountdownTimer(){
+    if(shopCountdownTimer !== null)window.clearInterval(shopCountdownTimer);
+    shopCountdownTimer=null;
+  }
   function ensureShopCountdownTimer() {
-    if (shopCountdownTimer) return;
+    if (shopCountdownTimer !== null || document.hidden || document.body.dataset.appScreen !== "shop") return;
     shopCountdownTimer = window.setInterval(() => {
       if (document.hidden || document.body.dataset.appScreen !== "shop") return;
       let becameAvailable = false;
@@ -7954,10 +7997,10 @@
       : window.setTimeout(() => flushMetaHubSections(), 60);
   }
 
-  function renderMetaHubScreens() {
+  function renderMetaHubScreens({defer=false}={}) {
     const current = appRouter.currentScreen;
     for (const section of META_HUB_SECTIONS) {
-      if (!document.hidden && section.screens.includes(current)) {
+      if (!defer && !document.hidden && section.screens.includes(current)) {
         metaHubDirtySections.delete(section.id);
         section.render();
       } else {
@@ -7976,6 +8019,8 @@
   }
 
   document.addEventListener("visibilitychange", () => {
+    if(document.hidden)stopShopCountdownTimer();
+    else if(document.body.dataset.appScreen === "shop")ensureShopCountdownTimer();
     if (!document.hidden) {
       // Data may have arrived while hidden. Repaint only the resumed surface.
       const screen = document.body.dataset.appScreen;
@@ -9719,6 +9764,8 @@
         appRouter.go(RelayAppScreen.PLAY);
         closeDropdownMenus();
         screenController.render();
+        syncScreenLifecycle(RelayAppScreen.PLAY);
+        syncBattleClockVisibility();
       }
       if (battleJustStarted) {
         resetBattleVisualSurface();
@@ -13017,6 +13064,7 @@
   let battleHiddenAt = null;
 
   function handleBattleVisibilityChange() {
+    syncBattleClockVisibility();
     if (document.hidden) {
       moduleMotion.clear();
       pendingModuleVfx=null;
@@ -20586,14 +20634,11 @@
   let lastBattleHudRenderAt = -Infinity;
   let renderedClockText = null;
   let renderedClockOvertime = null;
-  let battleClockFrame = null;
-  let battleClockTimer = null;
-  let battleClockUpdating = false;
 
   function requestBattleMotionFrame() {
     // Effects can wake us from inside tick(). The current frame owns that
     // handoff; queuing here as well would multiply rAF chains every core pulse.
-    if (battleClockUpdating || document.hidden || !(moduleMotion.needsFrame || moduleFx?.active)) return;
+    if (battleClockUpdating || document.hidden || document.body.dataset.appScreen !== "play" || !(moduleMotion.needsFrame || moduleFx?.active)) return;
     if (battleClockTimer !== null) { window.clearTimeout(battleClockTimer); battleClockTimer = null; }
     if (battleClockFrame === null) battleClockFrame = requestAnimationFrame(updateClock);
   }
@@ -20609,8 +20654,13 @@
   // Deployed cores "work" in battle: motes rise from the stone every 220 ms
   // (inside the battle loop; off on low graphics via moduleFx.coreIdle).
   let lastCoreIdleAt = 0;
+  function isBattlePresentationRunning(){
+    return activePlayMode === "online"
+      ? document.body.dataset.onlineStatus === "battle"
+      : activePlayMode === "local" && localBattleStarted && !localBattleFinished;
+  }
   function emitCoreIdleMotes(now) {
-    if (!moduleFx || !Number.isFinite(now) || now - lastCoreIdleAt < 220 || battleGraphicsQuality() === "dusuk") return;
+    if (!moduleFx || document.hidden || document.body.dataset.appScreen !== "play" || !isBattlePresentationRunning() || !Number.isFinite(now) || now - lastCoreIdleAt < 220 || battleGraphicsQuality() === "dusuk") return;
     lastCoreIdleAt = now;
     const layer = document.getElementById("battle-effect-layer")?.getBoundingClientRect();
     if (!layer?.width) return;
@@ -20620,6 +20670,16 @@
       const card = pulse.closest("[data-module-id]"), accent = card ? getComputedStyle(card).getPropertyValue("--core-accent").trim() : "";
       moduleFx.coreIdle({ x:r.left + r.width / 2 - layer.left, y:r.top + r.height / 2 - layer.top },
         { color:accent || "#56f1df", k:Math.max(.6, Math.min(1.6, r.width / 40)), ready:!!card?.classList.contains("core-power-ready") });
+    }
+  }
+
+  function syncBattleClockVisibility(){
+    if(document.hidden || document.body.dataset.appScreen !== "play"){
+      if(battleClockFrame !== null)window.cancelAnimationFrame?.(battleClockFrame);
+      if(battleClockTimer !== null)window.clearTimeout(battleClockTimer);
+      battleClockFrame=battleClockTimer=null;
+    }else if(!battleClockUpdating && battleClockFrame === null && battleClockTimer === null){
+      battleClockFrame=requestAnimationFrame(updateClock);
     }
   }
 
@@ -20634,7 +20694,9 @@
       // A transient render error must remain visible to error reporting, but
       // must not permanently kill the clock while transport/audio keep running.
       battleClockUpdating = false;
-      if (frameSampling || moduleMotion.needsFrame || moduleFx?.active || typeof window.setTimeout !== "function") {
+      if(document.hidden || document.body.dataset.appScreen !== "play"){
+        // The visible screen / visibility handler owns the next wakeup.
+      }else if (frameSampling || moduleMotion.needsFrame || moduleFx?.active || typeof window.setTimeout !== "function") {
         battleClockFrame = requestAnimationFrame(updateClock);
       } else {
         // rAF waits in background tabs; the timer only sets the HUD interval.
@@ -20647,6 +20709,13 @@
   }
 
   function renderBattleFrame(now) {
+    if(document.hidden || document.body.dataset.appScreen !== "play"){
+      moduleMotion.clear();
+      if(moduleFx?.active)moduleFx.clear();
+      if(battlePerformanceSampler?.active)battlePerformanceSampler.suspend();
+      analyticsLastFrameAt=null;
+      return false;
+    }
     const analyticsBattleActive = activePlayMode === "online"
       ? document.body.dataset.onlineStatus === "battle"
       : activePlayMode === "local" && localBattleStarted && !localBattleFinished;
@@ -22740,5 +22809,5 @@
   render();
   renderCapacity();
   renderCredits();
-  battleClockFrame = requestAnimationFrame(updateClock);
+  syncBattleClockVisibility();
 })();

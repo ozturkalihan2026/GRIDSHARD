@@ -243,7 +243,7 @@ assert.ok(app.includes('const needsAttention = cardNeedsAttention("core", core);
 assert.match(app, /setDetailTabUpgradeArrow\(document\.querySelector\('\[data-module-detail-tab="talents"\]'\), moduleTalentAvailable\(item\)\);/);
 assert.match(app, /setDetailTabUpgradeArrow\(document\.querySelector\('\[data-core-detail-tab="skills"\]'\), coreSkillAvailable\(core\)\);/);
 // Alt çubuk, hangi sayfa açık olursa olsun her durum güncellemesinde yenilenir.
-assert.match(app, /function renderMetaHubScreens\(\) \{[\s\S]*?renderDockIndicators\(\);\s*scheduleMetaHubFlush\(\);/);
+assert.match(app, /function renderMetaHubScreens\([^)]*\) \{[\s\S]*?renderDockIndicators\(\);\s*scheduleMetaHubFlush\(\);/);
 
 // "Sonraki seviye" kutusu bilgi ekranından kalktı; değerler baştaki satırda.
 assert.ok(!app.includes('"SONRAKİ SEVİYE"'));
