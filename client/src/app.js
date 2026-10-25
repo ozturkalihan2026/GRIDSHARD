@@ -2907,8 +2907,10 @@
     const normalizedId = CORE_VISUALS[coreId] ? coreId : "core_resonance";
     const visual = CORE_VISUALS[normalizedId];
     if (element) {
-      element.dataset.coreType = normalizedId;
-      element.style.setProperty("--core-accent", visual.accent);
+      if (element.dataset.coreType !== normalizedId) element.dataset.coreType = normalizedId;
+      if (element.style.getPropertyValue("--core-accent") !== visual.accent) {
+        element.style.setProperty("--core-accent", visual.accent);
+      }
     }
     return visual;
   }
