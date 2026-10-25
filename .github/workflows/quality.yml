@@ -159,10 +159,30 @@ jobs:
           node-version: "22"
           cache: pnpm
       - name: Install isolated test tools
+        timeout-minutes: 8
         run: |
           python -m pip install -r server/requirements-test.txt
           pnpm install --frozen-lockfile --ignore-scripts
-          pnpm exec playwright install --with-deps chromium webkit
+      - name: Restore pinned Playwright browser cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Install browser system dependencies
+        timeout-minutes: 8
+        run: node node_modules/@playwright/test/cli.js install-deps chromium webkit
+      - name: Install pinned browsers with bounded download retries
+        timeout-minutes: 10
+        env:
+          PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT: '60000'
+        run: |
+          for attempt in 1 2 3; do
+            if timeout --kill-after=10s 180s node node_modules/@playwright/test/cli.js install chromium webkit; then
+              exit 0
+            fi
+            echo "Browser installation attempt ${attempt}/3 failed; retrying only setup, not tests."
+          done
+          exit 1
       - name: Persistent card identity and translation observer work
         # No historical commit needed in CI's shallow checkout. Runtime contracts
         # assert real DOM identity/mutation counts without timing thresholds.
@@ -179,6 +199,7 @@ jobs:
           e2e/visual-atmosphere.spec.js
           e2e/onboarding-visibility.spec.js
           e2e/presentation-refinements.spec.js
+          e2e/battle-polish.spec.js
           e2e/battle-render-budget.spec.js
           e2e/beta381-battle-events.spec.js e2e/battle-density.spec.js
           e2e/mobile-battle.spec.js

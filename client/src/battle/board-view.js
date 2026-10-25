@@ -25,6 +25,7 @@
         secondsLabel = "sn",
         moduleSignature = null,
         onCardPlaced = null,
+        onCardCreated = null,
         force = false,
       }
     ) {
@@ -104,6 +105,7 @@
           }
         }
         if (module) {
+          const created = !view.card;
           if (!view.card) {
             view.card = createModuleCard(module);
             view.identity = identity;
@@ -111,6 +113,7 @@
           }
           if (typeof updateModuleCard === "function") updateModuleCard(view.card, module);
           if (typeof onCardPlaced === "function") onCardPlaced(module, cell);
+          if (created && typeof onCardCreated === "function") onCardCreated(module, cell, view.card);
         }
       }
     }

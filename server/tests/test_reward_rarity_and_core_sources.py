@@ -21,7 +21,6 @@ from app.arena_canon import (
 from app.competition_cycle import competition_cycle
 from app.meta_progression import (
     CHEST_DEFINITIONS,
-    MODULE_UPGRADE_SHARD_CURVES,
     MetaProgressionService,
     _select_reward_module,
     unlocked_core_type_ids,
@@ -182,19 +181,15 @@ def test_claimed_login_reward_keeps_the_amount_it_was_claimed_with():
     assert shown["module_shards"] == receipt["module_shards"]
 
 
-def test_reward_shard_scale_makes_rarer_cards_slower_to_max():
+def test_reward_shard_scale_still_reduces_each_rarer_award():
     percents = [REWARD_SHARD_PERCENT_BY_RARITY[rarity] for rarity in RARITY_ORDER]
     assert percents == sorted(percents, reverse=True) and len(set(percents)) == 4
     assert reward_shards_for_rarity(0, "legendary") == 0
     assert reward_shards_for_rarity(1, "legendary") == 1
 
-    # Aynı ödül akışında bir kartı son seviyeye getirmek için gereken ödül
-    # sayısı enderlikle birlikte artar (sıradan < ender < destansı < efsanevi).
-    rewards_needed = [
-        sum(MODULE_UPGRADE_SHARD_CURVES[rarity]) / REWARD_SHARD_PERCENT_BY_RARITY[rarity]
-        for rarity in RARITY_ORDER
-    ]
-    assert rewards_needed == sorted(rewards_needed) and len(set(rewards_needed)) == 4
+    # Seviye.docx explicitly replaces the old shard curves. Progression time
+    # cannot be inferred from piece ratios alone; credits/Flux differ too.
+    assert [reward_shards_for_rarity(1000, rarity) for rarity in RARITY_ORDER] == [1000, 750, 350, 150]
 
 
 def test_untargeted_road_shards_pick_rarer_cards_less_often():

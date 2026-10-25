@@ -142,8 +142,10 @@ test("battle board view enkazlı hücreyi geri sayımla kilitli gösterir", () =
 
 test("module card view bilinmeyen modüle güvenli simge verir", () => {
   const sandbox = load(path.join("src", "battle", "module-card-view.js"));
-  assert.equal(sandbox.GridshardModuleCardView.iconFor({ nameTr: "Lazer" }), "↯");
-  assert.equal(sandbox.GridshardModuleCardView.iconFor({ nameTr: "Bilinmeyen" }), "●");
+  const unknown=sandbox.GridshardModuleCardView.emblemFor({nameTr:"Bilinmeyen",category:"savunma"});
+  assert.match(unknown,/<svg class="module-emblem" data-cat="savunma"/);
+  assert.doesNotMatch(unknown,/Bilinmeyen|<script/);
+  assert.equal(typeof sandbox.GridshardModuleCardView.iconFor,"undefined");
 });
 
 test("tutorial controller oyuncu eylemini bağlamdan izleyip ilerler", () => {

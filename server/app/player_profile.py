@@ -20,6 +20,7 @@ from .arena_canon import (
 )
 from .text_safety import public_name_rejection
 from .competition_cycle import CYCLE_EPOCH, CYCLE_LENGTH, competition_cycle, cycle_for_id
+from .competition_control import launch_status, configured_start, owner_account
 from .season_competition import LEADERBOARD_PRIZES, TEAM_PRIZES, WEEKLY_PRIZES
 from .game.battle_pool import default_battle_pool, validate_battle_pool
 from .store_catalog import BATTLE_PREMIUM_BONUS_PERCENT, PRODUCTS_BY_ID, price_label_tr
@@ -50,31 +51,19 @@ def _iso_utc(moment: datetime) -> str:
 
 
 def season_descriptor(moment: datetime | None = None) -> dict:
-    """Anı içeren sezon: Pazartesi başlayan dört haftalık döngü.
-
-    Döngüler 28 Eylül 2026'da başlar (competition_cycle.py). Daha önceki anlar
-    eski takvim ayı sezonunda kalır; Eylül 2026 sezonu geçiş için 27 Eylül
-    Pazar 23:59:59'da biter.
-    """
+    """Explicit operator start followed by 28-day cycles; blank start stays closed."""
     current = (moment or datetime.now(timezone.utc)).astimezone(timezone.utc)
-    if current < CYCLE_EPOCH:
-        starts_at = datetime(current.year, current.month, 1, tzinfo=timezone.utc)
-        if current.month == 12:
-            next_starts_at = datetime(current.year + 1, 1, 1, tzinfo=timezone.utc)
-        else:
-            next_starts_at = datetime(current.year, current.month + 1, 1, tzinfo=timezone.utc)
-        return {
-            "id": f"gridshard_{current.year}_{current.month:02d}",
-            "name_tr": f"{TURKISH_MONTH_NAMES[current.month]} {current.year} Sezonu",
-            "starts_at": _iso_utc(starts_at),
-            "ends_at": _iso_utc(min(next_starts_at, CYCLE_EPOCH) - timedelta(seconds=1)),
-        }
+    launch = launch_status(current)
+    if not launch["active"]:
+        return {"id": "gridshard_waiting", "name_tr": "Sezon başlangıcı bekleniyor",
+                "starts_at": launch["starts_at"], "ends_at": "", **launch}
     cycle = competition_cycle(current)
     return {
         "id": f"gridshard_{cycle['id'].replace('-', '_')}",
         "name_tr": f"Sezon {cycle['number']}",
         "starts_at": _iso_utc(cycle["starts_at"]),
         "ends_at": _iso_utc(cycle["ends_at"] - timedelta(seconds=1)),
+        "active": True, "status": "active",
     }
 
 
@@ -219,9 +208,10 @@ SEASON_ROAD_EMOJI_REWARDS: dict[int, str] = {
 
 # Giriş takvimi ve sezon yolu parçaları yalnız destedeki kartlara değil, açık
 # bütün modüllere dağılır ve ender kart daha az parça alır (13 Ekim 2026,
-# kullanıcı kararı). Parça artık çok daha fazla karta bölündüğü için bu iki
-# kaynağın miktarı üç katıdır; yazılan sayı sıradan kartın aldığıdır.
-REWARD_MODULE_SHARD_SCALE = 3
+# kullanıcı kararı). Sezon yolu parçası daha fazla karta bölündüğü için
+# sezon miktarı üç katıdır; yazılan sayı sıradan kartın aldığıdır.
+# Giriş takvimi tek karta fazla parça yığmamak için taban miktarı kullanır.
+SEASON_MODULE_SHARD_SCALE = 3
 # Giriş takviminde çekirdek parçası veren günler (ikisi de Pazar, büyük ödül).
 LOGIN_CORE_SHARDS_BY_DAY = {14: 10, 28: 15}
 
@@ -275,7 +265,7 @@ def _season_reward_for_tier(tier: int) -> dict:
         reward.update(circuit_credits=50 + (tier * 5), flux_shards=4)
     else:
         reward.update(circuit_credits=35 + (tier * 5), module_shards=2 + (tier // 8))
-    reward["module_shards"] *= REWARD_MODULE_SHARD_SCALE
+    reward["module_shards"] *= SEASON_MODULE_SHARD_SCALE
 
     reward["reward_label_tr"] = (
         f"Büyük {reward['chest_tier'].title()} Sandık + Kozmetik"
@@ -374,7 +364,7 @@ def _login_period_reward(day: int) -> dict:
         "day": day,
         "circuit_credits": (120 + (day * 5)) if weekly_bonus else (35 + (day * 3)),
         "flux_shards": (10 + (day // 7)) if weekly_bonus else (2 + (day % 4)),
-        "module_shards": REWARD_MODULE_SHARD_SCALE * ((14 + day) if weekly_bonus else (3 + (day % 5))),
+        "module_shards": (14 + day) if weekly_bonus else (3 + (day % 5)),
         "core_shards": LOGIN_CORE_SHARDS_BY_DAY.get(day, 0),
         "is_major": weekly_bonus,
     }
@@ -648,7 +638,7 @@ class PlayerProfile:
 
     def premium_pass_active(self) -> bool:
         return bool(
-            self.season_premium_pass_season_id
+            launch_status()["active"] and self.season_premium_pass_season_id
             and self.season_premium_pass_season_id == self.active_meta_season_id
         )
 
@@ -754,6 +744,7 @@ class PlayerProfile:
             "season_name_tr": season["name_tr"],
             "season_starts_at": season["starts_at"],
             "season_ends_at": season["ends_at"],
+            "season_active": season["active"], "season_status": season["status"],
             "season_xp": self.season_xp,
             "current_tier": current_tier,
             "max_tier": len(SEASON_REWARD_TRACK),
@@ -793,7 +784,7 @@ class PlayerProfile:
                         **reward_view(reward, "login", int(reward["day"])),
                         "claimed": reward["day"] in self.claimed_login_period_days,
                         "claimable": (
-                            reward["day"] == self.login_period_day
+                            season["active"] and reward["day"] == self.login_period_day
                             and reward["day"] not in self.claimed_login_period_days
                         ),
                     }
@@ -830,7 +821,7 @@ class PlayerProfile:
                     **reward_view(reward, "tiers", int(reward["tier"])),
                     "claimed": reward["tier"] in claimed_tiers,
                     "claimable": (
-                        self.season_xp >= reward["required_xp"]
+                        season["active"] and self.season_xp >= reward["required_xp"]
                         and reward["tier"] not in claimed_tiers
                     ),
                 }
@@ -838,12 +829,12 @@ class PlayerProfile:
             ],
             "premium_pass": {
                 "active": premium_active,
-                "purchasable": not premium_active,
+                "purchasable": season["active"] and not premium_active,
                 "product_id": PREMIUM_PASS_PRODUCT["id"],
                 "price_label_tr": price_label_tr(PREMIUM_PASS_PRODUCT["price_kurus"]),
                 "multiplier": PREMIUM_PASS_MULTIPLIER,
                 "status_tr": (
-                    "Ücretli geçiş etkin." if premium_active else PREMIUM_PASS_STATUS_TR
+                    "Sezon başlangıcı bekleniyor." if not season["active"] else "Ücretli geçiş etkin." if premium_active else PREMIUM_PASS_STATUS_TR
                 ),
             },
             "claimed_premium_season_tiers": list(self.claimed_premium_season_tiers),
@@ -867,7 +858,7 @@ class PlayerProfile:
         claimed_tiers = set(self.claimed_season_tiers)
         claimed_login_days = set(self.claimed_login_period_days)
         daily_login_keys: list[str] = []
-        if self.login_period_day not in claimed_login_days:
+        if self.login_period_day > 0 and self.login_period_day not in claimed_login_days:
             daily_login_keys.append(
                 f"daily-login:{self.login_period_id}:{self.login_period_day}"
             )
@@ -884,7 +875,7 @@ class PlayerProfile:
         season_keys = tuple(
             f"season-tier:{self.active_meta_season_id}:{reward['tier']}"
             for reward in SEASON_REWARD_TRACK
-            if int(self.season_xp) >= int(reward["required_xp"])
+            if launch_status()["active"] and int(self.season_xp) >= int(reward["required_xp"])
             and int(reward["tier"]) not in claimed_tiers
         ) + tuple(
             f"season-premium-tier:{self.active_meta_season_id}:{reward['tier']}"
@@ -995,6 +986,11 @@ class PlayerProfileService:
 
     def _sync_season(self, profile: PlayerProfile) -> bool:
         season = season_descriptor(self.now())
+        if not season["active"]:
+            return False
+        if owner_account(profile.player_id):
+            profile.active_meta_season_id = season["id"]
+            return False
         if profile.active_meta_season_id == season["id"]:
             return False
         if getattr(self._settlement_clock, "moment", None) is not None and any(
@@ -1163,10 +1159,15 @@ class PlayerProfileService:
     def _sync_login_period(self, profile: PlayerProfile) -> None:
         """Giriş takvimi sezonla aynı döngüdür: 28 gün, Pazartesi başlar."""
         now = self.now().astimezone(timezone.utc)
+        if not launch_status(now)["active"]:
+            profile.login_period_id = ""
+            profile.login_period_day = 0
+            profile.login_period_day_count = len(LOGIN_PERIOD_REWARDS)
+            return
         cycle = competition_cycle(now)
         if profile.login_period_id != cycle["id"]:
             profile.login_period_id = cycle["id"]
-            profile.claimed_login_period_days = ()
+            profile.claimed_login_period_days = tuple(range(1, 29)) if owner_account(profile.player_id) else ()
         profile.login_period_day = (now - cycle["starts_at"]).days + 1
         profile.login_period_day_count = len(LOGIN_PERIOD_REWARDS)
 
@@ -1174,6 +1175,8 @@ class PlayerProfileService:
         profile = self.get_or_create(player_id)
         if request_id and request_id in profile.engagement_claim_receipts:
             return dict(profile.engagement_claim_receipts[request_id])
+        if not launch_status(self.now())["active"]:
+            raise PlayerProfileError("Sezon henüz başlamadı.")
         self._sync_login_period(profile)
         if day != profile.login_period_day:
             raise PlayerProfileError("Yalnız bugünün giriş ödülü alınabilir.")
@@ -1223,7 +1226,8 @@ class PlayerProfileService:
     ) -> PlayerProfile:
         profile = self.get_or_create(player_id, day_key=day_key)
         self._sync_daily_missions(profile, day_key)
-        profile.season_xp += max(0, int(season_xp_awarded))
+        if launch_status(self.now())["active"]:
+            profile.season_xp += max(0, int(season_xp_awarded))
         increments = {
             "complete_battles": 1,
             "deal_damage": max(0, int(damage_dealt)),
@@ -1263,7 +1267,8 @@ class PlayerProfileService:
             raise PlayerProfileError("Bu görev ödülü daha önce alındı.")
         if profile.daily_mission_progress.get(mission_id, 0) < mission["target"]:
             raise PlayerProfileError("Görev henüz tamamlanmadı.")
-        profile.season_xp += int(mission["season_xp_reward"])
+        if launch_status(self.now())["active"]:
+            profile.season_xp += int(mission["season_xp_reward"])
         profile.flux_shards += int(mission["flux_shard_reward"])
         profile.claimed_daily_missions = tuple(
             sorted({*profile.claimed_daily_missions, mission_id})
@@ -1285,6 +1290,8 @@ class PlayerProfileService:
         profile = self.get_or_create(player_id)
         if request_id and request_id in profile.engagement_claim_receipts:
             return profile
+        if not launch_status(self.now())["active"]:
+            raise PlayerProfileError("Sezon henüz başlamadı.")
         base_reward = next(
             (item for item in SEASON_REWARD_TRACK if item["tier"] == tier),
             None,
@@ -1357,6 +1364,8 @@ class PlayerProfileService:
         profile = self.get_or_create(player_id)
         if request_id and request_id in profile.engagement_claim_receipts:
             return profile
+        if not launch_status(self.now())["active"]:
+            raise PlayerProfileError("Sezon henüz başlamadı.")
         base_reward = next(
             (item for item in SEASON_PREMIUM_REWARD_TRACK if item["tier"] == tier),
             None,

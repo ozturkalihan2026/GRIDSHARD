@@ -114,7 +114,7 @@ def test_return_leg_opens_after_first_leg_and_only_during_match_days():
     assert locate_leg(PERIOD, return_leg, registrations=registrations)["leg"] == 2
 
 
-def test_human_team_plays_closest_rated_bots():
+def test_bots_cannot_fill_official_team_tournament_slots():
     registrations = {"human": {"team_name": "İnsan", "roster": [{"player_id": "h1", "display_name": "H1", "rating": 400}]}}
     ai_teams = {
         "ai": {
@@ -126,5 +126,7 @@ def test_human_team_plays_closest_rated_bots():
         }
     }
     view = build_team_tournament_view(PERIOD, _moment(5), registrations=registrations, ai_teams=ai_teams)
-    pairing = view["fixtures"][0]["member_pairings"][0]
-    assert {pairing["home_player_id"], pairing["away_player_id"]} == {"h1", "bot-low"}
+    assert view["status"] == "waiting_for_participants"
+    assert view["participant_count"] == 1
+    assert view["fixtures"] == []
+    assert view["standings"] == []

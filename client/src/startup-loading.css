@@ -1,0 +1,127 @@
+/* Illustrated circuit platforms with one living in-scene reactor. Only the existing
+   server/profile/collection/account lifecycle can advance or dismiss it. */
+.boot-screen {
+  position:fixed; inset:0; z-index:10000; isolation:isolate;
+  display:grid; grid-template-rows:auto minmax(0,1fr) auto;
+  overflow:hidden; box-sizing:border-box; color:#eaf8ff; background:#040c19;
+  font-family:var(--gs-font-copy); user-select:none; -webkit-user-select:none;
+  opacity:1; visibility:visible; touch-action:none;
+  transition:opacity .46s ease,visibility 0s linear 0s;
+}
+.boot-screen[hidden] { display:none !important; }
+.boot-screen[data-state="done"] {
+  opacity:0; visibility:hidden; pointer-events:none;
+  transition:opacity .46s ease,visibility 0s linear .46s;
+}
+.boot-screen-backdrop {
+  position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:#03122f;
+}
+.boot-screen-backdrop::before { content:""; position:absolute; inset:0; z-index:1; background:linear-gradient(180deg,rgba(1,10,35,.35),transparent 38%,transparent 75%,rgba(1,7,22,.95)); }
+.boot-screen-backdrop::after {
+  content:""; position:absolute; inset:16px;
+  border:1px solid #25516b; opacity:.45;
+  clip-path:polygon(0 0,24% 0,24% 1px,76% 1px,76% 0,100% 0,100% 24%,calc(100% - 1px) 24%,calc(100% - 1px) 76%,100% 76%,100% 100%,76% 100%,76% calc(100% - 1px),24% calc(100% - 1px),24% 100%,0 100%,0 76%,1px 76%,1px 24%,0 24%);
+}
+/* The image and its three tiny energy overlays share ONE 1024×1536 plane.
+ * Cover on portrait, contain on landscape: no JS resize loop or drifting
+ * viewport-relative hotspot when the artwork is cropped. */
+.boot-circuit-stage {
+  position:absolute; left:50%; top:50%;
+  width:max(100vw,calc(100dvh * 2 / 3)); aspect-ratio:2 / 3;
+  transform:translate(-50%,-50%);
+}
+.boot-circuit-scene { display:block; width:100%; height:100%; max-width:none; }
+.boot-reactor-fx { position:absolute; display:block; pointer-events:none; }
+.boot-reactor-halo {
+  left:29.1%; top:51.9%; width:28%; height:15.4%; border-radius:50%;
+  background:radial-gradient(ellipse,#6dffe93b,transparent 70%);
+  opacity:.18; animation:gs-boot-reactor-halo 3.2s ease-in-out infinite;
+}
+.boot-reactor-crystal {
+  left:37.5%; top:55.8%; width:11.5%; height:7.1%;
+  clip-path:polygon(49% 0,90% 28%,100% 42%,65% 100%,26% 98%,0 42%);
+  background:radial-gradient(ellipse at 42% 38%,#f0ffffe6,#70ffe5a6 42%,#4dcde02e 82%);
+  opacity:.18; animation:gs-boot-reactor-crystal 3.2s ease-in-out infinite;
+}
+.boot-reactor-spark {
+  left:42.3%; top:60.4%; width:.65%; height:.48%; border-radius:50%;
+  background:#efffff; opacity:0;
+  animation:gs-boot-reactor-spark 3.2s ease-in-out .8s infinite;
+}
+.boot-screen-meta {
+  position:relative; min-height:58px; display:flex; align-items:center;
+  padding:max(14px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) 0 max(20px,env(safe-area-inset-left));
+}
+.boot-version {
+  display:inline-flex; align-items:center; gap:8px; color:#8caebf;
+  font:600 12px/1.3 var(--gs-font-copy); letter-spacing:.06em; white-space:nowrap;
+}
+.boot-version::before { content:""; width:5px; height:5px; background:#ffcc45; transform:rotate(45deg); }
+.boot-screen .review-access-startup {
+  top:max(17px,env(safe-area-inset-top)); right:max(20px,env(safe-area-inset-right));
+  border:1px solid #28495d; border-radius:3px; background:#0a1929; color:#aac5d4;
+  font-size:10px; letter-spacing:.04em; min-height:36px; padding:8px 10px;
+}
+.boot-brand {
+  position:relative; align-self:start; display:grid; justify-items:center;
+  gap:10px; padding:clamp(14px,3dvh,30px) 20px 24px; min-width:0;
+}
+.boot-title {
+  margin:0; color:#f2f9ff; font:900 clamp(27px,8.8vw,44px)/1.15 var(--gs-font-brand);
+  letter-spacing:.1em; padding-left:.1em; text-align:center;
+  -webkit-text-stroke:0; text-shadow:0 3px 0 #02101e; animation:none;
+}
+.boot-tagline { margin:0; color:#a2bdcc; font:500 clamp(12px,3.4vw,15px)/1.5 var(--gs-font-copy); letter-spacing:.06em; text-align:center; }
+.boot-progress {
+  position:relative; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center;
+  gap:12px; box-sizing:border-box; width:min(100% - 48px,440px);
+  padding:20px 0 max(30px,calc(env(safe-area-inset-bottom) + 18px)); margin:0 auto;
+  border-top:1px solid #24404f;
+}
+.boot-progress::before { content:""; position:absolute; top:-1px; left:0; width:40px; height:2px; background:#62d8ee; }
+.boot-status { grid-column:1; margin:0; min-height:1.4em; color:#bad7e5; font:600 14px/1.4 var(--gs-font-copy); text-align:left; letter-spacing:.02em; }
+.boot-percent { grid-column:2; grid-row:1; color:#ffcc45; font:800 13px/1 var(--gs-font-copy); font-variant-numeric:tabular-nums; }
+.boot-bar { grid-column:1 / -1; position:relative; height:8px; overflow:hidden; border:1px solid #285269; border-radius:2px; background:#040e1c; }
+.boot-bar::after { content:""; position:absolute; inset:0; background:repeating-linear-gradient(90deg,transparent 0 calc(25% - 2px),#04101b calc(25% - 2px) 25%); pointer-events:none; }
+.boot-bar-fill { position:absolute; inset:0 auto 0 0; width:calc(var(--boot-progress,0) * 100%); min-width:0; background:linear-gradient(90deg,#1488ae,#64def3); transition:width var(--boot-progress-seconds,.32s) cubic-bezier(.22,.61,.36,1); }
+.boot-screen[data-state="ready"] .boot-bar-fill { background:linear-gradient(90deg,#d29730,#ffdf7a); }
+.boot-screen[data-state="error"] .boot-bar-fill { background:linear-gradient(90deg,#b73b50,#fc8f9b); }
+.boot-error { grid-column:1 / -1; display:grid; justify-items:center; gap:12px; margin-top:2px; text-align:center; }
+.boot-error[hidden] { display:none; }
+.boot-error p { margin:0; color:#ffc1c8; font:500 14px/1.4 var(--gs-font-copy); }
+.boot-retry { min-width:190px; min-height:46px; padding:0 22px; border:1px solid #ffe08a; border-radius:4px; color:#231900; background:linear-gradient(180deg,#ffdf7a,#ffcc45); box-shadow:0 3px 0 #97631a; font:800 14px/1 var(--gs-font-display); letter-spacing:.05em; cursor:pointer; touch-action:manipulation; }
+.boot-retry:active { transform:translateY(2px); box-shadow:0 1px 0 #97631a; }
+.boot-screen button:focus-visible { outline:2px solid #70e6f5; outline-offset:4px; }
+/* This class also styles the confirmed ID control in Settings; it is not
+   displayed on the splash and its account/copy semantics are unchanged. */
+.boot-player-id { display:inline-flex; align-items:center; gap:5px; min-width:0; min-height:34px; padding:0 9px; border:1px solid rgba(185,206,230,.3); border-radius:9px; color:#dcebff; background:rgba(4,12,26,.58); font:inherit; cursor:pointer; touch-action:manipulation; }
+.boot-player-id[hidden] { display:none; }
+.boot-player-id strong { font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.boot-player-id svg { width:15px; height:15px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linejoin:round; }
+.boot-player-id[data-copied="true"] { border-color:rgba(72,244,224,.75); color:#8ff3e4; }
+@keyframes gs-boot-reactor-halo { 50% { opacity:.55; transform:scale(1.035); } }
+@keyframes gs-boot-reactor-crystal { 50% { opacity:.48; } }
+@keyframes gs-boot-reactor-spark {
+  0%,15%,85%,100% { opacity:0; transform:translateY(0) scale(.6); }
+  38% { opacity:.8; }
+  70% { opacity:0; transform:translateY(-600%) scale(1); }
+}
+/* No animation work survives the splash, an error wait or reduced motion. */
+.boot-screen:is([hidden],[data-state="done"],[data-state="error"]) .boot-reactor-fx { animation:none; }
+@media (min-aspect-ratio:1/1) { .boot-circuit-stage { width:min(100vw,calc(100dvh * 2 / 3)); } }
+@media (prefers-reduced-motion:reduce) {
+  .boot-screen, .boot-screen * { animation:none !important; transition:none !important; }
+}
+@media (max-height:600px) {
+  .boot-screen-meta { min-height:48px; }
+  .boot-brand { gap:8px; padding:10px 20px 16px; }
+  .boot-title { font-size:clamp(24px,6vw,34px); }
+  .boot-progress { padding-top:12px; padding-bottom:max(16px,env(safe-area-inset-bottom)); gap:8px; }
+}
+@media (max-width:350px) {
+  .boot-screen-meta { padding-left:16px; }
+  .boot-screen .review-access-startup { right:16px; font-size:9px; padding:6px; }
+  .boot-progress { width:calc(100% - 40px); }
+  .boot-tagline { letter-spacing:.01em; }
+}

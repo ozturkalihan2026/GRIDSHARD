@@ -45,6 +45,12 @@ test("36 canon profiles own unique quiet WAVs and are present in the web/native 
   }
   assert.equal(hashes.size,36);
 });
+test("battery production uses its quiet battle alias, not the full-scale UI energy cue",()=>{
+  const f=fixture();
+  f.fx.receive([f.event('module_cycle_pulse',{player_id:'own',module_id:'battery'})],f.snapshot);
+  assert.deepEqual(f.sounds,['battery_charge']);
+});
+
 test("shield remains inside a device-sized footprint even on a wide board",()=>{
   const f=fixture();f.fx.boardRect=()=>{throw Error("shield must not measure the board");};
   const dome=f.fx.dome("own:shield",400);

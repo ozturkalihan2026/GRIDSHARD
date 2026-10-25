@@ -29,6 +29,8 @@ def main() -> None:
         if variable in {"DATABASE_URL", "DATABASE_URL_FILE", "REDIS_URL", "REDIS_URL_FILE"} or variable.endswith("_PATH") and variable.startswith(("GRIDSHARD_", "RELAY_")):
             os.environ.pop(variable, None)
     os.environ.update({"GRIDSHARD_RUNTIME_MODE": "development", "GRIDSHARD_RUNTIME_DATA_DIR": str(test_root),
+                       "GRIDSHARD_SEASON_STARTS_AT": "2026-09-28T00:00:00Z",
+                       "GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT": "2026-09-28T00:00:00Z",
                        "GRIDSHARD_AUTH_REQUIRED": "1", "GRIDSHARD_RATE_LIMIT_REQUIRED": "0",
                        "GRIDSHARD_AUTH_SIGNING_KEY": "e2e-only-signing-key-change-in-production",
                        "GRIDSHARD_MATCHMAKING_AI_ONLY": "0" if os.environ.get("GRIDSHARD_E2E_HUMAN_MATCHMAKING") == "1" else "1",

@@ -9,7 +9,7 @@ async function main(){
   assert.deepEqual(fs.readdirSync(dir).sort(),ids.map(id=>id+".webp").sort());
   const hashes=new Set(),records=[];
   for(const id of ids){
-    assert.equal(html.split(`./assets/ui/modules-yaw-v2/${id}.webp`).length-1,1,"One native/web asset allowlist entry");
+    assert.equal(html.split(`./assets/ui/modules-yaw-v2/${id}.webp`).length-1,0,"Archived shallow rotor art must not ship in current packages");
     const b=fs.readFileSync(path.join(dir,id+".webp")),meta=await sharp(b).metadata(),rgba=await sharp(b).ensureAlpha().raw().toBuffer();
     assert.equal(meta.width,256);assert.equal(meta.height,256);assert.equal(meta.hasAlpha,true);
     const quadrants=[0,0,0,0];let radius=0,minAlpha=255,maxAlpha=0;
@@ -24,7 +24,7 @@ async function main(){
   }
   assert.equal(hashes.size,10);
   const report={passed:true,date:"2026-10-17",legacyAssetLibraryOnly:true,runtime:false,supersededBy:"module-camera-v13-audit-20261017.json",cameraDegreesFromOverhead:30,renderer:"superseded shallow layers",true3D:false,
-    yawSupportedDevices:10,newFiles:10,newBytes:records.reduce((n,r)=>n+r.bytes,0),registeredAndUnclipped:true,webNativeAllowlist:true,
+    yawSupportedDevices:10,newFiles:10,newBytes:records.reduce((n,r)=>n+r.bytes,0),registeredAndUnclipped:true,webNativeAllowlist:false,
     browserStarted:false,serverRestarted:false,realGameplayVerified:false,fpsMeasured:false,files:records};
   fs.writeFileSync(path.join(root,"qa_reports/modules-yaw-v12-audit-20261017.json"),JSON.stringify(report,null,2)+"\n");console.log(JSON.stringify(report));
 }

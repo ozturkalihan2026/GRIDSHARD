@@ -150,7 +150,7 @@ def test_weekly_tournament_counts_only_positive_ranked_pvp_trophies(
 
 
 def test_team_standings_count_only_recorded_leg_wins():
-    moment = datetime(2026, 9, 19, 12, tzinfo=timezone.utc)
+    moment = datetime(2026, 10, 17, 12, tzinfo=timezone.utc)
     registrations = {
         "team-1": {"team_name": "Kesici Takımı", "roster": [{"player_id": "p1", "display_name": "Kesici", "rating": 800}]},
         "team-2": {"team_name": "Rakip Takım", "roster": [{"player_id": "p2", "display_name": "Rakip", "rating": 790}]},

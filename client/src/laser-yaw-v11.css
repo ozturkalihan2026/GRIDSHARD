@@ -6,17 +6,6 @@
 :root body[data-app-screen="play"] .module-device-rig[data-device="laser"] {
   transform:none !important; transform-origin:50% 50%;
 }
-:root body[data-app-screen="play"] .module-device-rig[data-device="laser"] > .module-device-base {
-  inset:0 !important; width:100% !important; height:100% !important; object-fit:fill;
-}
-.laser-yaw-rotor { position:absolute; inset:0; display:block; transform:rotate(var(--laser-yaw,-1.570796rad)); transform-origin:50% 50%; }
-.laser-yaw-rotor[data-phase="aim"] { transition:transform 100ms ease-out; }
-.laser-yaw-rotor[data-phase="work"] { transition:none; }
-:root body[data-app-screen="play"] .laser-yaw-rotor > .module-device-head {
-  position:absolute !important; display:block;
-  inset:0 !important; width:100% !important; height:100% !important; object-fit:fill;
-  animation:none !important; transform:none !important;
-}
 .laser-plane-point { position:absolute; display:block; width:0; height:0; pointer-events:none; visibility:hidden; }
 .laser-plane-point[data-corner="tl"] { left:0; top:0; }
 .laser-plane-point[data-corner="tr"] { left:100%; top:0; }
@@ -30,5 +19,3 @@
   background:linear-gradient(#ff273d 0 30%,#ffb4ac 30% 55%,#ff273d 55% 100%) !important;
   box-shadow:0 0 0 1px #751526 !important;
 }
-@media (prefers-reduced-motion:reduce) { .laser-yaw-rotor { transition:none !important; } }
-body[data-graphics="dusuk"] .laser-yaw-rotor { transition:none !important; }

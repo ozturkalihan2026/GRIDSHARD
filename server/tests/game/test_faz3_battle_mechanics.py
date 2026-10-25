@@ -185,7 +185,8 @@ def test_every_module_has_four_thresholds_with_two_signature_talents():
         tree = module_talent_options(module_id)
         assert [node["tier"] for node in tree] == ["0", "1", "2", "3"], module_id
         assert [node["kind"] for node in tree] == ["basic", "signature", "tuning", "mastery"]
-        assert [node["flux_cost"] for node in tree] == [15, 30, 45, 60]
+        from app.game.talents import TALENT_COSTS
+        assert [(node["circuit_credits_cost"], node["flux_cost"]) for node in tree] == list(TALENT_COSTS[spec["rarity"]])
         levels = [node["level"] for node in tree]
         assert levels == sorted(levels) and levels[-1] <= 15
         for node in tree:
@@ -604,7 +605,8 @@ def test_every_core_has_six_distinct_talents_under_the_saved_ids():
             "0_energy", "0_charge", "1_energy", "1_charge", "2_energy", "2_charge",
         ]
         assert [skill["level"] for skill in skills] == [5, 5, 9, 9, 13, 13]
-        assert [skill["flux_cost"] for skill in skills] == [25, 25, 50, 50, 75, 75]
+        from app.game.talents import CORE_TALENT_COSTS
+        assert [(s["circuit_credits_cost"], s["flux_cost"]) for s in skills] == [cost for cost in CORE_TALENT_COSTS[core["rarity"]] for _ in range(2)]
         hooks = [skill["hook"] for skill in skills]
         # Bir çekirdeğin altı yeteneği altı ayrı kuraldır; düz "+%3" artışı yoktur.
         assert len(set(hooks)) == 6 and set(hooks) <= CORE_HOOKS, core["id"]
@@ -614,7 +616,7 @@ def test_every_core_has_six_distinct_talents_under_the_saved_ids():
             assert "+%3" not in skill["name_tr"]
         used |= set(hooks)
     assert used == CORE_HOOKS
-    assert core_skill_tree("core_resonance")[1]["description_tr"] == "Savaşa %25 güç dolumuyla başlar."
+    assert core_skill_tree("core_resonance", "common")[1]["description_tr"] == "Savaşa %25 güç dolumuyla başlar."
     # Kayıtlı seçim kimlikleri yeni kurallara eşlenir; tanınmayan kimlik yok sayılır.
     assert core_talents("core_resonance", ("0_charge", "1_energy", "bozuk", "9_energy")) == {
         "opening_charge": {"amount": 25, "name_tr": "Hazır Rezonans", "name_en": "Primed Resonance"},
@@ -626,6 +628,7 @@ def test_core_view_lists_talents_and_a_saved_pick_can_still_be_learned():
     service = MetaProgressionService()
     profile = PlayerProfileService().get_or_create("faz3-core-view")
     profile.core_upgrade_levels["core_resonance"] = 4
+    profile.circuit_credits = 2000
     profile.flux_shards = 100
     view = next(core for core in service.view(profile)["cores"]["types"] if core["id"] == "core_resonance")
     assert [skill["name_tr"] for skill in view["skills"]][:2] == ["Kararlı Frekans", "Hazır Rezonans"]

@@ -24,94 +24,54 @@
 .module-device-rig:is([data-device="laser"],[data-device="pulse_cannon"],[data-device="missile_launcher"],[data-device="repair"],[data-device="cooler"]) {
   transform:translateY(6%) scale(.86); transform-origin:50% 50%;
 }
-.module-device-rig > img { position:absolute; display:block; object-fit:contain; pointer-events:none; user-select:none; }
-.module-device-base { width:76%; height:auto; left:12%; bottom:0; }
-.module-device-head { width:100%; height:auto; left:0; bottom:17%; }
-.module-device-rig[data-device="repair"] .module-device-base { width:80%; left:10%; }
-.module-device-rig[data-device="repair"] .module-device-head { bottom:23%; }
-.module-device-rig[data-device="repair"]:not([data-phase="work"])[data-heading="ne"] .module-device-head { bottom:4%; left:12%; }
-.module-device-rig[data-device="repair"]:not([data-phase="work"])[data-heading="nw"] .module-device-head { bottom:15%; left:-4%; }
-.module-device-rig[data-device="repair"]:not([data-phase="work"]):is([data-heading="se"],[data-heading="sw"]) .module-device-head { bottom:9%; }
-.module-device-rig[data-device="repair"][data-phase="work"][data-heading="ne"] .module-device-head { left:6%; }
-.module-device-rig[data-device="repair"][data-phase="work"][data-heading="nw"] .module-device-head { left:-11%; }
-.module-device-rig[data-device="repair"][data-phase="work"][data-heading="se"] .module-device-head { left:-4%; }
-.module-device-rig[data-device="repair"][data-phase="work"][data-heading="sw"] .module-device-head { left:2%; }
-.module-device-rig[data-device="cooler"] .module-device-head { width:90%; left:5%; bottom:24%; }
-.module-device-rig:is([data-device="shield"],[data-device="battery"],[data-device="amplifier"],[data-device="emp"],[data-device="armor"]) .module-device-head { height:100%; bottom:0; }
 .module-device-rig[data-disabled="true"] { opacity:.68; }
-.module-device-rig[data-heading="ne"] { --recoil-x:-2px; --recoil-y:1px; }
-.module-device-rig[data-heading="nw"] { --recoil-x:2px; --recoil-y:1px; }
-.module-device-rig[data-heading="se"] { --recoil-x:-2px; --recoil-y:-1px; }
-.module-device-rig[data-heading="sw"] { --recoil-x:2px; --recoil-y:-1px; }
-.module-device-rig:is([data-device="laser"],[data-device="pulse_cannon"],[data-device="missile_launcher"])[data-phase="work"] > .module-device-head { animation:gs-device-recoil 170ms ease-out both; }
-/* Only the upper assembly moves. No scale/rotation of chassis, cell or bars. */
-@keyframes gs-device-recoil {
-  0%,100% { transform:translate(0,0); }
-  28% { transform:translate(var(--recoil-x),var(--recoil-y)); }
-}
-/* Cooler rotor uses two painted frames; housing and pedestal do not wobble.
- * The far-facing rotor is occluded. Air/beam VFX remain a separate package. */
-/* Reduced-motion and low graphics retain target-facing art without recoil. */
-body[data-graphics="dusuk"] .module-device-rig > .module-device-head { animation:none !important; }
-@media (prefers-reduced-motion:reduce) { .module-device-rig > .module-device-head { animation:none !important; } }
 
 /* 8A circuit deck: device sockets, copper contacts and stationary live buses.
  * Scope is the two deployed 5x3 boards; shelf/deck/catalog art is untouched. */
 :root body[data-app-screen="play"]:is([data-local-status="battle"],[data-online-status="battle"]) .arena-panel {
   padding:0 !important; min-height:0 !important;
   border-color:#385565 !important;
-  background:
-    radial-gradient(ellipse at 50% 8%,#9a4c3524,transparent 48%),
-    radial-gradient(ellipse at 50% 92%,#21c5a92b,transparent 50%),
-    linear-gradient(160deg,#101f2b,#07141d 60%,#0c222a) !important;
 }
 :root body[data-app-screen="play"]:is([data-local-status="battle"],[data-online-status="battle"]) .vertical-circuit-arena {
-  --gs-board-gap:8px;
+  --gs-board-gap:clamp(12px,3vw,16px);
   /* Viewport fallback; modern WebViews use the actual arena container below. */
-  --gs-battle-card-size:max(28px,min(84px,calc((100vw - 64px) / 5),calc((100dvh - 280px) / 6)));
+  --gs-battle-card-size:max(28px,min(84px,calc((min(100vw - 100px,78vw - 16px) - 4 * var(--gs-board-gap)) / 5),calc((100dvh - 236px - 6.1 * var(--gs-board-gap)) / 9.15)));
   --gs-vertical-board-size:calc(var(--gs-battle-card-size) * 5 + var(--gs-board-gap) * 4);
+  --gs-board-height:calc(var(--gs-battle-card-size) * 3 + var(--gs-board-gap) * 2);
+  --gs-terrain-gap:calc(var(--gs-board-height) * .7);
   box-sizing:border-box; width:100% !important; height:100% !important;
-  min-height:0 !important; padding:8px 10px 12px !important;
-  display:grid !important; grid-template-columns:minmax(0,1fr) !important;
-  grid-template-rows:auto 52px auto !important;
-  align-content:safe center !important; justify-items:center !important; gap:0 !important;
+  min-height:0 !important; padding:0 !important;
+  display:block !important;
   overflow:auto; scrollbar-width:none;
 }
 @supports (container-type:size) {
   :root body[data-app-screen="play"]:is([data-local-status="battle"],[data-online-status="battle"]) .vertical-circuit-arena {
     container-type:size;
-    /* 180 px reserved for the compact enemy deck, names, VS and breathing room.
-     * Both board widths AND all six cell rows must fit the actual arena. */
+    /* Use more arena space for equipment: 3.05 board heights plus 128px
+     * for identities/padding. The upper identity begins below the old strip. */
     --gs-battle-card-size:max(28px,min(84px,
-      calc((100cqw - var(--gs-camera-fit-inset,24px) - 4 * var(--gs-board-gap)) / 5),
-      calc((100cqh - 180px - 4 * var(--gs-board-gap)) / 6)));
+      calc((min(100cqw - var(--gs-camera-fit-inset,80px),78cqw) - 4 * var(--gs-board-gap)) / 5),
+      calc((100cqh - 128px - 6.1 * var(--gs-board-gap)) / 9.15)));
   }
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena::-webkit-scrollbar { display:none; }
-:root body[data-app-screen="play"] .vertical-circuit-arena::after { opacity:.18 !important; }
 :root body[data-app-screen="play"] .vertical-circuit-arena .duel-side {
-  --circuit-light:#64efd1; --circuit-rim:#356759;
-  --circuit-cell-glow:#35e6b92b; --circuit-cell-inset:#53efd180;
   width:var(--gs-vertical-board-size) !important;
   min-height:0 !important; display:grid !important;
   grid-template-rows:auto auto !important; gap:0 !important;
-}
-:root body[data-app-screen="play"] .vertical-circuit-arena .duel-enemy-side {
-  --circuit-light:#ffba78; --circuit-rim:#735341;
-  --circuit-cell-glow:#ff9b452b; --circuit-cell-inset:#ffba7880;
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena .board {
   box-sizing:border-box;
   width:var(--gs-vertical-board-size) !important;
   height:calc(var(--gs-battle-card-size) * 3 + var(--gs-board-gap) * 2) !important;
-  grid-template-columns:repeat(5,var(--gs-battle-card-size)) !important;
-  grid-template-rows:repeat(3,var(--gs-battle-card-size)) !important;
-  gap:var(--gs-board-gap) !important; padding:0 !important; filter:none !important;
-  border:0 !important; border-radius:7px !important;
-  background:
-    repeating-linear-gradient(90deg,transparent 0 19px,#75c7b408 19px 20px),
-    repeating-linear-gradient(0deg,transparent 0 19px,#75c7b408 19px 20px),#0b2026 !important;
-  box-shadow:0 0 0 6px #0b2026,0 0 0 7px var(--circuit-rim),0 4px 0 7px #030b12 !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  grid-template-rows:repeat(3,minmax(0,1fr)) !important;
+  /* Native painted floor: 728x404 source units with 7-unit recessed seams.
+   * These transparent tracks only place equipment, meters and cable taps. */
+  column-gap:calc(var(--gs-vertical-board-size) * 7 / 728) !important;
+  row-gap:calc(var(--gs-board-height) * 7 / 404) !important;
+  padding:0 !important; filter:none !important;
+  border:0 !important;
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena .duel-enemy-identity {
   box-sizing:border-box; width:100% !important; min-height:0 !important;
@@ -132,40 +92,13 @@ body[data-graphics="dusuk"] .module-device-rig > .module-device-head { animation
   flex:0 0 var(--preview-size) !important;
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena .duel-vs { align-self:center !important; position:relative; z-index:5; }
-:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell {
-  box-sizing:border-box; border:2px solid !important;
-  border-color:#486270 #182c36 #071119 #29424c !important;
-  border-radius:7px !important;
-  background:
-    radial-gradient(circle at 5px 5px,#bb985c 1px,transparent 1.6px),
-    radial-gradient(circle at calc(100% - 5px) 5px,#bb985c 1px,transparent 1.6px),
-    radial-gradient(circle at 5px calc(100% - 5px),#6d674b 1px,transparent 1.6px),
-    radial-gradient(circle at calc(100% - 5px) calc(100% - 5px),#6d674b 1px,transparent 1.6px),
-    radial-gradient(ellipse at 50% 75%,var(--cell-energy-halo,transparent),transparent 85%),
-    linear-gradient(155deg,#1a303a,#0b1921 65%) !important;
-  box-shadow:inset 0 1px #829c9b22,inset 0 -3px #030c1677,0 2px #02090f !important;
-}
-:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell.energy-fed-cell {
-  /* Existing power-state class only: no extra node, pulse, timer or board rebuild.
-   * A lit floor + sharp rim stays legible behind the transparent device art. */
-  --cell-energy-halo:var(--circuit-cell-glow);
-  border-color:var(--circuit-light) !important;
-  box-shadow:inset 0 0 0 1px var(--circuit-cell-inset),inset 0 0 5px var(--circuit-cell-glow),inset 0 -3px #030c1677,0 2px #02090f !important;
-  animation:none !important; transition:none !important; filter:none !important; will-change:auto !important;
-}
-:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell.core-cell {
-  border-color:#d3aa59 !important; box-shadow:inset 0 0 12px #ffc55b18,0 2px #02090f !important;
-}
-:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell.tap-drop-target {
-  outline:2px solid #82f4cb !important; outline-offset:-4px;
-}
-:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell.debris-cell { border-style:dashed !important; }
 :root body[data-app-screen="play"] .vertical-circuit-arena .board-cell > .module-card.battle-module-card {
   box-sizing:border-box; width:100% !important; height:100% !important;
   min-width:0 !important; min-height:0 !important; margin:0 !important; padding:0 !important;
   border:0 !important; border-radius:4px !important;
 }
-/* The real HP fill remains its existing pseudo-element; no duplicate bar. */
+/* Ordinary module HP retains its existing pseudo-element. The final platform
+ * stylesheet gives cores one explicit foreground meter instead. */
 :root body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card::after {
   top:auto !important; bottom:0 !important; left:0 !important; right:0 !important;
   height:4px !important; border-radius:0 0 4px 4px !important;
@@ -191,7 +124,6 @@ body[data-graphics="dusuk"] .module-device-rig > .module-device-head { animation
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-jacket { stroke:#020c12; stroke-width:8; }
 :root body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-base { stroke:#526052 !important; stroke-width:3 !important; opacity:1 !important; }
-:root body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-contact { fill:#b89758; stroke:#292e24; stroke-width:1; }
 :root body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-glow { stroke:var(--circuit-light); stroke-width:7 !important; opacity:.22; }
 :root body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-current {
   display:inline !important; stroke:var(--circuit-light) !important; stroke-width:3 !important; opacity:1 !important;

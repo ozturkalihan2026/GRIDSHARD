@@ -3,6 +3,8 @@
 // painted heading heads). Measures opaque bounds/tips locally with Sharp.
 // No browser or game startup is needed. Output: client/src/module-layer-data.js
 // Usage: node tools/prepare-module-layers.cjs
+// Offline footprint pass also requires Python + Pillow (GRIDSHARD_PYTHON can
+// select its interpreter). Neither image library is loaded by the game.
 const fs = require("node:fs"), path = require("node:path");
 const sharp = require(process.env.GRIDSHARD_SHARP_MODULE || "sharp");
 const ROOT = path.resolve(__dirname, "..");
@@ -149,6 +151,8 @@ async function main() {
     "globalThis.GridshardModuleLayerData = Object.freeze(" + JSON.stringify(out, null, 1) + ");\n" +
     "if (typeof module !== \"undefined\" && module.exports) module.exports = globalThis.GridshardModuleLayerData;\n";
   fs.writeFileSync(OUTPUT, js);
+  require('node:child_process').execFileSync(process.env.GRIDSHARD_PYTHON || 'python',
+    [path.join(ROOT,'tools/audit-module-footprints.py'),'--write-fit'],{stdio:'inherit'});
   console.log(Object.entries(out).map(([k, v]) => k + ":" + (v.heads ? Object.keys(v.heads).length + " baş" : "tek")).join(" "));
 }
 main().catch(e => { console.error(e); process.exitCode = 1; });

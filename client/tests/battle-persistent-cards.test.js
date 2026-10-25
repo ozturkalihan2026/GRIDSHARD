@@ -64,6 +64,18 @@ test("force refresh preserves identity while updating state", () => {
   assert.equal(f.cell.firstElementChild, card); assert.equal(f.counts().created, 1);
 });
 
+test("placement notification runs once after mounting; HP, heat and force refresh do not replay it",()=>{
+  const f=fixture(),placed=[];
+  const options={...f.options,onCardCreated:(module,cell,card)=>{
+    assert.equal(card.parentElement,cell);assert.equal(card.hp,module.hp);placed.push(module.instanceId);
+  }};
+  f.view.render([moduleAt()],options);
+  f.view.render([{...moduleAt(60),heat:80}],options);
+  f.view.render([moduleAt(60)],{...options,force:true});
+  assert.deepEqual(placed,['laser-a']);
+  f.view.render([moduleAt(90,'laser-b')],options);assert.deepEqual(placed,['laser-a','laser-b']);
+});
+
 test("different instance and destruction replace only the required structure", () => {
   const f = fixture(); f.view.render([moduleAt()], f.options);
   const card = f.cell.firstElementChild;

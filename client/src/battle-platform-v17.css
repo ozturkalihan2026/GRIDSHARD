@@ -1,0 +1,243 @@
+/* Whole painted islands: floor, corner metal, edge pieces and touching towers.
+ * Terrain siblings share the board camera and stay below BOTH live boards.
+ * No nine-slicing, per-cell plaques, hollow wells or detached city wallpaper. */
+/* The legacy global theme has four full-viewport CSS gradients. A live or
+ * finishing battle needs only an opaque navy root behind its painted islands.
+ * Scope to the play screen so navigation restores the existing menu theme. */
+:root body[data-app-screen="play"] {
+  background:#07142b !important;
+}
+:root body[data-app-screen="play"] .arena-panel {
+  /* Depth/light already live in the approved painting. Retire the old
+   * whole-panel 44px inset / 24px outer blur underneath that artwork. */
+  box-shadow:none !important;
+}
+:root body[data-app-screen="play"]:is([data-local-status="battle"],[data-online-status="battle"]) .arena-panel {
+  background:#07132a url("../assets/ui/battle-approved-v5/circuit-walls.svg") center / 100% 100% no-repeat !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena {
+  position:relative; z-index:0; background:transparent !important;
+  display:block !important; padding:0 !important; overflow:hidden !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena::before,
+:root body[data-app-screen="play"] .vertical-circuit-arena::after {
+  content:none !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .duel-side {
+  position:absolute; left:calc(50% - var(--gs-vertical-board-size) / 2); margin:0 !important;
+  z-index:auto !important;
+  --circuit-platform-art:url("../assets/ui/battle-native-v6/island-player.webp");
+  --circuit-light:#73fff0;
+  --circuit-conduit:#28546a;
+  --circuit-cell-glow:#57f5d828;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .duel-enemy-side {
+  top:var(--scene-enemy-top,90px);
+  --circuit-platform-art:url("../assets/ui/battle-native-v6/island-enemy.webp");
+  --circuit-light:#ff583d;
+  --circuit-conduit:#60343e;
+  --circuit-cell-glow:#ff526d26;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .duel-player-side {
+  top:var(--scene-player-top,330px);
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .duel-player-side::after {
+  content:none;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .circuit-terrain {
+  position:absolute; left:0; width:100%; height:var(--gs-board-height);
+  z-index:0; pointer-events:none;
+  transform:rotateX(var(--gs-camera-tilt)) scale3d(var(--gs-camera-zoom),var(--gs-camera-zoom),var(--gs-camera-zoom));
+}
+:root body[data-app-screen="play"] .duel-enemy-side > .circuit-terrain {
+  top:0; transform-origin:50% 50%;
+}
+:root body[data-app-screen="play"] .duel-player-side > .circuit-terrain {
+  top:0; transform-origin:50% 50%;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .circuit-terrain::before {
+  /* Registered artwork: floor x264..992, y260..664 / 1254.
+   * Every painted plate is 140x130, separated by 7-unit native seams. */
+  /* Register the native floor itself to the invisible live 5x3 hitboxes. */
+  content:""; position:absolute; left:-36.263736%; top:-64.356436%;
+  width:172.252747%; height:310.396040%;
+  background:var(--circuit-platform-art) center / 100% 100% no-repeat;
+  pointer-events:none; animation:none; filter:none;
+}
+/* The upper cliff keeps the painting's original downward pillar orientation.
+ * Sink its lower tips behind the enemy rim to close the name/deck backdrop. */
+:root body[data-app-screen="play"] .duel-enemy-side > .circuit-terrain::after {
+  content:""; position:absolute; z-index:-1;
+  /* Source y820..1254: pillars only, excluding the platform fascia. */
+  left:-50%; width:200%; bottom:85%; height:107.425743%;
+  background:var(--circuit-platform-art) center bottom / 100% 288.940092% no-repeat;
+  transform:none; pointer-events:none; animation:none; filter:none;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .board {
+  position:relative; z-index:2;
+  /* The camera plane must not intercept taps in front of its 3D cells. */
+  pointer-events:none;
+  background:none !important; border-image:none !important;
+  border-radius:0 !important; box-shadow:none !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .board::after {
+  content:none !important;
+}
+/* Restore the existing one-shot activation wave. Its server event and 900ms
+ * lifecycle already exist; only the blanket ::after reset hid the visual. */
+:root body[data-app-screen="play"] .vertical-circuit-arena .board.core-wave::after {
+  content:"" !important; display:block !important;
+  border-radius:6px; z-index:70;
+}
+/* The island image owns the ONLY floor. Live cells are invisible hitboxes;
+ * never paint a second rectangle or socket grid over the native artwork. */
+:root body[data-app-screen="play"] .vertical-circuit-arena .board::before {
+  content:none !important; display:none !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .duel-side-heading {
+  position:relative; z-index:3;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .duel-vs {
+  position:absolute !important; left:50%; margin:0 !important;
+  transform:translate(-50%,-50%); pointer-events:none;
+  top:var(--circuit-vs-offset,0px);
+}
+/* Measured facing edges of the main platform rim, not its distant pillars:
+ * source y145 / y820, floor y260..664. Share the real ground camera. */
+.circuit-terrain > .circuit-rim-point {
+  position:absolute; left:50%; width:0; height:0;
+  visibility:hidden; pointer-events:none;
+}
+.circuit-rim-point[data-circuit-rim="top"] { top:-28.465347%; }
+.circuit-rim-point[data-circuit-rim="bottom"] { top:138.613861%; }
+:root body[data-app-screen="play"] .vertical-circuit-arena .duel-player-identity {
+  position:absolute; left:0; right:0; bottom:1px; width:100%;
+  margin:0 !important; padding:0 !important;
+  text-align:center; pointer-events:none;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .duel-enemy-identity {
+  position:absolute; top:0; left:0; right:0; width:100% !important;
+  margin:0 !important; padding:0 !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .enemy-deck-card {
+  --preview-size:clamp(24px,8vw,36px);
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell {
+  /* One standing size for every row and side; the measured module frames
+   * remain 85% of the reactor. Only the upper silhouette rises off the floor. */
+  --socket-art-size:var(--gs-equipment-size,calc(var(--gs-battle-card-size) * 1.265));
+  pointer-events:auto;
+  box-sizing:border-box; border:0 !important;
+  border-radius:2px !important; background:transparent !important;
+  box-shadow:none !important; filter:none !important;
+  animation:none !important; transition:none !important; will-change:auto !important;
+  outline:none; outline-offset:-3px;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .module-card.physical-module-card > .module-icon.has-module-device {
+  /* Reserve the bottom 12px for two meters (7px for a core's single meter).
+   * The registered opaque base ends 1px above the first meter, filling the
+   * remaining socket with standing art.
+   * Centring the foot vertically left a floating gap above the meters. */
+  inset:auto auto 13px calc(50% - var(--socket-art-size) / 2) !important; margin:0 !important;
+  max-width:none !important; max-height:none !important;
+  width:var(--socket-art-size) !important; height:var(--socket-art-size) !important;
+  inline-size:var(--socket-art-size) !important; block-size:var(--socket-art-size) !important;
+  z-index:2; transform-style:flat !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .module-card.physical-module-card[data-core="true"] > .module-icon.has-module-device {
+  bottom:8px !important;
+}
+/* Share the board's paint order: ground cables < meters < standing art.
+ * Each device ends above its own meters. A neighbour's opaque silhouette
+ * may occlude a meter, but that meter must never paint across the neighbour. */
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell,
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell > .module-card {
+  z-index:auto !important; transform-style:flat !important;
+}
+/* ::after elsewhere is also the old charge ring, so a core has one
+ * dedicated, persistent HP meter in the reserved space below its own art. */
+:root body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card::after {
+  display:none !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena :is(.core-health-bar,.module-health-bar) {
+  position:absolute; display:block; box-sizing:border-box; left:3px; right:3px; bottom:2px; height:5px;
+  z-index:1; transform:none; pointer-events:none;
+  border:1px solid #020811; border-radius:2px;
+  background:linear-gradient(90deg,var(--battle-hp-color) var(--hp-percent),#07111f var(--hp-percent));
+  box-shadow:none;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena :is(.core-health-bar,.module-health-bar)[hidden] {
+  display:none !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell::before {
+  content:none !important; display:none !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell::after {
+  content:none !important; display:none !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .module-card > .module-heat-bar {
+  top:auto !important; bottom:8px !important; left:3px !important; right:3px !important;
+  box-sizing:border-box; height:4px !important; transform:none !important; z-index:1;
+  border:1px solid #b28045; background:#32291c; box-shadow:none !important;
+}
+/* Support/energy pulses reuse a legacy cell-sized overlay. Its former z40
+ * painted the turquoise outline across standing devices. Keep the existing
+ * one-shot pulse on the ground, below both meters and every device. */
+:root body[data-app-screen="play"] .vertical-circuit-arena .module-card > .module-fx-overlay {
+  z-index:0 !important;
+}
+/* A compact contact shadow seats the upright painting on the metal socket.
+ * It shares the artwork's floor anchor and never enters the cable gutter. */
+:root body[data-app-screen="play"] .vertical-circuit-arena .module-device-ground-shadow {
+  top:100%; bottom:auto; left:18%; right:18%; height:7%; translate:0 -100%;
+  border-radius:50%; background:#01070c99;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell.energy-fed-cell {
+  background-image:radial-gradient(ellipse at 50% 52%,var(--circuit-cell-glow),transparent 50%) !important;
+  animation:none !important; transition:none !important; filter:none !important; will-change:auto !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell:is(.tap-drop-target,:focus-visible) {
+  outline:2px solid #a4ffe7 !important; outline-offset:-3px;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell.debris-cell {
+  border:2px dashed #f1b767 !important;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena :is(.board-cable-layer,.board-cable-current-layer) {
+  z-index:0 !important;
+}
+/* Both cable layers stay on the ground, behind standing devices. Channel
+ * geometry and ink are unchanged; only their former foreground order is gone. */
+:root body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-jacket {
+  stroke:#07111f; stroke-width:6; stroke-linecap:butt !important; stroke-linejoin:bevel;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-base {
+  stroke:var(--circuit-conduit) !important; stroke-width:5 !important; stroke-linecap:butt !important; stroke-linejoin:bevel;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-current {
+  stroke:var(--circuit-light) !important; stroke-width:3 !important; stroke-linecap:butt !important; stroke-linejoin:bevel;
+}
+:root body[data-app-screen="play"] .vertical-circuit-arena .circuit-cable-glow {
+  stroke:var(--circuit-light); stroke-width:5 !important; opacity:.16;
+}
+
+/* The real current balance fills once per server update, without a looping
+ * shimmer or another animation clock. Identity shares the existing HUD well. */
+:root body[data-app-screen="play"] #battle-current-bar { position:relative; overflow:hidden; isolation:isolate; }
+.battle-current-fill {
+  position:absolute; inset:0; width:100%; height:100%; align-self:stretch;
+  z-index:-1; pointer-events:none; transform-origin:0 50%;
+  background:linear-gradient(90deg,#146c82,#30b7bb); transform:scaleX(0);
+  transition:transform 550ms linear;
+}
+:root body[data-app-screen="play"] #player-battle-name {
+  min-width:0; max-width:calc(100% - 88px); margin-left:auto;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  font:700 11px/1.1 var(--gs-font-copy); color:#edffff; text-shadow:0 1px #062a37;
+}
+.battle-deployment-flight {
+  position:fixed; z-index:1100; left:0; top:0; object-fit:contain;
+  pointer-events:none; user-select:none; transform-origin:50% 50%;
+}
+@media (prefers-reduced-motion:reduce) {
+  .battle-current-fill { transition:none; }
+}

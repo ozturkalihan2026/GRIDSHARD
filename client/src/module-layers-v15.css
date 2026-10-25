@@ -58,7 +58,7 @@ body[data-graphics="dusuk"] .module-layer-head { transition:none; }
 /* ---- v15b (19 Ekim, kullanıcı geri bildirimi) --------------------------------
  * 1) Isı + CAN çubukları çizimin ALTINDA ve önünde: dik çizim üst kenarı örttüğü
  *    için ısı çubuğu kayboluyordu. İkisi alt kenarda üst üste, tahtadan hafif önde.
- * 2) Hücreler örnek sahnedeki gibi sade koyu yuva; güç durumu ince ışıkla kalır.
+ * 2) Soket malzemesi ve güç vurgusunun sahibi artık battle-platform-v17.css.
  * 3) Gölge çizimin tabanında. */
 :root body[data-app-screen="play"] .vertical-circuit-arena .module-card > .module-heat-bar {
   top:auto !important; bottom:6px !important; left:4px !important; right:4px !important;
@@ -70,21 +70,6 @@ body[data-graphics="dusuk"] .module-layer-head { transition:none; }
   border-radius:2px !important; transform:translateZ(6px); box-shadow:0 0 0 1px #02090fcc !important;
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena .module-card.has-heat-bar > .module-live-status-row { top:2px !important; }
-:root body[data-app-screen="play"] .vertical-circuit-arena :is(.board-cell,.enemy-board-cell)[data-occupied="true"] {
-  border-color:#3b5462 #142630 #061018 #22394429 !important;
-  background:
-    radial-gradient(ellipse at 50% 80%,var(--cell-energy-halo,transparent),transparent 70%),
-    linear-gradient(160deg,#122633,#09151d 70%) !important;
-}
-:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell.energy-fed-cell {
-  border-color:#3b5462 #142630 #061018 #223944 !important;
-  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--circuit-light) 45%,transparent),inset 0 -3px #030c1677,0 2px #02090f !important;
-}
-:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell.core-cell {
-  border-color:#3b5462 #142630 #061018 #223944 !important;
-  --cell-energy-halo:#ffcf6a2e;
-  box-shadow:inset 0 0 0 1px #d3aa5944,0 2px #02090f !important;
-}
 .module-device-rig[data-renderer="layers"] > .module-device-ground-shadow {
   top:auto; bottom:-4%; left:12%; right:12%; height:24%;
   background:radial-gradient(closest-side,#000000b0,#00000055 60%,transparent);

@@ -29,7 +29,7 @@
   // Both stand on one socket. The reactor is the visual anchor, rather than
   // shrinking it into the floor while ordinary devices tower over it.
   const STAGE = Object.freeze({ left:-.2, top:-.4, size:1.4 });
-  const CORE_STAGE = Object.freeze({ left:-.25, top:-.42, size:1.5 });
+  const CORE_STAGE = Object.freeze({ left:-.3, top:-.58, size:1.6 });
   // Both circuits lie on one GROUND plane seen by the fixed battle camera.
   // A device turns only about its vertical axis: the painting whose ground
   // yaw is nearest to the target's ground direction is shown, never rotated
@@ -49,6 +49,15 @@
     img.style.width=pct(part.size); img.style.height=pct(part.size);
   }
   const views = new WeakMap();
+  const headingPlans = new WeakMap();
+  function headingsFor(layer) {
+    let plan = headingPlans.get(layer);
+    if (!plan) {
+      plan = Object.entries(GROUND_YAW).filter(([heading]) => layer.heads[heading]);
+      headingPlans.set(layer, plan);
+    }
+    return plan;
+  }
   // Numeric yaw remains continuous. Illustrated volume is sampled at 45°:
   // E, SE, S, SW, W, NW, N, NE. Never rotate an upright painting in screen Z.
   const frameFor = angle => ((Math.round(angle / (Math.PI / 4)) % 8) + 8) % 8;
@@ -73,17 +82,22 @@
   function mount(host, model, enemy = false) {
     const id = idFor(model);
     if (!id) return false;
-    return build(host, id, enemy, LAYERS?.[id] || null, STAGE);
+    const layer=LAYERS?.[id] || null;
+    return build(host, id, enemy, layer, layer?.socketFit || STAGE);
   }
   // Upright approved reactor painting for a deployed core (no heading).
-  function mountCore(host, coreType) {
-    const layer=LAYERS?.[coreType];
-    if (!layer?.core) return false;
+  function mountCore(host, coreType, { destroyed=false } = {}) {
+    const intact=LAYERS?.[coreType];
+    if (!intact?.core) return false;
+    // Same registered canvas and floor anchor; only the death/rebirth boundary
+    // changes artwork. Never fade an intact reactor into a ghost silhouette.
+    const layer=destroyed ? {...intact, destroyed:true, art:{...intact.art,
+      src:`assets/ui/cores-wrecked-v1/${coreType}.webp`}} : intact;
     // Bounds are measured offline from opaque pixels, not the padded canvas.
     // Limit the painted silhouette, not its transparent square. Some height
     // above the socket is intentional; its footprint remains on that socket.
-    const size=layer.bounds ? Math.min(CORE_STAGE.size,1.34/layer.bounds.width,1.50/layer.bounds.height) : CORE_STAGE.size;
-    const frame={left:(1-size)/2,top:1.08-size,size};
+    const size=layer.bounds ? 1/Math.max(layer.bounds.width,layer.bounds.height) : 1;
+    const frame={left:(1-size)/2,top:1-size,size};
     return build(host, coreType, false, layer, frame);
   }
   function build(host, id, enemy, layer, frame) {
@@ -94,6 +108,7 @@
     rig.dataset.yaw="continuous";
     rig.dataset.renderer=layer?"layers":ATLAS_IDS.has(id)?"views8":"static";
     if (layer?.core) rig.dataset.core="true";
+    if (layer?.destroyed) rig.dataset.destroyed="true";
     const shadow=doc.createElement("span"); shadow.className="module-device-ground-shadow";
     rig.appendChild(shadow);
     const billboard=doc.createElement("span"); billboard.className="module-device-billboard";
@@ -109,7 +124,7 @@
       }else{
         const art=image(doc,"module-layer-art","./"+layer.art.src); boxStyle(art,layer.art); stage.appendChild(art);
         // Working core: coloured stone pulse over the painting (CSS, --core-accent from the card).
-        if(layer.core){ const pulse=doc.createElement("span"); pulse.className="module-core-pulse"; pulse.setAttribute("aria-hidden","true");
+        if(layer.core && !layer.destroyed){ const pulse=doc.createElement("span"); pulse.className="module-core-pulse"; pulse.setAttribute("aria-hidden","true");
           pulse.style.left=`${layer.emitter.x*100}%`; pulse.style.top=`${layer.emitter.y*100}%`; stage.appendChild(pulse); }
       }
       window.appendChild(stage);
@@ -124,7 +139,8 @@
     }
     host.replaceChildren(rig);
     host.classList.add("has-module-device");
-    views.set(host, { id, rig, window, layer, stage:frame, head, headKey:"", angle:enemy ? Math.PI/4 : -Math.PI/4, pose:"", frame:-1 });
+    views.set(host, { id, rig, window, layer, headings:layer?.kind === "layered" ? headingsFor(layer) : null,
+      stage:frame, head, headKey:"", angle:enemy ? Math.PI/4 : -Math.PI/4, pose:"", frame:-1 });
     pose(host, { heading, phase:"rest", disabled:false });
     return true;
   }
@@ -170,17 +186,15 @@
   function applyLayer(view, phase) {
     const a=view.angle;
     // Repair/Cooler have painted working poses; missing directions keep the rest pose.
-    const keyFor=h=>phase === "work" && view.layer.heads[h+"-work"] ? h+"-work" : h;
-    let best=null;
-    for (const [h,yaw] of Object.entries(GROUND_YAW)) {
-      if (!view.layer.heads[h]) continue;
+    let heading=null, bestDelta=Infinity;
+    for (const [h,yaw] of view.headings) {
       const delta=Math.abs(wrap(a-yaw));
-      if (!best || delta < best.delta) best={heading:h,delta};
+      if (delta < bestDelta) { heading=h; bestDelta=delta; }
     }
-    if (!best) return;
+    if (!heading) return;
     const current=view.rig.dataset.heading;
-    if (current && current !== best.heading && view.layer.heads[current] && Math.abs(wrap(a-GROUND_YAW[current])) <= best.delta+KEEP_HEADING) best={heading:current};
-    const heading=best.heading, key=keyFor(heading);
+    if (current && current !== heading && view.layer.heads[current] && Math.abs(wrap(a-GROUND_YAW[current])) <= bestDelta+KEEP_HEADING) heading=current;
+    const key=phase === "work" && view.layer.heads[heading+"-work"] ? heading+"-work" : heading;
     if (view.headKey !== key) {
       const part=view.layer.heads[key];
       boxStyle(view.head,part);
@@ -197,7 +211,7 @@
   // head's lean), or null when this device is not a layered painting.
   function emitter(host) {
     const view=views.get(host);
-    if (!view?.layer) return null;
+    if (!view?.layer || view.layer.destroyed) return null;
     let p=view.layer.emitter;
     if (view.layer.kind === "layered") {
       const part=view.layer.heads[view.headKey];

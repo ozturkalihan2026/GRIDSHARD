@@ -7,6 +7,12 @@ import tempfile
 # has dedicated tests that enable the production-default gate explicitly.
 os.environ.setdefault("GRIDSHARD_AUTH_REQUIRED", "0")
 os.environ.setdefault("GRIDSHARD_RATE_LIMIT_REQUIRED", "0")
+# Existing historical tests opt into the legacy active fixture. Production
+# has no default start; launch-gate tests explicitly clear these variables.
+os.environ.setdefault("GRIDSHARD_SEASON_STARTS_AT", "2026-09-28T00:00:00Z")
+os.environ.setdefault("GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT", "2026-09-28T00:00:00Z")
+os.environ.setdefault("GRIDSHARD_WEEKLY_MIN_PLAYERS", "2")
+os.environ.setdefault("GRIDSHARD_TEAM_MIN_TEAMS", "2")
 
 # TestClient ve çalışan yerel geliştirme sunucusu aynı JSON dosyasını açmasın.
 # Her pytest süreci kendine ait geçici kalıcılık alanı kullanır.

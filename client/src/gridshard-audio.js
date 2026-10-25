@@ -235,6 +235,16 @@
     // v14: rutin efektler 420 ms'lik pencerede en fazla 3 (önceden 320 ms).
     voiceWindowMs:420,
     maxRoutineVoices:3,
+    // One quiet support pulse per window leaves at least two routine starts
+    // available for real shots/hits. No extra voices or a second mixing bus.
+    supportRetriggerMs:420,
+    supportCues:Object.freeze([
+      "battery_charge", "amplifier_charge", "repair_beam", "cooling_air",
+      "omega_link", "chrono_shift", "target_lock", "nano_pulse",
+      ...["battery","amplifier","repair","cooler","capacitor","current_balancer",
+        "targeting_computer","overclock_unit","nano_medic","chrono_relay",
+        "precision_matrix","omega_amplifier","phoenix_repair"].map(id=>"module_"+id),
+    ]),
     priorityCues:Object.freeze([
       "core_hit", "kill_confirm", "module_lost", "warning",
       "shield_activate", "phoenix_revive", "core_rebirth", "emp",
@@ -245,21 +255,28 @@
     ...Object.fromEntries(Object.values(global.GridshardModulePresentation || {}).map(p=>[p.cue,{asset:p.asset,gain:p.gain,identity:p.id+" · "+p.shape}])),
     cooling_air:{
       asset:"./assets/audio/cooling_air.wav",
+      gain:0.55,
       identity:"kısa, yumuşak soğuk hava üflemesi",
     },
     repair_beam:{
       asset:"./assets/audio/repair_beam.wav",
+      gain:0.30,
       identity:"odaklanan yeşil onarım ışını",
     },
     energy_transfer:{
       asset:"./assets/audio/energy_transfer.wav",
       identity:"kısa dijital akım",
     },
+    battery_charge:{
+      asset:"./assets/audio/energy_transfer.wav",
+      gain:0.055,
+      identity:"arka planda kalan batarya üretim darbesi",
+    },
     amplifier_charge:{
       asset:"./assets/audio/energy_transfer.wav",
-      // This sustained source is ~13 dB louder in RMS than repair_beam.
-      // Trim only the amplifier, not the battle bus or core-ready/UI cues.
-      gain:0.18,
+      // Sustained production/support sources must sit below a short laser shot.
+      // The untrimmed UI/core-ready energy_transfer alias remains unchanged.
+      gain:0.045,
       identity:"dengelenmiş güçlendirici akım darbesi",
     },
     laser_fire:{
@@ -309,6 +326,9 @@
     },
     emp:{
       asset:"./assets/audio/emp.wav",
+      // This legacy transient is much hotter than the current module files;
+      // include its battle-priority multiplier when matching routine devices.
+      gain:0.06,
       identity:"yüksek frekans kırılması → kısa sessizlik",
     },
     virus_glitch:{
@@ -379,18 +399,22 @@
     },
     omega_link:{
       asset:"./assets/audio/port_connect.wav",
+      gain:0.15,
       identity:"omega rezonans bağlantısı",
     },
     chrono_shift:{
       asset:"./assets/audio/port_connect.wav",
+      gain:0.15,
       identity:"kronos penceresinin açılması",
     },
     target_lock:{
       asset:"./assets/audio/port_connect.wav",
+      gain:0.15,
       identity:"hedefe kilitlenme",
     },
     nano_pulse:{
       asset:"./assets/audio/energy_transfer.wav",
+      gain:0.055,
       identity:"nano onarım darbesi",
     },
     kill_confirm:{
@@ -399,6 +423,7 @@
     },
     module_lost:{
       asset:"./assets/audio/energy_transfer.wav",
+      gain:0.18,
       identity:"kendi modülünün düşmesi",
     },
     shield_activate:{
@@ -600,6 +625,7 @@
       this._sfxPlaybackGeneration = 0;
       this._sfxLastTriggeredAt = new Map();
       this._routineSfxStarts = [];
+      this._lastSupportSfxAt = -Infinity;
       this._resultTrack = null;
       this._lastPlaybackError = null;
       this._unlockTarget = null;
@@ -782,6 +808,8 @@
       const rules = GRIDSHARD_SFX_VOICE_LIMIT;
       const lastAt = this._sfxLastTriggeredAt.get(name) ?? -Infinity;
       const priority = rules.priorityCues.includes(name);
+      const support = Boolean(GRIDSHARD_BATTLE_STATE_LAYERS[this.state]) && rules.supportCues.includes(name);
+      if (support && now - this._lastSupportSfxAt < rules.supportRetriggerMs) return false;
       const retriggerMs = priority ? rules.priorityRetriggerMs : rules.retriggerMs;
       if (now - lastAt < retriggerMs) return false;
       if (!priority) {
@@ -792,6 +820,7 @@
         this._routineSfxStarts.push(now);
       }
       this._sfxLastTriggeredAt.set(name, now);
+      if (support) this._lastSupportSfxAt = now;
       return true;
     }
 

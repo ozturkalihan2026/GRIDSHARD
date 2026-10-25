@@ -3160,7 +3160,8 @@ function createClient() {
   assert.ok(app.includes("pool-choice-select"));
   assert.ok(app.includes("appendHpBar"));
   assert.ok(app.includes("pool-module-icon"));
-  assert.ok(app.includes("moduleIconFor(module)"));
+  assert.ok(app.includes("moduleEmblemMarkup(module)"));
+  assert.ok(!app.includes("moduleIconFor(module)"));
   assert.ok(css.includes(".hp-bar-fill"));
   assert.ok(css.includes('[data-hp-state="destroyed"]'));
   assert.ok(css.includes(".battle-pool-selection .pool-category-list"));

@@ -162,6 +162,7 @@ def test_weekly_reward_is_queued_once_and_claim_unlocks_inventory(monkeypatch):
             profile.weekly_tournament_registered_period = "2026-W01"
             profile.weekly_tournament_trophies_earned = trophies
             profile.weekly_tournament_wins = trophies // 10
+            profile.weekly_tournament_matches = trophies // 10
 
         before_credits = winner.circuit_credits
         first = gateway.get_reward_inbox(winner_id)

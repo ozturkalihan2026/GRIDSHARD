@@ -16,7 +16,7 @@ test("approved shared controls precede the screen-specific package in web/native
   const start = links.indexOf(shared[0]);
   assert.ok(start >= 0);
   assert.deepEqual(links.slice(start, start + shared.length), shared);
-  for (const skin of ["module-device-v8", "visual-polish-v9", "detail-cards-v10", "modules-yaw-v12", "module-layers-v15"]) {
+  for (const skin of ["module-device-v8", "visual-polish-v9", "detail-cards-v10", "modules-yaw-v12", "module-layers-v15", "battle-platform-v17"]) {
     assert.ok(links.indexOf(`./src/${skin}.css`) > start + shared.length - 1);
   }
   assert.equal(links.filter((name) => name.includes("ui-components-v2")).length, 1);

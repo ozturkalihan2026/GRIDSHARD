@@ -23,11 +23,12 @@ def test_preparation_pool_cards_share_the_battle_icon_language():
 
     assert app.count('"module-icon pool-module-icon"') == 2
     assert app.count('"pool-module-category"') == 2
-    # Havuz kartları ve savaş kartları aynı amblemi kullanır (görsel tur 5: tek harfli
-    # simge yerine çizilmiş amblem; eski simge yalnız yedek yolda durur).
+    # Havuz ve savaş aynı çizilmiş amblemi kullanır; emekli metin simgesi
+    # kaldırıldıktan sonra test onun yedek yolunu geri istememelidir.
     assert app.count("mountModuleEmblem(icon, module)") >= 3
     assert "mountModuleEmblem(chipIcon, module)" in app
-    assert "element.textContent = moduleIconFor(module);" in app
+    assert "element.innerHTML = moduleEmblemMarkup(module);" in app
+    assert "function moduleIconFor(" not in app
     assert ".battle-pool-selection .pool-category-list" in css
     assert ".battle-pool-selected .pool-category-list" in css
     assert "grid-template-columns:repeat(2,minmax(0,1fr))" in css

@@ -42,12 +42,13 @@ test("EMP uses the real sabotage target and passives do not invent a new aim on 
   motion.receive([{type:"module_contribution",at_ms:1500,data:{player_id:"own",source_module_id:"battery",target_player_id:"own",target_module_id:"battery"}}],snapshot,{ownPlayerId:"own",domId:(p,m)=>p+m.instance_id});
   motion.tick();assert.equal(draws.at(-1).angle,undefined,"self energy is not a directional target");
 });
-test("the board owns the shared 30 degree camera; upright art counter-tilts only once",()=>{
+test("the board owns the shared 30 degree camera; upright art compensates its Y scale once",()=>{
   const css=fs.readFileSync(path.join(__dirname,"../src/modules-yaw-v12.css"),"utf8");
-  assert.match(css,/--gs-camera-tilt:30deg/);assert.match(css,/--gs-camera-counter:-30deg/);
-  assert.match(css,/--gs-camera-axis-gap:26px/);assert.match(css,/transform-style:preserve-3d/);
-  assert.match(css,/\.board \{\s*transform:perspective\(var\(--gs-camera-distance\)\) rotateX\(var\(--gs-camera-tilt\)\)/);
-  assert.match(css,/\.module-device-billboard \{[^}]*transform:rotateX\(var\(--gs-camera-counter/s);
+  assert.match(css,/--gs-camera-tilt:30deg/);assert.match(css,/--gs-camera-upright-scale:1\.1547005384/);
+  assert.match(css,/transform-style:preserve-3d/);
+  assert.match(css,/transform:rotateX\(var\(--gs-camera-tilt\)\) scale3d\(var\(--gs-camera-zoom\),var\(--gs-camera-zoom\),var\(--gs-camera-zoom\)\)/);
+  assert.doesNotMatch(css,/transform:perspective\(/,'No row-dependent depth magnification');
+  assert.match(css,/\.module-device-billboard \{[^}]*transform:scaleY\(var\(--gs-camera-upright-scale/s);
   assert.doesNotMatch(css,/rotateZ|module-device-side|\.board \{ transform:none/);
   assert.match(css,/laser-plane-point \{ transform:translateZ\(var\(--device-height/);
   assert.match(css,/body\[data-graphics="dusuk"\]/);
@@ -58,8 +59,9 @@ test("the board owns the shared 30 degree camera; upright art counter-tilts only
 test("devices turn only about their vertical axis: nearest painted GROUND heading, never rotated on screen",()=>{
   const layers=require("../src/module-layer-data.js");
   const doc={createElement:()=>({ownerDocument:doc,children:[],dataset:{},classList:{add(){}},style:{setProperty(){}},setAttribute(){},appendChild(n){this.children.push(n);},replaceChildren(...n){this.children=n;}})};
-  const S=art.stage,Y=art.groundYaw,wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
+  const Y=art.groundYaw,wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
   for(const [id,layer]of Object.entries(layers).filter(([,v])=>v.heads?.y00)){
+    const S=layer.socketFit||art.stage;
     const host=doc.createElement();art.mount(host,{definitionId:id});const rig=host.children[0],head=rig.children[1].children[0].children[0].children.at(-1);
     const m=math.plane(null,{left:200,top:300,width:60,height:60});
     m.sprite=math.plane([{x:200,y:300},{x:260,y:300},{x:260,y:360},{x:200,y:360}]);
@@ -102,9 +104,28 @@ test("all seven reactor registrations remain prominent, bottom anchored and boun
   for(const[id,layer]of Object.entries(layers).filter(([,data])=>data.core)){
     const host=doc.createElement();art.mountCore(host,id);
     const stage=host.children[0].children[1].children[0].children[0],size=parseFloat(stage.style.width)/100;
-    assert.ok(size>=1.1,id);assert.ok(layer.bounds.width*size<=1.341,id);assert.ok(layer.bounds.height*size<=1.501,id);
-    assert.ok(Math.abs(parseFloat(stage.style.top)/100+size-1.08)<.001,id);
+    assert.ok(Math.abs(Math.max(layer.bounds.width,layer.bounds.height)*size-1)<.0001,id);
+    assert.ok(Math.abs(parseFloat(stage.style.top)/100+size-1)<.0001,id);
   }
+});
+
+test("all 36 modules consume their measured pedestal fit instead of the padded canvas centre",()=>{
+  const layers=require("../src/module-layer-data.js");
+  const doc={createElement:()=>({ownerDocument:doc,children:[],dataset:{},classList:{add(){}},style:{setProperty(){}},setAttribute(){},appendChild(n){this.children.push(n);},replaceChildren(...n){this.children=n;}})};
+  const modules=Object.entries(layers).filter(([,layer])=>!layer.core);
+  assert.equal(modules.length,36);
+  for(const [id,layer]of modules){
+    const host=doc.createElement();art.mount(host,{definitionId:id});
+    const stage=host.children[0].children[1].children[0].children[0],fit=layer.socketFit;
+    assert.ok(fit&&layer.socketBounds,id);
+    assert.ok(Math.abs(Math.max(layer.socketBounds.width,layer.socketBounds.height)*fit.size-.85)<.0001,id+' must be exactly 85% of the core extent');
+    for(const [property,value]of [['left',fit.left],['top',fit.top],['width',fit.size],['height',fit.size]])
+      assert.ok(Math.abs(parseFloat(stage.style[property])/100-value)<.00001,id+' '+property);
+  }
+  const platform=fs.readFileSync(path.join(__dirname,'../src/battle-platform-v17.css'),'utf8');
+  assert.match(platform,/\.module-card\.physical-module-card > \.module-icon\.has-module-device\s*\{[^}]*calc\(50% - var\(--socket-art-size\) \/ 2\)[^}]*max-width:none[^}]*width:var\(--socket-art-size\)[^}]*height:var\(--socket-art-size\)/);
+  const camera=fs.readFileSync(path.join(__dirname,'../src/modules-yaw-v12.css'),'utf8');
+  assert.doesNotMatch(camera,/--core-seat/,'No more-specific legacy seat may override the measured socket');
 });
 
 test("aim drawing reuses its projection until layout changes or the rig is replaced",()=>{
@@ -122,30 +143,29 @@ test("aim drawing reuses its projection until layout changes or the rig is repla
   rig={};sandbox.draw({domId:"one"},{});assert.equal(reads,3);
 });
 
-test("enemy and own board rotations share the VS axis; ground compresses but billboard stays upright",()=>{
-  const theta=Math.PI/6,scale=.98,distance=1400;
-  const enemyTop=100,height=232,gap=52,ownTop=enemyTop+height+gap;
-  const enemyAxis=enemyTop+height+gap/2,ownAxis=ownTop-gap/2;
-  assert.equal(enemyAxis,ownAxis);
-  // CSS: ground transform rotates +30°, billboard rotates -30° locally.
-  // Ground Y changes projection; billboard local Y has no residual Z slope.
-  const rotate=(y,z,a)=>({y:y*Math.cos(a)-z*Math.sin(a),z:y*Math.sin(a)+z*Math.cos(a)});
+test("orthographic camera keeps all three rows equal; ground tilts but billboard stays upright",()=>{
+  const theta=Math.PI/6,scale=1.08,upright=1.1547005384;
+  // One affine floor transform and one inverse Y scale. No perspective
+  // denominator, nested rotation flattening or row-dependent magnification.
   for(const y of [-80,0,80]){
-    const local=rotate(y,0,-theta),camera=rotate(local.y,local.z,theta);
-    assert.ok(Math.abs(camera.y-y)<1e-8);assert.ok(Math.abs(camera.z)<1e-8);
+    const rendered=y*upright*Math.cos(theta)*scale;
+    assert.ok(Math.abs(rendered-y*scale)<1e-7);
   }
-  const project=y=>{const d=(y-enemyAxis)*scale;return enemyAxis+d*Math.cos(theta)/(1-d*Math.sin(theta)/distance);};
-  assert.ok(project(enemyTop+height)-project(enemyTop)<height);
-  assert.ok(project(ownTop+height)-project(ownTop)<height*1.1);
+  const project=y=>y*scale*Math.cos(theta);
+  for(const top of[0,80,160,360])assert.ok(Math.abs(project(top+60)-project(top)-60*scale*Math.cos(theta))<1e-8);
 });
 
-test("closer camera keeps near-board corners inside mobile/desktop arena widths",()=>{
+test("fitted camera keeps all board corners and the front metal rim inside mobile/desktop bounds",()=>{
   const css=fs.readFileSync(path.join(__dirname,"../src/modules-yaw-v12.css"),"utf8");
-  assert.match(css,/--gs-camera-distance:1400px/);assert.match(css,/--gs-camera-fit-inset:32px/);assert.match(css,/scale\(\.98\)/);
+  assert.match(css,/--gs-camera-zoom:1\.08/);assert.doesNotMatch(css,/transform:perspective\(/);
+  const source=fs.readFileSync(path.join(__dirname,'../src/app.js'),'utf8');
+  const start=source.indexOf('  function circuitSceneLayout('),end=source.indexOf('  function fitCircuitScene()',start);
+  const sandbox={};vm.runInNewContext(source.slice(start,end)+';this.layout=circuitSceneLayout;',sandbox);
   for(const width of[280,300,340,360,394,430,500,580])for(const height of[400,500,650,850,1100]){
-    const s=Math.max(28,Math.min(84,(width-32-4*8)/5,(height-180-4*8)/6));
-    const w=5*s+4*8,h=3*s+2*8,nearWidth=w*.98/(1-(h+26)*.98*.5/1400);
+    const l=sandbox.layout({width,height,headerHeight:58,footerHeight:18});
+    const nearWidth=(5*l.size+4*l.gap)*1.08;
     assert.ok(nearWidth<=width,`${width}x${height}: ${nearWidth}`);
+    assert.ok(l.rimBottom<=height-22);
   }
 });
 test("tilted device corners are cached by layout epoch; card translations do not reread them",()=>{

@@ -13,6 +13,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 
 from .team_tournament import build_team_tournament_view, period_id_for
+from .competition_control import competition_eligible, launch_status, minimum_participants
 
 
 DAILY_META_DEFINITIONS: tuple[dict, ...] = (
@@ -192,30 +193,13 @@ def build_events_view(
 
     weekly_rows = []
     for player in players:
-        is_bot = bool(player.get("is_bot"))
-        registered = is_bot or player.get("weekly_registered_period") == week["id"]
-        if not registered:
+        if not competition_eligible(player.get("player_id"), is_bot=player.get("is_bot")):
             continue
-        seed = f"{week['id']}:{player.get('player_id')}"
-        matches = (
-            5 + _stable_int(seed + ":matches", 8)
-            if is_bot
-            else (
-                max(0, int(player.get("weekly_matches", 0)))
-                if player.get("weekly_period") == week["id"]
-                else 0
-            )
-        )
-        wins = (
-            min(matches, 2 + _stable_int(seed + ":wins", max(1, matches)))
-            if is_bot
-            else min(matches, max(0, int(player.get("weekly_wins", 0))))
-        )
-        trophies_earned = (
-            70 + _stable_int(seed + ":trophies", 240)
-            if is_bot
-            else max(0, int(player.get("weekly_trophies_earned", 0)))
-        )
+        if player.get("weekly_registered_period") != week["id"]:
+            continue
+        matches = max(0, int(player.get("weekly_matches", 0))) if player.get("weekly_period") == week["id"] else 0
+        wins = min(matches, max(0, int(player.get("weekly_wins", 0))))
+        trophies_earned = max(0, int(player.get("weekly_trophies_earned", 0)))
         weekly_rows.append({
             "player_id": player["player_id"],
             "display_name": player["display_name"],
@@ -225,42 +209,32 @@ def build_events_view(
             "losses": max(0, matches - wins),
             "points": trophies_earned,
             "trophies_earned": trophies_earned,
-            "is_bot": is_bot,
+            "is_bot": False,
             "registered": True,
         })
     weekly_rows.sort(key=lambda row: (-row["points"], -row["wins"], -row["rating"], row["display_name"].casefold()))
     for position, row in enumerate(weekly_rows, start=1):
         row["position"] = position
 
-    # Takım turnuvası (team_tournament.py): kayıtlar ve oynanan maç ayakları
-    # dışarıdan gelir; AI takımları her ay kendiliğinden katılır.
-    ai_teams: dict[str, dict] = {}
-    for player in players:
-        team_id = str(player.get("team_id") or "").strip()
-        if not player.get("is_bot") or not team_id:
-            continue
-        team = ai_teams.setdefault(
-            team_id,
-            {"team_name": str(player.get("team_name") or "AI Takımı"), "roster": []},
-        )
-        team["roster"].append({
-            "player_id": player["player_id"],
-            "display_name": player["display_name"],
-            "rating": int(player.get("rating", 0)),
-        })
+    # Official competitions contain registered real teams only.
     state = team_tournament_state or {}
     team_view = build_team_tournament_view(
         period_id_for(current),
         current,
         registrations=state.get("registrations") or {},
-        ai_teams=ai_teams,
+        ai_teams={},
         legs=state.get("legs") or {},
     )
     team_view["prizes"] = [dict(item) for item in TEAM_PRIZES]
+    launch = launch_status(current)
+    enough = len(weekly_rows) >= minimum_participants()
 
     return {
         "daily_meta_catalog": daily_meta_catalog_view(current),
         "weekly_tournament": {
+            "status": "waiting_for_launch" if not launch["active"] else "active" if enough else "waiting_for_participants",
+            "registration_open": launch["active"],
+            "minimum_participants": minimum_participants(), "participant_count": len(weekly_rows),
             "name_tr": "Haftalık Devre Turnuvası",
             "period": week,
             "rules_tr": "100 Devre Kredisi ile katıl. Katıldıktan sonra normal Arena savaşlarında kazandığın kupalar haftalık sıralamaya eklenir; sıralama pazartesi yenilenir.",

@@ -25,6 +25,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 
 from .competition_cycle import competition_cycle, cycle_for_id
+from .competition_control import launch_status, minimum_participants, competition_eligible
 
 
 TOURNAMENT_WEEKS = 4
@@ -66,7 +67,7 @@ def _stable_fraction(key: str) -> float:
 
 
 def period_id_for(moment: datetime | None = None) -> str:
-    return competition_cycle(_utc(moment))["id"]
+    return competition_cycle(_utc(moment), team=True)["id"]
 
 
 def period_id_of_leg(leg_id: str) -> str:
@@ -75,7 +76,7 @@ def period_id_of_leg(leg_id: str) -> str:
 
 
 def tournament_calendar(period_id: str) -> dict:
-    cycle = cycle_for_id(period_id)
+    cycle = cycle_for_id(period_id, team=True)
     start = cycle["starts_at"]
     weeks = []
     for week in range(1, TOURNAMENT_WEEKS + 1):
@@ -116,6 +117,8 @@ def tournament_phase(calendar: dict, moment: datetime | None = None) -> tuple[st
 
 
 def registration_open(period_id: str, moment: datetime | None = None) -> bool:
+    if not launch_status(moment, team=True)["active"]:
+        return False
     calendar = tournament_calendar(period_id)
     current = _utc(moment)
     return calendar["registration_opens_at"] <= current < calendar["registration_closes_at"]
@@ -503,6 +506,18 @@ def build_team_tournament_view(
     current = _utc(moment)
     calendar = tournament_calendar(period_id)
     phase, week_number = tournament_phase(calendar, current)
+    launch = launch_status(current, team=True)
+    real_registrations = {
+        key:{**value, "roster":[m for m in value.get("roster", []) if competition_eligible(m.get("player_id"))]}
+        for key,value in (registrations or {}).items()
+        if not str(key).startswith("ai-")
+    }
+    real_registrations = {key:value for key,value in real_registrations.items() if value["roster"]}
+    if not launch["active"] or len(real_registrations) < minimum_participants(team=True):
+        registrations, ai_teams, legs = {}, {}, {}
+        phase = "waiting_for_participants" if launch["active"] else "waiting_for_launch"
+    else:
+        registrations, ai_teams = real_registrations, {}
     teams = participating_teams(registrations or {}, ai_teams or {})
     schedule = build_schedule(period_id, teams, paired_week_count(calendar, current))
     recorded_legs = dict(legs or {})
@@ -548,13 +563,15 @@ def build_team_tournament_view(
         "phase": phase,
         "week": week_number,
         "weeks_total": TOURNAMENT_WEEKS,
-        "registration_open": phase == "registration",
+        "registration_open": launch["active"] and (phase == "registration" or phase == "waiting_for_participants"),
+        "status": phase, "participant_count": len(real_registrations),
+        "minimum_participants": minimum_participants(team=True),
         "next_milestone": next_milestone,
         "rules_tr": RULES_TR,
         "registration_fee": 0,
         "minimum_reward_points": MINIMUM_REWARD_POINTS,
         "legs_per_pairing": LEGS_PER_PAIRING,
-        "registered_team_ids": sorted(str(team_id) for team_id in (registrations or {})),
+        "registered_team_ids": sorted(str(team_id) for team_id in real_registrations),
         "bye_team_id": latest["bye_team_id"] if latest else None,
         "schedule_status": fixtures[0]["status"] if fixtures else "upcoming",
         "standings": standings,

@@ -51,12 +51,15 @@
   display:grid; place-items:center;
   width:30px; height:36px; margin:0; padding:0;
   border:0; border-radius:0; background:none; box-shadow:none;
-  color:#fff0ad;
-  font:700 34px/1 var(--gs-font-display);
-  -webkit-text-stroke:1.2px #745017; paint-order:stroke fill;
-  text-shadow:0 2px #c58b21,0 3px #543711;
-  opacity:1; filter:none;
+  font-size:0; line-height:0;
+  text-shadow:none; -webkit-text-stroke:0;
+  opacity:1; filter:none; transform:none;
 }
+:root body[data-app-screen] .app-resource-plus > svg { display:block; width:20px; height:23px; overflow:visible; filter:none; transform:none; }
+.app-resource-plus .resource-plus-depth { fill:#b77112; stroke:#81500d; stroke-width:1; stroke-linejoin:round; }
+.app-resource-plus .resource-plus-face { fill:#ffcc45; stroke:#ffe28a; stroke-width:1; stroke-linejoin:round; }
+.app-resource-plus .resource-plus-light { fill:#fff1ab; }
+:root body[data-app-screen] .app-resource-chip:active .app-resource-plus { transform:translateY(1px); }
 body[data-app-screen="menu"] { --gs-shell-top:128px; }
 body:is([data-app-screen="shop"],[data-app-screen="modules"]) { --gs-shell-top:56px; }
 :root body[data-app-screen="menu"] #app-progress-ribbon {
@@ -185,16 +188,6 @@ body:is([data-app-screen="shop"],[data-app-screen="modules"]) { --gs-shell-top:5
   background:linear-gradient(120deg,#254f77,#14314f) !important;
   box-shadow:none !important;
 }
-/* Boot readiness/progress/retry handlers are unchanged; no fake timing. */
-.boot-screen-backdrop {
-  background:radial-gradient(ellipse at 50% 0%,rgba(79,221,207,.12),transparent 65%),var(--gs-pattern-circuit),linear-gradient(180deg,#0d2845,#091c34 58%,#061226);
-}
-.boot-screen-backdrop::before { display:none; }
-.boot-title { -webkit-text-stroke:0; text-shadow:0 2px #061326; }
-.boot-bar { border:0; border-radius:4px; background:#07172b; box-shadow:none; }
-.boot-bar-fill { min-width:0; background:linear-gradient(180deg,#91efdc,#39b6a2); box-shadow:none; }
-.boot-bar-fill::after { display:none; animation:none; }
-
 /* An explicit, separate read action; never a claim/delete/invite action. */
 :root body[data-app-screen] .reward-inbox-card { grid-template-columns:44px minmax(0,1fr) auto; }
 :root body[data-app-screen] .reward-inbox-card.inbox-notice-card { grid-template-columns:44px minmax(0,1fr); }

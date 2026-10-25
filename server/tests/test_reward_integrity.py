@@ -69,7 +69,7 @@ def test_corrupted_preferred_deck_cannot_escape_the_peak_unlock_pool():
 
 
 def test_daily_and_season_receipts_use_unlocked_named_reward_targets():
-    now = datetime(2026, 9, 10, tzinfo=timezone.utc)
+    now = datetime(2026, 10, 10, tzinfo=timezone.utc)
     service = PlayerProfileService(now_func=lambda: now)
     profile = service.get_or_create("corrupted-engagement-deck")
     profile.preferred_battle_pool_ids = ("quantum_cannon", "removed_module")
@@ -96,7 +96,7 @@ def test_daily_and_season_receipts_use_unlocked_named_reward_targets():
 
 
 def test_arena_chest_and_shop_receipts_carry_actual_module_and_core_ids():
-    now = datetime(2026, 9, 10, 12, tzinfo=timezone.utc)
+    now = datetime(2026, 10, 10, 12, tzinfo=timezone.utc)
     meta = MetaProgressionService(now_func=lambda: now)
     profiles = PlayerProfileService(now_func=lambda: now)
 

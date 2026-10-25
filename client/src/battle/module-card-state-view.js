@@ -82,6 +82,7 @@
       const view = this.views.get(card);
       if (!view) throw new Error("Battle card must be created by its state view");
       this.data(card, "moduleId", model.id);
+      this.data(card, "core", Boolean(model.core));
       this.data(card, "category", model.category || "");
       this.toggle(card, "enemy-module-card", model.enemy);
       this.toggle(card, "fixed-module", model.core && !model.enemy);
@@ -90,6 +91,7 @@
       this.toggle(card, "core-power-target", model.targeting);
       this.toggle(card, "core-charge-card", model.core && !model.enemy);
       this.toggle(card, "core-power-ready", model.core && !model.enemy && model.coreReady);
+      this.attribute(card, "data-core-wreck", model.coreDestroyed ? "true" : null);
       this.attribute(card, "role", model.targeting ? "button" : null);
       this.attribute(card, "tabindex", model.targeting ? "0" : null);
       if (view.artwork !== model.artwork) {
@@ -104,6 +106,18 @@
       this.style(card, "--hp-percent", `${Math.round(ratio * 100)}%`);
       this.style(card, "--battle-hp-color", ratio <= .33 ? "#ff5f6d" : ratio <= .66 ? "#f0cb52" : "#60e58a");
       this.data(card, "hpState", ratio <= 0 ? "destroyed" : ratio <= .33 ? "critical" : ratio <= .66 ? "warning" : "healthy");
+      {
+        if(!view.health){
+          view.health=this.element("span",model.core ? "core-health-bar" : "module-health-bar");
+          view.health.setAttribute("role","meter");
+          card.appendChild(view.health);
+        }
+        this.attribute(view.health,"aria-label",model.coreLabel || model.name);
+        this.attribute(view.health,"aria-valuemin",0);
+        this.attribute(view.health,"aria-valuemax",model.maxHp);
+        this.attribute(view.health,"aria-valuenow",model.hp);
+        this.hidden(view.health,Boolean(model.coreDestroyed || model.hp<=0));
+      }
       if (model.core && !model.enemy) this.style(card, "--core-charge", `${model.coreCharge}%`);
       this.data(card, "powerState", model.powerState);
       this.toggle(card, "energy-disconnected", Boolean(model.powerMessage));

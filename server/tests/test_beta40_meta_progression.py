@@ -125,7 +125,8 @@ def test_core_tree_is_normalized_and_season_result_is_archived_before_soft_reset
     profile = PlayerProfileService().get_or_create("player")
     profile.rating = 5600
     profile.core_skill_points = 3
-    profile.flux_shards = 100
+    profile.flux_shards = 2000
+    profile.circuit_credits = 20000
     profile.core_upgrade_levels["core_quantum"] = 4
     service = MetaProgressionService()
     service.select_core(profile, "core_quantum")
@@ -138,6 +139,7 @@ def test_core_tree_is_normalized_and_season_result_is_archived_before_soft_reset
     view = service.view(profile)
 
     assert receipt["skill_id"] == "0_energy"
+    assert profile.circuit_credits == profile.flux_shards == 0
     assert view["cores"]["competitive_power_enabled"] is True
     assert view["cores"]["selected_core_type"] == "core_quantum"
 

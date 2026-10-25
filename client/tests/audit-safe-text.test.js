@@ -56,7 +56,8 @@ test("battle render signature includes structural definition changes",()=>{
 
 test("outer board cache does not hide definition/name/category/core artwork changes",()=>{
   const start=source.indexOf("  function renderBoard(");
-  const end=source.indexOf("  function moduleIconFor(",start);
+  const end=source.indexOf("  function moduleEmblemMarkup(",start);
+  assert.ok(start>0&&end>start);
   const signatureStart=source.indexOf("  function battleModuleRenderSignature(");
   const signatureEnd=source.indexOf("  const enemyBattleBoardView",signatureStart);
   const state={instanceId:"same",definitionId:"core",nameTr:"Çekirdek",category:"sistem",hp:100,maxHp:100};
@@ -64,7 +65,7 @@ test("outer board cache does not hide definition/name/category/core artwork chan
   const sandbox={client:{modules:new Map([["same",state]])},localBattleFinished:false,corePowerTargeting:false,
     document:{documentElement:{lang:"tr"}},metaProgressionState:{cores:{selected_core_type:"core_resonance"}},
     playerCellDebris:[],board:{},localizedUiText:text=>text,
-    createModuleCard(){},updateBattleModuleCard(){},moduleAnchorCells:new Map(),
+    createModuleCard(){},updateBattleModuleCard(){},presentBattleDeployment(){},moduleAnchorCells:new Map(),
     playerCircuitCableModules:()=>[],renderBoardCables(){},
     battleBoardView:{render(modules,options){signatures.push(options.moduleSignature([...modules][0]));}}};
   vm.runInNewContext("let renderedBoardSignature=null;\n"+source.slice(signatureStart,signatureEnd)+source.slice(start,end)+"\nthis.render=renderBoard;",sandbox);

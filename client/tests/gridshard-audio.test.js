@@ -75,7 +75,7 @@ assert.strictEqual(
 // backends through _cueGain without changing the shared source or bus.
 const amplifierCue=global.GRIDSHARD_SFX_CUES.amplifier_charge;
 assert.strictEqual(amplifierCue.asset,global.GRIDSHARD_SFX_CUES.energy_transfer.asset);
-assert.strictEqual(director._cueGain("amplifier_charge"),0.18);
+assert.strictEqual(director._cueGain("amplifier_charge"),0.045);
 assert.strictEqual(director._cueGain("energy_transfer"),1);
 function wavRms(asset) {
   const fs=require("node:fs"),path=require("node:path");
@@ -87,7 +87,7 @@ function wavRms(asset) {
   return Math.sqrt(sum/(length/2));
 }
 const amplifierRms=wavRms(amplifierCue.asset)*director._cueGain("amplifier_charge");
-const repairRms=wavRms(global.GRIDSHARD_SFX_CUES.repair_beam.asset);
+const repairRms=wavRms(global.GRIDSHARD_SFX_CUES.repair_beam.asset)*director._cueGain("repair_beam");
 assert.ok(amplifierRms<=repairRms && amplifierRms>=repairRms*.5,"support pulse stays audible without dominating repair");
 
 

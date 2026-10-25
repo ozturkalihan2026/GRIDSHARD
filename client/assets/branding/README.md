@@ -1,5 +1,20 @@
 # GRIDSHARD marka ikonları
 
+23 Ekim 2026 son revizyon: Açılışta yalnız devrenin içindeki reaktör kalır;
+üstteki ayrı logo kaldırıldı. Başlık ve slogan üstteki mavi alana taşındı.
+`startup-circuit-v1/circuit-scene.webp` üstündeki kristal/enerji nabzı üç küçük
+CSS katmanıdır; gövde/zemin oynamaz. Görsel değiştirilmedi veya yeniden üretilmedi.
+`reactor-logo.webp` yalnız önceki üretim kaydı ve tanıtım kapanışı için korunur;
+açılış HTML'inde/paketinde kullanılmaz.
+İki kaynak görsel yerleşik imagegen ile, onaylı grafik/ikon referansından üretildi;
+`tools/prepare-startup-art.py` yalnız teknik WebP dışa aktarımı yapar.
+İstemler: `docs/ACILIS_DEVRE_YETENEK_VIDEO_20261023.md`; son revizyon/testler:
+`docs/CANLI_CEKIRDEK_ACILIS_20261023.md`.
+Önceki SVG odası ve eski logo açılışta kullanılmaz; geçmiş varlıklar değişmedi.
+Tek stil sahibi `client/src/startup-loading.css`; eski canon/home boot stilleri
+kaldırıldı. İlerleme, hata/yeniden deneme ve sunucu doğrulaması değişmedi.
+Önceki tasarım notları aşağıda tarihsel kayıt olarak korunur.
+
 - `gridshard-store-icon-1024.png`: mağaza yüklemeleri ve Apple dokunma ikonu.
 - `gridshard-store-icon-512.png`: Android/PWA kataloğu.
 - `gridshard-favicon-32.png` ve `gridshard-favicon-192.png`: web sekmesi ve PWA.

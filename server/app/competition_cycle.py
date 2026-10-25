@@ -1,16 +1,12 @@
-"""Dört haftalık yarışma döngüsü.
+"""Operator-anchored 28-day cycles. Pure calendar math does not open competitions.
 
-Sezon (sezon yolu, kupa arşivi, lider panosu ödülleri) ve Takımlar Arası
-Turnuva aynı takvimi kullanır. Her döngü Pazartesi 00:00 UTC'de başlar ve dört
-ISO haftası (28 gün) sürer. Haftalık turnuva da Pazartesi başladığından her
-döngü tam dört haftalık turnuva içerir.
-
-Döngüler 28 Eylül 2026 Pazartesi'den (1. döngü) ileri ve geri sayılır. Döngü
-kimliği başlangıç gününün tarihidir (ör. ``2026-09-28``).
+The season and the later team tournament have independent explicit start anchors.
+The legacy epoch is only a fallback for reading historical calendar identifiers.
 """
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from .competition_control import configured_start
 
 
 CYCLE_WEEKS = 4
@@ -25,8 +21,12 @@ def _utc(moment: datetime | None) -> datetime:
     return value.astimezone(timezone.utc)
 
 
-def _cycle(index: int) -> dict:
-    starts_at = CYCLE_EPOCH + index * CYCLE_LENGTH
+def _anchor(team=False):
+    return (configured_start(team=True) if team else None) or configured_start() or CYCLE_EPOCH
+
+
+def _cycle(index: int, *, team=False) -> dict:
+    starts_at = _anchor(team) + index * CYCLE_LENGTH
     return {
         "index": index,
         "number": index + 1,
@@ -36,18 +36,20 @@ def _cycle(index: int) -> dict:
     }
 
 
-def competition_cycle(moment: datetime | None = None) -> dict:
+def competition_cycle(moment: datetime | None = None, *, team=False) -> dict:
     """Anı içeren döngü; ``ends_at`` bir sonraki döngünün başlangıcıdır."""
-    return _cycle((_utc(moment) - CYCLE_EPOCH) // CYCLE_LENGTH)
+    return _cycle((_utc(moment) - _anchor(team)) // CYCLE_LENGTH, team=team)
 
 
-def cycle_for_id(cycle_id: str) -> dict:
+def cycle_for_id(cycle_id: str, *, team=False) -> dict:
     """Kimlikten döngü; Pazartesi'ye ve döngü sınırına oturmayan tarih geçersizdir."""
     try:
         starts_at = datetime.strptime(str(cycle_id), "%Y-%m-%d").replace(tzinfo=timezone.utc)
     except ValueError as exc:
         raise ValueError("Geçersiz döngü kimliği.") from exc
-    offset = starts_at - CYCLE_EPOCH
-    if offset % CYCLE_LENGTH:
+    # IDs retain ISO dates even when the operator starts mid-day.
+    epoch = _anchor(team)
+    offset = starts_at.date() - epoch.date()
+    if offset.days % CYCLE_LENGTH.days:
         raise ValueError("Geçersiz döngü kimliği.")
-    return _cycle(offset // CYCLE_LENGTH)
+    return _cycle(offset.days // CYCLE_LENGTH.days, team=team)

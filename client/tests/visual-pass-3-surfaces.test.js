@@ -90,24 +90,26 @@ test("ev ekranı: artan yükseklik lig kartı ile deste paneli arasındaki boşl
   assert.match(rule('body[data-app-screen="menu"] .home-loadout-card'), /height:clamp\(150px,calc\(14\.6dvh \+ 67px\),161px\) !important;/);
 });
 
-test("Çekirdek amblemi yedi çekirdek için çizilir ve ev ekranına konur", () => {
-  const start = app.indexOf("  const CORE_EMBLEM_MARKS = Object.freeze({");
+test("yedi fiziksel çekirdek çizimi ödül ve ev ekranında ortak kaynaktır", () => {
+  const start = app.indexOf("  const CORE_VISUALS = Object.freeze({");
   const end = app.indexOf("  function renderHomeCoreHero() {");
   assert.ok(start > 0 && end > start);
   const sandbox = {};
-  vm.runInNewContext(`${app.slice(start, end)}\nObject.assign(this, { CORE_EMBLEM_MARKS, coreEmblemSvg });`, sandbox);
+  vm.runInNewContext(`${app.slice(start, end)}\nObject.assign(this, { CORE_VISUALS, coreEmblemMarkup });`, sandbox);
   const ids = ["core_resonance", "core_guardian", "core_overdrive", "core_disruptor", "core_capacitor", "core_phoenix", "core_quantum"];
-  assert.deepEqual(Object.keys(sandbox.CORE_EMBLEM_MARKS), ids);
-  const drawings = ids.map((id) => sandbox.coreEmblemSvg(id));
-  assert.equal(new Set(drawings).size, ids.length, "her çekirdeğin işareti ayrı");
-  for (const svg of drawings) {
-    assert.match(svg, /^<svg class="core-emblem" viewBox="0 0 120 120"/);
-    for (const part of ["ce-frame", "ce-gem", "ce-gem-light", "ce-gem-dark", "ce-ink", "ce-bolt"]) assert.ok(svg.includes(`class="${part}"`), part);
-    assert.equal(/\d\.\d{4,}/.test(svg), false, "koordinatlar kısa yazılır");
+  assert.deepEqual(Object.keys(sandbox.CORE_VISUALS), ids);
+  const drawings = ids.map((id) => sandbox.coreEmblemMarkup(id));
+  assert.equal(new Set(drawings).size, ids.length, "her çekirdeğin çizimi ayrı");
+  for (const [index, markup] of drawings.entries()) {
+    assert.match(markup, /class="core-physical-art"/);
+    assert.ok(markup.includes(`cores-physical-v1/${ids[index]}.webp`));
+    assert.doesNotMatch(markup, /<svg|ce-frame|ce-mark/);
+    assert.ok(fs.existsSync(path.join(__dirname,"../assets/ui/cores-physical-v1",ids[index]+".webp")));
   }
-  assert.equal(sandbox.coreEmblemSvg("bilinmeyen"), sandbox.coreEmblemSvg("core_resonance"));
+  assert.equal(sandbox.coreEmblemMarkup("bilinmeyen"), sandbox.coreEmblemMarkup("core_resonance"));
   assert.ok(app.includes("mountCoreEmblem(glyph, coreId);"));
-  assert.match(rule(".core-emblem .ce-gem"), /fill:var\(--core-accent,#56f1df\);/);
+  assert.doesNotMatch(app,/coreEmblemSvg|CORE_EMBLEM_MARKS/);
+  assert.doesNotMatch(css,/\.ce-(?:frame|mark|gem|bolt)\b/);
 });
 
 test("enderlik rengi tek dildir: sıradan çelik, ender mavi, destansı mor, efsanevi altın", () => {

@@ -52,6 +52,8 @@ function fakeElement(tag) {
 const cardsButton = fakeElement("button");
 const shopButton = fakeElement("button");
 const saleBadge = fakeElement("span");
+const moduleTab = fakeElement("button"); moduleTab.dataset.cardPage = "modules";
+const coreTab = fakeElement("button"); coreTab.dataset.cardPage = "cores";
 const sandbox = {
   metaProgressionState: null,
   uiLocale: () => "tr-TR",
@@ -59,6 +61,7 @@ const sandbox = {
   document: {
     documentElement: { lang: "tr" },
     createElement: fakeElement,
+    querySelectorAll: (selector) => selector === "[data-card-page]" ? [moduleTab, coreTab] : [],
     getElementById: (id) => (id === "dock-shop-sale" ? saleBadge : null),
     querySelector: (selector) => (selector.includes('"modules"') ? cardsButton : selector.includes('"shop"') ? shopButton : null),
   },
@@ -79,7 +82,7 @@ const moduleItem = (overrides = {}) => ({
 });
 const coreItem = (overrides = {}) => ({
   id:"core_resonance", unlocked:true, level:1, shards:2, legacy_shards:0,
-  next_upgrade_cost:{ shards:2, flux_shards:20 },
+  next_upgrade_cost:{ shards:2, circuit_credits:100, flux_shards:20 },
   skills:[{ id:"a", tier:"t1", level:3, flux_cost:10, learned:false, tier_selected:false }],
   ...overrides,
 });
@@ -136,6 +139,9 @@ withState(rich, () => {
 withState({ ...rich, flux_shards:19 }, () => {
   assert.equal(sandbox.cardNeedsAttention("core", coreItem()), false);
 });
+withState({ ...rich, circuit_credits:99 }, () => {
+  assert.equal(sandbox.coreUpgradeAvailable(coreItem()), false, "core level needs the rarity table's credits too");
+});
 // Sunucu durumu yokken ya da geçici önizlemede gösterge yanmaz.
 withState(null, () => {
   assert.equal(sandbox.cardNeedsAttention("module", moduleItem()), false);
@@ -171,6 +177,11 @@ withState(dockState({ module_collection:[moduleItem({ shards:0 }), moduleItem()]
 withState(dockState({ cores:{ types:[coreItem()] } }), () => {
   sandbox.renderDockIndicators();
   assert.equal(cardsButton.classes.has("has-upgrade-notification"), true, "yükseltilebilir çekirdek de ışığı yakar");
+  assert.equal(coreTab.classes.has("has-upgrade-arrow"), true);
+  assert.equal(moduleTab.classes.has("has-upgrade-arrow"), false);
+  const arrow = coreTab.querySelector(".upgrade-arrow");
+  sandbox.renderDockIndicators();
+  assert.equal(coreTab.querySelector(".upgrade-arrow"), arrow, "unchanged renders retain the same arrow");
 });
 withState(dockState({ shop:{ chest_store:{ sale_active:true, discount_percent:40 } } }), () => {
   sandbox.renderDockIndicators();

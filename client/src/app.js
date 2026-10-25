@@ -451,6 +451,7 @@
 
     renderParticipantBootstrapStatus();
     renderServerBootStatus();
+    requestOnboardingSync();
 
     return result;
   }
@@ -669,7 +670,7 @@
   // Mutations may briefly contend with the JSON persistence lock. Every
   // mutation carries an idempotent receipt id, so keep the request alive
   // while the server completes instead of surfacing a false timeout.
-  async function fetchWithDeadline(input, init = {}, timeoutMs = 30000) {
+  async function fetchWithDeadline(input, init = {}, timeoutMs = 30000, consume = null) {
     const controller = new AbortController();
     let timedOut = false;
     const timer = window.setTimeout(() => {
@@ -677,7 +678,12 @@
       controller.abort();
     }, timeoutMs);
     try {
-      return await fetch(input, { ...init, signal: controller.signal });
+      const response = await fetch(input, { ...init, signal: controller.signal });
+      // A server may send headers and then stall mid-body. Keep the same
+      // abort/deadline owner alive until the requested body has been consumed.
+      const result = consume ? await consume(response) : response;
+      if (timedOut) throw new Error("Response body deadline elapsed");
+      return result;
     } catch (error) {
       if (!timedOut) throw error;
       const timeoutError = new Error(
@@ -706,7 +712,7 @@
     let lastError = null;
     for (let attempt = 0; attempt < (canRetry ? 2 : 1); attempt += 1) {
       try {
-        const response = await fetchWithDeadline(
+        const {response, rawBody} = await fetchWithDeadline(
           path,
           {
             cache: "no-store",
@@ -717,9 +723,9 @@
               ...(options.headers || {}),
             },
           },
-          timeoutMs
+          timeoutMs,
+          async response => ({response, rawBody:await response.text()})
         );
-        const rawBody = await response.text();
         let payload = {};
         try {
           payload = rawBody ? JSON.parse(rawBody) : {};
@@ -1040,6 +1046,7 @@
           renderProfileSummary();
           renderMetaHubScreens({defer:true});
           renderRemoteDataStatus();
+          focusEarnedReward(screen);
           });
         });
       if (["shop", "modules", "team", "menu"].includes(screen)) {
@@ -1149,12 +1156,14 @@
 
   async function loadMetaProgression({required = false, afterSettle = false} = {}) {
     try {
-      const response = await fetchWithDeadline(
+      const {response, payload} = await fetchWithDeadline(
         `/profile/${encodeURIComponent(participantPlayerId)}/meta-progression`,
-        { cache: "no-store" }
+        { cache: "no-store" },
+        30000,
+        async response => ({response, payload:response.ok ? await response.json() : null})
       );
       if (!response.ok) throw new Error("Koleksiyon yüklenemedi.");
-      metaProgressionState = withCanonicalModuleNames(await response.json());
+      metaProgressionState = withCanonicalModuleNames(payload);
       const repair = repairBattleDeckAgainstCollection();
       if (repair.changed) {
         await persistBattlePoolDefinitionIds(repair.definitionIds);
@@ -1274,9 +1283,11 @@
   function moduleUpgradeBlockReason(item) {
     const cost = item?.next_upgrade_cost;
     const required = Number(cost?.shards || 1);
-    const usableShards = Number(item?.shards || 0) + Number(metaProgressionState?.universal_module_shards || 0);
+    const specificShards = Number(item?.shards || 0);
+    const usableShards = specificShards + Math.max(0, Number(metaProgressionState?.universal_module_shards || 0));
     if (!item?.unlocked) return `${item?.unlock_trophies ?? 0} kupada açılır.`;
     if (!cost) return "Azami seviye.";
+    if (specificShards < 0) return "Bu modül parçasının iade açığını oynayarak kapatmalısın.";
     if (usableShards < required) return `Gerekli parça: ${usableShards}/${required}`;
     if (Number(metaProgressionState?.circuit_credits || 0) < Number(cost.circuit_credits)) return `Gerekli Devre Kredisi: ${cost.circuit_credits}`;
     // Efsanevi modül seviye 8'den sonra Akı da ister.
@@ -1319,20 +1330,44 @@
     return Boolean(item?.unlocked)
       && !node.selected
       && Number(item.level) + 1 >= node.level
-      && Number(metaProgressionState?.flux_shards || 0) >= node.flux_cost;
+      && talentAffordable(node);
   }
 
   function coreUpgradeAvailable(core) {
     const cost = core?.next_upgrade_cost;
-    const owned = Number(core?.shards || 0) + Number(core?.legacy_shards || 0);
-    return Boolean(core?.unlocked && cost && owned >= Number(cost.shards)
-      && Number(metaProgressionState?.flux_shards || 0) >= Number(cost.flux_shards));
+    const specific = Number(core?.shards || 0);
+    const owned = specific + Math.max(0, Number(core?.legacy_shards || 0));
+    return Boolean(core?.unlocked && cost && specific >= 0 && owned >= Number(cost.shards)
+      && Number(metaProgressionState?.circuit_credits || 0) >= Number(cost.circuit_credits || 0)
+      && Number(metaProgressionState?.flux_shards || 0) >= Number(cost.flux_shards || 0));
   }
 
   function coreSkillLearnable(core, skill) {
     return Boolean(core?.unlocked) && !skill.learned && !skill.tier_selected
       && core.level >= skill.level
-      && Number(metaProgressionState?.flux_shards || 0) >= Number(skill.flux_cost || 0);
+      && talentAffordable(skill);
+  }
+
+  function talentAffordable(node) {
+    return Number(metaProgressionState?.circuit_credits || 0) >= Number(node.circuit_credits_cost || 0)
+      && Number(metaProgressionState?.flux_shards || 0) >= Number(node.flux_cost || 0);
+  }
+
+  function talentCostShortfall(node) {
+    if (Number(metaProgressionState?.circuit_credits || 0) < Number(node.circuit_credits_cost || 0)) {
+      return document.documentElement.lang === "en"
+        ? `${Number(node.circuit_credits_cost).toLocaleString(uiLocale())} CREDITS REQUIRED`
+        : `${Number(node.circuit_credits_cost).toLocaleString(uiLocale())} DK GEREKLİ`;
+    }
+    return Number(metaProgressionState?.flux_shards || 0) < Number(node.flux_cost || 0)
+        ? (document.documentElement.lang === "en"
+          ? `${Number(node.flux_cost).toLocaleString(uiLocale())} FLUX REQUIRED`
+          : `${Number(node.flux_cost).toLocaleString(uiLocale())} AKI GEREKLİ`) : "";
+  }
+
+  function appendTalentCosts(element, node) {
+    if (Number(node.circuit_credits_cost) > 0) element.append(createCostChip("credit", node.circuit_credits_cost));
+    if (Number(node.flux_cost) > 0) element.append(createCostChip("flux", node.flux_cost));
   }
 
   // Göstergeler yalnız sunucudan gelen gerçek durumla yanar (yerel önizlemede değil).
@@ -1372,15 +1407,23 @@
   // Bilgi ekranındaki Yetenekler sekmesinde, seçilebilir yetenek varken yeşil ok.
   function setDetailTabUpgradeArrow(button, available) {
     if (!button) return;
-    button.querySelector(".upgrade-arrow")?.remove();
+    const arrow = button.querySelector(".upgrade-arrow");
     button.classList.toggle("has-upgrade-arrow", Boolean(available));
-    if (available) button.appendChild(createUpgradeArrow());
+    if (!available) arrow?.remove();
+    else if (!arrow) button.appendChild(createUpgradeArrow());
   }
 
   // Alt çubuk: yükseltilebilir kart ya da seçilebilir yetenek varken Kartlar
   // düğmesinde yeşil ışık; sandık indirimi günü Mağaza düğmesinde indirim oranı.
   function renderDockIndicators() {
     const state = metaProgressionState;
+    for (const button of document.querySelectorAll("[data-card-page]")) {
+      const cores = button.dataset.cardPage === "cores";
+      const available = cores
+        ? (state?.cores?.types || []).some(item => cardNeedsAttention("core", item))
+        : (state?.module_collection || []).some(item => cardNeedsAttention("module", item));
+      setDetailTabUpgradeArrow(button, available);
+    }
     const cardsButton = document.querySelector('#app-bottom-dock [data-open-screen="modules"]');
     if (cardsButton) {
       const ready = (state?.module_collection || []).some((item) => cardNeedsAttention("module", item))
@@ -1918,10 +1961,10 @@
     if (kind === "core_shards") {
       const identity = coreRewardIdentity(rewards);
       const icon = document.createElement("span");
-      // Ödül satırında amblemin yalnız gövdesi çizilir (küçük boyda yörünge okunmaz).
+      // Rewards use the same approved physical painting as every other core view.
       icon.className = "resource-symbol resource-symbol-core-card is-emblem";
       icon.setAttribute("aria-hidden", "true");
-      icon.innerHTML = coreEmblemSvg(identity.id);
+      icon.innerHTML = coreEmblemMarkup(identity.id);
       applyCoreVisualIdentity(icon, identity.id);
       return icon;
     }
@@ -2589,7 +2632,7 @@
       if (rewards.core_shards) {
         const identity = coreRewardIdentity(rewards);
         const visual = CORE_VISUALS[identity.id] || CORE_VISUALS.core_resonance;
-        return `<span class="resource-symbol resource-symbol-core-card is-emblem" data-core-type="${identity.id}" style="--core-accent:${visual.accent}" aria-hidden="true">${coreEmblemSvg(identity.id)}</span>`;
+        return `<span class="resource-symbol resource-symbol-core-card is-emblem" data-core-type="${identity.id}" style="--core-accent:${visual.accent}" aria-hidden="true">${coreEmblemMarkup(identity.id)}</span>`;
       }
       if (rewards.module_shards || rewards.module_id || rewards.module_shard_target) return moduleShardSymbolMarkup(rewards);
       if (rewards.flux_shards) return resourceSymbolMarkup("flux_shards");
@@ -2870,38 +2913,7 @@
     return visual;
   }
 
-  // Çekirdek amblemi: altıgen metal yuva, içinde çekirdeğin renginde kristal ve
-  // çekirdeğe özgü işaret. Kaynak simgeleri ve sandıklarla aynı dildedir (dolu gövde,
-  // aydınlık ve gölge yüzey, koyu kontur); rengi `--core-accent` verir. Oyunda
-  // çekirdeğin göründüğü her yerde aynı çizim kullanılır: ev ekranı, Kartlar →
-  // Çekirdek, bilgi penceresi, savaş alanı (iki çekirdek ve güç düğmesi), maç sonu,
-  // profil ve Devre Yolu (`mountCoreEmblem`).
-  const CORE_EMBLEM_MARKS = Object.freeze({
-    core_resonance:'<path class="ce-mark" d="M60 44 76 60 60 76 44 60Z"/><path class="ce-mark-cut" d="M60 53 67 60 60 67 53 60Z"/>',
-    core_guardian:'<path class="ce-mark" d="M60 43 74 48v11c0 9-6 15-14 18-8-3-14-9-14-18V48Z"/><path class="ce-mark-cut" d="M60 51v18"/>',
-    core_overdrive:'<path class="ce-mark" d="M65 41 48 62h10l-3 17 17-22H62Z"/>',
-    core_disruptor:'<path class="ce-mark-line" d="M43 65 52 51l8 16 8-16 9 14"/>',
-    core_capacitor:'<path class="ce-mark" d="M45 49h26v6h4v10h-4v6H45Z"/><path class="ce-mark-cut" d="M51 55v10M58 55v10M65 55v10"/>',
-    core_phoenix:'<path class="ce-mark" d="M60 41c2 8 13 12 13 23a13 13 0 0 1-26 0c0-5 2-8 5-10 0 4 2 6 4 7-1-7 1-14 4-20Z"/>',
-    core_quantum:'<path class="ce-mark" d="M60 41 65 55 79 60 65 65 60 79 55 65 41 60 55 55Z"/><circle class="ce-mark" cx="77" cy="44" r="3.4"/>',
-  });
-  function coreEmblemSvg(coreId) {
-    const mark = CORE_EMBLEM_MARKS[coreId] || CORE_EMBLEM_MARKS.core_resonance;
-    return '<svg class="core-emblem" viewBox="0 0 120 120" focusable="false" aria-hidden="true">'
-      + '<path class="ce-frame" d="M60 9 104 34.500v51L60 111 16 85.500v-51Z"/>'
-      + '<path class="ce-frame-light" d="M60 9 16 34.500v51L60 60Z"/>'
-      + '<path class="ce-frame-dark" d="M104 34.500v51L60 111V60Z"/>'
-      + '<path class="ce-ink" d="M60 9 104 34.500v51L60 111 16 85.500v-51Z"/>'
-      + '<path class="ce-well" d="M60 21 93.500 40.500v39L60 99 26.500 79.500v-39Z"/>'
-      + '<path class="ce-gem" d="M60 26 89 60 60 94 31 60Z"/>'
-      + '<path class="ce-gem-light" d="M60 26 31 60H60Z"/>'
-      + '<path class="ce-gem-dark" d="M89 60 60 94V60Z"/>'
-      + '<path class="ce-ink" d="M60 26 89 60 60 94 31 60Z"/>'
-      + mark
-      + '<circle class="ce-bolt" cx="60" cy="15" r="2.400"/><circle class="ce-bolt" cx="98.500" cy="37.500" r="2.400"/><circle class="ce-bolt" cx="98.500" cy="82.500" r="2.400"/>'
-      + '<circle class="ce-bolt" cx="60" cy="105" r="2.400"/><circle class="ce-bolt" cx="21.500" cy="82.500" r="2.400"/><circle class="ce-bolt" cx="21.500" cy="37.500" r="2.400"/>'
-      + '</svg>';
-  }
+  // One current physical painting for menus, rewards and deployed-core fallback.
   function coreEmblemMarkup(coreId) {
     const id = CORE_VISUALS[coreId] ? coreId : "core_resonance";
     return `<span class="core-emblem-set"><img class="core-physical-art" src="./assets/ui/cores-physical-v1/${id}.webp" alt="" aria-hidden="true" draggable="false"></span>`;
@@ -3082,7 +3094,10 @@
   function renderCoreCollection() {
     const host = document.getElementById("core-collection-list");
     if (!host) return;
-    const signature = JSON.stringify([metaProgressionState?.cores?.types, document.documentElement.lang]);
+    // Availability also changes when another operation spends/awards currency.
+    const signature = JSON.stringify([metaProgressionState?.cores?.types,
+      metaProgressionState?.flux_shards, metaProgressionState?.circuit_credits,
+      metaProgressionState?.unavailable, document.documentElement.lang]);
     if (renderedCoreCollection?.host === host && renderedCoreCollection.signature === signature) return;
     renderedCoreCollection = {host, signature};
     host.replaceChildren();
@@ -3230,7 +3245,8 @@
         level.title = localizedUiText(TALENT_KIND_LABELS[tierKind] || "Yetenek");
         const levelValue = document.createElement("strong");
         levelValue.textContent = `SV ${threshold.level}`;
-        level.append(levelValue, createCostChip("flux", threshold.flux_cost));
+        level.append(levelValue);
+        appendTalentCosts(level, threshold);
         const kind = document.createElement("em");
         kind.className = "module-talent-kind";
         kind.textContent = localizedUiText(`EŞİK ${tierIndex + 1}`);
@@ -3248,7 +3264,7 @@
             ? "SEÇİLDİ"
             : skill.tier_selected ? "DİĞER DAL SEÇİLDİ"
               : core.level < skill.level ? `SV ${skill.level} GEREKLİ`
-                : Number(metaProgressionState?.flux_shards || 0) < Number(skill.flux_cost || 0) ? `${skill.flux_cost} AKI GEREKLİ`
+                : !talentAffordable(skill) ? talentCostShortfall(skill)
                   : "SEÇ";
           const skillName = document.createElement("strong");
           skillName.textContent = talentDisplayName(skill);
@@ -3319,9 +3335,16 @@
     if (upgrade) {
       upgrade.disabled = !canUpgrade;
       upgrade.setAttribute("aria-disabled", String(upgrade.disabled));
-      setCostButtonLabel(upgrade, localizedUiText(cost ? "YÜKSELT" : "AZAMİ SEVİYE"), cost ? [["flux", cost.flux_shards]] : []);
+      setCostButtonLabel(upgrade, localizedUiText(cost ? "YÜKSELT" : "AZAMİ SEVİYE"), cost
+        ? [["credit", cost.circuit_credits], ["flux", cost.flux_shards]].filter(([, amount]) => Number(amount) > 0)
+        : []);
     }
-    setText("core-detail-status", !core.unlocked ? `Arena ${core.unlock_arena} seviyesinde açılır.` : cost && !canUpgrade ? `${cost.shards} parça ve ${cost.flux_shards} Akı gerekli.` : "");
+    const costCopy = cost ? [
+      `${cost.shards} çekirdek parçası`,
+      ...(Number(cost.circuit_credits) > 0 ? [`${Number(cost.circuit_credits).toLocaleString(uiLocale())} Devre Kredisi`] : []),
+      ...(Number(cost.flux_shards) > 0 ? [`${Number(cost.flux_shards).toLocaleString(uiLocale())} Akı`] : []),
+    ].join(" + ") : "";
+    setText("core-detail-status", !core.unlocked ? `Arena ${core.unlock_arena} seviyesinde açılır.` : cost && !canUpgrade ? `${costCopy} gerekli.` : "");
     for (const button of document.querySelectorAll("[data-core-detail-tab]")) button.classList.toggle("is-active", button.dataset.coreDetailTab === "overview");
     renderCoreDetailTab("overview");
     if (dialog?.showModal && !dialog.open) dialog.showModal();
@@ -3463,7 +3486,9 @@
     const state = metaProgressionState || fallbackMetaProgression();
     const host = document.getElementById("module-collection-grid");
     const signature = JSON.stringify([state.module_collection, deckEditorSlots, battlePoolPresets,
-      activeBattlePoolPresetName, pendingDeckModuleInstanceId, activeModuleFilter, document.documentElement.lang]);
+      activeBattlePoolPresetName, pendingDeckModuleInstanceId, activeModuleFilter,
+      state.circuit_credits, state.flux_shards, state.universal_module_shards,
+      state.unavailable, document.documentElement.lang]);
     if (renderedModuleCollection?.host === host && renderedModuleCollection.signature === signature) return;
     renderedModuleCollection = {host, signature};
     document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
@@ -4409,6 +4434,7 @@
     const engagementPass = profileState.profile?.engagement?.premium_pass || null;
     const active = Boolean(pass?.active ?? engagementPass?.active);
     button.hidden = active || !(pass || engagementPass?.purchasable);
+    if (pass?.season_active === false || profileState.profile?.engagement?.season_active === false) button.hidden = true;
     button.disabled = Boolean(!currentPurchaseProvider() || purchaseInFlight || !paidProductAvailable(pass));
     button.textContent = `ÜCRETLİ GEÇİŞİ AÇ · ${paidProductPrice(pass, engagementPass?.price_label_tr || "199,99 TL")}`;
   }
@@ -4941,8 +4967,9 @@
         level.title = localizedUiText(TALENT_KIND_LABELS[node.kind] || "Yetenek");
         const levelValue = document.createElement("strong");
         levelValue.textContent = `SV ${node.level}`;
-        // Akı bedeli yazıyla değil simgesiyle gösterilir.
-        level.append(levelValue, createCostChip("flux", node.flux_cost));
+        // Display only charged currencies, from the authoritative server node.
+        level.append(levelValue);
+        appendTalentCosts(level, node);
         const choices = document.createElement("div");
         choices.className = "module-talent-choices";
         const kindLabel = TALENT_KIND_LABELS[node.kind];
@@ -4964,7 +4991,7 @@
             ? "SEÇİLDİ"
             : node.selected ? "DİĞER DAL SEÇİLDİ"
               : Number(item.level) + 1 < node.level ? `SV ${node.level} GEREKLİ`
-                : Number(metaProgressionState?.flux_shards || 0) < node.flux_cost ? `${node.flux_cost} AKI GEREKLİ`
+                : !talentAffordable(node) ? talentCostShortfall(node)
                   : "SEÇ";
           const choiceName = talentDisplayName(choice);
           const choiceTitle = document.createElement("strong");
@@ -5143,6 +5170,25 @@
     return `team:${kind}:${participantPlayerId}:${Date.now()}:${Math.random().toString(16).slice(2)}`;
   }
 
+  // Read ownership is distinct from navigation: background data may update a
+  // cache, but an older read must never replace a newer read/mutation/account.
+  function createViewReadOwner(readState) {
+    let generation = 0;
+    const isCurrent = ticket => ticket.generation === generation
+      && ticket.playerId === participantPlayerId && ticket.state === readState();
+    return Object.freeze({
+      begin:() => ({generation:++generation, playerId:participantPlayerId, state:readState()}),
+      isCurrent,
+      commit(ticket, apply) {
+        if (!isCurrent(ticket)) return false;
+        apply();
+        ticket.state = readState();
+        return true;
+      },
+    });
+  }
+  const teamViewReads = createViewReadOwner(() => teamState);
+
   // Takım durumu sunucudan gelene kadar ne takım sayfası ne de "katıl /
   // oluştur" ekranı gösterilir; ilk yükleme başarısız olursa yeniden deneme
   // düğmesi çıkar.
@@ -5161,15 +5207,17 @@
   }
 
   async function loadTeamView() {
+    const ticket = teamViewReads.begin();
     const connection = document.getElementById("team-connection-state");
     if (connection) connection.textContent = "Yükleniyor…";
     renderTeamSections();
     try {
-      teamState = await requestJsonWithDeadline(
-        `/teams/player/${encodeURIComponent(participantPlayerId)}`,
+      const payload = await requestJsonWithDeadline(
+        `/teams/player/${encodeURIComponent(ticket.playerId)}`,
         { cache: "no-store" },
         10000
       );
+      if (!teamViewReads.commit(ticket, () => { teamState = payload; })) return {ok:false, stale:true};
       if (connection) connection.textContent = teamState.joined ? "BAĞLI" : "TAKIM YOK";
       setTeamActionStatus("");
       renderTeamHub();
@@ -5178,6 +5226,7 @@
       }
       return { ok:true, state:teamState };
     } catch (error) {
+      if (!teamViewReads.isCurrent(ticket)) return {ok:false, stale:true};
       if (connection) connection.textContent = "BAĞLANTI HATASI";
       setTeamActionStatus(error instanceof Error ? error.message : String(error), "error");
       renderTeamSections({ failed:true });
@@ -5222,18 +5271,22 @@
     }
   }
 
+  const socialViewReads = createViewReadOwner(() => socialState);
   async function loadSocialView({ quiet = false } = {}) {
+    const ticket = socialViewReads.begin();
     if (!quiet) setFriendsStatus("Arkadaş ağı yükleniyor…", "pending");
     try {
-      socialState = await requestJsonWithDeadline(
-        `/social/${encodeURIComponent(participantPlayerId)}`,
+      const payload = await requestJsonWithDeadline(
+        `/social/${encodeURIComponent(ticket.playerId)}`,
         { cache:"no-store" },
         12000
       );
+      if (!socialViewReads.commit(ticket, () => { socialState = payload; })) return {ok:false, stale:true};
       if (!quiet) setFriendsStatus("");
       renderFriendsScreen();
       return { ok:true, state:socialState };
     } catch (error) {
+      if (!socialViewReads.isCurrent(ticket)) return {ok:false, stale:true};
       if (!quiet) setFriendsStatus(error instanceof Error ? error.message : String(error), "error");
       return { ok:false, error };
     }
@@ -6047,8 +6100,6 @@
     // Notification ownership stays live even when the friends page is closed.
     renderSocialNotificationDots();
     if (!socialState || document.hidden || document.body.dataset.appScreen !== "friends") return;
-    const summary = document.getElementById("friends-summary");
-    if (summary) summary.textContent = `${socialState.friends?.length || 0} / ${socialState.friend_limit || 100} arkadaş`;
 
     // Ebeveyn ayarı: sohbet, özel mesaj ve arkadaşlık isteği yolları kapanır;
     // arkadaş listesi ve arkadaş savaşı durur. Asıl engel sunucudadır.
@@ -6295,6 +6346,12 @@
       : "—";
   }
 
+  function competitionStatusLabel(tournament) {
+    if (tournament?.status === "waiting_for_launch") return "Başlangıç bekleniyor";
+    if (tournament?.status === "waiting_for_participants") return `Kayıt bekliyor · ${Number(tournament.participant_count || 0)} / ${Number(tournament.minimum_participants || 4)}`;
+    return `${eventDateLabel(tournament?.period?.starts_at)} — ${eventDateLabel(tournament?.period?.ends_at)}`;
+  }
+
   // Sıralamada ilk üç satırın yanında ödül sandığı ve içeriği görünür.
   function appendTournamentPrizeChest(item, prizes, position, note) {
     const prize = (prizes || []).find((candidate) => Number(candidate.position) === Number(position));
@@ -6354,13 +6411,13 @@
     const reset = document.getElementById("weekly-tournament-reset");
     const rules = document.getElementById("weekly-tournament-rules");
     if (name) name.textContent = tournament.name_tr || "Haftalık Devre Turnuvası";
-    if (reset) reset.textContent = `${eventDateLabel(tournament.period?.starts_at)} — ${eventDateLabel(tournament.period?.ends_at)}`;
+    if (reset) reset.textContent = competitionStatusLabel(tournament);
     if (rules) rules.textContent = tournament.rules_tr || "";
     const register = document.getElementById("weekly-tournament-register");
     const viewer = state?.viewer || {};
     if (register) {
-      register.disabled = Boolean(viewer.weekly_registered);
-      register.textContent = viewer.weekly_registered
+      register.disabled = tournament.registration_open === false || Boolean(viewer.weekly_registered);
+      register.textContent = tournament.registration_open === false ? "BAŞLANGIÇ BEKLENİYOR" : viewer.weekly_registered
         ? "TURNUVAYA KATILDIN"
         : `${Number(tournament.entry_fee || 0)} DK · TURNUVAYA KATIL`;
     }
@@ -6427,7 +6484,7 @@
     const rules = document.getElementById("team-tournament-rules");
     const phaseLabel = TEAM_TOURNAMENT_PHASE_TR[tournament.phase] || "";
     if (name) name.textContent = tournament.name_tr || "Takımlar Arası Turnuva";
-    if (week) week.textContent = `${Number(tournament.week || 1)}. HAFTA · ${phaseLabel}`;
+    if (week) week.textContent = String(tournament.status || "").startsWith("waiting_for_") ? competitionStatusLabel(tournament) : `${Number(tournament.week || 1)}. HAFTA · ${phaseLabel}`;
     if (rules) rules.textContent = tournament.rules_tr || "";
     const viewer = state?.viewer || {};
     const register = document.getElementById("team-tournament-register");
@@ -6732,23 +6789,27 @@
     const teamLinkName = document.getElementById("team-event-link-name");
     const teamLinkPeriod = document.getElementById("team-event-link-period");
     if (weeklyLinkName) weeklyLinkName.textContent = weekly.name_tr || "Haftalık Devre Turnuvası";
-    if (weeklyLinkPeriod) weeklyLinkPeriod.textContent = `${eventDateLabel(weekly.period?.starts_at)} — ${eventDateLabel(weekly.period?.ends_at)}`;
+    if (weeklyLinkPeriod) weeklyLinkPeriod.textContent = competitionStatusLabel(weekly);
     if (teamLinkName) teamLinkName.textContent = team.name_tr || "Takımlar Arası Turnuva";
-    if (teamLinkPeriod) teamLinkPeriod.textContent = `${Number(team.week || 1)}. hafta · ${eventDateLabel(team.period?.ends_at)} tarihinde yenilenir`;
+    if (teamLinkPeriod) teamLinkPeriod.textContent = String(team.status || "").startsWith("waiting_for_") ? competitionStatusLabel(team) : `${Number(team.week || 1)}. hafta · ${eventDateLabel(team.period?.ends_at)} tarihinde yenilenir`;
   }
 
+  const eventViewReads = createViewReadOwner(() => eventsState);
   async function loadEventsView() {
+    const ticket = eventViewReads.begin();
     const statuses = ["event-action-status", "weekly-event-status", "team-event-status"]
       .map((id) => document.getElementById(id))
       .filter(Boolean);
     for (const status of statuses) status.textContent = "Turnuva verileri yükleniyor…";
     try {
-      eventsState = await requestJsonWithDeadline(`/events?player_id=${encodeURIComponent(participantPlayerId)}`, { cache:"no-store" }, 12000);
+      const payload = await requestJsonWithDeadline(`/events?player_id=${encodeURIComponent(ticket.playerId)}`, { cache:"no-store" }, 12000);
+      if (!eventViewReads.commit(ticket, () => { eventsState = payload; })) return {ok:false, stale:true};
       for (const status of statuses) status.textContent = "";
       renderEventsHub();
       loadDailyMetaState({ present:false });
       return { ok:true, state:eventsState };
     } catch (error) {
+      if (!eventViewReads.isCurrent(ticket)) return {ok:false, stale:true};
       for (const status of statuses) status.textContent = error instanceof Error ? error.message : String(error);
       return { ok:false, error };
     }
@@ -6911,13 +6972,16 @@
     });
   }
 
+  const dailyMetaReads = createViewReadOwner(() => dailyMetaState);
   async function loadDailyMetaState({ present = false } = {}) {
+    const ticket = dailyMetaReads.begin();
     try {
-      dailyMetaState = await requestJsonWithDeadline(
-        `/profile/${encodeURIComponent(participantPlayerId)}/daily-meta`,
+      const payload = await requestJsonWithDeadline(
+        `/profile/${encodeURIComponent(ticket.playerId)}/daily-meta`,
         { cache:"no-store" },
         12000
       );
+      if (!dailyMetaReads.commit(ticket, () => { dailyMetaState = payload; })) return {ok:false, stale:true};
       const status = document.getElementById("daily-meta-dialog-status");
       if (status) status.textContent = "";
       renderDailyMetaCard();
@@ -6925,7 +6989,7 @@
       const dialog = document.getElementById("daily-meta-dialog");
       if (present && dailyMetaState.requires_roll && dialog && !dialog.open) {
         void afterStartup(() => {
-          if (dialog.open || !dailyMetaState?.requires_roll
+          if (!dailyMetaReads.isCurrent(ticket) || dialog.open || !dailyMetaState?.requires_roll
             || document.getElementById("review-access-dialog")?.open) return;
           if (dialog.showModal) dialog.showModal();
           else dialog.setAttribute("open", "");
@@ -6933,6 +6997,7 @@
       }
       return { ok:true, state:dailyMetaState };
     } catch (error) {
+      if (!dailyMetaReads.isCurrent(ticket)) return {ok:false, stale:true};
       const status = document.getElementById("daily-meta-dialog-status");
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
       return { ok:false, error };
@@ -8618,12 +8683,12 @@
           let lastError = null;
           for (let attempt = 0; attempt < 4; attempt += 1) {
             try {
-              const response = await fetchWithDeadline(
+              const {response, payload} = await fetchWithDeadline(
                 path,
                 { cache: "no-store" },
-                30000
+                30000,
+                async response => ({response, payload:await response.json()})
               );
-              const payload = await response.json();
               if (!response.ok) {
                 throw new Error(
                   payload.detail
@@ -8654,7 +8719,6 @@
 
   function resetPostMatchReveal() {
     window.clearTimeout(postMatchRevealTimer);
-    document.getElementById("battle-ended-banner")?.remove();
     postMatchRevealTimer = null;
     postMatchRevealKey = null;
     postMatchRevealReady = false;
@@ -8670,21 +8734,12 @@
     postMatchRevealKey = normalizedKey;
     postMatchRevealReady = !waitForCoreExplosion;
     if (!waitForCoreExplosion) {
-      document.getElementById("battle-ended-banner")?.remove();
       renderPlayModeUi();
       return;
-    }
-    const arena=document.getElementById("duel-arena");
-    if(arena && !document.getElementById("battle-ended-banner")) {
-      const banner=document.createElement("div");
-      banner.id="battle-ended-banner";banner.setAttribute("role","status");
-      banner.textContent=localizedUiText("SAVAŞ SONA ERDİ");
-      arena.appendChild(banner);
     }
     postMatchRevealTimer = window.setTimeout(() => {
       postMatchRevealTimer = null;
       postMatchRevealReady = true;
-      document.getElementById("battle-ended-banner")?.remove();
       renderPlayModeUi();
     }, POST_MATCH_CORE_EXPLOSION_HOLD_MS);
   }
@@ -9778,9 +9833,6 @@
       }
       if (document.documentElement) document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
-      if (battleJustStarted) {
-        triggerGridshardCue("energy_transfer");
-      }
     }
     renderPlayModeUi();
     renderHomeHubWhenVisible();
@@ -9878,6 +9930,8 @@
   let battleEmojiCooldownUntil = 0;
   let battleEmojiCooldownTimer = 0;
   const shelf = document.getElementById("module-shelf");
+  const pendingBattleDeployments = [];
+  const liveBattleDeployments = new Set();
   let corePowerCharge = 0;
   let corePowerReady = false;
   let corePowerTargeting = false;
@@ -9945,7 +9999,7 @@
     applyCoreVisualIdentity(corePowerButtonEl, selectedCore);
     mountCoreEmblem(corePowerButtonEl.querySelector(".core-power-glyph"), selectedCore);
     const coreCard = board?.querySelector('[data-module-id="core-1"]');
-    if (coreCard) {
+    if (coreCard && coreCard.dataset.coreWreck !== "true") {
       applyCoreVisualIdentity(coreCard, selectedCore);
       coreCard.style.setProperty("--core-charge", `${charge}%`);
       coreCard.classList.toggle("core-power-ready", corePowerReady);
@@ -12869,14 +12923,14 @@
     const sessionId = localServerSessionId;
     try {
       return await localServerRequests.run(async () => {
-        const response=await fetchWithDeadline(
+        return await fetchWithDeadline(
           `/local-ai/sessions/${encodeURIComponent(sessionId)}/snapshot`
           + `?player_id=${encodeURIComponent(participantPlayerId)}`
           + `&cursor=${localServerEventCursor}`,
           { cache:"no-store" },
-          5000
+          5000,
+          response => response.ok ? response.json() : null
         );
-        return response.ok ? response.json() : null;
       }, payload => sessionId === localServerSessionId && applyLocalServerSnapshotEnvelope(payload));
     } catch (_error) {
       // Sunucu köprüsü açılamazsa mevcut çevrimdışı test savaşı kesilmez.
@@ -12887,7 +12941,7 @@
     stopLocalServerPolling();
     const generation = localServerRequests.generation;
     try {
-      const response=await fetchWithDeadline(
+      const {response, payload}=await fetchWithDeadline(
         "/local-ai/sessions",
         {
           method:"POST",
@@ -12911,12 +12965,12 @@
               })),
           }),
         },
-        8000
+        8000,
+        async response => ({response, payload:response.ok ? await response.json() : null})
       );
       if (!response.ok) {
         return false;
       }
-      const payload=await response.json();
       if (!payload?.session_id) return false;
       if (!localServerRequests.isCurrent(generation)) {
         void closeLocalServerSession(payload.session_id);
@@ -12970,7 +13024,7 @@
     const sessionId = localServerSessionId;
     const generation = localServerRequests.generation;
     try {
-      const response=await fetchWithDeadline(
+      const {response, detail}=await fetchWithDeadline(
         `/local-ai/sessions/${encodeURIComponent(sessionId)}/commands`,
         {
           method:"POST",
@@ -12985,13 +13039,11 @@
             payload:command.payload,
           }),
         },
-        5000
+        5000,
+        async response => ({response, detail:response.ok ? null : await response.json().catch(() => ({}))})
       );
       if (!localServerRequests.isCurrent(generation) || sessionId !== localServerSessionId) return false;
       if (!response.ok) {
-        const detail=await response
-          .json()
-          .catch(() => ({}));
         logClientMessage(
           detail.detail
           || "Sunucu savaş komutunu reddetti."
@@ -13034,6 +13086,7 @@
   // Sahnedeki bütün geçici efektleri ve bekleyen efekt işlerini bırakır; savaş
   // durumu (tahta, Akım, Çekirdek gücü) yerinde kalır.
   function clearBattleEffects() {
+    clearBattleDeployments();
     moduleMotion.reset();
     pendingModuleVfx=null;
     moduleVfx.reset();
@@ -13066,6 +13119,7 @@
   function handleBattleVisibilityChange() {
     syncBattleClockVisibility();
     if (document.hidden) {
+      clearBattleDeployments();
       moduleMotion.clear();
       pendingModuleVfx=null;
       moduleVfx.clearEffects();
@@ -13237,7 +13291,6 @@
 
     criticalCoreAudioRequested = false;
     requestOwnedAudioState("local_battle_started");
-    triggerGridshardCue("energy_transfer");
 
     createEnemyBoard();
     renderEnemyBoard();
@@ -16684,11 +16737,6 @@
     }
   }
 
-  const CIRCUIT_CABLE_DIRECTIONS = [
-    { dx:1, dy:0 },
-    { dx:0, dy:1 },
-  ];
-
   function cablePositionKey(position) {
     return `${Number(position?.x)},${Number(position?.y)}`;
   }
@@ -16730,11 +16778,77 @@
     battleLayoutRefreshQueued = true;
     const refresh = () => {
       battleLayoutRefreshQueued = false;
+      fitCircuitScene();
       if (board) renderBoardCables(board, playerCircuitCableModules());
       if (enemyBoard) renderBoardCables(enemyBoard, enemyCircuitCableModules());
+      positionCircuitVs();
     };
     if (typeof window.requestAnimationFrame === "function") window.requestAnimationFrame(refresh);
     else refresh();
+  }
+
+  function circuitSceneLayout({width,height,headerHeight,footerHeight,tilt=30,zoom=1.08}) {
+    const baseGap=Math.max(8,Math.min(10,width*.02));
+    const baseBetween=Math.max(24,Math.min(30,height*.04));
+    const yScale=Math.cos(tilt*Math.PI/180)*zoom;
+    // Identity and deck must finish BEFORE the rear metal rim. Equipment can
+    // stand above its socket, so keep the complete upper rim clear as well.
+    const usable=Math.max(1,height-headerHeight-footerHeight-50-baseBetween);
+    const byHeight=(usable/(3.6*yScale)-2*baseGap)/3;
+    const byWidth=(width*.9/zoom-4*baseGap)/5;
+    const baseSize=Math.max(12,Math.min(84,byHeight,byWidth));
+    const baseHeight=(3*baseSize+2*baseGap)*yScale;
+    const available=Math.max(1,height-headerHeight-footerHeight-9);
+    // Enlarge the complete live circuit, including its sockets and gutters.
+    // Reclaim empty outer margins first; very short/narrow viewports still fit.
+    const growth=Math.min(1.10,(available-8)/(3.6*baseHeight));
+    const size=baseSize*growth,gap=baseGap*growth;
+    const boardHeight=3*size+2*gap,projectedHeight=boardHeight*yScale;
+    const between=Math.max(8,Math.min(baseBetween,available-3.6*projectedHeight));
+    const sceneTop=4+headerHeight;
+    const inset=(boardHeight-projectedHeight)/2;
+    const enemyTop=sceneTop+.32*projectedHeight-inset;
+    const playerTop=sceneTop+1.8*projectedHeight+between+.32*projectedHeight-inset;
+    // Preserve earlier increases and apply this revision's additional 10%.
+    // Circuit enlargement stays independent. Core/module normalization is .85.
+    const equipmentSize=baseSize*.92*1.15*1.10*1.10;
+    return {size,gap,enemyTop,playerTop,boardHeight,projectedHeight,equipmentSize,growth,
+      rimBottom:sceneTop+3.6*projectedHeight+between};
+  }
+
+  function fitCircuitScene() {
+    const arena=board?.closest?.('.vertical-circuit-arena');
+    if(!arena?.clientWidth || !arena.clientHeight)return;
+    const header=arena.querySelector('.duel-enemy-identity');
+    const footer=arena.querySelector('.duel-player-identity');
+    if(!header || !footer)return;
+    const style=getComputedStyle(arena);
+    const layout=circuitSceneLayout({width:arena.clientWidth,height:arena.clientHeight,
+      headerHeight:header.offsetHeight,footerHeight:footer.offsetHeight,
+      tilt:parseFloat(style.getPropertyValue('--gs-camera-tilt'))||0,
+      zoom:parseFloat(style.getPropertyValue('--gs-camera-zoom'))||1});
+    for(const [key,value] of [['--gs-battle-card-size',layout.size],['--gs-board-gap',layout.gap],
+      ['--scene-enemy-top',layout.enemyTop],['--scene-player-top',layout.playerTop],
+      ['--gs-equipment-size',layout.equipmentSize]]){
+      const next=`${Math.floor(value*1000)/1000}px`;
+      if(arena.style.getPropertyValue(key)!==next)arena.style.setProperty(key,next);
+    }
+  }
+
+  function positionCircuitVs() {
+    // Only on layout invalidation, never on combat ticks. The two paintings
+    // have asymmetric rim depth, so the grid-row midpoint is not their visual
+    // midpoint. Invisible registration points share the actual terrain camera.
+    const arena=board?.closest?.('.vertical-circuit-arena');
+    const vs=arena?.querySelector('.duel-vs');
+    const upper=arena?.querySelector('[data-circuit-rim="bottom"]');
+    const lower=arena?.querySelector('[data-circuit-rim="top"]');
+    if(!vs || !upper || !lower || !board.clientWidth || !enemyBoard?.clientWidth)return;
+    const a=upper.getBoundingClientRect(),b=lower.getBoundingClientRect(),r=vs.getBoundingClientRect();
+    if(!r.height)return;
+    const current=parseFloat(vs.style.getPropertyValue('--circuit-vs-offset')) || 0;
+    const offset=Math.round((current+(a.top+b.top)/2-(r.top+r.height/2))*100)/100;
+    if(Math.abs(offset-current)>.1)vs.style.setProperty('--circuit-vs-offset',`${offset}px`);
   }
 
   function observeBattleLayout(element) {
@@ -16743,6 +16857,8 @@
       battleLayoutObserver = new ResizeObserver(() => invalidateBattleLayout());
     }
     battleLayoutObserver.observe(element);
+    const arena=element.closest?.('.vertical-circuit-arena');
+    if(arena)battleLayoutObserver.observe(arena);
   }
 
   function measureBoardCableGeometry(boardElement) {
@@ -16760,172 +16876,180 @@
         height:cell.offsetHeight,
       });
     }
+    // Transparent equal hitboxes register to the island's single native
+    // floor. Cables use their real recessed seams, never a second drawn grid.
+    const cell=(x,y)=>geometry.cells.get(`${x},${y}`);
+    if(cell(0,0) && cell(4,2)){
+      geometry.channelX=[0,...[1,2,3,4].map(x=>{
+        const a=cell(x-1,0),b=cell(x,0);return (a.left+a.width+b.left)/2/geometry.width;
+      }),1];
+      geometry.channelY=[0,...[1,2].map(y=>{
+        const a=cell(0,y-1),b=cell(0,y);return (a.top+a.height+b.top)/2/geometry.height;
+      }),1];
+    }
     return geometry;
   }
 
-  // Kenarın iki ucu: komşu hücrelerin birbirine bakan kenar ortaları (tahta pikseli).
-  function circuitCableEndpoints(geometry, first, second) {
-    const firstCell = geometry.cells.get(cablePositionKey(first));
-    const secondCell = geometry.cells.get(cablePositionKey(second));
-    if (!firstCell || !secondCell) return null;
-    const firstCenter = {
-      x:firstCell.left + (firstCell.width / 2),
-      y:firstCell.top + (firstCell.height / 2),
-    };
-    const secondCenter = {
-      x:secondCell.left + (secondCell.width / 2),
-      y:secondCell.top + (secondCell.height / 2),
-    };
-    const horizontal = first.y === second.y;
-    const forward = horizontal ? second.x > first.x : second.y > first.y;
-    const start = horizontal
-      ? { x:firstCell.left + (forward ? firstCell.width : 0), y:firstCenter.y }
-      : { x:firstCenter.x, y:firstCell.top + (forward ? firstCell.height : 0) };
-    const end = horizontal
-      ? { x:secondCell.left + (forward ? 0 : secondCell.width), y:secondCenter.y }
-      : { x:secondCenter.x, y:secondCell.top + (forward ? 0 : secondCell.height) };
-    return { start, end };
-  }
-
-  function createCircuitCableLine(layer, geometry, first, second, className) {
-    const points = circuitCableEndpoints(geometry, first, second);
-    if (!points) return null;
-    const { start, end } = points;
-    const line=document.createElementNS("http://www.w3.org/2000/svg","line");
-    line.classList.add(...className.split(" ").filter(Boolean));
-    line.setAttribute("x1",String(start.x));
-    line.setAttribute("y1",String(start.y));
-    line.setAttribute("x2",String(end.x));
-    line.setAttribute("y2",String(end.y));
-    layer.appendChild(line);
-    return line;
-  }
-
-  function createCircuitCableContacts(layer, geometry, first, second) {
-    const points = circuitCableEndpoints(geometry, first, second);
-    if (!points) return;
-    for (const point of [points.start, points.end]) {
-      const contact = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      contact.classList.add("circuit-cable-contact");
-      contact.setAttribute("cx", String(point.x));
-      contact.setAttribute("cy", String(point.y));
-      contact.setAttribute("r", "2.3");
-      layer.appendChild(contact);
-    }
-  }
-
-  // Visual bus routing only: energy and adjacency rules remain server-owned.
-  // One deterministic orthogonal route per powered destination, not every
-  // shortest route in the rectangle. Empty sockets can carry the board's bus;
-  // they never become powered modules or invented destinations.
-  function circuitCableRoutes(modules) {
-    const validCells = new Set(BOARD_CELLS.map(([x,y]) => `${x},${y}`));
-    const live = modules.filter(module => module?.position
-      && validCells.has(cablePositionKey(module.position))
-      && module.status !== "destroyed" && Number(module.hp ?? 1) > 0);
-    const core = live.find(module => module.definitionId === "core" || module.nameTr === "Çekirdek");
-    const fedCells = new Set();
-    const energizedEdges = new Set();
-    if (!core) return {fedCells, energizedEdges};
-    for (const module of live) {
-      if (module !== core && module.isPowered === false) continue;
-      fedCells.add(cablePositionKey(module.position));
-      let from = {x:Number(core.position.x), y:Number(core.position.y)};
-      const target = {x:Number(module.position.x), y:Number(module.position.y)};
-      const addStep = next => {
-        if (validCells.has(cablePositionKey(next))) {
-          energizedEdges.add(`${cablePositionKey(from)}>${cablePositionKey(next)}`);
+  // Channels are a measured graph of the gutters around the 15 sockets.
+  // Equipment can tap its upper OR lower channel. Dijkstra selects the
+  // shortest physical length; equal lengths prefer fewer bends. No path can
+  // use a socket interior as a shortcut.
+  function circuitGutterGraph(geometry) {
+    const nodes=[], junctions=new Map(), ports=new Map();
+    const cell=(x,y)=>geometry.cells.get(`${x},${y}`);
+    if (!cell(0,0) || !cell(4,2)) return {nodes,ports};
+    const gapX=cell(1,0).left-cell(0,0).left-cell(0,0).width;
+    const gapY=cell(0,1).top-cell(0,0).top-cell(0,0).height;
+    const xs=geometry.channelX?.map(x=>x*geometry.width) || Array.from({length:6},(_,x)=>x===0 ? cell(0,0).left-gapX/2
+      : cell(x-1,0).left+cell(x-1,0).width+gapX/2);
+    const ys=geometry.channelY?.map(y=>y*geometry.height) || Array.from({length:4},(_,y)=>y===0 ? cell(0,0).top-gapY/2
+      : cell(0,y-1).top+cell(0,y-1).height+gapY/2);
+    const add=(x,y)=>{const id=nodes.length;nodes.push({x,y,id,links:[]});return id;};
+    const link=(a,b)=>{const length=Math.abs(nodes[a].x-nodes[b].x)+Math.abs(nodes[a].y-nodes[b].y);
+      nodes[a].links.push({id:b,length});nodes[b].links.push({id:a,length});};
+    for(let y=0;y<4;y++)for(let x=0;x<6;x++)junctions.set(`${x},${y}`,add(xs[x],ys[y]));
+    for(let y=0;y<4;y++)for(let x=0;x<6;x++){
+      const a=junctions.get(`${x},${y}`);
+      if(y<3)link(a,junctions.get(`${x},${y+1}`));
+      if(x<5){
+        {
+          const c=cell(x,Math.min(y,2));
+          const midpoint=add(c.left+c.width/2,ys[y]);
+          link(a,midpoint);link(midpoint,junctions.get(`${x+1},${y}`));
+          for(const row of [y-1,y]){
+            if(row<0 || row>2)continue;
+            const socket=cell(x,row),key=`${x},${row}`;
+            if(!ports.has(key))ports.set(key,{taps:[]});
+            ports.get(key).taps.push({node:midpoint,side:row===y ? "top" : "bottom",
+              point:{x:socket.left+socket.width/2,y:socket.top+(row===y ? 0 : socket.height)}});
+          }
         }
-        from = next;
-      };
-      const stepX = Math.sign(target.x - from.x);
-      while (from.x !== target.x) addStep({x:from.x + stepX, y:from.y});
-      const stepY = Math.sign(target.y - from.y);
-      while (from.y !== target.y) addStep({x:from.x, y:from.y + stepY});
+      }
     }
-    return {fedCells, energizedEdges};
+    return {nodes,ports,bevel:geometry.channelX ? Math.min(1.5,geometry.width*.003) : Math.max(0,Math.min(3,Math.min(gapX,gapY)/2-4))};
+  }
+
+  function circuitCableRoutes(modules) {
+    const validCells=new Set(BOARD_CELLS.map(([x,y])=>`${x},${y}`));
+    const live=modules.filter(m=>m?.position && validCells.has(cablePositionKey(m.position))
+      && m.status!=="destroyed" && Number(m.hp??1)>0);
+    const core=live.find(m=>m.definitionId==="core" || m.nameTr==="Çekirdek");
+    const fedCells=new Set(),energizedEdges=new Set();
+    if(core)for(const m of live){
+      if(m!==core && m.isPowered===false)continue;
+      const key=cablePositionKey(m.position);fedCells.add(key);
+      if(m!==core)energizedEdges.add(key);
+    }
+    return {coreKey:core ? cablePositionKey(core.position) : null,fedCells,energizedEdges};
+  }
+
+  function circuitChamferPath(points, bevel) {
+    const compact=[];
+    for(const p of points){
+      if(compact.length && compact.at(-1).x===p.x && compact.at(-1).y===p.y)continue;
+      while(compact.length>1){
+        const a=compact.at(-2),b=compact.at(-1);
+        if((a.x===b.x && b.x===p.x)||(a.y===b.y && b.y===p.y))compact.pop();else break;
+      }
+      compact.push(p);
+    }
+    if(!compact.length)return "";
+    const coordinate=p=>`${Math.round(p.x*100)/100} ${Math.round(p.y*100)/100}`;
+    let path=`M ${coordinate(compact[0])}`;
+    for(let i=1;i<compact.length-1;i++){
+      const a=compact[i-1],b=compact[i],c=compact[i+1];
+      const before=Math.abs(b.x-a.x)+Math.abs(b.y-a.y),after=Math.abs(c.x-b.x)+Math.abs(c.y-b.y);
+      const cut=Math.min(bevel,before/2,after/2);
+      path+=` L ${coordinate({x:b.x+(a.x-b.x)*cut/before,y:b.y+(a.y-b.y)*cut/before})}`;
+      path+=` L ${coordinate({x:b.x+(c.x-b.x)*cut/after,y:b.y+(c.y-b.y)*cut/after})}`;
+    }
+    return path+` L ${coordinate(compact.at(-1))}`;
+  }
+
+  function shortestCircuitPaths(graph, sourceKey) {
+    const source=graph.ports.get(sourceKey),paths=new Map();
+    if(!source)return paths;
+    const distance=graph.nodes.map(()=>Infinity),turns=graph.nodes.map(()=>Infinity);
+    const previous=graph.nodes.map(()=>-1),origins=graph.nodes.map(()=>null),done=new Set();
+    for(const tap of source.taps){
+      distance[tap.node]=Math.abs(tap.point.y-graph.nodes[tap.node].y);
+      turns[tap.node]=0;origins[tap.node]=tap;
+    }
+    while(done.size<graph.nodes.length){
+      let id=-1;
+      for(const node of graph.nodes)if(!done.has(node.id) && (id<0 || distance[node.id]<distance[id]
+        || (distance[node.id]===distance[id] && turns[node.id]<turns[id])))id=node.id;
+      if(id<0 || !Number.isFinite(distance[id]))break;
+      done.add(id);
+      const node=graph.nodes[id],prior=graph.nodes[previous[id]];
+      for(const edge of node.links){
+        if(done.has(edge.id))continue;
+        const next=graph.nodes[edge.id],length=distance[id]+edge.length;
+        const bend=turns[id]+(prior && (prior.x===node.x)!==(node.x===next.x) ? 1 : 0);
+        if(length<distance[edge.id]-1e-6 || (Math.abs(length-distance[edge.id])<1e-6 && bend<turns[edge.id])){
+          distance[edge.id]=length;turns[edge.id]=bend;previous[edge.id]=id;origins[edge.id]=origins[id];
+        }
+      }
+    }
+    for(const [key,target] of graph.ports){
+      if(key===sourceKey)continue;
+      const end=target.taps.reduce((best,tap)=>{
+        const length=distance[tap.node]+Math.abs(tap.point.y-graph.nodes[tap.node].y);
+        return !best || length<best.length ? {tap,length} : best;
+      },null);
+      const start=origins[end.tap.node];
+      const points=[end.tap.point];let at=end.tap.node;
+      while(at>=0){points.push(graph.nodes[at]);at=previous[at];}
+      points.push(start.point);points.reverse();
+      paths.set(key,{d:circuitChamferPath(points,graph.bevel),points,
+        length:end.length,startSide:start.side,endSide:end.tap.side});
+    }
+    return paths;
   }
 
   function boardCableState(boardElement, layer) {
-    const hasObserver = typeof ResizeObserver === "function";
-    let state = boardCableStates.get(layer);
-    if (
-      state
-      && state.epoch === battleLayoutEpoch
-      && hasObserver
-      && layer.childElementCount > 0
-    ) {
-      return state;
-    }
-    if (!state) observeBattleLayout(boardElement);
-    const geometry = measureBoardCableGeometry(boardElement);
-    const currentLayer = ensureBoardCurrentLayer(boardElement, layer);
-    layer.replaceChildren();
-    currentLayer.replaceChildren();
+    let state=boardCableStates.get(layer);
+    if(state && state.epoch===battleLayoutEpoch && typeof ResizeObserver==="function" && state.graph.ports.size>0)return state;
+    if(!state)observeBattleLayout(boardElement);
+    const geometry=measureBoardCableGeometry(boardElement),currentLayer=ensureBoardCurrentLayer(boardElement,layer);
+    layer.replaceChildren();currentLayer.replaceChildren();
     boardElement.querySelector(":scope > .board-cable-flow-layer")?.remove();
-    layer.setAttribute("viewBox", `0 0 ${geometry.width} ${geometry.height}`);
-    currentLayer.setAttribute("viewBox", `0 0 ${geometry.width} ${geometry.height}`);
-    const cells = new Set(BOARD_CELLS.map(([x,y]) => `${x},${y}`));
-    const edges = [];
-    for (const [x,y] of BOARD_CELLS) {
-      const first = {x,y};
-      for (const {dx,dy} of CIRCUIT_CABLE_DIRECTIONS) {
-        const second = {x:x+dx,y:y+dy};
-        if (!cells.has(cablePositionKey(second))) continue;
-        createCircuitCableLine(layer, geometry, first, second, "circuit-cable-jacket");
-        createCircuitCableLine(layer, geometry, first, second, "circuit-cable-base");
-        createCircuitCableContacts(layer, geometry, first, second);
-        const glow = createCircuitCableLine(currentLayer, geometry, first, second, "circuit-cable-glow");
-        const current = createCircuitCableLine(currentLayer, geometry, first, second, "circuit-cable-current");
-        glow?.setAttribute("visibility", "hidden");
-        current?.setAttribute("visibility", "hidden");
-        edges.push({
-          first,
-          second,
-          forwardKey:`${cablePositionKey(first)}>${cablePositionKey(second)}`,
-          reverseKey:`${cablePositionKey(second)}>${cablePositionKey(first)}`,
-          direction:"none",
-          current,
-          glow,
-        });
+    for(const svg of [layer,currentLayer])svg.setAttribute("viewBox",`0 0 ${geometry.width} ${geometry.height}`);
+    const wires=new Map();
+    for(const [x,y] of BOARD_CELLS){
+      const paths=[];
+      for(const [parent,name] of [[layer,"jacket"],[layer,"base"],[currentLayer,"glow"],[currentLayer,"current"]]){
+        const path=document.createElementNS("http://www.w3.org/2000/svg","path");
+        path.classList.add(`circuit-cable-${name}`);path.setAttribute("visibility","hidden");
+        parent.appendChild(path);paths.push(path);
       }
+      wires.set(`${x},${y}`,{paths,d:null,visible:false});
     }
-    state = { epoch:battleLayoutEpoch, geometry, edges, currentLayer, fedSignature:null };
-    boardCableStates.set(layer, state);
-    return state;
+    state={epoch:battleLayoutEpoch,geometry,graph:circuitGutterGraph(geometry),wires,routeCache:new Map(),fedSignature:null};
+    boardCableStates.set(layer,state);return state;
   }
 
   function renderBoardCables(boardElement, moduleIterable=[]) {
-    const layer = ensureBoardCableLayer(boardElement);
-    if (!layer) return;
-    const cableState = boardCableState(boardElement, layer);
-    const {fedCells, energizedEdges} = circuitCableRoutes([...moduleIterable]);
-    const fedSignature = [...fedCells].sort().join("|");
-    if (cableState.fedSignature !== fedSignature) {
-      cableState.fedSignature = fedSignature;
-      for (const cell of boardElement.querySelectorAll(".board-cell")) {
-        const key = `${cell.dataset.x},${cell.dataset.y}`;
-        const fed = fedCells.has(key);
-        cell.classList.toggle("energy-fed-cell", fed);
-        cell.dataset.energyFed = String(fed);
+    const layer=ensureBoardCableLayer(boardElement);
+    if(!layer)return;
+    const state=boardCableState(boardElement,layer);
+    const {coreKey,fedCells,energizedEdges}=circuitCableRoutes([...moduleIterable]);
+    const signature=[...fedCells].sort().join("|");
+    if(signature!==state.fedSignature){
+      state.fedSignature=signature;
+      for(const cell of boardElement.querySelectorAll(".board-cell")){
+        const fed=fedCells.has(`${cell.dataset.x},${cell.dataset.y}`);
+        cell.classList.toggle("energy-fed-cell",fed);cell.dataset.energyFed=String(fed);
       }
     }
-
-    // All cable nodes persist. Only changed connections toggle visibility;
-    // unchanged ticks allocate no cable nodes and perform no cable writes.
-    for (const edge of cableState.edges) {
-      const direction = energizedEdges.has(edge.forwardKey)
-        ? "forward"
-        : energizedEdges.has(edge.reverseKey)
-          ? "reverse"
-          : "none";
-      if (direction === edge.direction) continue;
-      edge.direction = direction;
-      const visibility = direction === "none" ? "hidden" : "visible";
-      edge.current?.setAttribute("visibility", visibility);
-      edge.glow?.setAttribute("visibility", visibility);
+    if(coreKey && !state.routeCache.has(coreKey))state.routeCache.set(coreKey,shortestCircuitPaths(state.graph,coreKey));
+    const routes=state.routeCache.get(coreKey);
+    for(const [key,wire] of state.wires){
+      const route=routes?.get(key),visible=Boolean(route && energizedEdges.has(key));
+      if(visible && route.d!==wire.d){for(const path of wire.paths)path.setAttribute("d",route.d);wire.d=route.d;}
+      if(visible!==wire.visible){for(const path of wire.paths)path.setAttribute("visibility",visible ? "visible" : "hidden");wire.visible=visible;}
     }
-    if (boardElement === board) renderCorePowerControl();
+    if(boardElement===board)renderCorePowerControl();
   }
 
   function playerCircuitCableModules() {
@@ -17124,7 +17248,7 @@
       if (model.core) {
         // Deployed core uses the approved upright painting, fitted to one socket.
         delete icon.dataset.coreEmblem;
-        if (!GridshardModuleDeviceArt.mountCore?.(icon, model.coreType)) mountCoreEmblem(icon, model.coreType);
+        if (!GridshardModuleDeviceArt.mountCore?.(icon, model.coreType, {destroyed:model.coreDestroyed})) mountCoreEmblem(icon, model.coreType);
         applyCoreVisualIdentity(card, model.coreType);
       } else if (model.physical) {
         GridshardModuleDeviceArt.mount(icon, model.module, model.enemy);
@@ -17143,6 +17267,7 @@
     const name = GridshardModuleDeviceArt.idFor(moduleLike) === "armor"
       ? "Sönümleyici" : moduleLike.nameTr ?? moduleLike.name ?? "";
     const core = moduleLike.definitionId === "core" || moduleLike.kind === "core" || name === "Çekirdek";
+    const coreDestroyed = core && Number(moduleLike.hp) <= 0;
     const coreType = enemy ? mockEnemyCoreType : metaProgressionState?.cores?.selected_core_type || "core_resonance";
     const received = Math.max(0, Number(moduleLike.energyReceived || 0));
     const required = Math.max(0, Number(moduleLike.energyRequired || 0));
@@ -17173,7 +17298,7 @@
       return {key:badge.kind + ":" + index, kind:badge.kind, phase:badge.phase, className:"module-signature-badge",
         label:kind.label(badge), title:battleUiText(typeof kind.title === "function" ? kind.title(badge) : kind.title)};
     });
-    const targeting = core && !enemy && corePowerTargeting;
+    const targeting = core && !enemy && !coreDestroyed && corePowerTargeting;
     const title = enemy ? name + " · HP " + Math.max(0, Math.round(moduleLike.hp)) + "/" + moduleLike.maxHp
       : targeting ? "Çekirdek Rezonansını kullan" : core ? name + " sabit başlangıç modülüdür." : name + " · savaş sırasında sabit";
     const coreCharge = Math.max(0, Math.min(100, Math.round(corePowerCharge)));
@@ -17182,13 +17307,13 @@
     const physical = core || (moduleLike.status === "active" && Boolean(moduleLike.position)
       && Boolean(GridshardModuleDeviceArt.idFor(moduleLike)));
     return {
-      module:moduleLike, id:moduleLike.instanceId ?? moduleLike.id, enemy, core, coreType, targeting, physical,
+      module:moduleLike, id:moduleLike.instanceId ?? moduleLike.id, enemy, core, coreType, coreDestroyed, targeting, physical,
       category:moduleLike.category ?? moduleLike.kind ?? "", name:battleUiText(name),
       shortName:battleUiText(moduleShortNameFor(moduleLike)), title:battleUiText(title),
-      artwork:core ? "core:" + coreType : (moduleLike.definitionId || "") + ":" + name + ":" + physical,
+      artwork:core ? "core:" + coreType + (coreDestroyed ? ":wreck" : "") : (moduleLike.definitionId || "") + ":" + name + ":" + physical,
       hp:moduleLike.hp, maxHp:moduleLike.maxHp, heat, overheated:Boolean(moduleLike.overheated),
-      coreCharge, coreReady:corePowerReady,
-      coreLabel:core && !enemy ? battleUiText("Çekirdek gücü · " + (corePowerReady ? "Hazır" : "%" + coreCharge)) : "",
+      coreCharge, coreReady:corePowerReady && !coreDestroyed,
+      coreLabel:coreDestroyed ? battleUiText("Çekirdek enkazı") : core && !enemy ? battleUiText("Çekirdek gücü · " + (corePowerReady ? "Hazır" : "%" + coreCharge)) : "",
       powerState:flowing ? "flowing" : required > 0 ? "disconnected" : "passive", powerMessage,
       heatState:moduleLike.overheated ? "overheated" : heat >= 100 ? "critical" : heat >= 70 ? "high" : heat >= 45 ? "slowed" : "warm",
       heatLabel:battleUiText(moduleLike.overheated ? "Aşırı ısındı · " + heatText : heatEffect ? heatText + " · " + heatEffect : heatText),
@@ -18028,7 +18153,7 @@
     const remainingDays = Math.floor(remainingMs / 86400000);
     const remainingHours = Math.floor((remainingMs % 86400000) / 3600000);
     setText("profile-current-season-name", engagement.season_name_tr || "Güncel Sezon");
-    setText("profile-season-countdown", Number.isFinite(seasonEndsAt) && seasonEndsAt > 0 ? `${remainingDays} gün ${remainingHours} sa kaldı` : "Sezon süresi hazırlanıyor");
+    setText("profile-season-countdown", engagement.season_active === false ? "Sezon başlangıcı bekleniyor" : Number.isFinite(seasonEndsAt) && seasonEndsAt > 0 ? `${remainingDays} gün ${remainingHours} sa kaldı` : "Sezon süresi hazırlanıyor");
     renderTrophyValue("profile-season-trophies", Number(view.rating || 0));
     setText("profile-season-league", view.leagueNameTr || "Arena 1");
     renderTrophyValue("profile-last-season-trophies", previous ? Number(previous.final_rating || 0) : "—");
@@ -18088,6 +18213,7 @@
   }
 
   function renderProfileHonorShowcase() {
+    if (document.hidden || document.body.dataset.appScreen !== "profile") return;
     const cosmetics = profileState.viewModel()?.cosmetics || {};
     const groups = [
       {
@@ -18170,6 +18296,7 @@
 
 
   function renderProfileHighlights() {
+    if (document.hidden || document.body.dataset.appScreen !== "profile") return;
     const view = profileState.viewModel();
     const highest = document.getElementById("profile-highest-trophies");
     if (highest && view) renderTrophyValue(highest, Number(view.highestRating || view.rating || 0));
@@ -18931,33 +19058,71 @@
     }
   }
 
+  const leaderboardReads = createViewReadOwner(() => leaderboardPayload);
   async function loadLeaderboard() {
+    const ticket = leaderboardReads.begin();
+    const dialog = document.getElementById("leaderboard-dialog");
     const status = document.getElementById("leaderboard-status");
     if (status) status.textContent = "Sıralama yükleniyor…";
     try {
-      const response = await fetchWithDeadline(
-        `/leaderboards?player_id=${encodeURIComponent(participantPlayerId)}`,
+      const {response, payload} = await fetchWithDeadline(
+        `/leaderboards?player_id=${encodeURIComponent(ticket.playerId)}`,
         { cache: "no-store" },
-        8000
+        8000,
+        async response => ({response, payload:await response.json()})
       );
-      const payload = await response.json();
+      if (!leaderboardReads.isCurrent(ticket)) return {ok:false, stale:true};
       if (!response.ok) throw new Error(payload.detail || "Lider panosu yüklenemedi.");
-      leaderboardPayload = payload;
-      renderLeaderboard();
+      leaderboardReads.commit(ticket, () => { leaderboardPayload = payload; });
+      if (dialog?.open && !document.hidden) renderLeaderboard();
       return { ok: true };
     } catch (error) {
-      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+      if (!leaderboardReads.isCurrent(ticket)) return {ok:false, stale:true};
+      if (status && dialog?.open && !document.hidden) status.textContent = error instanceof Error ? error.message : String(error);
       return { ok: false };
     }
   }
 
   function openLeaderboard() {
+    activeLeaderboardTab = "trophies";
+    activeTrophyLeaderboardScope = "general";
+    for (const button of document.querySelectorAll("[data-leaderboard-tab]")) {
+      button.classList.toggle("is-active", button.dataset.leaderboardTab === activeLeaderboardTab);
+    }
+    for (const button of document.querySelectorAll("[data-leaderboard-scope]")) {
+      button.classList.toggle("is-active", button.dataset.leaderboardScope === activeTrophyLeaderboardScope);
+    }
     const arena = document.getElementById("arena-detail-dialog");
     if (arena?.open && arena.close) arena.close();
     const dialog = document.getElementById("leaderboard-dialog");
     if (dialog?.showModal && !dialog.open) dialog.showModal();
     else dialog?.setAttribute("open", "");
+    renderLeaderboard();
     loadLeaderboard();
+  }
+
+  // Run once after the navigation's profile read/render, not after each claim.
+  // Move only this page's scroll container; do not scroll the app shell/body.
+  function focusEarnedReward(screen) {
+    if (appRouter.currentScreen !== screen || document.hidden) return;
+    const panel = document.querySelector(`[data-screen-panel="${screen}"]`);
+    if (!panel || panel.hidden) return;
+    let target;
+    if (screen === "daily-rewards") {
+      const today = profileState.viewModel()?.engagement?.daily_login?.today;
+      target = panel.querySelector(`[data-login-claim="${Number(today || 1)}"]`)?.closest(".monthly-login-card");
+    } else if (screen === "rewards") {
+      target = panel.querySelector('.season-pass-cell[data-state="claimable"]')?.closest(".season-pass-row")
+        || [...panel.querySelectorAll('.season-pass-row[data-unlocked="true"]')].at(-1)
+        || panel.querySelector(".season-pass-row");
+    }
+    if (!target) return;
+    // Some desktop layouts scroll a nested track; mobile scrolls the panel.
+    let scroller = target.parentElement;
+    while (scroller && scroller !== panel && !/(auto|scroll)/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+    if (!scroller) return;
+    const bounds = scroller.getBoundingClientRect(), rect = target.getBoundingClientRect();
+    scroller.scrollTop += rect.top - bounds.top - Math.max(0, (scroller.clientHeight - rect.height) / 2);
   }
 
   function closeRewardInbox() {
@@ -19740,7 +19905,7 @@
     const loginDayCount = Number(engagement.daily_login?.day_count || loginRewards.length || 28);
     setText(
       "monthly-login-summary",
-      claimableLoginRewards
+      engagement.season_active === false ? "Sezon başlangıcı bekleniyor" : claimableLoginRewards
         ? "Bugünün ödülü hazır"
         : `${engagement.daily_login?.claimed_days?.length || 0} / ${loginDayCount} gün alındı`
     );
@@ -19766,7 +19931,8 @@
         card.dataset.major = String(Boolean(reward.is_major));
         const day = document.createElement("strong");
         // Dönem Pazartesi başlar; 7, 14, 21 ve 28. günler Pazar'dır.
-        day.textContent = `${reward.day}. GÜN · ${LOGIN_WEEKDAYS_TR[(Number(reward.day) - 1) % 7]}`;
+        const startDay = engagement.daily_login?.starts_at ? (new Date(engagement.daily_login.starts_at).getUTCDay() + 6) % 7 : 0;
+        day.textContent = `${reward.day}. GÜN · ${LOGIN_WEEKDAYS_TR[(startDay + Number(reward.day) - 1) % 7]}`;
         const prize = createRewardRows(reward, { compact:true });
         const action = document.createElement("button");
         action.type = "button";
@@ -20154,6 +20320,72 @@
     return null;
   }
 
+  function battleDeploymentMotionAllowed() {
+    return !document.hidden && document.body.dataset.appScreen === 'play'
+      && !localBattleFinished && !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function rememberBattleDeployment(module) {
+    if(!battleDeploymentMotionAllowed())return;
+    const now=performance.now();
+    while(pendingBattleDeployments.length && now-pendingBattleDeployments[0].at>5000)pendingBattleDeployments.shift();
+    const card=[...shelf.querySelectorAll('.deck-module-card')].find(card=>card.dataset.moduleId===module.instanceId);
+    const image=card?.querySelector('img');
+    if(!image?.animate)return;
+    const r=image.getBoundingClientRect();
+    if(!r.width || !r.height)return;
+    pendingBattleDeployments.push({definition:module.definitionId || clientDefinitionId(module.instanceId),
+      at:now,src:image.currentSrc || image.src,left:r.left,top:r.top,width:r.width,height:r.height});
+    if(pendingBattleDeployments.length>15)pendingBattleDeployments.shift();
+  }
+
+  function releaseBattleDeployment(record) {
+    if(!liveBattleDeployments.delete(record))return;
+    for(const animation of [record.travel,record.arrival]){
+      if(!animation)continue;
+      animation.onfinish=animation.oncancel=null;
+      animation.cancel();
+    }
+    record.flight.remove();
+  }
+
+  function clearBattleDeployments() {
+    pendingBattleDeployments.length=0;
+    for(const record of [...liveBattleDeployments])releaseBattleDeployment(record);
+  }
+
+  // Only a newly confirmed player card consumes a shelf click. Ordinary HUD
+  // updates, initial cores and reconnect snapshots never replay a placement.
+  function presentBattleDeployment(module, cell, card) {
+    const now=performance.now();
+    while(pendingBattleDeployments.length && now-pendingBattleDeployments[0].at>5000)pendingBattleDeployments.shift();
+    const definition=module.definitionId || clientDefinitionId(module.instanceId);
+    const index=pendingBattleDeployments.findIndex(request=>request.definition===definition);
+    if(index<0)return;
+    const request=pendingBattleDeployments.splice(index,1)[0];
+    const host=card.querySelector('.has-module-device');
+    if(!battleDeploymentMotionAllowed() || !host?.animate || !cell.isConnected)return;
+    const target=host.getBoundingClientRect();
+    if(!target.width || !target.height)return;
+    const flight=document.createElement('img');
+    flight.className='battle-deployment-flight';flight.src=request.src;flight.alt='';
+    flight.setAttribute('aria-hidden','true');flight.draggable=false;
+    flight.style.width=`${request.width}px`;flight.style.height=`${request.height}px`;
+    document.body.appendChild(flight);
+    const startX=request.left,startY=request.top;
+    const endX=target.left+(target.width-request.width)/2;
+    const endY=target.top+(target.height-request.height)/2;
+    const scale=target.width/request.width;
+    const travel=flight.animate([
+      {transform:`translate(${startX}px,${startY}px) scale(1)`,opacity:1},
+      {transform:`translate(${endX}px,${endY}px) scale(${scale})`,opacity:0}
+    ],{duration:360,easing:'cubic-bezier(.2,.7,.2,1)',fill:'both'});
+    // Animate art only: authoritative position, routing and meters stay put.
+    const arrival=host.animate([{opacity:0},{opacity:1}],{duration:240,delay:120,fill:'both'});
+    const record={flight,travel,arrival};liveBattleDeployments.add(record);
+    travel.onfinish=travel.oncancel=()=>releaseBattleDeployment(record);
+  }
+
   function deployDeckModule(module) {
     const compositionRejection = deploymentCompositionRejection(module);
     if (compositionRejection) {
@@ -20173,6 +20405,7 @@
       renderShelf();
       return false;
     }
+    rememberBattleDeployment(module);
     trackBattleUiInteraction("deploy_module", "module_place");
     logClientMessage(
       `${module.nameTr} için sunucu uygun hücreyi seçiyor.`
@@ -20311,6 +20544,7 @@
         onCardPlaced: (module, cell) => {
           moduleAnchorCells.set(String(module.instanceId), cell);
         },
+        onCardCreated:presentBattleDeployment,
         force,
       }
     );
@@ -20318,10 +20552,6 @@
       board,
       playerCircuitCableModules()
     );
-  }
-
-  function moduleIconFor(module) {
-    return GridshardModuleCardView.iconFor(module);
   }
 
   // Modülün amblemi: sandıklar ve Çekirdek amblemiyle aynı dilde çizilmiş simge
@@ -20332,10 +20562,6 @@
 
   function mountModuleEmblem(element, module) {
     if (!element) return;
-    if (typeof GridshardModuleCardView.emblemFor !== "function") {
-      element.textContent = moduleIconFor(module);
-      return;
-    }
     element.innerHTML = moduleEmblemMarkup(module);
     element.classList.add("has-module-emblem");
   }
@@ -20397,6 +20623,15 @@
         `${client.circuitCredits} / 12`
       );
     }
+    const current = Math.max(0,Math.min(12,Number(client.circuitCredits)||0));
+    const fill = document.getElementById('battle-current-fill');
+    const meter = document.getElementById('battle-current-bar');
+    const transform = `scaleX(${current/12})`;
+    const balance=String(current),changed=meter?.getAttribute('aria-valuenow')!==balance;
+    // CSSOM rounds fractional transforms. Compare the server balance so a
+    // steady 1/12 does not repeatedly write a longer float on every HUD tick.
+    if(fill && (!fill.style.transform || changed))fill.style.transform=transform;
+    if(meter && changed)meter.setAttribute('aria-valuenow',balance);
     // Bu sayaca merkez ekranı da yazar; karşılaştırma ekrandaki sayıyla yapılır.
     const lobbyCredits = document.getElementById("lobby-circuit-credits");
     const lobbyValue = String(metaProgressionState?.circuit_credits ?? 0);
@@ -21900,7 +22135,6 @@
       ['#team-menu [data-team-management-tab="members"]', "people", "green"],
       ['[data-card-page="modules"]', "deck", "blue"],
       ['[data-card-page="cores"]', "core", "cyan"],
-      ['[data-leaderboard-tab="core_damage"]', "core", "cyan"],
       ['[data-leaderboard-tab="teams"]', "team", "violet"],
     ]) {
       for (const button of document.querySelectorAll(selector)) {
@@ -21913,6 +22147,8 @@
         button.classList.add("has-ui-icon");
       }
     }
+    const coreRanking = document.querySelector('[data-leaderboard-tab="core_damage"] > span');
+    if (coreRanking) mountCoreEmblem(coreRanking, "core_resonance");
     for (const button of document.querySelectorAll("#arena-detail-close,#leaderboard-back,.event-detail-header > button")) {
       button.innerHTML = uiIconMarkup("back"); button.classList.add("refresh-back-button");
     }
@@ -22079,6 +22315,21 @@
       emitFloatingFeedback:(moduleId, text, variant="neutral") =>
         emitFloatingBattleFeedback(moduleId, text, variant),
       emitModuleExplosion,
+      // Presentation-only activation preview; same handler as server events.
+      previewCoreActivation:(effectKind="energy")=>{
+        if(!["heal","attack","sabotage","defense","energy","hybrid"].includes(effectKind))return false;
+        presentCorePowerActivation(pvpState.snapshot || localServerState.snapshot || {players:[]},
+          {player_id:participantPlayerId,effect_kind:effectKind,power_id:"core_capacitor",affected_targets:[]});
+        return true;
+      },
+      // Presentation-only death/rebirth preview; never mutates authoritative
+      // modules, rewards or the server. Removed with this API in production.
+      previewCoreState:({hp=0}={})=>{
+        const module=client.modules.get("core-1"),card=document.getElementById("board")?.querySelector('[data-module-id="core-1"]');
+        if(!module||!card)return false;
+        battleCardStateView.update(card,battleCardModel({...module,hp}));
+        return true;
+      },
       deployModule:(definitionId) => {
         const module = clientModuleForDefinitionId(definitionId);
         return Boolean(module && deployDeckModule(module));
@@ -22765,6 +23016,7 @@
       if (
         ONBOARDING_AUTOMATION_OPT_OUT
         || onboardingFlow.isCompleted()
+        || participantBootstrapResult?.ok !== true
         || startupLoading?.active
         || (startupLoading?.root && !startupLoading.root.hidden)
         || !context.hub
@@ -22783,6 +23035,39 @@
     onboardingFlow.update(context);
     syncBattleHints(context);
   }
+  // Menu presentation deliberately has no battle rAF. The guide owns a small
+  // timer ONLY while its menu flow is active, and wakes after startup/UI events.
+  // Finished/veteran/automation sessions keep no polling timer; battle keeps
+  // using renderBattleFrame. Coalesce clicks/close/visibility into one wakeup.
+  let onboardingSyncTimer = null;
+  let onboardingSyncImmediate = false;
+  function cancelOnboardingSync() {
+    if (onboardingSyncTimer !== null) window.clearTimeout(onboardingSyncTimer);
+    onboardingSyncTimer = null;
+    onboardingSyncImmediate = false;
+  }
+  function runOnboardingSync() {
+    onboardingSyncTimer = null;
+    onboardingSyncImmediate = false;
+    if (document.hidden) return;
+    syncFirstMatchTutorial(performance.now(), { force:true });
+    if (onboardingFlow.active && !document.hidden && document.body.dataset.appScreen !== "play") {
+      onboardingSyncTimer = window.setTimeout(runOnboardingSync, 200);
+    }
+  }
+  function requestOnboardingSync() {
+    if (document.hidden) { cancelOnboardingSync(); return; }
+    if (!onboardingFlow.active && (ONBOARDING_AUTOMATION_OPT_OUT
+      || onboardingFlow.isCompleted() || Number(statisticsState.viewModel()?.totalMatches) > 0)) return;
+    if (onboardingSyncImmediate) return;
+    cancelOnboardingSync();
+    onboardingSyncImmediate = true;
+    onboardingSyncTimer = window.setTimeout(runOnboardingSync, 0);
+  }
+  document.addEventListener("click", requestOnboardingSync, true);
+  document.addEventListener("close", requestOnboardingSync, true);
+  document.addEventListener("visibilitychange", requestOnboardingSync);
+
   // Hedefe dokunuş ekranı değiştirdiyse sıradaki adım beklemeden görünür.
   onboardingOverlay.afterTap = () => {
     requestAnimationFrame(() => syncFirstMatchTutorial(performance.now(), { force: true }));
@@ -22794,6 +23079,7 @@
     onboardingFlow.start({ force: true });
     openAppScreen("menu");
     syncFirstMatchTutorial(performance.now(), { force: true });
+    requestOnboardingSync();
   });
 
   document.body.dataset.onlineStatus = "idle";

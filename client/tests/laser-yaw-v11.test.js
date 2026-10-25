@@ -98,7 +98,7 @@ test("XP has one raster source in victory markup and all generated reward uses",
   assert.match(css,/experience-v1\/experience.webp/);
   assert.match(css,/data-emitter="laser"\] \{ --shot-color:#ff273d !important/);
   for(const name of ["head","base"]) {
-    assert.ok(html.includes(`src="./assets/ui/laser-yaw-v1/${name}.webp"`),"Dynamic assets must be included in web/native packages");
+    assert.ok(!html.includes(`src="./assets/ui/laser-yaw-v1/${name}.webp"`),"Retired rotor art is not shipped; source artwork stays archived");
     const bytes=fs.readFileSync(path.join(__dirname,`../assets/ui/laser-yaw-v1/${name}.webp`));
     assert.equal(bytes.subarray(8,12).toString(),"WEBP");assert.ok(bytes.length<30000);
   }

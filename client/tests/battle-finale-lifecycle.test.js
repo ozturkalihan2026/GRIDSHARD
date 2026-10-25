@@ -8,15 +8,14 @@ function setup(){
  vm.runInNewContext(source.slice(start,end)+';this.schedule=schedulePostMatchReveal;this.reset=resetPostMatchReveal;',sandbox);
  return {sandbox,nodes,timers,get renders(){return renders;}};
 }
-test('core finale shows one accessible end label, holds 2.5s, then cleans up',()=>{
+test('core finale keeps the 2.5s explosion hold without an end label',()=>{
  const s=setup();s.sandbox.schedule('match',{waitForCoreExplosion:true});
- assert.equal(s.nodes.size,1);assert.equal(s.nodes.get('battle-ended-banner').textContent,'SAVAŞ SONA ERDİ');
- assert.equal(s.nodes.get('battle-ended-banner').role,'status');
+ assert.equal(s.nodes.size,0);
  assert.equal(s.timers.size,1);assert.equal([...s.timers.values()][0].ms,2500);assert.equal(s.renders,0);
  s.sandbox.schedule('match',{waitForCoreExplosion:true});assert.equal(s.timers.size,1);
  [...s.timers.values()][0].fn();assert.equal(s.nodes.size,0);assert.equal(s.renders,1);
 });
-test('exit/reset and a non-core result cannot leak the finale label or timer',()=>{
+test('exit/reset and a non-core result cannot leak a finale timer',()=>{
  const s=setup();s.sandbox.schedule('a',{waitForCoreExplosion:true});s.sandbox.reset();
  assert.equal(s.nodes.size,0);assert.equal(s.timers.size,0);
  s.sandbox.schedule('b',{waitForCoreExplosion:true});s.sandbox.schedule('c');

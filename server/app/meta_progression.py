@@ -46,31 +46,23 @@ MODULE_EFFECT_LINES = {
 }
 RARITY_UNLOCK_ARENA = {"common": 1, "rare": 1, "epic": 5, "legendary": 9}
 
-# Yükseltme maliyeti (12 Ekim 2026, kullanıcı kararı "enderliğe göre"): enderlik
-# arttıkça daha az parça ve daha çok Devre Kredisi; efsanevide seviye 8'den
-# sonra Akı da gerekir. Tablo: docs/OYUN_DUZENLEMELERI_PLANI.md, D9.
-RARITY_COST_MULTIPLIER = {
-    "common": 1.0,
-    "rare": 1.5,
-    "epic": 2.0,
-    "legendary": 3.0,
+# Modül/çekirdek ortak tablosu: kullanıcının Seviye.docx dosyası,25 Ekim2026.
+# Enderlikler artık sabit çarpanla türetilemez; her satır açıkça tanımlıdır.
+MODULE_UPGRADE_CREDIT_CURVES = {
+    "common": (100, 200, 400, 600, 1000, 1500, 3000, 6000, 12000, 20000, 25000, 30000, 35000, 40000),
+    "rare": (300, 500, 800, 1200, 1500, 3000, 5000, 10000, 20000, 30000, 40000, 45000, 50000, 55000),
+    "epic": (600, 900, 1200, 2000, 3000, 6000, 8000, 16000, 25000, 40000, 50000, 60000, 65000, 70000),
+    "legendary": (1200, 1800, 2400, 4000, 6000, 12000, 16000, 20000, 30000, 40000, 50000, 60000, 70000, 80000),
 }
-MODULE_UPGRADE_CREDIT_CURVE = (
-    100, 200, 400, 600, 1000, 1500, 2200, 3200, 4800, 7000, 10000, 15000, 22000, 32000,
-)
 MODULE_UPGRADE_SHARD_CURVES = {
-    "common": (2, 4, 8, 14, 22, 32, 44, 58, 74, 92, 112, 136, 164, 200),
-    "rare": (2, 4, 6, 10, 16, 24, 34, 44, 56, 70, 84, 102, 124, 150),
-    "epic": (2, 2, 4, 8, 12, 16, 22, 30, 38, 46, 56, 68, 82, 100),
-    "legendary": (1, 2, 3, 4, 6, 10, 14, 18, 22, 28, 34, 40, 50, 60),
+    "common": (2, 4, 10, 20, 40, 80, 160, 320, 480, 600, 720, 840, 960, 1200),
+    "rare": (2, 4, 10, 20, 30, 60, 100, 150, 250, 400, 500, 600, 700, 800),
+    "epic": (2, 2, 4, 8, 12, 20, 30, 40, 50, 75, 100, 125, 150, 200),
+    "legendary": (1, 2, 4, 6, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90),
 }
 MODULE_UPGRADE_FLUX_CURVES = {
-    "legendary": (0, 0, 0, 0, 0, 0, 20, 30, 40, 50, 60, 80, 100, 120),
+    "legendary": (0, 0, 0, 0, 0, 0, 500, 1000, 1500, 2000, 2500, 4000, 6000, 10000),
 }
-# Çekirdek parçası yalnız Elmas Sandık'tan gelir; eğri buna göre kısadır.
-CORE_UPGRADE_SHARD_CURVE = (1, 1, 2, 2, 3, 4, 5, 6, 8, 10, 12, 15, 18, 22)
-CORE_UPGRADE_FLUX_PER_LEVEL = 50
-
 MODULE_TALENT_RESET_COST_PER_SELECTION = 25
 
 
@@ -174,7 +166,7 @@ CORE_ROLES = (
 # Çekirdek yetenekleri çekirdeğe özeldir (game/talents.py); kimlikler eskisi
 # gibi "<eşik>_energy" ve "<eşik>_charge" olduğu için kayıtlı seçimler geçerlidir.
 CORE_TYPES = tuple(
-    {**core, "role_tr": CORE_ROLES[i], "skills": core_skill_tree(core["id"])}
+    {**core, "role_tr": CORE_ROLES[i], "skills": core_skill_tree(core["id"], core["rarity"])}
     for i, core in enumerate(CORE_TYPES)
 )
 
@@ -383,16 +375,20 @@ def core_unlock_rating(core_type: dict) -> int:
     return ARENA_MINIMUM_RATING_BY_INDEX[int(core_type["unlock_arena"])]
 
 
-def module_upgrade_cost(module_definition_id: str, current_level: int) -> dict:
-    rarity = MODULE_RARITY.get(module_definition_id, "common")
-    next_level = max(0, int(current_level)) + 1
-    multiplier = RARITY_COST_MULTIPLIER[rarity]
-    index = min(13, next_level - 1)
+def rarity_upgrade_cost(rarity: str, upgrade_counter: int) -> dict:
+    """One authoritative level price; shards belong to the upgraded item."""
+    index = min(13, max(0, int(upgrade_counter)))
     return {
-        "next_level": next_level,
-        "circuit_credits": round(MODULE_UPGRADE_CREDIT_CURVE[index] * multiplier),
+        "circuit_credits": MODULE_UPGRADE_CREDIT_CURVES[rarity][index],
         "shards": MODULE_UPGRADE_SHARD_CURVES[rarity][index],
         "flux_shards": MODULE_UPGRADE_FLUX_CURVES.get(rarity, (0,) * 14)[index],
+    }
+
+
+def module_upgrade_cost(module_definition_id: str, current_level: int) -> dict:
+    return {
+        "next_level": max(0, int(current_level)) + 1,
+        **rarity_upgrade_cost(MODULE_RARITY.get(module_definition_id, "common"), current_level),
     }
 
 
@@ -719,7 +715,7 @@ class MetaProgressionService:
             "season_archives": [dict(item) for item in profile.season_archives],
             "economy_separation": {
                 "module_upgrades": "circuit_credits_and_module_shards",
-                "module_talents_and_cores": "flux_shards",
+                "module_talents_and_cores": "circuit_credits_and_flux_shards",
                 "ranked_normalized": False,
             },
         }
@@ -949,7 +945,7 @@ class MetaProgressionService:
             "signature_mechanic": f"{signature['name_tr']} — {signature['signature_tr']}",
             "telegraph_tr": signature["telegraph_tr"],
             "counterplay_tr": signature["counterplay_tr"],
-            "next_upgrade_cost": {"flux_shards": CORE_UPGRADE_FLUX_PER_LEVEL * (counter + 1), "shards": CORE_UPGRADE_SHARD_CURVE[counter]} if counter < 14 else None,
+            "next_upgrade_cost": rarity_upgrade_cost(core_type["rarity"], counter) if counter < 14 else None,
             "skills": [{**skill, "learned": skill["id"] in profile.core_skills.get(core_type["id"], ()),
                         "tier_selected": any(s.startswith(skill["tier"] + "_") for s in profile.core_skills.get(core_type["id"], ()))} for skill in core_type["skills"]],
             "ranked_normalized": False,
@@ -973,14 +969,26 @@ class MetaProgressionService:
             owned = profile.core_shards_by_type.get(core_id, 0)
             if owned < 0:
                 raise MetaProgressionError("Bu çekirdek parçasının iade açığını oynayarak kapatmalısın.")
-            if profile.flux_shards < cost["flux_shards"] or owned + max(0, profile.core_shards) < cost["shards"]:
-                raise MetaProgressionError(f"Gerekli: {cost['flux_shards']} Akı ve {cost['shards']} çekirdek parçası.")
+            if (profile.circuit_credits < cost["circuit_credits"]
+                    or profile.flux_shards < cost["flux_shards"]
+                    or owned + max(0, profile.core_shards) < cost["shards"]):
+                raise MetaProgressionError(
+                    f"Gerekli: {cost['circuit_credits']} Devre Kredisi, "
+                    f"{cost['shards']} çekirdek parçası ve {cost['flux_shards']} Akı."
+                )
+            profile.circuit_credits -= cost["circuit_credits"]
             profile.flux_shards -= cost["flux_shards"]
             used = min(owned, cost["shards"])
             profile.core_shards_by_type[core_id] = owned - used
             profile.core_shards -= cost["shards"] - used  # Preserve spendability of legacy generic pieces.
             profile.core_upgrade_levels[core_id] = core["level"]
-            receipt = {"request_id": request_id, "operation": "upgrade", "core_type_id": core_id, "level": core["level"] + 1}
+            receipt = {
+                "request_id": request_id, "operation": "upgrade", "core_type_id": core_id,
+                "level": core["level"] + 1,
+                "circuit_credits_spent": cost["circuit_credits"],
+                "flux_shards_spent": cost["flux_shards"], "shards_spent": cost["shards"],
+                "core_shards_spent": used, "legacy_core_shards_spent": cost["shards"] - used,
+            }
             profile.core_receipts[request_id] = receipt
             return dict(receipt)
 
@@ -998,12 +1006,16 @@ class MetaProgressionService:
                 raise MetaProgressionError("Yetenek bulunamadı.")
             if module_id not in unlocked_module_ids(max(profile.highest_rating, profile.rating), profile.legacy_module_unlocks) or profile.module_upgrade_levels.get(module_id, 0) + 1 < node["level"]:
                 raise MetaProgressionError("Gerekli modül seviyesine ulaşılmadı.")
-            choices = profile.module_talents.setdefault(module_id, {})
+            choices = profile.module_talents.get(module_id, {})
             if tier in choices:
                 raise MetaProgressionError("Bu eşikte zaten bir uzmanlık seçildi.")
+            if profile.circuit_credits < node["circuit_credits_cost"]:
+                raise MetaProgressionError("Yetenek için Devre Kredisi yetersiz.")
             if profile.flux_shards < node["flux_cost"]:
                 raise MetaProgressionError("Yetenek için Akı yetersiz.")
+            profile.circuit_credits -= node["circuit_credits_cost"]
             profile.flux_shards -= node["flux_cost"]
+            choices = profile.module_talents.setdefault(module_id, {})
             choices[tier] = choice
             receipt = {"request_id": request_id, "module_definition_id": module_id, "tier": tier, "choice": choice}
             profile.module_upgrade_receipts[request_id] = receipt
@@ -1558,8 +1570,11 @@ class MetaProgressionService:
                 raise MetaProgressionError("Çekirdek yeteneği bulunamadı veya henüz açılmadı.")
             if skill["tier_selected"] or core["level"] < skill["level"]:
                 raise MetaProgressionError("Eşik seçilmiş veya çekirdek seviyesi yetersiz.")
+            if profile.circuit_credits < skill["circuit_credits_cost"]:
+                raise MetaProgressionError("Çekirdek yeteneği için Devre Kredisi yetersiz.")
             if profile.flux_shards < skill["flux_cost"]:
                 raise MetaProgressionError("Çekirdek yeteneği için Akı yetersiz.")
+            profile.circuit_credits -= skill["circuit_credits_cost"]
             profile.flux_shards -= skill["flux_cost"]
             profile.core_skills[core_type_id] = (*profile.core_skills.get(core_type_id, ()), skill_id)
             receipt = {"request_id": request_id, "core_type_id": core_type_id, "skill_id": skill_id}

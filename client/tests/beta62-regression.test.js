@@ -9,7 +9,7 @@ const css = fs.readFileSync("./src/canon.css", "utf8");
 
 assert.ok(html.includes('id="leaderboard-current-group"'));
 assert.ok(!html.includes('id="leaderboard-arena-filter"'));
-assert.ok(app.includes('/leaderboards?player_id=${encodeURIComponent(participantPlayerId)}'));
+assert.ok(app.includes('/leaderboards?player_id=${encodeURIComponent(ticket.playerId)}'));
 assert.ok(app.includes("viewer_trophy_group"));
 assert.ok(css.includes("grid-template-rows:auto auto auto minmax(0,1fr) auto"));
 
@@ -19,8 +19,8 @@ assert.ok(css.includes("translateY(-50%)"));
 
 // 8A circuit contract; executable routing/lifecycle checks live separately.
 assert.ok(app.includes("function circuitCableRoutes(modules)"));
-assert.ok(app.includes("module.isPowered === false"));
-assert.ok(app.includes("const stepY = Math.sign(target.y - from.y)"));
+assert.ok(app.includes("m.isPowered===false"));
+assert.ok(app.includes("function shortestCircuitPaths(graph, sourceKey)"));
 assert.ok(app.includes("energizedEdges.add"));
 
 assert.ok(html.includes('data-team-panel="management"'));

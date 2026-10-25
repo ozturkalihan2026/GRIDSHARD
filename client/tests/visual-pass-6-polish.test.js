@@ -154,11 +154,11 @@ test("savaş efektleri kademelidir: sıradan vuruş sade, ağır vuruşta halka 
 });
 
 test("giriş ekranı ve marka amblemi yeni görsel dildedir", () => {
-  const boot = pass6.slice(pass6.indexOf("/* Giriş (yükleme) ekranı yeni görsel dilde"), pass6.indexOf("/* Savaş efektleri yeni görsel dilde"));
-  assert.match(boot, /\.boot-trace \{ display:none; \}/);
-  assert.match(boot, /-webkit-text-stroke:5px #0a1024;/);
-  assert.match(boot, /@keyframes gs-boot-glow \{ 50% \{ transform:translateY\(-2px\); text-shadow:0 6px 0 #0a1024; \} \}/);
-  assert.ok(!/rgba\(72,244,224/.test(boot));
+  const boot = fs.readFileSync(path.join(root, "src", "startup-loading.css"), "utf8");
+  assert.match(boot, /\.boot-circuit-scene\s*\{/);
+  assert.match(boot, /\.boot-title\s*\{[^}]*-webkit-text-stroke:0;/);
+  assert.match(boot, /@keyframes gs-boot-reactor-crystal \{ 50% \{ opacity:\.48; \} \}/);
+  assert.doesNotMatch(boot, /gs-boot-glow|gs-boot-trace/);
   const brand = fs.readFileSync(path.join(root, "..", "tools", "generate_brand_assets.py"), "utf8");
   assert.match(brand, /INK = \(10, 16, 36\)/);
   assert.match(brand, /def render_emblem\(s, ring_radius, \*, halo=1\.0, particles=None, seed=SEED\):/);

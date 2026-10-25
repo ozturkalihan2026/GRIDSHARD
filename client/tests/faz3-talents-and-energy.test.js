@@ -70,7 +70,7 @@ test("çekirdek yetenekleri modül yetenek ağacıyla aynı tasarımdadır", () 
   const tab = slice('    } else if (tabName === "skills") {', "      host.appendChild(tree);");
   assert.match(tab, /tree\.className = "module-talent-path core-talent-path";/);
   assert.match(tab, /row\.className = "module-talent-node";/);
-  assert.match(tab, /level\.append\(levelValue, createCostChip\("flux", threshold\.flux_cost\)\);/);
+  assert.match(tab, /appendTalentCosts\(level, threshold\);/);
   assert.match(tab, /skillName\.textContent = talentDisplayName\(skill\);/);
   assert.match(tab, /skillState\.textContent = state;/);
   assert.match(tab, /intro\.textContent = talentDisplayDescription\(skill\);/);

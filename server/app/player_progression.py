@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from .competition_control import competition_eligible, launch_status
 from datetime import datetime, timezone
 
 from .arena_canon import trophy_delta, unlocked_module_ids
@@ -140,6 +141,7 @@ class PlayerProgressionService:
         meta_progression_service: MetaProgressionService | None = None,
     ):
         self.profile_service = profile_service
+        self.weekly_active = lambda moment: launch_status(moment)["active"]
         self.meta_progression_service = (
             meta_progression_service or MetaProgressionService()
         )
@@ -267,6 +269,8 @@ class PlayerProgressionService:
             if (
                 updated.weekly_tournament_registered_period == weekly_period
                 and contributes_to_weekly_tournament(state.match_type)
+                and competition_eligible(player_id)
+                and self.weekly_active(completed_at)
             ):
                 if updated.weekly_tournament_period != weekly_period:
                     updated.weekly_tournament_period = weekly_period

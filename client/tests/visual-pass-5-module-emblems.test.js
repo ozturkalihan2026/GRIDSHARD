@@ -49,13 +49,12 @@ test("bilinmeyen modül genel yongayla çizilir; sınıf yalnız bilinen beş de
   assert.ok(view.emblemFor({ nameTr: "Bilinmeyen", category: "savunma" }).includes('data-cat="savunma"'));
   assert.ok(view.emblemFor({ nameTr: "Bilinmeyen", category: '"><script>' }).includes('data-cat=""'));
   assert.ok(view.emblemFor(null).includes('data-cat=""'));
-  // Eski tek harfli simge yedek olarak durur.
-  assert.equal(view.iconFor({ nameTr: "Lazer" }), "↯");
+  assert.equal(typeof view.iconFor, "undefined", "retired text drawings are not a second fallback family");
 });
 
-test("oyun modülü her yerde amblemle çizer; tek harfli simge yalnız yedek yoldadır", () => {
-  assert.equal((app.match(/moduleIconFor\(/g) || []).length, 2);
-  assert.ok(app.includes("element.textContent = moduleIconFor(module);"));
+test("oyun modülü her yerde resimle çizer; eski tek harfli simge yolu yoktur", () => {
+  assert.doesNotMatch(app,/moduleIconFor|GridshardModuleCardView\.iconFor/);
+  assert.ok(app.includes("element.innerHTML = moduleEmblemMarkup(module);"));
   // The retired counter-grid builder no longer adds an unused mounting site.
   assert.equal((app.match(/mountModuleEmblem\(/g) || []).length, 17);
   assert.ok(app.includes('else mountModuleEmblem(icon, model.module);'), "both battle boards share the persistent artwork path");

@@ -22,6 +22,7 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, Web
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .production_config import environment_secret, production_endpoints
+from .competition_control import competition_eligible, launch_status, minimum_participants
 from .postgres_economic_operations import PostgresEconomicOperations, EconomicOperationConflict
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.websockets import WebSocketDisconnect
@@ -743,6 +744,7 @@ player_progression_service = PlayerProgressionService(
     player_profile_service,
     meta_progression_service,
 )
+player_progression_service.weekly_active = lambda moment: _events_view(moment)["weekly_tournament"]["status"] == "active"
 DEFAULT_TELEMETRY_PATH = (
     RUNTIME_DATA_DIR
     / "web_test_telemetry.json"
@@ -3029,27 +3031,11 @@ def _leaderboard_profile_rows() -> list[dict]:
 # haftalık döngüdür. Kayıtlar ve oynanan maç ayakları takım deposunda dönem
 # kimliğiyle tutulur; AI takımları her dönem katılır.
 
-def _team_tournament_ai_teams() -> dict[str, dict]:
-    teams: dict[str, dict] = {}
-    for bot in BOTS:
-        team_id = str(bot.get("team_id") or "").strip()
-        if not team_id:
-            continue
-        team = teams.setdefault(
-            team_id,
-            {"team_name": str(bot.get("team_name") or "AI Takımı"), "roster": []},
-        )
-        team["roster"].append({
-            "player_id": str(bot["id"]),
-            "display_name": str(bot["display_name"]),
-            "rating": max(0, int(bot.get("rating", 0))),
-        })
-    return teams
-
-
 def _team_roster_snapshot(team: dict) -> list[dict]:
     roster = []
     for member_id in team.get("member_ids", []):
+        if not competition_eligible(member_id):
+            continue
         profile = _team_member_profile(str(member_id))
         roster.append({
             "player_id": str(member_id),
@@ -3080,7 +3066,7 @@ def _team_tournament_final_standings(period_id: str) -> list[dict]:
         period_id,
         calendar["ends_at"],
         registrations=state["registrations"],
-        ai_teams=_team_tournament_ai_teams(),
+        ai_teams={},
         legs=state["legs"],
     )["standings"]
 
@@ -3111,7 +3097,7 @@ def _record_team_tournament_leg(state) -> None:
             period_id,
             leg_id,
             registrations=_team_tournament_state(period_id)["registrations"],
-            ai_teams=_team_tournament_ai_teams(),
+            ai_teams={},
         )
     except (TypeError, ValueError):
         return
@@ -3132,6 +3118,7 @@ def _record_team_tournament_leg(state) -> None:
 
 
 def _ranked_player_rows(players: list[dict], value_key: str) -> list[dict]:
+    players = [row for row in players if competition_eligible(row["player_id"], is_bot=row.get("is_bot"))]
     ordered = sorted(
         players,
         key=lambda row: (
@@ -3403,7 +3390,8 @@ def get_public_team_profile(team_id: str) -> dict:
 @app.get("/leaderboards")
 @persistent_operation
 def get_leaderboards(player_id: str | None = None) -> dict:
-    players = _leaderboard_profile_rows()
+    players = [row for row in _leaderboard_profile_rows()
+               if competition_eligible(row["player_id"], is_bot=row.get("is_bot"))]
     teams: dict[str, dict] = {}
     for player in players:
         team_id = str(player.get("team_id") or "").strip()
@@ -3480,7 +3468,7 @@ def get_leaderboards(player_id: str | None = None) -> dict:
 def _real_competition_profiles() -> list:
     player_ids = set(player_profile_service._profiles)
     player_ids.update(snapshot.player_id for snapshot in player_data_repository.list_snapshots())
-    return [_team_member_profile(player_id) for player_id in sorted(player_ids)]
+    return [_team_member_profile(player_id) for player_id in sorted(player_ids) if competition_eligible(player_id)]
 
 
 def _queue_competition_reward(profile, *, source: str, period_id: str, position: int, prize: dict, team_id: str | None = None) -> bool:
@@ -3508,6 +3496,8 @@ def _queue_competition_reward(profile, *, source: str, period_id: str, position:
 
 def _settle_competition_rewards(player_id: str) -> None:
     """Lazily materialize ended season/week/team rewards exactly once."""
+    if not launch_status()["active"] or not competition_eligible(player_id):
+        return
     with REWARD_INBOX_LOCK:
         profiles = _real_competition_profiles()
         target = next((item for item in profiles if item.player_id == player_id), None)
@@ -3522,7 +3512,7 @@ def _settle_competition_rewards(player_id: str) -> None:
         # therefore safe to settle after rollover.
         for archive in target.season_archives:
             period_id = str(archive.get("season_id") or archive.get("id") or "")
-            if not period_id or period_id == current_season:
+            if not period_id or period_id == current_season or period_id == "gridshard_waiting":
                 continue
             rows = []
             for profile in profiles:
@@ -3560,7 +3550,7 @@ def _settle_competition_rewards(player_id: str) -> None:
                 key=lambda item: (-item[1], -item[2], item[0]),
             )
             position = next((index for index, row in enumerate(rows, 1) if row[0] == player_id), 0)
-            if 1 <= position <= len(WEEKLY_PRIZES):
+            if len(rows) >= minimum_participants() and target.weekly_tournament_matches > 0 and 1 <= position <= len(WEEKLY_PRIZES):
                 changed |= _queue_competition_reward(
                     target,
                     source="weekly_tournament",
@@ -5893,6 +5883,8 @@ def get_events(player_id: str | None = Query(None)) -> dict:
 @app.post("/events/weekly/register")
 @persistent_operation
 def register_weekly_tournament(request: EventRegistrationOperation) -> dict:
+    if not launch_status()["active"] or not competition_eligible(request.player_id):
+        raise HTTPException(status_code=422, detail="Turnuva başlangıcı bekleniyor.")
     profile = _team_member_profile(request.player_id)
     # Registration resets weekly counters, so materialize an unopened reward
     # from the just-closed week before advancing the period.
@@ -5916,6 +5908,8 @@ def register_weekly_tournament(request: EventRegistrationOperation) -> dict:
 @app.post("/events/team/register")
 @persistent_operation
 def register_team_tournament(request: EventRegistrationOperation) -> dict:
+    if not launch_status(team=True)["active"] or not competition_eligible(request.player_id):
+        raise HTTPException(status_code=422, detail="Takım turnuvası başlangıcı bekleniyor.")
     profile = _team_member_profile(request.player_id)
     _settle_competition_rewards(request.player_id)
     team = team_service.team_for_player(request.player_id)
@@ -5953,6 +5947,8 @@ def check_in_team_tournament_fixture(
     """Oyuncunun bu haftaki sıradaki maç ayağına girer (önce ilk maç, sonra rövanş)."""
     view = get_events(request.player_id)
     tournament = view["team_tournament"]
+    if tournament.get("status") in {"waiting_for_launch", "waiting_for_participants"} or not competition_eligible(request.player_id):
+        raise HTTPException(status_code=422, detail="Turnuva kayıt bekliyor.")
     if not view.get("viewer", {}).get("team_registered"):
         raise HTTPException(status_code=422, detail="Takım bu turnuvaya kayıtlı değil.")
     fixture = next(

@@ -14,6 +14,8 @@ test.use({trace:"off",video:"off"});
 test("savaş hareketleri ve VFX aynı kare bütçesinde kalır", async ({page}, info) => {
   test.setTimeout(90_000);
   const errors=[]; page.on("pageerror", error=>errors.push(String(error)));
+  const menuBackground=await page.evaluate(()=>getComputedStyle(document.body).backgroundImage);
+  expect(menuBackground).not.toBe('none');
   await page.evaluate(()=>window.__GRIDSHARD_TEST_API.startRenderCostProbe());
   await page.evaluate(() => {
     const sample=window.__battleCost={rigLayoutReads:0, rectReads:0, methods:{}, longTasks:0, maxTaskMs:0};
@@ -61,6 +63,15 @@ test("savaş hareketleri ve VFX aynı kare bütçesinde kalır", async ({page}, 
       target:a.effect?.target?.getAttribute('class'),iterations:String(a.effect?.getTiming().iterations)})),
     devices:document.querySelectorAll(".vertical-circuit-arena .module-device-rig").length,
     effects:document.querySelectorAll("#battle-effect-layer *").length}));
+  evidence.surfaces=await page.evaluate(()=>['html','body','.battle-shell','.battle-layout','.arena-panel','.vertical-circuit-arena','#battle-effect-layer'].map(selector=>{
+    const el=document.querySelector(selector),s=getComputedStyle(el),r=el.getBoundingClientRect();
+    const pseudo=kind=>{const p=getComputedStyle(el,kind);return {content:p.content,display:p.display,
+      background:p.backgroundImage,filter:p.filter,backdrop:p.backdropFilter||p.webkitBackdropFilter,
+      animation:p.animationName,willChange:p.willChange};};
+    return {selector,size:[r.width,r.height],background:s.backgroundImage,color:s.backgroundColor,
+      filter:s.filter,backdrop:s.backdropFilter||s.webkitBackdropFilter,shadow:s.boxShadow,
+      transform:s.transform,contain:s.contain,willChange:s.willChange,before:pseudo('::before'),after:pseudo('::after')};
+  }));
   if(before&&after){const previous=new Map(before.metrics.map(m=>[m.name,m.value]));evidence.browser=Object.fromEntries(after.metrics
     .filter(m=>["LayoutCount","RecalcStyleCount","LayoutDuration","RecalcStyleDuration","ScriptDuration","TaskDuration"].includes(m.name))
     .map(m=>[m.name,m.value-(previous.get(m.name)||0)]));}
@@ -68,6 +79,8 @@ test("savaş hareketleri ve VFX aynı kare bütçesinde kalır", async ({page}, 
   console.log('BATTLE_RENDER_BUDGET',JSON.stringify({project:info.project.name,...evidence}));
   await page.screenshot({path:info.outputPath("battle-proportions.png")});
   expect(evidence.devices).toBeGreaterThanOrEqual(5);
+  expect(evidence.surfaces.find(s=>s.selector==='body').background).toBe('none');
+  expect(evidence.surfaces.find(s=>s.selector==='.arena-panel').shadow).toBe('none');
   expect(evidence.rigLayoutReads).toBe(0);
   expect(evidence.performance?.freeze_count).toBe(0);
   expect(evidence.performance?.budget_passed).toBe(true);

@@ -3,26 +3,27 @@
  * This is illustrated 2.5D, not a volumetric mesh. */
 :root body[data-app-screen="play"] .vertical-circuit-arena {
   --gs-camera-tilt:0deg;
-  --gs-camera-counter:0deg;
-  --gs-camera-distance:1400px;
-  --gs-camera-fit-inset:32px;
-  /* Exactly half of v8's 52px VS track: both boards use the SAME world axis. */
-  --gs-camera-axis-gap:26px;
+  --gs-camera-upright-scale:1;
+  --gs-camera-y-scale:1;
+  --gs-camera-zoom:1.08;
+  --gs-camera-fit-inset:80px;
 }
 :root body[data-app-screen="play"][data-battle-perspective="on"] .vertical-circuit-arena {
   --gs-camera-tilt:30deg;
-  --gs-camera-counter:-30deg;
+  --gs-camera-upright-scale:1.1547005384;
+  --gs-camera-y-scale:.8660254038;
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena .board {
-  transform:perspective(var(--gs-camera-distance)) rotateX(var(--gs-camera-tilt)) scale(.98) !important;
+  /* Orthographic: retain the ground tilt, never grow nearer rows/devices. */
+  transform:rotateX(var(--gs-camera-tilt)) scale3d(var(--gs-camera-zoom),var(--gs-camera-zoom),var(--gs-camera-zoom)) !important;
   transform-style:preserve-3d;
   isolation:auto; overflow:visible; filter:none !important; will-change:auto !important;
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena .enemy-board {
-  transform-origin:50% calc(100% + var(--gs-camera-axis-gap)) !important;
+  transform-origin:50% 50% !important;
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena .duel-player-side .board {
-  transform-origin:50% calc(-1 * var(--gs-camera-axis-gap)) !important;
+  transform-origin:50% 50% !important;
 }
 /* Do not flatten the path between the board camera and its billboard. SVG
  * cables and edge-mounted bars stay on the board; only device art faces camera. */
@@ -36,19 +37,17 @@
   --device-height:calc(var(--gs-battle-card-size,60px) * .14);
   transform:none !important; transform-style:preserve-3d; opacity:1;
 }
-:root body[data-app-screen="play"] .vertical-circuit-arena .physical-module-card > .module-icon.has-module-device {
-  /* Atlas frames already contain registration padding; do not pad twice. */
-  inset:3px !important; width:calc(100% - 6px) !important; height:calc(100% - 6px) !important;
-  inline-size:calc(100% - 6px) !important; block-size:calc(100% - 6px) !important;
-}
+/* The painted-platform stylesheet owns square sprite registration inside its
+ * measured rectangular sockets. Keep one owner for both module and core seats. */
 .module-device-ground-shadow {
   position:absolute; left:18%; right:18%; top:65%; height:20%;
   border-radius:50%; background:#01070c80; pointer-events:none;
 }
 .module-device-billboard {
   position:absolute; inset:0; display:block; transform-style:preserve-3d;
-  /* Registered pedestal point; no second perspective camera on the module. */
-  transform-origin:50% 82%; transform:rotateX(var(--gs-camera-counter,0deg));
+  /* Orthographic inverse Y scale gives the same upright bitmap on WebKit
+   * without depending on nested preserve-3d rotation/compositing behavior. */
+  transform-origin:50% 82%; transform:scaleY(var(--gs-camera-upright-scale,1));
 }
 .module-view-window { position:absolute; display:block; inset:0; overflow:hidden; }
 .module-view-atlas {

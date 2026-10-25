@@ -80,3 +80,49 @@ test("localized labels and titles update without replacing artwork", () => {
   f.view.update(card,model({name:"Laser",shortName:"Laser",title:"Laser",heatLabel:"Heat 80%"}));
   assert.equal(card.children[0],icon);assert.equal(icon.getAttribute("aria-label"),"Laser");assert.equal(card.getAttribute("title"),"Laser");assert.equal(f.metrics.mounts,1);
 });
+
+test("both core meters retain real HP, survive updates and hide only for a wreck",()=>{
+  for(const enemy of [false,true]){
+    const f=dom(),initial=model({core:true,enemy,hp:300,maxHp:300});
+    const card=f.view.create(initial),meter=card.children.find(n=>n.className==='core-health-bar');
+    assert.ok(meter);assert.equal(meter.getAttribute('role'),'meter');
+    const before={...f.metrics};f.view.update(card,initial);assert.deepEqual(f.metrics,before);
+    f.view.update(card,{...initial,hp:120});
+    assert.equal(meter.getAttribute('aria-valuenow'),'120');
+    assert.equal(meter.getAttribute('aria-valuemax'),'300');
+    assert.equal(card.style.getPropertyValue('--hp-percent'),'40%');
+    assert.equal(f.metrics.nodes,before.nodes);
+    f.view.update(card,{...initial,hp:0,coreDestroyed:true});assert.equal(meter.hidden,true);
+    f.view.update(card,initial);assert.equal(meter.hidden,false);
+    assert.equal(card.children.filter(n=>n.className==='core-health-bar').length,1);
+  }
+});
+
+test("core death/rebirth remounts only once per boundary and retains its socket/card/listeners",()=>{
+  const f=dom(),living=model({core:true,artwork:'core:a',coreReady:false});
+  const card=f.view.create(living),icon=card.children[0],overlay=card.children[2],listeners=f.metrics.listeners;
+  const dead=model({core:true,coreDestroyed:true,hp:0,artwork:'core:a:wreck',coreReady:false});
+  f.view.update(card,dead);
+  assert.equal(card.getAttribute('data-core-wreck'),'true');assert.equal(f.metrics.mounts,2);
+  const unchanged={...f.metrics};
+  for(let i=0;i<1000;i++)f.view.update(card,dead);
+  assert.deepEqual(f.metrics,unchanged,'no death timer/DOM/remount work on repeated snapshots');
+  f.view.update(card,living);
+  assert.equal(card.getAttribute('data-core-wreck'),null);assert.equal(f.metrics.mounts,3);
+  assert.equal(card.children[0],icon);assert.equal(card.children[2],overlay);assert.equal(f.metrics.listeners,listeners);
+});
+
+test("physical modules have persistent foreground HP AND heat tracks, including zero heat",()=>{
+  for(const enemy of[false,true]){
+    const f=dom(),initial=model({physical:true,enemy,heat:0,liveBadges:[],signatureBadges:[]});
+    const card=f.view.create(initial),hp=card.children.find(n=>n.className==='module-health-bar');
+    const heat=card.children.find(n=>n.className==='module-heat-bar');
+    assert.ok(hp&&!hp.hidden&&heat&&!heat.hidden);
+    const same={...f.metrics};for(let i=0;i<100;i++)f.view.update(card,initial);
+    assert.deepEqual(f.metrics,same);
+    f.view.update(card,{...initial,hp:40,heat:70,heatLabel:'70%'});
+    assert.equal(hp.getAttribute('aria-valuenow'),'40');
+    assert.equal(heat.style.getPropertyValue('--heat-percent'),'70%');
+    assert.equal(f.metrics.nodes,same.nodes);
+  }
+});

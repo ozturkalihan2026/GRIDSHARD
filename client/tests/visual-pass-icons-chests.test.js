@@ -104,8 +104,8 @@ test("maliyet rozeti para biriminin adını değil simgesini gösterir", () => {
 });
 
 test("bilgi penceresinde bedeller ve yetenek Akı'sı simgeyle yazılır", () => {
-  assert.match(app, /setCostButtonLabel\(upgrade, localizedUiText\(cost \? "YÜKSELT" : "AZAMİ SEVİYE"\), cost \? \[\["flux", cost\.flux_shards\]\] : \[\]\);/);
-  assert.match(app, /level\.append\(levelValue, createCostChip\("flux", node\.flux_cost\)\);/);
+  assert.match(app, /setCostButtonLabel\(upgrade, localizedUiText\(cost \? "YÜKSELT" : "AZAMİ SEVİYE"\), cost\s*\? \[\["credit", cost\.circuit_credits\], \["flux", cost\.flux_shards\]\]\.filter\(\(\[, amount\]\) => Number\(amount\) > 0\)/);
+  assert.match(app, /appendTalentCosts\(level, node\);/);
   assert.match(app, /setCostButtonLabel\(resetButton, localizedUiText\("SIFIRLA"\), \[\["flux", resetCost\]\]\);/);
   assert.ok(!app.includes("levelCost.textContent = `${node.flux_cost} Akı`;"));
   assert.equal(en("YETENEKLERİ SIFIRLA"), "RESET TALENTS");

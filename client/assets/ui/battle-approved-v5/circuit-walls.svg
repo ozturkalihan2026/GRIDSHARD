@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="1000" viewBox="0 0 600 1000" preserveAspectRatio="none">
+ <defs>
+  <linearGradient id="stone" x2="1" y2="1"><stop stop-color="#344c76"/><stop offset=".45" stop-color="#1b3157"/><stop offset="1" stop-color="#0b1937"/></linearGradient>
+  <linearGradient id="current" x2="0" y2="1"><stop stop-color="#ff3649"/><stop offset=".43" stop-color="#971a3d"/><stop offset=".55" stop-color="#054681"/><stop offset="1" stop-color="#00d9f4"/></linearGradient>
+  <pattern id="blocks" width="100" height="156" patternUnits="userSpaceOnUse">
+   <path d="M-20 12 26 0 72 23 72 108 26 138-20 111Z M40 133 88 107 136 133 136 222 88 249 40 222Z" fill="url(#stone)" stroke="#071128" stroke-width="3"/>
+   <path d="M-20 12 26 38 72 23M26 38V138M40 133 88 161 136 133M88 161V249" fill="none" stroke="#6d86ad" stroke-opacity=".46" stroke-width="2"/>
+   <path d="m-17 13 43-11 42 21M44 133l43-23 44 23" fill="none" stroke="#9cb9d1" stroke-opacity=".35"/>
+  </pattern>
+  <pattern id="joints" width="100" height="156" patternUnits="userSpaceOnUse">
+   <path d="M26 40v91l14 9M88 163v79" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="bevel"/>
+  </pattern>
+  <mask id="edge-joints"><path fill="url(#joints)" d="M0 0h76v1000H0zM524 0h76v1000h-76z"/></mask>
+ </defs>
+ <path fill="#0a1933" d="M0 0h600v1000H0z"/>
+ <path d="M31 0v112l24 24v196L23 364v185l29 29v245l-30 30v147M568 0v95l-29 29v198l35 35v180l-28 28v247l29 29v159" fill="none" stroke="url(#current)" stroke-width="12"/>
+ <path fill="url(#blocks)" d="M0 0h600v1000H0z"/>
+ <path fill="url(#current)" mask="url(#edge-joints)" d="M0 0h600v1000H0z"/>
+ <path d="M83 0v155l-23 23v167l28 28v177l-25 25v230l24 24v171M516 0v146l27 27v175l-28 28v182l26 26v226l-24 24v166" fill="none" stroke="url(#current)" stroke-width="4"/>
+</svg>

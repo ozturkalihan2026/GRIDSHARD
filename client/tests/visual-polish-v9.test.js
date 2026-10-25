@@ -92,7 +92,8 @@ test("single collect and account switches cannot collect another message or appl
 test("shared surfaces preserve hidden state, core HP clears the charge mask and shelf has name/cost tracks",()=>{
   assert.match(css,/\.inbox-message-content\[hidden\] \{ display:none !important/);
   assert.match(css,/\.arena-reward-node\.is-claimable/);assert.ok(!app.includes("TÜM AÇILABİLİR SANDIKLAR AÇILDI"));
-  assert.match(deviceCss,/grid-template-rows:auto 52px auto !important/);
+  assert.match(app,/function fitCircuitScene\(\)/);
+  assert.match(app,/rimBottom:sceneTop\+3\.6\*projectedHeight\+between/);
   assert.match(deviceCss,/mask:none !important; -webkit-mask:none !important/);
   assert.match(deviceCss,/grid-template-rows:minmax\(0,1fr\) 12px 14px !important/);
 });

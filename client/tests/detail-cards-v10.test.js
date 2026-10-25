@@ -116,6 +116,8 @@ test("actual core dialog counts legacy shards and requires level resources and l
   const f=appFixture(),button=f.byId.get("core-detail-upgrade"),state=f.context.metaProgressionState;
   f.context.openCore();assert.equal(button.disabled,true);f.core.legacy_shards=2;f.context.openCore();assert.equal(button.disabled,false);
   state.flux_shards=19;f.context.openCore();assert.equal(button.disabled,true);
+  state.flux_shards=100;f.core.next_upgrade_cost.circuit_credits=501;f.context.openCore();assert.equal(button.disabled,true);
+  f.core.next_upgrade_cost.circuit_credits=500;f.context.openCore();assert.equal(button.disabled,false);
   state.flux_shards=100;f.core.unlocked=false;f.context.openCore();assert.equal(button.disabled,true);
   f.core.unlocked=true;state.unavailable=true;f.context.openCore();assert.equal(button.disabled,true);
   state.unavailable=false;f.core.next_upgrade_cost=null;f.context.openCore();assert.equal(button.disabled,true);

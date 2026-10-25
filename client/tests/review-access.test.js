@@ -190,7 +190,7 @@ test("app startup preserves the server-selected review identity rather than maki
 test("only private demo skips automatic guide; manual tutorial and ordinary player guide remain available", () => {
   const app = fs.readFileSync("src/app.js", "utf8");
   const start = app.indexOf("  function syncFirstMatchTutorial(");
-  const end = app.indexOf("  // Hedefe dokunuş", start);
+  const end = app.indexOf("  // Menu presentation", start);
   assert.ok(start > 0 && end > start);
   function run({review, requested=false, dialog=false}) {
     let hidden=0, started=0;
@@ -198,6 +198,7 @@ test("only private demo skips automatic guide; manual tutorial and ordinary play
       document:{getElementById:() => ({open:dialog})}, GridshardAuth:{session:{isReviewProfile:() => review}},
       onboardingOverlay:{hide:() => hidden++}, ONBOARDING_AUTOMATION_OPT_OUT:false,
       onboardingContext:() => ({hub:true,inMatchFlow:false}), startupLoading:null,
+      participantBootstrapResult:{ok:true},
       onboardingFlow:{active:false,isCompleted:() => false,start:() => started++,update(){},read:() => false},
       statisticsState:{viewModel:() => ({totalMatches:0})}, syncBattleHints(){}};
     vm.runInNewContext(`${app.slice(start,end)}; syncFirstMatchTutorial(1000);`,context);

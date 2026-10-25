@@ -73,9 +73,9 @@
   filter:none !important;
 }
 :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) button::before, :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) button::after { display:none !important; }
-:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .detail-card-close {
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog,#reward-inbox-dialog) .detail-card-close {
   grid-area:close; position:static !important; place-self:start end; display:grid !important; place-items:center;
-  width:36px !important; height:36px !important; min-height:36px !important; padding:0 !important;
+  width:36px !important; height:36px !important; min-width:36px !important; min-height:36px !important; padding:0 !important;
   border:1px solid #ffadb6 !important; border-bottom:3px solid #771b36 !important; border-radius:11px !important;
   background:linear-gradient(#ff6c7d,#d83258) !important; color:white !important;
   font:800 30px/1 var(--gs-font-copy) !important; box-shadow:inset 0 1px #fff5,0 2px #07172b !important;
@@ -211,7 +211,7 @@
   color:#24485e !important; font:700 10px/1.2 var(--gs-font-copy) !important; letter-spacing:0;
 }
 :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-kind > .ui-icon { width:14px; height:14px; }
-:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices { display:grid !important; grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr) !important; gap:6px !important; align-items:center; }
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices { display:grid !important; grid-template-columns:minmax(0,1fr) 62px minmax(0,1fr) !important; gap:6px !important; align-items:center; }
 :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices::before { display:none !important; }
 :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button {
   position:relative !important; display:grid !important; grid-template-columns:20px minmax(0,1fr) !important;
@@ -230,11 +230,14 @@
 :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button.is-selected small { color:#194e43 !important; }
 :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button.is-previewed { outline:2px solid #eaa42e; outline-offset:1px; }
 :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-level {
-  width:44px !important; height:44px; min-height:44px !important; padding:3px !important;
+  width:62px !important; height:auto; min-height:60px !important; padding:3px !important;
   display:grid; place-items:center; align-content:center; gap:2px; border-radius:12px !important;
   border:1px solid #719bb8 !important; background:#315b80 !important; color:#fff;
 }
 :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-level > strong { font:800 11px/1.2 var(--gs-font-display) !important; }
+/* Both wallets must remain readable, including 40.000 DK + 4.000 Flux.
+ * Keep one chip per row instead of shrinking the price into the old 44px dot. */
+:root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-level > .cost-chip { font-size:10px; white-space:nowrap; }
 :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-reset-panel {
   display:flex; align-items:center; justify-content:space-between; gap:6px; padding:7px !important;
   margin:0 !important; background:#b2ccdc !important; color:#254b63; border:1px solid #87a6b9; border-radius:8px;
@@ -244,11 +247,10 @@
 @media (max-width:360px) {
   :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) { padding:8px !important; gap:6px !important; }
   :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-detail-title h2 { font-size:17px !important; }
-  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices { grid-template-columns:minmax(0,1fr) 38px minmax(0,1fr) !important; gap:5px !important; }
+  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices { gap:5px !important; }
   :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button { grid-template-columns:1fr !important; min-height:52px !important; padding:6px !important; text-align:center !important; }
   :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button > .ui-icon { display:none !important; }
   :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-choices button :is(strong,small) { grid-column:1; }
-  :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) .module-talent-level { width:38px !important; }
 }
 @media (max-height:600px) {
   :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) { gap:5px !important; padding:8px !important; }

@@ -41,7 +41,7 @@
   ];
   const profiles=Object.freeze(Object.fromEntries(rows.map(([id,shape,color,travel,hz,seconds])=>[id,Object.freeze({
     id,shape,color,travel,hz,seconds,cue:"module_"+id,
-    asset:"./assets/audio/modules/"+id+".wav",gain:id==="laser"?.38:id==="cooler"?.45:.50
+    asset:"./assets/audio/modules/"+id+".wav",gain:id==="laser"?.38:id==="emp"?.35:id==="cooler"?.45:.50
   })])));
   root.GridshardModulePresentation=profiles;
   if(typeof module!=="undefined"&&module.exports)module.exports=profiles;

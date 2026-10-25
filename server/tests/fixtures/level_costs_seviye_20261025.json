@@ -1,0 +1,426 @@
+{
+  "source_file": "Seviye.docx",
+  "source_sha256": "24f8f26f6f15ff7789cd66581873b94c8bd21a86218cc9e3e7d2649cf5423e63",
+  "costs": {
+    "common": [
+      {
+        "circuit_credits": 100,
+        "shards": 2,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 200,
+        "shards": 4,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 400,
+        "shards": 10,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 600,
+        "shards": 20,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 1000,
+        "shards": 40,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 1500,
+        "shards": 80,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 3000,
+        "shards": 160,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 6000,
+        "shards": 320,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 12000,
+        "shards": 480,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 20000,
+        "shards": 600,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 25000,
+        "shards": 720,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 30000,
+        "shards": 840,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 35000,
+        "shards": 960,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 40000,
+        "shards": 1200,
+        "flux_shards": 0
+      }
+    ],
+    "rare": [
+      {
+        "circuit_credits": 300,
+        "shards": 2,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 500,
+        "shards": 4,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 800,
+        "shards": 10,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 1200,
+        "shards": 20,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 1500,
+        "shards": 30,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 3000,
+        "shards": 60,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 5000,
+        "shards": 100,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 10000,
+        "shards": 150,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 20000,
+        "shards": 250,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 30000,
+        "shards": 400,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 40000,
+        "shards": 500,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 45000,
+        "shards": 600,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 50000,
+        "shards": 700,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 55000,
+        "shards": 800,
+        "flux_shards": 0
+      }
+    ],
+    "epic": [
+      {
+        "circuit_credits": 600,
+        "shards": 2,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 900,
+        "shards": 2,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 1200,
+        "shards": 4,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 2000,
+        "shards": 8,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 3000,
+        "shards": 12,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 6000,
+        "shards": 20,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 8000,
+        "shards": 30,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 16000,
+        "shards": 40,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 25000,
+        "shards": 50,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 40000,
+        "shards": 75,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 50000,
+        "shards": 100,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 60000,
+        "shards": 125,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 65000,
+        "shards": 150,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 70000,
+        "shards": 200,
+        "flux_shards": 0
+      }
+    ],
+    "legendary": [
+      {
+        "circuit_credits": 1200,
+        "shards": 1,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 1800,
+        "shards": 2,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 2400,
+        "shards": 4,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 4000,
+        "shards": 6,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 6000,
+        "shards": 10,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 12000,
+        "shards": 15,
+        "flux_shards": 0
+      },
+      {
+        "circuit_credits": 16000,
+        "shards": 20,
+        "flux_shards": 500
+      },
+      {
+        "circuit_credits": 20000,
+        "shards": 30,
+        "flux_shards": 1000
+      },
+      {
+        "circuit_credits": 30000,
+        "shards": 40,
+        "flux_shards": 1500
+      },
+      {
+        "circuit_credits": 40000,
+        "shards": 50,
+        "flux_shards": 2000
+      },
+      {
+        "circuit_credits": 50000,
+        "shards": 60,
+        "flux_shards": 2500
+      },
+      {
+        "circuit_credits": 60000,
+        "shards": 70,
+        "flux_shards": 4000
+      },
+      {
+        "circuit_credits": 70000,
+        "shards": 80,
+        "flux_shards": 6000
+      },
+      {
+        "circuit_credits": 80000,
+        "shards": 90,
+        "flux_shards": 10000
+      }
+    ]
+  },
+  "module_talents": {
+    "common": [
+      {
+        "circuit_credits_cost": 1000,
+        "flux_cost": 0
+      },
+      {
+        "circuit_credits_cost": 2000,
+        "flux_cost": 0
+      },
+      {
+        "circuit_credits_cost": 4000,
+        "flux_cost": 0
+      },
+      {
+        "circuit_credits_cost": 8000,
+        "flux_cost": 1000
+      }
+    ],
+    "rare": [
+      {
+        "circuit_credits_cost": 2000,
+        "flux_cost": 0
+      },
+      {
+        "circuit_credits_cost": 4000,
+        "flux_cost": 0
+      },
+      {
+        "circuit_credits_cost": 10000,
+        "flux_cost": 1000
+      },
+      {
+        "circuit_credits_cost": 20000,
+        "flux_cost": 2000
+      }
+    ],
+    "epic": [
+      {
+        "circuit_credits_cost": 10000,
+        "flux_cost": 0
+      },
+      {
+        "circuit_credits_cost": 20000,
+        "flux_cost": 1000
+      },
+      {
+        "circuit_credits_cost": 30000,
+        "flux_cost": 2000
+      },
+      {
+        "circuit_credits_cost": 40000,
+        "flux_cost": 3000
+      }
+    ],
+    "legendary": [
+      {
+        "circuit_credits_cost": 10000,
+        "flux_cost": 1000
+      },
+      {
+        "circuit_credits_cost": 20000,
+        "flux_cost": 2000
+      },
+      {
+        "circuit_credits_cost": 30000,
+        "flux_cost": 3000
+      },
+      {
+        "circuit_credits_cost": 40000,
+        "flux_cost": 4000
+      }
+    ]
+  },
+  "core_talents": {
+    "common": [
+      {
+        "circuit_credits_cost": 2000,
+        "flux_cost": 0
+      },
+      {
+        "circuit_credits_cost": 5000,
+        "flux_cost": 0
+      },
+      {
+        "circuit_credits_cost": 10000,
+        "flux_cost": 1000
+      }
+    ],
+    "rare": [
+      {
+        "circuit_credits_cost": 4000,
+        "flux_cost": 0
+      },
+      {
+        "circuit_credits_cost": 10000,
+        "flux_cost": 0
+      },
+      {
+        "circuit_credits_cost": 20000,
+        "flux_cost": 2000
+      }
+    ],
+    "epic": [
+      {
+        "circuit_credits_cost": 10000,
+        "flux_cost": 0
+      },
+      {
+        "circuit_credits_cost": 20000,
+        "flux_cost": 2000
+      },
+      {
+        "circuit_credits_cost": 30000,
+        "flux_cost": 3000
+      }
+    ],
+    "legendary": [
+      {
+        "circuit_credits_cost": 20000,
+        "flux_cost": 2000
+      },
+      {
+        "circuit_credits_cost": 30000,
+        "flux_cost": 3000
+      },
+      {
+        "circuit_credits_cost": 40000,
+        "flux_cost": 4000
+      }
+    ]
+  }
+}

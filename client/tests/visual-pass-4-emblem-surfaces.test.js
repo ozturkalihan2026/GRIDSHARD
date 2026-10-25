@@ -41,17 +41,18 @@ test("profesyonel dokunuş: tur 3 yüzeyleri ince konturlu ve alçak dudaklıdı
 });
 
 test("Çekirdek amblemi onaylı fiziksel çizimdir ve her yerde aynı işlevle çizilir", () => {
-  const start = app.indexOf("  const CORE_EMBLEM_MARKS = Object.freeze({");
+  const start = app.indexOf("  function coreEmblemMarkup(coreId) {");
   const end = app.indexOf("  function renderHomeCoreHero() {");
   assert.ok(start > 0 && end > start);
   const sandbox = {CORE_VISUALS:{core_phoenix:{},core_resonance:{}}};
-  vm.runInNewContext(`${app.slice(start, end)}\nObject.assign(this, { coreEmblemSvg, coreEmblemMarkup });`, sandbox);
+  vm.runInNewContext(`${app.slice(start, end)}\nObject.assign(this, { coreEmblemMarkup });`, sandbox);
   const markup = sandbox.coreEmblemMarkup("core_phoenix");
   assert.match(markup, /cores-physical-v1\/core_phoenix.webp/);
   assert.doesNotMatch(markup, /<svg|core-emblem-orbits|core-emblem-spark/);
   assert.match(sandbox.coreEmblemMarkup("unknown"), /cores-physical-v1\/core_resonance.webp/);
-  // Kaynak kartındaki statik SVG'nin kendi animasyon katmanı yoktur.
-  assert.equal(/ce-orbits|ce-spark/.test(sandbox.coreEmblemSvg("core_resonance")), false);
+  // Reward rows and arena stops no longer keep a separate SVG renderer.
+  assert.ok(app.includes('icon.innerHTML = coreEmblemMarkup(identity.id);'));
+  assert.ok(app.includes('${coreEmblemMarkup(identity.id)}</span>'));
 
   for (const call of [
     "mountCoreEmblem(glyph, coreId);",
@@ -88,7 +89,7 @@ test("savaşta çekirdek amblemi hücrenin ortasındadır", () => {
   assert.match(icon, /inset:12% !important;/);
   assert.match(icon, /justify-self:stretch !important;[^}]*align-self:stretch !important;/);
   // v15: savaşta çekirdek onaylı dik çizimle durur; çizim yüklenemezse aynı amblem kullanılır.
-  assert.ok(app.includes("if (!GridshardModuleDeviceArt.mountCore?.(icon, model.coreType)) mountCoreEmblem(icon, model.coreType);"));
+  assert.ok(app.includes("if (!GridshardModuleDeviceArt.mountCore?.(icon, model.coreType, {destroyed:model.coreDestroyed})) mountCoreEmblem(icon, model.coreType);"));
   assert.ok(app.includes('const coreType = enemy ? mockEnemyCoreType : metaProgressionState?.cores?.selected_core_type || "core_resonance";'));
 });
 

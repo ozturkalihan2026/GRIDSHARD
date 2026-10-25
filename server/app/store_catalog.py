@@ -17,6 +17,7 @@ Aynı sağlayıcı + doğrulanmış işlem kimliği ikinci kez ürün vermez.
 """
 
 from __future__ import annotations
+from .competition_control import launch_status
 
 import os
 import uuid
@@ -149,6 +150,8 @@ def verify_ad_view(provider: str, *, test_mode: bool) -> dict:
 def _grant(profile, product: dict) -> dict:
     kind = product["kind"]
     if kind == "season_pass":
+        if not launch_status()["active"]:
+            raise StoreError("Sezon başlamadan ücretli sezon geçişi satın alınamaz.")
         if profile.premium_pass_active():
             raise StoreError("Bu sezonun ücretli geçişi zaten etkin.")
         profile.season_premium_pass_season_id = profile.active_meta_season_id
@@ -465,6 +468,9 @@ def store_view(profile, *, purchase_test_mode: bool, ad_test_mode: bool, platfor
         "season_pass": {
             **season_pass,
             "active": profile.premium_pass_active(),
+            "purchasable": launch_status()["active"] and not profile.premium_pass_active(),
+            "season_active": launch_status()["active"],
+            "status_tr": "Sezon başlangıcı bekleniyor." if not launch_status()["active"] else "",
             "refund_policy_version": premium_refund_policy,
             "reward_recovery_on_refund": premium_refund_policy == PREMIUM_REFUND_POLICY,
         },

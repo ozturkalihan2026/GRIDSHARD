@@ -58,6 +58,19 @@ test("mağaza başlıkları ve düşük kalite sandık açılışı mevcut görs
   }
 });
 
+test("çekirdek parçası ödülleri eski SVG yerine güncel fiziksel çizimi gösterir",async({page})=>{
+  const ids=["core_resonance","core_guardian","core_overdrive","core_disruptor","core_capacitor","core_phoenix","core_quantum"];
+  for(const id of ids){
+    await page.evaluate(id=>window.__GRIDSHARD_TEST_API.showChestReveal({definition_id:"core_24h",rewards:{core_shards:1,core_type_id:id}}),id);
+    const art=page.locator('#chest-reveal-rewards .resource-symbol-core-card img.core-physical-art');
+    await expect(art).toHaveAttribute('src',`./assets/ui/cores-physical-v1/${id}.webp`);
+    await expect(art).toBeVisible();
+    await expect.poll(()=>art.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+    await expect(page.locator('#chest-reveal-rewards .resource-symbol-core-card svg')).toHaveCount(0);
+  }
+  await page.locator('#chest-reveal-close').click();
+});
+
 test("kupa seçimi, günlük meta ve tüm modül çizimleri mevcut arayüze bağlıdır", async ({page},info) => {
   test.setTimeout(90_000);
   await page.locator('[data-shell-screen="team"]').click();
@@ -107,11 +120,13 @@ test("çekirdek baskın ölçekte sokete oturur, isabette kırpılmaz; kalkan ve
   await expect(page.locator("#enemy-board .module-device-rig[data-core=true]")).toBeVisible();
   const raster=await page.locator('.module-device-rig[data-core=true] .module-layer-art').evaluateAll(images=>images.map(img=>{
     const chain=[];
-    for(let node=img;node && chain.length<7;node=node.parentElement) {
+    for(let node=img;node && chain.length<12;node=node.parentElement) {
       const style=getComputedStyle(node),rect=node.getBoundingClientRect();
       chain.push({tag:node.className,size:[style.width,style.height],rect:[rect.width,rect.height],
         transform:style.transform,scale:style.scale,zoom:style.zoom,filter:style.filter,
-        willChange:style.willChange,backface:style.backfaceVisibility,imageRendering:style.imageRendering});
+        willChange:style.willChange,backface:style.backfaceVisibility,imageRendering:style.imageRendering,
+        transformStyle:style.transformStyle,opacity:style.opacity,overflow:style.overflow,
+        contain:style.contain,isolation:style.isolation,mask:style.maskImage});
     }
     return {src:img.currentSrc,natural:[img.naturalWidth,img.naturalHeight],chain};
   }));
@@ -126,6 +141,9 @@ test("çekirdek baskın ölçekte sokete oturur, isabette kırpılmaz; kalkan ve
     const result = [];
     for (const rig of document.querySelectorAll(".module-device-rig[data-core=true]")) {
       const host = rig.parentElement, original = rig.dataset.device;
+      const registration=getComputedStyle(host);
+      if(Math.abs(parseFloat(registration.width)-parseFloat(registration.height))>1)
+        throw new Error('Core registration must stay square; object-fit letterboxing invalidates opaque bounds');
       const cell = host.closest(".board-cell,.enemy-board-cell");
       for (const [id, data] of Object.entries(GridshardModuleLayerData).filter(([,data]) => data.core)) {
         GridshardModuleDeviceArt.mountCore(host, id);
@@ -151,10 +169,12 @@ test("çekirdek baskın ölçekte sokete oturur, isabette kırpılmaz; kalkan ve
         const after=stage.getBoundingClientRect();
         // Standing art may rise above the PCB, but must not become a tiny
         // floor token or spill across another socket's horizontal footprint.
-        result.push({id, fits:visible.left>=c.left-c.width*.18&&visible.right<=c.right+c.width*.18
-            &&visible.top>=c.top-c.height*.65&&visible.bottom<=c.bottom+4,
-          prominent:(visible.right-visible.left)>=c.width*.78 && (visible.bottom-visible.top)>=c.height*.78,
-          cell:[c.width,c.height],silhouette:[visible.right-visible.left,visible.bottom-visible.top],
+        const unit=Math.hypot(corners[1].x-corners[0].x,corners[1].y-corners[0].y);
+        const health=host.closest('.module-card').querySelector('.core-health-bar').getBoundingClientRect();
+        result.push({id, fits:visible.left>=c.left-1&&visible.right<=c.right+1
+            &&visible.top>=c.top-c.height*.8&&visible.bottom<=health.top-.5,
+          prominent:Math.abs(Math.max(visible.right-visible.left,visible.bottom-visible.top)-unit)<1.5,
+          unit,cell:[c.width,c.height],silhouette:[visible.right-visible.left,visible.bottom-visible.top],
           overflow:[c.left-visible.left,visible.right-c.right,c.top-visible.top,visible.bottom-c.bottom].map(n=>Math.round(n)),
           stable:Math.abs(after.width-before.width)<1&&Math.abs(after.height-before.height)<1});
         host.closest(".module-card").classList.remove("fx-hit");
@@ -163,6 +183,7 @@ test("çekirdek baskın ölçekte sokete oturur, isabette kırpılmaz; kalkan ve
     }
     return result;
   });
+  await info.attach('all-core-opaque-bounds',{body:JSON.stringify(bounds,null,2),contentType:'application/json'});
   expect(bounds.length).toBe(14);
   for(const core of bounds) { expect(core.stable, core.id).toBe(true); expect(core.fits, JSON.stringify(core)).toBe(true); expect(core.prominent,JSON.stringify(core)).toBe(true); }
   await expect(page.locator("#battle-start-countdown")).toBeHidden({timeout:6000});
@@ -178,11 +199,15 @@ test("çekirdek baskın ölçekte sokete oturur, isabette kırpılmaz; kalkan ve
     const registered=await shell.evaluate(svg=>{
       const stage=svg.parentElement.getBoundingClientRect(),shell=svg.getBoundingClientRect();
       const socket=svg.closest('.module-device-billboard').getBoundingClientRect();
-      return {widthRatio:shell.width/stage.width,top:shell.top,socketTop:socket.top,height:socket.height};
+      return {widthRatio:shell.width/stage.width,top:shell.top,stageTop:stage.top,
+        bottom:shell.bottom,stageBottom:stage.bottom,socketTop:socket.top,height:socket.height};
     });
     expect(registered.widthRatio).toBeGreaterThan(.95);
     expect(registered.widthRatio).toBeLessThan(1.05);
-    expect(registered.top).toBeLessThan(registered.socketTop-registered.height*.15);
+    // The module now fits its equal socket rather than towering over it.
+    // Its protective shell must still cover the registered painting stage.
+    expect(registered.top).toBeLessThanOrEqual(registered.stageTop+1);
+    expect(registered.bottom).toBeGreaterThanOrEqual(registered.stageBottom-1);
   }
   const coreId = await page.locator('#board .module-card:has([data-core="true"])').getAttribute("data-module-id");
   await page.screenshot({path:info.outputPath("core-and-shield.png")});

@@ -32,7 +32,6 @@ from app.arena_canon import (
 )
 from app.game.tutorial import TUTORIAL_ENEMY_DECK, TUTORIAL_PLAYER_DECK, TUTORIAL_REQUIRED_CARDS
 from app.meta_progression import (
-    CORE_UPGRADE_SHARD_CURVE,
     MetaProgressionError,
     MetaProgressionService,
     archive_and_soft_reset_season,
@@ -571,17 +570,17 @@ def totals(module_id):
 
 
 def test_upgrade_cost_totals_match_the_published_table():
-    assert totals("laser") == (100_000, 962, 0)        # sıradan
-    assert totals("emp") == (150_000, 726, 0)          # ender
-    assert totals("railgun") == (200_000, 486, 0)      # destansı
-    assert totals("ion_spear") == (300_000, 292, 500)  # efsanevi
+    assert totals("laser") == (174_800, 5436, 0)
+    assert totals("emp") == (262_300, 3626, 0)
+    assert totals("railgun") == (347_700, 818, 0)
+    assert totals("ion_spear") == (393_400, 478, 27500)
     assert module_upgrade_cost("laser", 0) == {
         "next_level": 1, "circuit_credits": 100, "shards": 2, "flux_shards": 0,
     }
     assert module_upgrade_cost("ion_spear", 6) == {
-        "next_level": 7, "circuit_credits": 6600, "shards": 14, "flux_shards": 20,
+        "next_level": 7, "circuit_credits": 16000, "shards": 20, "flux_shards": 500,
     }
-    assert module_upgrade_cost("ion_spear", 13)["flux_shards"] == 120
+    assert module_upgrade_cost("ion_spear", 13)["flux_shards"] == 10000
 
 
 def test_rarer_modules_need_fewer_pieces_and_more_credits_at_every_level():
@@ -593,7 +592,8 @@ def test_rarer_modules_need_fewer_pieces_and_more_credits_at_every_level():
         costs = [module_upgrade_cost(samples[r], level) for r in ("common", "rare", "epic", "legendary")]
         credits = [cost["circuit_credits"] for cost in costs]
         shards = [cost["shards"] for cost in costs]
-        assert credits == sorted(set(credits)), level
+        # The Word table deliberately ties Epic/Legendary at some late steps.
+        assert credits == sorted(credits), level
         assert shards == sorted(shards, reverse=True), level
         if level:
             previous = module_upgrade_cost("laser", level - 1)
@@ -607,17 +607,17 @@ def test_legendary_upgrade_spends_flux_and_is_refused_without_it():
     profile.rating = 5400
     profile.highest_rating = 5400
     profile.module_upgrade_levels["ion_spear"] = 6
-    profile.module_shards["ion_spear"] = 14
-    profile.circuit_credits = 6600
-    profile.flux_shards = 19
-    with pytest.raises(MetaProgressionError, match="20 Akı"):
+    profile.module_shards["ion_spear"] = 20
+    profile.circuit_credits = 16000
+    profile.flux_shards = 499
+    with pytest.raises(MetaProgressionError, match="500 Akı"):
         service.upgrade_module(profile, "ion_spear", "need-flux")
-    assert (profile.circuit_credits, profile.flux_shards) == (6600, 19)
+    assert (profile.circuit_credits, profile.flux_shards) == (16000, 499)
 
-    profile.flux_shards = 25
+    profile.flux_shards = 505
     receipt = service.upgrade_module(profile, "ion_spear", "with-flux")
     assert receipt["level_after"] == 7
-    assert receipt["flux_shards_spent"] == 20
+    assert receipt["flux_shards_spent"] == 500
     assert (profile.circuit_credits, profile.flux_shards) == (0, 5)
     assert profile.module_shards["ion_spear"] == 0
     # Aynı istek yinelenirse yeniden harcanmaz.
@@ -637,19 +637,18 @@ def test_existing_module_levels_are_untouched_by_the_new_table():
     )
     assert view["level"] == 9
     assert view["next_upgrade_cost"] == {
-        "next_level": 10, "circuit_credits": 7000, "shards": 92, "flux_shards": 0,
+        "next_level": 10, "circuit_credits": 20000, "shards": 600, "flux_shards": 0,
     }
 
 
-def test_core_upgrade_needs_reachable_piece_counts_and_more_flux():
-    assert sum(CORE_UPGRADE_SHARD_CURVE) == 109 and len(CORE_UPGRADE_SHARD_CURVE) == 14
+def test_core_upgrade_uses_the_same_rarity_level_table_as_modules():
     service = MetaProgressionService()
     profile = PlayerProfileService().get_or_create("core-cost")
     core = next(c for c in service.view(profile)["cores"]["types"] if c["id"] == "core_resonance")
-    assert core["next_upgrade_cost"] == {"flux_shards": 50, "shards": 1}
+    assert core["next_upgrade_cost"] == {"circuit_credits": 100, "flux_shards": 0, "shards": 2}
     profile.core_upgrade_levels["core_resonance"] = 13
     core = next(c for c in service.view(profile)["cores"]["types"] if c["id"] == "core_resonance")
-    assert core["next_upgrade_cost"] == {"flux_shards": 700, "shards": 22}
+    assert core["next_upgrade_cost"] == {"circuit_credits": 40000, "flux_shards": 0, "shards": 1200}
 
 
 # -- Lige girişte açılan modüllerin maç sonucunda bildirilmesi ---------------------

@@ -44,11 +44,10 @@ def chest_value(definition_id: str) -> dict:
             "shards": shards, "core": definition["core_drop_chance"] * definition["core_drop_shards"]}
 
 
-def module_cost(rarity: str, level: int) -> tuple[int, int]:
-    """Seviye 1'den verilen seviyeye toplam Devre Kredisi ve parça."""
-    steps = level - 1
-    credits = sum(round(value * meta.RARITY_COST_MULTIPLIER[rarity]) for value in meta.MODULE_UPGRADE_CREDIT_CURVE[:steps])
-    return credits, sum(meta.MODULE_UPGRADE_SHARD_CURVES[rarity][:steps])
+def module_cost(rarity: str, level: int) -> tuple[int, int, int]:
+    """Ortak tablodan seviye1→hedef toplam DK, ilgili parça ve Akı."""
+    costs = [meta.rarity_upgrade_cost(rarity, counter) for counter in range(max(0, min(14, level-1)))]
+    return tuple(sum(c[key] for c in costs) for key in ("circuit_credits", "shards", "flux_shards"))
 
 
 def daily_income(rating: int, matches: float, win_rate: float) -> dict:
@@ -131,16 +130,23 @@ def report(rating: int, matches: float, win_rate: float) -> None:
         print(f"  {name:<22} Devre Kredisi {credits:7.0f}   Akı {flux:5.0f}")
     print(f"  {'Toplam / gün':<22} Devre Kredisi {income['credits']:7.0f}   Akı {income['flux']:5.0f}")
     print(f"  Sezon deneyimi {income['season_xp']:.0f}/gün; {DAYS} günde {income['tiers']}/{len(profile.SEASON_REWARD_TRACK)} kademe")
-    print("  Bir kartın süresi (gün; parça | o kart için tek başına Devre Kredisi):")
+    print("  Bir kartın süresi (gün; parça | tek başına Devre Kredisi | tek başına Akı):")
     for rarity, rate in income["per_card"].items():
         cells = "  ".join(
-            f"S{level} {module_cost(rarity, level)[1] / rate:5.0f} | {module_cost(rarity, level)[0] / income['credits']:4.0f}"
+            f"S{level} {module_cost(rarity, level)[1] / rate:5.0f} | {module_cost(rarity, level)[0] / income['credits']:4.0f} | {module_cost(rarity, level)[2] / income['flux']:4.0f}"
             for level in LEVELS
         )
         print(f"    {RARITY[rarity]:<9} {rate:5.2f} parça/gün   {cells}")
     per_core = income["core"] / income["unlocked_cores"]
-    cells = "  ".join(f"S{level} {sum(meta.CORE_UPGRADE_SHARD_CURVE[:level - 1]) / per_core:5.0f}" for level in LEVELS)
-    print(f"  Çekirdek: {income['core']:.3f} parça/gün (çekirdek başına {per_core:.3f})   {cells}")
+    print(f"  Çekirdek: {income['core']:.3f} parça/gün (çekirdek başına {per_core:.3f})")
+    for core_type in meta.CORE_TYPES:
+        if rating < meta.core_unlock_rating(core_type):
+            continue
+        cells = "  ".join(
+            f"S{level} {module_cost(core_type['rarity'], level)[1] / per_core:5.0f} | {module_cost(core_type['rarity'], level)[0] / income['credits']:4.0f} | {module_cost(core_type['rarity'], level)[2] / income['flux']:4.0f}"
+            for level in LEVELS
+        )
+        print(f"    {core_type['name_tr']}: {cells}")
 
 
 def main() -> None:

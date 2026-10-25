@@ -76,11 +76,11 @@ test("new original sounds are short mono PCM, bounded in size/peak and not stale
     const asset=global.GRIDSHARD_SFX_CUES[cue].asset;assert.ok(fs.existsSync(path.join(client,asset)));
   }
 });
-test("clarity reduces broad color wash, keeping sharp energy rims and a translucent honeycomb",()=>{
-  const css=fs.readFileSync(path.join(__dirname,"../src/module-device-v8.css"),"utf8");
-  assert.match(css,/inset 0 0 5px var\(--circuit-cell-glow\)/);
-  assert.match(css,/border-color:var\(--circuit-light\) !important/);
-  assert.match(css,/--circuit-cell-glow:#35e6b92b/);
+test("painted sockets keep power light local and the shield honeycomb translucent",()=>{
+  const css=fs.readFileSync(path.join(__dirname,"../src/battle-platform-v17.css"),"utf8");
+  assert.match(css,/radial-gradient\(ellipse at 50% 52%,var\(--circuit-cell-glow\),transparent 50%\)/);
+  assert.match(css,/--circuit-cell-glow:#57f5d828/);
+  assert.match(css,/box-shadow:none !important; filter:none !important/);
   const vfx=fs.readFileSync(path.join(__dirname,"../src/battle/module-vfx.js"),"utf8");
   assert.match(vfx,/offset:\.55,"stop-color":"#28bcff","stop-opacity":\.025/);
   const mesh=fs.readFileSync(path.join(__dirname,"../src/module-vfx-v14.css"),"utf8");

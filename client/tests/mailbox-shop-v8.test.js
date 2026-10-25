@@ -59,18 +59,19 @@ test("mailbox has four tabs, system owns notifications and collected chests disa
   assert.ok(app.includes('activeInboxTab === "purchase" ? rewardInboxState?.purchases || [] : []'));
 });
 
-test("repair has a shared crescent, no gameplay balance change and a short title", () => {
+test("repair has one current physical painting, no gameplay balance change and a short title", () => {
   const icons = {};
+  vm.runInNewContext(fs.readFileSync(path.join(root, "src/module-device-art.js"), "utf8"), icons);
   vm.runInNewContext(fs.readFileSync(path.join(root, "src/battle/module-card-view.js"), "utf8"), icons);
   const card = icons.GridshardModuleCardView;
   for (const module of [{ nameTr:"Onarım" }, { nameTr:"Onarım Modülü" }, { definition_id:"repair" }, { definitionId:"repair" }]) {
-    assert.equal(card.iconFor(module), "☾");
+    assert.match(card.emblemFor(module),/modules-physical-v1\/repair.webp/);
   }
-  assert.notEqual(card.iconFor({ nameTr:"Güçlendirici" }), "☾");
+  assert.notEqual(card.emblemFor({ nameTr:"Güçlendirici" }),card.emblemFor({ nameTr:"Onarım" }));
   assert.equal(card.shortNameFor({ nameTr:"Onarım" }), "Onarım");
   const canon = fs.readFileSync(path.join(root, "src/canon-data.js"), "utf8");
   assert.match(canon, /"id": "repair",\s*"name_tr": "Onarım"/);
-  assert.ok(app.includes("return GridshardModuleCardView.iconFor(module)"));
+  assert.ok(!app.includes("GridshardModuleCardView.iconFor"));
 });
 
 test("season stock protocol is explicit and confirmed tier rewards get a reveal", () => {

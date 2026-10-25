@@ -1,6 +1,736 @@
 # GRIDSHARD geliştirme kontrol noktası
 
-Güncelleme tarihi: 23 Ekim 2026
+Güncelleme tarihi: 25 Ekim 2026
+
+## Son karar — Seviye.docx içindeki üç tablo birebir uygulandı
+
+Kullanıcı Word dosyasındaki seviye, modül yetenek ve çekirdek yetenek
+tablolarının üçünü de yazılan tutarlarla istedi. Çekirdek tablosu modül2–4
+sütunlarına eşit olmadığı için CORE_TALENT_COSTS bağımsızdır. Açılış
+seviyeleri/seçimler aynı; eski makbuz ve yükseltmeler geri fiyatlandırılmaz.
+
+Seviye artık enderliğe özel açık DK eğrileriyle hesaplanır, eski sabit
+çarpan silindi. Ortak modül/çekirdek son adım: yaygın40000DK/1200parça,
+nadir55000/800, epik70000/200, efsanevi80000/90+10000Akı. 7→8'de
+efsanevi16000DK/20parça+500Akı. Yetenekler de Word'deki üç tablodan
+alındı; önceki23 Ekim tutarları artık geçerli değil.
+
+Belgeden çıkarılan kaynak test verisi: `server/tests/fixtures/level_costs_seviye_20261025.json`.
+56 seviye/16modül yeteneği/12çekirdek yeteneği, tüm602 seviye görünümü
+doğrulandı. 735 istemci,302 ilgili sunucu,10 build ve üç tarayıcıda9
+fiyat/ok/ödül gezinme testi geçti. Ekonomi raporu eski sabitlerden ortak
+hesaba taşındı; çekirdekleri enderlikleriyle ve Akı maliyetiyle hesaplar.
+2 araç testi ve424 dosyanın import kontrolü(0 sorun) geçti.
+Canlı kullanıcı hesabı düzenlenmedi.
+WebKit FPS testi değildir; önceki FPS işi ayrı kalır. Sunucu/AAB/commit/push yok.
+Güncel üç tablo: `docs/CEKIRDEK_ENDERLIK_SEVIYE_MALIYETLERI_20261025.md`.
+Kanıt: `artifacts/seviye-docx-20261025/`.
+
+## Son karar — çekirdek seviyeleri modüllerle aynı enderlik tablosunda
+
+Kullanıcı çekirdekleri de normal modül seviye maliyet tablosuna bağlamayı
+istedi. `rarity_upgrade_cost` ortak sunucu hesabıdır; çekirdeklerin eski
+50×adım Akı ve109 toplam parça eğrisi/sabitleri kaldırıldı. DK, ilgili
+çekirdek parçası ve efsanevide ileri seviyelerde Akı alınır. Örneğin1→2
+yaygın100DK/2parça, efsanevi300DK/1parça;14→15 efsanevi96000DK/60parça/120Akı.
+Modül fiyatları ve yetenek fiyatları değişmedi. Seviye sayacı, kayıtlı
+yetenekler ve geçmiş ödemeler korunur; eski makbuz tekrar ücretlenmez.
+
+İstemci bedeli DK ve gerekiyorsa Akı simgeleriyle gösterir. Yeşil ok/tuş
+aynı tüm kaynak kontrolünde. Core makbuzları DK/Akı ve özel/genel parça
+harcamalarını ayrı kaydeder. 735 istemci,249 sunucu,10 build geçti; yeni
+fiyatlar320/393px ve üç profilde3/3, ödül/ok gezinmesi3/3 geçti.
+Fiziksel cihaz FPS ölçümü değildir; önceki WebKit FPS işi hâlâ ayrı açıktır.
+Tablo: `docs/CEKIRDEK_ENDERLIK_SEVIYE_MALIYETLERI_20261025.md`.
+Kanıt: `artifacts/core-rarity-costs-20261025/`. Canlı hesap düzenlenmedi;
+sunucu/AAB/commit/push bu turda yapılmadı.
+
+## Son iş — günlük ödül ve koleksiyon/menü düzeltmeleri
+
+Giriş takvimindeki eski3× parça çarpanı kaldırıldı: normal gün3–7,
+Pazar21/28/35/42 yaygın parça tabanı; enderlik azaltması aynı. Sezon aynı.
+Önceki126 makbuzları tarihsel olarak korunur; geri kesme/yeniden ödül yok.
+Modül ve çekirdek seviye tabloları önceki onayla aynı; gerçek kesinti ile
+gösterilen bedel uyuşur. Çekirdek50→700 Akı/adım, toplam5250 Akı/109 parça.
+Yetenekler23 Ekim yüksek fiyatları ve çekirdekte modül eşik2–4 kuralında.
+
+Cüzdanla değişen modül/çekirdek yeşil ok önbelleği düzeltildi; kart alt
+sekmelerine de ok bağlandı. Günlük sayfa bugüne, sezon ilk alınabilir ödüle
+tek sefer kayar. Lider panosu her açılışta Kupa/Genel; çekirdek sekmesi mevcut
+fiziksel resim. Mesaj kutusu kapatma36px ortak bilgi kartı stilinde.
+Çekirdek başlıkları sarı çizgisiz; Arkadaşlar başlığı ortalı ve0/100 yok.
+
+734 istemci,236 ilgili sunucu,10 paketleme ve üç tarayıcıda3 yeni UI testi
+geçti. Testler izole veride; yerel oyuncu hesabı değiştirilmedi. Önceki
+WebKit FPS problemi ayrı ve hâlâ açık; bu UI testleri FPS kapısı değildir.
+Belge: `docs/ODUL_MALIYET_VE_MENU_DUZELTMELERI_20261025.md`.
+Kanıt: `artifacts/progression-ui-20261025/`. Dağıtım/AAB/commit/push yapılmadı.
+
+## Son inceleme — 126 Lazer parçası ve Play savaş görüntüsü
+
+Pilot-081F6296 hesabındaki ani artış, 2026-09-28 dönemi28. gün giriş
+ödülünün tek makbuzundaki126 Lazer parçası. Ortak takvim günü; ardışık28
+giriş koşulu değil. Tekrar aynı/farklı/eksik istek kimliği ve yanlış gün
+kontrollerini içeren yeni regresyonla ilgili27 sunucu testi geçti.
+Hesabın bakiyesi ve ekonomi kuralları değiştirilmedi; çift ödül kanıtı yok.
+
+İki geçici oyuncunun gerçek sunucu yönetimli arkadaş savaşından karşılıklı
+lazer saldırılı görüntü alındı: `artifacts/play-store-battle-20261025/GRIDSHARD-savas-1080x1920.png`.
+1080×1920, PNG,9:16,1.83MiB; kenar/dosya boyutu doğrulaması geçti.
+Çekim testi geçti, iki tarafta3 modül+çekirdek ve JS hatası yok.
+Play Console yüklemesi yapılmadı; mevcut8/8 slottaki eski savaş görselinin
+yerine kullanılacak. Video, commit, sunucu ve AAB bu turda yapılmadı.
+
+Android Chromium WebView / iOS WKWebView ayrımı açıklandı. Windows WebKit
+7.6FPS fiziksel iPhone ölçümü değildir; genel WebKit bütçesi hâlâ kırmızı.
+Belge: `docs/LAZER_PARCA_TAKVIM_VE_MAGAZA_CEKIM_20261025.md`.
+
+## Son iş — eski global kök gradyanları savaşta devreden çıktı
+
+`battle-platform-v17.css` body[data-app-screen=play] için opak#07142b zemin;
+4 eski CSS gradyanı artık savaş computed style'ında yok. Menü teması korunur.
+Eski arena44px iç/24px dış blur gölgeleri de kaldırıldı. Yerleşim/görsel
+kaideler/kanal/barlar aynı. Yeni bitmap, animasyon veya zamanlayıcı yok.
+734/734 istemci,10/10 paketleme ve3/3 görsel regresyon geçti.
+FPS önce/sonra: Desktop140.6→141.3,
+Android emülasyonu140.7→139.8, Windows WebKit4.3→7.6. WebKit FPS bütçesi
+HÂLÂ BAŞARISIZ; bu temizlik tüm performans sorunu çözüldü demek değildir.
+Eşikler değiştirilmedi. 2B eşdeğer kamera,will-change,contain:paint ve
+efekt/cihaz kapatma deneyleri kabul edilebilir çözüm vermedi; ürüne alınmadı.
+No-container daha kötü (~4FPS), bu yüzden size-container korunur.
+Belge: `docs/SAVAS_KOK_BOYAMA_WEBKIT_20261025.md`.
+Kanıt: `artifacts/battle-root-paint-*-20261025/` ve `battle-paint-probe-20261025/`.
+Sunucu/AAB geçişi bu turda yapılmadı; genel WebKit yayın kapısı yeşil değildir.
+
+## Son düzeltme — turkuaz enerji darbesi zemin katmanında
+
+Sorun sabit `energy-fed-cell` zemin rengi değil, enerji/destek olayında
+yanıp sönen `.module-fx-overlay` çerçevesinin eski z40 katmanıydı.
+Savaşta overlay z0!important yapıldı; can/ısı1, cihaz2. Çerçevenin mevcut
+tek seferlik .7s opaklık darbesi/rengi korundu. Yeni efekt düğümü/timer yok.
+Tüm düşük/orta/yüksek grafik kalitelerinde gerçek enerji olayı sınıfı ve
+görünür çerçevenin12 kenar noktasında resim alfa kanalıyla örtüşme denetlenir.
+Kanıt: `artifacts/battle-energy-frame-ground-20261025/`.
+19/19 hedefli istemci testi ve üç tarayıcı profilinde3/3 görsel test geçti.
+Üç grafik kalitesinde toplam270 çerçeve/3240 kenar örneği denetlendi.
+
+## Son düzeltme — barlar komşu cihazın üstüne çizilmez
+
+Ortak paint sırası: kablo0 < can/ısı1 < cihaz2. Önceki global HUD100 kuralı
+kaldırıldı. Kendi cihazının tabanı zaten ilk barın1px üstünde bittiğinden
+kendi barı açık kalır; komşu cihazın opak kısmı barın önüne gelirse bar doğal
+olarak arkada kalır. Hücre/card stack context'leri yeniden açılmadı; mevcut
+geometri, can5px/ısı4px, gölge, boyut oranları ve yerleşme animasyonu aynı.
+Dolu-tahta testinde58 barın her birinde5 örnek nokta ve gerçek resim alfa
+kanalıyla komşu opak cihazın önde olduğu kontrol edilir. Boş/şeffaf resim
+tuvali görünür barı gizlenmiş saydırmaz. Kanıt: `artifacts/battle-meter-occlusion-20261025/`.
+Doğrulama: 6/6 hedefli istemci testi, üç tarayıcı profilinde3/3 geçti;
+174 gösterge üzerinde870 alfa/örtüşme örneği denetlendi.
+
+## Son referans — cihaz ayağı göstergelerin hemen üstünde
+
+Son iki ekran görüntüsüyle hücre merkezine ayak yerleştirme kuralı değişti.
+Modül tabanı alttan13px, çekirdek tabanı alttan8px: gerçek ilk göstergenin
+üstünde1px pay. CAN5px/alttan2, ısı4px/alttan8 yerleri/ölçüleri aynı.
+Temas gölgesi sahnenin altına bağlı, %7 basık ve %64 genişliğinde; aşağıdaki
+önceki "temas gölgesi hücre merkezinde" notu artık geçerli değildir.
+Mevcut büyüklükler/.85 oranı, kanal, barlar, isimli Akım ve uçuşlar korunur.
+Ayrıntı: `docs/SAVAS_GOSTERGE_USTU_OTURMA_20261025.md`.
+Kanıt: `artifacts/battle-grounded-seat-final-20261025/`.
+Son kontrol: 18/18 hedefli istemci ve üç profilde 6/6 görsel test geçti.
+
+## Son istek — hücre merkezi, arka enerji, +%10 cihaz ve animasyonlar
+
+Enerji iki katmanda da z0, cihaz z2, HUD z100. Hat geometrisi/kanalı aynı.
+Cihaz temas gölgesi tüm hücrelerin gerçek merkezinde; cihaz tabanının .06
+birim öne payı var. Yeni ek 1.10 cihaz artışı uygulandı, modül/çekirdek .85.
+Can 5px/alttan2, ısı 4px/alttan8 aynı. Oyuncu adı Akım barında;
+gerçek bakiye/12 dolgu yalnız değişince 550ms geçişle güncellenir.
+Sunucu onayından sonra yeni kart için 360ms raf-varış uçuşu var. HP/ısı
+güncellemesi ve force render bunu tekrar oynatmaz. Uçuşlar varışta, çıkışta
+ve gizlenmede temizlenir. Kuyruk en çok15/5 saniye, reduced-motion destekli.
+Ayrıntı: `docs/SAVAS_OTURMA_AKIM_YERLESME_20261025.md`.
+Son tarayıcı kanıtı: `artifacts/battle-seat-hud-final-20261025/`.
+Son doğrulama: 734/734 istemci, 10/10 derleme, üç profilde 6/6 görsel test.
+3240 modül yerleşimi, 174 gösterge, 18 güç dalgası ve 9 raf uçuşu denetlendi.
+
+## Son istek — alttaki gerçek hücreleri eşitle, ikinci zemini kaldır
+
+Aktif kaide artık `battle-native-v6/island-{player,enemy}.webp`.
+Yerleşik resimde tüm 15 hücre 140×130, boşluklar 7 birim; alt sıra eşit.
+Kaynak açıklık 1254 karede x264..992, y260..664. Aynı kayda hizalanmış
+eşit şeffaf hitbox'lar kullanılır. `.board::before` ve `.board-cell::before`
+kapalıdır; üst üste ikinci CSS zemin çizilmez. Aşağıdaki eski notların
+opaktaki ikinci zemin / %110 resim açıklığı kararları artık geçerli değildir.
+Modül/çekirdek ölçeği ve 0.85 oranı, ayakta görünüm, hücre içindeki can/ısı,
+enerji yolları ve özel güç dalgası korunur. VS gerçek rim işaretlerini ölçer.
+Üretici `tools/prepare-native-circuits.cjs`; source/master/kayıt denetimi
+`artifacts/battle-native-20261025/`. Eski iki kaide resmi ve üretici arşivde.
+Ayrıntı/istemler `docs/SAVAS_TEK_ZEMIN_ESIT_HUCRELER_20261025.md`.
+İstemci 729/729, derleme 10/10 ve tarayıcı 6/6 geçti; 3240 modül yerleşimi,
+174 dolu-tahta göstergesi ve 18 güç dalgası kontrolü yapıldı. Tarayıcı kanıtı
+`artifacts/battle-native-verified-20261025/`.
+
+## Son istek — geniş çerçeve, ek %10 cihaz ve özel güç dalgası
+
+23:36 görüntüsündeki taşma: resimdeki iç açıklık canlı 5×3 alanla tam kenar
+kenaraydı. Kaide resmi yatayda merkezden 1.10 genişletildi; iç açıklık şimdi
+canlı zeminin %110'u (her yanda %5 pay). Yükseklik/VS/kaide Y kayıtları aynı.
+Resmin CSS solu -42.65101%, genişliği 185.15437%; iki taraf ortak kayıt.
+Cihazlar önceki ölçünün üstüne 1.10 daha büyüdü: baz `.92 * 1.15 * 1.10`.
+36 modül yine çekirdeğin 0.85'i; rastgele hücre yerleşimi ve bar ayağı aynı.
+CAN dış kalınlık 5px, ısı 4px. Isının eski 1px dış gölgesi kaldırıldı;
+kutular border-box, canın renkli içi 3px, ısınınki 2px. CAN alttan 2px,
+ısı 8px; aralarında 1px boşluk ve çizim tabanından sonra açık alan var.
+İnce canlı akım katmanı z3 ile eğilen üst siluetin önünde; kablo kılıfı
+zeminde z0, görsel z2, göstergeler z100. Enerji izi ve barlar açık kalır.
+`presentCorePowerActivation` olayı çalışıyordu; genel `.board::after` sıfırlaması
+dalga katmanını gizlemişti. Yalnız `.board.core-wave::after` geri açıldı.
+Mevcut 850ms tek seferlik animasyon ve 900ms temizleme kullanılır; kalıcı
+animasyon veya yeni efekt düğümü yok. Dalga z70, göstergeler z100.
+Altı etki türü gerçek sunucu olayının görsel işleyicisiyle geliştirme önizlemesi
+üzerinden sınanır; bu test kancası üretim derlemesinden çıkarılır.
+Kanıt: `artifacts/battle-frame-wave-verified-20261024/`.
+Doğrulama: 728/728 istemci, 10/10 derleme; üç tarayıcıda 6/6 görsel test.
+3240 modül yerleşimi, 174 dolu-tahta göstergesi, 18 güç-dalga türü kontrolü
+geçti. Tüm altı güç türü görünüyor ve 900ms yaşam döngüsünde temizleniyor.
+Canın ısıdan kalın olduğu ve resim açıklığının 5×3 alanı her iki yanda %5
+payla çevrelediği gerçek tarayıcı ölçüleriyle doğrulandı.
+
+## Son istek — devre %10, cihaz %15 ve EMP ses dengesi
+
+Devreler önceki yerleşime göre 1.10; cihazlar önceki bağımsız görsel ölçüsüne
+göre 1.15 ölçeklenir. Cihazın %15'i devrenin %10'una ayrıca çarpılmaz.
+`circuitSceneLayout` baz ölçüyü tutar; `--gs-equipment-size` tek görsel ölçü
+sahibidir. 36 modül yine çekirdeğin kanonik 0.85 ölçüsünde. Normal dört test
+görünümünde tam 1.10/1.15 doğrulanır; aşırı sıkışık arena boyutlarında devre
+ölçeği ana metal kenarı ve adı kesmemek için sığma sınırına tabidir.
+Boş üst/alt paylar geri kazanıldı; başlık devrenin dışında, isim raf üstünde.
+CAN/ısı aynı hücre içi konum/kalınlıkta. Eski hücre başına yalıtılmış çizim
+sırası kaldırıldı: görseller ortak katman 2, barlar 100. Böylece büyüyen alt
+çekirdek üst hücrenin barını kapatamaz. Dik Y telafisi ve resim duruşu aynı.
+3px/20px Z kaldırma kullanılmaz; yeni DOM düğümü veya efekt döngüsü eklenmez.
+Yana eğilen birkaç modülün kayıt çerçevesi çevrimdışı merkezlenir; ölçü ve
+çizimler değiştirilmez, kablonun 6px kılıfına opak siluet taşmaz.
+EMP: eski `emp.wav` kazançsız ve savaşta 1.4 öncelik çarpanlıydı; `emp` gain
+0.06 yapıldı. `module_emp` 0.50→0.35. Yeni modül EMP RMS'si -36.77 dBFS;
+modül lazer -36.59 dBFS. Eski EMP savaş RMS'si -33.78 dBFS; lazer darbesinden
+10.3 dB daha aşağıda. Her iki ses çalma yolu ortak ayarı kullanır.
+Kanıt: `artifacts/battle-zoom-emp-verified-20261024/` ve
+`artifacts/battle-zoom-emp-client-tests.log`.
+Son doğrulama: 728/728 istemci testi; Chromium, mobil Chrome ve WebKit'te 6/6
+tarayıcı testi. Dört ekran ölçüsünde 1.10/1.15, 3240 modül yerleşiminde 0.85
+oran, açık enerji koridoru ve barlar; dolu tahtada toplam 174 gösterge kontrolü.
+
+## Son görsel notu — dik yerleşim ve hücre içi barlar
+
+22:42 ekran görüntüsündeki son talep önceki başlığı günceller: rakip adı VE
+destesi ana metal kenarın dışında; bütün başlık ile kenar arasında 6px boşluk
+ayrılır. Arka metal kenarı destenin arkasına taşıma kararı iptal edildi.
+Ortak dik resim sahnesi hücrenin %92'si; bütün modüllerin kanonik opak ölçüsü
+çekirdeğin yine %85'i. Resmin ayağı alttan 13px'de oturur, üst siluet hücrenin
+üzerine yükselebilir. Yatay ayak izi hücre içinde; satıra göre büyütme yok.
+CAN alttan 2px, ısı alttan 7px ile HÜCRE İÇİNDE; ikisi 3px öne alınır.
+Eski negatif alt konumlar kaldırıldı. Enerji kanalları barlardan bağımsız ve
+görünür; gerçek güç durumuna bağlıdır. Gölge sabit, yeni animasyon döngüsü yok.
+Yan duvar blok birleşimlerinde üstte kırmızı, altta turkuaz enerji detayları
+`circuit-walls.svg` maskesiyle çizilir. Yatay hedef %90; kaideler arası 24–30px.
+Mavi ana metal kenar, oyuncu adı, raf ve VS hizası korunur.
+Detay: `docs/SAVAS_DIK_YERLESIM_BARLAR_20261024.md`.
+İlgili son düzenlemede 727/727 istemci testi geçti.
+
+## SON OTORİTE — savaş sahnesinin altı sabit kuralı
+
+Kullanıcının son altı maddesi önceki eşitsiz ızgara ve ayrı boyut kararlarını
+iptal eder. İki tahta 5×3 eşit hücre; eski düzensiz iç resim çizgileri kodla
+çizilen eşit metal soketlerle değiştirilir, onaylı dış metal ve renkli kaideler
+korunur. Yanları durağan blok duvar SVG'si kapatır. Çekirdek kanonik opak
+ölçüsü 1.0; 36 modülün tamamı 0.85, batarya istisnası YOK. Ortografik eğim
+ve üç eksenli ortak ölçek satırlar/iki taraf arasında büyüklük farkını önler.
+Eski Z-kaldırma temizlendi. Her normal modülün ayrı kalıcı CAN/ısı; çekirdeğin
+kalıcı CAN ölçeri var. Barlar son görsel notuna göre hücre içinde tutulur;
+hücreler arasındaki enerji kanalına taşınmaz.
+Arena ölçüsüne göre yerleşim ana mavi metal kenarı ve oyuncu adını raf üstünde
+tutar. VS gerçek iki metal kenarın ortasında, güç hatları eşit hücre aralarında.
+Çekirdek merkez (2,1); sunucunun rastgele boş hücre dağıtımı değişmedi.
+Detay: `docs/SAVAS_ALTI_SABIT_KURAL_20261024.md`.
+Kanıt: `artifacts/battle-six-contracts-20261024/`.
+Önceki %86/%77.4, eşitsiz sütun/satır oranları ve sabit +32/-12px kararları
+artık geçerli değil. Commit/push/sunucu/AAB yapılmadı.
+Son doğrulama: 727/727 istemci, 10/10 derleme ve 6/6 üç-tarayıcı testi.
+36 modül × 30 hücre × 3 tarayıcı = 3240 ölçüm; hepsinde %85 ortak ölçü,
+hücreye sığma ve bar görünürlüğü doğrulandı. 12 ekran boyutu ölçümü, merkezde
+çekirdek ve raf üstünde mavi metal kenar doğrulandı. Paket `e90836111c129b7b`.
+WebKit'in 3D döndürme yassılaştırması ters 2D Y ölçeği ile giderildi; görüntü
+ve namlu kayıtları aynı gerçek düzlemde. Özet: `verification-summary.json`.
+
+## Son rötuş — VS gerçek kaide aralığında, batarya ayrıca küçük
+
+VS sabit +10px yerine çizilmiş iki kaidenin birbirine bakan metal kenarları
+arasında ortalanır. Zemine bağlı iki görünmez kayıt noktası aynı perspektifi
+kullanır. Mevcut layout invalidation sırasında ölçülür; savaş tick'inde yeni
+ölçüm/döngü yok, aynı düzende tekrar CSS yazımı yok. Tahtalar yer değiştirmez.
+36 modülün tamamının socketFit kaydı ve gerçek mount yolu doğrulandı:
+35 modül önceki dolu-boyut kaydının %86'sında; batarya ek %10 küçültülerek
+%77.4'ünde. Çekirdekler, hücre merkezleri ve taban noktaları değişmedi.
+Kanıt: `artifacts/battle-vs-size-20261024/`. Commit/push/sunucu/AAB yok.
+725/725 istemci, 10/10 paket birim testi ve üç tarayıcıda 3/3 yerleşim testi
+geçti. Dört ekran boyutunda VS merkez sapması <1px. Ölçüm JSON'u 36/36
+modülün küçültüldüğünü ve taban merkezinin korunduğunu doğrular.
+
+## En son düzeltme — yakın kamera, gerçek soket merkezleri ve çekirdek CAN
+
+Önceki eşit kare ızgara, resimdeki geniş dış hücrelerle uyuşmuyordu. Canlı
+5×3 sütun/satır oranları artık çizimdeki sınırlarla aynı. Modül resminin
+kare kayıt alanı gerçek hücrede yatay ortalı ve altta oturur; eski seçici
+çekirdek koltuk CSS'i kaldırıldı. 36 modül gerçek opak tabanından çevrimdışı
+ölçülerek socketFit kaydıyla ölçeklenip ortalanır; namlu/efekt kaydı da aynı.
+Son geri bildirimle yalnız modüller %14 küçültüldü; çekirdek baskın boyutta
+kalır, modüllerin taban merkezi ve yere oturma noktası değişmez.
+Kamera `.98→1.08`, oynanabilir genişlik güvenlik sınırı %78. Çekirdeğin
+CAN barı artık ayrı, kalıcı ön ölçer; gerçek CAN değerini gösterir.
+Önceki istekler korunur: rakip -12px; yalnız mavi +32px; VS +10px; oyuncu
+adı arena altından 16px yukarı, raf üstünde. İki mevcut kaide resmi ve aşağı
+inen rakip üst sütunları korunur. Yeni çalışma anı ölçüm/timer/canvas yok.
+Detay: `docs/SAVAS_KAMERA_HIZALAMA_20261024.md`.
+Kanıt: `artifacts/battle-camera-fit-20261024/`. Sunucu/AAB/commit/push yok.
+Son modül küçültmesiyle 724/724 istemci ve 6/6 Chromium/Android/WebKit testi
+geçti. İzole paket `3ae4ff635739ceb6`; aynı 2 kaide resmi, 44 betik/614 varlık.
+
+## En son yerleşim — büyük tahtalar, dolu köşeler, hücre boyunda modüller
+
+download.jpg notları ve devam mesajı uygulandı. Tahta genişlik payı 112→80px;
+dikey yerleşim 3.55H→3.05H; kare hücreler ve modüller daha büyük. Rakip tarafı
+12px yukarı, VS 6px yukarı taşındı; kamera ekseni +12px gerçek farkı hesaba
+katar. Üst blok uzantısı %200 genişlikte, köşelerdeki düz arka planı kapatır.
+Normal modülün 3px kayıt iç boşluğu kaldırıldı; kare tuval hücre boyunda ve
+2px aşağı oturur. Çekirdek yüksekliği hücre boyutuna ve yakın/uzak tarafa
+uyarlanır. Isı/CAN ve namlu/efekt projeksiyonu aynı sahiplerde kalır.
+Büyüyen 3D tahta düzleminin hücre tıklamasını örtmesi giderildi: düzlem
+pointer-events:none, hücreler auto; gerçek hücre hitbox'ları korunur.
+722/722 istemci ve 6/6 Chromium/Android/WebKit zemin/çekirdek testi geçti.
+Son tarayıcı matrisi ve paket kanıtı:
+`artifacts/battle-arena-fit-20261024/`. Paket `9fff76c1a15aca05`, 44 betik,
+614 izin-listesi varlığı, aynı iki resim. Yeni resim/animasyon/timer yok.
+Detay: `docs/SAVAS_ARENA_YERLESIMI_20261024.md`. Sunucu/AAB/commit yok.
+
+## En son yön düzeltmesi — üst bloklar aşağı iner
+
+Kullanıcı üst blokların tersliğini bildirdi. Enemy terrain ::after üzerindeki
+scaleY(-1) kaldırıldı. Aynı resmin y730..1254 sütun kesiti özgün yönünde
+kullanılıyor; üstte ikinci platform kenarı çıkarılmaz. Alt uçlar rakip
+zemininin arkasına girer; isim/deste arkasındaki alan dolu kalır. Oyuncu
+kaidesi, enerji hatları ve savaş kodu değişmedi. Kanıt klasörü:
+`artifacts/battle-downward-blocks-20261024/`. Bu not önceki yukarı çevirme
+yaklaşımının yerine geçer. Yeni resim ya da animasyon eklenmedi.
+
+## En son düzeltme — rakip kaidesinin yukarı devamı
+
+Ekran tavanına asılı ayrı canopy kullanıcı tarafından reddedildi. Rakip
+kaidesinin kendi alt blokları CSS arka plan kesitiyle yukarı bakacak şekilde
+aynı kaideye bağlandı. Rakip isim/deste arkasındaki siyah şerit kapandı;
+oyuncu alt kaidesiyle blok ölçeği ve malzemesi aynı. Yeni çizim üretilmedi.
+`enemy-canopy.webp` aktif klasörden çıkarıldı, geri alınabilir dosya:
+`artifacts/battle-upper-foundation-20261024/retired-enemy-canopy.webp`.
+Üretim aracı artık bu eski canopy dosyasını dışa aktarmıyor.
+Aktif iki resim toplam 327458 bayt. Paket `cfd1e66173ed37d9`, 44 betik,
+614 izin-listesi varlığı; ayrı canopy resmi pakette yok. Üç zemin birim testi
+ve masaüstü Chromium, Android Chrome ve iPhone WebKit yerleşimi geçti.
+Kanıt: `artifacts/battle-upper-foundation-20261024/platform-393.png`.
+Enerji yönlendirmesi, savaş mekaniği ve sunucu bu tur değişmedi.
+
+## Son düzeltme — üst kırmızı bloklar ve kısa üst/alt enerji dalları
+
+Rakip adının/destesinin arkasındaki üst boşluk, onaylı kaidenin malzemesine
+uygun aşağı sarkan kırmızı enerji sütunlarıyla tamamlandı. Yeni yerleşik
+imagegen varlığı: `client/assets/ui/battle-approved-v5/enemy-canopy.webp`.
+Tek durağan arena arka planıdır; DOM/animasyon eklemez.
+Her hücre için üst/alt enerji girişi tanımlandı. Üst sıra çekirdeğin üst
+kanalından, alt sıra alt kanalından doğrudan sağa/sola bağlanır. Önceki yalnız
+alt port nedeniyle uzayan dolaşımlar kaldırıldı; kısa yol seçimi giriş/çıkış
+mesafesini de hesaplar. Kaynak/layout önbelleği ve 60 kalıcı SVG yol korunur.
+722/722 istemci testi + 3/3 Chromium/Android/WebKit zemin testi geçti.
+Tüm kaynak/hedefler için minimum uzunluk ve üst/alt sıraların aynı yatay
+kanaldan doğrudan dallanması kontrol edildi. Paket `48e16918c5c0d645`:
+44 betik, 614 izin-listesi varlığı, 3 sahne resmi toplam 394268 bayt.
+İstem/kaynak: `docs/SAVAS_UST_BLOKLAR_KISA_HATLAR_20261024.md`.
+Kanıt: `artifacts/battle-short-branches-20261024/`. Sunucu/AAB/commit yok.
+
+## Güncel seçim — kullanıcının onayladığı 5×3 kaide (V5)
+
+Kullanıcı `codex-clipboard-069ef928-14bc-442a-aaab-d44767950e9d.png`
+çizimini seçti. Oyuncuda bu dosyanın kendisi kullanılıyor; aynı çizimden
+yerleşik imagegen ile kırmızı rakip üretildi. Aktif varlıklar:
+`client/assets/ui/battle-approved-v5/island-{player,enemy}.webp`.
+Koyu hücreler, gümüş köşeler, altın bağlantılar, uzun kaide ve bağlı sütunlar
+korunur. Arka plan iki tarafın renk ışığıyla bütünleşir. V4 dosyaları ve eski
+iki üretim aracı aktif klasörden çıkarıldı; geri alınabilir konum:
+`artifacts/battle-approved-20261024/retired/`. Boş V1/V2/V3 klasörleri kaldırıldı.
+
+Enerji yollarında zorunlu sağ-alt kavşak ve yatay-önce dolaşım kaldırıldı.
+Çizimin gerçek, eşit olmayan hücre arası kanal konumları üzerinden Dijkstra
+en kısa fiziksel yolu seçer. Köşeler küçük pahlarla kırılır. 5×3 yerleştirme
+alanları korunur; yalnız gerçek güç alan modüller bağlanır. 60 kalıcı SVG yol,
+yerleşim/kaynak önbelleği; değişmeyen snapshot kablo DOM yazımı üretmez.
+Tüm kaynak/hedef çiftleri ve 9 hücre/aralık kombinasyonunda en kısa mesafe,
+hücre içinden geçmeme, güç/destruction ve DOM yeniden kullanım testleri geçti.
+İstemci 721/721 geçti. Paket `3a508112f2e2c4a8`: 44 betik, 614 izin-listesi
+varlığı, yalnız iki yeni zemin resmi (327458 bayt). 6/6 kaide/çekirdek tarayıcı
+testi geçti; son çizilmiş kanal hizası ayrıca 3/3 profilde geçti.
+Kaynak/istem/kanıt: `docs/ONAYLANAN_SAVAS_KAIDESI_20261024.md` ve
+`artifacts/battle-approved-20261024/`. Video, sunucu, commit/push/AAB yok.
+Aşağıdaki V4 ve önceki tasarımlar tarihsel kayıttır; aktif seçim V5'tir.
+
+## Güncel çalışma — bütünleşik koyu metal adalar (V4)
+
+Önceki V3 tekrar eden hücre/kenar yaklaşımı kullanıcı tarafından reddedildi.
+Son iki referanstan yerleşik imagegen ile bütün sahne çizimleri üretildi:
+`client/assets/ui/battle-islands-v4/island-player.webp` ve `island-enemy.webp`.
+Koyu nötr metal döşeme, gümüş köşe dirsekleri, turkuaz/kırmızı kenarlar ve
+kaide köşelerine bağlı destek kuleleri aynı resimde. 9-slice / hücre resmi yok.
+İki `.circuit-terrain` kardeş katmanı aynı kamera ile iki canlı tahtanın altında.
+5×3 yerleştirme ve gerçek güç SVG bağlantıları korunuyor. Yeni animasyon/timer yok.
+Kamera yerleşim payları kaideye göre güncellendi; çekirdekler saydam kaynak
+boşluğuna eklenen ikinci iç boşluktan arındırıldı, kare kayıtları korundu.
+Eski 5 runtime resmi ve dokümanları `artifacts/battle-islands-20261024/retired/`
+arşivine taşındı; eski çizgili arena pseudo katmanları canon.css'den kaldırıldı.
+Yeni 2 resim toplam 196432 bayt. İstemci 721/721 test geçti. Son tarayıcı
+matrisi 6/6 geçti: masaüstü Chromium, Android Chrome emülasyonu, iPhone WebKit
+emülasyonu. 320×568, 393×852, 1280×720, 1920×853 alan/hücre kontrolleri;
+iki tarafta yedi çekirdeğin görünürlük, taşma, isabette kararlılık kontrolleri.
+İzole web paket kimliği `ea6d20166eeb2dc0`; 44 betik, 614 izin-listesi varlığı,
+yalnız iki yeni zemin resmi ve eski zeminlerin paket dışı olduğu doğrulandı.
+Kaynak, istemler, sınırlar: `docs/SAVAS_BUTUNLESIK_ADALAR_20261024.md`.
+Kanıt: `artifacts/battle-islands-20261024/`. Tanıtım videosu SHA değişmedi.
+Commit/push, sunucu güncellemesi, AAB veya yeni video bu tur yapılmadı.
+WebKit FPS konusu ayrı açık; görsel test geçişi FPS kanıtı değildir.
+Aşağıdaki V3 ve önceki bölümler tarihsel kayıttır, aktif tasarım değildir.
+
+## Son çalışma — referanstaki kalın mavi/kırmızı blok kaide
+
+Kullanıcı ince gri çerçeve/oyuk sekizgen sonucu reddetti; özellikler grafiği ve
+açılış görselindeki gerçek blok dilini yeniden istedi. Yerleşik imagegen ile
+aynı referanslardan kalın mavi/turkuaz ve eş kayıtlı kırmızı 5×3 kaide üretildi.
+İlk 5×2 taslak kullanılmadı. Yeni runtime: client/assets/ui/battle-pedestal-v3/.
+V17 malzeme sahibi değişti: 42px ön kaide, metal köşeler, doygun takım blokları;
+resmin merkezine fill YOK. Aynı kaynak kesiti 15 gerçek hücreye oturur.
+Eski oyuk pseudo yüzleri kaldırıldı; 60 yerine30 durağan hücre yüzü.
+Mevcut güç SVG'si turkuaz/kırmızı; 5×3, hitbox, kamera, savaş JS kuralları aynı.
+Eski2V2runtime resmi artifacts/battle-pedestal-20261024/retired-v2/ içine taşındı;
+devre uçurumu arka planı korundu. Toplam5aktif zemin görseli292242bayt.
+
+721/721 istemci +6/6 Chromium/Android/WebKit zemin/çekirdek geçti.
+Yalıtılmış gerçek paket72c42508c0fd4ecb (artifacts/web-pedestal-v3-OUmSwA/dist),
+44betik/614izin listesi varlığı/5CSS resmi doğrulandı. Önceki onay kullanım sınırı
+engeli bu tur tekrarlanmadı; test/build tamamlandı. Kaynak/istem/doğrulama:
+docs/SAVAS_KAIDE_REFERANS_20261024.md; kanıt artifacts/battle-pedestal-20261024/.
+Video değişmedi; commit/push/sunucu/AAB yok. WebKit FPS hâlâ ayrı açık konu.
+Aşağıdaki bölümler eski iterasyonların tarihsel kaydıdır.
+
+## Son çalışma — yalnız sekizgen kuyu, geniş aralık ve oluk içi enerji
+
+Kullanıcı V2 sahnesinin mavi/kırmızı metal ayrıntıları ile arka planını KORUYUP
+önceki soketten yalnız sekizgen oturma alanını istedi. İlk üretilen nötr tam
+soket varyantını reddetti; bu bitmap kullanılmadı/istemciye eklenmedi. Üç V2
+görsel byte-identical ve testte SHA256 sabitli. Hücrelerin içine durağan CSS
+bevel + sekizgen kuyu, yalnız gerçek boşluklara koyu oluk boyası eklendi.
+Clip-path sadece zemin pseudo yüzlerinde; aygıt/çekirdek 3D zincirine dokunulmadı.
+
+V8 boşluk12–16px; responsive formüller gerçek boşluğu çıkarır, 5×3 aynı.
+V17 dış metal çerçeveler/kendi mavi/rakip kırmızı/çevreyi aynen kullanır.
+SVG ana kanallar gerçek hücre ARALARINDA; yalnız güç alan gerçek sokete kenar
+port ucu, boş transitlere uç yok. 22kenar/132SVG düğümü sabit; yol/uç varyantları
+geometride önbellekli; aynı snapshot kablo DOM/ölçüm/yazım üretmez. İlk boş
+tahta ölçümünde null geometri koruması ve regresyonu eklendi.
+
+Son Rezonans CSS öncesi722/722 client,10/10 build geçti;
+o aşamadaki yalıtılmış paket2336ca8eb0c57b26, aynı3resim.
+Yalnız Rezonans kare host iç payı3→2px ve yerleşimi2px aşağı; diğer çekirdekler
+değişmez. Son CSS sonrası Chromium/Android/WebKit zemin+çekirdek6/6 geçti.
+Kare host da doğrulanır; yedi çekirdek eşikleri gevşetilmedi.
+Son CSS sonrası tam test/build tekrarı otomatik onay incelemesinin kullanım
+sınırı hatasıyla YÜRÜTÜLMEDİ. Güvenlik reddi değil inceleme altyapı hatasıdır;
+onay engeli aşılmadan yeni escalated süreç başlatma. Son paket eski CSS'li;
+yeniden paketleme/tam test bekliyor. Mevcut tarayıcı süreci72832 başarıyla bitti.
+Rapor docs/SAVAS_SOKET_KANAL_DUZENI_20261023.md; kanıtlar
+artifacts/battle-gutters-20261023/. Bu tur video/kayıt yok, sunucu/AAB/push yok.
+Önceki WebKit FPS açığı kapanmış sayılmaz. Aşağıdaki V2 notu önceki turdur.
+
+## Son çalışma — V2 birleşik metal platform / video değişmeyecek
+
+Kullanıcı önceki tekrarlanan mavi çerçeveli soketleri reddetti. Yeni onayla
+V17 malzeme sahibi değiştirildi: tek bütün grafit platform, gümüş metal köşe
+dönüş blokları, seyrek oyuncu mavi / rakip kırmızı kenar parçaları. İki eş
+1024×615 alfa WebP border-image/9-slice ile mevcut 5×3 alanına kayıtlı; 640×960
+tek statik çevre WebP basamaklı derin bloklar ve kırmızı/turkuaz yarıklar içerir.
+Toplam 224.000 bayt. Yeni kaynak/istem raporu docs/SAVAS_PLATFORM_V2_20261023.md.
+V1 socket-block istemciden artifacts/battle-platform-20261023 içine arşivlendi.
+
+Gerçek güç rotaları soket merkezleri arasında artık sürekli; fiziksel kablo ve
+akım yalnız canlı rotada gösterilir, boş padlerin tümüne ikinci gri ızgara yok.
+Aynı SVG düğümleri ve geometri önbelleği kullanılır. Ek timer/rAF/animasyon/3D
+yüz/canvas yok. Hitbox, hücre içerik border'ı, kamera, sprite/bar/VFX ve sunucu
+kuralları korunur. 718/718 istemci +10/10 build geçti. Zemin E2E üç tarayıcıda
+3/3 (320/393/1280/1920 genişlikleri); mevcut çekirdek/kalkan/patlama testi3/3.
+İlk hızlı masaüstü kurulum yarışı kaydı korunur; test ilk yetkili savaş tick'ini
+bekler, gerçek yerleştirilmiş çizim şartı aynıdır. Ürün deployment kodu değişmedi.
+Yalıtılmış gerçek buildbf4fe54c9d2c63e6 üç yeni resmi içerir; eski soket yok;
+ana dist/Android değiştirilmedi. Kanıt artifacts/battle-platform-v2-20261023/.
+
+Kullanıcı açıkça **tanıtım videosunu güncelleme, sonra yeniden çekeceğiz** dedi.
+Bu tur promo dosyaları değiştirilmedi/kayıt alınmadı. Promo SHA256:
+65896a58fe0dd3030866556d689035cd4fb52afd2469d6373308b43e3fb418a8.
+Son kayıtsız 18sn manuel Yüksek/perspektif açık örneği Chromium128,23FPS,
+emüle Android128,11FPS (bütçe geçti); Windows WebKit4,03FPS/p95278ms, bütçe
+başarısız. FPS sorunu açık. Toplama3/3PASS kalite kapısı değil; aynı seed A/B
+ve fiziksel telefon testi değildir. Son zemin/çekirdek görsel matrisi6/6PASS.
+Kablo kökleri z0, hücrelerden altta; WebKit'te çekirdeği örten tel düzeltildi.
+Sunucu/commit/push/AAB/yayın yapılmadı. Aşağıdaki V1 notları tarihidir.
+
+## Son çalışma — özellikler grafiğindeki platform dili gerçek savaşta
+
+Kullanıcı onayıyla savaş zeminine boyalı mavi soketler bağlandı. Tek 256px
+gerçek alfa WebP, 19.732 bayt; imagegen özellikler grafiği referanslı, ham kaynak
+artifacts/battle-platform-20261023/source korunur. CSS sahibi battle-platform-v17;
+V8 eski hücre/tahta boyası ve V15 dolu/güçlü hücre boyaları kaldırıldı. Yerleşim,
+iki px içerik kutusu, 5×3 hücreler, 8px boşluklar, kamera, modüller, barlar aynı.
+Yeni JS/DOM/canvas/3D yüz/timer yok. Kendi mint/rakip kırmızı SVG hatları yalnız
+mevcut güç durumuyla açılır; hücre ışığı sabit, hedef/klavye/enkaz uyarıları kalır.
+
+717 istemci +10 build testi geçti. Yeni platform E2E üç tarayıcıda 3/3;
+320/393/1280/1920 genişlikte sabit hücre kimliği, hittest ve taşma doğrulandı.
+Mevcut çekirdek/kalkan/patlama E2E de 3/3 geçti. İlk WebKit testi 3 geri sayımı
+sırasında hittest yapıyordu; test gerçek hazır-olma + yerleşmiş modülü bekleyecek
+şekilde düzeltildi, ürün mantığı değişmedi. Tanı/rapor/istemler:
+docs/SAVAS_PLATFORM_DONUSUMU_20261023.md. Yalıtılmış build 8f0501929efce1a1;
+CSS bundle soket resmini içerir, ana dist/Android değişmedi.
+
+Eski/yeni, manuel Yüksek, 18sn kayıtsız karşılaştırması tamamlandı. Masaüstü
+Chromium142,70→143,31; emüle Android142,31→143,25 (p95 ikisinde7,2ms).
+Windows WebKit2,62→3,86; sahne sayıları9→7 farklı, nedensel kazanç değil,
+ikisinde de FPS bütçesi başarısız. Ölçüm toplama6/6PASS, kalite onayı değil.
+JSON'lar artifacts/battle-platform-20261023 altında; WebKit sorunu sürüyor.
+Gerçek savaş önizlemesi aynı dizinde savas-onizleme.mp4 (7sn). Tanıtım yeni
+zeminle yenilendi: promo-20261023/GRIDSHARD-tanitim-1080x1920.mp4,
+40,7sn /8.052.669 bayt; kayıt E2E geçti, kontrol kareleri/rapor güncel.
+Sunucu/ekonomi/savaş motoru/commit/push/AAB/yayın bu tur yok.
+
+## Son çalışma — üst logo yok; devre içindeki reaktör canlı
+
+İşaretli ekran isteği uygulandı: ayrı üst .boot-emblem HTML/CSS ve float
+animasyonu kaldırıldı; başlık/slogan mavi üst alanda. Mevcut circuit-scene.webp
+değişmedi. İçindeki reaktöre3küçük CSS opacity/transform enerji katmanı
+eklendi (hafif kristal nabzı ve yükselen kıvılcım), gövde/platform sabit.
+Resim ve efektler2:3tekkoordinatdüzleminde; portre cover/yatay contain hizalı.
+Yeni video/canvas/rAF/timer/blur yok. Error/done/hidden/reducedmotion kapalı.
+
+715istemci +9açılış E2E geçti (üç tarayıcı,320/360/1280 genişlik), yalıtılmış
+build ca4739cc7f343201 /44betik /614varlık. Logo runtime'dan çıktı ama
+tanıtım kapanışına gereken kaynak dosyası korunuyor. Önizlemeler/E2E JSON
+artifacts/startup-reactor-live-20261023; rapor docs/CANLI_CEKIRDEK_ACILIS_20261023.md.
+Tanıtım yeni açılışla yenilendi (kayıt E2E geçti;40,7sn,6.616.622bayt).
+3,1sn sessiz gerçek açılış önizlemesi aynı startup-reactor-live klasöründe animasyon.mp4.
+Bu görsel iş server/FPS/bağlantı hatası düzeltmesi değil. Canlı, AAB, commit/push yok.
+
+## Son çalışma — yeni logolu devre açılışı, DK/Akı yetenek fiyatları, tanıtım
+
+Kullanıcı Epik 4. yetenek için **16.000 DK + 400 Akı** onayladı. Dört
+enderlik × dört modül eşiği server/app/game/talents.py:TALENT_COSTS tablosunda;
+çekirdekler kendi enderliklerinin 2/3/4. modül bedelini kullanır. Gerçek DK
+cüzdanı circuit_credits. İki cüzdan kontrolü kesintiden önce yapılır; fiş
+tekrarında ikinci kesinti yok, eski seçimler korunur. İstemci ortak bedel
+çizicisi ve 62px rozet ile iki para birimini gösterir; sıfır Akı çizilmez.
+
+Yeni onaylı ikonun fiziksel reaktörü ve özellikler grafiğinin devre platformları
+imagegen referanslarıyla açılışa bağlandı. İki WebP toplam yaklaşık315KB;
+logo/yazı/API ilerlemesi ayrıdır. Eski düz kristal logo ve SVG oda açılışta
+yerini bunlara bıraktı. Orijinaller artifacts/startup-circuit-20261023/source
+altında korunur. İstemler ve tüm detaylar docs/ACILIS_DEVRE_YETENEK_VIDEO_20261023.md.
+
+715 istemci testi; 1753 sunucu testi geçti /44 atlandı. Sıfır Akı bedelinde
+uygulanamayan19 "eksik Akı" parametresi test listesinden çıkarıldı. Eksik google-auth
+gereksinimi kuruldu, emekli metin simgesini isteyen eski test güncellendi.
+Üç tarayıcıda6 açılış +3 fiyat E2E geçti. 320/393px fiyat taşması yok;
+önizleme satın alma çağırmıyor. Fiyat E2E üç normal CI projesine de bağlandı.
+10 derleme testi geçti. Yalıtılmış build 48765f79b5753d40 /44script,
+615varlık; ana dist/Android değişmedi. Bu, WebKit FPS sorununun çözüldüğü
+veya uzaktaki CI'ın yeşil olduğu anlamına gelmez; önceki bulgu aşağıdadır.
+
+Headless Chrome gerçek yerel geçici hesapla menü/eşleştirme/savaş kaydı alındı;
+sayfa hatası yok. tools/playwright-promo.config.js + e2e/promo-capture.spec.js
+kayıt; tools/build-promo-video.cjs kurgu. 40,7sn1080×1920MP4 (ham540×960,
+kurgu ölçekleme) artifacts/promo-20261023/GRIDSHARD-tanitim-1080x1920.mp4.
+Oyun müzikleri kurguda eklendi, ham video sessiz; FPS kanıtı değildir.
+Kayıt/kurgu raporu ve ham WebM saklandı. Görünür bilgisayar kullanımı,
+canlı hesap, commit/push, sunucu geçişi, AAB veya yayın yapılmadı.
+
+## Son çalışma — paylaşılan WebKit araştırmasıyla salt-okunur karşılaştırma
+
+webkit fps.txt okundu. Ürün/CI kaynağı değiştirilmedi; önceki kirli çalışma
+korundu. Yalnız artifacts/cleanup-20261023 altında geçici araştırma probe/config
+ve rapor yazıldı. DPR zaten max2; yalnız Canvas2D var, WebGL yok. Background
+savaş/ses lifecycle korumaları mevcut, ilgili 14 test yeniden geçti.
+
+Yeni somut ayrıntı: perspective off/düşükte açı sıfırlansa da board perspective(),
+preserve-3d zinciri, billboard en az2px Z ve barlarda6px Z kalıyor. Eski global
+body'deki dört gradient de hâlâ aktif; sırf dosyası eski diye atıl sayılamaz.
+Anchor cache task sonunda atılıyor, idlecore ayrıca rect/style okuyor; motion
+lock/pose/dirty ve beam array tahsisleri var. Kök neden diye kanıtlanmadılar.
+
+9 kısa Windows WebKit tanısı: auto normal1.49FPS; DPR1 1.43; frozengeometry1.43
+(native rect346→59 / 88→23ms); flat2.42; sahne boyaması gizli6.0; solidroot2.20.
+İlk noaudio2.70 kalite düşüşüyle karıştığı için yorumlanmadı. Sabit Yüksek/manual
+ve perspective on tekrarında normal2.44 / noaudio2.64; ikisi de bütçe başarısız.
+JSframe max15–23ms, canvas tick toplam2–6ms/18sn; native boyama ayrı/öncelikli.
+Hiçbir tanı FPS kapısını geçmedi. Yeşil tanı testleri release onayı değil;
+frozen/flat/hidden/solid/noaudio ürüne taşınmadı. Fiziksel iOS/GC kaydı yok.
+Detay: docs/WEBKIT_ARASTIRMA_KARSILASTIRMASI_20261023.md. Sonraki iş gerçek
+cihaz/render timeline ile native paint ayrımı ve görünümü koruyan hafif katman
+yolu; geometri/tahsis temizliği destekleyici. Commit/push/sunucu/AAB yok.
+
+## Son çalışma — savaş giriş sesi kaldırıldı, fütüristik kristal açılışı
+
+İlk çevrimiçi battle geçişi ve yerel savaş başlatıcısı gerçek üretim olayı
+olmadan energy_transfer çağırıyordu. İki çağrı kaldırıldı; gerçek üretim,
+çekirdek-ready/ödül sesleri ve savaş müziği kaldı. Kaynak regresyonu + üç
+tarayıcıda gerçek eşleştirme girişinde ses çağrısı kaydıyla doğrulandı.
+
+Mevcut v2 logo korunarak koyu lacivert devre odası, statik SVG raylar, keskin
+HUD çerçeve, camgöbeği/altın yavaş halkalar tasarlandı. Eski canon'daki iki
+boot CSS bloğu ve home override'ları kaldırıldı; tek startup-loading.css.
+Canvas/parçacık/yeni runtime timer/rAF yok. Gizli/done/error halinde hareket
+durur; reduced-motion destekli. Gerçek API ilerlemesi/retry/inceleme/hesap
+güvenceleri ve önceki ilk eğitim düzeltmesi korundu.
+
+713/713 istemci, 10/10 paketleme; üç tarayıcı giriş/boot matrisi 15/15, son
+responsive rötuş tekrarı 3/3 geçti. 320×568,360×800,1280×720; bar görünür,
+kontroller çakışmıyor. Portre ve masaüstü önizlemeleri görsel kontrol edildi.
+İzole build a91f680d83aabe52 / 44 betik / 614 varlık; ana dist/Android aynı.
+Önizleme artifacts/crystal-startup-20261023/{portrait,desktop}.png.
+Detay: docs/KRISTAL_ACILIS_SESSIZ_SAVAS_GIRISI_20261023.md.
+Commit/push, uzak CI/sunucu/AAB yok; WebKit savaş FPS engeli hâlâ ayrı/açık.
+
+## Son çalışma — ilk girişte eğitimin otomatik açılmaması
+
+Neden: rehber başlangıcı savaş renderBattleFrame döngüsünde kalmıştı; önceki
+performans koruması döngüyü menüde durdurunca ilk giriş kontrolü uyanmıyordu.
+Savaş döngüsü menüde yeniden açılmadı. Bootstrap sonu ve UI olayları ayrı
+birleştirilmiş rehber uyandırıcısına bağlandı; yalnız aktif menü eğitiminde
+200ms timer var. Gizliyken iptal, savaşta mevcut döngüye devir; tamamlanan,
+deneyimli/opt-out oturumlarda polling yok. Başarılı sunucu bootstrap'ı gelmeden
+geçici sıfır istatistikle eğitim başlamaz. Manuel tekrar/özel inceleme korunur.
+
+712/712 istemci, 10/10 paketleme geçti. İlk otomatik açılış/yeniden yükleme ve
+mağazaya ilerleme üç tarayıcıda 3/3; emüle Android tam menü → yönetmenli ilk
+savaş → zafer/ödül → tamamlanma ve eşleştirme hata dönüş matrisi 4/4 geçti.
+İzole build cfa205ff7f6f2353 / 44 betik / 614 varlık. Ana dist/Android aynı.
+Detay ve kanıtlar: docs/ILK_GIRIS_EGITIM_DUZELTMESI_20261023.md.
+Commit/push, yeni uzak CI, sunucu/AAB yok. WebKit FPS engeli hâlâ ayrı/açık.
+
+## Son çalışma — destek sesleri, çekirdek enkazı, artı ve CI kurulumu
+
+Eski batarya üretim sesi lazerden RMS ~16,85 dB yüksekti. Batarya ayrı düşük
+kazançlı cue'ya taşındı; güçlendirici/onarım/soğutma ve sonraki destek sesleri
+dengelendi. Savaşta ortak 420ms destek tetikleme sınırı rutin ses kapasitesini
+korur; çekirdek önceliği ve UI/ödül sesleri değişmez. Yeni timer/kanal yok.
+Yedi yeni saydam 384px enkaz WebP, mevcut çekirdeklerin imagegen düzenlemesiyle
+üretildi. Canlı görseller korundu; HP0'da tek mount, yeniden doğuşta canlıya
+dönüş; enkazda pulse/emitter/ready yok. Eski soluk siluet kaldırıldı.
+SAVAŞ SONA ERDİ ara yazısı kaldırıldı; 2500ms patlama/sonuç beklemesi korundu.
+Kaynak artıları eski gölgeli font yerine dik, net savaş sarısı katmanlı SVG.
+
+Son uzaktaki e795bc8 CI 39962200347 kurulumda ~30dk takılıp iptal olmuştu;
+testler başlamadı. Browser cache ve süre sınırlı ayrı bağımlılık/indirme
+adımları eklendi. Önceki 39715140349 WebKit FPS hatası hâlâ açık; kalite
+kapısı gevşetilmedi. Sonraki commit CI'si henüz doğrulanmadı, yeşil denemez.
+
+Son 709/709 istemci, 10/10 paketleme, 22/22 araç; 418 dosya import denetimi
+geçti. Üç tarayıcıda mevcut 6/6 ve yeni artı/çekirdek görsel 6/6 geçti;
+bu FPS onayı veya gerçek sunucu ölüm/ödül testi değildir. İzole son build
+fd36a55578bb272d / 44 betik / 614 varlık / 7 enkaz. Dev önizleme üretimde yok.
+Commit/push, sunucu veya AAB yapılmadı. Önceki kirli çalışma korundu.
+Detay: docs/SES_CEKIRDEK_CI_DUZELTMELERI_20261023.md;
+görsel promptları: docs/CORE_WRECKS_PROMPTS_20261023.md.
+
+## Son çalışma — WebKit ve dinamik görsel yolların gerçek erişilebilirliği
+
+HEAD e795bc8 üzerindeki önceki turun commit edilmemiş istek/timeout temizliği
+korundu. Bu tur server canon → client canon → profil → mount zincirinde tüm
+36 modül / 7 çekirdek doğrulandı; 43 kayıt ve 373 dinamik WebP dosyası tamam.
+Normal mount yalnız layers üretir. Kayıt yokken tek atlas/statik yedek resmi
+üretildiği de ayrıca test edildi. module-view-data/laser-aim korunuyor; eski
+adlarına rağmen bobin/namlu/düzlem geometrisinde kullanılıyorlar.
+
+Gerçek aktif legacy: çekirdek parçası ödül satırı ve Devre Yolu ödül simgesi
+coreEmblemSvg kullanıyordu. İkisi coreEmblemMarkup fiziksel resmine bağlandı;
+eski SVG fonksiyonu/işaret tablosu/çizim CSS'i kaldırıldı. Üretilmeyen eski
+module-device-head/base ve laser-yaw-rotor CSS/animasyonları temizlendi.
+İnert asset allowlist'teki kullanılmayan 12 eski rotor resmi (166700 bayt)
+ürün paketinden çıkarıldı; kaynak dosyalar ve offline hazırlama araçları
+korundu. Bunlar zaten template'te çizilmiyordu; FPS kazancı diye sunulmaz.
+applyLayer artık yön kayıtlarını her karede Object.entries ile kurmaz;
+katman başına WeakMap planı paylaşılır. Histerezis/namlu/çalışma pozu aynı.
+
+Kart çizicisindeki güncel resimden sonra ulaşılamayan ada göre eski SVG
+tablosu/çizim yardımcıları da kaldırıldı (yaklaşık 10KB kaynak); bilinmeyene
+tek genel yonga kalır. Metin ICONS/iconFor tablosu ve uygulamadaki ulaşılamayan
+metot-yokluğu dalı da kaldırıldı. Desteklenmeyen açık kimlik, bilinen ada göre
+eski çizimi devralamaz. Eski çiziciye bağlı test sözleşmeleri fiziksel resim
+ve güvenli genel yonga davranışına taşındı; cache testi çıkarım sınırı yenilendi.
+
+700/700 istemci, 10/10 paketleme, 27/27 ilgili sunucu testi geçti. İzole
+web build 967d22aea1ce8167 / 44 betik / 607 varlık:
+artifacts/web-dynamic-audit-B8L48j/dist. Ana dist veya Android değiştirilmedi.
+Normal dist hedefi önceden oluşturulunca yerel Windows rename engeli aşıldı.
+
+WebKit hâlâ açık: yüksek öncelikli tanı CSS'iyle animasyonlar gerçekten sıfır,
+7 resim görünür iken 2.1 FPS / p95 633.5ms; maske/filtre/bileşim izolasyonu
+2.1 FPS / p95 540.5ms. Düşük öncelikli ilk genel CSS deneylerinin !important
+izolasyonu eksikti; kesin kategori kanıtı olarak kullanılmamalı. Tanı CSS'i
+ürüne taşınmadı, kalite kapısı/eşikler değişmedi. Normal üç tarayıcı FPS +
+görsel matrisi 20/21 (18 işlevsel + 2 Chromium FPS geçti). Son modül tablosu
+temizliğinin ilgili tekrar matrisi 8/9, yine yalnız WebKit FPS kırmızı.
+Son normal ölçüm: desktop Chrome 138.4 FPS, emüle Android 138.7 FPS,
+ikisi p95 7.5ms/geçer; Windows WebKit 2.0 FPS/p95 551.5ms/0 freeze/kalır.
+700 istemci testinin tamamı son metin simgesi temizliğinden sonra yeniden geçti.
+Kanıtlar artifacts/cleanup-20261023/e2e-dynamic-21-results.json ve
+e2e-dynamic-final-9-results.json, client-dynamic-audit.tap.
+Detay: docs/WEBKIT_DINAMIK_KOD_DENETIMI_20261023.md.
+Yeni commit/push/CI, sunucu yayını veya AAB yok.
+
+## Son çalışma — kıdemli mimari denetim / istek sahipliği ve gövde timeout'u
+
+Başlangıç HEAD e795bc8, temizdi; oradaki yaşam döngüsü/nav revision/inert/dialog
+ve savaş saati temizliği korundu. Bu tur 5 veri yükleyicisine ortak
+createViewReadOwner eklendi: takım, sosyal, turnuva, günlük meta, sıralama.
+Hesap + istek nesli + başlangıç durum referansı uyuşmadan eski başarı/hata
+uygulanmaz. Yeni mutasyonun durum nesnesi eski GET ile ezilemez. Kapalı/gizli
+sıralama yeniden çizilmez; ertelenmiş meta penceresi eski hesapla açılamaz.
+Bu bir istek geçmişi Map'i değildir; gate'ler yalnız sayaç/getter tutar.
+
+Gerçek bekleme kusuru: fetchWithDeadline başlık geldiğinde timeout'u kapatıyor,
+sonraki text/json gövdesi sınırsız kalıyordu. İsteğe bağlı consume callback'i
+timer/controller'ı gövde sonuna kadar tutar; AbortError yutulsa da timeout
+başarılı sayılamaz. Ortak JSON, koleksiyon, maç sonucu, sıralama, yerel savaş
+JSON tüketicileri buna taşındı. Idempotent tekrar aynı request_id/body ile
+kalır; anahtarsız POST tekrar edilmez. Görünmeyen profil deste/çekirdek/onur
+ayrıntıları artık başka sayfa veya savaşta okunup kurulmaz.
+
+24 yeni davranış testiyle son 693/693 istemci ve 10/10 paketleme geçti.
+İzole build 01a79433f4fc40ca / 44 betik / 619 varlık. İşlevsel üç tarayıcı
+açılış/menü/arayüz matrisi 33/33 geçti (6.6dk). Yeni 150-geçiş bellek koşusunda
+GC sonrası DOM 20241/20241/20241, dinleyici 1081/1081/1081, document 7/7/7.
+Heap 9471932 -> 9723624 -> 9829720 bayt (+0.34 MiB); kısa menü testi uzun
+savaş/fiziksel cihaz ölçümü değildir. Kanıt:
+artifacts/cleanup-20261023/e2e-architecture-33-results.json.
+
+Kaynak HTML 45 betik başvurusu muhafazakâr fonksiyon adı taramasında yeni tek
+referanslı aday vermedi; kesin AST erişilebilirlik ispatı değildir. Önceki ölü
+WebGL/11 yardımcı/kök dekor temizliği korunur; bu tur yeni dosya silinmedi.
+Neden/çözüm, kapsam ve kalan riskler docs/MIMARI_OPTIMIZASYON_20261023.md'de.
+Windows WebKit savaş FPS sorunu hâlâ açık (son önceki ölçüm 2.7 FPS/p95 389.5ms).
+Bu tur FPS testi/çizici değiştirilmedi, işlevsel matris FPS onayı değildir.
+Yeni commit/push/CI koşusu, sunucu yayını veya AAB yapılmadı.
 
 ## Son devam — sosyal/turnuva çizimleri, bellek ölçümü ve görünmeyen dekor
 

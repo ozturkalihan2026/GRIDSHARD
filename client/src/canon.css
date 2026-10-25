@@ -4148,18 +4148,6 @@ body:not([data-app-screen="play"]) .app-progress-ribbon .lobby-currency-chip > s
     gap:0 !important;
     transform:none !important;
   }
-  body[data-app-screen="play"][data-local-status="battle"] .vertical-circuit-arena::before,
-  body[data-app-screen="play"][data-online-status="battle"] .vertical-circuit-arena::before {
-    content:"";
-    position:absolute;
-    z-index:0;
-    top:50%;
-    right:8%;
-    left:8%;
-    height:1px;
-    background:linear-gradient(90deg,transparent,rgba(255,219,104,.55),transparent);
-    pointer-events:none;
-  }
   body[data-app-screen="play"][data-local-status="battle"] .vertical-circuit-arena .duel-side,
   body[data-app-screen="play"][data-online-status="battle"] .vertical-circuit-arena .duel-side {
     position:relative;
@@ -5485,31 +5473,6 @@ body[data-battle-perspective="on"][data-app-screen="play"] .vertical-circuit-are
 body[data-battle-perspective="on"][data-app-screen="play"] .vertical-circuit-arena .duel-player-side .board {
   transform-origin:50% calc(-1 * var(--gs-camera-axis-gap));
 }
-/* Düz zemin ızgarası kalkar; aynı ızgara eğik zemin olarak arenanın arkasına
-   yerleşir ve kenarlarda söner. */
-body[data-battle-perspective="on"][data-app-screen="play"][data-local-status="battle"] .arena-panel,
-body[data-battle-perspective="on"][data-app-screen="play"][data-online-status="battle"] .arena-panel {
-  background:
-    radial-gradient(ellipse 85% 40% at 50% 10%,rgba(255,86,122,.22),transparent 70%),
-    radial-gradient(ellipse 85% 40% at 50% 90%,rgba(64,236,220,.24),transparent 70%),
-    radial-gradient(circle at 50% 50%,rgba(122,150,255,.16),transparent 46%),
-    linear-gradient(180deg,#10183a 0%,#0c2847 46%,#0b3040 54%,#0a1b36 100%) !important;
-}
-body[data-battle-perspective="on"][data-app-screen="play"][data-local-status="battle"] .vertical-circuit-arena::after,
-body[data-battle-perspective="on"][data-app-screen="play"][data-online-status="battle"] .vertical-circuit-arena::after {
-  content:"";
-  position:absolute;
-  z-index:0;
-  inset:-3% 7%;
-  pointer-events:none;
-  background:
-    repeating-linear-gradient(0deg,rgba(110,180,255,.075) 0 1px,transparent 1px 28px),
-    repeating-linear-gradient(90deg,rgba(110,180,255,.075) 0 1px,transparent 1px 28px);
-  transform:perspective(var(--gs-camera-distance)) rotateX(var(--gs-camera-tilt));
-  transform-origin:50% 50%;
-  -webkit-mask-image:radial-gradient(ellipse 72% 62% at 50% 50%,#000 52%,transparent 100%);
-  mask-image:radial-gradient(ellipse 72% 62% at 50% 50%,#000 52%,transparent 100%);
-}
 
 /* Analitik onayı (Ayarlar → Hesap ve Gizlilik; docs/ANALYTICS.md). */
 .account-platform-panel .account-analytics-toggle { display:flex;align-items:center;gap:8px;min-height:38px;padding:7px 9px;border:1px solid rgba(79,190,193,.32);border-radius:8px;color:#dff8f4;background:#06172a;font:800 .5rem var(--gs-font-display); }
@@ -5544,280 +5507,6 @@ body[data-battle-perspective="on"][data-app-screen="play"][data-online-status="b
 .settings-tutorial-replay small:empty { display:none; }
 .settings-tutorial-replay small { color:#9fc3dc; font-size:.5rem; }
 
-/* === Beta.72 tur 17: yükleme ekranı (src/boot-screen.js) ================== */
-/* Betikler inmeden ilk boyamada görünür; sunucu, oturum, profil ve koleksiyon
-   hazır olunca söner. Çubuk genişliği --boot-progress (0–1) değişkenidir. */
-.boot-screen {
-  position:fixed;
-  inset:0;
-  z-index:10000;
-  display:grid;
-  grid-template-rows:auto minmax(0,1fr) auto;
-  overflow:hidden;
-  color:#ecf5ff;
-  font-family:var(--gs-font-copy);
-  background:#07142b;
-  opacity:1;
-  visibility:visible;
-  transition:opacity .46s ease,visibility 0s linear 0s;
-  touch-action:none;
-  user-select:none;
-  -webkit-user-select:none;
-}
-.boot-screen[hidden] { display:none !important; }
-.boot-screen[data-state="done"] {
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
-  transition:opacity .46s ease,visibility 0s linear .46s;
-}
-.boot-screen-backdrop {
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background:
-    radial-gradient(circle at 50% 38%,rgba(72,244,224,.22),transparent 40%),
-    radial-gradient(circle at 50% 112%,rgba(255,213,106,.16),transparent 46%),
-    radial-gradient(circle at 12% 18%,rgba(184,124,255,.10),transparent 32%),
-    linear-gradient(180deg,#0c2242 0%,#07142b 52%,#030a17 100%);
-}
-.boot-screen-backdrop::before {
-  content:"";
-  position:absolute;
-  inset:0;
-  background-image:
-    linear-gradient(rgba(72,244,224,.075) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(72,244,224,.075) 1px,transparent 1px);
-  background-size:32px 32px;
-  background-position:center center;
-  -webkit-mask-image:radial-gradient(circle at 50% 40%,#000 0 26%,transparent 74%);
-  mask-image:radial-gradient(circle at 50% 40%,#000 0 26%,transparent 74%);
-}
-.boot-screen-backdrop::after {
-  content:"";
-  position:absolute;
-  inset:0;
-  background:radial-gradient(ellipse at 50% 45%,transparent 55%,rgba(1,5,12,.72) 100%);
-}
-.boot-trace {
-  position:absolute;
-  left:0;
-  width:42vw;
-  height:2px;
-  border-radius:2px;
-  opacity:0;
-  background:linear-gradient(90deg,transparent,rgba(72,244,224,.9),transparent);
-  box-shadow:0 0 10px rgba(72,244,224,.55);
-  animation:gs-boot-trace 3.8s linear infinite;
-}
-.boot-trace-a { top:14%; animation-delay:.2s; }
-.boot-trace-b { top:31%; animation-delay:1.6s; animation-direction:reverse; }
-.boot-trace-c { top:63%; animation-delay:.9s; background:linear-gradient(90deg,transparent,rgba(255,213,106,.85),transparent); box-shadow:0 0 10px rgba(255,213,106,.45); }
-.boot-trace-d { top:82%; animation-delay:2.4s; animation-direction:reverse; }
-@keyframes gs-boot-trace {
-  0% { transform:translateX(-45vw); opacity:0; }
-  12% { opacity:.9; }
-  78% { opacity:.9; }
-  100% { transform:translateX(105vw); opacity:0; }
-}
-
-.boot-screen-meta {
-  position:relative;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left));
-  font:700 13px/1.2 var(--gs-font-copy);
-  letter-spacing:.02em;
-  text-shadow:0 1px 3px rgba(0,0,0,.85);
-}
-.boot-version { color:#dcebff; white-space:nowrap; }
-.boot-player-id {
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-  min-width:0;
-  min-height:34px;
-  padding:0 9px;
-  border:1px solid rgba(185,206,230,.3);
-  border-radius:9px;
-  color:#dcebff;
-  background:rgba(4,12,26,.58);
-  font:inherit;
-  cursor:pointer;
-  touch-action:manipulation;
-}
-.boot-player-id[hidden] { display:none; }
-.boot-player-id strong { font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
-.boot-player-id svg { width:15px; height:15px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linejoin:round; }
-.boot-player-id[data-copied="true"] { border-color:rgba(72,244,224,.75); color:#8ff3e4; }
-
-.boot-brand {
-  position:relative;
-  align-self:center;
-  display:grid;
-  justify-items:center;
-  gap:6px;
-  padding:0 20px;
-}
-.boot-emblem {
-  position:relative;
-  width:min(64vw,300px,40dvh);
-  aspect-ratio:1;
-  display:grid;
-  place-items:center;
-}
-/* Amblem şeffaf (tools/generate_brand_assets.py); altın halkası görselin
-   %72'sidir, dönen CSS halkaları onun dışında kalır. */
-.boot-emblem-art {
-  position:relative;
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  animation:gs-boot-float 4.2s ease-in-out infinite;
-}
-.boot-emblem-ring {
-  position:absolute;
-  inset:7%;
-  border-radius:50%;
-  background:conic-gradient(from 0deg,transparent 0 68%,rgba(72,244,224,.95) 88%,transparent 100%);
-  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));
-  mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));
-  animation:gs-boot-spin 2.2s linear infinite;
-}
-.boot-emblem-ring-outer {
-  inset:-2%;
-  opacity:.6;
-  background:conic-gradient(from 120deg,transparent 0 58%,rgba(255,213,106,.9) 82%,transparent 100%);
-  animation-duration:5.4s;
-  animation-direction:reverse;
-}
-.boot-title {
-  margin:2px 0 0;
-  color:#f5fbff;
-  font:900 clamp(30px,10.5vw,48px)/1 var(--gs-font-display);
-  letter-spacing:.06em;
-  text-align:center;
-  text-shadow:0 0 18px rgba(101,228,245,.55),0 4px 0 rgba(0,0,0,.35);
-  animation:gs-boot-glow 3.2s ease-in-out infinite;
-}
-.boot-tagline {
-  margin:0;
-  color:#b9cee6;
-  font:600 clamp(12px,3.5vw,15px)/1.3 var(--gs-font-copy);
-  letter-spacing:.16em;
-  text-align:center;
-  text-transform:uppercase;
-}
-@keyframes gs-boot-spin { to { transform:rotate(360deg); } }
-@keyframes gs-boot-float { 50% { transform:translateY(-7px) scale(1.015); } }
-@keyframes gs-boot-glow { 50% { text-shadow:0 0 28px rgba(101,228,245,.8),0 4px 0 rgba(0,0,0,.35); } }
-
-.boot-progress {
-  position:relative;
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
-  align-items:center;
-  gap:9px 10px;
-  width:min(100%,520px);
-  margin:0 auto;
-  padding:0 max(22px,env(safe-area-inset-right)) max(28px,calc(env(safe-area-inset-bottom) + 18px)) max(22px,env(safe-area-inset-left));
-}
-.boot-status {
-  grid-column:1 / -1;
-  min-height:1.3em;
-  margin:0;
-  color:#ecf5ff;
-  font:700 clamp(14px,4vw,17px)/1.3 var(--gs-font-copy);
-  letter-spacing:.02em;
-  text-align:center;
-  text-shadow:0 1px 3px rgba(0,0,0,.9);
-}
-.boot-bar {
-  position:relative;
-  height:16px;
-  overflow:hidden;
-  border:1px solid rgba(72,244,224,.5);
-  border-radius:999px;
-  background:linear-gradient(180deg,rgba(3,10,22,.94),rgba(10,26,48,.94));
-  box-shadow:inset 0 2px 6px rgba(0,0,0,.65),0 0 18px rgba(72,244,224,.14);
-}
-.boot-bar-fill {
-  position:absolute;
-  top:0;
-  bottom:0;
-  left:0;
-  width:calc(var(--boot-progress,.05) * 100%);
-  min-width:12px;
-  border-radius:inherit;
-  background:linear-gradient(90deg,#27c9b9,#48f4e0 58%,#ffd56a);
-  box-shadow:0 0 14px rgba(72,244,224,.6);
-  transition:width var(--boot-progress-seconds,.32s) cubic-bezier(.22,.61,.36,1),background .3s ease;
-}
-.boot-bar-fill::after {
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:inherit;
-  background:repeating-linear-gradient(115deg,transparent 0 10px,rgba(255,255,255,.2) 10px 17px);
-  background-size:40px 100%;
-  animation:gs-boot-stripes .9s linear infinite;
-}
-@keyframes gs-boot-stripes { to { background-position:40px 0; } }
-.boot-percent {
-  min-width:3.4em;
-  color:#ffd56a;
-  font:800 13px/1 var(--gs-font-display);
-  text-align:right;
-  font-variant-numeric:tabular-nums;
-}
-.boot-screen[data-state="ready"] .boot-bar-fill { box-shadow:0 0 24px rgba(255,213,106,.75); }
-.boot-screen[data-state="error"] .boot-bar-fill {
-  background:linear-gradient(90deg,#d9435a,#ff647c);
-  box-shadow:0 0 12px rgba(255,100,124,.45);
-}
-.boot-screen[data-state="error"] .boot-bar-fill::after { animation:none; }
-.boot-error {
-  grid-column:1 / -1;
-  display:grid;
-  justify-items:center;
-  gap:10px;
-  margin-top:2px;
-  text-align:center;
-}
-.boot-error[hidden] { display:none; }
-.boot-error p {
-  margin:0;
-  color:#ffc9d0;
-  font:600 14px/1.4 var(--gs-font-copy);
-}
-.boot-retry {
-  min-width:190px;
-  min-height:48px;
-  padding:0 22px;
-  border:0;
-  border-radius:12px;
-  color:#1d1402;
-  background:linear-gradient(180deg,#ffe38a,#ffb84d);
-  box-shadow:0 6px 18px rgba(255,184,77,.35),inset 0 -3px 0 rgba(0,0,0,.18);
-  font:900 15px/1 var(--gs-font-display);
-  letter-spacing:.08em;
-  cursor:pointer;
-  touch-action:manipulation;
-}
-@media (max-height:560px) {
-  .boot-emblem { width:min(40vw,190px,34dvh); }
-  .boot-progress { padding-bottom:max(16px,env(safe-area-inset-bottom)); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .boot-trace,
-  .boot-emblem-art,
-  .boot-emblem-ring,
-  .boot-title,
-  .boot-bar-fill::after { animation:none; }
-  .boot-trace { display:none; }
-}
 
 /* Operator title progression */
 .app-progress-ribbon #lobby-player-details { appearance:none; max-width:100%; min-height:0; margin:0; padding:0 2px; border:0; background:none; box-shadow:none; filter:none; text-shadow:none; color:#b7cbdc; font:600 .7rem/1.35 var(--gs-font-copy); letter-spacing:0; text-align:left; cursor:pointer; text-decoration:none; }
@@ -9353,23 +9042,9 @@ body[data-app-screen="rewards"] .season-reward-panel > .reward-back-link {
 }
 .boot-title { font-family:var(--gs-font-brand) !important; }
 
-/* Çekirdek fiziksel resmi; küçük kaynak kartları için kullanılan statik SVG. */
+/* Current physical core paintings, including small reward cards. */
 .core-emblem-set { position:relative;display:block;width:100%;height:100%;aspect-ratio:1;pointer-events:none; }
-.core-emblem-set > svg { position:absolute;inset:0;display:block;width:100%;height:100%;overflow:visible; }
 .is-emblem { font-size:0 !important;line-height:0 !important;text-shadow:none !important; }
-.is-emblem > svg.core-emblem { display:block;width:100%;height:100%;overflow:visible; }
-.core-emblem .ce-frame { fill:#8195b1; }
-.core-emblem .ce-frame-light { fill:#dce7f3;opacity:.62; }
-.core-emblem .ce-frame-dark { fill:#2a3d5c;opacity:.74; }
-.core-emblem .ce-ink { fill:none;stroke:#0a1024;stroke-width:2.6;stroke-linejoin:round; }
-.core-emblem .ce-well { fill:#0b1b3a;stroke:#0a1024;stroke-width:2.2;stroke-linejoin:round; }
-.core-emblem .ce-gem { fill:var(--core-accent,#56f1df); }
-.core-emblem .ce-gem-light { fill:#ffffff;opacity:.36; }
-.core-emblem .ce-gem-dark { fill:#0a1024;opacity:.28; }
-.core-emblem .ce-mark { fill:#ffffff;stroke:#0a1024;stroke-width:2.2;stroke-linejoin:round;paint-order:stroke; }
-.core-emblem .ce-mark-cut { fill:#0a1024;stroke:#0a1024;stroke-width:2.2;stroke-linecap:round;opacity:.8; }
-.core-emblem .ce-mark-line { fill:none;stroke:#ffffff;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 0 #0a1024); }
-.core-emblem .ce-bolt { fill:#eef4fb;stroke:#0a1024;stroke-width:1.3; }
 
 /* --- Ev ekranı ----------------------------------------------------------------------
    Çekirdek amblemi küçülür (ekran yüksekliğinin yaklaşık yedide biri, en çok 132
@@ -10668,84 +10343,6 @@ body[data-app-screen="menu"] #home-active-deck .unified-module-tile {
 #account-player-id-label,
 #account-player-id-value { font-size:.66rem !important; }
 
-/* Giriş (yükleme) ekranı yeni görsel dilde: oyunun desenli mavi zemini, yeni amblem
-   (tools/generate_brand_assets.py), konturlu ve dudaklı marka yazısı, yuva içinde dolu
-   ilerleme çubuğu. Neon ışımalar, süpürülen çizgiler ve karartma kalktı. Eski blok
-   ("Beta.72 tur 17") yerinde durur; bu kurallar onun üstüne yazar. */
-.boot-screen { background:#0d2f62; }
-.boot-screen-backdrop {
-  background:
-    var(--gs-pattern-diamond),
-    linear-gradient(180deg,#14427c,#0d2f62 52%,#0a2452);
-}
-.boot-screen-backdrop::before {
-  /* Amblemin arkasında iki kademeli düz ışık dairesi (mağaza simgesindeki gibi). */
-  inset:auto;
-  left:50%;
-  top:calc(50% - 22px);
-  width:min(118vw,560px,74dvh);
-  aspect-ratio:1;
-  border-radius:50%;
-  transform:translate(-50%,-58%);
-  background:radial-gradient(circle,rgba(92,170,246,.2) 0 58%,rgba(92,170,246,.12) 58% 100%);
-  -webkit-mask-image:none;
-  mask-image:none;
-}
-.boot-screen-backdrop::after { display:none; }
-.boot-trace { display:none; }
-.boot-emblem-art { filter:drop-shadow(0 6px 0 rgba(3,10,24,.28)); }
-/* Dönen yaylar: ışıma yerine düz renkli, kalın iki yörünge parçası. */
-.boot-emblem-ring {
-  inset:3%;
-  background:conic-gradient(from 0deg,transparent 0 80%,#43cfc2 80% 100%);
-  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
-  mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
-}
-.boot-emblem-ring-outer {
-  inset:-4%;
-  opacity:1;
-  background:conic-gradient(from 120deg,transparent 0 86%,#f7ba3c 86% 100%);
-}
-.boot-title {
-  color:#ffffff;
-  -webkit-text-stroke:5px #0a1024;
-  paint-order:stroke fill;
-  text-shadow:0 4px 0 #0a1024;
-}
-/* Aynı adlı eski hareket yazıyı ışıtıyordu; yeni dilde yazı hafifçe yükselir, dudağı derinleşir. */
-@keyframes gs-boot-glow { 50% { transform:translateY(-2px); text-shadow:0 6px 0 #0a1024; } }
-.boot-tagline { color:#cfe6ff; text-shadow:0 1px 0 rgba(3,10,24,.6); }
-.boot-version { text-shadow:0 1px 0 rgba(3,10,24,.6); }
-.boot-status { text-shadow:0 1px 0 rgba(3,10,24,.7); }
-.boot-bar {
-  height:18px;
-  border:0;
-  border-radius:9px;
-  background:#081a3c;
-  box-shadow:inset 0 2px 4px rgba(1,6,18,.7),0 0 0 2px #0a1024,0 3px 0 2px rgba(3,10,24,.45);
-}
-.boot-bar-fill {
-  min-width:14px;
-  background:linear-gradient(180deg,#8ff0b3 0 38%,#3fdc86 38% 100%);
-  box-shadow:inset 0 -3px 0 rgba(12,96,52,.5);
-}
-.boot-bar-fill::after { background:repeating-linear-gradient(115deg,transparent 0 10px,rgba(255,255,255,.22) 10px 17px); background-size:40px 100%; }
-.boot-screen[data-state="ready"] .boot-bar-fill {
-  background:linear-gradient(180deg,#ffe793 0 38%,#f7ba3c 38% 100%);
-  box-shadow:inset 0 -3px 0 rgba(150,78,6,.45);
-}
-.boot-screen[data-state="error"] .boot-bar-fill {
-  background:linear-gradient(180deg,#ff9bab 0 38%,#e83f66 38% 100%);
-  box-shadow:inset 0 -3px 0 rgba(120,14,44,.5);
-}
-.boot-percent { color:#ffd965; text-shadow:0 1px 0 #0a1024; }
-.boot-retry {
-  border-radius:11px;
-  color:#4a2504;
-  background:linear-gradient(180deg,#ffdc72,#f7ac30);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 0 1px #0a1024,0 3px 0 1px #8a4a08;
-}
-.boot-retry:active { transform:translateY(2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 0 0 1px #0a1024,0 1px 0 1px #8a4a08; }
 
 /* Savaş efektleri yeni görsel dilde: ışıma, bulanık gölge ve yumuşak geçiş yok. Atış,
    vuruş, patlama ve imza efektleri dolu gövdeli, iki tonlu (aydınlık üst yüz) ve koyu
@@ -11203,7 +10800,6 @@ body:not([data-app-screen="play"]) #app-bottom-dock .menu-action .menu-action-ti
 :is(#home-active-deck,#module-deck-strip,#module-shelf,#enemy-deck-preview,.collection-module-tile,.profile-deck-module,.statistics-deck-module,.arena-module-unlocks) .module-emblem :is(.me-shine,.me-light,.me-dark) { display:none; }
 :is(#home-active-deck,#module-deck-strip,#module-shelf,#enemy-deck-preview,.collection-module-tile,.profile-deck-module,.statistics-deck-module,.arena-module-unlocks) .module-emblem .me-ink { stroke-width:2.2; }
 :is(#home-active-deck,#module-deck-strip,#module-shelf,#enemy-deck-preview) .module-emblem { filter:none !important; }
-.core-power-button .core-emblem :is(.ce-bolt,.ce-frame-light,.ce-frame-dark) { display:none; }
 
 /* Savaş metni incelir. Sıradan atışta kontursuz kıvılcım; ağır darbe ve çekirdek
    patlamasının mevcut güçlü silueti korunur. Yeni sürekli filtre/ışıma eklenmez. */

@@ -17,7 +17,7 @@ def _store(profiles: PlayerProfileService) -> PlayerDataStoreService:
 
 
 def test_notification_chain_is_section_scoped_and_survives_reload():
-    now = datetime(2026, 9, 10, 12, tzinfo=timezone.utc)
+    now = datetime(2026, 10, 10, 12, tzinfo=timezone.utc)
     profiles = PlayerProfileService(now_func=lambda: now)
     profile = profiles.get_or_create("notification-player")
     profile.season_xp = SEASON_REWARD_TRACK[9]["required_xp"]
@@ -54,7 +54,7 @@ def test_notification_chain_is_section_scoped_and_survives_reload():
 
 
 def test_login_and_mission_notifications_are_acknowledged_independently():
-    now = datetime(2026, 9, 10, 12, tzinfo=timezone.utc)
+    now = datetime(2026, 10, 10, 12, tzinfo=timezone.utc)
     profiles = PlayerProfileService(now_func=lambda: now)
     profile = profiles.get_or_create("notification-split-player")
     mission = profile.engagement_view()["daily_missions"][0]
@@ -75,7 +75,7 @@ def test_login_and_mission_notifications_are_acknowledged_independently():
 
 
 def test_claimed_reward_disappears_without_clearing_other_notification_sections():
-    now = datetime(2026, 9, 10, 12, tzinfo=timezone.utc)
+    now = datetime(2026, 10, 10, 12, tzinfo=timezone.utc)
     profiles = PlayerProfileService(now_func=lambda: now)
     profile = profiles.get_or_create("notification-claim-player")
     profile.season_xp = SEASON_REWARD_TRACK[0]["required_xp"]
@@ -90,7 +90,7 @@ def test_claimed_reward_disappears_without_clearing_other_notification_sections(
 
 
 def test_chest_inventory_groups_counts_and_bulk_open_respects_unlock_time():
-    now = datetime(2026, 9, 10, 12, tzinfo=timezone.utc)
+    now = datetime(2026, 10, 10, 12, tzinfo=timezone.utc)
     meta = MetaProgressionService(now_func=lambda: now)
     profile = PlayerProfileService(now_func=lambda: now).get_or_create(
         "bulk-chest-player"
@@ -140,7 +140,7 @@ def test_chest_inventory_groups_counts_and_bulk_open_respects_unlock_time():
 
 
 def test_partial_bulk_open_keeps_completed_receipts_and_failed_inventory():
-    now = datetime(2026, 9, 10, 12, tzinfo=timezone.utc)
+    now = datetime(2026, 10, 10, 12, tzinfo=timezone.utc)
     meta = MetaProgressionService(now_func=lambda: now)
     profile = PlayerProfileService(now_func=lambda: now).get_or_create(
         "partial-bulk-player"

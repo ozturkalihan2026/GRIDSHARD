@@ -44,17 +44,16 @@ def test_season_descriptor_uses_monday_four_week_cycles():
         "name_tr": "Sezon 3",
         "starts_at": "2026-11-23T00:00:00Z",
         "ends_at": "2026-12-20T23:59:59Z",
+        "active": True,
+        "status": "active",
     }
 
 
-def test_september_2026_season_hands_over_to_the_first_cycle():
+def test_configured_season_waits_until_its_explicit_start():
     legacy = season_descriptor(datetime(2026, 9, 25, 12, tzinfo=timezone.utc))
-    assert legacy == {
-        "id": "gridshard_2026_09",
-        "name_tr": "Eylül 2026 Sezonu",
-        "starts_at": "2026-09-01T00:00:00Z",
-        "ends_at": "2026-09-27T23:59:59Z",
-    }
+    assert legacy["id"] == "gridshard_waiting"
+    assert legacy["active"] is False
+    assert legacy["status"] == "scheduled"
     first = season_descriptor(datetime(2026, 9, 28, 0, 0, tzinfo=timezone.utc))
     assert first["id"] == "gridshard_2026_09_28"
     assert first["name_tr"] == "Sezon 1"

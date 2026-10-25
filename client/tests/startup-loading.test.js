@@ -185,17 +185,31 @@ test("boot labels, percentages, errors and ready text use language keys", async 
   assert.equal(loading.statusEl.textContent,"Ready!");
 });
 
-test("startup artwork and the entire animation CSS block are unchanged", () => {
+test("startup keeps the approved circuit scene, one in-scene reactor and real readiness", () => {
   const hash = data => crypto.createHash("sha256").update(data).digest("hex");
   const art = fs.readFileSync("assets/branding/gridshard-emblem.webp");
   // Görsel tur 6 (13 Ekim 2026, kullanıcı isteği): amblem yeni görsel dilde yeniden çizildi
   // (tools/generate_brand_assets.py). Eski özet: c5b44663…fa913 (GRIDSHARD2.1 kaynağı).
   assert.equal(hash(art),"4c187311d6bd426381cb8627170febd2448409157e0e04fda72e076b318f0f18");
-  const css = fs.readFileSync("src/canon.css","utf8").replace(/\r\n/g,"\n");
-  const block = css.slice(css.indexOf("/* === Beta.72 tur 17: yükleme ekranı"),css.indexOf("/* Operator title progression */")).trim();
-  assert.equal(hash(block),"5b9f8d3a4997e2ab33751e004528d92094dddb02236a996c4c7c1390dbbff009");
+  const css = fs.readFileSync("src/startup-loading.css","utf8");
+  const canon = fs.readFileSync("src/canon.css","utf8");
+  const home = fs.readFileSync("src/home-interface-v3.css","utf8");
+  assert.doesNotMatch(canon, /\.boot-screen\s*\{/);
+  assert.doesNotMatch(home, /\.boot-screen-backdrop\s*\{/);
+  assert.match(css, /prefers-reduced-motion:reduce/);
+  assert.match(css, /\[data-state="done"\]/);
+  assert.match(css, /\[data-state="error"\]\) \.boot-reactor-fx \{ animation:none; \}/);
+  assert.doesNotMatch(css, /gs-boot-trace|gs-boot-glow|filter:blur|backdrop-filter|animation:[^;]*(?:shadow|gradient)/);
   const html = fs.readFileSync("index.html","utf8");
-  assert.ok(html.includes('src="./assets/branding/gridshard-emblem-v2.webp"'));
+  assert.ok(!html.includes('class="boot-emblem'));
+  assert.ok(!html.includes('src="./assets/branding/startup-circuit-v1/reactor-logo.webp"'));
+  assert.ok(html.includes('src="./assets/branding/startup-circuit-v1/circuit-scene.webp"'));
+  assert.ok(html.includes('href="./src/startup-loading.css"'));
+  assert.ok(html.includes('class="boot-circuit-scene"'));
+  assert.equal((html.match(/class="boot-reactor-[a-z]+ boot-reactor-fx"/g)||[]).length,3);
+  assert.match(css,/\.boot-circuit-stage\s*\{[^}]*aspect-ratio:2 \/ 3;/);
+  assert.doesNotMatch(css,/gs-boot-float|will-change|mix-blend-mode/);
+  assert.ok(!html.includes('class="boot-trace'));
   assert.ok(fs.existsSync('assets/branding/gridshard-emblem-v2.webp'));
   assert.ok(html.indexOf('src="./src/boot-screen.js"') < html.indexOf('src="./src/startup-loading.js"'));
   assert.equal(html.match(/id="boot-version"[^>]*>Sürüm: ([^<]+)/)[1], JSON.parse(fs.readFileSync(path.join(__dirname,"../../package.json"),"utf8")).version);

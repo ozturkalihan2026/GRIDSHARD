@@ -1,9 +1,6 @@
 /* 21 October: scoped repairs to the approved physical-art presentation. */
-/* Lift the facing sprite clear of the tilted PCB. Opacity/filter grouping on
-   the card must never collapse its upper half through the board plane. */
-:root body[data-app-screen="play"] .module-device-rig[data-renderer="layers"] .module-device-billboard {
-  transform:translateZ(max(2px,var(--device-height,7px))) rotateX(var(--gs-camera-counter,0deg));
-}
+/* Billboard seating belongs to the shared orthographic socket camera.
+ * No legacy per-device Z lift: its footprint and HUD must share one floor. */
 /* The shared canvas already animates the working crystal and real charge
    pulses. Do not also run independent CSS clocks on every painted device.
    In software WebKit those clocks repaint the whole nested board scene. */
@@ -58,16 +55,25 @@ body[data-app-screen="play"] .module-explosion[data-material] i {
 body[data-app-screen="play"] .module-explosion.core-explosion[data-material] { --burst-size:180px; }
 body[data-app-screen="play"] .module-explosion.core-explosion[data-material] .explosion-flash { animation:gs-core-finale 1.7s ease-out both !important; }
 .core-collapse-ring { position:absolute; left:0; top:0; width:160px; height:160px; border:4px solid var(--explosion-color,#78edee); border-radius:50%; pointer-events:none; animation:gs-core-collapse 1.65s ease-out both; }
-#battle-ended-banner { position:absolute; left:50%; top:47%; z-index:15; width:max-content; max-width:90%; padding:10px 18px; border:1px solid #ffe09a; border-radius:7px; background:#0b2134e8; color:#ffe4a0; font:800 clamp(15px,3vw,23px)/1.3 var(--gs-font-display); text-align:center; pointer-events:none; transform:translate(-50%,-50%); animation:gs-finale-label .45s ease-out both; }
 @keyframes gs-core-finale { 0%{opacity:0;transform:translate(-50%,-50%) scale(.15)} 15%{opacity:1;transform:translate(-50%,-50%) scale(1)} 55%{opacity:.7} 100%{opacity:0;transform:translate(-50%,-50%) scale(2.1)} }
 @keyframes gs-core-collapse { from{opacity:.9;transform:translate(-50%,-50%) scale(.2,.12)} to{opacity:0;transform:translate(-50%,-50%) scale(3.5,1.8)} }
-@keyframes gs-finale-label { from{opacity:0;translate:0 8px} to{opacity:1;translate:0 0} }
 @media(prefers-reduced-motion:reduce) {
   body[data-app-screen="play"] .module-explosion.core-explosion[data-material] .explosion-flash { animation:gs-core-still 1.4s ease-out both !important; }
   .core-collapse-ring { display:none; }
-  #battle-ended-banner { animation:none; }
 }
 @keyframes gs-core-still { from{opacity:.65} to{opacity:0} }
+
+/* A death is a one-shot artwork state, not a dimmed living reactor. The same
+   registered stage is reused and rebirth remounts the intact painting once. */
+:root body[data-app-screen="play"] .vertical-circuit-arena .module-card[data-core-wreck="true"] {
+  opacity:1 !important; filter:none !important; animation:none !important;
+}
+:root body[data-app-screen="play"] .module-card[data-core-wreck="true"]::after,
+:root body[data-app-screen="play"] .module-card[data-core-wreck="true"] :is(.module-live-status-row,.module-signature-row) { display:none !important; }
+.module-device-rig[data-destroyed="true"] .module-layer-art { filter:none !important; animation:gs-core-wreck-reveal .9s ease-out both; }
+@keyframes gs-core-wreck-reveal { 0%,55%{opacity:0} 100%{opacity:1} }
+body[data-graphics="dusuk"] .module-device-rig[data-destroyed="true"] .module-layer-art { animation:none !important; opacity:1; }
+@media(prefers-reduced-motion:reduce) { .module-device-rig[data-destroyed="true"] .module-layer-art { animation:none !important; opacity:1; } }
 
 /* A cheap coloured opening remains visible even after automatic quality
    reduction. Reduced motion keeps a stationary glow and the open lid. */
@@ -89,7 +95,17 @@ body[data-app-screen="play"] .module-explosion.core-explosion[data-material] .ex
 }
 
 :root body[data-app-screen="shop"] .shop-section > .mobile-section-heading,
-:root body[data-app-screen="modules"] .module-deck-editor > .mobile-section-heading { border-left:0; border-radius:7px; }
+:root body[data-app-screen="modules"] .module-deck-editor > .mobile-section-heading,
+:root body[data-app-screen="modules"] [data-card-page-panel="cores"] .mobile-section-heading { border-left:0; border-radius:7px; }
+
+:root body[data-app-screen="friends"] .friends-hero { justify-content:center; text-align:center; }
+:root body[data-app-screen="friends"] .friends-hero h3 { margin-inline:auto; justify-content:center; }
+:root body[data-app-screen] [data-card-page] { position:relative; }
+:root body[data-app-screen] [data-card-page] > .upgrade-arrow { position:absolute; top:4px; right:6px; z-index:2; width:18px; height:18px; }
+:root body[data-app-screen] [data-leaderboard-tab="core_damage"] > span { display:grid; place-items:center; }
+:root body[data-app-screen] [data-leaderboard-tab="core_damage"] .core-emblem-set { width:32px; height:32px; }
+:root body[data-app-screen] #reward-inbox-dialog #reward-inbox-close::before,
+:root body[data-app-screen] #reward-inbox-dialog #reward-inbox-close::after { display:none !important; }
 :root body[data-app-screen] #daily-meta-card {
   display:grid; grid-template-columns:64px minmax(0,1fr); gap:2px 12px; padding:8px 13px !important;
   border:1px solid #477aa3 !important; border-bottom:4px solid #081b30 !important; border-radius:10px !important;

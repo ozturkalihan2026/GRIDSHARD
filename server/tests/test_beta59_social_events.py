@@ -19,16 +19,16 @@ def _clear_players(*player_ids: str) -> None:
         gateway.player_settings_service._settings.pop(player_id, None)
 
 
-def test_registered_tournaments_expose_rich_prizes_and_live_player_pairing():
-    moment = datetime(2026, 9, 19, 18, 5, tzinfo=timezone.utc)
+def test_registered_tournaments_expose_rich_prizes_and_wait_for_real_teams():
+    moment = datetime(2026, 10, 17, 18, 5, tzinfo=timezone.utc)
     view = build_events_view(
         [
             {
                 "player_id": "human-owner",
                 "display_name": "İnsan Lider",
                 "rating": 750,
-                "weekly_registered_period": "2026-W38",
-                "weekly_period": "2026-W38",
+                "weekly_registered_period": "2026-W42",
+                "weekly_period": "2026-W42",
                 "weekly_matches": 3,
                 "weekly_wins": 2,
                 "weekly_trophies_earned": 31,
@@ -74,19 +74,13 @@ def test_registered_tournaments_expose_rich_prizes_and_live_player_pairing():
 
     team = view["team_tournament"]
     assert team["registration_fee"] == 0
-    # 19 Eylül Cumartesi: 31 Ağustos'ta başlayan döngünün 3. haftası; kayıt
-    # kapalı, Cuma–Pazar rövanşlı maç günleri açık.
-    assert team["phase"] == "matches"
-    assert team["registration_open"] is False
+    assert team["phase"] == "waiting_for_participants"
+    assert team["participant_count"] == 1
+    assert team["registered_team_ids"] == ["human-team"]
     assert team["minimum_reward_points"] == 4
-    assert team["schedule_status"] == "live"
-    fixture = team["fixtures"][0]
-    assert fixture["status"] == "live"
-    assert fixture["matches_open_at"] == "2026-09-18T00:00:00Z"
-    assert {fixture["home_team_id"], fixture["away_team_id"]} == {"human-team", "bot-team"}
-    legs = fixture["member_pairings"][0]["legs"]
-    assert [leg["status"] for leg in legs] == ["open", "locked"]
-    assert legs[0]["battle_session_id"].startswith("team-event-")
+    assert team["standings"] == []
+    assert team["fixtures"] == []
+    assert all(not row["is_bot"] for row in weekly["standings"])
     # Takım turnuvası ödülleri takım profilindeki görünüm seçenekleridir.
     assert team["prizes"][0]["team_emblem_id"]
     assert team["prizes"][0]["team_frame_id"]

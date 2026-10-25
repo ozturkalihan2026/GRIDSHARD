@@ -40,7 +40,24 @@ TALENT_LEVELS = {
     "epic": (7, 10, 13, 15),
     "legendary": (8, 11, 14, 15),
 }
-TALENT_FLUX_COSTS = (15, 30, 45, 60)
+# Seviye.docx,25 Ekim2026: (Devre Kredisi, Akı), her tablo kendi tutarlarıyla.
+TALENT_COSTS = {
+    "common": ((1000, 0), (2000, 0), (4000, 0), (8000, 1000)),
+    "rare": ((2000, 0), (4000, 0), (10000, 1000), (20000, 2000)),
+    "epic": ((10000, 0), (20000, 1000), (30000, 2000), (40000, 3000)),
+    "legendary": ((10000, 1000), (20000, 2000), (30000, 3000), (40000, 4000)),
+}
+CORE_TALENT_COSTS = {
+    "common": ((2000, 0), (5000, 0), (10000, 1000)),
+    "rare": ((4000, 0), (10000, 0), (20000, 2000)),
+    "epic": ((10000, 0), (20000, 2000), (30000, 3000)),
+    "legendary": ((20000, 2000), (30000, 3000), (40000, 4000)),
+}
+
+
+def talent_cost(rarity: str, threshold: int, *, core: bool = False) -> dict[str, int]:
+    credits, flux = (CORE_TALENT_COSTS if core else TALENT_COSTS)[rarity][threshold]
+    return {"circuit_credits_cost": credits, "flux_cost": flux}
 
 BASIC_POWER_COPY = {
     "saldırı": ("Hasar +%3", "Damage +3%", "Bu modülün verdiği hasarı kalıcı olarak %3 artırır.",
@@ -387,23 +404,23 @@ def module_talent_tree(module_id: str, category: str, rarity: str, has_cooldown:
                 "Permanently increases this module's effect by 4%.")
     )
     return (
-        {"tier": TIER_BASIC, "level": levels[0], "flux_cost": TALENT_FLUX_COSTS[0], "kind": "basic", "choices": [
+        {"tier": TIER_BASIC, "level": levels[0], **talent_cost(rarity, 0), "kind": "basic", "choices": [
             _choice(CHOICE_LEFT, power[0], power[1], power[2], power[3]),
             _choice(CHOICE_RIGHT, "CAN +%5", "HP +5%",
                     "Bu modülün azami CAN değerini kalıcı olarak %5 artırır.",
                     "Permanently increases this module's max HP by 5%."),
         ]},
-        {"tier": TIER_SIGNATURE, "level": levels[1], "flux_cost": TALENT_FLUX_COSTS[1], "kind": "signature", "choices": [
+        {"tier": TIER_SIGNATURE, "level": levels[1], **talent_cost(rarity, 1), "kind": "signature", "choices": [
             signature_choice(CHOICE_LEFT, left),
             signature_choice(CHOICE_RIGHT, right),
         ]},
-        {"tier": TIER_TUNING, "level": levels[2], "flux_cost": TALENT_FLUX_COSTS[2], "kind": "tuning", "choices": [
+        {"tier": TIER_TUNING, "level": levels[2], **talent_cost(rarity, 2), "kind": "tuning", "choices": [
             tuning_left,
             _choice(CHOICE_RIGHT, "Verim: enerji −%12", "Efficiency: energy −12%",
                     "Bu modülün enerji tüketimini kalıcı olarak %12 azaltır.",
                     "Permanently reduces this module's energy use by 12%."),
         ]},
-        {"tier": TIER_MASTERY, "level": levels[3], "flux_cost": TALENT_FLUX_COSTS[3], "kind": "mastery", "choices": [
+        {"tier": TIER_MASTERY, "level": levels[3], **talent_cost(rarity, 3), "kind": "mastery", "choices": [
             _choice(CHOICE_LEFT, "İmza Ustalığı", "Signature Mastery", mastery_tr, mastery_en),
             _choice(CHOICE_RIGHT, "CAN +%8", "HP +8%",
                     "Bu modülün azami CAN değerini kalıcı olarak %8 artırır.",
@@ -460,7 +477,6 @@ def default_ai_talents(module_id: str, rarity: str, upgrade_level: int) -> dict[
 # "<eşik>_charge" sağ dal. Eski düz artışların (enerji +%3, dolum +%3) yerini
 # çekirdeğe özel kurallar aldı; her çekirdeğin altı yeteneği birbirinden farklıdır.
 CORE_TALENT_LEVELS = (5, 9, 13)
-CORE_TALENT_FLUX_COSTS = (25, 50, 75)
 CORE_SLOT_LEFT = "energy"
 CORE_SLOT_RIGHT = "charge"
 
@@ -582,7 +598,7 @@ CORE_TALENTS: dict[str, tuple[tuple[dict, dict], ...]] = {
 }
 
 
-def core_skill_tree(core_type: str) -> tuple[dict, ...]:
+def core_skill_tree(core_type: str, rarity: str) -> tuple[dict, ...]:
     """Çekirdeğin altı yeteneği (üç eşik × iki dal); koleksiyon görünümü ve seçim."""
     skills: list[dict] = []
     for tier, pair in enumerate(CORE_TALENTS[core_type]):
@@ -590,7 +606,7 @@ def core_skill_tree(core_type: str) -> tuple[dict, ...]:
             description_tr, description_en = _core_describe(spec["hook"], spec["params"])
             skills.append({
                 "id": f"{tier}_{slot}", "tier": str(tier), "level": CORE_TALENT_LEVELS[tier],
-                "flux_cost": CORE_TALENT_FLUX_COSTS[tier], "hook": spec["hook"],
+                **talent_cost(rarity, tier, core=True), "hook": spec["hook"],
                 "name_tr": spec["name_tr"], "name_en": spec["name_en"],
                 "description_tr": description_tr, "description_en": description_en,
             })

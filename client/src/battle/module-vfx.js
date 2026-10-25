@@ -7,7 +7,7 @@
   const operational=m=>alive(m) && m.is_powered!==false && !m.overheated;
   // v15: the first ten modules use the approved crafted WAVs (not the
   // synthesized module_* blips) and the canvas effect set.
-  const CRAFTED_CUES=Object.freeze({repair:"repair_beam",cooler:"cooling_air",emp:"emp",amplifier:"amplifier_charge",battery:"energy_transfer"});
+  const CRAFTED_CUES=Object.freeze({repair:"repair_beam",cooler:"cooling_air",emp:"emp",amplifier:"amplifier_charge",battery:"battery_charge"});
   const FIRST_TEN=new Set(["laser","shield","cooler","battery","amplifier","emp","repair","armor","pulse_cannon","missile_launcher"]);
   function ellipseHit(from,to,ellipse){
     const dx=to.x-from.x,dy=to.y-from.y,rx=ellipse.rx,ry=ellipse.ry;

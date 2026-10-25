@@ -32,6 +32,8 @@
   <link rel="stylesheet" href="./src/module-vfx-v14.css" />
   <link rel="stylesheet" href="./src/module-layers-v15.css" />
   <link rel="stylesheet" href="./src/presentation-refinements-v16.css" />
+  <link rel="stylesheet" href="./src/battle-platform-v17.css" />
+  <link rel="stylesheet" href="./src/startup-loading.css" />
   <!-- /build:styles -->
 </head>
 <!-- Açılış ekranı betikler yüklenmeden de Ev düzeninde çizilir (Ev'e özgü
@@ -40,6 +42,13 @@
   <!-- Inert asset allowlist for dynamically rendered art in both web/native
        builds. Templates do not preload or display these images. -->
   <template id="module-device-assets">
+    <img src="./assets/ui/cores-wrecked-v1/core_resonance.webp" alt="">
+    <img src="./assets/ui/cores-wrecked-v1/core_guardian.webp" alt="">
+    <img src="./assets/ui/cores-wrecked-v1/core_overdrive.webp" alt="">
+    <img src="./assets/ui/cores-wrecked-v1/core_disruptor.webp" alt="">
+    <img src="./assets/ui/cores-wrecked-v1/core_capacitor.webp" alt="">
+    <img src="./assets/ui/cores-wrecked-v1/core_phoenix.webp" alt="">
+    <img src="./assets/ui/cores-wrecked-v1/core_quantum.webp" alt="">
     <img src="./assets/ui/modules-views-v3/laser.webp" alt="">
     <img src="./assets/ui/modules-views-v3/shield.webp" alt="">
     <img src="./assets/ui/modules-views-v3/battery.webp" alt="">
@@ -50,18 +59,6 @@
     <img src="./assets/ui/modules-views-v3/cooler.webp" alt="">
     <img src="./assets/ui/modules-views-v3/pulse_cannon.webp" alt="">
     <img src="./assets/ui/modules-views-v3/missile_launcher.webp" alt="">
-    <img src="./assets/ui/modules-yaw-v2/base.webp" alt="">
-    <img src="./assets/ui/modules-yaw-v2/shield.webp" alt="">
-    <img src="./assets/ui/modules-yaw-v2/battery.webp" alt="">
-    <img src="./assets/ui/modules-yaw-v2/amplifier.webp" alt="">
-    <img src="./assets/ui/modules-yaw-v2/emp.webp" alt="">
-    <img src="./assets/ui/modules-yaw-v2/repair.webp" alt="">
-    <img src="./assets/ui/modules-yaw-v2/armor.webp" alt="">
-    <img src="./assets/ui/modules-yaw-v2/cooler.webp" alt="">
-    <img src="./assets/ui/modules-yaw-v2/pulse_cannon.webp" alt="">
-    <img src="./assets/ui/modules-yaw-v2/missile_launcher.webp" alt="">
-    <img src="./assets/ui/laser-yaw-v1/head.webp" alt="">
-    <img src="./assets/ui/laser-yaw-v1/base.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/cooler-se-work.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/cooler-sw-work.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/laser-ne.webp" alt="">
@@ -220,25 +217,22 @@
     <img src="./assets/ui/reward-chests-v1/ranks/rank_spark.webp" alt="">
     <img src="./assets/ui/reward-chests-v1/ranks/rank_spark-open.webp" alt="">
   </template>
-  <!-- Original GRIDSHARD2.1 branding and animations; the current server-backed
-       startup-loading.js still decides when the game is actually ready. -->
+  <!-- Illustrated circuit chamber: one in-scene reactor, actual API
+       readiness. No canvas, background render loop or simulated loading. -->
   <section id="startup-loading" class="boot-screen" data-state="loading" aria-labelledby="startup-title" aria-busy="true">
     <button class="review-access-launch review-access-startup" type="button" data-review-access-open>REVIEW / DEMO SIGN-IN</button>
     <div class="boot-screen-backdrop" aria-hidden="true">
-      <span class="boot-trace boot-trace-a"></span>
-      <span class="boot-trace boot-trace-b"></span>
-      <span class="boot-trace boot-trace-c"></span>
-      <span class="boot-trace boot-trace-d"></span>
+      <div class="boot-circuit-stage">
+        <img class="boot-circuit-scene" src="./assets/branding/startup-circuit-v1/circuit-scene.webp" alt="" width="1024" height="1536" decoding="async" fetchpriority="high">
+        <span class="boot-reactor-halo boot-reactor-fx"></span>
+        <span class="boot-reactor-crystal boot-reactor-fx"></span>
+        <span class="boot-reactor-spark boot-reactor-fx"></span>
+      </div>
     </div>
     <div class="boot-screen-meta">
       <span id="boot-version" class="boot-version" data-version="2.1.1">Sürüm: 2.1.1</span>
     </div>
     <div class="boot-brand">
-      <div class="boot-emblem" aria-hidden="true">
-        <span class="boot-emblem-ring"></span>
-        <span class="boot-emblem-ring boot-emblem-ring-outer"></span>
-        <img class="boot-emblem-art" src="./assets/branding/gridshard-emblem-v2.webp" alt="" width="256" height="256" decoding="async" fetchpriority="high">
-      </div>
       <h1 id="startup-title" class="boot-title">GRIDSHARD</h1>
       <p class="boot-tagline">Devreni kur. Stratejini konuştur.</p>
     </div>
@@ -298,12 +292,12 @@
       <button type="button" class="app-resource-chip app-resource-flux" data-open-screen="shop" data-resource-shop="flux" title="Akı" aria-label="Akı · mağazayı aç">
         <i class="resource-symbol resource-symbol-flux is-token" data-token="flux" aria-hidden="true"><span class="currency-art" data-currency="flux" aria-hidden="true"></span></i>
         <strong id="lobby-flux-shards">0</strong>
-        <span class="app-resource-plus" aria-hidden="true">+</span>
+        <span class="app-resource-plus" aria-hidden="true"><svg viewBox="0 0 32 36" focusable="false"><path class="resource-plus-depth" d="M11 5h10v10h10v10H21v10H11V25H1V15h10Z"/><path class="resource-plus-face" d="M11 1h10v10h10v10H21v10H11V21H1V11h10Z"/><path class="resource-plus-light" d="M12 2h8v2h-6v9H3v-1h9Z"/></svg></span>
       </button>
       <button type="button" class="app-resource-chip app-resource-credit" data-open-screen="shop" data-resource-shop="credit" title="Devre Kredisi" aria-label="Devre Kredisi · mağazayı aç">
         <i class="resource-symbol resource-symbol-credit is-token" data-token="credit" aria-hidden="true"><span class="currency-art" data-currency="credit" aria-hidden="true"></span></i>
         <strong id="lobby-circuit-credits">200</strong>
-        <span class="app-resource-plus" aria-hidden="true">+</span>
+        <span class="app-resource-plus" aria-hidden="true"><svg viewBox="0 0 32 36" focusable="false"><path class="resource-plus-depth" d="M11 5h10v10h10v10H21v10H11V25H1V15h10Z"/><path class="resource-plus-face" d="M11 1h10v10h10v10H21v10H11V21H1V11h10Z"/><path class="resource-plus-light" d="M12 2h8v2h-6v9H3v-1h9Z"/></svg></span>
       </button>
     </section>
 
@@ -514,7 +508,7 @@
     </dialog>
 
     <dialog id="reward-inbox-dialog" class="reward-inbox-dialog" aria-labelledby="reward-inbox-title">
-      <header><div><h2 id="reward-inbox-title" data-ui-icon="mail:blue">Mesaj Kutusu</h2></div><button id="reward-inbox-close" type="button" aria-label="Kapat">×</button></header>
+      <header><div><h2 id="reward-inbox-title" data-ui-icon="mail:blue">Mesaj Kutusu</h2></div><button id="reward-inbox-close" class="detail-card-close" type="button" aria-label="Kapat">×</button></header>
       <p id="reward-inbox-status" role="status" aria-live="polite"></p>
       <nav class="reward-inbox-tabs" role="tablist" aria-label="Mesaj kategorileri">
         <button id="inbox-tab-battle" type="button" role="tab" data-inbox-tab="battle" aria-controls="inbox-panel-battle" aria-selected="false" tabindex="-1">Savaş</button>
@@ -1069,7 +1063,6 @@
     <section class="profile-summary-panel friends-screen" id="friends-screen" data-screen-panel="friends" hidden>
       <header class="friends-hero">
         <h3 data-ui-icon="people:green">Arkadaşlar</h3>
-        <small id="friends-summary">0 / 100 arkadaş</small>
       </header>
       <div class="friends-toolbar">
         <button id="friend-invite-create" class="friend-invite-create" type="button">DAVET KODU OLUŞTUR</button>
@@ -1819,24 +1812,25 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
 
         <div class="duel-arena vertical-circuit-arena" id="duel-arena">
           <div id="battle-effect-layer" class="battle-effect-layer" aria-hidden="true"></div>
-          <section class="duel-side duel-enemy-side">
-            <div class="duel-side-heading duel-enemy-identity">
+          <div class="duel-side-heading duel-enemy-identity">
               <button id="enemy-battle-name" class="public-player-link battle-player-link" type="button">AI Rakip</button>
               <div id="enemy-deck-preview" class="enemy-deck-preview" aria-label="Rakip destesi"></div>
               <span id="enemy-board-status" class="board-vitals" hidden>Çekirdek 300/300</span>
-            </div>
+          </div>
+          <section class="duel-side duel-enemy-side">
+            <div class="circuit-terrain" aria-hidden="true"><span class="circuit-rim-point" data-circuit-rim="bottom"></span></div>
             <div id="enemy-board" class="board enemy-board" aria-label="Rakip Savaş Alanı"></div>
           </section>
 
           <div class="duel-vs" aria-hidden="true">VS</div>
 
           <section class="duel-side duel-player-side">
+            <div class="circuit-terrain" aria-hidden="true"><span class="circuit-rim-point" data-circuit-rim="top"></span></div>
             <div id="board" class="board" aria-label="Oyuncu Savaş Alanı"></div>
-            <div class="duel-side-heading duel-player-identity">
-              <strong id="player-battle-name">Oyuncu</strong>
-              <span id="player-board-status" class="board-vitals" hidden>Çekirdek 300/300</span>
-            </div>
           </section>
+          <div class="duel-side-heading duel-player-identity">
+            <span id="player-board-status" class="board-vitals" hidden>Çekirdek 300/300</span>
+          </div>
           <button id="battle-emoji-button" class="battle-emoji-button" type="button" aria-label="Savaş emojisi gönder" aria-haspopup="menu" aria-expanded="false" aria-controls="battle-emoji-tray" hidden>
             <span id="battle-emoji-button-glyph" aria-hidden="true">🙂</span>
           </button>
@@ -1844,9 +1838,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
       </section>
 
       <aside class="shelf-panel">
-        <div class="panel-title-row">
+        <div id="battle-current-bar" class="panel-title-row" role="meter" aria-label="Akım" aria-valuemin="0" aria-valuemax="12" aria-valuenow="6">
+          <span id="battle-current-fill" class="battle-current-fill" aria-hidden="true"></span>
           <h2>Akım</h2>
           <strong id="shelf-credit-indicator" class="resource-value resource-value-current"><i class="resource-symbol resource-symbol-current is-token" data-token="current" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/><path class="tk-l" d="M13.9 1.5 4.3 13.5h3.4L13.85 5.6Z"/><path class="tk-d" d="M19.7 10.1 8.5 22.5 9.3 18 16.4 10.1Z"/><path class="tk-o" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/></svg></i><span id="shelf-credit-value">6 / 12</span></strong>
+          <strong id="player-battle-name">Oyuncu</strong>
           <span id="shelf-lock-label">Kilitli</span>
         </div>
         <div id="module-shelf" class="module-shelf" aria-label="Modül Rafı"></div>

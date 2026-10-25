@@ -133,13 +133,13 @@ test("sunucu aşama adını göndermese de lig modülü tablodan tanınır", () 
 
 test("efsanevi modülde Akı yetmezse yükseltme kapalıdır ve nedeni yazar", () => {
   const item = {
-    definition_id:"ion_spear", unlocked:true, shards:14,
-    next_upgrade_cost:{ circuit_credits:6600, shards:14, flux_shards:20 },
+    definition_id:"ion_spear", unlocked:true, shards:20,
+    next_upgrade_cost:{ circuit_credits:16000, shards:20, flux_shards:500 },
   };
-  rules.metaProgressionState = { circuit_credits:6600, flux_shards:19, universal_module_shards:0 };
-  assert.equal(rules.moduleUpgradeBlockReason(item), "Gerekli Akı: 20");
-  assert.equal(en("Gerekli Akı: 20"), "Flux required: 20");
-  rules.metaProgressionState.flux_shards = 20;
+  rules.metaProgressionState = { circuit_credits:16000, flux_shards:499, universal_module_shards:0 };
+  assert.equal(rules.moduleUpgradeBlockReason(item), "Gerekli Akı: 500");
+  assert.equal(en("Gerekli Akı: 500"), "Flux required: 500");
+  rules.metaProgressionState.flux_shards = 500;
   assert.equal(rules.moduleUpgradeBlockReason(item), "");
   // Akı istemeyen modülde (eski sunucu alanı göndermez) kural değişmez.
   const common = { definition_id:"laser", unlocked:true, shards:2, next_upgrade_cost:{ circuit_credits:100, shards:2 } };

@@ -35,7 +35,7 @@ function fixture(screen) {
     createTeamProfileLink:() => node(), createTeamMemberRow:() => node(),
     teamState:{joined:true, is_owner:true, members:[{player_id:'peer'}], messages:[{text:'Hello'}], online_opponents:[]},
     presetMessageText:m => m.text, teamDescriptionText:() => '', boundedWinRatePercent:() => 0,
-    uiLocale:() => 'tr-TR', eventDateLabel:() => 'date', TEAM_TOURNAMENT_PHASE_TR:{},
+    uiLocale:() => 'tr-TR', eventDateLabel:() => 'date', competitionStatusLabel:() => 'date', TEAM_TOURNAMENT_PHASE_TR:{},
     eventsState:{weekly_tournament:{standings:[{position:1,player_id:'peer'}]},
       team_tournament:{standings:[{position:1,team_id:'team'}]},viewer:{}},
     sendTeamMessage() {}, recentBattleInviteTargets:new Set(), autoLaunchedBattleSessions:new Set(),
@@ -119,7 +119,7 @@ test('event directory and hidden screens never build tournament standings or fix
   const f = fixture('events');
   f.context.renderWeeklyTournament = () => f.calls.push('weekly');
   f.context.renderTeamTournament = () => f.calls.push('team');
-  vm.runInContext(extract('  function renderEventsHub() {', '  async function loadEventsView()') + ';this.render=renderEventsHub;', f.context);
+  vm.runInContext(extract('  function renderEventsHub() {', '  const eventViewReads =') + ';this.render=renderEventsHub;', f.context);
   f.context.render(); assert.deepEqual(f.calls, ['renderDailyMetaCard']);
   f.context.document.body.dataset.appScreen = 'weekly-event'; f.context.render();
   assert.deepEqual(f.calls.slice(-2), ['weekly','renderEventSubpages']);
@@ -148,4 +148,26 @@ test('weekly and team tournament tabs build only their visible standings, calend
   assert.equal(f.get('team-tournament-standings').resets, 1);
   assert.equal(f.calls.filter(c => c === 'renderTeamFixtures').length, 1);
   assert.equal(f.calls.filter(c => c === 'renderTeamTournamentCalendar').length, 1);
+});
+
+test('hidden profile details never read profile data or build deck/honor cards', () => {
+  const f = fixture('menu'); let reads=0, mounted=0, honors=0;
+  Object.assign(f.context, {
+    profileState:{viewModel:() => {reads++; return {battlePoolIds:['laser'],cosmetics:{}};}},
+    metaProgressionState:null, moduleDefinitions:[{definitionId:'laser',nameTr:'Lazer'}],
+    mountModuleEmblem:() => {mounted++;}, mountCoreEmblem() {}, applyCoreVisualIdentity() {},
+    localizedUiText:s => s, fillHonorCollection:() => {honors++;}, PROFILE_RANK_TROPHIES:[], PROFILE_BADGES:[],
+  });
+  vm.runInContext(extract('  function renderProfileHighlights() {', '  const renderedAvatarArt =')
+    + extract('  function renderProfileHonorShowcase() {', '  // Devre Koleksiyonu')
+    + ';this.details=()=>{renderProfileHighlights();renderProfileHonorShowcase();};', f.context);
+  for(const screen of ['menu','shop','modules','statistics','play']) {
+    f.context.document.body.dataset.appScreen=screen;
+    for(let i=0;i<100;i++)f.context.details();
+  }
+  assert.equal(reads,0);assert.equal(mounted,0);assert.equal(honors,0);assert.equal(f.created(),0);
+  f.context.document.body.dataset.appScreen='profile';f.context.document.hidden=true;f.context.details();
+  assert.equal(reads,0);
+  f.context.document.hidden=false;f.context.details();
+  assert.equal(reads,2);assert.equal(mounted,1);assert.equal(honors,2);
 });

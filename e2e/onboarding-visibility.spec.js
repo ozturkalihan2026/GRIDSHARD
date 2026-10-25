@@ -8,6 +8,33 @@ const html = fs.readFileSync(path.join(client, "index.html"), "utf8");
 const styles = [...html.match(/<!-- build:styles -->([\s\S]*?)<!-- \/build:styles -->/)[1]
   .matchAll(/href="([^"]+)"/g)].map(match => path.resolve(client, match[1]));
 
+test("ilk giriş eğitimi savaş çizim döngüsü olmadan menüde kendiliğinden başlar", async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = [];
+  page.on("pageerror", error => errors.push(String(error)));
+  // Exercise real default-first-launch semantics, not Settings/replay or a
+  // forced battle. Only e2e's automatic-guide opt-out is explicitly disabled.
+  await page.goto("/?e2e=1&onboarding=1", { waitUntil:"domcontentloaded" });
+  await waitForParticipantReady(page, 60_000);
+  const guide = page.locator("dialog.guide-overlay");
+  await expect(page.locator("body")).toHaveAttribute("data-app-screen", "menu");
+  await expect(page.locator("body")).toHaveAttribute("data-online-status", "idle");
+  await expect(guide).toBeVisible();
+  await expect(guide).toHaveAttribute("data-step", "welcome:");
+  await page.reload({ waitUntil:"domcontentloaded" });
+  await waitForParticipantReady(page, 60_000);
+  await expect(guide).toBeVisible();
+  await expect(guide).toHaveAttribute("data-step", "welcome:");
+  await guide.locator(".guide-next").click();
+  await expect(guide).toHaveAttribute("data-step", "open-shop:");
+  const hole = await guide.locator(".guide-hole").boundingBox();
+  expect(hole).not.toBeNull();
+  await page.mouse.click(hole.x + hole.width / 2, hole.y + hole.height / 2);
+  await expect(page.locator("body")).toHaveAttribute("data-app-screen", "shop");
+  await expect(guide).toHaveAttribute("data-step", "gift-chest:");
+  expect(errors).toEqual([]);
+});
+
 test("eğitim katmanı arayüzü örtmez; normal pencereler panel stilini korur", async ({ page }) => {
   // Isolated presentation fixture: use EVERY production stylesheet in its real
   // order and the real guide renderer, without accounts, purchases or a battle.
