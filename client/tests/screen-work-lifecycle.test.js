@@ -16,12 +16,31 @@ test("battle presentation releases scheduled work outside play and resumes with 
 
 test("core idle emitters never read hidden/off-screen/finished board geometry",()=>{
   let queries=0,emissions=0;
-  const c=vm.createContext({document:{hidden:false,body:{dataset:{appScreen:"menu",onlineStatus:"battle"}},getElementById(){queries++;return{getBoundingClientRect:()=>({left:0,top:0,width:300})};},querySelectorAll(){return[{getBoundingClientRect:()=>({left:10,top:10,width:20,height:20}),closest:()=>null}];}},activePlayMode:"online",localBattleStarted:false,localBattleFinished:false,lastCoreIdleAt:0,moduleFx:{coreIdle(){emissions++;}},battleGraphicsQuality:()=>"orta"});
+  const c=vm.createContext({document:{hidden:false,body:{dataset:{appScreen:"menu",onlineStatus:"battle"}},getElementById(){queries++;return{getBoundingClientRect:()=>({left:0,top:0,width:300})};},querySelectorAll(){return[{getBoundingClientRect:()=>({left:10,top:10,width:20,height:20}),closest:()=>null}];}},activePlayMode:"online",localBattleStarted:false,localBattleFinished:false,lastCoreIdleAt:0,battleLayoutEpoch:1,coreIdleEmitterGeometry:new WeakMap(),moduleFx:{coreIdle(){emissions++;}},battleGraphicsQuality:()=>"orta"});
   vm.runInContext(extract("  function isBattlePresentationRunning()","  function syncBattleClockVisibility()"),c);
   c.emitCoreIdleMotes(1000);assert.equal(queries,0);
   c.document.body.dataset.appScreen="play";c.document.hidden=true;c.emitCoreIdleMotes(1000);assert.equal(queries,0);
   c.document.hidden=false;c.document.body.dataset.onlineStatus="finished";c.emitCoreIdleMotes(1000);assert.equal(queries,0);
   c.document.body.dataset.onlineStatus="battle";c.emitCoreIdleMotes(1000);assert.equal(emissions,1);
+});
+
+test("core motes reuse stationary geometry, track readiness live, and remeasure on layout or replacement",()=>{
+  let reads=0,ready=false;const emitted=[];
+  const card={classList:{contains:()=>ready}};
+  let pulse={getBoundingClientRect(){reads++;return{left:40,top:60,width:20,height:20};},closest:()=>card};
+  const c=vm.createContext({document:{hidden:false,body:{dataset:{appScreen:"play",onlineStatus:"battle"}},
+    getElementById:()=>({getBoundingClientRect(){reads++;return{left:10,top:20,width:300};}}),
+    querySelectorAll:()=>[pulse]},getComputedStyle:()=>({getPropertyValue:()=>"#123456"}),
+    activePlayMode:"online",localBattleStarted:false,localBattleFinished:false,lastCoreIdleAt:0,
+    battleLayoutEpoch:1,coreIdleEmitterGeometry:new WeakMap(),moduleFx:{coreIdle:(point,options)=>emitted.push({point,options})},
+    battleGraphicsQuality:()=>"orta"});
+  vm.runInContext(extract("  function isBattlePresentationRunning()","  function syncBattleClockVisibility()"),c);
+  c.emitCoreIdleMotes(1000);assert.equal(reads,2);
+  ready=true;c.emitCoreIdleMotes(1240);assert.equal(reads,2);assert.equal(emitted[1].options.ready,true);
+  assert.deepEqual({...emitted[1].point},{x:40,y:50});
+  c.battleLayoutEpoch++;c.emitCoreIdleMotes(1480);assert.equal(reads,4);
+  pulse={...pulse};c.emitCoreIdleMotes(1720);assert.equal(reads,6);
+  c.document.hidden=true;c.emitCoreIdleMotes(1960);assert.equal(reads,6);
 });
 
 test("late navigation jobs cannot paint a later screen and release their callback record",()=>{

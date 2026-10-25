@@ -210,6 +210,10 @@ jobs:
         run: |
           node tools/battle-card-benchmark.js --assert-only
           node tools/i18n-dom-check.js --assert-only
+      - name: Battle frame budget on the platform compositor
+        env:
+          GRIDSHARD_E2E_HUMAN_MATCHMAKING: '0'
+        run: pnpm exec playwright test e2e/battle-render-budget.spec.js ${{ matrix.projects }}
       - name: Startup, current UI and mobile layouts (AI-only fixture)
         env:
           GRIDSHARD_E2E_HUMAN_MATCHMAKING: '0'
@@ -221,7 +225,6 @@ jobs:
           e2e/onboarding-visibility.spec.js
           e2e/presentation-refinements.spec.js
           e2e/battle-polish.spec.js
-          e2e/battle-render-budget.spec.js
           e2e/beta381-battle-events.spec.js e2e/battle-density.spec.js
           e2e/mobile-battle.spec.js
           ${{ matrix.projects }}

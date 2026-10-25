@@ -20889,6 +20889,9 @@
   // Deployed cores "work" in battle: motes rise from the stone every 220 ms
   // (inside the battle loop; off on low graphics via moduleFx.coreIdle).
   let lastCoreIdleAt = 0;
+  // Static socket geometry lives for one layout epoch. Weak keys release
+  // destroyed/replaced core art without retaining an old battlefield.
+  const coreIdleEmitterGeometry = new WeakMap();
   function isBattlePresentationRunning(){
     return activePlayMode === "online"
       ? document.body.dataset.onlineStatus === "battle"
@@ -20897,14 +20900,23 @@
   function emitCoreIdleMotes(now) {
     if (!moduleFx || document.hidden || document.body.dataset.appScreen !== "play" || !isBattlePresentationRunning() || !Number.isFinite(now) || now - lastCoreIdleAt < 220 || battleGraphicsQuality() === "dusuk") return;
     lastCoreIdleAt = now;
-    const layer = document.getElementById("battle-effect-layer")?.getBoundingClientRect();
-    if (!layer?.width) return;
+    let layer = null;
     for (const pulse of document.querySelectorAll('.module-device-rig[data-core="true"] .module-core-pulse')) {
-      const r = pulse.getBoundingClientRect();
-      if (!r.width) continue;
-      const card = pulse.closest("[data-module-id]"), accent = card ? getComputedStyle(card).getPropertyValue("--core-accent").trim() : "";
-      moduleFx.coreIdle({ x:r.left + r.width / 2 - layer.left, y:r.top + r.height / 2 - layer.top },
-        { color:accent || "#56f1df", k:Math.max(.6, Math.min(1.6, r.width / 40)), ready:!!card?.classList.contains("core-power-ready") });
+      let emitter = coreIdleEmitterGeometry.get(pulse);
+      if (!emitter || emitter.epoch !== battleLayoutEpoch) {
+        layer ||= document.getElementById("battle-effect-layer")?.getBoundingClientRect();
+        if (!layer?.width) return;
+        const r = pulse.getBoundingClientRect();
+        if (!r.width) continue;
+        const card = pulse.closest("[data-module-id]");
+        const accent = card ? getComputedStyle(card).getPropertyValue("--core-accent").trim() : "";
+        emitter = {epoch:battleLayoutEpoch,card,color:accent || "#56f1df",
+          point:{x:r.left + r.width / 2 - layer.left,y:r.top + r.height / 2 - layer.top},
+          k:Math.max(.6,Math.min(1.6,r.width / 40))};
+        coreIdleEmitterGeometry.set(pulse,emitter);
+      }
+      moduleFx.coreIdle(emitter.point,
+        {color:emitter.color,k:emitter.k,ready:!!emitter.card?.classList.contains("core-power-ready")});
     }
   }
 
@@ -21023,6 +21035,10 @@
       }
     }
 
+    // Read before this frame's HUD/board writes. A 220ms pulse must not force
+    // synchronous layout immediately after updating the battlefield.
+    if (!document.hidden) emitCoreIdleMotes(now);
+
     // HUD ve tahta denetimi her karede çalışmaz: sunucu mesajı uygulanınca
     // (bkz. syncOnlineServerBattle) ve yedek olarak bu turda yenilenir.
     if (
@@ -21033,8 +21049,6 @@
       renderBattleHud(now);
     }
 
-    // Read the rare idle-emitter geometry before movement writes in this frame.
-    if (!document.hidden) emitCoreIdleMotes(now);
     moduleMotion.tick(now);
     if (document.hidden) moduleFx?.clear(); else moduleFx?.tick(now);
     return frameSampling;
