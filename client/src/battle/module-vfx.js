@@ -226,7 +226,10 @@
       if(this.hidden()||this.load()>=2)return;
       const target=this.anchor(targetId),source=target&&this.anchor(sourceId,target.center);if(!source||!target)return;
       const from=source.emitter,to=target.center,fxId={repair:"repair",emp:"emp",boost:"amplifier",cool:"cooler"}[type];
-      if(type==="cool"){this.coolingMist(from,to,sourceId,targetId);if(this.useFx("cooler"))this.fx.cool(from,to,{k:this.scale(target)});return;}
+      // The approved mist already paints this complete effect. Do not also
+      // enqueue the older canvas plume (27 callbacks + 36 extra particles per
+      // target); that rendered the same cooling event twice at higher tiers.
+      if(type==="cool"){this.coolingMist(from,to,sourceId,targetId);return;}
       if(fxId&&this.useFx(fxId)){
         const k=this.scale(target);
         if(type==="repair")this.fx.repair(from,to,{k});

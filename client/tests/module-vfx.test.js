@@ -152,6 +152,18 @@ test("cooling is an outlet-oriented soft cloud fan, with bounded nodes and share
   const code=fs.readFileSync(path.join(__dirname,"../src/battle/module-vfx.js"),"utf8");
   assert.doesNotMatch(code,/vfx-cold-wisp|vfx-cold-cone|requestAnimationFrame|setTimeout|setInterval|replaceChildren/);
 });
+test("approved cooling mist has one renderer even when the canvas effects are available",()=>{
+  const f=fixture();let duplicates=0;
+  f.fx.fx={clear(){},cool(){duplicates++;}};
+  const event=f.event("module_cooled",{player_id:"own",source_module_id:"cooler",target_module_id:"laser",heat_before:20,heat_after:5});
+  f.fx.receive([event],f.snapshot);
+  assert.equal(duplicates,0,"the legacy canvas cooling stream must not run behind the painted mist");
+  assert.ok(f.fx.effects.has("support:cool:own:cooler:own:laser"));
+  assert.equal(f.queue.entries.length,1,"only the approved mist's shared expiry is scheduled");
+  assert.deepEqual(f.sounds,["cooling_air"]);
+  f.fx.receive([event],f.snapshot);assert.equal(f.queue.entries.length,1,"replays cannot restart it");
+});
+
 test("cooling cloud quality, hidden/load gates, death, session reset and reduced motion remain bounded",()=>{
   const descendants=n=>[n,...n.children.flatMap(descendants)];
   for(const[quality,expected]of[["yuksek",5],["orta",4],["dusuk",2]]){
