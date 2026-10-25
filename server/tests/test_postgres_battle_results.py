@@ -198,8 +198,10 @@ def test_live_signed_ad_bonus_survives_cache_loss_and_response_retry(battle_db, 
 
 def test_pending_result_precedes_rollover_after_a_multi_period_outage(battle_db, monkeypatch):
     pool, players, (a, b, _), ledger = battle_db
-    completed = datetime(2026, 9, 27, 22, tzinfo=timezone.utc)
-    rebooted = datetime(2026, 11, 2, 12, tzinfo=timezone.utc)
+    # The fixture explicitly opens seasons on Sep 28. Recover a result from
+    # an active season, then cross multiple complete 28-day periods offline.
+    completed = datetime(2026, 10, 25, 22, tzinfo=timezone.utc)
+    rebooted = datetime(2026, 12, 2, 12, tzinfo=timezone.utc)
     service = gateway.player_profile_service
     monkeypatch.setattr(service, "_now_func", lambda: completed)
     for owner in (a, b):

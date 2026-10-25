@@ -218,6 +218,9 @@ def smoke(image, network="host", maintenance_image=None, soak_seconds=0, admob_s
             for item in private.iterdir():
                 item.chmod(0o644)  # Disposable fixture mount for the unprivileged container.
             env = {"GRIDSHARD_RUNTIME_MODE": "production", "GRIDSHARD_RUNTIME_DATA_DIR": "/var/lib/gridshard",
+                   # This isolated fixture tests active-season premium review access.
+                   # Production compose intentionally leaves both dates empty.
+                   "GRIDSHARD_SEASON_STARTS_AT": "2026-09-28T00:00:00Z",
                    "DATABASE_URL_FILE": "/run/secrets/database_url", "GRIDSHARD_AUTH_SIGNING_KEY_FILE": "/run/secrets/auth_key",
                    "REDIS_URL": os.environ.get("GRIDSHARD_SMOKE_CONTAINER_REDIS_URL", "redis://127.0.0.1:6379/14"), "GRIDSHARD_PUBLIC_WEB_URL": "https://gridshard.invalid",
                    "GRIDSHARD_PUBLIC_WS_BASE_URL": "wss://gridshard.invalid", "GRIDSHARD_PURCHASE_TEST_MODE": "0", "GRIDSHARD_AD_TEST_MODE": "0"}
