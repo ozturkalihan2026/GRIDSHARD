@@ -70,6 +70,7 @@ try {
         if ($Offline) { $taskArguments += '--offline' }
         Invoke-TaskChecked '.\gradlew.bat' $taskArguments
     } finally { Pop-Location }
+    Invoke-TaskChecked 'python' @('tools/audit_android_r8.py','android/app/build/outputs/bundle/release/app-release.aab')
     Write-Output 'Signed APK/AAB built. This does not confirm Play approval, PGS binding, billing access or live advertising readiness.'
 } finally {
     foreach ($taskName in $taskEnvNames) { [Environment]::SetEnvironmentVariable($taskName,$taskPrevious[$taskName],'Process') }

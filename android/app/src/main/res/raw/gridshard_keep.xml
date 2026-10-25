@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- These names are resolved by getIdentifier in the native Play Games and
+     ad-safety bridges, so the resource shrinker cannot see a direct R reference. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@string/gridshard_play_games_*,@string/gridshard_ad_*" />

@@ -83,6 +83,18 @@ try {
     foreach ($taskFlag in @('firebase_messaging_auto_init_enabled', 'firebase_analytics_collection_enabled')) {
         if ($taskManifest -notmatch ('"' + $taskFlag + '"[^\n]*\n[^\n]*android:value[^\n]*(\(type 0x12\)0x0(?![0-9a-f])|="false")')) { throw "Startup flag is not disabled in the packaged manifest: $taskFlag" }
     }
+    # Read the actual optimized artifact, not only the Gradle configuration.
+    $taskR8Output = & python (Join-Path $taskRoot 'tools/audit_android_r8.py') $taskAab --output (Join-Path $Directory 'r8-audit.json')
+    if ($LASTEXITCODE -ne 0) { throw 'R8 artifact verification failed' }
+    $taskR8 = ($taskR8Output -join "`n") | ConvertFrom-Json
+    $taskResources = (& $taskTools.Aapt dump --values resources $taskApk) -join "`n"
+    if ($LASTEXITCODE -ne 0) { throw 'Packaged resources could not be read' }
+    foreach ($taskResource in @('gridshard_play_games_id','gridshard_play_games_server_client_id',
+        'gridshard_ad_app_id','gridshard_ad_ad_unit_id','gridshard_ad_mode','gridshard_ad_test_devices')) {
+        if ($taskResources -notmatch ('string/' + [regex]::Escape($taskResource) + ':')) {
+            throw "Dynamic native resource removed: $taskResource"
+        }
+    }
     $taskReceipt = [ordered]@{
         package_name = 'com.gridshardgame.app'; version_code = $VersionCode; version_name = $taskReleaseVersion;
         apk_sha256 = (Get-FileHash -LiteralPath $taskApk -Algorithm SHA256).Hash.ToLower();
@@ -92,10 +104,11 @@ try {
         private_review_material_embedded = $false; debuggable = $false;
         advertising_id_permissions = $false; uses_remote_web_url = $false;
         firebase_auto_init_disabled = $true; embedded_font_files = $taskFonts; external_font_hosts = $false;
+        r8 = $taskR8; dynamic_native_resources_verified = $true;
         device_install_verified = $false; play_uploaded = $false; full_access_attestation_verified = $false
     }
-    $taskReceipt | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $Directory 'release-audit.json') -Encoding UTF8
-    $taskReceipt | ConvertTo-Json -Depth 4
+    $taskReceipt | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $Directory 'release-audit.json') -Encoding UTF8
+    $taskReceipt | ConvertTo-Json -Depth 6
 } finally {
     $taskPassword = $null; $taskPrivateValue = $null; $taskCredential = $null; $taskVerifier = $null
 }
