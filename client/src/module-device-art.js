@@ -50,6 +50,61 @@
   }
   const views = new WeakMap();
   const headingPlans = new WeakMap();
+  // Direction paintings otherwise decode for the first time during a shot.
+  // Retain only the current deck, never the whole collection. Work is bounded
+  // and stops starting new requests as soon as the menu is no longer visible.
+  const preparedArt = new Map();
+  const preparingArt = new Set();
+  let preparationQueue = [], wantedArt = new Set(), preparationAllowed = () => false;
+  let preparedBytes = 0;
+  const PREPARED_BYTE_LIMIT = 32 * 1024 * 1024;
+  function prepareBattleArt(ids, coreId, canLoad = () => true) {
+    if (typeof global.Image !== "function") return;
+    const paths = [];
+    for (const id of [...new Set(ids || []), coreId]) {
+      const layer = LAYERS?.[id];
+      if (!layer) continue;
+      for (const part of [layer.base, layer.art, ...Object.values(layer.heads || {})]) {
+        if (part?.src) paths.push("./" + part.src);
+      }
+    }
+    wantedArt = new Set(paths.slice(0, 64));
+    preparationAllowed = canLoad;
+    for (const [src, entry] of preparedArt) {
+      if (!wantedArt.has(src)) { preparedBytes -= entry.bytes; preparedArt.delete(src); }
+    }
+    preparationQueue = [...wantedArt].filter(src => !preparedArt.has(src) && !preparingArt.has(src));
+    pumpPreparation();
+  }
+  function pumpPreparation() {
+    while (preparingArt.size < 2 && preparationQueue.length && preparationAllowed()) {
+      const src = preparationQueue.shift();
+      preparingArt.add(src);
+      const img = new global.Image();
+      img.decoding = "async";
+      let settled = false;
+      const finish = ok => {
+        if (settled) return;
+        settled = true;
+        global.clearTimeout(deadline);
+        img.onload = img.onerror = null;
+        if (!ok) img.removeAttribute?.("src");
+        preparingArt.delete(src);
+        const bytes = img.naturalWidth * img.naturalHeight * 4;
+        if (ok && bytes > 0 && wantedArt.has(src) && preparedBytes + bytes <= PREPARED_BYTE_LIMIT) {
+          preparedArt.set(src, {img, bytes}); preparedBytes += bytes;
+        }
+        pumpPreparation();
+      };
+      const deadline = global.setTimeout(() => finish(false), 2500);
+      img.onerror = () => finish(false);
+      img.onload = () => {
+        if (typeof img.decode === "function") img.decode().then(() => finish(true), () => finish(false));
+        else finish(true);
+      };
+      img.src = src;
+    }
+  }
   function headingsFor(layer) {
     let plan = headingPlans.get(layer);
     if (!plan) {
@@ -242,6 +297,6 @@
     return aimed;
   }
   const aimLaser=(host,matrix,target)=>views.get(host)?.id === "laser" ? aimDevice(host,matrix,target) : null;
-  global.GridshardModuleDeviceArt = Object.freeze({ idFor, markup, mount, pose, aimDevice, aimLaser, frameFor, emitter, pair, mountCore, stage:STAGE, coreStage:CORE_STAGE, groundYaw:GROUND_YAW });
+  global.GridshardModuleDeviceArt = Object.freeze({ idFor, markup, mount, pose, aimDevice, aimLaser, frameFor, emitter, pair, mountCore, prepareBattleArt, stage:STAGE, coreStage:CORE_STAGE, groundYaw:GROUND_YAW });
   if (typeof module !== "undefined" && module.exports) module.exports = global.GridshardModuleDeviceArt;
 })(globalThis);

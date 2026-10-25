@@ -1632,6 +1632,12 @@
 
   let renderedHomeHubSignature = null;
   function renderHomeHub() {
+    if (!document.hidden && appRouter.currentScreen === RelayAppScreen.MENU) {
+      const core = metaProgressionState?.cores?.types?.find(item => item.selected)
+        || metaProgressionState?.cores?.types?.[0];
+      window.GridshardModuleDeviceArt?.prepareBattleArt?.(deckEditorSlots.filter(Boolean), core?.id || "core_resonance",
+        () => !document.hidden && appRouter.currentScreen === RelayAppScreen.MENU);
+    }
     const signature = JSON.stringify([metaProgressionState, profileState.profile?.rating, deckEditorSlots, battlePoolPresets,
       activeBattlePoolPresetName, document.documentElement.lang, homeMatchmakingLaunchPending,
       homeMatchmakingCancelPending, isOnlineMatchmakingCancelable()]);
