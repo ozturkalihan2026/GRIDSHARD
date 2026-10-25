@@ -1,8 +1,12 @@
 # Android 2.1.1 / versionCode 10 — R8
 
-Bu sürüm yalnız Android paketleme ve doğrulamasını değiştirir. Sunucu API'si,
-web istemcisi ve görünen sürüm 2.1.1 kalır; canlı sunucuyu yeniden dağıtmak veya
-hesap/sezon geçişini tekrarlamak gerekmez. Önceki Android paketi versionCode 9'dur.
+Bu sürüm R8 ile Android paketleme ve doğrulamasını değiştirir. FPS kapısının
+incelenmesinde soğutucunun onaylı SVG sisine ek olarak eski Canvas soğutmasını
+da çalıştırdığı görüldü. Görünen sis ve ses korunarak ikinci çizici kaldırıldı
+(hedef başına 27 zamanlanmış callback ve 36 parçacık). Bu istemci düzeltmesi
+web paketinde de bulunduğundan sunucu imajı güncellenir. Sunucu API'si ve
+görünen sürüm 2.1.1 kalır; hesap/sezon geçişi tekrar çalıştırılmaz.
+Önceki Android paketi versionCode 9'dur; yeni paket versionCode 10 kullanır.
 
 ## Etkin ayarlar
 
