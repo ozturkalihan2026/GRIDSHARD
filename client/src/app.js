@@ -20903,20 +20903,23 @@
     let layer = null;
     for (const pulse of document.querySelectorAll('.module-device-rig[data-core="true"] .module-core-pulse')) {
       let emitter = coreIdleEmitterGeometry.get(pulse);
-      if (!emitter || emitter.epoch !== battleLayoutEpoch) {
+      const card = emitter?.card || pulse.closest("[data-module-id]");
+      const ready = !!card?.classList.contains("core-power-ready");
+      // Ready art changes the stone's width (46% -> 58%). Preserve that
+      // geometry, while ordinary pulses still perform no layout reads.
+      if (!emitter || emitter.epoch !== battleLayoutEpoch || emitter.ready !== ready) {
         layer ||= document.getElementById("battle-effect-layer")?.getBoundingClientRect();
         if (!layer?.width) return;
         const r = pulse.getBoundingClientRect();
         if (!r.width) continue;
-        const card = pulse.closest("[data-module-id]");
         const accent = card ? getComputedStyle(card).getPropertyValue("--core-accent").trim() : "";
-        emitter = {epoch:battleLayoutEpoch,card,color:accent || "#56f1df",
+        emitter = {epoch:battleLayoutEpoch,card,ready,color:accent || "#56f1df",
           point:{x:r.left + r.width / 2 - layer.left,y:r.top + r.height / 2 - layer.top},
           k:Math.max(.6,Math.min(1.6,r.width / 40))};
         coreIdleEmitterGeometry.set(pulse,emitter);
       }
       moduleFx.coreIdle(emitter.point,
-        {color:emitter.color,k:emitter.k,ready:!!emitter.card?.classList.contains("core-power-ready")});
+        {color:emitter.color,k:emitter.k,ready});
     }
   }
 

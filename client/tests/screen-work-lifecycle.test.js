@@ -36,11 +36,12 @@ test("core motes reuse stationary geometry, track readiness live, and remeasure 
     battleGraphicsQuality:()=>"orta"});
   vm.runInContext(extract("  function isBattlePresentationRunning()","  function syncBattleClockVisibility()"),c);
   c.emitCoreIdleMotes(1000);assert.equal(reads,2);
-  ready=true;c.emitCoreIdleMotes(1240);assert.equal(reads,2);assert.equal(emitted[1].options.ready,true);
-  assert.deepEqual({...emitted[1].point},{x:40,y:50});
-  c.battleLayoutEpoch++;c.emitCoreIdleMotes(1480);assert.equal(reads,4);
-  pulse={...pulse};c.emitCoreIdleMotes(1720);assert.equal(reads,6);
-  c.document.hidden=true;c.emitCoreIdleMotes(1960);assert.equal(reads,6);
+  c.emitCoreIdleMotes(1240);assert.equal(reads,2);
+  ready=true;c.emitCoreIdleMotes(1480);assert.equal(reads,4);assert.equal(emitted[2].options.ready,true);
+  assert.deepEqual({...emitted[2].point},{x:40,y:50});
+  c.battleLayoutEpoch++;c.emitCoreIdleMotes(1720);assert.equal(reads,6);
+  pulse={...pulse};c.emitCoreIdleMotes(1960);assert.equal(reads,8);
+  c.document.hidden=true;c.emitCoreIdleMotes(2200);assert.equal(reads,8);
 });
 
 test("late navigation jobs cannot paint a later screen and release their callback record",()=>{
