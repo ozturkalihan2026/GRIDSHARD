@@ -16,7 +16,10 @@ test('resource plus has its own upright gold geometry, not a stroked blurry font
 test('CI bounds only browser setup, keeps real FPS assertions and discovers the polish cases on all projects',()=>{
   const workflow=read('.github/workflows/quality.yml');
   assert.match(workflow,/Restore pinned Playwright browser cache/);
-  assert.match(workflow,/timeout --kill-after=10s 180s node node_modules\/@playwright\/test\/cli.js install chromium webkit/);
+  assert.match(workflow,/--kill-after=10s 180s node node_modules\/@playwright\/test\/cli.js install/);
+  assert.ok(workflow.includes('os: macos-15'));
+  assert.ok(workflow.includes('projects: --project=iphone-safari-emulated'));
+  assert.ok(workflow.includes('projects: --project=desktop-chromium --project=android-chrome-emulated'));
   assert.match(workflow,/for attempt in 1 2 3/);assert.match(workflow,/exit 1/);
   assert.ok(workflow.includes('e2e/battle-render-budget.spec.js'));
   assert.ok(workflow.includes('e2e/battle-polish.spec.js'));

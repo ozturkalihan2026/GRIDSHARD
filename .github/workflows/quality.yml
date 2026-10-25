@@ -140,11 +140,25 @@ jobs:
           --maintenance-image gridshard-maintenance-ci:${{ github.sha }}
 
   browser:
-    name: Startup / mobile layout / two-client reconnect
-    runs-on: ubuntu-latest
-    # Üç tarayıcı projesi (masaüstü, Android, iPhone/WebKit) 15 dakikayı aşıyor
-    # ve iş sonuç vermeden iptal oluyordu.
+    name: Browser contracts (${{ matrix.platform }})
+    # WebKit rendering differs by platform; Windows explicitly disables
+    # accelerated compositing. Keep the exact FPS gate on macOS WebKit for the
+    # closest-to-Safari environment, as recommended
+    # by Playwright; Chromium/Android remain on Linux. No scenario is skipped.
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Chromium-Android
+            os: ubuntu-latest
+            browsers: chromium
+            projects: --project=desktop-chromium --project=android-chrome-emulated
+          - platform: Safari-WebKit
+            os: macos-15
+            browsers: webkit
+            projects: --project=iphone-safari-emulated
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -169,21 +183,28 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install browser system dependencies
+        if: runner.os == 'Linux'
         timeout-minutes: 8
-        run: node node_modules/@playwright/test/cli.js install-deps chromium webkit
+        run: node node_modules/@playwright/test/cli.js install-deps chromium
+      - name: Ensure bounded download timeout on macOS
+        if: runner.os == 'macOS'
+        run: command -v gtimeout >/dev/null || brew install coreutils
       - name: Install pinned browsers with bounded download retries
         timeout-minutes: 10
         env:
           PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT: '60000'
         run: |
+          task_timeout=timeout
+          if [ "${{ runner.os }}" = "macOS" ]; then task_timeout=gtimeout; fi
           for attempt in 1 2 3; do
-            if timeout --kill-after=10s 180s node node_modules/@playwright/test/cli.js install chromium webkit; then
+            if "$task_timeout" --kill-after=10s 180s node node_modules/@playwright/test/cli.js install ${{ matrix.browsers }}; then
               exit 0
             fi
             echo "Browser installation attempt ${attempt}/3 failed; retrying only setup, not tests."
           done
           exit 1
       - name: Persistent card identity and translation observer work
+        if: runner.os == 'Linux'
         # No historical commit needed in CI's shallow checkout. Runtime contracts
         # assert real DOM identity/mutation counts without timing thresholds.
         run: |
@@ -203,11 +224,12 @@ jobs:
           e2e/battle-render-budget.spec.js
           e2e/beta381-battle-events.spec.js e2e/battle-density.spec.js
           e2e/mobile-battle.spec.js
+          ${{ matrix.projects }}
       - name: Preserve browser performance and failure evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gridshard-browser-evidence-${{ github.sha }}
+          name: gridshard-browser-evidence-${{ matrix.platform }}-${{ github.sha }}
           path: |
             qa_reports/playwright-results.json
             test-results/
@@ -215,6 +237,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
       - name: Two real browser clients and reconnect (explicit human fixture)
+        if: runner.os == 'Linux'
         env:
           GRIDSHARD_E2E_HUMAN_MATCHMAKING: '1'
         run: pnpm exec playwright test e2e/two-client-pvp.spec.js --project=desktop-chromium

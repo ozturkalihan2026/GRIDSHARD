@@ -1,5 +1,41 @@
 # GRIDSHARD geliştirme kontrol noktası
 
+## 25 Ekim — üretim geçişi CI yeşil olana kadar bekliyor
+
+Kullanıcı sezon/turnuva başlangıcını açık komuta bağlama, gerçek hesapların
+ilerlemesini yedekle sıfırlama, Uç'u azami ilerleme ve sıralama dışı tutma,
+botları yalnız normal oyunda tutma kararını onayladı. Kodlar ve tek işlemli
+`tools/production_cutover.py` hazır. Şu anda canlıya uygulanmadı.
+
+Yerel: 1796 sunucu testi geçti, 44 gerçek servis testi yerel servis olmadığı
+ için atlandı; ilgili gerçek PostgreSQL/Redis/image işi sonraki GitHub CI'de
+geçti. İstemci735, build10, araç24, import428 dosya/0 sorun. Sonraki CI
+fixture düzeltmeleri: sezon öncesi tarihte XP bekleyen kurtarma testi aktif
+sezona taşındı; image smoke kendi aktif-sezon fixture'ını açıkça ayarlıyor.
+Kapalı takım sayfasını çizdirmeye çalışan tarayıcı fixture'ı gerçek sayfayı
+açıyor; enkaz testi yüksek/düşük ve reduced-motion'u ayrı ayrı doğruluyor.
+Bu iki senaryo masaüstü/Android8, WebKit3 testinde geçti.
+
+`c177ea3` CI: sunucu/istemci/PostgreSQL-Redis-image yeşil, tarayıcı69/70;
+kalan tek hata Linux WebKit FPS p95/jank bütçesi. Eşikler düşürülmedi,
+test atlanmadı. Aynı WebKit senaryoları Safari'ye en yakın ortam için macOS15
+işine ayrılıyor; Chromium/Android Linux'ta. Tüm görsel/oyun senaryoları ve
+FPS eşiği korunuyor. Kaynak: https://playwright.dev/docs/browsers
+
+Windows Playwright kodu WebKit'i `--disable-accelerated-compositing` ile
+başlatıyor. Tanılar `artifacts/webkit-ci-probe-20261025/`: kapalı DOM'u
+ayırma, eşdeğer2D kamera, compositor hints, Canvas alternatifleri bütçeyi
+geçirmedi; ürüne uygulanmadı. Statik SVG duvarı aynı bitmap'e çevirme de
+tek başına yeterli değil. Windows emülasyonu fiziksel iOS ölçümü değildir.
+
+CI tümü yeşil olmadan worker durdurma/sıfırlama/dağıtım yok. Önceden
+imzalanan2.1.1/code9 AAB yalnız adaydır; son onaylı committen yeniden
+üretilecek. Canlı erişim ve özel anahtar yolu yalnız görev bağlamında;
+anahtar/değerler kaynak arşivine girmez. Kullanıcı Play Console yüklemesini
+kendisi yapacak. Devam protokolü ve doğrulama provası:
+`artifacts/production-launch-20261025/OPERATOR_PLAN.md`, `verify_cutover.py`.
+
+
 Güncelleme tarihi: 25 Ekim 2026
 
 ## Son karar — Seviye.docx içindeki üç tablo birebir uygulandı
