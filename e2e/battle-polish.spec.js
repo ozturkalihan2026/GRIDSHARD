@@ -46,19 +46,25 @@ test('dead core becomes an opaque wreck without live crystal light and rebirth r
   await page.evaluate(async src=>{const img=new Image();img.src=src.replace('cores-physical-v1','cores-wrecked-v1');await img.decode();},living);
   // Read one coherent view update, before the next authoritative LIVE server
   // snapshot restores this visual-only preview to its real, healthy state.
-  const preview=hp=>page.evaluate(hp=>{
+  const preview=(hp,quality='yuksek')=>page.evaluate(({hp,quality})=>{
     const updated=window.__GRIDSHARD_TEST_API.previewCoreState({hp});
+    // Auto quality may fall to low on shared CI/mobile runners. Assert each
+    // CSS quality contract explicitly in the same coherent preview snapshot.
+    document.body.dataset.graphics=quality;
     const card=document.querySelector('#board [data-module-id="core-1"]'),img=card.querySelector('.module-layer-art');
     return {updated,wreck:card.dataset.coreWreck||null,opacity:getComputedStyle(card).opacity,filter:getComputedStyle(card).filter,
       src:img.getAttribute('src'),pulse:card.querySelectorAll('.module-core-pulse').length,
       animation:getComputedStyle(img).animationName,imageOpacity:getComputedStyle(img).opacity};
-  },hp);
+  },{hp,quality});
   const dead=await preview(0);
   expect(dead.updated).toBe(true);expect(dead.wreck).toBe('true');expect(dead.opacity).toBe('1');expect(dead.filter).toBe('none');
   expect(dead.src).toContain('cores-wrecked-v1');expect(dead.pulse).toBe(0);expect(dead.animation).toBe('gs-core-wreck-reveal');
   await expect(page.locator('#battle-ended-banner')).toHaveCount(0);
   const revived=await preview(300);
   expect(revived.wreck).toBe(null);expect(revived.src).toBe(living);expect(revived.pulse).toBe(1);
+  const low=await preview(0,'dusuk');
+  expect(low.wreck).toBe('true');expect(low.animation).toBe('none');expect(low.imageOpacity).toBe('1');
+  await preview(300);
   await page.emulateMedia({reducedMotion:'reduce'});
   const reduced=await preview(0);expect(reduced.animation).toBe('none');expect(reduced.imageOpacity).toBe('1');
   await preview(300);

@@ -134,6 +134,10 @@ test("devre atmosferi, ortak dock ve kazanılmış profil koleksiyonu", async ({
   await expect(page.locator("#public-profile-content .profile-honor-item[data-earned=true]")).toHaveCount(1);
   await expect(page.locator("#profile-rank-trophy-collection .profile-honor-item[data-earned=true]")).toHaveCount(1);
   await page.evaluate(()=>document.getElementById("public-profile-dialog").close());
+  // Team hub deliberately skips hidden-page DOM work. Open its actual page
+  // before supplying the owned fixture, just as a player would.
+  await page.locator('[data-shell-screen="team"]').click();
+  await expect(page.locator('body')).toHaveAttribute('data-app-screen','team');
   await page.evaluate(()=>{
     const payload={joined:true,team_id:"isolated-visual-team",name:"Test Takımı",member_count:1,total_trophies:27,average_trophies:27,
       statistics:{total_matches:1,win_rate:1},members:[],requests:[],tournament:{}};
