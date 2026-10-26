@@ -79,7 +79,10 @@ def test_operator_title_requires_both_trophies_and_wins():
 
 
 def test_cosmetic_selection_roundtrips_through_player_store():
-    profiles = PlayerProfileService()
+    # Persistence is tested within one cycle; the real clock would roll this
+    # September fixture over on October 26 and erase its claimed login days.
+    now = datetime(2026, 10, 5, tzinfo=timezone.utc)
+    profiles = PlayerProfileService(now_func=lambda: now)
     repository = InMemoryPlayerDataRepository()
     store = PlayerDataStoreService(
         profile_service=profiles,
