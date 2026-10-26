@@ -1,12 +1,9 @@
 package com.gridshard.nativeui;
 
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.webkit.WebView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -25,33 +22,18 @@ public class GridshardActivity extends BridgeActivity {
         registerPlugin(GridshardPlayGames.class);
         registerPlugin(GridshardAdSafety.class);
         super.onCreate(savedInstanceState);
+        // Configure the window even when Capacitor falls back to its no-WebView
+        // screen. AndroidX owns API-specific cutout/color compatibility; our
+        // listener below remains the single owner of game/keyboard padding.
+        WindowCompat.enableEdgeToEdge(getWindow());
         if (getBridge() == null) return;
         // The system font-size setting scales WebView text by default. The game
         // UI is laid out in fixed cells, so scaled labels spill out of their
         // boxes; keep text at the designed size.
         getBridge().getWebView().getSettings().setTextZoom(100);
-        Window window = getWindow();
-        WindowCompat.setDecorFitsSystemWindows(window, false);
-        if (Build.VERSION.SDK_INT >= 28) {
-            WindowManager.LayoutParams attributes = window.getAttributes();
-            attributes.layoutInDisplayCutoutMode = Build.VERSION.SDK_INT >= 30
-                ? WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
-                : WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-            window.setAttributes(attributes);
-        }
-        // Older Android versions need explicit transparent colors; on 35+ the
-        // edge-to-edge window supplies them. No white/gray three-button scrim.
-        if (Build.VERSION.SDK_INT < 35) {
-            window.setStatusBarColor(Color.TRANSPARENT);
-            window.setNavigationBarColor(Color.TRANSPARENT);
-        }
-        if (Build.VERSION.SDK_INT >= 29) {
-            window.setStatusBarContrastEnforced(false);
-            window.setNavigationBarContrastEnforced(false);
-        }
         View viewport = (View) getBridge().getWebView().getParent();
         viewport.setBackgroundColor(Color.rgb(7, 20, 43));
-        window.getDecorView().setBackgroundColor(Color.rgb(7, 20, 43));
+        getWindow().getDecorView().setBackgroundColor(Color.rgb(7, 20, 43));
         ViewCompat.setOnApplyWindowInsetsListener(viewport, (view, insets) -> {
             int safeTypes = WindowInsetsCompat.Type.statusBars()
                 | WindowInsetsCompat.Type.captionBar() | WindowInsetsCompat.Type.displayCutout();

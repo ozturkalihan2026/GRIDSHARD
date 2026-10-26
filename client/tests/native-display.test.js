@@ -3,7 +3,8 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
-const {androidDisplayActivity} = require("../../tools/configure-native-display.js");
+const {androidDisplayActivity, configureNativeDisplay} = require("../../tools/configure-native-display.js");
+const os = require("node:os");
 const root = path.resolve(__dirname, "../..");
 
 test("native display hook is idempotent and preserves activity code/identity", () => {
@@ -35,8 +36,7 @@ test("camera reservation stays stable; bottom is edge-to-edge except for the key
   assert.match(source, /setInsetsIgnoringVisibility\(consumedTypes, Insets\.NONE\)/);
   assert.match(source, /if \(keyboardVisible \|\| getBridge\(\) == null\) return/);
   assert.match(source, /BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE/);
-  assert.match(source, /setNavigationBarContrastEnforced\(false\)/);
-  assert.match(source, /setNavigationBarColor\(Color\.TRANSPARENT\)/);
+  assert.match(source, /WindowCompat\.enableEdgeToEdge\(getWindow\(\)\)/);
   assert.match(source, /MotionEvent\.ACTION_UP\) restoreGameFullscreen\(\)/);
   assert.match(source, /boolean handled = super\.dispatchTouchEvent\(event\)/);
   assert.match(source, /return handled/);
@@ -45,6 +45,43 @@ test("camera reservation stays stable; bottom is edge-to-edge except for the key
   assert.match(source, /getWebView\(\)\.getSettings\(\)\.setTextZoom\(100\)/);
   const android = path.join(root, "android/app/src/main/java/com/gridshard/nativeui/GridshardActivity.java");
   if (fs.existsSync(android)) assert.equal(fs.readFileSync(android, "utf8"), source);
+});
+
+test("edge-to-edge is initialized once before the missing-WebView return with Core 1.17", () => {
+  const source = fs.readFileSync(path.join(root, "tools/native-templates/GridshardActivity.java"), "utf8");
+  const call = "WindowCompat.enableEdgeToEdge(getWindow());";
+  assert.equal(source.split(call).length - 1, 1);
+  assert.ok(source.indexOf("super.onCreate(savedInstanceState);") < source.indexOf(call));
+  assert.ok(source.indexOf(call) < source.indexOf("if (getBridge() == null) return;"));
+  // Do not reintroduce a parallel copy of AndroidX's version-specific policy.
+  // This only checks our activity, not the implementation bundled by AndroidX.
+  assert.doesNotMatch(source, /LAYOUT_IN_DISPLAY_CUTOUT_MODE_|layoutInDisplayCutoutMode/);
+  assert.doesNotMatch(source, /set(?:Status|Navigation)Bar(?:Color|ContrastEnforced)\(/);
+  assert.doesNotMatch(source, /setDecorFitsSystemWindows\(/);
+  assert.match(fs.readFileSync(path.join(root, "android/variables.gradle"), "utf8"), /androidxCoreVersion = '1\.17\.0'/);
+  assert.match(fs.readFileSync(path.join(root, "android/app/build.gradle"), "utf8"), /implementation "androidx\.core:core:\$androidxCoreVersion"/);
+});
+
+test("display sync copies the updated policy without changing the portrait manifest", (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "gridshard-display-"));
+  t.after(() => fs.rmSync(directory, {recursive:true, force:true}));
+  const javaRoot = path.join(directory, "app/src/main/java/com/example");
+  fs.mkdirSync(javaRoot, {recursive:true});
+  const activity = path.join(javaRoot, "MainActivity.java");
+  fs.writeFileSync(activity, "package com.example;\nimport com.getcapacitor.BridgeActivity;\npublic class MainActivity extends BridgeActivity {}\n");
+  const manifest = path.join(directory, "app/src/main/AndroidManifest.xml");
+  const manifestSource = '<manifest><application><activity android:name=".MainActivity" android:screenOrientation="portrait" /></application></manifest>';
+  fs.writeFileSync(manifest, manifestSource);
+  const target = path.join(directory, "app/src/main/java/com/gridshard/nativeui/GridshardActivity.java");
+  const template = fs.readFileSync(path.join(root, "tools/native-templates/GridshardActivity.java"), "utf8");
+  configureNativeDisplay(directory, root);
+  assert.equal(fs.readFileSync(target, "utf8"), template);
+  assert.equal(fs.readFileSync(manifest, "utf8"), manifestSource);
+  const firstActivity = fs.readFileSync(activity, "utf8");
+  configureNativeDisplay(directory, root);
+  assert.equal(fs.readFileSync(activity, "utf8"), firstActivity);
+  assert.equal(fs.readFileSync(target, "utf8"), template);
+  assert.equal(fs.readFileSync(manifest, "utf8"), manifestSource);
 });
 
 test("all settings checkboxes use the same horizontal toggle layout", () => {
