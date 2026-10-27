@@ -13,8 +13,9 @@ test('painted islands are local WebP assets within the terrain budget',()=>{
     assert.ok(bytes.length<210000);total+=bytes.length;
   }
   assert.ok(total<360000);
-  assert.equal((terrain.match(/url\(/g)||[]).length,3);
-  assert.ok(read('assets/ui/battle-approved-v5/circuit-walls.svg').length<5000);
+  assert.equal((terrain.match(/url\(/g)||[]).length,2);
+  assert.doesNotMatch(terrain,/circuit-walls\.svg/);
+  assert.match(terrain,/background:#0a1933 !important/);
   assert.doesNotMatch(terrain,/battle-platform-v2|battle-pedestal-v3|socket-block/);
 });
 
@@ -59,7 +60,11 @@ test('scene fitting reserves BOTH metal rims and the player name above the shelf
     const l=sandbox.layout({width,height,headerHeight:58,footerHeight:18,tilt});
     assert.ok(l.size>12);
     assert.ok((5*l.size+4*l.gap)*1.08<=width+.01);
+    assert.ok((5*l.size+4*l.gap)*1.08*1254/728<=width-16+.01,
+      `${width}x${height}: the entire painted island must fit, including both rims`);
     assert.ok(l.rimBottom<=height-18-4+.01,`${width}x${height} rim must finish above the identity`);
+    assert.ok(height-18-l.paintingBottom<=8.01,
+      `${width}x${height}: blue island must fill the space above the shelf`);
     assert.ok(l.playerTop>l.enemyTop+l.boardHeight);
     // Both the complete deck and name finish above the main metal rim.
     const floorTop=l.enemyTop+(l.boardHeight-l.projectedHeight)/2;

@@ -6,6 +6,7 @@ yaptığı iş gösterilir (blok %60, yansıtma %30, onarım 15 CAN …). Sayıl
 kullandığı sabit ve işlevlerden hesaplanır; ayrı bir tablo tutulmaz.
 """
 from __future__ import annotations
+from dataclasses import replace
 
 from .combat import (
     ATTACK_WINDUP_MS,
@@ -23,6 +24,7 @@ from .energy import (
     MAX_COST_REDUCTION,
 )
 from .module_cycles import (
+    PRISM_ENERGY_PER_BLOCK_CAP,
     BLOCK_BASE_RATIO,
     PHASE_WINDOW_MS,
     armor_regen_amount,
@@ -34,6 +36,7 @@ from .module_cycles import (
     sabotage_guard_ratio,
 )
 from .sabotage import (
+    sabotage_duration_ms,
     DISRUPTOR_DURATION_MS,
     EMP_DURATION_MS,
     JAMMER_DURATION_MS,
@@ -67,6 +70,7 @@ from .support import (
     PRECISION_MAX_STACKS,
     TARGETING_PER_ATTACK_CAP,
 )
+from .operations import JAMMER_BASE_REDUCTION, JAMMER_MAX_REDUCTION
 
 # Bir destek tek saldırının beklemesini en çok bu orana indirebilir (support.py).
 _SPEED_FLOOR = 0.65
@@ -129,6 +133,7 @@ def module_specials(definition, stats: dict) -> list[dict]:
             specials.append(_percent("block", "BLOK", "BLOCK", block_ratio(module_id, effect)))
         if module_id == "prism_shield":
             specials.append(_percent("conversion", "DÖNÜŞÜM", "CONVERT", prism_conversion_ratio(effect)))
+            specials.append(_special("conversion_cap", "BLOK TAVANI", "BLOCK CAP", PRISM_ENERGY_PER_BLOCK_CAP, "energy"))
         # Modülün asıl işi önce gelir (bilgi ekranının baştaki kutusu onu gösterir).
         if module_id == "reflector":
             specials.append(_percent("reflect", "YANSITMA", "REFLECT", mirror_reflect_ratio(effect)))
@@ -203,21 +208,16 @@ def module_specials(definition, stats: dict) -> list[dict]:
         return specials
 
     if definition.category == "sabotaj":
-        duration_ms = {
-            "emp": EMP_DURATION_MS,
-            "jammer": JAMMER_DURATION_MS,
-            "virus": VIRUS_DURATION_MS,
-            "disruptor": DISRUPTOR_DURATION_MS,
-        }.get(mechanic_id, 0)
-        if module_id == "singularity_projector":
-            duration_ms = SINGULARITY_DURATION_MS
-        duration_ms = max(500, round(duration_ms * effect))
+        duration_ms = sabotage_duration_ms(replace(definition, effect_multiplier=effect))
         specials.append(_seconds("duration", "ETKİ SÜRESİ", "EFFECT TIME", duration_ms))
+        if module_id == "jammer":
+            specials.append(_percent("support_reduction", "DESTEK AZALTMA", "SUPPORT REDUCTION",
+                                     min(JAMMER_MAX_REDUCTION, JAMMER_BASE_REDUCTION * effect)))
         if mechanic_id == "virus":
             ticks = max(1, -(-duration_ms // VIRUS_TICK_INTERVAL_MS))
             specials.append(_special(
                 "virus_damage", "TOPLAM HASAR", "TOTAL DAMAGE",
-                sum(VIRUS_TICK_DAMAGE + VIRUS_TICK_ESCALATION * index for index in range(ticks)), "damage",
+                sum(round((VIRUS_TICK_DAMAGE + VIRUS_TICK_ESCALATION * index) * effect) for index in range(ticks)), "damage",
             ))
         if module_id in SABOTAGE_ECHO_RATIOS:
             specials.append(_percent("echo", "YANKI SÜRESİ", "ECHO TIME", SABOTAGE_ECHO_RATIOS[module_id]))

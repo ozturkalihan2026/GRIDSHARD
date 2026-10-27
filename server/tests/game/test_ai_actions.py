@@ -95,7 +95,7 @@ def test_ai_waits_briefly_for_a_better_card_only_when_an_attack_is_live():
     ai.circuit_credits = 12
     engine.enqueue_command(BattleCommand("ai", "deploy_module", {"definition_id": "laser"}))
     engine.step()
-    ai.circuit_credits = 3
+    ai.circuit_credits = 2
     assert choose_deploy_definition(ai, engine.state.players["opponent"]) is None
-    ai.circuit_credits = 4
+    ai.circuit_credits = 3
     assert choose_deploy_definition(ai, engine.state.players["opponent"]) == "pulse_cannon"

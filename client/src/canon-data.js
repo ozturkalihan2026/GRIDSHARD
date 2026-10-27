@@ -93,9 +93,9 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "category": "saldırı",
     "rarity": "rare",
     "unlock_arena": 3,
-    "current_cost": 4,
-    "max_hp": 115,
-    "base_damage": 32,
+    "current_cost": 3,
+    "max_hp": 90,
+    "base_damage": 30,
     "unlock_trophies": 600
   },
   {
@@ -106,7 +106,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "unlock_arena": 3,
     "current_cost": 3,
     "max_hp": 105,
-    "base_damage": 28,
+    "base_damage": 32,
     "unlock_trophies": 600
   },
   {
@@ -138,8 +138,8 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "rarity": "rare",
     "unlock_arena": 5,
     "current_cost": 4,
-    "max_hp": 100,
-    "base_damage": 20,
+    "max_hp": 125,
+    "base_damage": 22,
     "unlock_trophies": 1300
   },
   {
@@ -170,7 +170,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "category": "sabotaj",
     "rarity": "rare",
     "unlock_arena": 6,
-    "current_cost": 3,
+    "current_cost": 2,
     "max_hp": 85,
     "base_damage": 0,
     "unlock_trophies": 1700
@@ -182,8 +182,8 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "rarity": "epic",
     "unlock_arena": 7,
     "current_cost": 4,
-    "max_hp": 95,
-    "base_damage": 40,
+    "max_hp": 125,
+    "base_damage": 44,
     "unlock_trophies": 2150
   },
   {
@@ -225,7 +225,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "category": "sabotaj",
     "rarity": "epic",
     "unlock_arena": 9,
-    "current_cost": 4,
+    "current_cost": 3,
     "max_hp": 70,
     "base_damage": 0,
     "unlock_trophies": 3150
@@ -248,8 +248,8 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "rarity": "epic",
     "unlock_arena": 10,
     "current_cost": 4,
-    "max_hp": 100,
-    "base_damage": 30,
+    "max_hp": 125,
+    "base_damage": 34,
     "unlock_trophies": 3650
   },
   {
@@ -269,9 +269,9 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "category": "saldırı",
     "rarity": "epic",
     "unlock_arena": 11,
-    "current_cost": 5,
-    "max_hp": 92,
-    "base_damage": 24,
+    "current_cost": 4,
+    "max_hp": 105,
+    "base_damage": 18,
     "unlock_trophies": 4200
   },
   {
@@ -304,7 +304,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "unlock_arena": 12,
     "current_cost": 3,
     "max_hp": 105,
-    "base_damage": 6,
+    "base_damage": 10,
     "unlock_trophies": 4800
   },
   {
@@ -314,7 +314,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "rarity": "epic",
     "unlock_arena": 12,
     "current_cost": 3,
-    "max_hp": 90,
+    "max_hp": 110,
     "base_damage": 0,
     "unlock_trophies": 4800
   },
@@ -324,9 +324,9 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "category": "saldırı",
     "rarity": "legendary",
     "unlock_arena": 13,
-    "current_cost": 6,
-    "max_hp": 100,
-    "base_damage": 48,
+    "current_cost": 4,
+    "max_hp": 130,
+    "base_damage": 40,
     "unlock_trophies": 5400,
     "unlock_league": "spark"
   },
@@ -348,7 +348,7 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "category": "sabotaj",
     "rarity": "legendary",
     "unlock_arena": 13,
-    "current_cost": 3,
+    "current_cost": 2,
     "max_hp": 80,
     "base_damage": 0,
     "unlock_trophies": 5400,
@@ -372,9 +372,9 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "category": "saldırı",
     "rarity": "legendary",
     "unlock_arena": 13,
-    "current_cost": 6,
-    "max_hp": 105,
-    "base_damage": 58,
+    "current_cost": 4,
+    "max_hp": 135,
+    "base_damage": 42,
     "unlock_trophies": 5400,
     "unlock_league": "spark"
   },
@@ -396,9 +396,9 @@ globalThis.GRIDSHARD_CANON_MODULES = Object.freeze([
     "category": "sabotaj",
     "rarity": "legendary",
     "unlock_arena": 13,
-    "current_cost": 3,
+    "current_cost": 4,
     "max_hp": 90,
-    "base_damage": 25,
+    "base_damage": 0,
     "unlock_trophies": 5400,
     "unlock_league": "spark"
   }

@@ -220,7 +220,7 @@ def test_repair_cleanses_jammer():
     assert JAMMER_DEBUFF_ID not in target.debuffs
 
 
-def test_cooler_reduces_emp_duration():
+def test_cooler_does_not_cleanse_emp_but_remains_powered():
     engine = make_engine()
     base_network(engine, "p1")
     cooler = add(
@@ -262,7 +262,7 @@ def test_cooler_reduces_emp_duration():
     ].expires_at_ms
 
     assert cooler.is_powered is True
-    assert after < before
+    assert after == before
 
 
 def test_resistance_never_pauses_battle():

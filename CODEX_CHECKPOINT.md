@@ -1,5 +1,185 @@
 # GRIDSHARD geliştirme kontrol noktası
 
+## 28 Ekim — 36 modül denge planı sırayla uygulandı ve test edildi
+
+Kullanıcı5aşamayı sırayla uygulayıp her testten sonra sonraki aşamayı
+şekillendirmeyi onayladı. Önceki reddedilmiş27Ekim adayı topluca alınmadı.
+Son rapor:`docs/MODUL_DENGE_UYGULAMA_20261028.md` (36kartın önce→son tablosu).
+
+1) EMP1,8sn/tavan2,4; Tekillik iki hedef1,5sn/tavan2; sonrası1,5sn toparlanma.
+Bozucu yalnız destek çıktısını%35/en çok%50azaltır. Virüs6sn/6artan darbe,
+hedef çalışır. Kesici yalnız enerji kartını keser; yankısı yok. Susturulan
+ve enerjisiz canlı modüller fiziksel hedef olarak kalır. Kesici Çekirdeğin
+mevcut tam destek kesintisi ayrı`core_support_disabled`kimliğiyle korundu.
+2) Modül CAN büyümesi%3→%4,5; ana saldırı hasarı%5→%4. Çekirdek kendi
+300→881CAN eğrisini koruyor; önceden giderilen seviye hatası duruyor.
+3) Soğutucu yalnız ısı; sabotaj temizliği0. Blok ısısı taban/seviyeli CAN
+oranıyla normalize.4) Ağır silahlarda seçici CAN, ham darbe düşüşleri;
+Füze/Ark/Plazma/Sürü rol verimi yükseldi. Prizma%8/tavan%12, normalize
+blok başına en çok3enerji. Kuantum yük bonusu%60. Omega sınıf%10/cap%22.
+Matris110CAN. Darbe3Akım/90CAN/30hasar; Bozucu2,Kesici2,Virüs3,Tekillik4.
+Diğerleri raporda. İstemci kopyası senkron; Sönümleyici adı/sırası korundu.
+
+Testte bulunan3AI hatası regresyonlarıyla düzeltildi: silahsızken sürekli
+ucuz Batarya basma; ucuz silah yüzünden daha iyi silaha hiç biriktirememe;
+karşılıklı silah yok oluşundan sonra aynı çıplak silahları sonsuza basma.
+Son durumda her iki taraf saldırısız/ön hatsız ve en az iki saldırı kaybı
+varsa bir savunma kurar, ardından yine silaha biriktirir. Yeni maç süresi
+sınırı veya yapay Çekirdek CAN kaybı eklenmedi. Statik kart basmayan eski
+testte farklı düzenlerin de iki saldırı hattını yitirebileceği doğrulandı.
+
+Son25deste/36kart/1-8-15seviye/ayna taraf/tohum matrisi2.400maç:240sn'ye
+takılan0. Medyan50,1/52,65/49,3sn; ölen modül ömrü5/5/4,8sn. Üç komut
+reddi geçici boş hücre. Ham hasarı tam CAN'dan yüksek3olay önceden yaralı
+hedeflereydi(31/148,88/194); tüm yüksek yetenek vuruşları kaldırılmış değil.
+Toplam11karşılaştırma koşumunda15.680maç; bu canlı meta kazanma oranı değil.
+
+1.959sunucu testi geçti/44ortam nedeniyle atlandı;678savaş testi dahil.
+36×16azami seviye yetenek profilinin istatistikleri/kontrol tavanı denetlendi.
+744istemci ve10paketleme testi geçti. Masaüstü/Android/WebKit savaş ve
+320/393kart panelleri geçti. WebKit tek180sn çoklu ekran testi süreye
+takıldı; ekran başına ayrılan aynı kontrollerin ikisi geçti.
+
+Kullanıcı fiziksel Android bağladı. Resmî ADB yalnız`.mobile-debug/adb-tooling`
+içinde. Yerel yalıtılmış sunucu/yeni misafirle Chrome'da36değer,6bilgi
+paneli ve gerçek savaşta Lazer/Batarya/Kalkan basımı doğrulandı; iki
+tahta15hücre,375×668CSSpx,DPR3,25,taşma0/JS hata0;5sn rAF örneği59,9FPS.
+Bu native WebView, tam tahta, uzun oturum veya gerçek iPhone testi değildir.
+Mağazadaki uygulama/hesap ve canlı oyuncu verisi kullanılmadı.
+
+Kanıt:`artifacts/balance-rollout-20261028/`; son matris`05-verified`, telefon
+`physical-android`, tarayıcı`browser-final`ve`webkit-verified`.
+Sonwebbuild:`6fc0d37cebc44444`. Canlı/PlayStore/AAB/commit/push yok.
+
+## 27 Ekim — 36 modülün tamamına ilişkin denge değerlendirmesi
+
+Kullanıcı iki ağır silah odaklı düzeltmenin 36 modülü dengeleyip
+dengelemediğini sordu; baştan tasarım değerlendirmesi istedi. Önceki
+çalışmanın bütün modülleri dengelemediği açıklandı. Bu turda oyun denge
+kaynakları değiştirilmedi; yalnız ayrı süreçlerde bellek içi deney yapıldı.
+
+`tools/audit_module_balance.py`: 36 kart/17 altılı deste, 1/8/15 seviye,
+ayna taraflar, azami seviyede iki tohum, yedi çekirdek türü ve mevcut AI
+modül yetenekleri/çekirdek güçleriyle 3.264 maç. Ek 66 tek hedef ve 168
+termal/kontrol deneyi. Bütün çekirdek yetenek dalları ve canlı meta yok.
+
+Bulgu: mevcut CAN artışı 1→15'te yaklaşık%51, teorik DPS artışı%122.
+operations.py dört sabotaj ailesini (Virüs dahil) tam susturma sayıyor ve
+hedef listesinden çıkarıyor. Korumasız tek modül/90 sn kontrollü deneyde
+seviye15 Bozucu/Virüs/Tekillik yaklaşık%98–99 çalışma kesiyor.
+Soğutucu EMP/hat süresini taban1.800ms/darbe kısaltıyor. Mutlak engellenen
+hasar ısıya, Prizma blok hasarı enerjiye dönüştüğü için seviye bütçesi
+ayrıca incelenmeli.
+
+İlk aday: CAN büyümesi%4,5, hasar%4; 36 taban kart değeri, kontrol süre
+tavanı (Virüs hariç), normalize savunma ısısı, azaltılmış Prizma/Soğutucu
+temizliği ve yükseltilmiş Plazma/Sürü yan vuruşları. 15. seviye maç medyanı
+43→62,95sn; ölen modül ömrü3,4→5,4sn. Kuantum tek hedef testi2vuruş/2,4sn
+→4vuruş/7,9sn; fakat aday Onarım/Darbe destelerini aşırı yükseltti,
+Sürü/Hassas odak zayıf kaldı, orta seviyede iki maç240sn'de bitmedi.
+ADAY TAM DENGE OLARAK REDDEDİLDİ; uygulanmadı. JSON bunu açıkça işaretler.
+
+Tasarım kararı: EMP kısa tam susturma; Bozucu destek verimi; Virüs yalnız
+tırmanan hasar; Kesici enerji hattı; Tekillik iki hedefte kısa kontrol.
+Soğutucu termal seçim, Bariyer kontrol karşı hamlesi. Bu davranış değişimleri
+henüz uygulanmadı. Her kartın rolü/mevcut→deney HP/hasar/Akımı raporda.
+
+Rapor:`docs/MODUL_DENGE_DEGERLENDIRMESI_20261027.md`.
+Deney JSON:`docs/MODUL_DENGE_ADAYI_20261027.json`.
+Kanıt:`artifacts/module-balance-audit-20261027/` (envanter, eşleşmeler,
+özetler, izole deneyler, kaynak SHA256). Canlı/AAB/commit/push yok.
+
+## 27 Ekim — savaş arkasında düz koyu zemin denemesi
+
+Kullanıcı devrelerin ARKASINDAKİ düz gri blok desenini kaldırıp blokların
+arasındaki koyu rengi kullanmayı istedi. Arena arkasındaki
+`battle-approved-v5/circuit-walls.svg` çizimi devreden çıkarıldı; zemin
+SVG'nin kendi taban rengi#0a1933. Kırmızı/mavi boyalı adalar, hücreler ve
+modüller değişmedi; kaynak SVG silinmedi. Yeni animasyon/efekt/resim yok.
+6 ilgili istemci testi, web build9fa5a2e7e2603b75 ve Android savaş kontrolü
+geçti; 320/393/1280/1920px'de düz#0a1933 zemin, adalar, göstergeler ve
+dokunma hizası doğrulandı. Kanıt:`artifacts/battle-dark-backdrop-20261027/`.
+Yerel görsel deneme; canlı dağıtım veya AAB yok.
+
+## 27 Ekim — savaş emoji düğmesi bellek denetimi ve temizlik
+
+1050 aç/kapa ve GC ölçümünde önceki kodda kalıcı artan DOM/dinleyici
+sızıntısı görülmedi. Ancak kontrol her HUD okumasında tam profil kopyası
+üretiyordu:10.000 yenilemede10.000→0 kopya. Yalnız mevcut kozmetik alanı
+okunur; aynı düğme resmi bekleme durumunda yeniden kurulmaz.
+
+Kapalı tepsi seçenekleri bırakılır; çıkış/bitiş/arka planda balonlar ve
+bekleme timeout'u hemen temizlenir. Balonlar ortak süpürme kuyruğundadır,
+tahta başına1/toplam2 sınırı vardır. Arka plan sonrası aynı maçın3sn bekleme
+son tarihi korunur; yeni maçta sıfırlanır. Sunucu sözleşmesi değişmedi.
+
+744 istemci,10 paketleme,2 sunucu emoji ve masaüstü/Android'de4 tarayıcı
+testi geçti. Testler profil kopyaları,1050 aç/kapa,400 görsel olayda sınır,
+arka plan/yeni maç/bitiş ve gerçek sunucuda iki emoji gönderimini kapsar.
+Fiziksel cihaz RAM/GPU ölçümü veya genel FPS sorunu çözüldü iddiası yok.
+Test kancası yalnız E2E istek yakalamasında; ürün API'sine eklenmedi.
+Güncel web build:`f340504218263075`. Canlı/AAB/commit/push yok.
+Belge:`docs/SAVAS_EMOJI_BELLEK_DENETIMI_20261027.md`.
+Kanıt:`artifacts/battle-emoji-memory-20261027/`.
+
+## 27 Ekim — mavi devrenin altındaki büyük boşluk düzeltmesi
+
+Kullanıcı telefon önizlemesinde mavi adanın altında kalan geniş boşluğu
+reddetti. Önceki yatay sığdırma iki devreyi arenanın üstüne yığıyordu.
+`circuitSceneLayout` artık oyuncu resminin gerçek altını (1254−260)/404
+kaydıyla alt rafa8px payla bağlar; kısa ekranda eski güvenli asgari devre
+aralığı korunur. Gizli oyuncu CAN metninin eski18px yer ayırması kaldırıldı;
+oyuncu adı mevcut Akım barında. VS iki gerçek metal kenarı izler. Yatay
+sığma, eşit hücreler, resim/kablo/gösterge/dokunma kaydı aynı.
+
+744 istemci testi geçti. Android/masaüstü/WebKit savaş kontrolleri
+320/393/1280/1920px ve tüm modül/çekirdek çizimleriyle geçti. Alt boşluk
+en çok9px sınırı gerçek tarayıcıda denetlenir; Android son görüntüleri
+`artifacts/battle-vertical-fill-20261027/android-final/` altında.
+Güncel web build:`7a8ec740e3f24860`.
+Kanıt:`artifacts/battle-vertical-fill-20261027/`.
+Bu yerel yerleşim düzeltmesidir; canlı dağıtım veya AAB yok.
+
+## 27 Ekim — üretim başvurusu kabul edildi; telefon bulguları yerelde düzeltildi
+
+Kullanıcı Google Play üretim başvurusunun kabul edildiğini ve Uç hesabının
+azami seviyede olduğunu bildirdi. Mağaza adresi:
+https://play.google.com/store/apps/details?id=com.gridshardgame.app .
+Bu turda canlı hesaplara/ortama erişilmedi; önceki 25 Ekim geçiş notu tarihçedir.
+Yeni bir sıfırlama veya sezon/turnuva başlangıcı uygulanmadı.
+
+27 Ekim telefon görüntülerindeki dört görünüm sorunu düzeltildi: onaylı
+22 Ekim mağaza reaktörü web/Android/iOS uygulama ikonlarına bağlandı; Android
+beş yoğunlukta30 PNG aynı kaynakla eşleşir. Canonical kaynak
+`client/assets/branding/gridshard-app-icon-source.png`, teknik dışa aktarım
+`tools/prepare_app_icons.py`; sync kancası korunur. Kamera sığdırması artık
+yalnız hücreleri değil1254/728 resim/zemin oranıyla devrenin TAM genişliğini
+hesaplar ve iki yanda8px pay bırakır. Kullanıcının ek düzeltmesiyle ÖDÜL
+LİSTESİ başlığın sağ ucunda22px/9px yazı; iki sütunlu tek satır zorunlu,
+Kartlar/Çekirdek sekmesi mevcut fiziksel core_resonance resmiyle.
+
+Savaşta kritik kök neden: çekirdek seviye15'te de300 CAN kalıyordu. Ortak
+seviye eğrisi300×1.08^(sv−1), azamide881 CAN; API/bilgi ekranı/motor aynı.
+AI kurulumdan sonra seviye eşlerken hazır çekirdek de start öncesi bir kez
+güncellenir; tekrar start hasarı iyileştirmez. Kuantum Topu ve İyon Mızrağı
+Akımı6→4, Kuantum Tekrarlayıcı5→4; gömülü istemci kanonu da aynı.
+Aksiyon enerjisi ısı katsayısı2.2→0.9; diğer ısı kuralları aynı.
+Sv15 soğutucusuz ilk aşırı ısınma Kuantum15.1→41.6sn, İyon18.4→50.6sn.
+Karşılaştırma16 sentetik AI maçı da içerir; gerçek oyuncu kazanma oranı veya
+tüm destelerin dengelendiği garantisi değildir, aktif çekirdek güçleri yok.
+
+Doğrulama:1802 sunucu geçti/44 gerçek servis testi atlandı;744 istemci ve
+10 paketleme geçti. Son kompakt başlık web build9a72673b0c29fd63; 320/393px
+masaüstü/Android ek kontrolü2/2 geçti. Kanıt:`artifacts/shop-heading-compact-20261027/`.
+Önceki paket tarayıcı doğrulaması: üç profilde
+3 savaş,3 çekirdek bilgisi; masaüstü/Android'de2 mağaza+çekirdek ikon testi
+geçti. 320/393px başlık hizası, tam ada genişliği, dokunma,36 modül/7 çekirdek,
+gösterge/enerji/özel güç gezinmesi doğrulandı. Önceki FPS yayın kapısı bu görsel
+testlerle kapandı sayılmaz. Yeni AAB/APK, canlı yayın, commit/push yok.
+Kurulu uygulama ikonu yeni native paket gerektirir.
+Belge:`docs/URETIM_SONRASI_DUZELTMELER_20261027.md`.
+Kanıt:`artifacts/production-fixes-20261027/`.
+
 ## 25 Ekim — üretim geçişi CI yeşil olana kadar bekliyor
 
 Kullanıcı sezon/turnuva başlangıcını açık komuta bağlama, gerçek hesapların

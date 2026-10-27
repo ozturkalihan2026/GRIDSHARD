@@ -38,7 +38,7 @@ def test_role_metadata_contains_energy_damage_and_cooldown():
     # Saldırılar enerjiyi atış anında öder; sürekli bakım enerjileri yoktur.
     assert pulse.energy_consumption == 0.0
     assert pulse.action_energy_cost == 5.0
-    assert pulse.base_damage == 32.0
+    assert pulse.base_damage == 30.0
     assert pulse.cooldown_ms == 2500
 
     armor = get_module_definition("armor")

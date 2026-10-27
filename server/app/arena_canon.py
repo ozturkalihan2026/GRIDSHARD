@@ -563,8 +563,8 @@ def module_stats(definition, upgrade_level: int, talents: dict | None = None) ->
     action_cost = float(getattr(definition, "action_energy_cost", 0.0) or 0.0) * talent["energy"]
     action_rate = action_cost / (cooldown_ms / 1000) if action_cost > 0 and cooldown_ms > 0 else 0.0
     stats = {"level": level + 1, "rarity": rarity,
-            "max_hp": round(definition.max_hp * rarity_profile["hp"] * 1.03 ** level * resilience),
-            "base_damage": round(definition.base_damage * rarity_profile["attack"] * 1.05 ** level * power, 2),
+            "max_hp": round(definition.max_hp * rarity_profile["hp"] * 1.045 ** level * resilience),
+            "base_damage": round(definition.base_damage * rarity_profile["attack"] * 1.04 ** level * power, 2),
             "cooldown_ms": cooldown_ms,
             "effect_multiplier": rarity_profile["effect"] * (1.03 if definition.category == "sabotaj" else 1.035) ** level * power * talent["effect"],
             "energy_consumption": upkeep,

@@ -46,7 +46,7 @@ def test_module_catalog_exposes_real_engine_values():
 
     emp=by_id(body,"emp")
     assert any(
-        "2.5 sn" in line
+        "1.8 sn" in line
         for line in emp["effect_lines"]
     )
 

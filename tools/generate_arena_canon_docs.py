@@ -258,14 +258,17 @@ def cycle_canon_lines() -> list[str]:
     add("# GRIDSHARD 2.1 — Modül Çevrim Kanonu")
     add("")
     add("Bu belge `server/app/game/catalog.py`, `module_cycles.py` ve `module_sheet.py` verisinden üretilir "
-        "(13 Ekim 2026). Çelişki olursa kod geçerlidir.")
+        "(28 Ekim 2026 denge uygulaması). Çelişki olursa kod geçerlidir.")
     add("")
     add("Her modül kendi çevrimiyle çalışır ve çevrim seviyeyle kısalır (seviye başına %0,8; seviye 15'te yaklaşık "
-        "%10,6). CAN seviye başına %3, hasar %5 artar; modüle özgü değerler etki çarpanıyla (seviye başına %3,5; "
+        "%10,6). CAN seviye başına %4,5, hasar %4 artar; modüle özgü değerler etki çarpanıyla (seviye başına %3,5; "
         "sabotajda %3) büyür. Yüksek tabanlı oranlar (blok, yansıtma, kubbe, sabotaj direnci, dönüşüm) azalan "
         "hızla büyür ve kendi tavanında durur. Bilgi ekranı aynı sayıları `module_stats` üzerinden gösterir.")
     add("")
     add("Çevrim türleri:")
+    add("Kontrol süreleri kendi tavanında durur. Virüs süresi 6 sn sabittir; hasarı büyür. "
+        "EMP/Tekillik sonrası 1,5 sn toparlanma vardır. Soğutucu sabotaj süresini kısaltmaz. "
+        "Prizma dönüşümü seviye etkisinden arındırılmış blok hasarına uygulanır ve blok başına en çok 3 enerjidir.")
     add("")
     add("- **Eylem aralığı** (saldırı, onarım, sabotaj): modül çevrimi dolunca işini yapar; enerji yetmezse bekler.")
     add("- **Savunma yükü** (Kalkan, Prizma Kalkanı, Yansıtıcı, Koruyucu Kubbe, Bariyer): çevrim dolunca yük hazır "

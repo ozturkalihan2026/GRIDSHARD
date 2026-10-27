@@ -15,7 +15,7 @@ from .module_cycles import (
     mirror_reflect_ratio,
     passive_reduction,
 )
-from .operations import module_is_operational
+from .operations import module_is_operational, module_is_present
 
 
 ATTACK_COOLDOWN_ID = "attack"
@@ -69,7 +69,7 @@ def selectable_targets(player: PlayerBattleState) -> list[BattleModule]:
     active = [
         module
         for module in player.modules.values()
-        if module_is_operational(module)
+        if module_is_present(module)
     ]
 
     normal_targets = [
@@ -139,17 +139,17 @@ ATTACK_WINDUP_MS = {"missile_launcher": 700, "plasma_mortar": 1200}
 SECONDARY_HIT_RATIOS = {
     "arc_cannon": 0.45,
     "drone_bay": 0.25,
-    "plasma_mortar": 0.35,
+    "plasma_mortar": 0.55,
     "ion_spear": 0.55,
 }
 QUANTUM_REPEAT_HITS = 4
 QUANTUM_REPEAT_ECHO_RATIO = 0.65
 SWARM_RELEASE_DRONES = 4
 SWARM_RELEASE_TARGETS = 3
-SWARM_RELEASE_RATIO_PER_TARGET = 0.25
-QUANTUM_CHARGE_DAMAGE_BONUS = 0.80
+SWARM_RELEASE_RATIO_PER_TARGET = 0.45
+QUANTUM_CHARGE_DAMAGE_BONUS = 0.60
 # Seviye 1 değeri; savaşta oran module_cycles.prism_conversion_ratio ile büyür.
-PRISM_ENERGY_CONVERSION = 0.25
+PRISM_ENERGY_CONVERSION = 0.08
 
 # Delici silahlar ham güç almaz; yüksek enerji ve ısı karşılığında savunma
 # azaltımının bir kısmını yok sayar (oran = azaltımın korunan payı).

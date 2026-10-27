@@ -11300,7 +11300,7 @@ body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active .lobb
   height:40px !important;
 }
 
-/* Painted shop chests: art only; keep the existing 63×54 slot and price rows. */
+/* Painted shop chests: fill the slot owned by shop-rewards-v6.css. */
 .chest-visual.chest-painted-visual {
   filter:none !important;
 }

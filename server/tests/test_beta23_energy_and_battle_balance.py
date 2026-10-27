@@ -1,4 +1,5 @@
 from app.game.simulation import (
+    _install_layout,
     BALANCED_LAYOUT,
     OFFENSE_LAYOUT,
     DEFENSE_LAYOUT,
@@ -7,6 +8,8 @@ from app.game.simulation import (
     ARMOR_COUNTER_LAYOUT,
     run_round_robin,
 )
+from app.game.engine import BattleEngine
+from app.game.models import BattleState, ModuleStatus
 
 
 def test_six_layout_round_robin_resolves_without_a_timer_and_has_multiple_counters():
@@ -26,19 +29,23 @@ def test_six_layout_round_robin_resolves_without_a_timer_and_has_multiple_counte
 
     assert len(report.matches)==30
 
-    # Süre sınırı yoktur. Bu koşum kart basmadığı için yalnız birebir aynı
-    # iki düzen, iki tarafın saldırıları aynı anda yok olunca kilitlenebilir;
-    # gerçek maçta oyuncular Akım ile yeni kart basar.
+    # This fixture never rebuilds. Different layouts can also simultaneously
+    # lose their final weapons. Verify that physical stalemate explicitly;
+    # dynamic AI rebuilding is covered separately by the rollout matrix.
     by_id={layout.id:layout for layout in layouts}
     for match in report.matches:
         if match.timed_out:
             first=by_id[match.layout_a_id]
             second=by_id[match.layout_b_id]
-            assert [
-                (item.definition_id,item.x,item.y) for item in first.modules
-            ]==[
-                (item.definition_id,item.x,item.y) for item in second.modules
-            ]
+            engine=BattleEngine(BattleState(battle_id='static-stalemate'))
+            for owner,layout in (('a',first),('b',second)):
+                engine.add_player(owner);_install_layout(engine,owner,layout)
+            engine.start()
+            for _ in range(6000):engine.step()
+            assert all(not any(m.status==ModuleStatus.ACTIVE and m.hp>0
+                               and m.definition.base_damage>0
+                               for m in player.modules.values())
+                       for player in engine.state.players.values())
 
     # There is no single layout winning every pairing.
     winning_layouts={

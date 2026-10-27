@@ -23,12 +23,10 @@ def add(engine, player_id, instance_id, definition_id, x, y):
     "effect_id",
     (
         "emp_disabled",
-        "support_jammed",
-        "virus",
-        "line_disrupted",
+        "singularity_disabled",
     ),
 )
-def test_every_sabotage_family_suspends_the_affected_module(effect_id):
+def test_hard_control_suspends_work_but_not_physical_presence(effect_id):
     engine = BattleEngine(BattleState(battle_id=f"beta55-{effect_id}"))
     player = engine.add_player("p1")
     add(engine, "p1", "core", "core", 2, 1)
@@ -67,12 +65,11 @@ def test_suspension_rule_covers_every_catalog_module(definition_id):
     assert module.energy_required_last_tick == 0
 
 
-def test_sabotaged_shield_does_not_attract_an_attack():
+def test_sabotaged_shield_remains_a_physical_target():
     engine = BattleEngine(BattleState(battle_id="beta55-targeting"))
     player = engine.add_player("p2")
     add(engine, "p2", "core", "core", 2, 1)
     shield = add(engine, "p2", "shield", "shield", 0, 0)
-    armor = add(engine, "p2", "armor", "armor", 1, 0)
     shield.debuffs["emp_disabled"] = TimedModuleEffect(
         id="emp_disabled",
         name_tr="EMP",
@@ -80,17 +77,17 @@ def test_sabotaged_shield_does_not_attract_an_attack():
     )
     engine._process_energy_flow()
 
-    assert select_target(player).instance_id == armor.instance_id
+    assert select_target(player).instance_id == shield.instance_id
 
 
 def test_current_costs_follow_the_r2_balance_table():
     # Beta.72 R2: maliyet enderliği değil ölçülen güç/tempo değerini izler.
     r2 = {
-        "laser": 3, "shield": 3, "armor": 3, "repair": 3, "pulse_cannon": 4,
-        "quantum_repeater": 5, "ion_spear": 6, "quantum_cannon": 6,
+        "laser": 3, "shield": 3, "armor": 3, "repair": 3, "pulse_cannon": 3,
+        "quantum_repeater": 4, "ion_spear": 4, "quantum_cannon": 4,
         "prism_shield": 4, "phoenix_repair": 4, "reflector": 3, "swarm_fabricator": 3,
         "chrono_relay": 3, "overclock_unit": 3, "precision_matrix": 3,
-        "omega_amplifier": 3, "disruptor": 3, "singularity_projector": 3,
+        "omega_amplifier": 3, "disruptor": 2, "singularity_projector": 4,
     }
     for module_id, cost in r2.items():
         assert MODULES[module_id]["current_cost"] == cost, module_id

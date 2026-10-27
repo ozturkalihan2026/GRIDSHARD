@@ -226,7 +226,7 @@ def test_stat_branches_change_only_their_own_value():
     laser = BASIC_MODULE_DEFINITIONS["laser"]
     base = module_stats(laser, 4)
     assert module_stats(laser, 4, {"0": "power"})["base_damage"] == pytest.approx(base["base_damage"] * 1.03, abs=0.01)
-    assert module_stats(laser, 4, {"0": "resilience"})["max_hp"] == round(laser.max_hp * 1.03 ** 4 * 1.05)
+    assert module_stats(laser, 4, {"0": "resilience"})["max_hp"] == round(laser.max_hp * 1.045 ** 4 * 1.05)
     # İmza eşiği sayısal değer değiştirmez.
     for choice in ("power", "resilience"):
         assert module_stats(laser, 4, {"1": choice}) == base
@@ -237,7 +237,7 @@ def test_stat_branches_change_only_their_own_value():
     lean = module_stats(laser, 4, {"2": "resilience"})
     assert lean["action_energy_cost"] == pytest.approx(round(1.2 * 0.88, 2))
     assert lean["energy_per_second"] < base["energy_per_second"]
-    assert module_stats(laser, 4, {"3": "resilience"})["max_hp"] == round(laser.max_hp * 1.03 ** 4 * 1.08)
+    assert module_stats(laser, 4, {"3": "resilience"})["max_hp"] == round(laser.max_hp * 1.045 ** 4 * 1.08)
     assert module_stats(laser, 4, {"3": "power"}) == base
     # Çevrimi olmayan modülde (yalnız Akım Dengeleyici) hız dalı etkiyi artırır.
     balancer = BASIC_MODULE_DEFINITIONS["current_balancer"]

@@ -13,7 +13,8 @@
   box-shadow:none !important;
 }
 :root body[data-app-screen="play"]:is([data-local-status="battle"],[data-online-status="battle"]) .arena-panel {
-  background:#07132a url("../assets/ui/battle-approved-v5/circuit-walls.svg") center / 100% 100% no-repeat !important;
+  /* Reuse the dark color formerly visible between the backdrop's blocks. */
+  background:#0a1933 !important;
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena {
   position:relative; z-index:0; background:transparent !important;
@@ -112,6 +113,8 @@
 .circuit-rim-point[data-circuit-rim="bottom"] { top:138.613861%; }
 :root body[data-app-screen="play"] .vertical-circuit-arena .duel-player-identity {
   position:absolute; left:0; right:0; bottom:1px; width:100%;
+  /* The player name lives in the Current bar; hidden vitals reserve no row. */
+  min-height:0 !important;
   margin:0 !important; padding:0 !important;
   text-align:center; pointer-events:none;
 }

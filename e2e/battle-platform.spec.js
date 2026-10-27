@@ -99,6 +99,12 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
         return {cols:s.gridTemplateColumns.split(' ').length,rows:s.gridTemplateRows.split(' ').length,
           count:el.querySelectorAll('.board-cell').length,light:s.getPropertyValue('--circuit-light').trim(),
           art:painting.backgroundImage,oldFrame:s.borderImageSource,groundZ:+g.zIndex,boardZ:+s.zIndex,
+          fullIslandFits:(()=>{
+            const a=ground.getBoundingClientRect(),matrix=new DOMMatrix(g.transform);
+            const zoom=Math.hypot(matrix.m11,matrix.m12),width=parseFloat(painting.width)*zoom;
+            const center=a.left+a.width/2;
+            return center-width/2>=arena.left+6&&center+width/2<=arena.right-6;
+          })(),
           groundTransform:g.transform,boardTransform:s.transform,groundOrigin:g.transformOrigin,boardOrigin:s.transformOrigin,
           gapError:Math.max(Math.abs(parseFloat(s.columnGap)-el.clientWidth*7/728),
             Math.abs(parseFloat(s.rowGap)-el.clientHeight*7/404)),
@@ -133,7 +139,7 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
       const footerHeight=arenaEl.querySelector('.duel-player-identity').offsetHeight;
       const beforeSize=Math.max(12,Math.min(84,
         ((arenaEl.clientHeight-headerHeight-footerHeight-50-baseBetween)/(3.6*yScale)-2*baseGap)/3,
-        (arenaEl.clientWidth*.9/zoom-4*baseGap)/5));
+        ((arenaEl.clientWidth-16)*(728/1254)/(zoom*1.10)-4*baseGap)/5));
       const liveBuses=[...document.querySelectorAll('.vertical-circuit-arena .circuit-cable-current[visibility="visible"]')].map(path=>{
         const s=getComputedStyle(path);
         return {width:parseFloat(s.strokeWidth),opacity:+s.opacity,display:s.display,length:path.getTotalLength()};
@@ -150,6 +156,7 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
         vsError:Math.abs(vs.top+vs.height/2-(upperRim.top+lowerRim.top)/2),
         vsInGap:vs.top+vs.height/2>upperRim.top&&vs.top+vs.height/2<lowerRim.top,
         playerRimFits:playerGround.bottom+playerGround.height*.48<=footer.top-3,
+        playerPaintingBottomGap:footer.top-(playerGround.top+playerGround.height*(1254-260)/404),
         coreHealth,
         circuitScale:parseFloat(sceneStyle.getPropertyValue('--gs-battle-card-size'))/beforeSize,
         equipmentScale:parseFloat(sceneStyle.getPropertyValue('--gs-equipment-size'))/(beforeSize*.92),
@@ -167,6 +174,7 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
         hit:{tag:hit?.tagName,classes:hit?.getAttribute('class'),cell:hit?.closest('.board-cell')?.dataset,
           point:[r.left+r.width/2,r.top+r.height/2]},
         environment:getComputedStyle(document.querySelector('.arena-panel')).backgroundImage,
+        environmentColor:getComputedStyle(document.querySelector('.arena-panel')).backgroundColor,
         rootBackground:getComputedStyle(document.body).backgroundImage,
         arenaShadow:getComputedStyle(document.querySelector('.arena-panel')).boxShadow,
         enemyExtension:getComputedStyle(document.querySelector('.duel-enemy-side > .circuit-terrain'),'::after').backgroundImage,
@@ -186,12 +194,14 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
     expect(layout.vsError).toBeLessThan(1);
     expect(layout.vsInGap).toBe(true);
     expect(layout.playerRimFits).toBe(true);
+    expect(layout.playerPaintingBottomGap).toBeLessThanOrEqual(9);
     expect(layout.circuitScale).toBeCloseTo(1.10,3);
     expect(layout.equipmentScale/(1.15*1.10)).toBeCloseTo(1.10,3);
     expect(layout.enemyHeaderClear).toBe(true);
     expect(layout.liveBuses.length).toBeGreaterThan(0);
     expect(layout.liveBuses.every(bus=>bus.width>=3&&bus.opacity===1&&bus.display!=='none'&&bus.length>0)).toBe(true);
     expect(layout.coreCentred).toBe(true);
+    expect(layout.boards.every(b=>b.fullIslandFits)).toBe(true);
     expect(layout.boards.map(b=>[b.cols,b.rows,b.count])).toEqual([[5,3,15],[5,3,15]]);
     expect(layout.boards[1].bottom).toBeLessThan(layout.boards[0].top);
     expect(layout.boards.map(b=>b.light)).toEqual(['#73fff0','#ff583d']);
@@ -213,7 +223,8 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
       &&Math.abs(b.frameOpening.right-b.frameOpening.floorWidth)<1
       &&Math.abs(b.frameOpening.top)<1
       &&Math.abs(b.frameOpening.bottom-b.frameOpening.floorHeight)<1)).toBe(true);
-    expect(layout.environment).toContain('circuit-walls.svg');
+    expect(layout.environment).toBe('none');
+    expect(layout.environmentColor).toBe('rgb(10, 25, 51)');
     expect(layout.rootBackground).toBe('none');expect(layout.arenaShadow).toBe('none');
     expect(layout.enemyExtension).toContain('island-enemy.webp');
     expect(layout.legacyGrid).toBe('none');

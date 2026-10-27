@@ -489,6 +489,10 @@ def generate(root=ROOT):
     mark = render_emblem(2600, 760).resize((1300, 1300), Image.LANCZOS)
     splash.alpha_composite(mark, (1366 - 650, 1366 - 650))
     save_png(splash.convert("RGB"), ios / "splash-2732x2732.png")
+    # Launcher/store icons now share the approved painted reactor. Keep the
+    # historical boot-art generator from restoring the retired crystal icon.
+    from prepare_app_icons import export_icons
+    export_icons(root)
 
 
 if __name__ == "__main__":

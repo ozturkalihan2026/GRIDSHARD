@@ -11,7 +11,9 @@ from app.game.simulation import DEFAULT_SIMULATION_LAYOUTS, _install_layout
 
 
 def reference_predicate(module):
-    return any(key in module.debuffs for key in operations.DISABLING_SABOTAGE_DEBUFF_IDS)
+    return any(key in module.debuffs for key in operations.DISABLING_SABOTAGE_DEBUFF_IDS) or (
+        "line_disrupted" in module.debuffs and module.definition.category == "enerji"
+    )
 
 
 EFFECT_KEYS = (*sorted(operations.DISABLING_SABOTAGE_DEBUFF_IDS), "unrelated_slow")
@@ -40,7 +42,7 @@ def simulate(layout_a, layout_b):
             break
         # Exercise expiry/cleanse interactions as well as natural EMP/jammer.
         if tick in (5, 25, 45, 65):
-            key = EFFECT_KEYS[(tick - 5) // 20]
+            key = EFFECT_KEYS[((tick - 5) // 20) % len(EFFECT_KEYS)]
             for player in engine.state.players.values():
                 module = player.modules[f"{player.player_id}-laser"]
                 module.debuffs[key] = TimedModuleEffect(

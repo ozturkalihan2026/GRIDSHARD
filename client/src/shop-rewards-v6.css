@@ -124,3 +124,20 @@
   :root body[data-app-screen] .daily-mission-card .daily-mission-side { grid-column:2; width:100%; justify-items:stretch; }
   :root body[data-app-screen] .daily-mission-card .daily-mission-rewards { justify-content:flex-end; }
 }
+/* Keep disclosure in the title row; the global action-button size is too large. */
+:root body[data-app-screen] .shop-screen .chest-store-section > .mobile-section-heading {
+  display:grid !important; grid-template-columns:minmax(0,1fr) max-content;
+  align-items:center; gap:0 6px; padding-right:5px;
+}
+:root body[data-app-screen] .shop-screen .chest-store-section > .mobile-section-heading > div {
+  flex:1; min-width:0; padding-right:0 !important;
+}
+:root body[data-app-screen] .shop-screen #chest-odds-open {
+  position:relative; inset:auto; align-self:center; justify-self:end;
+  width:max-content; min-width:0; min-height:22px !important; height:22px !important;
+  margin:0; padding:0 6px !important; font-size:9px !important; line-height:1;
+  white-space:nowrap; --gs2-depth:1px; --gs2-cut:3px;
+}
+:root body[data-app-screen] .shop-screen #chest-odds-open::after {
+  content:""; position:absolute; inset:-11px 0; background:none; box-shadow:none;
+}

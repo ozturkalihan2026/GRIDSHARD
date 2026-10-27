@@ -33,6 +33,7 @@ from .combat import (
 )
 from .composition import deployment_rejection_reason
 from .module_cycles import (
+    PRISM_ENERGY_PER_BLOCK_CAP,
     CYCLE_READY_KEY,
     DEFENSE_CHARGE_KEYS,
     OVERCLOCK_CHARGE_KEY,
@@ -62,7 +63,7 @@ from .core_balance import (
     core_power_threshold,
     static_charge_stacks,
 )
-from .operations import has_disabling_sabotage, module_is_operational
+from .operations import has_disabling_sabotage, jammer_efficiency, module_is_operational
 from .heat import (
     CRITICAL_HEAT_THRESHOLD,
     HEAT_PER_BLOCKED_DAMAGE,
@@ -89,6 +90,9 @@ from .result import (
     summary_to_dict,
 )
 from .sabotage import (
+    CONTROL_RECOVERY_MS,
+    EMP_DEBUFF_ID,
+    SINGULARITY_DEBUFF_ID,
     JAMMER_DEBUFF_ID,
     SABOTAGE_COOLDOWN_ID,
     SabotagePlan,
@@ -105,6 +109,7 @@ from .sabotage import (
     sabotage_resistance,
 )
 from .support import (
+    support_efficiency,
     AMPLIFIER_CHARGE_KEY,
     AMPLIFIER_PULSE_COOLDOWN_ID,
     _operational_supports,
@@ -286,6 +291,9 @@ class BattleEngine:
         talents = self.state.player_module_talents.get(player_id, {}).get(definition_id, {})
         stats = module_stats(definition, self.state.player_upgrade_levels.get(player_id, {}).get(definition_id, 0),
                              talents)
+        if definition_id == "core":
+            from .core_stats import core_max_hp
+            stats["max_hp"] = core_max_hp(player.core_level)
         daily_meta = daily_meta_by_id(
             self.state.player_daily_meta_ids.get(player_id, "")
         )
@@ -317,6 +325,8 @@ class BattleEngine:
             instance_id=instance_id,
             definition=definition,
         )
+        if definition_id == "core":
+            module.mechanic_state["core_hp_level"] = max(1, min(15, player.core_level))
         # Seçilmiş imza yeteneği (talents.py); kancalar savaş boyunca buradan okunur.
         signature = module_signature(definition_id, talents)
         if signature is not None:
@@ -357,6 +367,21 @@ class BattleEngine:
     def start(self) -> None:
         if self.state.status != BattleStatus.WAITING:
             return
+
+        # AI levels are matched after setup. Refresh its already-granted core
+        # once, before the first snapshot/tick, using the same level curve.
+        from .core_stats import core_max_hp
+        for player in self.state.players.values():
+            level = max(1, min(15, player.core_level))
+            for module in player.modules.values():
+                if module.definition.id != "core":
+                    continue
+                applied = module.mechanic_state.get("core_hp_level", 1)
+                if applied != level:
+                    maximum = round(module.definition.max_hp * core_max_hp(level) / core_max_hp(applied))
+                    module.hp = round(module.hp * maximum / module.definition.max_hp)
+                    module.definition = replace(module.definition, max_hp=maximum)
+                    module.mechanic_state["core_hp_level"] = level
 
         self.state.status = BattleStatus.RUNNING
         self._emit("battle_started", {})
@@ -1149,7 +1174,11 @@ class BattleEngine:
             or target.hp <= 0
         ):
             return
-        if add_module_heat(target, blocked_damage * HEAT_PER_BLOCKED_DAMAGE) > 0:
+        # Heat is a percentage budget. Upgrading HP/damage must not make a
+        # defense overheat sooner for blocking the same fraction of its HP.
+        base_hp = get_module_definition(target.definition.id).max_hp
+        normalized_damage = blocked_damage * base_hp / max(1, target.definition.max_hp)
+        if add_module_heat(target, normalized_damage * HEAT_PER_BLOCKED_DAMAGE) > 0:
             self._check_overheat(player_id, target)
 
     def _check_overheat(self, player_id: str, module: BattleModule) -> bool:
@@ -1394,7 +1423,7 @@ class BattleEngine:
                 key=lambda current: current.instance_id,
             ):
                 effect = module.debuffs.get(VIRUS_DEBUFF_ID)
-                if effect is None:
+                if effect is None or effect.is_expired(self.state.elapsed_ms):
                     continue
                 if module.status != ModuleStatus.ACTIVE:
                     continue
@@ -1508,6 +1537,7 @@ class BattleEngine:
                     module,
                     target_player,
                     excluded_target_ids=reserved_target_ids,
+                    elapsed_ms=self.state.elapsed_ms,
                 )
                 if plan is None:
                     continue
@@ -1552,6 +1582,7 @@ class BattleEngine:
                         module,
                         target_player,
                         excluded_target_ids=reserved_target_ids,
+                        elapsed_ms=self.state.elapsed_ms,
                     )
                     if echo_target is not None:
                         echo_resistance = sabotage_resistance(
@@ -1631,12 +1662,14 @@ class BattleEngine:
                 data,
             )
 
-            # Every sabotage family suspends the affected card. The card
-            # stays visible for feedback/cleansing, but cannot attack,
-            # defend, support, generate energy or attract targeting.
             target_module = self._require_module(target_player_id, plan.target_module_id)
-            target_module.is_powered = False
-            target_module.energy_received_last_tick = 0.0
+            if plan.effect_id in {EMP_DEBUFF_ID, SINGULARITY_DEBUFF_ID}:
+                target_module.mechanic_state["control_recovery_until_ms"] = (
+                    self.state.elapsed_ms + effective_duration_ms + CONTROL_RECOVERY_MS
+                )
+            if has_disabling_sabotage(target_module):
+                target_module.is_powered = False
+                target_module.energy_received_last_tick = 0.0
 
             self._emit(
                 "sabotage_applied",
@@ -1726,16 +1759,6 @@ class BattleEngine:
 
             for module in support_modules:
                 if not module.is_powered:
-                    continue
-
-                if JAMMER_DEBUFF_ID in module.debuffs:
-                    self._emit(
-                        "support_skipped_jammed",
-                        {
-                            "player_id": player.player_id,
-                            "module_id": module.instance_id,
-                        },
-                    )
                     continue
 
                 # Aşırı ısınan destek modülü %70'in altına inene kadar susar.
@@ -1868,6 +1891,7 @@ class BattleEngine:
                                 COOLER_DEBUFF_REDUCTION_MS_PER_PULSE
                                 * module.definition.effect_multiplier
                                 * player.energy_support_multiplier
+                                * support_efficiency(module)
                             ),
                         )
                         effect.expires_at_ms = max(
@@ -1922,6 +1946,7 @@ class BattleEngine:
                             COOLER_HEAT_REDUCTION_PER_PULSE
                             * module.definition.effect_multiplier
                             * player.energy_support_multiplier
+                            * support_efficiency(module)
                         )
                         if is_overheated(target):
                             # Susmuş modülü yeniden devreye almak önceliklidir.
@@ -2081,7 +2106,7 @@ class BattleEngine:
             position = positions[int.from_bytes(digest[:8], "big") % len(positions)]
             target.status = ModuleStatus.ACTIVE
             target.position = position
-            target.hp = max(1, round(target.definition.max_hp * PHOENIX_REVIVE_HP_RATIO))
+            target.hp = max(1, round(target.definition.max_hp * PHOENIX_REVIVE_HP_RATIO * jammer_efficiency(module)))
             target.heat = 0.0
             target.debuffs.clear()
             target.is_powered = True
@@ -2233,7 +2258,9 @@ class BattleEngine:
         conversion = prism_conversion_ratio(
             target.definition.effect_multiplier, heat_efficiency(target)
         )
-        converted = min(resolution.reduced_damage * conversion, room)
+        base_hp = get_module_definition(target.definition.id).max_hp
+        normalized_damage = resolution.reduced_damage * base_hp / max(1, target.definition.max_hp)
+        converted = min(normalized_damage * conversion, PRISM_ENERGY_PER_BLOCK_CAP, room)
         if converted <= 0:
             return
         target_player.energy_stock += converted
@@ -3414,7 +3441,7 @@ class BattleEngine:
                         self.add_debuff(
                             enemy_id,
                             module.instance_id,
-                            JAMMER_DEBUFF_ID,
+                            "core_support_disabled",
                             "Çekirdek Kesintisi",
                             duration_ms,
                         )

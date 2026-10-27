@@ -155,18 +155,17 @@ def test_disruptor_disables_its_target_but_not_the_embedded_bus():
 
     engine._process_sabotage_actions()
 
-    # Kesici birincil hedefi keser ve ikinci bir sisteme kısa yankı uygular;
-    # gömülü enerji hattı kesilmez, üçüncü modül enerjili kalır.
+    # Kesici yalnız enerji modülünü keser; silah ve savunma çalışmaya devam eder.
     modules = (battery, laser, shield)
     affected = [module for module in modules if DISRUPTOR_DEBUFF_ID in module.debuffs]
     unaffected = [module for module in modules if DISRUPTOR_DEBUFF_ID not in module.debuffs]
-    assert len(affected) == 2
-    assert len(unaffected) == 1
-    assert any(event.type == "sabotage_echo_applied" for event in engine.state.events)
+    assert affected == [battery]
+    assert len(unaffected) == 2
+    assert not any(event.type == "sabotage_echo_applied" for event in engine.state.events)
 
     engine._process_energy_flow()
     assert all(module.is_powered is False for module in affected)
-    assert unaffected[0].is_powered is True
+    assert all(module.is_powered for module in unaffected)
 
 
 def test_emp_disabled_sabotage_does_not_fire():

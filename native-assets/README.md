@@ -1,5 +1,12 @@
 # GRIDSHARD yerel marka görselleri
 
+27 Ekim 2026: Android launcher/round/adaptive/monochrome ve açılış ikonu,
+iOS AppIcon artık onaylı `client/assets/branding/gridshard-app-icon-source.png`
+reaktöründen `tools/prepare_app_icons.py` ile dışa aktarılır. Beş yoğunluktaki
+30 PNG Android üretim projesiyle byte düzeyinde eşleşir. Aşağıdaki önceki
+marka kaynağı notu bu ikonlar için tarihçedir. Capacitor sync aynı güncel
+`native-assets/` dosyalarını kullanmaya devam eder.
+
 Android/iOS ikonları ve açılış görselleri `D:\Projects\GRIDSHARD2.1` kaynağından
 yeniden çizilmeden/yeniden kodlanmadan alınmıştır. `tools/generate_brand_assets.py`
 aynı dosyaları yeniden üretmek içindir; aktarım sırasında çalıştırılmadı.

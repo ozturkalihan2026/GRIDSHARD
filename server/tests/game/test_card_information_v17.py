@@ -43,7 +43,7 @@ class CardInformationV17Tests(unittest.TestCase):
             module.is_powered = True
         target.hp = 10000
         stats = module_stats(BASIC_MODULE_DEFINITIONS["laser"], 2)
-        self.assertEqual(stats["base_damage"], 13.23)
+        self.assertEqual(stats["base_damage"], 12.98)
         self.assertEqual(stats["cooldown_ms"], 984)
         self.assertEqual(TICK_MS, 100)
         hits = []

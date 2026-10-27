@@ -4,6 +4,7 @@
 const terms = require("./terms.js");
 const site = {
   origin: "https://gridshardgame.com",
+  playStoreUrl: "https://play.google.com/store/apps/details?id=com.gridshardgame.app",
   email: "gridshardgame@gmail.com",
   publisher: "Alihan ÖZTÜRK",
   updated: "2026-10-09",
@@ -26,7 +27,8 @@ const content = {
       description: "Modüllerini birleştir, devreni kur ve rakibinin çekirdeğini devre dışı bırak. GRIDSHARD oyun tanıtımı, destek ve gizlilik bilgileri.",
       eyebrow: "DEVRE TABANLI STRATEJİ", headline: "Devreni kur.\nStratejini konuştur.",
       intro: "Saldırı, savunma ve destek modüllerini bir araya getir. Akımını yönet, devrenin dengesini kur ve rakibinin çekirdeğini devre dışı bırak.",
-      status: "Google Play yayını hazırlanıyor", statusNote: "İndirme bağlantısı yayımlandığında burada yer alacak. Bu sayfa oyun sunucusu değildir.",
+      status: "Google Play'de", statusNote: "GRIDSHARD'ı Android cihazına Google Play üzerinden indir.",
+      downloadAction: "Google Play'den indir",
       features: [
         { title: "Senin devren, senin kararın", text: "Modül seçimin ve akım ekonomin savaşın gidişatını belirler." },
         { title: "Çekirdeğe kadar mücadele", text: "Rakibinin modüllerini devre dışı bırak ve çekirdeğine ulaş." },
@@ -90,7 +92,8 @@ const content = {
       description: "Combine your modules, build your circuit and disable your opponent’s core. GRIDSHARD game information, support and privacy.",
       eyebrow: "CIRCUIT-BASED STRATEGY", headline: "Build your circuit.\nMake your strategy count.",
       intro: "Combine attack, defence and support modules. Manage your power, balance your circuit and disable your opponent’s core.",
-      status: "Preparing for Google Play", statusNote: "A download link will appear here once the game is published. This page is not the game server.",
+      status: "On Google Play", statusNote: "Download GRIDSHARD for your Android device on Google Play.",
+      downloadAction: "Get it on Google Play",
       features: [
         { title: "Your circuit, your decisions", text: "Your module choices and power economy shape each battle." },
         { title: "Fight your way to the core", text: "Disable your opponent’s modules and reach their core." },

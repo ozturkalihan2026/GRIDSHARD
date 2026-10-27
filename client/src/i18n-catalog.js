@@ -3,6 +3,17 @@
 
   // New screen copy belongs here; the legacy dictionary remains in i18n.js.
   const translations = Object.freeze({
+    "Kilitlenen plazma, %55 alan sıçraması":"Locked plasma, 55% splash to the next target",
+    "Destek verimini %35 azaltma (en çok %50)":"Reduces support output by 35% (at most 50%)",
+    "Isısı ve enerji maliyeti yüksektir; EMP ile kısa süreli durdurulur; Kesici enerji kaynağına baskı yapar.":"Heat and energy costs are high; EMP briefly stops it and Disruptor pressures its energy source.",
+    "Sıçrama hasarı da hedefin savunmasından geçer; Sönümleyici verimini düşürür; EMP kısa süreli durdurur.":"Splash goes through the target's defenses; Damper reduces its output and EMP briefly stops it.",
+    "Enerji ve ısı maliyeti çok yüksektir; EMP ile kısa süreli durdurulur; Kesici enerji kaynağına baskı yapar.":"Energy and heat costs are very high; EMP briefly stops it and Disruptor pressures its energy source.",
+    "Devresinde enerji fazlası yoksa yük birikmez; Sönümleyici ve enerji kaynağını kesen Kesici etkilidir.":"Charge cannot build without surplus energy; Damper and Disruptor cutting the energy source are effective.",
+    "Tek hedefe yoğun ateş, iki modüle yayılan küçük onarımı aşar; Sinyal Bozucu verimini azaltır.":"Focused fire outpaces the small repair split across two modules; Jammer weakens its output.",
+    "Sahibi çok saldırı modülü kullandıkça payı düşer; Sinyal Bozucu verimini azaltır.":"Its share drops with more attack modules; Jammer weakens its output.",
+    "Sahibi çok saldırı modülü kullandıkça payı düşer; kilit aralığından sık ateş eden silah her atışta kilit bulamaz. Sinyal Bozucu verimini azaltır.":"Its share drops with more attack modules; weapons faster than its lock cycle cannot use a lock on every shot. Jammer weakens its output.",
+    "Hedef değişimi odağı sıfırlar (Yansıtıcı saldırıyı üzerine çekerek bunu yapar); Sinyal Bozucu verimini azaltır.":"Changing target resets focus (Reflector can draw attacks to do this); Jammer weakens its output.",
+    "Tek sınıfa dayalı destede rezonans zayıftır; Sinyal Bozucu verimini azaltır.":"Resonance is weak with only one class; Jammer weakens its output.",
     "ÖDÜLLÜ REKLAM TESTİ":"REWARDED AD TEST",
     "▶ TEST REKLAMINI AÇ":"▶ OPEN TEST AD",
     "Test reklamı · gerçek ek ödül verilmez":"Test ad · no real bonus is granted",
@@ -1838,7 +1849,7 @@
     "profile.lobby_title_trophies": {tr:"{title} · 🏆 {trophies}", en:"{title} · 🏆 {trophies}"},
     "battle.overclocked": {tr:"Aşırı Hızlandırma · saldırı temposu arttı", en:"Overclock · attack tempo increased"},
     "battle.attack_blocked_overheat": {tr:"Saldırı engellendi: kritik ısı", en:"Attack blocked: critical heat"},
-    "battle.support_jammed": {tr:"Destek engellendi · Sinyal Bozma", en:"Support blocked · Signal Jam"},
+    "battle.support_jammed": {tr:"Destek verimi azaldı · Sinyal Bozma", en:"Support weakened · Signal Jam"},
     "battle.sabotage_resisted": {tr:"Sabotaj direnci çalıştı", en:"Sabotage resistance activated"},
     "battle.sabotage_blocked": {tr:"Sabotaj engellendi", en:"Sabotage blocked"},
     "battle.sabotage_cleansed": {tr:"Sabotaj temizlendi · {effect}", en:"Sabotage cleansed · {effect}"},

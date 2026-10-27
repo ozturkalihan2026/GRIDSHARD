@@ -97,7 +97,7 @@ def test_every_module_shows_its_own_values_and_they_grow_with_level():
         "repair": "repair", "nano_medic": "repair", "phoenix_repair": "repair", "cooler": "cooling",
         "amplifier": "damage_boost", "targeting_computer": "speed_boost", "overclock_unit": "damage_boost",
         "precision_matrix": "damage_boost", "omega_amplifier": "resonance",
-        "emp": "duration", "jammer": "duration", "virus": "duration", "disruptor": "duration",
+        "emp": "duration", "jammer": "duration", "virus": "virus_damage", "disruptor": "duration",
         "singularity_projector": "duration", "battery": "storage", "capacitor": "storage",
         "current_balancer": "saving", "laser": "dps", "pulse_cannon": "dps", "railgun": "dps",
     }
@@ -212,7 +212,7 @@ def test_prism_shield_blocks_on_its_cycle_and_converts_the_blocked_damage():
     blocked = [event.data for event in engine.state.events if event.type == "attack_performed"][0]
     assert blocked["defense_type"] == "Prizma Kalkanı"
     assert blocked["reduced_damage"] == round(blocked["raw_damage"] * 0.55)
-    assert engine.state.players["p2"].energy_stock == pytest.approx(blocked["reduced_damage"] * 0.25)
+    assert engine.state.players["p2"].energy_stock == pytest.approx(min(blocked["reduced_damage"] * 0.08, 3.0))
     assert prism.mechanic_state[BLOCK_CHARGE_KEY] is False
     assert defense_profile(prism, attacker=pulse)[1] == 1.0
 

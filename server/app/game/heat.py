@@ -20,17 +20,15 @@ OVERHEAT_DEBUFF_ID = "overheated"
 OVERHEAT_RECOVERY_THRESHOLD = HIGH_HEAT_THRESHOLD
 OVERHEAT_VENT_COOLING_MULTIPLIER = 3.0
 OVERHEAT_SELF_DAMAGE = 5
-# Değerler AI–AI denge simülasyonuyla seçildi (tur 12): maçlar ~1 dakika,
-# saldırı modülünün ömrü medyan ~9 sn, ortalama ~22 sn; ısı bu sürede
-# hissedilmeli. Pasif soğuma saniyede %1,2. Sürekli ateş eden, soğutulmayan
-# modülde %45 eşiği: Kuantum Topu ~5 sn, Darbe Topu ~7,5 sn, Ray Topu ~10 sn,
-# Lazer ~16 sn; susma: Kuantum Topu ~14 sn, Darbe/Ray Topu ~25 sn, Lazer ~47 sn.
+# Pasif soğuma saniyede %1,2. 27 Ekim: aksiyon enerjisinin ısı katsayısı
+# 2,2 → 0,9. Ağır silahlar ilk birkaç atışta Soğutucu'ya bağımlı kalmaz;
+# uzun süreli ateş, hız desteği ve büyük devrelerde ısı hâlâ birikir.
 PASSIVE_COOLING_PER_TICK = 0.12
 # Bir eylemin ısısı: ateş temposu (temel bekleme süresi başına) ve harcanan
 # aksiyon enerjisi. Hızlandırılmış modül daha sık çalıştığı için daha hızlı
 # ısınır; enerji yoğun kartlar belirgin biçimde daha sıcak çalışır.
 HEAT_PER_FIRING_SECOND = 1.2
-HEAT_PER_ACTION_ENERGY = 2.2
+HEAT_PER_ACTION_ENERGY = 0.9
 # Sürekli sistemler aldıkları bakım enerjisiyle ısınır. Tek başına pasif
 # soğumayı ancak aşar; asıl yük işten gelir: savunma engellediği hasarla,
 # Batarya ve Kapasitör depodan verdikleri enerjiyle ısınır.

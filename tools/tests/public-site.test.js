@@ -197,9 +197,18 @@ test("original branding assets are copied without alteration", () => {
   assert.match(files.get("site.css").toString(), /prefers-reduced-motion/);
 });
 
-test("pre-release state and unfinished production policy are disclosed", () => {
-  assert.match(renderPage("tr", "home"), /Google Play yayını hazırlanıyor/);
-  assert.match(renderPage("en", "home"), /Preparing for Google Play/);
+test("store download uses the supplied app identity and current approved logo", () => {
+  assert.equal(site.playStoreUrl,"https://play.google.com/store/apps/details?id=com.gridshardgame.app");
+  for (const language of ["tr","en"]) {
+    const html=renderPage(language,"home");
+    assert.ok(html.includes(`href="${site.playStoreUrl}"`));
+    assert.match(html,/class="button play-download"/);
+    assert.match(html,/src="\/assets\/gridshard-logo\.png"/);
+    assert.doesNotMatch(html,/Google Play yayını hazırlanıyor|Preparing for Google Play|gridshard-emblem\.webp/);
+  }
+});
+
+test("existing privacy policy disclosures are retained", () => {
   assert.match(renderPage("tr", "privacy"), /en fazla 30 gün/);
   assert.match(renderPage("tr", "privacy"), /varsayılan olarak kapalıdır/);
   assert.match(renderPage("tr", "privacy"), /genel yayın öncesinde ayrıca doğrulanacaktır/);

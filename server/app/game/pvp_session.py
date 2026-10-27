@@ -690,13 +690,12 @@ class PvPSessionService:
                     power_reason = "source"
                 elif "emp_disabled" in module.debuffs:
                     power_reason = "emp_disabled"
+                elif "singularity_disabled" in module.debuffs:
+                    power_reason = "singularity_disabled"
+                elif "core_support_disabled" in module.debuffs:
+                    power_reason = "core_support_disabled"
                 elif "line_disrupted" in module.debuffs:
                     power_reason = "line_disrupted"
-                elif any(
-                    effect_id in module.debuffs
-                    for effect_id in ("support_jammed", "virus")
-                ):
-                    power_reason = "sabotaged"
                 elif module.energy_waiting:
                     power_reason = "waiting_energy"
                 elif (

@@ -107,22 +107,22 @@ MODULE_COPY_EN: dict[str, tuple[str, str]] = {
     "overclock_unit": ("Performance at a heat cost", "At the starting level, every 2.5 sec it overcharges the heaviest attack module: its next shot deals 20% more damage and its cooldown is 20% shorter; that module heats up with every charge. Leveling up shortens the charge interval."),
     "emp": ("Temporary system disruption", "Temporarily disrupts energy and support lines."),
     "jammer": ("Support-line disruption", "Weakens targeting and support modules."),
-    "virus": ("Escalating system debuff", "Applies a weakening effect that grows across support and control lines."),
-    "disruptor": ("Temporary system cut", "Temporarily cuts a target system and echoes a shorter cut onto a second system."),
+    "virus": ("Escalating infection", "Deals escalating damage for six seconds while the target keeps working; Repair cleanses it."),
+    "disruptor": ("Energy-system cut", "Temporarily cuts one energy module's generation or reserve; other modules keep working."),
     "guardian_dome": ("Circuit protection", "At the starting level it reduces its own incoming damage by 32% and every 1.5 sec reduces one attack on another module in the circuit by 30%. Leveling up raises the protection and shortens the interval."),
-    "prism_shield": ("Prismatic conversion", "At the starting level, every 1.3 sec it meets one incoming attack and blocks 55% of its damage; a quarter of the blocked damage becomes Core reserve energy. Leveling up raises the block and the conversion and shortens the interval."),
+    "prism_shield": ("Prismatic conversion", "At the starting level, every 1.3 sec it meets one incoming attack and blocks 55% of its damage; 8% of level-normalized blocked damage becomes Core reserve energy, at most 3 energy per block. Leveling up raises the block and the conversion and shortens the interval."),
     "phase_armor": ("Periodic phase", "At the starting level it voids every attack during the first second of each 6-second cycle; otherwise it reduces damage by 18%. Leveling up shortens the cycle, so the phase comes more often."),
     "nano_medic": ("Distributed repair", "Repairs the two most damaged modules at once, each for 62% of a base repair."),
     "phoenix_repair": ("Return to service", "Every 30 seconds, within class limits, brings a destroyed module back at 30% HP (10 energy); each module can return only once per match. Without a candidate it performs a strong single repair."),
     "quantum_repeater": ("Quantum repeat", "On the fourth consecutive hit on the same target, echoes 65% of the last damage."),
-    "plasma_mortar": ("Delayed plasma field", "Locks onto a target for 1.2 sec before firing; 35% area damage splashes onto the next target."),
+    "plasma_mortar": ("Delayed plasma field", "Locks onto a target for 1.2 sec before firing; 55% area damage splashes onto the next target."),
     "ion_spear": ("Ionic pierce", "Ignores 60% of defensive reduction; 55% damage carries onto the target behind."),
     "swarm_fabricator": ("Swarm build-up", "Stores a drone on every shot; the fourth shot releases a swarm onto three targets."),
-    "quantum_cannon": ("Quantum charge", "Collects the circuit's wasted energy as charge; a full charge adds up to 80% damage to the next shot."),
+    "quantum_cannon": ("Quantum charge", "Collects the circuit's wasted energy as charge; a full charge adds up to 60% damage to the next shot."),
     "chrono_relay": ("Time debt", "Speeds up every attack for 4 sec, then a time debt (2.5 sec at the starting level) slows them down. Leveling up shortens the time debt."),
     "precision_matrix": ("Focus stacks", "At the starting level, every 1.5 sec it gives one focus stack to attack modules that kept their target; each stack adds damage and speed (up to 4 stacks). Changing target resets the focus. Leveling up builds focus faster."),
     "omega_amplifier": ("Adaptive resonance", "At the starting level, every 2 sec it charges the attack modules in the circuit with resonance; each distinct class in the circuit grows the shared damage support of a charged shot. Leveling up shortens the charge interval."),
-    "singularity_projector": ("Singularity field", "Cuts the target system for 4.5 sec and echoes a 65%-duration cut onto a second system."),
+    "singularity_projector": ("Singularity field", "Stops two targets for 1.5 sec (at most 2 sec); they remain targetable and recover for 1.5 sec after control."),
 }
 
 
@@ -445,8 +445,7 @@ def _mechanic_effect_lines(definition_id: str) -> list[str]:
                 "Soğutucu bunu birkaç saniyeye indirir."
             ),
             (
-                f"Aynı darbe EMP ve hat kesintisi yaşayan en fazla {COOLER_MAX_TARGETS} modülün "
-                f"kalan süresini {COOLER_DEBUFF_REDUCTION_MS_PER_PULSE / 1000:g} sn kısaltır."
+                "Sabotaj süresini kısaltmaz; yalnız ısıyı düşürür."
             ),
             "Seviye yükseldikçe soğutma artar, darbe aralığı kısalır.",
         ]
@@ -498,7 +497,7 @@ def _mechanic_effect_lines(definition_id: str) -> list[str]:
 
     if definition_id == "jammer":
         return [
-            f"Hedef destek/kontrol modülünü {JAMMER_DURATION_MS / 1000:g} sn bozar.",
+            f"Yalnız destek modülünün verimini {JAMMER_DURATION_MS / 1000:g} sn boyunca %35 azaltır (en çok %50); modül çalışır.",
             f"Temel sabotaj bekleme süresi {definition.cooldown_ms / 1000:g} sn.",
         ]
 
@@ -522,13 +521,10 @@ def _mechanic_effect_lines(definition_id: str) -> list[str]:
     if definition_id == "disruptor":
         return [
             (
-                f"Hedef sistemi {DISRUPTOR_DURATION_MS / 1000:g} sn keser; "
+                f"Bir enerji modülünü {DISRUPTOR_DURATION_MS / 1000:g} sn keser; "
                 "diğer modüller enerji almaya devam eder."
             ),
-            (
-                "Ek olarak ikinci bir sisteme "
-                f"%{_percent(SABOTAGE_ECHO_RATIOS['disruptor'])} süreli yankı kesintisi uygular."
-            ),
+            "Silah, savunma ve destek kartlarını susturmaz; ikinci hedefe yankı yapmaz.",
         ]
 
     if definition.energy_consumption > 0:
@@ -594,7 +590,7 @@ def _mechanic_effect_lines_en(definition_id: str) -> list[str]:
     if definition_id == "repair":
         return [f"Restores {BASE_REPAIR_AMOUNT} HP to one lowest-health-ratio living module with a base cooldown of {definition.cooldown_ms / 1000:g} sec.", "A target can be repaired only once per support step.", "Can cleanse selected sabotage effects."]
     if definition_id == "cooler":
-        return [f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it sends a cooling pulse: it picks overheated modules first, then the {COOLER_MAX_TARGETS} hottest modules in the circuit, and cools each by {COOLER_HEAT_REDUCTION_PER_PULSE:g}% heat.", f"Cooling is {COOLER_OVERHEAT_MULTIPLIER:g}x on a silenced module; it works again once its heat drops below {OVERHEAT_RECOVERY_THRESHOLD:g}%, which the Cooler cuts to a few seconds.", f"The same pulse shortens EMP and line-cut effects on up to {COOLER_MAX_TARGETS} modules by {COOLER_DEBUFF_REDUCTION_MS_PER_PULSE / 1000:g} sec.", "Leveling up raises the cooling and shortens the pulse interval."]
+        return [f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it sends a cooling pulse: it picks overheated modules first, then the {COOLER_MAX_TARGETS} hottest modules in the circuit, and cools each by {COOLER_HEAT_REDUCTION_PER_PULSE:g}% heat.", f"Cooling is {COOLER_OVERHEAT_MULTIPLIER:g}x on a silenced module; it works again once its heat drops below {OVERHEAT_RECOVERY_THRESHOLD:g}%, which the Cooler cuts to a few seconds.", "Does not shorten sabotage effects; cooling only changes heat.", "Leveling up raises the cooling and shortens the pulse interval."]
     if definition_id == "amplifier":
         return [f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it charges every attack module in the circuit regardless of placement; a charged module's next shot deals more damage: a {_percent(AMPLIFIER_TOTAL_BUDGET)}% damage budget is shared across attack modules, at most {_percent(AMPLIFIER_PER_ATTACK_CAP)}% each.", "The charge is spent by the shot and waits for the next pulse; weapons that fire faster than the pulse do not find a charge on every shot.", "The pulse interval shortens as the module levels up."]
     if definition_id == "targeting_computer":
@@ -603,9 +599,9 @@ def _mechanic_effect_lines_en(definition_id: str) -> list[str]:
         return [f"At the starting level, every {definition.cooldown_ms / 1000:g} sec it overcharges the heaviest attack module: its next shot's damage rises to {_percent(OVERCLOCK_DAMAGE_MULTIPLIER)}% and the cooldown after it drops to {_percent(OVERCLOCK_COOLDOWN_MULTIPLIER)}%.", f"The target gains {OVERCLOCK_HEAT_PER_PULSE:g}% extra heat with every charge and heats faster; an overheated target is swapped for the next heaviest attack.", "The charge interval shortens as the module levels up."]
     sabotage = {
         "emp": [f"Disables the target system for {EMP_DURATION_MS / 1000:g} sec.", f"Base sabotage cooldown is {definition.cooldown_ms / 1000:g} sec."],
-        "jammer": [f"Disrupts a target support or control module for {JAMMER_DURATION_MS / 1000:g} sec.", f"Base sabotage cooldown is {definition.cooldown_ms / 1000:g} sec."],
+        "jammer": [f"Reduces one support module's output by 35% (at most 50%) for {JAMMER_DURATION_MS / 1000:g} sec; it keeps working.", f"Base sabotage cooldown is {definition.cooldown_ms / 1000:g} sec."],
         "virus": [f"Lasts {VIRUS_DURATION_MS / 1000:g} sec; starts at {VIRUS_TICK_DAMAGE} damage every {VIRUS_TICK_INTERVAL_MS / 1000:g} sec and grows by {VIRUS_TICK_ESCALATION} each tick.", "Damage continues over time unless cleansed or resisted."],
-        "disruptor": [f"Disables the target for {DISRUPTOR_DURATION_MS / 1000:g} sec; other cells keep receiving energy.", f"Also echoes a {_percent(SABOTAGE_ECHO_RATIOS['disruptor'])}%-duration cut onto a second system."],
+        "disruptor": [f"Cuts one energy module for {DISRUPTOR_DURATION_MS / 1000:g} sec; other cells keep receiving energy.", "Does not stop weapons, defenses or supports; does not echo to a second target."],
     }
     return sabotage.get(definition_id, ["No additional numeric effect is published for this module."])
 

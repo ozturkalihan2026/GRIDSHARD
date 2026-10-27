@@ -6,6 +6,7 @@ from app.game.energy import (
     CORE_RESERVE_BASE_CAPACITY,
     CORE_RESERVE_PER_LEVEL,
 )
+from app.game.core_stats import core_max_hp
 from app.meta_progression import MetaProgressionService
 from app.player_profile import PlayerProfileService
 
@@ -23,6 +24,7 @@ def test_core_view_reports_next_level_energy_values():
     assert core["energy_per_second"] == round(BASE_CORE_GENERATION_PER_SECOND, 2)
     assert core["energy_capacity"] == round(CORE_RESERVE_BASE_CAPACITY, 1)
     assert core["next_stats"] == {
+        "max_hp": core_max_hp(2),
         "energy_per_second": round(
             BASE_CORE_GENERATION_PER_SECOND * CORE_LEVEL_GENERATION_MULTIPLIER, 2
         ),
@@ -42,6 +44,7 @@ def test_next_level_values_are_the_values_the_upgrade_really_gives():
     assert upgraded["level"] == 2
     assert upgraded["energy_per_second"] == promised["energy_per_second"]
     assert upgraded["energy_capacity"] == promised["energy_capacity"]
+    assert upgraded["max_hp"] == promised["max_hp"]
 
 
 def test_core_at_max_level_has_no_next_level_values():

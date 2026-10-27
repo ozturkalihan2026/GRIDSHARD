@@ -304,3 +304,10 @@
   :root body[data-app-screen] :is(#module-detail-dialog,#core-detail-dialog) :is([data-tab="talents"],[data-tab="skills"]) { flex:none !important; overflow:visible !important; }
 }
 
+.cards-page-tabs .cards-core-icon {
+  display:inline-flex; align-items:center; justify-content:center;
+  flex:0 0 30px; width:30px; height:30px;
+}
+.cards-page-tabs .cards-core-icon :is(.core-emblem-set,.core-physical-art) {
+  width:100%; height:100%; object-fit:contain;
+}

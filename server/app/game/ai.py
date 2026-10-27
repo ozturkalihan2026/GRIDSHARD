@@ -245,6 +245,10 @@ def choose_deploy_definition(
         definition = get_module_definition(definition_id)
         if deployment_rejection_reason(ai_player, definition) is not None:
             continue
+        if definition_id == "jammer" and threat_profile.support_count == 0:
+            continue
+        if definition_id == "disruptor" and threat_profile.energy_count == 0:
+            continue
         cost = max(1, definition.current_cost - (1 if ai_player.discounted_deployments else 0))
         counter = score_counter_candidate(definition_id, threat_profile)
         score = float(counter.score + archetype.bias_for(definition.category))
@@ -294,6 +298,30 @@ def choose_deploy_definition(
     if not candidates:
         return None
     candidates.sort(key=lambda item: (-item[0], item[1]))
+    # Rebuild an offense after losses. Spending every two regenerated Current
+    # on a Battery otherwise prevents ever affording a three/four-cost weapon.
+    if category_counts.get("saldırı", 0) == 0:
+        # After repeated mutual wipes, don't rebuild identical naked weapons
+        # forever. One affordable frontline changes that exchange. Once it
+        # exists the normal save-for-offense rule applies again.
+        if (threat_profile.attack_count == 0 and len(active_modules) == 1
+                and sum(m.definition.category == "saldırı" for m in ai_player.modules.values()) >= 2):
+            frontline = [item for item in candidates if item[2] <= ai_player.circuit_credits
+                         and get_module_definition(item[3]).category == "savunma"]
+            if frontline:
+                return frontline[0][3]
+        attacks = [item for item in candidates if get_module_definition(item[3]).category == "saldırı"]
+        if attacks:
+            affordable_attacks = [item for item in attacks if item[2] <= ai_player.circuit_credits]
+            best_attack = attacks[0]
+            if best_attack[2] <= ai_player.circuit_credits:
+                return best_attack[3]
+            if affordable_attacks:
+                cheap = affordable_attacks[0]
+                wait_ms = (best_attack[2] - ai_player.circuit_credits) * regen_interval_ms - ai_player.current_regen_remainder_ms
+                if best_attack[0] - cheap[0] <= 4 or wait_ms > SAVE_WINDOW_MS:
+                    return cheap[3]
+            return None
     _score, _key, best_cost, best_id = candidates[0]
     credits = ai_player.circuit_credits
     if best_cost <= credits:

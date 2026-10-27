@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from .heat import generates_heat, heat_efficiency, is_overheated
 from .models import BattleModule, ModuleStatus, PlayerBattleState
 from .module_cycles import OMEGA_CHARGE_KEY, OVERCLOCK_CHARGE_KEY, TARGETING_LOCK_KEY
-from .operations import module_is_operational
+from .operations import jammer_efficiency, module_is_operational
 
 REPAIR_COOLDOWN_ID = "support_repair"
 BASE_REPAIR_AMOUNT = 15
@@ -80,8 +80,8 @@ CHRONO_DEBT_COOLDOWN = 1.18
 CHRONO_DEBT_DAMAGE = 0.95
 
 # Omega Güçlendirici: devredeki her farklı sınıf toplam paya %8 ekler.
-OMEGA_BUDGET_PER_CATEGORY = 0.08
-OMEGA_PER_ATTACK_CAP = 0.20
+OMEGA_BUDGET_PER_CATEGORY = 0.10
+OMEGA_PER_ATTACK_CAP = 0.22
 OMEGA_MAX_CATEGORIES = 5
 
 # Nano Medik iki hedefe, her birine temel onarımın %62'si kadar.
@@ -99,17 +99,14 @@ JAMMER_DEBUFF_ID = "support_jammed"
 REPAIR_CLEANSABLE_DEBUFFS = (
     "virus",
     "support_jammed",
+    "core_support_disabled",
 )
 
-COOLER_REDUCIBLE_DEBUFFS = (
-    "emp_disabled",
-    "line_disrupted",
-)
+COOLER_REDUCIBLE_DEBUFFS = ()
 
-# Soğutucu darbesi EMP ve hat kesintisinin kalan süresinden bu kadar keser
-# (eski sürekli kural adım başına 200 ms'ydi; saniyelik etki yakındır).
-COOLER_DEBUFF_REDUCTION_MS_PER_PULSE = 1800
-COOLER_DEBUFF_REDUCTION_MS_PER_TICK = 200
+# Compatibility exports: cooling changes heat, never control duration.
+COOLER_DEBUFF_REDUCTION_MS_PER_PULSE = 0
+COOLER_DEBUFF_REDUCTION_MS_PER_TICK = 0
 
 @dataclass(slots=True, frozen=True)
 class AttackSupportModifiers:
@@ -122,6 +119,10 @@ class AttackSupportModifiers:
     # Seçilen tek desteğin türü (ör. "amplifier"); destek yoksa boş.
     kind: str = ""
 
+def support_efficiency(module: BattleModule) -> float:
+    return heat_efficiency(module) * jammer_efficiency(module)
+
+
 def _operational_supports(
     player: PlayerBattleState,
     definition_id: str,
@@ -132,11 +133,10 @@ def _operational_supports(
             for module in player.modules.values()
             if module.definition.id == definition_id
             and module_is_operational(module)
-            and JAMMER_DEBUFF_ID not in module.debuffs
             and not is_overheated(module)
         ),
         key=lambda module: (
-            -module.definition.effect_multiplier * heat_efficiency(module),
+            -module.definition.effect_multiplier * support_efficiency(module),
             module.instance_id,
         ),
     )
@@ -226,7 +226,7 @@ def attack_support_modifiers(player, attack_module, core_position, elapsed_ms: i
             shared_support_share(AMPLIFIER_PER_ATTACK_CAP, AMPLIFIER_TOTAL_BUDGET, attacks)
             * source.definition.effect_multiplier
             * support
-            * heat_efficiency(source)
+            * support_efficiency(source)
         )
         options.append((bonus, "amplifier", source, 1 + bonus, 1.0))
 
@@ -237,13 +237,13 @@ def attack_support_modifiers(player, attack_module, core_position, elapsed_ms: i
             shared_support_share(TARGETING_PER_ATTACK_CAP, TARGETING_TOTAL_BUDGET, attacks)
             * source.definition.effect_multiplier
             * support
-            * heat_efficiency(source)
+            * support_efficiency(source)
         )
         options.append((reduction, "targeting_computer", source, 1.0, max(.65, 1 - reduction)))
 
     overclock = overclock_assignments(player).get(attack_module.instance_id)
     if overclock is not None and attack_module.mechanic_state.get(OVERCLOCK_CHARGE_KEY, True):
-        effect = overclock.definition.effect_multiplier * support * heat_efficiency(overclock)
+        effect = overclock.definition.effect_multiplier * support * support_efficiency(overclock)
         options.append((
             .40 * effect,
             "overclock_unit",
@@ -256,7 +256,7 @@ def attack_support_modifiers(player, attack_module, core_position, elapsed_ms: i
     stacks = max(0, min(PRECISION_MAX_STACKS, int(attack_module.mechanic_state.get("precision_focus_stacks", 0))))
     if matrices and stacks:
         source = matrices[0]
-        effect = source.definition.effect_multiplier * support * heat_efficiency(source)
+        effect = source.definition.effect_multiplier * support * support_efficiency(source)
         damage = 1 + PRECISION_DAMAGE_PER_STACK * stacks * effect
         cooldown = max(.72, 1 - PRECISION_COOLDOWN_PER_STACK * stacks * effect)
         options.append(((damage - 1) + (1 - cooldown), "precision_matrix", source, damage, cooldown))
@@ -272,7 +272,7 @@ def attack_support_modifiers(player, attack_module, core_position, elapsed_ms: i
                 1 - (1 - CHRONO_BOOST_COOLDOWN)
                 * source.definition.effect_multiplier
                 * support
-                * heat_efficiency(source),
+                * support_efficiency(source),
             )
             options.append((1 - cooldown, "chrono_relay", source, 1.0, cooldown))
         elif phase == "debt":
@@ -287,7 +287,7 @@ def attack_support_modifiers(player, attack_module, core_position, elapsed_ms: i
             shared_support_share(OMEGA_PER_ATTACK_CAP, OMEGA_BUDGET_PER_CATEGORY * diversity, attacks)
             * source.definition.effect_multiplier
             * support
-            * heat_efficiency(source)
+            * support_efficiency(source)
         )
         if bonus > 0:
             options.append((bonus, "omega_amplifier", source, 1 + bonus, 1.0))
@@ -329,7 +329,7 @@ def attack_support_modifiers(player, attack_module, core_position, elapsed_ms: i
 
 
 def repair_amount(repair_module):
-    return max(1, int(round(BASE_REPAIR_AMOUNT * repair_module.definition.effect_multiplier)))
+    return max(1, int(round(BASE_REPAIR_AMOUNT * repair_module.definition.effect_multiplier * jammer_efficiency(repair_module))))
 
 def repair_targets(player, repair_module, core_position):
     del repair_module, core_position

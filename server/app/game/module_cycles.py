@@ -13,6 +13,12 @@ from __future__ import annotations
 
 # Çevrim süresi (ms); 0 çevrimi olmayan, sürekli çalışan modüldür.
 CYCLE_COOLDOWN_MS: dict[str, int] = {
+    # Saldırı: türetilen silah kendi temposunu korur; ailedeki bir değişiklik
+    # İyon/Kuantum gibi başka bir karta gizlice taşınmaz.
+    "laser": 1000, "pulse_cannon": 2500, "missile_launcher": 3000,
+    "railgun": 3000, "arc_cannon": 1800, "drone_bay": 900,
+    "plasma_mortar": 3000, "quantum_repeater": 1000, "ion_spear": 3200,
+    "swarm_fabricator": 900, "quantum_cannon": 2800,
     # Savunma
     "shield": 1200,
     "prism_shield": 1300,
@@ -69,8 +75,9 @@ DOME_GUARD_CAP = 0.50
 SABOTAGE_GUARD_BASE = 0.35
 SABOTAGE_GUARD_CAP = 0.60
 # Prizma Kalkanı'nın engellediği hasardan enerjiye çevirdiği pay.
-PRISM_CONVERSION_BASE = 0.25
-PRISM_CONVERSION_CAP = 0.45
+PRISM_CONVERSION_BASE = 0.08
+PRISM_CONVERSION_CAP = 0.12
+PRISM_ENERGY_PER_BLOCK_CAP = 3.0
 # Zırh'ın her çevrimde kendine yaptığı plaka onarımı.
 ARMOR_REGEN_BASE = 5
 # Faz Zırhı her çevrimin ilk bu kadar süresinde saldırıları boşa çıkarır.

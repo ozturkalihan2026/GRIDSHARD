@@ -645,6 +645,9 @@
 
   function renderBattleEmojiVisual(host, emoji) {
     if (!host) return;
+    const key = [emoji?.id || "", emoji?.glyph || "", emoji?.mediaSrc || "", emoji?.motion || "none", Boolean(emoji?.real)].join("|");
+    if (host.dataset.battleEmojiVisualKey === key && host.firstElementChild) return;
+    host.dataset.battleEmojiVisualKey = key;
     host.replaceChildren(createBattleEmojiVisual(emoji));
   }
   const PROFILE_RANK_TROPHIES = Object.freeze([
@@ -1765,6 +1768,7 @@
     block:["shield", "blue"], reduction:["reduction", "steel"], reflect:["reflect", "violet"],
     regen:["wrench", "green"], sabotage_guard:["guard", "violet"], dome_guard:["dome", "cyan"],
     phase:["phase", "violet"], conversion:["convert", "cyan"],
+    conversion_cap:["energy", "cyan"], support_reduction:["guard", "violet"],
     repair:["wrench", "green"], revive:["revive", "orange"], revive_hp:["hp", "orange"],
     cooling:["snow", "cyan"], damage_boost:["boost", "red"], speed_boost:["speed", "gold"],
     heat:["flame", "orange"], boost:["hourglass", "gold"], debt:["hourglass", "steel"],
@@ -3332,6 +3336,7 @@
     mountCoreEmblem(art, core.id);
     const nextStats = core.unlocked ? core.next_stats : null;
     renderDetailStatRow(document.getElementById("core-detail-stats"), [
+      { label:"CAN", value:core.max_hp, current:core.max_hp, next:nextStats?.max_hp, icon:"hp", tone:"green" },
       { label:"ENERJİ", value:`${core.energy_per_second}/sn`, current:core.energy_per_second, next:nextStats?.energy_per_second, unit:"per_second", icon:"energy", tone:"cyan" },
       { label:"DEPO", value:core.energy_capacity, current:core.energy_capacity, next:nextStats?.energy_capacity, icon:"battery", tone:"blue" },
       { label:"YETENEK", value:(core.skills || []).filter((skill) => skill.learned).length, icon:"star", tone:"gold" },
@@ -9937,6 +9942,7 @@
   const BATTLE_EMOJI_COOLDOWN_MS = 3000; // sunucudaki bekleme ile aynı
   let battleEmojiCooldownUntil = 0;
   let battleEmojiCooldownTimer = 0;
+  const battleEmojiBubbles = new Map();
   const shelf = document.getElementById("module-shelf");
   const pendingBattleDeployments = [];
   const liveBattleDeployments = new Set();
@@ -10044,31 +10050,53 @@
   // açar; seçilen emoji rakibin de gördüğü savaş olayı olarak gönderilir.
 
   function closeBattleEmojiTray() {
-    if (!battleEmojiTrayEl || battleEmojiTrayEl.hidden) return;
-    battleEmojiTrayEl.hidden = true;
-    battleEmojiButtonEl?.setAttribute("aria-expanded", "false");
+    if (!battleEmojiTrayEl) return;
+    if (!battleEmojiTrayEl.hidden) battleEmojiTrayEl.hidden = true;
+    if (battleEmojiTrayEl.firstElementChild) battleEmojiTrayEl.replaceChildren();
+    if (battleEmojiButtonEl?.getAttribute("aria-expanded") !== "false") battleEmojiButtonEl?.setAttribute("aria-expanded", "false");
+  }
+
+  function battleEmojiInteractionAvailable() {
+    return !document.hidden && document.body.dataset.appScreen === "play"
+      && !localBattleFinished && !(activePlayMode === "online" && pvpState.phase === "finished");
+  }
+
+  function clearBattleEmojiResources() {
+    closeBattleEmojiTray();
+    if (battleEmojiCooldownTimer) window.clearTimeout(battleEmojiCooldownTimer);
+    battleEmojiCooldownTimer = 0;
+    for (const record of battleEmojiBubbles.values()) {
+      record.cleanup.cancelled = true;
+      record.cleanup.run = null;
+      record.bubble.remove();
+    }
+    battleEmojiBubbles.clear();
   }
 
   let renderedBattleEmojiSignature = null;
 
   function renderBattleEmojiControl() {
     if (!battleEmojiButtonEl) return;
-    const cosmetics = profileState.viewModel()?.cosmetics;
+    // This is a hot HUD read; do not clone progression, rewards and cosmetics.
+    const cosmetics = profileState.profile?.cosmetics;
     const available = availableBattleEmojis(cosmetics);
     const coolingDown = Date.now() < battleEmojiCooldownUntil;
-    const quick = quickBattleEmoji(cosmetics) || { glyph:"🙂", real:true };
-    if (localBattleFinished || coolingDown) closeBattleEmojiTray();
+    const quick = available.find(emoji => emoji.id === cosmetics?.selected_battle_emoji_id)
+      || available[0] || { glyph:"🙂", real:true };
+    const inactive = !battleEmojiInteractionAvailable();
+    if (inactive) clearBattleEmojiResources();
+    else if (coolingDown) closeBattleEmojiTray();
     // Düğme görseli yeniden kurulursa animasyonu baştan başlar; değişmediyse bırak.
     const signature = [
       available.map((emoji) => emoji.id).join(","),
       coolingDown,
-      localBattleFinished,
+      inactive,
       quick.id || quick.glyph,
     ].join("|");
     if (signature === renderedBattleEmojiSignature) return;
     renderedBattleEmojiSignature = signature;
     battleEmojiButtonEl.hidden = !available.length;
-    battleEmojiButtonEl.disabled = localBattleFinished || coolingDown;
+    battleEmojiButtonEl.disabled = inactive || coolingDown;
     battleEmojiButtonEl.dataset.cooldown = String(coolingDown);
     if (battleEmojiButtonGlyphEl) {
       renderBattleEmojiVisual(battleEmojiButtonGlyphEl, quick);
@@ -10076,8 +10104,8 @@
   }
 
   function openBattleEmojiTray() {
-    if (!battleEmojiTrayEl) return;
-    const available = availableBattleEmojis(profileState.viewModel()?.cosmetics);
+    if (!battleEmojiTrayEl || !battleEmojiInteractionAvailable() || Date.now() < battleEmojiCooldownUntil) return;
+    const available = availableBattleEmojis(profileState.profile?.cosmetics);
     battleEmojiTrayEl.replaceChildren(...available.map((emoji) => {
       const option = document.createElement("button");
       option.type = "button";
@@ -10103,7 +10131,7 @@
   }
 
   function sendBattleEmoji(emojiId) {
-    if (localBattleFinished || Date.now() < battleEmojiCooldownUntil) return;
+    if (!battleEmojiInteractionAvailable() || Date.now() < battleEmojiCooldownUntil) return;
     client.emitCommand({
       kind:"send_battle_emoji",
       payload:{emoji_id:emojiId},
@@ -10113,7 +10141,10 @@
     renderBattleEmojiControl();
     window.clearTimeout(battleEmojiCooldownTimer);
     battleEmojiCooldownTimer = window.setTimeout(
-      renderBattleEmojiControl,
+      () => {
+        battleEmojiCooldownTimer = 0;
+        if (battleEmojiInteractionAvailable()) renderBattleEmojiControl();
+      },
       BATTLE_EMOJI_COOLDOWN_MS + 30
     );
   }
@@ -11840,17 +11871,31 @@
   }
 
   function presentBattleEmoji(playerId, emojiId) {
+    if (!battleEmojiInteractionAvailable()) return;
     const emoji = BATTLE_EMOJIS.find((item) => item.id === emojiId);
     if (!emoji || emoji.id === "none") return;
     const targetBoard = playerId === participantPlayerId ? board : enemyBoard;
     if (!targetBoard) return;
+    // The server rate limit already spaces emotes out. Also bound the visual
+    // owner to one bubble per side if events arrive together after a stall.
+    const previous = battleEmojiBubbles.get(targetBoard);
+    if (previous) {
+      previous.cleanup.cancelled = true;
+      previous.cleanup.run = null;
+      previous.bubble.remove();
+    }
     const bubble = document.createElement("div");
     bubble.className = "battle-emoji-bubble";
     bubble.appendChild(createBattleEmojiVisual(emoji));
     bubble.setAttribute("role", "status");
     bubble.setAttribute("aria-label", emoji.nameTr);
     targetBoard.appendChild(bubble);
-    window.setTimeout(() => bubble.remove(), 1900);
+    const record = {bubble, cleanup:null};
+    record.cleanup = scheduleBattleSweep(1900, () => {
+      bubble.remove();
+      if (battleEmojiBubbles.get(targetBoard) === record) battleEmojiBubbles.delete(targetBoard);
+    });
+    battleEmojiBubbles.set(targetBoard, record);
   }
 
   // Yetenek adı ve açıklaması sunucudan iki dilde gelir; İngilizce yoksa
@@ -13094,6 +13139,7 @@
   // Sahnedeki bütün geçici efektleri ve bekleyen efekt işlerini bırakır; savaş
   // durumu (tahta, Akım, Çekirdek gücü) yerinde kalır.
   function clearBattleEffects() {
+    clearBattleEmojiResources();
     clearBattleDeployments();
     moduleMotion.reset();
     pendingModuleVfx=null;
@@ -13127,6 +13173,7 @@
   function handleBattleVisibilityChange() {
     syncBattleClockVisibility();
     if (document.hidden) {
+      clearBattleEmojiResources();
       clearBattleDeployments();
       moduleMotion.clear();
       pendingModuleVfx=null;
@@ -13136,6 +13183,7 @@
     }
     const hiddenFor = battleHiddenAt === null ? 0 : performance.now() - battleHiddenAt;
     battleHiddenAt = null;
+    renderBattleEmojiControl();
     if (hiddenFor < BATTLE_RESUME_DISCARD_AFTER_MS || activePlayMode === "idle") return;
     onlineBattlePresentation.discardEffects();
     clearBattleEffects();
@@ -13151,6 +13199,8 @@
     battleCountdown.cancel();
     onlineBattlePresentation.reset();
     clearBattleEffects();
+    battleEmojiCooldownUntil = 0;
+    renderedBattleEmojiSignature = null;
     battleTimerLagMs = 0;
     moduleAnchorRects.clear();
     moduleAnchorCells.clear();
@@ -16803,7 +16853,9 @@
     // stand above its socket, so keep the complete upper rim clear as well.
     const usable=Math.max(1,height-headerHeight-footerHeight-50-baseBetween);
     const byHeight=(usable/(3.6*yScale)-2*baseGap)/3;
-    const byWidth=(width*.9/zoom-4*baseGap)/5;
+    // Fit the complete painted island (1254px), not only its 728px floor.
+    // Reserve the later 10% scene growth here so it cannot crop the rim again.
+    const byWidth=((width-16)*(728/1254)/(zoom*1.10)-4*baseGap)/5;
     const baseSize=Math.max(12,Math.min(84,byHeight,byWidth));
     const baseHeight=(3*baseSize+2*baseGap)*yScale;
     const available=Math.max(1,height-headerHeight-footerHeight-9);
@@ -16816,12 +16868,20 @@
     const sceneTop=4+headerHeight;
     const inset=(boardHeight-projectedHeight)/2;
     const enemyTop=sceneTop+.32*projectedHeight-inset;
-    const playerTop=sceneTop+1.8*projectedHeight+between+.32*projectedHeight-inset;
+    const minimumPlayerTop=sceneTop+1.8*projectedHeight+between+.32*projectedHeight-inset;
+    // Width fitting can leave substantial vertical space on tall phones.
+    // Anchor the actual blue painting's bottom (source y1254, floor y260..664)
+    // above the shelf, rather than stacking both islands at the arena's top.
+    // Keep the minimum rim separation when a short viewport limits height.
+    const playerPaintingBelowFloorTop=(1254-260)/404;
+    const playerTop=Math.max(minimumPlayerTop,
+      height-footerHeight-8-inset-playerPaintingBelowFloorTop*projectedHeight);
     // Preserve earlier increases and apply this revision's additional 10%.
     // Circuit enlargement stays independent. Core/module normalization is .85.
     const equipmentSize=baseSize*.92*1.15*1.10*1.10;
     return {size,gap,enemyTop,playerTop,boardHeight,projectedHeight,equipmentSize,growth,
-      rimBottom:sceneTop+3.6*projectedHeight+between};
+      rimBottom:playerTop+inset+1.48*projectedHeight,
+      paintingBottom:playerTop+inset+playerPaintingBelowFloorTop*projectedHeight};
   }
 
   function fitCircuitScene() {
@@ -17283,6 +17343,8 @@
     let powerMessage = "";
     if (!flowing && required > 0) powerMessage = battleUiText({
       emp_disabled:"EMP etkisi bu modülün enerji sistemini devre dışı bıraktı.",
+      singularity_disabled:"Tekillik bu modülü kısa süreliğine durdurdu; modül hâlâ hedef alınabilir.",
+      core_support_disabled:"Rakip Çekirdek gücü bu desteği kısa süreliğine durdurdu.",
       line_disrupted:"Kesici etkisi bu modülün enerji hattını geçici olarak kopardı.",
       insufficient_supply:"Çekirdek enerji ihtiyacı: " + required.toFixed(1) + " Ü, gelen: " + received.toFixed(1) + " Ü.",
       waiting_energy:"Enerji rezervi bu modülün sıradaki eylemine yetmiyor; enerji birikince ateşler.",
@@ -22159,7 +22221,6 @@
       ['#team-menu [data-team-management-tab="cosmetics"]', "palette", "pink"],
       ['#team-menu [data-team-management-tab="members"]', "people", "green"],
       ['[data-card-page="modules"]', "deck", "blue"],
-      ['[data-card-page="cores"]', "core", "cyan"],
       ['[data-leaderboard-tab="teams"]', "team", "violet"],
     ]) {
       for (const button of document.querySelectorAll(selector)) {
@@ -22174,6 +22235,19 @@
     }
     const coreRanking = document.querySelector('[data-leaderboard-tab="core_damage"] > span');
     if (coreRanking) mountCoreEmblem(coreRanking, "core_resonance");
+    const coreTab = document.querySelector('[data-card-page="cores"]');
+    if (coreTab) {
+      let glyph = coreTab.querySelector(':scope > .cards-core-icon');
+      if (!glyph) {
+        glyph = document.createElement('span');
+        glyph.className = 'cards-core-icon';
+        const old = coreTab.querySelector(':scope > span');
+        if (old) old.replaceWith(glyph);
+        else coreTab.prepend(glyph);
+      }
+      mountCoreEmblem(glyph, 'core_resonance');
+      coreTab.classList.add('has-ui-icon');
+    }
     for (const button of document.querySelectorAll("#arena-detail-close,#leaderboard-back,.event-detail-header > button")) {
       button.innerHTML = uiIconMarkup("back"); button.classList.add("refresh-back-button");
     }

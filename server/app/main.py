@@ -1240,7 +1240,7 @@ def attach_player_progression_to_session(
     battle_player.core_skills = profile.core_skills.get(profile.selected_core_type, ())
     battle_player.selected_battle_emoji_id = profile.selected_battle_emoji_id
     battle_player.battle_emoji_ids = profile.available_battle_emoji_ids
-    # Beta.72: çekirdek türü CAN'ı değiştirmez; bütün çekirdekler kanonik CAN'la girer.
+    # Çekirdek türü CAN'ı değiştirmez; motor seviyeye bağlı ortak CAN'ı uygular.
     session.engine.state.player_module_talents[player_id] = {k: dict(v) for k, v in profile.module_talents.items()}
     today = daily_meta_catalog_view()["day"]
     session.engine.state.player_daily_meta_ids[player_id] = (

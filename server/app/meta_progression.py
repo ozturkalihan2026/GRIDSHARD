@@ -9,6 +9,7 @@ from uuid import uuid4
 from .game.catalog import BASIC_MODULE_DEFINITIONS
 from .game.catalog_view import build_module_catalog_view
 from .game.core_balance import core_signature
+from .game.core_stats import core_max_hp
 from .game.energy import (
     BASE_CORE_GENERATION_PER_SECOND,
     CORE_LEVEL_GENERATION_MULTIPLIER,
@@ -920,6 +921,7 @@ class MetaProgressionService:
         signature = core_signature(core_type["id"])
         def energy_stats(level_counter: int) -> dict:
             return {
+                "max_hp": core_max_hp(level_counter + 1),
                 "energy_per_second": round(
                     BASE_CORE_GENERATION_PER_SECOND
                     * CORE_LEVEL_GENERATION_MULTIPLIER ** level_counter,

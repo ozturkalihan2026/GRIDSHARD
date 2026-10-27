@@ -1,5 +1,17 @@
 # GRIDSHARD marka ikonları
 
+27 Ekim 2026: mağazada onaylanan boyalı reaktör artık uygulama ikonunun da
+tek kaynağıdır: `gridshard-app-icon-source.png` (22 Ekim mağaza teslimindeki
+`app-icon-512.png` ile aynı dosya). Web/PWA/favicon, Android'in beş yoğunlukta
+launcher/round/adaptive/themed ikonları ve native açılış ikonu, iOS AppIcon
+bu kaynaktan `python tools/prepare_app_icons.py` ile yalnız boyutlandırılır.
+512 px mağaza çıktısının kaynakla RGB pikselleri aynıdır. Android kaynakları
+`configure-native-branding.js` ile üretim projesine uygulanmıştır. Sync
+kancası bunları sonraki paketlere de taşır. Kurulu uygulamada değişiklik
+yeni Android paketiyle görünür; webdeki açılış devresi ayrı görselini korur.
+`generate_brand_assets.py` de ikonları en son bu kaynaktan dışa aktarır;
+aşağıdaki eski kristal çizimi ikon üretiminin kaynağı olmaktan çıkmıştır.
+
 23 Ekim 2026 son revizyon: Açılışta yalnız devrenin içindeki reaktör kalır;
 üstteki ayrı logo kaldırıldı. Başlık ve slogan üstteki mavi alana taşındı.
 `startup-circuit-v1/circuit-scene.webp` üstündeki kristal/enerji nabzı üç küçük

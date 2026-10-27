@@ -56,12 +56,12 @@ module.exports = defineConfig({
   projects: [
     {
       name: "desktop-chromium",
-      testMatch: /(battle-platform|battle-polish|startup-loading|talent-costs|reward-navigation|core-level-costs|two-client-pvp|menu-navigation|persistent-render|visual-atmosphere|presentation-refinements|battle-render-budget|onboarding-visibility|typography-pilot|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|battle-density|beta33-season|beta381-battle-events)\.spec\.js/,
+      testMatch: /(balance-rollout|battle-platform|battle-polish|battle-emoji-memory|startup-loading|talent-costs|reward-navigation|core-level-costs|two-client-pvp|menu-navigation|persistent-render|visual-atmosphere|presentation-refinements|battle-render-budget|onboarding-visibility|typography-pilot|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|battle-density|beta33-season|beta381-battle-events)\.spec\.js/,
       use: { ...devices["Desktop Chrome"], ...localChrome }
     },
     {
       name: "android-chrome-emulated",
-      testMatch: /(battle-platform|battle-polish|startup-loading|talent-costs|reward-navigation|core-level-costs|two-client-pvp|visual-atmosphere|presentation-refinements|battle-render-budget|onboarding-visibility|typography-pilot|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|mobile-battle|settings-layout|onboarding)\.spec\.js/,
+      testMatch: /(balance-rollout|battle-platform|battle-polish|battle-emoji-memory|startup-loading|talent-costs|reward-navigation|core-level-costs|two-client-pvp|visual-atmosphere|presentation-refinements|battle-render-budget|onboarding-visibility|typography-pilot|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|mobile-battle|settings-layout|onboarding)\.spec\.js/,
       use: { ...devices["Pixel 7"], ...localChrome }
     },
     {
@@ -69,7 +69,7 @@ module.exports = defineConfig({
       // Windows'taki WebKit öykünmesi yavaştır: testler işlevsel olarak geçer ama
       // 60 sn sınırına dayanır (ayar ekranı testi tek başına 58 sn sürdü).
       timeout: 150_000,
-      testMatch: /(battle-platform|battle-polish|startup-loading|talent-costs|reward-navigation|core-level-costs|mobile-battle|settings-layout|presentation-refinements|battle-render-budget|onboarding|onboarding-visibility)\.spec\.js/,
+      testMatch: /(balance-rollout|battle-platform|battle-polish|startup-loading|talent-costs|reward-navigation|core-level-costs|mobile-battle|settings-layout|presentation-refinements|battle-render-budget|onboarding|onboarding-visibility)\.spec\.js/,
       use: { ...devices["iPhone 15"] }
     }
   ]
