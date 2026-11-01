@@ -980,251 +980,6 @@ globalThis.GridshardModuleLayerData = Object.freeze({
    "bottom": 1.0027
   }
  },
- "cooler": {
-  "kind": "layered",
-  "heads": {
-   "y00": {
-    "src": "assets/ui/modules-physical-v1/cooler-y00.webp",
-    "left": -0.0394,
-    "top": 0.0529,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.7565,
-     "y": 0.3535
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7579
-    }
-   },
-   "y01": {
-    "src": "assets/ui/modules-physical-v1/cooler-y01.webp",
-    "left": -0.0332,
-    "top": 0.0571,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.7451,
-     "y": 0.6135
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7591
-    }
-   },
-   "y02": {
-    "src": "assets/ui/modules-physical-v1/cooler-y02.webp",
-    "left": -0.0271,
-    "top": 0.0529,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.7641,
-     "y": 0.6194
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7591
-    }
-   },
-   "y03": {
-    "src": "assets/ui/modules-physical-v1/cooler-y03.webp",
-    "left": -0.0209,
-    "top": 0.0571,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.7956,
-     "y": 0.6603
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7628
-    }
-   },
-   "y04": {
-    "src": "assets/ui/modules-physical-v1/cooler-y04.webp",
-    "left": -0.0394,
-    "top": 0.0571,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.4506,
-     "y": 0.7329
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7542
-    }
-   },
-   "y05": {
-    "src": "assets/ui/modules-physical-v1/cooler-y05.webp",
-    "left": -0.0353,
-    "top": 0.0571,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.3135,
-     "y": 0.7221
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7529
-    }
-   },
-   "y06": {
-    "src": "assets/ui/modules-physical-v1/cooler-y06.webp",
-    "left": -0.0291,
-    "top": 0.0571,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.2298,
-     "y": 0.6112
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7529
-    }
-   },
-   "y07": {
-    "src": "assets/ui/modules-physical-v1/cooler-y07.webp",
-    "left": -0.0188,
-    "top": 0.0571,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.2528,
-     "y": 0.5929
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7554
-    }
-   },
-   "y08": {
-    "src": "assets/ui/modules-physical-v1/cooler-y08.webp",
-    "left": -0.0394,
-    "top": 0.0694,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.2394,
-     "y": 0.4688
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7542
-    }
-   },
-   "y09": {
-    "src": "assets/ui/modules-physical-v1/cooler-y09.webp",
-    "left": -0.0353,
-    "top": 0.0653,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.2487,
-     "y": 0.3118
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7529
-    }
-   },
-   "y10": {
-    "src": "assets/ui/modules-physical-v1/cooler-y10.webp",
-    "left": -0.0312,
-    "top": 0.0653,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.2483,
-     "y": 0.3183
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7542
-    }
-   },
-   "y11": {
-    "src": "assets/ui/modules-physical-v1/cooler-y11.webp",
-    "left": -0.0209,
-    "top": 0.0653,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.2621,
-     "y": 0.2773
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7591
-    }
-   },
-   "y12": {
-    "src": "assets/ui/modules-physical-v1/cooler-y12.webp",
-    "left": -0.0374,
-    "top": 0.0818,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.3868,
-     "y": 0.2335
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7641
-    }
-   },
-   "y13": {
-    "src": "assets/ui/modules-physical-v1/cooler-y13.webp",
-    "left": -0.0353,
-    "top": 0.0818,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.7153,
-     "y": 0.2855
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7591
-    }
-   },
-   "y14": {
-    "src": "assets/ui/modules-physical-v1/cooler-y14.webp",
-    "left": -0.0312,
-    "top": 0.0818,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.7311,
-     "y": 0.2771
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7579
-    }
-   },
-   "y15": {
-    "src": "assets/ui/modules-physical-v1/cooler-y15.webp",
-    "left": -0.0209,
-    "top": 0.0818,
-    "size": 1.0541,
-    "emitter": {
-     "x": 0.7451,
-     "y": 0.3324
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7579
-    }
-   }
-  },
-  "socketFit": {
-   "size": 1.03218,
-   "left": -0.01784,
-   "top": -0.03497
-  },
-  "socketBounds": {
-   "width": 0.7219,
-   "height": 0.8235,
-   "left": 0.16024,
-   "top": 0.1751,
-   "right": 0.9049,
-   "footMin": 0.5655,
-   "footMax": 0.5682,
-   "footCentre": 0.5017,
-   "bottom": 1.0027
-  }
- },
  "arc_cannon": {
   "kind": "layered",
   "heads": {
@@ -1713,251 +1468,6 @@ globalThis.GridshardModuleLayerData = Object.freeze({
    "footMax": 0.6969,
    "footCentre": 0.49416,
    "bottom": 1.0027
-  }
- },
- "jammer": {
-  "kind": "layered",
-  "heads": {
-   "y00": {
-    "src": "assets/ui/modules-physical-v1/jammer-y00.webp",
-    "left": -0.0833,
-    "top": -0.1068,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.6804,
-     "y": 0.3341
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7052
-    }
-   },
-   "y01": {
-    "src": "assets/ui/modules-physical-v1/jammer-y01.webp",
-    "left": -0.081,
-    "top": -0.1068,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.7179,
-     "y": 0.5239
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7052
-    }
-   },
-   "y02": {
-    "src": "assets/ui/modules-physical-v1/jammer-y02.webp",
-    "left": -0.0649,
-    "top": -0.0884,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.7565,
-     "y": 0.545
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7107
-    }
-   },
-   "y03": {
-    "src": "assets/ui/modules-physical-v1/jammer-y03.webp",
-    "left": -0.0718,
-    "top": -0.0884,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.758,
-     "y": 0.5452
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7148
-    }
-   },
-   "y04": {
-    "src": "assets/ui/modules-physical-v1/jammer-y04.webp",
-    "left": -0.0901,
-    "top": -0.0747,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.4564,
-     "y": 0.5391
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7079
-    }
-   },
-   "y05": {
-    "src": "assets/ui/modules-physical-v1/jammer-y05.webp",
-    "left": -0.0787,
-    "top": -0.0747,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.1846,
-     "y": 0.536
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7038
-    }
-   },
-   "y06": {
-    "src": "assets/ui/modules-physical-v1/jammer-y06.webp",
-    "left": -0.0695,
-    "top": -0.0747,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.2068,
-     "y": 0.545
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7065
-    }
-   },
-   "y07": {
-    "src": "assets/ui/modules-physical-v1/jammer-y07.webp",
-    "left": -0.0879,
-    "top": -0.0655,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.2568,
-     "y": 0.5515
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7065
-    }
-   },
-   "y08": {
-    "src": "assets/ui/modules-physical-v1/jammer-y08.webp",
-    "left": -0.0993,
-    "top": -0.0655,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.3724,
-     "y": 0.3295
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7065
-    }
-   },
-   "y09": {
-    "src": "assets/ui/modules-physical-v1/jammer-y09.webp",
-    "left": -0.0993,
-    "top": -0.0655,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.3693,
-     "y": 0.3371
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7065
-    }
-   },
-   "y10": {
-    "src": "assets/ui/modules-physical-v1/jammer-y10.webp",
-    "left": -0.0764,
-    "top": -0.0793,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.2918,
-     "y": 0.1507
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7024
-    }
-   },
-   "y11": {
-    "src": "assets/ui/modules-physical-v1/jammer-y11.webp",
-    "left": -0.0764,
-    "top": -0.0793,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.2788,
-     "y": 0.1551
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7024
-    }
-   },
-   "y12": {
-    "src": "assets/ui/modules-physical-v1/jammer-y12.webp",
-    "left": -0.0993,
-    "top": -0.0379,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.4931,
-     "y": 0.0877
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7203
-    }
-   },
-   "y13": {
-    "src": "assets/ui/modules-physical-v1/jammer-y13.webp",
-    "left": -0.0833,
-    "top": -0.0425,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.572,
-     "y": 0.1
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7203
-    }
-   },
-   "y14": {
-    "src": "assets/ui/modules-physical-v1/jammer-y14.webp",
-    "left": -0.0833,
-    "top": -0.0425,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.7565,
-     "y": 0.3253
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7203
-    }
-   },
-   "y15": {
-    "src": "assets/ui/modules-physical-v1/jammer-y15.webp",
-    "left": -0.0879,
-    "top": -0.0517,
-    "size": 1.1757,
-    "emitter": {
-     "x": 0.7156,
-     "y": 0.3785
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7107
-    }
-   }
-  },
-  "socketFit": {
-   "size": 0.85685,
-   "left": 0.0688,
-   "top": 0.14049
-  },
-  "socketBounds": {
-   "width": 0.7164,
-   "height": 0.992,
-   "left": 0.13341,
-   "top": 0.00949,
-   "right": 0.85902,
-   "footMin": 0.6246,
-   "footMax": 0.6583,
-   "footCentre": 0.50324,
-   "bottom": 1.0031
   }
  },
  "railgun": {
@@ -2479,35 +1989,6 @@ globalThis.GridshardModuleLayerData = Object.freeze({
    "bottom": 0.9999
   }
  },
- "battery": {
-  "kind": "single",
-  "art": {
-   "src": "assets/ui/modules-physical-v1/battery.webp",
-   "left": -0.005,
-   "top": 0.041,
-   "size": 1.0061
-  },
-  "emitter": {
-   "x": 0.5,
-   "y": 0.4252
-  },
-  "socketFit": {
-   "size": 0.94308,
-   "left": -0.01418,
-   "top": 0.05447
-  },
-  "socketBounds": {
-   "width": 0.9013,
-   "height": 0.8856,
-   "left": 0.05002,
-   "top": 0.11698,
-   "right": 0.95132,
-   "footMin": 0.6026,
-   "footMax": 0.6026,
-   "footCentre": 0.54521,
-   "bottom": 1.0026
-  }
- },
  "amplifier": {
   "kind": "single",
   "art": {
@@ -2821,35 +2302,6 @@ globalThis.GridshardModuleLayerData = Object.freeze({
    "bottom": 1.0
   }
  },
- "targeting_computer": {
-  "kind": "single",
-  "art": {
-   "src": "assets/ui/modules-physical-v2/targeting_computer.webp",
-   "left": -0.0434,
-   "top": -0.0401,
-   "size": 1.0868
-  },
-  "emitter": {
-   "x": 0.5,
-   "y": 0.3543
-  },
-  "socketFit": {
-   "size": 0.85324,
-   "left": 0.0275,
-   "top": 0.14556
-  },
-  "socketBounds": {
-   "width": 0.9028,
-   "height": 0.9962,
-   "left": 0.05,
-   "top": 0.00518,
-   "right": 0.95283,
-   "footMin": 0.6679,
-   "footMax": 0.6679,
-   "footCentre": 0.55377,
-   "bottom": 1.0014
-  }
- },
  "barrier": {
   "kind": "single",
   "art": {
@@ -2876,64 +2328,6 @@ globalThis.GridshardModuleLayerData = Object.freeze({
    "footMin": 0.6427,
    "footMax": 0.6427,
    "footCentre": 0.37145,
-   "bottom": 1.0013
-  }
- },
- "capacitor": {
-  "kind": "single",
-  "art": {
-   "src": "assets/ui/modules-physical-v2/capacitor.webp",
-   "left": -0.0383,
-   "top": -0.0304,
-   "size": 1.0766
-  },
-  "emitter": {
-   "x": 0.5,
-   "y": 0.3603
-  },
-  "socketFit": {
-   "size": 0.86128,
-   "left": 0.01865,
-   "top": 0.1376
-  },
-  "socketBounds": {
-   "width": 0.9,
-   "height": 0.9869,
-   "left": 0.04861,
-   "top": 0.01446,
-   "right": 0.94858,
-   "footMin": 0.6897,
-   "footMax": 0.6897,
-   "footCentre": 0.55888,
-   "bottom": 1.0013
-  }
- },
- "current_balancer": {
-  "kind": "single",
-  "art": {
-   "src": "assets/ui/modules-physical-v2/current_balancer.webp",
-   "left": 0.0077,
-   "top": 0.0962,
-   "size": 0.9846
-  },
-  "emitter": {
-   "x": 0.5,
-   "y": 0.465
-  },
-  "socketFit": {
-   "size": 0.94172,
-   "left": 0.06053,
-   "top": 0.05705
-  },
-  "socketBounds": {
-   "width": 0.9026,
-   "height": 0.8256,
-   "left": 0.04872,
-   "top": 0.17569,
-   "right": 0.95128,
-   "footMin": 0.8359,
-   "footMax": 0.8359,
-   "footCentre": 0.46667,
    "bottom": 1.0013
   }
  },
@@ -2966,35 +2360,6 @@ globalThis.GridshardModuleLayerData = Object.freeze({
    "bottom": 1.0014
   }
  },
- "chrono_relay": {
-  "kind": "single",
-  "art": {
-   "src": "assets/ui/modules-physical-v2/chrono_relay.webp",
-   "left": -0.0543,
-   "top": -0.0652,
-   "size": 1.113
-  },
-  "emitter": {
-   "x": 0.5,
-   "y": 0.3387
-  },
-  "socketFit": {
-   "size": 0.83546,
-   "left": 0.04169,
-   "top": 0.16337
-  },
-  "socketBounds": {
-   "width": 0.9014,
-   "height": 1.0174,
-   "left": 0.05004,
-   "top": -0.01593,
-   "right": 0.95146,
-   "footMin": 0.6956,
-   "footMax": 0.6956,
-   "footCentre": 0.54857,
-   "bottom": 1.0014
-  }
- },
  "phase_armor": {
   "kind": "single",
   "art": {
@@ -3022,93 +2387,6 @@ globalThis.GridshardModuleLayerData = Object.freeze({
    "footMax": 0.6966,
    "footCentre": 0.57239,
    "bottom": 1.0015
-  }
- },
- "precision_matrix": {
-  "kind": "single",
-  "art": {
-   "src": "assets/ui/modules-physical-v2/precision_matrix.webp",
-   "left": -0.0878,
-   "top": -0.125,
-   "size": 1.1755
-  },
-  "emitter": {
-   "x": 0.5,
-   "y": 0.3016
-  },
-  "socketFit": {
-   "size": 0.78886,
-   "left": 0.1527,
-   "top": 0.20995
-  },
-  "socketBounds": {
-   "width": 0.9031,
-   "height": 1.0775,
-   "left": 0.04689,
-   "top": -0.07602,
-   "right": 0.94995,
-   "footMin": 0.7684,
-   "footMax": 0.7684,
-   "footCentre": 0.44026,
-   "bottom": 1.0015
-  }
- },
- "prism_shield": {
-  "kind": "single",
-  "art": {
-   "src": "assets/ui/modules-physical-v2/prism_shield.webp",
-   "left": -0.1139,
-   "top": -0.175,
-   "size": 1.2278
-  },
-  "emitter": {
-   "x": 0.5,
-   "y": 0.2705
-  },
-  "socketFit": {
-   "size": 0.75522,
-   "left": 0.12118,
-   "top": 0.24357
-  },
-  "socketBounds": {
-   "width": 0.9432,
-   "height": 1.1255,
-   "left": 0.02679,
-   "top": -0.12384,
-   "right": 0.97002,
-   "footMin": 0.6619,
-   "footMax": 0.6619,
-   "footCentre": 0.5016,
-   "bottom": 1.0016
-  }
- },
- "omega_amplifier": {
-  "kind": "single",
-  "art": {
-   "src": "assets/ui/modules-physical-v2/omega_amplifier.webp",
-   "left": -0.0469,
-   "top": -0.0468,
-   "size": 1.0938
-  },
-  "emitter": {
-   "x": 0.5,
-   "y": 0.3501
-  },
-  "socketFit": {
-   "size": 0.84771,
-   "left": 0.05321,
-   "top": 0.1511
-  },
-  "socketBounds": {
-   "width": 0.94,
-   "height": 1.0027,
-   "left": 0.03001,
-   "top": -0.00122,
-   "right": 0.96999,
-   "footMin": 0.7377,
-   "footMax": 0.7377,
-   "footCentre": 0.52706,
-   "bottom": 1.0014
   }
  },
  "core_capacitor": {
@@ -3727,986 +3005,6 @@ globalThis.GridshardModuleLayerData = Object.freeze({
    "bottom": 1.0019
   }
  },
- "nano_medic": {
-  "kind": "layered",
-  "heads": {
-   "y00": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y00.webp",
-    "left": 0.124,
-    "top": 0.0902,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.9758,
-     "y": 0.4788
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7359
-    }
-   },
-   "y01": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y01.webp",
-    "left": 0.1276,
-    "top": 0.0975,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.9872,
-     "y": 0.5272
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7414
-    }
-   },
-   "y02": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y02.webp",
-    "left": 0.135,
-    "top": 0.0865,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.9812,
-     "y": 0.5699
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7359
-    }
-   },
-   "y03": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y03.webp",
-    "left": 0.1166,
-    "top": 0.0865,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.901,
-     "y": 0.6954
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7359
-    }
-   },
-   "y04": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y04.webp",
-    "left": 0.0359,
-    "top": 0.0865,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.5752,
-     "y": 0.725
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7359
-    }
-   },
-   "y05": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y05.webp",
-    "left": -0.0448,
-    "top": 0.0902,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.0645,
-     "y": 0.5786
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7359
-    }
-   },
-   "y06": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y06.webp",
-    "left": -0.0576,
-    "top": 0.0902,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.0254,
-     "y": 0.5972
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.737
-    }
-   },
-   "y07": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y07.webp",
-    "left": -0.0595,
-    "top": 0.0902,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.0517,
-     "y": 0.574
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7359
-    }
-   },
-   "y08": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y08.webp",
-    "left": -0.0613,
-    "top": 0.0865,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.0138,
-     "y": 0.51
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7348
-    }
-   },
-   "y09": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y09.webp",
-    "left": 0.0084,
-    "top": 0.0902,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.1334,
-     "y": 0.2739
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.737
-    }
-   },
-   "y10": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y10.webp",
-    "left": -0.0264,
-    "top": 0.0865,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.0605,
-     "y": 0.2804
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7359
-    }
-   },
-   "y11": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y11.webp",
-    "left": -0.0026,
-    "top": 0.0865,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.1228,
-     "y": 0.2077
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7348
-    }
-   },
-   "y12": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y12.webp",
-    "left": 0.0322,
-    "top": 0.0902,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.4762,
-     "y": 0.1395
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7359
-    }
-   },
-   "y13": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y13.webp",
-    "left": 0.0634,
-    "top": 0.0865,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.8662,
-     "y": 0.2627
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7348
-    }
-   },
-   "y14": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y14.webp",
-    "left": 0.0671,
-    "top": 0.0902,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.8753,
-     "y": 0.2767
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7359
-    }
-   },
-   "y15": {
-    "src": "assets/ui/modules-physical-v1/nano_medic-y15.webp",
-    "left": 0.0579,
-    "top": 0.0902,
-    "size": 0.9392,
-    "emitter": {
-     "x": 0.8648,
-     "y": 0.2666
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7359
-    }
-   }
-  },
-  "socketFit": {
-   "size": 0.96274,
-   "left": 0.01299,
-   "top": 0.03486
-  },
-  "socketBounds": {
-   "width": 0.8829,
-   "height": 0.8829,
-   "left": -0.02825,
-   "top": 0.11585,
-   "right": 1.03996,
-   "footMin": 0.5846,
-   "footMax": 0.6579,
-   "footCentre": 0.50192,
-   "bottom": 1.0025
-  }
- },
- "ion_spear": {
-  "kind": "layered",
-  "heads": {
-   "y00": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y00.webp",
-    "left": 0.172,
-    "top": 0.1998,
-    "size": 0.9228,
-    "emitter": {
-     "x": 1.0212,
-     "y": 0.5098
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7967
-    }
-   },
-   "y01": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y01.webp",
-    "left": 0.1558,
-    "top": 0.1853,
-    "size": 0.9228,
-    "emitter": {
-     "x": 1.0035,
-     "y": 0.6353
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.788
-    }
-   },
-   "y02": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y02.webp",
-    "left": 0.0728,
-    "top": 0.1421,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.9037,
-     "y": 0.7459
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7632
-    }
-   },
-   "y03": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y03.webp",
-    "left": 0.0332,
-    "top": 0.106,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.6211,
-     "y": 0.694
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7405
-    }
-   },
-   "y04": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y04.webp",
-    "left": 0.0386,
-    "top": 0.106,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.5588,
-     "y": 0.6545
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7405
-    }
-   },
-   "y05": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y05.webp",
-    "left": 0.053,
-    "top": 0.106,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.2549,
-     "y": 0.7369
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7405
-    }
-   },
-   "y06": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y06.webp",
-    "left": -0.0479,
-    "top": 0.106,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.0551,
-     "y": 0.7173
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7405
-    }
-   },
-   "y07": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y07.webp",
-    "left": -0.0587,
-    "top": 0.1962,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.0159,
-     "y": 0.5901
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7935
-    }
-   },
-   "y08": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y08.webp",
-    "left": 0.0242,
-    "top": 0.1962,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.0981,
-     "y": 0.4977
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7956
-    }
-   },
-   "y09": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y09.webp",
-    "left": 0.026,
-    "top": 0.1349,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.0918,
-     "y": 0.2831
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7588
-    }
-   },
-   "y10": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y10.webp",
-    "left": 0.0512,
-    "top": 0.1024,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.1552,
-     "y": 0.1959
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7394
-    }
-   },
-   "y11": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y11.webp",
-    "left": 0.0602,
-    "top": 0.1024,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.2125,
-     "y": 0.1606
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7394
-    }
-   },
-   "y12": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y12.webp",
-    "left": 0.0422,
-    "top": 0.1024,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.4856,
-     "y": 0.1513
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7394
-    }
-   },
-   "y13": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y13.webp",
-    "left": 0.0206,
-    "top": 0.106,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.737,
-     "y": 0.175
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7405
-    }
-   },
-   "y14": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y14.webp",
-    "left": 0.0206,
-    "top": 0.1024,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.8286,
-     "y": 0.2031
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7405
-    }
-   },
-   "y15": {
-    "src": "assets/ui/modules-physical-v1/ion_spear-y15.webp",
-    "left": 0.0692,
-    "top": 0.1745,
-    "size": 0.9228,
-    "emitter": {
-     "x": 0.9262,
-     "y": 0.3696
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7816
-    }
-   }
-  },
-  "socketFit": {
-   "size": 0.97983,
-   "left": -0.00878,
-   "top": 0.01782
-  },
-  "socketBounds": {
-   "width": 0.8675,
-   "height": 0.8675,
-   "left": -0.02986,
-   "top": 0.13124,
-   "right": 1.06837,
-   "footMin": 0.5119,
-   "footMax": 0.7209,
-   "footCentre": 0.50075,
-   "bottom": 1.0024
-  }
- },
- "quantum_cannon": {
-  "kind": "layered",
-  "heads": {
-   "y00": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y00.webp",
-    "left": 0.1053,
-    "top": 0.1632,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.8979,
-     "y": 0.5109
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7591
-    }
-   },
-   "y01": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y01.webp",
-    "left": 0.0663,
-    "top": 0.1666,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.8361,
-     "y": 0.5929
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7611
-    }
-   },
-   "y02": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y02.webp",
-    "left": 0.0884,
-    "top": 0.1666,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.8304,
-     "y": 0.671
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7601
-    }
-   },
-   "y03": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y03.webp",
-    "left": 0.0934,
-    "top": 0.1564,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.7657,
-     "y": 0.7048
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.755
-    }
-   },
-   "y04": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y04.webp",
-    "left": 0.0663,
-    "top": 0.1564,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.5084,
-     "y": 0.652
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.755
-    }
-   },
-   "y05": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y05.webp",
-    "left": 0.0613,
-    "top": 0.1598,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.2625,
-     "y": 0.6694
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7561
-    }
-   },
-   "y06": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y06.webp",
-    "left": 0.0562,
-    "top": 0.1632,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.1937,
-     "y": 0.6623
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7581
-    }
-   },
-   "y07": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y07.webp",
-    "left": 0.0613,
-    "top": 0.1699,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.169,
-     "y": 0.571
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7632
-    }
-   },
-   "y08": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y08.webp",
-    "left": 0.0799,
-    "top": 0.1869,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.1571,
-     "y": 0.5568
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7733
-    }
-   },
-   "y09": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y09.webp",
-    "left": 0.0748,
-    "top": 0.1699,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.1389,
-     "y": 0.4148
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7632
-    }
-   },
-   "y10": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y10.webp",
-    "left": 0.0579,
-    "top": 0.1564,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.1573,
-     "y": 0.4416
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.755
-    }
-   },
-   "y11": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y11.webp",
-    "left": 0.0917,
-    "top": 0.1564,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.2968,
-     "y": 0.2291
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.755
-    }
-   },
-   "y12": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y12.webp",
-    "left": 0.0697,
-    "top": 0.1564,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.4695,
-     "y": 0.2035
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.755
-    }
-   },
-   "y13": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y13.webp",
-    "left": 0.0545,
-    "top": 0.1598,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.771,
-     "y": 0.2799
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7561
-    }
-   },
-   "y14": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y14.webp",
-    "left": 0.0358,
-    "top": 0.1598,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.8071,
-     "y": 0.323
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7561
-    }
-   },
-   "y15": {
-    "src": "assets/ui/modules-physical-v1/quantum_cannon-y15.webp",
-    "left": 0.0409,
-    "top": 0.1598,
-    "size": 0.8673,
-    "emitter": {
-     "x": 0.8171,
-     "y": 0.3165
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7561
-    }
-   }
-  },
-  "socketFit": {
-   "size": 1.04243,
-   "left": -0.02278,
-   "top": -0.04483
-  },
-  "socketBounds": {
-   "width": 0.8154,
-   "height": 0.8154,
-   "left": 0.0793,
-   "top": 0.1835,
-   "right": 0.94776,
-   "footMin": 0.5918,
-   "footMax": 0.655,
-   "footCentre": 0.5015,
-   "bottom": 1.0023
-  }
- },
- "phoenix_repair": {
-  "kind": "layered",
-  "heads": {
-   "y00": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y00.webp",
-    "left": 0.1028,
-    "top": 0.2273,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.742,
-     "y": 0.7694
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7757
-    }
-   },
-   "y01": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y01.webp",
-    "left": 0.0981,
-    "top": 0.2242,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.7871,
-     "y": 0.6091
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7747
-    }
-   },
-   "y02": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y02.webp",
-    "left": 0.1152,
-    "top": 0.2242,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.7911,
-     "y": 0.7584
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7747
-    }
-   },
-   "y03": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y03.webp",
-    "left": 0.095,
-    "top": 0.2242,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.7433,
-     "y": 0.7292
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7747
-    }
-   },
-   "y04": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y04.webp",
-    "left": 0.0981,
-    "top": 0.2242,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.4657,
-     "y": 0.7526
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7747
-    }
-   },
-   "y05": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y05.webp",
-    "left": 0.1028,
-    "top": 0.2273,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.2178,
-     "y": 0.7541
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7757
-    }
-   },
-   "y06": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y06.webp",
-    "left": 0.0887,
-    "top": 0.2273,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.2105,
-     "y": 0.7522
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7757
-    }
-   },
-   "y07": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y07.webp",
-    "left": 0.0825,
-    "top": 0.2273,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.1662,
-     "y": 0.6154
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7757
-    }
-   },
-   "y08": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y08.webp",
-    "left": 0.0965,
-    "top": 0.2242,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.2051,
-     "y": 0.5109
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7747
-    }
-   },
-   "y09": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y09.webp",
-    "left": 0.0981,
-    "top": 0.2242,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.1787,
-     "y": 0.5372
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7757
-    }
-   },
-   "y10": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y10.webp",
-    "left": 0.1074,
-    "top": 0.2273,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.1949,
-     "y": 0.5094
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7766
-    }
-   },
-   "y11": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y11.webp",
-    "left": 0.0934,
-    "top": 0.2242,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.3175,
-     "y": 0.3891
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7747
-    }
-   },
-   "y12": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y12.webp",
-    "left": 0.1059,
-    "top": 0.2273,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.486,
-     "y": 0.2723
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7757
-    }
-   },
-   "y13": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y13.webp",
-    "left": 0.095,
-    "top": 0.2242,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.6218,
-     "y": 0.3673
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7747
-    }
-   },
-   "y14": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y14.webp",
-    "left": 0.0996,
-    "top": 0.2242,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.7661,
-     "y": 0.4845
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7747
-    }
-   },
-   "y15": {
-    "src": "assets/ui/modules-physical-v1/phoenix_repair-y15.webp",
-    "left": 0.1121,
-    "top": 0.2242,
-    "size": 0.7976,
-    "emitter": {
-     "x": 0.7793,
-     "y": 0.425
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7747
-    }
-   }
-  },
-  "socketFit": {
-   "size": 1.13364,
-   "left": -0.06829,
-   "top": -0.13602
-  },
-  "socketBounds": {
-   "width": 0.7104,
-   "height": 0.7498,
-   "left": 0.1282,
-   "top": 0.24913,
-   "right": 0.8593,
-   "footMin": 0.5608,
-   "footMax": 0.6917,
-   "footCentre": 0.5013,
-   "bottom": 1.0021
-  }
- },
  "plasma_mortar": {
   "kind": "layered",
   "heads": {
@@ -4952,984 +3250,386 @@ globalThis.GridshardModuleLayerData = Object.freeze({
    "bottom": 1.0023
   }
  },
- "swarm_fabricator": {
+ "burst_cannon": {
   "kind": "layered",
   "heads": {
-   "y00": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y00.webp",
-    "left": 0.1157,
-    "top": 0.225,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.857,
-     "y": 0.5793
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7789
-    }
-   },
-   "y01": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y01.webp",
-    "left": 0.1252,
-    "top": 0.2187,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.8695,
-     "y": 0.6381
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7751
-    }
-   },
-   "y02": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y02.webp",
-    "left": 0.1283,
-    "top": 0.2187,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.8561,
-     "y": 0.6411
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7741
-    }
-   },
-   "y03": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y03.webp",
-    "left": 0.1141,
-    "top": 0.225,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.7567,
-     "y": 0.7601
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7798
-    }
-   },
-   "y04": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y04.webp",
-    "left": 0.0888,
-    "top": 0.2471,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.4589,
-     "y": 0.7712
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7922
-    }
-   },
-   "y05": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y05.webp",
-    "left": 0.0556,
-    "top": 0.2187,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.2543,
-     "y": 0.7538
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7741
-    }
-   },
-   "y06": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y06.webp",
-    "left": 0.0556,
-    "top": 0.244,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.125,
-     "y": 0.6759
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7893
-    }
-   },
-   "y07": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y07.webp",
-    "left": 0.0477,
-    "top": 0.2693,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.1131,
-     "y": 0.676
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.8045
-    }
-   },
-   "y08": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y08.webp",
-    "left": 0.0698,
-    "top": 0.2377,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.1383,
-     "y": 0.6584
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7855
-    }
-   },
-   "y09": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y09.webp",
-    "left": 0.0651,
-    "top": 0.263,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.1273,
-     "y": 0.6217
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.8007
-    }
-   },
-   "y10": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y10.webp",
-    "left": 0.1204,
-    "top": 0.2851,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.1867,
-     "y": 0.6251
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.814
-    }
-   },
-   "y11": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y11.webp",
-    "left": 0.1378,
-    "top": 0.2345,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.2702,
-     "y": 0.3415
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7836
-    }
-   },
    "y12": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y12.webp",
-    "left": 0.1046,
-    "top": 0.263,
-    "size": 0.8098,
+    "src": "assets/ui/modules-physical-v3/burst_cannon-y12.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
     "emitter": {
-     "x": 0.481,
-     "y": 0.3557
+     "x": 0.49999999999999994,
+     "y": 0.19999999999999998
     },
     "pivot": {
      "x": 0.5,
-     "y": 0.8007
-    }
-   },
-   "y13": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y13.webp",
-    "left": 0.1426,
-    "top": 0.244,
-    "size": 0.8098,
-    "emitter": {
-     "x": 0.8168,
-     "y": 0.4333
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7903
+     "y": 0.8
     }
    },
    "y14": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y14.webp",
-    "left": 0.1568,
-    "top": 0.2313,
-    "size": 0.8098,
+    "src": "assets/ui/modules-physical-v3/burst_cannon-y14.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
     "emitter": {
-     "x": 0.9067,
-     "y": 0.508
+     "x": 0.7121320343559642,
+     "y": 0.24393398282201784
     },
     "pivot": {
      "x": 0.5,
-     "y": 0.7827
+     "y": 0.8
     }
    },
-   "y15": {
-    "src": "assets/ui/modules-physical-v1/swarm_fabricator-y15.webp",
-    "left": 0.1014,
-    "top": 0.244,
-    "size": 0.8098,
+   "y00": {
+    "src": "assets/ui/modules-physical-v3/burst_cannon-y00.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
     "emitter": {
-     "x": 0.8458,
-     "y": 0.5774
+     "x": 0.8,
+     "y": 0.35
     },
     "pivot": {
      "x": 0.5,
-     "y": 0.7903
+     "y": 0.8
+    }
+   },
+   "y02": {
+    "src": "assets/ui/modules-physical-v3/burst_cannon-y02.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
+    "emitter": {
+     "x": 0.7121320343559643,
+     "y": 0.4560660171779821
+    },
+    "pivot": {
+     "x": 0.5,
+     "y": 0.8
+    }
+   },
+   "y04": {
+    "src": "assets/ui/modules-physical-v3/burst_cannon-y04.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
+    "emitter": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "pivot": {
+     "x": 0.5,
+     "y": 0.8
+    }
+   },
+   "y06": {
+    "src": "assets/ui/modules-physical-v3/burst_cannon-y06.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
+    "emitter": {
+     "x": 0.2878679656440358,
+     "y": 0.4560660171779821
+    },
+    "pivot": {
+     "x": 0.5,
+     "y": 0.8
+    }
+   },
+   "y08": {
+    "src": "assets/ui/modules-physical-v3/burst_cannon-y08.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
+    "emitter": {
+     "x": 0.2,
+     "y": 0.35
+    },
+    "pivot": {
+     "x": 0.5,
+     "y": 0.8
+    }
+   },
+   "y10": {
+    "src": "assets/ui/modules-physical-v3/burst_cannon-y10.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
+    "emitter": {
+     "x": 0.2878679656440357,
+     "y": 0.24393398282201786
+    },
+    "pivot": {
+     "x": 0.5,
+     "y": 0.8
     }
    }
   },
   "socketFit": {
-   "size": 1.11651,
-   "left": -0.06056,
-   "top": -0.11774
+   "size": 0.90667,
+   "left": 0.03781,
+   "top": 0.12162
   },
   "socketBounds": {
-   "width": 0.7613,
-   "height": 0.7529,
-   "left": 0.07512,
-   "top": 0.24612,
-   "right": 0.94129,
-   "footMin": 0.5694,
-   "footMax": 0.6769,
-   "footCentre": 0.50206,
-   "bottom": 1.0011
+   "width": 0.9375,
+   "height": 0.9355,
+   "left": 0.03125,
+   "top": 0.0332,
+   "right": 0.96875,
+   "footMin": 0.6387,
+   "footMax": 0.7656,
+   "footCentre": 0.50977,
+   "bottom": 0.9688
   }
  },
- "disruptor": {
+ "shield_breaker": {
   "kind": "layered",
   "heads": {
-   "y00": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y00.webp",
-    "left": 0.0775,
-    "top": 0.1075,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.9657,
-     "y": 0.4417
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7678
-    }
-   },
-   "y01": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y01.webp",
-    "left": 0.0459,
-    "top": 0.0641,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.905,
-     "y": 0.5452
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7417
-    }
-   },
-   "y02": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y02.webp",
-    "left": 0.032,
-    "top": 0.0206,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.8812,
-     "y": 0.5968
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7169
-    }
-   },
-   "y03": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y03.webp",
-    "left": -0.0193,
-    "top": 0.0206,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.7306,
-     "y": 0.6759
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7157
-    }
-   },
-   "y04": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y04.webp",
-    "left": -0.0035,
-    "top": 0.0206,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.4958,
-     "y": 0.6154
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7157
-    }
-   },
-   "y05": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y05.webp",
-    "left": -0.0588,
-    "top": 0.0206,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.1586,
-     "y": 0.5737
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7157
-    }
-   },
-   "y06": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y06.webp",
-    "left": -0.0627,
-    "top": 0.0443,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.1137,
-     "y": 0.6077
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7299
-    }
-   },
-   "y07": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y07.webp",
-    "left": -0.0746,
-    "top": 0.072,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.0715,
-     "y": 0.5151
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7465
-    }
-   },
-   "y08": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y08.webp",
-    "left": -0.0311,
-    "top": 0.0917,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.1028,
-     "y": 0.4371
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7571
-    }
-   },
-   "y09": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y09.webp",
-    "left": -0.0371,
-    "top": 0.0206,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.0394,
-     "y": 0.1784
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7157
-    }
-   },
-   "y10": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y10.webp",
-    "left": -0.0292,
-    "top": 0.0206,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.0741,
-     "y": 0.1927
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7157
-    }
-   },
-   "y11": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y11.webp",
-    "left": -0.0193,
-    "top": 0.0167,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.2093,
-     "y": 0.0984
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7145
-    }
-   },
    "y12": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y12.webp",
-    "left": -0.0015,
-    "top": 0.0206,
-    "size": 1.011,
+    "src": "assets/ui/modules-physical-v3/shield_breaker-y12.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
     "emitter": {
-     "x": 0.4487,
-     "y": 0.0722
+     "x": 0.49999999999999994,
+     "y": 0.19999999999999998
     },
     "pivot": {
      "x": 0.5,
-     "y": 0.7157
-    }
-   },
-   "y13": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y13.webp",
-    "left": 0.0064,
-    "top": 0.0167,
-    "size": 1.011,
-    "emitter": {
-     "x": 0.8006,
-     "y": 0.0786
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7145
+     "y": 0.8
     }
    },
    "y14": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y14.webp",
-    "left": -0.0114,
-    "top": 0.0206,
-    "size": 1.011,
+    "src": "assets/ui/modules-physical-v3/shield_breaker-y14.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
     "emitter": {
-     "x": 0.8488,
-     "y": 0.1769
+     "x": 0.7121320343559642,
+     "y": 0.24393398282201784
     },
     "pivot": {
      "x": 0.5,
-     "y": 0.7157
+     "y": 0.8
     }
    },
-   "y15": {
-    "src": "assets/ui/modules-physical-v1/disruptor-y15.webp",
-    "left": 0.0538,
-    "top": 0.0325,
-    "size": 1.011,
+   "y00": {
+    "src": "assets/ui/modules-physical-v3/shield_breaker-y00.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
     "emitter": {
-     "x": 0.9922,
-     "y": 0.3837
+     "x": 0.8,
+     "y": 0.35
     },
     "pivot": {
      "x": 0.5,
-     "y": 0.7216
+     "y": 0.8
+    }
+   },
+   "y02": {
+    "src": "assets/ui/modules-physical-v3/shield_breaker-y02.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
+    "emitter": {
+     "x": 0.7121320343559643,
+     "y": 0.4560660171779821
+    },
+    "pivot": {
+     "x": 0.5,
+     "y": 0.8
+    }
+   },
+   "y04": {
+    "src": "assets/ui/modules-physical-v3/shield_breaker-y04.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
+    "emitter": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "pivot": {
+     "x": 0.5,
+     "y": 0.8
+    }
+   },
+   "y06": {
+    "src": "assets/ui/modules-physical-v3/shield_breaker-y06.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
+    "emitter": {
+     "x": 0.2878679656440358,
+     "y": 0.4560660171779821
+    },
+    "pivot": {
+     "x": 0.5,
+     "y": 0.8
+    }
+   },
+   "y08": {
+    "src": "assets/ui/modules-physical-v3/shield_breaker-y08.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
+    "emitter": {
+     "x": 0.2,
+     "y": 0.35
+    },
+    "pivot": {
+     "x": 0.5,
+     "y": 0.8
+    }
+   },
+   "y10": {
+    "src": "assets/ui/modules-physical-v3/shield_breaker-y10.webp",
+    "left": 0,
+    "top": 0,
+    "size": 1,
+    "emitter": {
+     "x": 0.2878679656440357,
+     "y": 0.24393398282201786
+    },
+    "pivot": {
+     "x": 0.5,
+     "y": 0.8
     }
    }
   },
   "socketFit": {
-   "size": 0.89183,
-   "left": 0.05248,
-   "top": 0.10577
+   "size": 0.90861,
+   "left": 0.05779,
+   "top": 0.11974
   },
   "socketBounds": {
-   "width": 0.9531,
-   "height": 0.9504,
-   "left": -0.04301,
-   "top": 0.04829,
-   "right": 1.05954,
-   "footMin": 0.5555,
-   "footMax": 0.7372,
-   "footCentre": 0.5018,
-   "bottom": 1.0027
+   "width": 0.9355,
+   "height": 0.9336,
+   "left": 0.03125,
+   "top": 0.03516,
+   "right": 0.96875,
+   "footMin": 0.4766,
+   "footMax": 0.8203,
+   "footCentre": 0.48669,
+   "bottom": 0.9688
   }
  },
- "singularity_projector": {
-  "kind": "layered",
-  "heads": {
-   "y00": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y00.webp",
-    "left": 0.0169,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.5057,
-     "y": 0.4364
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7273
-    }
-   },
-   "y01": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y01.webp",
-    "left": 0.0055,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.4924,
-     "y": 0.434
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7261
-    }
-   },
-   "y02": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y02.webp",
-    "left": 0.0093,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.4962,
-     "y": 0.4364
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7273
-    }
-   },
-   "y03": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y03.webp",
-    "left": -0.0021,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.4848,
-     "y": 0.4364
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7273
-    }
-   },
-   "y04": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y04.webp",
-    "left": 0.0188,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.5076,
-     "y": 0.434
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7261
-    }
-   },
-   "y05": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y05.webp",
-    "left": 0.0302,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.5152,
-     "y": 0.434
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7261
-    }
-   },
-   "y06": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y06.webp",
-    "left": 0.015,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.5038,
-     "y": 0.434
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7261
-    }
-   },
-   "y07": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y07.webp",
-    "left": 0.0264,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.5114,
-     "y": 0.434
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7261
-    }
-   },
-   "y08": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y08.webp",
-    "left": 0.0169,
-    "top": 0.0529,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.5057,
-     "y": 0.4317
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.725
-    }
-   },
-   "y09": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y09.webp",
-    "left": -0.0078,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.481,
-     "y": 0.4364
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7273
-    }
-   },
-   "y10": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y10.webp",
-    "left": -0.0021,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.4848,
-     "y": 0.434
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7261
-    }
-   },
-   "y11": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y11.webp",
-    "left": -0.0078,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.481,
-     "y": 0.434
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7261
-    }
-   },
-   "y12": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y12.webp",
-    "left": 0.0131,
-    "top": 0.0529,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.5019,
-     "y": 0.4317
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.725
-    }
-   },
-   "y13": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y13.webp",
-    "left": 0.0169,
-    "top": 0.0529,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.5019,
-     "y": 0.4317
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.725
-    }
-   },
-   "y14": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y14.webp",
-    "left": -0.0097,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.4772,
-     "y": 0.434
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7261
-    }
-   },
-   "y15": {
-    "src": "assets/ui/modules-physical-v1/singularity_projector-y15.webp",
-    "left": 0.0188,
-    "top": 0.0567,
-    "size": 0.9737,
-    "emitter": {
-     "x": 0.5076,
-     "y": 0.434
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7261
-    }
-   }
+ "buffer_shield": {
+  "kind": "single",
+  "art": {
+   "src": "assets/ui/modules-physical-v3/buffer_shield.webp",
+   "left": 0,
+   "top": 0,
+   "size": 1
+  },
+  "emitter": {
+   "x": 0.5,
+   "y": 0.35
   },
   "socketFit": {
-   "size": 0.92856,
-   "left": 0.03315,
-   "top": 0.06912
+   "size": 0.90667,
+   "left": 0.04864,
+   "top": 0.12162
   },
   "socketBounds": {
-   "width": 0.8596,
-   "height": 0.9154,
-   "left": 0.07712,
-   "top": 0.08333,
-   "right": 0.93672,
-   "footMin": 0.5604,
-   "footMax": 0.6897,
-   "footCentre": 0.50277,
-   "bottom": 1.0025
+   "width": 0.9279,
+   "height": 0.9375,
+   "left": 0.03493,
+   "top": 0.03125,
+   "right": 0.96288,
+   "footMin": 0.8559,
+   "footMax": 0.8559,
+   "footCentre": 0.49782,
+   "bottom": 0.9688
   }
  },
- "overclock_unit": {
-  "kind": "layered",
-  "heads": {
-   "y00": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y00.webp",
-    "left": 0.106,
-    "top": 0.1959,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.8147,
-     "y": 0.5124
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7665
-    }
-   },
-   "y01": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y01.webp",
-    "left": 0.1028,
-    "top": 0.1992,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.8239,
-     "y": 0.5793
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7675
-    }
-   },
-   "y02": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y02.webp",
-    "left": 0.1222,
-    "top": 0.1992,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.8138,
-     "y": 0.6416
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7675
-    }
-   },
-   "y03": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y03.webp",
-    "left": 0.1109,
-    "top": 0.1992,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.7509,
-     "y": 0.6985
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7675
-    }
-   },
-   "y04": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y04.webp",
-    "left": 0.0834,
-    "top": 0.1992,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.4981,
-     "y": 0.6505
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7675
-    }
-   },
-   "y05": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y05.webp",
-    "left": 0.0447,
-    "top": 0.1959,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.2435,
-     "y": 0.6406
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7665
-    }
-   },
-   "y06": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y06.webp",
-    "left": 0.0737,
-    "top": 0.1959,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.1855,
-     "y": 0.6014
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7665
-    }
-   },
-   "y07": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y07.webp",
-    "left": 0.0673,
-    "top": 0.1992,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.1992,
-     "y": 0.5539
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7675
-    }
-   },
-   "y08": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y08.webp",
-    "left": 0.098,
-    "top": 0.1959,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.2018,
-     "y": 0.4853
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7665
-    }
-   },
-   "y09": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y09.webp",
-    "left": 0.0867,
-    "top": 0.1992,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.1817,
-     "y": 0.4458
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7675
-    }
-   },
-   "y10": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y10.webp",
-    "left": 0.0947,
-    "top": 0.1959,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.1941,
-     "y": 0.4167
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7665
-    }
-   },
-   "y11": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y11.webp",
-    "left": 0.0915,
-    "top": 0.1959,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.3232,
-     "y": 0.2855
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7665
-    }
-   },
-   "y12": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y12.webp",
-    "left": 0.0867,
-    "top": 0.1959,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.4096,
-     "y": 0.2418
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7665
-    }
-   },
-   "y13": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y13.webp",
-    "left": 0.0818,
-    "top": 0.1959,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.7059,
-     "y": 0.2855
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7665
-    }
-   },
-   "y14": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y14.webp",
-    "left": 0.106,
-    "top": 0.1959,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.8108,
-     "y": 0.3392
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7665
-    }
-   },
-   "y15": {
-    "src": "assets/ui/modules-physical-v1/overclock_unit-y15.webp",
-    "left": 0.0964,
-    "top": 0.1959,
-    "size": 0.8267,
-    "emitter": {
-     "x": 0.8118,
-     "y": 0.449
-    },
-    "pivot": {
-     "x": 0.5,
-     "y": 0.7665
-    }
-   }
+ "last_bastion": {
+  "kind": "single",
+  "art": {
+   "src": "assets/ui/modules-physical-v3/last_bastion.webp",
+   "left": 0,
+   "top": 0,
+   "size": 1
+  },
+  "emitter": {
+   "x": 0.5,
+   "y": 0.35
   },
   "socketFit": {
-   "size": 1.09367,
-   "left": -0.04828,
-   "top": -0.09608
+   "size": 0.90667,
+   "left": 0.04054,
+   "top": 0.12162
   },
   "socketBounds": {
-   "width": 0.732,
-   "height": 0.7772,
-   "left": 0.10929,
-   "top": 0.22173,
-   "right": 0.89723,
-   "footMin": 0.5899,
-   "footMax": 0.6674,
-   "footCentre": 0.50132,
-   "bottom": 1.0022
+   "width": 0.9257,
+   "height": 0.9375,
+   "left": 0.03829,
+   "top": 0.03125,
+   "right": 0.96396,
+   "footMin": 0.8468,
+   "footMax": 0.8468,
+   "footCentre": 0.50676,
+   "bottom": 0.9688
+  }
+ },
+ "cleanser": {
+  "kind": "single",
+  "art": {
+   "src": "assets/ui/modules-physical-v3/cleanser.webp",
+   "left": 0,
+   "top": 0,
+   "size": 1
+  },
+  "emitter": {
+   "x": 0.5,
+   "y": 0.35
+  },
+  "socketFit": {
+   "size": 0.90667,
+   "left": 0.03837,
+   "top": 0.12162
+  },
+  "socketBounds": {
+   "width": 0.9329,
+   "height": 0.9375,
+   "left": 0.03455,
+   "top": 0.03125,
+   "right": 0.96748,
+   "footMin": 0.7459,
+   "footMax": 0.7459,
+   "footCentre": 0.50915,
+   "bottom": 0.9688
+  }
+ },
+ "speed_relay": {
+  "kind": "single",
+  "art": {
+   "src": "assets/ui/modules-physical-v3/speed_relay.webp",
+   "left": 0,
+   "top": 0,
+   "size": 1
+  },
+  "emitter": {
+   "x": 0.5,
+   "y": 0.35
+  },
+  "socketFit": {
+   "size": 0.90667,
+   "left": 0.04667,
+   "top": 0.12162
+  },
+  "socketBounds": {
+   "width": 0.9335,
+   "height": 0.9375,
+   "left": 0.03326,
+   "top": 0.03125,
+   "right": 0.96674,
+   "footMin": 0.896,
+   "footMax": 0.896,
+   "footCentre": 0.5,
+   "bottom": 0.9688
   }
  }
 });

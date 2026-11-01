@@ -6,7 +6,7 @@ const declarations=terrain.replace(/\/\*[\s\S]*?\*\//g,'');
 
 test('painted islands are local WebP assets within the terrain budget',()=>{
   let total=0;
-  const names=['battle-native-v6/island-player','battle-native-v6/island-enemy'];
+  const names=['battle-native-v7/island-player','battle-native-v7/island-enemy'];
   for(const name of names){
     const bytes=fs.readFileSync(path.join(root,`assets/ui/${name}.webp`));
     assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');
@@ -34,7 +34,7 @@ test('whole terrain sits below live boards without slicing, cell images or extra
 });
 
 test('native floor has equal plate dimensions in all three rows on both sides',()=>{
-  const g=JSON.parse(read('assets/ui/battle-native-v6/registration.json'));
+  const g=JSON.parse(read('assets/ui/battle-native-v7/registration.json'));
   assert.equal(g.width,g.columns*g.cellWidth+(g.columns-1)*g.gap);
   assert.equal(g.height,g.rows*g.cellHeight+(g.rows-1)*g.gap);
   assert.deepEqual([g.columns,g.rows,g.cellWidth,g.cellHeight],[5,3,140,130]);

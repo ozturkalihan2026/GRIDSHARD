@@ -49,7 +49,9 @@ def test_deploy_requires_deck_membership_and_credit():
     command(engine, "deploy_module", definition_id="laser")
     assert engine.state.events[-1].type == "command_rejected"
     engine.state.players["player-1"].circuit_credits = 1_000
-    command(engine, "deploy_module", definition_id="armor")
+    # Armor is now part of the 24-card roster's balanced starter deck.
+    assert "missile_launcher" not in engine.state.players["player-1"].battle_pool.module_definition_ids
+    command(engine, "deploy_module", definition_id="missile_launcher")
     assert engine.state.events[-1].type == "command_rejected"
 
 

@@ -13,7 +13,6 @@ from app import main
 from app.game.board import BoardCellType, get_default_board
 from app.game.catalog import get_module_definition
 from app.game.core_balance import CORE_SIGNATURES
-from app.game.energy import process_energy_tick
 from app.game.engine import BattleEngine
 from app.game.models import BattleCommand, BattleState, ModuleStatus
 from app.telemetry import InMemoryTelemetryService, TelemetryError, TelemetryEvent
@@ -63,18 +62,10 @@ def test_old_generator_and_special_cells_do_not_return():
     assert {cell.cell_type for cell in board.cells} == {BoardCellType.CORE, BoardCellType.NORMAL}
 
 
-def test_core_rarity_is_not_an_energy_power_curve():
-    produced = []
-    for core_type in CORE_SIGNATURES:
-        engine = BattleEngine(BattleState(battle_id=core_type))
-        player = engine.add_player("a")
-        core = engine.grant_module("a", "core", "core")
-        core.status = ModuleStatus.ACTIVE
-        core.position = engine.board.core_position
-        player.core_type = core_type
-        produced.append(process_energy_tick(player).generated)
-    assert produced and produced[0] > 0
-    assert all(value == pytest.approx(produced[0]) for value in produced)
+def test_core_rarity_has_no_energy_resource():
+    from app.game.models import PlayerBattleState,ModuleDefinition
+    assert 'energy_stock' not in PlayerBattleState.__dataclass_fields__
+    assert 'energy_generation' not in ModuleDefinition.__dataclass_fields__
 
 
 @pytest.mark.parametrize("kind", ("web_test_session_started", "web_test_session_bound", "web_test_session_finished",
@@ -103,6 +94,7 @@ def test_health_is_the_current_readiness_contract_not_a_legacy_release_stamp():
     from app.version import LEGACY_HEALTH_VERSION
     assert body["version"] == LEGACY_HEALTH_VERSION
     assert body["release_version"] == VERSION
-    assert body["pvp_protocol_version"] == 1
+    from app.game.pvp_protocol import PVP_PROTOCOL_VERSION
+    assert body["pvp_protocol_version"] == PVP_PROTOCOL_VERSION
     assert {"player_data", "telemetry"} <= body["persistence"].keys()
     assert "release_ready" not in body

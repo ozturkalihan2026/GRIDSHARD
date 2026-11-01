@@ -271,8 +271,10 @@ assert.ok(headline.includes(": specialEntries(item.stats, nextStats)[0]"));
 // Akım maliyeti İstatistik sekmesinde durmaya devam eder.
 assert.ok(app.includes('{ key:"current", icon:"current", tone:"gold", label:"AKIM MALİYETİ", value:number(item.current_cost) },'));
 assert.equal(i18n.translateText("BEKLEME", "en"), "COOLDOWN");
-assert.ok(app.includes('{ label:"ENERJİ", value:`${core.energy_per_second}/sn`, current:core.energy_per_second, next:nextStats?.energy_per_second, unit:"per_second", icon:"energy", tone:"cyan" },'));
-assert.ok(app.includes('{ label:"DEPO", value:core.energy_capacity, current:core.energy_capacity, next:nextStats?.energy_capacity, icon:"battery", tone:"blue" },'));
+assert.ok(!app.includes("core.energy_per_second"));
+assert.ok(app.includes("core.first_charge_seconds ?? 20"));
+assert.ok(!app.includes("core.energy_capacity"));
+assert.ok(app.includes("core.recharge_seconds ?? 35"));
 
 // Çevrim kutusu: adı sunucudan gelir, çevrimi olmayan modül "SÜREKLİ" yazar.
 {

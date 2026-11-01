@@ -1,91 +1,12 @@
-"""Authoritative live-battle deck composition limits.
-
-The six-card deck stays expressive, while repeated utility cards cannot fill
-the whole circuit and turn a match into an unbreakable repair loop.
-"""
-
-from .models import BattleModule, ModuleDefinition, ModuleStatus, PlayerBattleState
+"""No class, copy or offense/utility quotas. Current and board cells govern play."""
+def normalize_battle_category(category):
+    return 'enerji' if category=='sistem' else category
 
 
-UTILITY_CATEGORIES = frozenset({"savunma", "destek", "enerji", "sabotaj"})
-CATEGORY_ACTIVE_LIMITS = {
-    "savunma": 3,
-    "destek": 3,
-    "enerji": 3,
-    "sabotaj": 3,
-}
-MAX_ACTIVE_UTILITY_COPIES_PER_DEFINITION = 2
-UTILITY_LEAD_OVER_ATTACK = 2
+def active_deployable_modules(player):
+    from .models import ModuleStatus
+    return tuple(u for u in player.modules.values() if u.status==ModuleStatus.ACTIVE and u.hp>0 and u.definition.id!='core')
 
 
-def normalize_battle_category(category: str) -> str:
-    """Sistem is the display/canonical alias of the existing wire category."""
-    return "enerji" if category == "sistem" else category
-
-
-def active_deployable_modules(player: PlayerBattleState) -> tuple[BattleModule, ...]:
-    return tuple(
-        module
-        for module in player.modules.values()
-        if module.status == ModuleStatus.ACTIVE
-        and module.hp > 0
-        and module.definition.id != "core"
-    )
-
-
-def deployment_rejection_reason(
-    player: PlayerBattleState,
-    definition: ModuleDefinition,
-    *,
-    ignored_instance_id: str | None = None,
-) -> str | None:
-    """Return a player-facing reason when a new live copy would break limits."""
-    active = tuple(
-        module
-        for module in active_deployable_modules(player)
-        if module.instance_id != ignored_instance_id
-    )
-    category = normalize_battle_category(definition.category)
-
-    if category not in UTILITY_CATEGORIES:
-        return None
-
-    same_definition_count = sum(
-        module.definition.id == definition.id
-        for module in active
-    )
-    if same_definition_count >= MAX_ACTIVE_UTILITY_COPIES_PER_DEFINITION:
-        return (
-            f"{definition.name_tr} için aynı anda en fazla "
-            f"{MAX_ACTIVE_UTILITY_COPIES_PER_DEFINITION} kopya kullanılabilir."
-        )
-
-    category_limit = CATEGORY_ACTIVE_LIMITS[category]
-    category_count = sum(
-        normalize_battle_category(module.definition.category) == category
-        for module in active
-    )
-    if category_count >= category_limit:
-        category_label = {
-            "savunma": "Savunma",
-            "destek": "Destek",
-            "enerji": "Sistem",
-            "sabotaj": "Sabotaj",
-        }[category]
-        return f"{category_label} sınırı dolu: {category_count}/{category_limit}."
-
-    attack_count = sum(
-        module.definition.category == "saldırı"
-        for module in active
-    )
-    utility_count = sum(
-        normalize_battle_category(module.definition.category) in UTILITY_CATEGORIES
-        for module in active
-    )
-    if utility_count + 1 > attack_count + UTILITY_LEAD_OVER_ATTACK:
-        return (
-            "Devre dengesi için önce bir Saldırı modülü yerleştir. "
-            "Saldırı dışı modüller, Saldırı sayısını en fazla 2 aşabilir."
-        )
-
+def deployment_rejection_reason(player,definition,*,ignored_instance_id=None):
     return None

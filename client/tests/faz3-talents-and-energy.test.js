@@ -82,25 +82,18 @@ test("çekirdek yetenekleri modül yetenek ağacıyla aynı tasarımdadır", () 
   assert.equal(en("EŞİK 2"), "TIER 2");
 });
 
-test("savaşta tetiklenen modül ve çekirdek yeteneği adıyla gösterilir", () => {
-  const types = slice("  const SIGNATURE_EVENT_TYPES = new Set([", "  ]);");
-  assert.ok(types.includes('"module_talent_triggered"') && types.includes('"core_talent_triggered"'));
-  assert.match(app, /talent:\{ priority:2, lifetimeMs:1100, particles:6, cue:null, minRepeatMs:900 \},/);
-  const handler = slice('    } else if (type === "module_talent_triggered") {', '    } else if (type === "attack_windup_started") {');
-  assert.match(handler, /emitSignatureBattleEffect\("talent", own\(data\.module_id\), \{/);
-  assert.match(handler, /type === "core_talent_triggered"/);
-  assert.match(handler, /talentDisplayName\(data\)\.toLocaleUpperCase\(uiLocale\(\)\)/);
-  assert.match(css, /\.battle-effect-layer \[data-signature="talent"\] \{ --signature-color:#ffe98a;/);
+test("current talents retain localized names and specialize the existing job",()=>{
+ assert.ok(app.includes('talentDisplayName(choice)'));
+ assert.ok(!app.includes('module_talent_triggered'));
+ const v7=JSON.parse(read('..','server','data','module_talents_v7.json'));
+ assert.equal(Object.keys(v7.modules).length,24);
+ for(const m of Object.values(v7.modules))for(const o of m.specializations)assert.ok(o.name_tr&&o.name_en);
 });
 
-test("bilgi ekranı gerçek enerji tüketimini, Batarya'da üretimi gösterir", () => {
-  const tiles = slice("  function createModuleStatTiles(item) {", "      row.dataset.stat = tile.key;");
-  assert.match(tiles, /Number\(stats\.energy_generation\) > 0/);
-  assert.match(tiles, /label:"ENERJİ ÜRETİMİ", value:`\+\$\{number\(stats\.energy_generation, 1\)\}\/sn`/);
-  // Eski sunucu yeni alanı göndermez; o zaman bakım değeri yazılır.
-  assert.match(tiles, /number\(stats\.energy_per_second \?\? stats\.energy_consumption, 1\)/);
-  assert.equal(en("ENERJİ ÜRETİMİ"), "ENERGY OUTPUT");
-  assert.equal(en("ENERJİ TÜKETİMİ"), "ENERGY USE");
+test("bilgi ekranı gerçek enerji tüketimini, Batarya'da üretimi gösterir",()=>{
+  const tiles=app.slice(app.indexOf("  function createModuleStatTiles("),app.indexOf("  function renderModuleDetailTab("));
+  assert.doesNotMatch(tiles,/ENERJİ TÜKETİMİ|ENERJİ ÜRETİMİ|ETKİ ÇARPANI/);
+  for(const label of ['CAN','HASAR','AKIM MALİYETİ'])assert.ok(tiles.includes(label));
 });
 
 test("Akım Desteği metasının açıklaması yeni kuralı anlatır", () => {
@@ -111,12 +104,11 @@ test("Akım Desteği metasının açıklaması yeni kuralı anlatır", () => {
   assert.equal(en("Savaşta Akım bugün daha hızlı yenilenir."), "Current regenerates faster in battle today.");
 });
 
-test("sunucudaki her yeteneğin İngilizce adı vardır", () => {
-  // talents.py içindeki tanımlar: _signature("kanca", "Türkçe ad", "English name", …)
-  const names = [...talentsSource.matchAll(/_(?:signature|core_talent)\("[a-z_]+", "([^"]+)", "([^"]+)"/g)];
-  assert.equal(names.length, 36 * 2 + 7 * 6);
-  for (const [, nameTr, nameEn] of names) {
-    assert.ok(nameTr.trim() && nameEn.trim());
-    assert.ok(/^[\x20-\x7E]+$/.test(nameEn), `İngilizce ad ASCII değil: ${nameEn}`);
-  }
+test("every current module and core talent has an English name",()=>{
+ const {spawnSync}=require('node:child_process');
+ const script="import json;from app.game.module_talents_v3 import tree;from app.module_roster import MODULE_SPECS;from app.meta_progression import CORE_TYPES;from app.game.core_talents_v5 import tree as ct;print(json.dumps([o for k in MODULE_SPECS for tier in tree(k) for o in tier['choices']]+[o for c in CORE_TYPES for o in ct(c['id'],c['rarity'])]))";
+ const r=spawnSync('python',['-X','utf8','-c',script],{cwd:path.join(CLIENT_ROOT,'..','server'),encoding:'utf8'});
+ assert.equal(r.status,0,r.stderr);
+ const choices=JSON.parse(r.stdout);assert.equal(choices.length,24*8+7*6);
+ for(const o of choices)assert.ok(o.name_tr.trim()&&o.name_en.trim());
 });

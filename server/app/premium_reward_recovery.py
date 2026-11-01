@@ -87,11 +87,18 @@ def _amounts(resources: dict) -> dict:
 
 def _balance(profile, resource: str) -> int:
     field, identity = _resource_parts(resource)
+    from .module_roster import RETIRED_MODULE_IDS
+    if field == 'module_shards' and identity in RETIRED_MODULE_IDS and profile.module_roster_revision >= 2:
+        return int(profile.universal_module_shards)
     return int(getattr(profile, field).get(identity, 0) if identity else getattr(profile, field))
 
 
 def _add(profile, resource: str, amount: int) -> None:
     field, identity = _resource_parts(resource)
+    from .module_roster import RETIRED_MODULE_IDS
+    if field == 'module_shards' and identity in RETIRED_MODULE_IDS and profile.module_roster_revision >= 2:
+        profile.universal_module_shards += amount
+        return
     if identity:
         wallet = getattr(profile, field)
         wallet[identity] = int(wallet.get(identity, 0)) + amount

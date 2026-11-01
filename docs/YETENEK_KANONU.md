@@ -1,117 +1,62 @@
-# GRIDSHARD 2.1 — Yetenek Kanonu
+# GRIDSHARD — Modül yetenekleri V7.1, 1 Kasım 2026
 
-Bu belge `server/app/game/talents.py` verisinden üretilir (Faz 3, 12 Ekim 2026). Çelişki olursa kod geçerlidir.
+Aktif 24 modül için geçerlidir. Kaynak `server/app/game/module_talents_v3.py`; eşik ve fiyat kaynağı `server/app/game/talents.py`. `python tools/document_module_talents_v3.py` ile yeniden üretilir.
 
-## Modül yetenekleri
+Her eşikte iki daldan biri seçilir. Kartların mevcut görevi geliştirilir; yetenekler rastgele yerleşimi, öncelikli hedefleri ve kartın Akım bedelini değiştirmez. Savaşın tek ekonomisi Akımdır. Enerji/Isı ya da emekli kartlar geri gelmez. Çekirdek dalları bu değişikliğin kapsamında değildir.
 
-Her modülün dört eşiği vardır; her eşikte iki daldan biri seçilir. Eşik seviyeleri enderliğe göredir: Sıradan 5 / 8 / 11 / 14, Ender 6 / 9 / 12 / 15, Destansı 7 / 10 / 13 / 15, Efsanevi 8 / 11 / 14 / 15. Bedel sırasıyla 15, 30, 45 ve 60 Akı.
+| Eşik | Sol dal | Sağ dal |
+|---|---|---|
+| Temel | Mevcut işin gücü +%3 | Azami CAN +%5 |
+| İmza | Aşağıdaki karta özel sol uzmanlık | Karta özel sağ uzmanlık |
+| İnce ayar | Atış/eylem aralığı −%4; pasif kartlarda işin gücü +%4 | Azami CAN +%5 |
+| Ustalık | Mevcut işin gücü +%6 | Azami CAN +%8 |
 
-| Eşik | Tür | Sol dal | Sağ dal |
-|---:|---|---|---|
-| 1 | Temel uzmanlık | Güç +%3 (hasar ya da sınıfın etkisi) | CAN +%5 |
-| 2 | İmza yeteneği | Modüle özel yetenek (aşağıdaki tablo) | Modüle özel yetenek (aşağıdaki tablo) |
-| 3 | İnce ayar | Çevrim −%4 (çevrimi olmayan Akım Dengeleyici'de etki +%4) | Enerji tüketimi −%12 |
-| 4 | Ustalık | 2. eşikte seçilen imza yeteneğini güçlendirir | CAN +%8 |
+İşin gücü: saldırıda hasar; diğer kartlarda blok, zırh, yansıma, dost koruması, faz süresi, kalkan CAN, onarım, atış bonusu, kesinti süresi, yavaşlatma veya hız yükü. Bariyer’de alınan onarım artar. Arındırıcı’da arındırma dolumu kısalır; tek seferde yine bir olumsuz etki silinir. Ustalık bağımsızdır; imza seçilmemişken de yarar sağlar.
 
-### İmza yetenekleri
+Önce imza dalının sabit değer/dağılım değişimleri, sonra temel/ince ayar/ustalık çarpanları uygulanır. +%3, +3 yüzde puan değildir. Örneğin %60 blok ×1,03=%61,8. Süre ve oranlar seviyeyle büyümez; mutlak miktarlar seviye eğrisini bir kez alır. Ayrıntılı karar ve testler: `NIHAI_MODUL_ENDERLIK_YETENEK_V7_20261101.md` ve `V7_UYGULAMA_VE_STRATEJI_TESTLERI_20261101.md`.
 
-| Modül | Sınıf | Sol dal | Sağ dal |
-|---|---|---|---|
-| Lazer | Saldırı | **Yayılım Işını** — Her 30 saniyede bir 5 saniye boyunca her atış, hedefin yanındaki modüllere hasarın %30 kadarını da verir. | **Bitirici Işın** — CAN'ı %35 altındaki hedeflere %25 daha çok hasar verir. |
-| Kalkan | Savunma | **Tam Blok** — Her 12 saniyede bir, gelen bir vuruşu tamamen engeller. | **Geri Tepen Kalkan** — Aldığı hasarın %15 kadarını saldıran modüle geri verir. |
-| Batarya | Sistem | **Güç Dalgası** — Her 20 saniyede bir 5 saniye boyunca etkisi %40 artar. | **Akım Dönüştürücü** — Her 25 saniyede bir +1 Akım kazandırır. |
-| Soğutucu | Destek | **Derin Dondurma** — Her 18 saniyede bir 5 saniye boyunca etkisi %80 artar. | **Isı Geri Kazanımı** — Her 20 saniyede bir +1 Akım kazandırır. |
-| EMP | Sabotaj | **Şok Darbesi** — Sabotajı hedefe ayrıca 12 hasar verir. | **Uzun Dalga** — Her 24 saniyede bir 8 saniye boyunca etkisi %40 artar. |
-| Güçlendirici | Destek | **Rezonans Dalgası** — Her 20 saniyede bir 6 saniye boyunca etkisi %50 artar. | **Son Yük** — Yok olduğunda +2 Akım kazandırır. |
-| Onarım | Destek | **Acil Onarım** — Her 20 saniyede bir 5 saniye boyunca etkisi %60 artar. | **Saha Kurulumu** — Yerleştiği anda devredeki diğer modülleri 20 CAN onarır. |
-| Zırh | Savunma | **Son Katman** — CAN'ı %40 altına düşünce aldığı hasar %30 azalır. | **Parçalanan Zırh** — Yok olduğunda devredeki diğer modülleri 25 CAN onarır. |
-| Darbe Topu | Saldırı | **Üçüncü Darbe** — Her 3. atış %60 daha çok hasar verir. | **Zırh Kıran** — Hedefin savunma azaltımının %30 kadarını yok sayar. |
-| Füze Fırlatıcı | Saldırı | **Çekirdek Avcısı** — Çekirdeğe %30 daha çok hasar verir. | **Seri Fırlatma** — Bir modülü yok ettiğinde beklemeden yeniden ateş eder. |
-| Hedefleme Bilgisayarı | Destek | **Kilitlenme Modu** — Her 20 saniyede bir 6 saniye boyunca etkisi %50 artar. | **Sağlam Kurulum** — Yerleştikten sonraki 10 saniye boyunca %50 daha az hasar alır. |
-| Bariyer | Savunma | **Taze Bariyer** — Yerleştikten sonraki 8 saniye boyunca %40 daha az hasar alır. | **Elektrikli Bariyer** — Aldığı hasarın %20 kadarını saldıran modüle geri verir. |
-| Ark Topu | Saldırı | **Fırtına Arkı** — Her 20 saniyede bir 4 saniye boyunca her atış, hedefin yanındaki modüllere hasarın %35 kadarını da verir. | **Süper İletken** — Her 4. atış enerji harcamaz ve modülü ısıtmaz. |
-| Kapasitör | Sistem | **Acil Boşalım** — Yok olduğunda +3 Akım kazandırır. | **Hızlı Dolum** — Her 18 saniyede bir 5 saniye boyunca etkisi %50 artar. |
-| Dron Üssü | Saldırı | **Avcı Sürü** — CAN'ı %40 altındaki hedeflere %30 daha çok hasar verir. | **Otonom Dronlar** — Her 5. atış enerji harcamaz ve modülü ısıtmaz. |
-| Sinyal Bozucu | Sabotaj | **Parazit Yükü** — Sabotajı hedefe ayrıca 10 hasar verir. | **Sinyal Hırsızı** — Her 22 saniyede bir +1 Akım kazandırır. |
-| Ray Topu | Saldırı | **İlk Kurşun** — Yerleştikten sonraki ilk atışı ve her yok edişten sonraki ilk atışı %50 daha çok hasar verir. | **Çekirdek Delici** — Çekirdeğe %35 daha çok hasar verir. |
-| Akım Dengeleyici | Sistem | **Akım Geri Kazanımı** — Her 20 saniyede bir +1 Akım kazandırır. | **Dengeli Tepe** — Her 20 saniyede bir 6 saniye boyunca etkisi %50 artar. |
-| Yansıtıcı | Savunma | **Odaklı Yansıma** — Aldığı hasarın %25 kadarını saldıran modüle geri verir. | **Ayna Anı** — Her 10 saniyede bir, gelen bir vuruşu tamamen engeller. |
-| Nano Sağlıkçı | Destek | **Nano Bulut** — Yerleştiği anda devredeki diğer modülleri 15 CAN onarır. | **Yoğun Bakım** — Her 20 saniyede bir 5 saniye boyunca etkisi %60 artar. |
-| Virüs | Sabotaj | **Mutasyon** — Her 20 saniyede bir 6 saniye boyunca etkisi %50 artar. | **Zararlı Yük** — Sabotajı hedefe ayrıca 14 hasar verir. |
-| Aşırı Hızlandırıcı | Destek | **Tavan Devri** — Her 16 saniyede bir 4 saniye boyunca etkisi %60 artar. | **Enerji Boşalımı** — Yok olduğunda +2 Akım kazandırır. |
-| Plazma Havanı | Saldırı | **Plazma Yağmuru** — Her 25 saniyede bir 6 saniye boyunca her atış, hedefin yanındaki modüllere hasarın %30 kadarını da verir. | **Yoğun Plazma** — Her 3. atış %50 daha çok hasar verir. |
-| Muhafız Kubbesi | Savunma | **Son Kubbe** — Yok olduğunda devredeki diğer modülleri 30 CAN onarır. | **Sıkışan Kubbe** — CAN'ı %50 altına düşünce aldığı hasar %25 azalır. |
-| Kuantum Tekrarlayıcı | Saldırı | **Kuantum İnfaz** — CAN'ı %30 altındaki hedeflere %35 daha çok hasar verir. | **Kuantum Sıçrama** — Bir modülü yok ettiğinde beklemeden yeniden ateş eder. |
-| Krono Rölesi | Destek | **Zaman Kârı** — Her 18 saniyede bir +1 Akım kazandırır. | **Derin Zaman** — Her 20 saniyede bir 5 saniye boyunca etkisi %50 artar. |
-| Faz Zırhı | Savunma | **Faz Girişi** — Yerleştikten sonraki 10 saniye boyunca %50 daha az hasar alır. | **Ek Faz** — Her 9 saniyede bir, gelen bir vuruşu tamamen engeller. |
-| Sürü Fabrikatörü | Saldırı | **Kendini Üreten Sürü** — Her 3. atış enerji harcamaz ve modülü ısıtmaz. | **Delici Sürü** — Hedefin savunma azaltımının %25 kadarını yok sayar. |
-| Hassasiyet Matrisi | Destek | **Keskin Odak** — Her 20 saniyede bir 6 saniye boyunca etkisi %60 artar. | **Korunan Matris** — CAN'ı %50 altına düşünce aldığı hasar %30 azalır. |
-| İyon Mızrağı | Saldırı | **İyon Açılışı** — Yerleştikten sonraki ilk atışı ve her yok edişten sonraki ilk atışı %60 daha çok hasar verir. | **Aşırı Yüklü Mızrak** — Her 4. atış %80 daha çok hasar verir. |
-| Prizma Kalkanı | Savunma | **Prizma Kırılması** — Aldığı hasarın %18 kadarını saldıran modüle geri verir. | **Yoğun Prizma** — CAN'ı %40 altına düşünce aldığı hasar %35 azalır. |
-| Kesici | Sabotaj | **Kesik Akım** — Sabotajı hedefe ayrıca 16 hasar verir. | **Geniş Kesinti** — Her 24 saniyede bir 8 saniye boyunca etkisi %40 artar. |
-| Anka Onarım | Destek | **Son Kıvılcım** — Yok olduğunda devredeki diğer modülleri 30 CAN onarır. | **Anka Girişi** — Yerleştiği anda devredeki diğer modülleri 25 CAN onarır. |
-| Kuantum Topu | Saldırı | **Tekil Vuruş** — Çekirdeğe %40 daha çok hasar verir. | **Kuantum Şok Dalgası** — Her 30 saniyede bir 5 saniye boyunca her atış, hedefin yanındaki modüllere hasarın %40 kadarını da verir. |
-| Omega Güçlendirici | Destek | **Omega Tepe Noktası** — Her 24 saniyede bir 6 saniye boyunca etkisi %60 artar. | **Omega Akımı** — Her 20 saniyede bir +1 Akım kazandırır. |
-| Tekillik Projektörü | Sabotaj | **Çöküş** — Sabotajı hedefe ayrıca 20 hasar verir. | **Olay Ufku** — Her 26 saniyede bir 8 saniye boyunca etkisi %45 artar. |
+## Aynen korunan maliyetler
 
-Ustalık imza yeteneğinin ana değerini bir buçuk katına çıkarır: oran ve artışlar ×1,5; dönemsel blok ve Akım kazancı 1,5 kat sık; onarım ve şok miktarı ×1,5; "her N. atış" bir atış erken; yok olunca verilen Akım +1; yeniden ateş eden yetenekte o atış %30 daha çok hasar verir.
+Her hücre **Devre Kredisi / Akı** biçimindedir. Normal ücret ve seçili eşik başına **25 Akı** sıfırlama değişmedi. V7 geçişinde davranışı değişen kartlarda önceden ücretli seçilmiş eşikler için bir defalık ücretsiz yeniden seçim vardır: ücretsiz sıfırlama + yalnız eski satın alınmış eşiklerin ücretsiz tekrar seçimi. Yeni eşikler ücretlidir; hak tekrar girişte yenilenmez. Eski bedeller iade edilmez.
 
-## Çekirdek yetenekleri
+| Enderlik | Açıldığı seviyeler | Temel | İmza | İnce ayar | Ustalık |
+|---|---|---|---|---|---|
+| Yaygın | 5 / 8 / 11 / 14 | 1.000 / 0 | 2.000 / 0 | 4.000 / 0 | 8.000 / 1.000 |
+| Nadir | 6 / 9 / 12 / 15 | 2.000 / 0 | 4.000 / 0 | 10.000 / 1.000 | 20.000 / 2.000 |
+| Epik | 7 / 10 / 13 / 15 | 10.000 / 0 | 20.000 / 1.000 | 30.000 / 2.000 | 40.000 / 3.000 |
+| Efsanevi | 8 / 11 / 14 / 15 | 10.000 / 1.000 | 20.000 / 2.000 | 30.000 / 3.000 | 40.000 / 4.000 |
 
-Çekirdek üç eşikte (seviye 5, 9 ve 13; bedel 25, 50 ve 75 Akı) iki daldan birini seçer. Her çekirdeğin altı yeteneği birbirinden farklı bir kuraldır.
+## Kartlara özel imza seçenekleri
 
-### Rezonans Çekirdeği
+| Modül | Sol dal | Sağ dal |
+|---|---|---|
+| Lazer | **Yoğun Işın** — Ana hasar +%8. | **Seri Işın** — Atış çevrimi −%8. |
+| Darbe Topu | **Ağır Darbe** — Ana hasar +%10. | **Hazır Namlu** — Hazırlık 0,6 → 0,4 sn; toplam çevrim aynı. |
+| Ray Topu | **Derin Delme** — Zırh azaltımını yok sayma %40 → %55. | **Hızlı Ray** — Atış çevrimi −%8; delme aynı. |
+| Füze Fırlatıcı | **Ağır Başlık** — Takip patlaması oranı %20 → %35; ana hasar ve gecikme aynı. | **Hızlı Kilit** — Hazırlık 0,7 → 0,45 sn; takip patlaması 0,6 → 0,3 sn. Toplam çevrim değişmez. |
+| Dron Üssü | **İkinci Kol** — İkinci hedef oranı %25 → %40; ana hasar aynı. | **Yoğun Sürü** — Ana hasar +%10; ikinci hedef oranı %25 → %10. Tek hedefte uzmanlaşır. |
+| Ark Topu | **Geniş Zincir** — İkinci/üçüncü oran %45/%20 → %55/%25. | **Yoğun Ark** — Ana hasar +%10; üçüncü sıçrama kalkar, ikinci %45 kalır. |
+| Plazma Havanı | **Kalıcı İz** — İz saniyede %5 → %8; iki yayılım %30/%30 → %20/%20. Toplam iz %24. | **Geniş Yayılım** — Yayılım %30/%30 → %40/%40; iz saniyede %5 → %3. Toplam iz %9. |
+| Kuantum Tekrarlayıcı | **Yoğun Dördüncü** — Dördüncü temel hasar 24 → 30; toplam yankı %60 → %40. Hedef başına %20 aynı. | **Yaygın Yankı** — Dördüncü temel hasar 24 → 22; toplam yankı %60 → %80. Hedef başına %20 aynı. |
+| Seri Top | **Sıkı Seri** — Mermiler arası süre 0,2 → 0,15 sn; üç mermi ve çevrim aynı. | **Ağır Mermi** — Her merminin hasarı +%10. |
+| Kalkan Kırıcı | **Derin Kırıcı** — Ek kalkan silme bütçesi %50 → %75; CAN hasarı aynı. | **Ağır Kırıcı** — Ana hasar +%10; ek kalkan oranı %50 kalır. |
+| Kalkan | **Güçlü Blok** — Blok oranı %60 → %68. | **Hızlı Blok** — Blok dolum çevrimi −%15. |
+| Zırh | **Kalın Plaka** — Azaltım %25 → %30. | **Sağlam Gövde** — Azami CAN +%12. |
+| Bariyer | **Derin Siper** — Azami CAN +%12. | **Takviyeli Siper** — Kendi gelen saldırı hasarını %6 azaltır; hedef sırası aynı. |
+| Yansıtıcı | **Güçlü Yansıma** — Gerçek CAN kaybından dönüş %30 → %40. | **Hızlı Ayna** — Yansıma dolum çevrimi −%15. |
+| Muhafız Kubbe | **Güçlü Kubbe** — Engelleme %35 → %42. | **Hızlı Kubbe** — Koruma dolum çevrimi −%15. |
+| Faz Zırhı | **Uzun Faz** — Faz penceresi 1 → 1,2 sn. | **Sık Faz** — Faz çevrimi 6 → 5,4 sn. |
+| Tampon | **Yoğun Tampon** — Havuz 60 → 75; dönüşüm %40 → %30. Havuz başına en çok 22,5 onarım. | **Onaran Tampon** — Havuz 60 → 50; dönüşüm %40 → %60. Havuz başına en çok 30 onarım. |
+| Son Siper | **Çekirdek Mirası** — Çekirdek kalkanı 75 → 90; dost toplamı 40 → 25. Toplam 115 aynı. | **Devre Mirası** — Çekirdek kalkanı 75 → 60; dost toplamı 40 → 60. Toplam 120. |
+| Onarım | **Yoğun Onarım** — Toplam onarım +%20; süre ve darbe sayısı aynı. | **İlk Yardım** — Toplam onarımın ilk darbeye düşen payı 1/3 → %50; diğer iki darbe %25/%25. Toplam, süre ve çevrim aynı. |
+| Güçlendirici | **Güçlü Yük** — Sonraki atış bonusu %25 → %30. | **Sık Yükleme** — Yükleme çevrimi −%12. |
+| EMP | **Uzun Kesinti** — Kesinti 1 → 1,2 sn; toparlanma 3 sn kalır. | **Hızlı Darbe** — EMP çevrimi −%10; kesinti ve toparlanma aynı. |
+| Yavaşlatıcı Virüs | **Yoğun Yavaşlık** — Aralık uzatma %25 → %30; süre aynı. | **Onarım Bozucu** — Aralık uzatma %25 → %15; aynı 4 sn boyunca hedefin aldığı onarım −%25. Kalkanı azaltmaz. |
+| Arındırıcı | **Sık Arındırma** — Arındırma çevrimi −%15; bir etki siler. | **Temiz Koruma** — Başarılı arındırmadan sonra aynı hedefte 2 sn tek kontrol koruması: sonraki EMP/Virüsün süresi −%30. İmha/hasar yüklerini engellemez; birikmez. |
+| Hız Rölesi | **Güçlü Hız Yükü** — Bekleme kısaltması %20 → %25. | **Sık Röle** — Yükleme çevrimi −%12. |
 
-| Seviye | Sol dal | Sağ dal |
-|---:|---|---|
-| 5 | **Kararlı Frekans** — Çekirdek CAN değeri %70 ve üstündeyken enerji üretimi %10 artar. | **Hazır Rezonans** — Savaşa %25 güç dolumuyla başlar. |
-| 9 | **Derin Rezonans** — Yok olan her dost modül güç dolumuna %12 ekler. | **İkinci Darbe** — Güç kullanıldıktan sonra dolum sıfırdan değil %20 dolumdan başlar. |
-| 13 | **Koruyucu Yankı** — Çekirdek CAN değeri ilk kez %40 altına düştüğünde 6 saniyeliğine 60 kalkan kazanır (maçta bir kez). | **Akım Rezonansı** — Güç kullanıldığında +2 Akım kazandırır. |
+## Kayıt ve uygulama
 
-### Muhafız Çekirdeği
+Eski eşik (`0`–`3`) ve dal (`power`/`resilience`) kimlikleri korunur. Arşivdeki geçerli ücretli seçimler yalnız halen aktif kartlara, ek ücret alınmadan ve mevcut yeni seçimlerin üzerine yazılmadan bir kez bağlanır. Sonraki sıfırlama kalıcıdır. Emekli kartların kayıtları özel arşivde kalır; işlem fişleri değişmez.
 
-| Seviye | Sol dal | Sağ dal |
-|---:|---|---|
-| 5 | **Dikenli Kabuk** — Çekirdeğe vuran her saldırı, saldıran modüle 4 hasar verir. | **Nöbet Hazırlığı** — Savaşa %20 güç dolumuyla başlar. |
-| 9 | **Bariyer Tohumu** — Çekirdek CAN değeri ilk kez %50 altına düştüğünde 6 saniyeliğine 70 kalkan kazanır (maçta bir kez). | **Kalkan Matrisi** — Yok olan her dost modül güç dolumuna %15 ekler. |
-| 13 | **Son Direniş** — Uzatmada Çekirdek %20 daha az hasar alır. | **Kesintisiz Nöbet** — Güç kullanıldıktan sonra dolum sıfırdan değil %25 dolumdan başlar. |
-
-### Aşırı Yük Çekirdeği
-
-| Seviye | Sol dal | Sağ dal |
-|---:|---|---|
-| 5 | **Sıcak Başlangıç** — Savaşa %30 güç dolumuyla başlar. | **Yüksek Devir** — Çekirdek CAN değeri %70 ve üstündeyken enerji üretimi %10 artar. |
-| 9 | **Enerji Sıçraması** — Yok edilen her rakip modül güç dolumuna %12 ekler. | **Akım Patlaması** — Güç kullanıldığında +2 Akım kazandırır. |
-| 13 | **Kırmızı Hat** — Güç kullanıldıktan sonra dolum sıfırdan değil %25 dolumdan başlar. | **Kızgın Çekirdek** — Çekirdeğe vuran her saldırı, saldıran modüle 5 hasar verir. |
-
-### Kesinti Çekirdeği
-
-| Seviye | Sol dal | Sağ dal |
-|---:|---|---|
-| 5 | **Statik Alan** — Yok olan her dost modül güç dolumuna %12 ekler. | **Pusu** — Savaşa %25 güç dolumuyla başlar. |
-| 9 | **Sinyal Kırılması** — Güç kullanıldıktan sonra dolum sıfırdan değil %20 dolumdan başlar. | **Zincirleme Arıza** — Yok edilen her rakip modül güç dolumuna %10 ekler. |
-| 13 | **Karartma** — Uzatmada Çekirdek %20 daha az hasar alır. | **Çalınan Akım** — Güç kullanıldığında +2 Akım kazandırır. |
-
-### Kapasitör Çekirdeği
-
-| Seviye | Sol dal | Sağ dal |
-|---:|---|---|
-| 5 | **Yedek Hücre** — Çekirdek CAN değeri %70 ve üstündeyken enerji üretimi %12 artar. | **Deşarj Kazancı** — Güç kullanıldığında +2 Akım kazandırır. |
-| 9 | **Hızlı Dolum** — Savaşa %25 güç dolumuyla başlar. | **Statik Kalkan** — Çekirdek CAN değeri ilk kez %40 altına düştüğünde 6 saniyeliğine 60 kalkan kazanır (maçta bir kez). |
-| 13 | **Taşma** — Güç kullanıldıktan sonra dolum sıfırdan değil %25 dolumdan başlar. | **Geri Besleme** — Yok olan her dost modül güç dolumuna %15 ekler. |
-
-### Anka Çekirdeği
-
-| Seviye | Sol dal | Sağ dal |
-|---:|---|---|
-| 5 | **Kor** — Çekirdek CAN değeri ilk kez %40 altına düştüğünde 6 saniyeliğine 60 kalkan kazanır (maçta bir kez). | **Küllerin Gücü** — Yok olan her dost modül güç dolumuna %12 ekler. |
-| 9 | **Yeniden Doğuş** — Güç kullanıldıktan sonra dolum sıfırdan değil %20 dolumdan başlar. | **Sıcak Yuva** — Çekirdek CAN değeri %70 ve üstündeyken enerji üretimi %10 artar. |
-| 13 | **Güneş Kanadı** — Uzatmada Çekirdek %20 daha az hasar alır. | **Erken Kıvılcım** — Savaşa %25 güç dolumuyla başlar. |
-
-### Kuantum Çekirdeği
-
-| Seviye | Sol dal | Sağ dal |
-|---:|---|---|
-| 5 | **Faz Tohumu** — Yok edilen her rakip modül güç dolumuna %10 ekler. | **Hazır Faz** — Savaşa %20 güç dolumuyla başlar. |
-| 9 | **Olasılık Bükümü** — Güç kullanıldığında +2 Akım kazandırır. | **Kuantum Tepkisi** — Çekirdeğe vuran her saldırı, saldıran modüle 4 hasar verir. |
-| 13 | **Tekillik** — Güç kullanıldıktan sonra dolum sıfırdan değil %25 dolumdan başlar. | **Faz Kalkanı** — Çekirdek CAN değeri ilk kez %40 altına düştüğünde 6 saniyeliğine 70 kalkan kazanır (maçta bir kez). |
+Kart ekranının istatistikleri ile savaş aynı hesaplanan parametreleri kullanır. Yetersiz cüzdan, seviye kilidi ve yinelenen istekler sunucuda denetlenir. Bu kodu geliştirmek gerçek oyuncu verilerinin veya telefondaki uygulamanın güncellendiği anlamına gelmez.

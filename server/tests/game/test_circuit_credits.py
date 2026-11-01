@@ -32,7 +32,7 @@ def test_akim_regenerates_on_interval_and_award_respects_cap():
     for _ in range(25):
         engine.step()
     assert engine.circuit_credits("player") == 7
-    engine.award_circuit_credits("player", 25, reason="test")
+    engine.award_circuit_credits("player", 25, reason="damage_exchange")
     assert engine.circuit_credits("player") == 12
     for _ in range(50):
         engine.step()

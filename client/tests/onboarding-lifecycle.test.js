@@ -111,6 +111,6 @@ test("automatic first-launch guide waits for confirmed bootstrap, not seeded zer
   assert.equal(c.onboardingFlow.active, false);
   c.participantBootstrapResult = {ok:true};
   c.syncFirstMatchTutorial(0, {force:true});
-  assert.equal(c.onboardingFlow.active, true);
+  assert.equal(c.onboardingFlow.active, false);
   assert.match(app, /renderParticipantBootstrapStatus\(\);\s*renderServerBootStatus\(\);\s*requestOnboardingSync\(\);/);
 });

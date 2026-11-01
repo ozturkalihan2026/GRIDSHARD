@@ -170,7 +170,8 @@ def test_socket_cannot_read_or_mutate_another_session(kind, payload):
     async def scenario():
         value = service()
         adapter = PvPWebSocketAdapter(value)
-        socket = Socket(incoming=[dict(version=1, type=kind, session_id="other", player_id="a",
+        from app.game.pvp_protocol import PVP_PROTOCOL_VERSION
+        socket = Socket(incoming=[dict(version=PVP_PROTOCOL_VERSION, type=kind, session_id="other", player_id="a",
                                        request_id="cross", payload=payload)])
         connection = await connect(adapter, "a", socket)
         other = value.get_session("other")

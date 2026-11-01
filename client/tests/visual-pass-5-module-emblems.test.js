@@ -21,7 +21,7 @@ function cardView() {
 
 test("her modülün kendi amblemi vardır ve sınıfının rengini taşır", () => {
   const { view, modules } = cardView();
-  assert.equal(modules.length, 36);
+  assert.equal(modules.length, 24);
   const fallback = view.emblemFor({ nameTr: "Bilinmeyen" });
   const drawings = new Set();
   for (const module of modules) {
@@ -37,7 +37,7 @@ test("her modülün kendi amblemi vardır ve sınıfının rengini taşır", () 
     assert.notEqual(svg.slice(svg.indexOf(">")), fallback.slice(fallback.indexOf(">")), `${module.name_tr}: genel yonga değil`);
     drawings.add(physical ? svg : svg.slice(svg.indexOf(">")));
   }
-  assert.equal(drawings.size, 36, "her çizim farklı");
+  assert.equal(drawings.size, 24, "her çizim farklı");
   // Çekirdek, koleksiyondaki "Onarım Modülü" adı ve tanım kimliği de çizimini bulur.
   assert.ok(view.emblemFor({ nameTr: "Çekirdek" }).includes('data-cat="sistem"'));
   assert.equal(view.emblemFor({ nameTr: "Onarım Modülü" }), view.emblemFor({ nameTr: "Onarım" }));
@@ -66,7 +66,7 @@ test("oyun modülü her yerde resimle çizer; eski tek harfli simge yolu yoktur"
 });
 
 test("amblem stilleri: sınıf renkleri, yapboz parçası, bilgi penceresi", () => {
-  for (const category of ["saldırı", "savunma", "destek", "sistem", "sabotaj"]) {
+  for (const category of ["saldırı", "savunma", "taktik", "sistem"]) {
     assert.ok(block.includes(`.module-emblem[data-cat="${category}"] {`), category);
   }
   assert.match(block, /\.module-emblem \.me-ink \{ fill:none; stroke:var\(--me-ink\); stroke-width:2\.6;/);
@@ -77,7 +77,7 @@ test("amblem stilleri: sınıf renkleri, yapboz parçası, bilgi penceresi", () 
   assert.match(block, /#module-detail-dialog \.module-detail-art\.has-module-emblem \{\n  z-index:2;[^}]*opacity:1 !important;/);
   assert.match(block, /#module-detail-dialog \.module-detail-art\.has-module-emblem \.module-emblem \{\n  width:54px;\n  height:54px;\n  filter:drop-shadow\(0 0 12px var\(--module-accent,#48f4e0\)\)/);
   assert.equal(block.includes("color-mix("), false);
-  assert.equal(block.includes(":has("), false);
+  assert.ok(block.includes('button:only-child'));
 });
 
 test("çekirdeklerde enderlik, modüldeki rozetle aynı dilde yazar", () => {

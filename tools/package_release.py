@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "2.1.1"
+VERSION = "2.2.0"
 PACKAGE_LABEL = "signatures-social"
 ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}"
 
@@ -31,6 +31,9 @@ EXCLUDED_NAMES = {"RELEASE_MANIFEST.json"}
 STATIC_SERVER_DATA_FILES = {
     "server/data/arena_bot_profiles_v1.json",
     "server/data/arena_progression_v1.json",
+    "server/data/module_roster_v2.json",
+    "server/data/module_talents_v7.json",
+    "server/data/season_module_releases_v2.json",
 }
 GENERATED_ROOT_PATTERNS = (
     "GRIDSHARD-*.zip",
@@ -39,7 +42,7 @@ GENERATED_ROOT_PATTERNS = (
 
 PRIVATE_OR_GENERATED_PREFIXES = (
     "qa_reports/", "test-results/", "playwright-report/", "artifacts/",
-    ".mobile-debug/", ".venv/", "node_modules/", "dist/", "build/", "secrets/",
+    ".mobile-debug/", ".venv/", "node_modules/", "dist/", "build/", "secrets/", "deliverables/",
 )
 PRIVATE_FILE_PATTERNS = (
     "*.key", "*.pem", "*.p8", "*.p12", "*.pfx", "*.keystore", "*.jks",

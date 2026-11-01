@@ -217,5 +217,5 @@ test("startup keeps the approved circuit scene, one in-scene reactor and real re
   assert.ok(app.includes("await startupLoading?.finish();"));
   assert.ok(app.includes("void afterStartup(() => consumePendingDeepLink());"));
   assert.ok(app.includes("onOpen: (url) => afterStartup(() => consumePendingDeepLink(url)),"));
-  assert.ok(app.includes("|| startupLoading?.active"));
+  assert.ok(app.includes("onboardingOverlay.hide();"));
 });

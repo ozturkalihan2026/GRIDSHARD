@@ -1,0 +1,517 @@
+{
+  "status": "DESIGN_ONLY_NOT_IMPLEMENTED_NOT_BALANCE_VALIDATED",
+  "migration_is_executable": false,
+  "version": "akim-3-sinif-v1",
+  "economy": {
+    "resource": "Akim",
+    "start": 6,
+    "cap": 12,
+    "regen_seconds": 2.2
+  },
+  "board": {
+    "columns": 5,
+    "rows": 3,
+    "core_cell": [
+      2,
+      1
+    ],
+    "active_non_core_limit": 8,
+    "copies_per_definition": 2,
+    "deck_size": 6,
+    "min_attack_cards": 2,
+    "placement": "player_selected",
+    "deployment_seconds": 0.8,
+    "core_hp": 900,
+    "core_protection": "lane_and_barrier_not_global_all_modules"
+  },
+  "growth": {
+    "hp_damage_healing_per_level": 1.03,
+    "max_level": 15,
+    "cycle_growth": 1,
+    "percent_effect_growth": 1
+  },
+  "shared_rules": {
+    "normal_attack_targeting": "same_approach_column_front_to_back_then_core_if_path_open",
+    "barrier_redirects_per_hit": 1,
+    "shield_blocks_per_hit": 1,
+    "module_repair_stacking": "strongest_raw_healing_link_only_then_received_healing_modifier_once",
+    "module_repair_can_target_core": false,
+    "module_repair_can_target_self": false,
+    "amplifier_stacking": "strongest_only",
+    "emp_duration_seconds": 1,
+    "full_interrupt_immunity_after_seconds": 3,
+    "weak_line_duration_seconds": 4,
+    "weak_line_max_received_damage_increase": 0.2,
+    "weak_line_max_received_healing_reduction": 0.5,
+    "global_elapsed_time_damage_or_repair_modifier": false,
+    "hidden_counter_damage_multiplier": false
+  },
+  "prototype_core_power": {
+    "recharge_seconds": 35,
+    "non_core_targets": 2,
+    "heal_per_target": 40,
+    "heals_core": false
+  },
+  "modules": [
+    {
+      "id": "laser",
+      "name": "Lazer",
+      "cls": "saldiri",
+      "cost": 3,
+      "hp": 260,
+      "damage": 18,
+      "cycle": 1.4,
+      "role": "Düzenli tek hedef ateşi",
+      "mechanic": "Tek isabet. Özel delme veya yayılma yok.",
+      "target": "Önündeki hatta ilk geçerli hedef.",
+      "counter": "Zırh, korumalı hat ve odak ateşi.",
+      "tradeoff": "Ucuz ve istikrarlı; sıkışık düzeni veya güçlü zırhı tek başına hızlı çözmez."
+    },
+    {
+      "id": "pulse",
+      "name": "Darbe Topu",
+      "cls": "saldiri",
+      "cost": 4,
+      "hp": 290,
+      "damage": 52,
+      "cycle": 3.6,
+      "role": "Ani ve görünür darbe",
+      "mechanic": "Tek ağır isabet. Çevrimin son 0,6 saniyesi görünür hazırlık; bu süre 3,6 saniyeye dahildir.",
+      "target": "Önündeki hatta ilk geçerli hedef.",
+      "counter": "Hazır Kalkan yükü, EMP ve Yansıtıcıyı doğru zamanda kullanmak.",
+      "tradeoff": "Atış boşa giderse büyük tempo kaybeder; devamlı en yüksek hasarı üretmez."
+    },
+    {
+      "id": "rail",
+      "name": "Ray Topu",
+      "cls": "saldiri",
+      "cost": 4,
+      "hp": 280,
+      "damage": 40,
+      "cycle": 3.2,
+      "role": "Zırhı çözme",
+      "mechanic": "Zırhın hasar azaltımının %65'ini yok sayar. Kalkan blok oranını veya Bariyer yönlendirmesini yok saymaz.",
+      "target": "Önündeki hatta ilk geçerli hedef.",
+      "counter": "Kalkan, yaygın düşük maliyetli baskı, EMP.",
+      "tradeoff": "Çıplak hedefte Lazerden daha iyi bir hasar/Akım oranı sunmamalı."
+    },
+    {
+      "id": "arc",
+      "name": "Ark Topu",
+      "cls": "saldiri",
+      "cost": 4,
+      "hp": 245,
+      "damage": 20,
+      "cycle": 1.8,
+      "secondary_damage": 14,
+      "max_targets": 2,
+      "role": "Komşu iki hedefi yıpratma",
+      "mechanic": "Ana hedefe 20, ona ortogonal komşu tek başka hedefe 14 hasar. İkinci hedef yoksa bu hasar ana hedefe eklenmez.",
+      "target": "Normal hat hedefi; ikincil hedef ana hedefin bir hücre komşuluğunda.",
+      "counter": "Seyrek yerleşim, tek büyük savunma, odak ateşi.",
+      "tradeoff": "Tek hedefte verimi düşer; bütün tahtaya sıçramaz."
+    },
+    {
+      "id": "mortar",
+      "name": "Havan",
+      "cls": "saldiri",
+      "cost": 5,
+      "hp": 250,
+      "damage": 60,
+      "cycle": 4.8,
+      "secondary_damage": 20,
+      "max_targets": 3,
+      "role": "Sıkışık düzeni bozma",
+      "mechanic": "Ana hedefe 60; bir hücre komşuluğundaki en fazla iki farklı hedefe 20'şer hasar. Son 1,2 saniye hazırlık, toplam çevrime dahildir.",
+      "target": "Normal hat hedefi etrafında küçük alan. Çekirdeğe doğrudan geçme yetkisi yok.",
+      "counter": "Seyrek yerleşim, EMP, ayrı hatlardan baskı.",
+      "tradeoff": "Pahalıdır; hedef aralığı genişse tek hedef hasarı olağanüstü değildir."
+    },
+    {
+      "id": "drone",
+      "name": "Dron Üssü",
+      "cls": "saldiri",
+      "cost": 4,
+      "hp": 240,
+      "damage": 12,
+      "cycle": 2.6,
+      "hits": 3,
+      "hit_spacing": 0.12,
+      "role": "Tek blok yükünü harcatma",
+      "mechanic": "Aynı hedefe 0,12 saniye arayla 3×12 hasar. Her isabet ayrı blok değerlendirmesi alır. Canlı, bağımsız dron birimi üretmez.",
+      "target": "Önündeki hatta ilk geçerli hedef; arka hatta kendiliğinden atlamaz.",
+      "counter": "Zırh ve Havan baskısı.",
+      "tradeoff": "Üç isabet tek bir büyük vuruş sayılmaz; ölen hedefte kalan isabetler yeni hedefe taşınmaz."
+    },
+    {
+      "id": "shield",
+      "name": "Kalkan",
+      "cls": "savunma",
+      "cost": 3,
+      "hp": 320,
+      "cycle": 3,
+      "role": "Bir önemli vuruşu yumuşatma",
+      "mechanic": "Hazır yük, kendisine veya bir ortogonal komşusuna gelen tek doğrudan isabetin %60'ını engeller. Yük paylaşımlıdır; bloktan sonra 3 saniyede dolar.",
+      "target": "Kendisi ve dört yöndeki bir hücre komşuları.",
+      "counter": "Dron üçlü isabeti, ucuz atışla yük harcatıp ağır darbe geçirmek, EMP.",
+      "tradeoff": "Her mermiyi engellemez. Aynı isabette ikinci bir Kalkan bloğu uygulanmaz."
+    },
+    {
+      "id": "barrier",
+      "name": "Bariyer",
+      "cls": "savunma",
+      "cost": 4,
+      "hp": 460,
+      "cycle": 0,
+      "role": "Bir bölge için CAN harcama",
+      "mechanic": "Arkasındaki kendi sütununa ve birer yan sütuna geçen doğrudan saldırıları üzerine çeker; gelen hasarı kendi CAN'ından tam öder. İkincil alan hasarını toplamaz.",
+      "target": "Kendi hizası ve birer yan sütun; yalnız Bariyerin arkasında kalan bölge.",
+      "counter": "Alan hasarı, Rayla birlikte yoğun baskı, EMP ile kısa koruma açıklığı.",
+      "tradeoff": "Hasar azaltması, saldırısı veya kendini onarımı yoktur. Aynı isabet en fazla bir kez yönlendirilir."
+    },
+    {
+      "id": "armor",
+      "name": "Zırh",
+      "cls": "savunma",
+      "cost": 3,
+      "hp": 300,
+      "cycle": 0,
+      "role": "Kendi hattında sürekli dayanıklılık",
+      "mechanic": "Kendisine gelen doğrudan ve ikincil hasarı %35 azaltır. Komşuları güçlendirmez, kendini onarmaz.",
+      "target": "Yalnız kendisi.",
+      "counter": "Ray Topu; başka açık hatta baskı; EMP.",
+      "tradeoff": "Bariyer gibi üç sütunu korumaz; tek hücrede güçlü bir engeldir."
+    },
+    {
+      "id": "reflector",
+      "name": "Yansıtıcı",
+      "cls": "savunma",
+      "cost": 3,
+      "hp": 280,
+      "cycle": 4,
+      "role": "Pahalı vuruşu cezalandırma",
+      "mechanic": "Hazır olduğunda kendisine gelen ilk isabetin gerçekleşen CAN hasarının %60'ını, en fazla 40 hasarı saldırana geri verir. Sonra 4 saniye yüklenir.",
+      "target": "Yalnız kendisine vuran kaynak.",
+      "counter": "Ucuz küçük isabetle yük harcatmak; EMP.",
+      "tradeoff": "Yansıttığı için aldığı hasar azalmaz. Yansıtma yeniden yansıtma veya isabet yeteneği tetiklemez."
+    },
+    {
+      "id": "repair",
+      "name": "Onarım",
+      "cls": "taktik",
+      "cost": 3,
+      "hp": 190,
+      "cycle": 3,
+      "healing_total": 24,
+      "healing_targets": 1,
+      "role": "Tek yaralı modülü hayatta tutma",
+      "mechanic": "Bir komşu modüle 3 saniyede toplam 24 CAN onarım bağı verir. Kendisini ve Çekirdeği onaramaz.",
+      "target": "Ortogonal komşular arasında en düşük CAN oranındaki uygun hedef.",
+      "counter": "Bozucu, Hedefleme ile onarım kaynağına ulaşmak, iki silahın odak ateşi.",
+      "tradeoff": "Aynı hedefte modül kaynaklı onarım bağlarının yalnız en güçlüsü işler; miktarlar toplanmaz."
+    },
+    {
+      "id": "nano",
+      "name": "Nano Onarım",
+      "cls": "taktik",
+      "cost": 3,
+      "hp": 185,
+      "cycle": 3,
+      "healing_total": 14,
+      "healing_targets": 2,
+      "role": "Yaygın hasarı toparlama",
+      "mechanic": "En fazla iki komşuya ayrı ayrı 3 saniyede toplam 14 CAN onarım bağı verir. Eksik ikinci hedefin payı birinciye aktarılmaz.",
+      "target": "Ortogonal komşular arasında en yaralı iki uygun hedef; kendisi/Çekirdek hariç.",
+      "counter": "Tek hedefe yoğun ateş, Bozucu.",
+      "tradeoff": "Toplam takım onarımı yüksek, kritik tek hedef onarımı düşüktür. Onarım ile üst üste yığılmaz."
+    },
+    {
+      "id": "amplifier",
+      "name": "Güçlendirici",
+      "cls": "taktik",
+      "cost": 2,
+      "hp": 150,
+      "cycle": 0,
+      "role": "Kurulmuş saldırı hattını güçlendirme",
+      "mechanic": "Yalnız hemen solundaki ve sağındaki saldırı modüllerinin doğrudan/ikincil temel hasarını %35 artırır.",
+      "target": "Aynı sırada sol ve sağ birer hücre; en fazla iki silah.",
+      "counter": "Havan/Ark ile yan yana düzeni vurmak; Güçlendiriciyi hedeflemek.",
+      "tradeoff": "Tek silahla erken kurmak verimsizdir. Aynı silaha iki Güçlendirici etkisi toplanmaz; sınırsız çarpan oluşturmaz."
+    },
+    {
+      "id": "targeting",
+      "name": "Hedefleme Bilgisayarı",
+      "cls": "taktik",
+      "cost": 3,
+      "hp": 180,
+      "cycle": 8,
+      "role": "Bir silaha kontrollü arka hat erişimi",
+      "mechanic": "Seçilen bir komşu silaha 4 saniye geçerli, en fazla iki atışlık Odak yetkisi verir. Bu atışlar oyuncunun işaretlediği tek çekirdek dışı hedefe yönelir.",
+      "target": "Bir ortogonal komşu silah + görünür bir düşman modülü. Bariyer yönlendirmesi ve Kalkan bloğu korunur.",
+      "counter": "Bariyerle kaynak korumak, hedefleme kaynağını yok etmek, yetkinin kısa süresini kullanmak.",
+      "tradeoff": "Hasar/hız bonusu vermez; boşa geçen Odak süresi veya biten hedef yeni hedefe otomatik taşınmaz."
+    },
+    {
+      "id": "emp",
+      "name": "EMP",
+      "cls": "taktik",
+      "cost": 3,
+      "hp": 170,
+      "cycle": 7,
+      "role": "Bir önemli çevrimi geciktirme",
+      "mechanic": "Tek saldırı veya savunma modülünü 1 saniye duraklatır. Ardından hedef 3 saniye yeni tam kesintiye bağışıktır. Kalan çevrim ilerlemesi silinmez.",
+      "target": "İşaretlenen uygun modül; yoksa öncelikli aktif saldırı/savunma hedefi. Çekirdek hariç.",
+      "counter": "Birden fazla saldırı kaynağı, tek silaha bütün yatırımı yapmamak, toparlanma aralığı.",
+      "tradeoff": "Kontroller üst üste eklenmez; bağışık hedefte başarısız tetik kaynak tüketmez ve başka uygun hedef aranır."
+    },
+    {
+      "id": "disruptor",
+      "name": "Bozucu",
+      "cls": "taktik",
+      "cost": 2,
+      "hp": 150,
+      "cycle": 7,
+      "role": "Onarımla korunan hedefi açma",
+      "mechanic": "Tek düşman modülüne 4 saniye Zayıf Hat işareti koyar: aldığı saldırı hasarı %20 artar, aldığı onarım %50 azalır. Silahı kapatmaz. Çekirdeğe uygulanmaz.",
+      "target": "İşaretli çekirdek dışı modül; işaret yoksa onarım bağı bulunan öncelikli hedef.",
+      "counter": "Baskıyı başka hatta taşımak, hedefi Kalkanla korumak, Bozucuyu hedeflemek.",
+      "tradeoff": "Az saldırı kurulmuşken veya hedefte onarım yokken değeri düşer. Kopyalar %20 hasar artışı / %50 onarım azalması sınırını aşamaz; süreler toplanmaz."
+    }
+  ],
+  "legacy_mapping": [
+    {
+      "from": "laser",
+      "to": "laser",
+      "status": "koru"
+    },
+    {
+      "from": "shield",
+      "to": "shield",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "battery",
+      "to": null,
+      "status": "sistem_disinda"
+    },
+    {
+      "from": "cooler",
+      "to": null,
+      "status": "sistem_disinda"
+    },
+    {
+      "from": "emp",
+      "to": "emp",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "amplifier",
+      "to": "amplifier",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "repair",
+      "to": "repair",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "armor",
+      "to": "armor",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "pulse_cannon",
+      "to": "pulse",
+      "status": "koru"
+    },
+    {
+      "from": "missile_launcher",
+      "to": "mortar",
+      "status": "birlestirme_adayi"
+    },
+    {
+      "from": "targeting_computer",
+      "to": "targeting",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "barrier",
+      "to": "barrier",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "arc_cannon",
+      "to": "arc",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "capacitor",
+      "to": null,
+      "status": "sistem_disinda"
+    },
+    {
+      "from": "drone_bay",
+      "to": "drone",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "jammer",
+      "to": "disruptor",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "railgun",
+      "to": "rail",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "current_balancer",
+      "to": null,
+      "status": "sistem_disinda"
+    },
+    {
+      "from": "reflector",
+      "to": "reflector",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "nano_medic",
+      "to": "nano",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "virus",
+      "to": null,
+      "status": "ikinci_asama"
+    },
+    {
+      "from": "overclock_unit",
+      "to": null,
+      "status": "ikinci_asama"
+    },
+    {
+      "from": "plasma_mortar",
+      "to": "mortar",
+      "status": "birlestirme_adayi"
+    },
+    {
+      "from": "guardian_dome",
+      "to": null,
+      "status": "ikinci_asama"
+    },
+    {
+      "from": "quantum_repeater",
+      "to": null,
+      "status": "ikinci_asama"
+    },
+    {
+      "from": "chrono_relay",
+      "to": null,
+      "status": "ikinci_asama"
+    },
+    {
+      "from": "phase_armor",
+      "to": null,
+      "status": "ikinci_asama"
+    },
+    {
+      "from": "swarm_fabricator",
+      "to": null,
+      "status": "ikinci_asama"
+    },
+    {
+      "from": "precision_matrix",
+      "to": null,
+      "status": "ikinci_asama"
+    },
+    {
+      "from": "ion_spear",
+      "to": "rail",
+      "status": "birlestirme_adayi"
+    },
+    {
+      "from": "prism_shield",
+      "to": null,
+      "status": "ikinci_asama"
+    },
+    {
+      "from": "disruptor",
+      "to": "disruptor",
+      "status": "yeniden_tanimla"
+    },
+    {
+      "from": "phoenix_repair",
+      "to": null,
+      "status": "ikinci_asama"
+    },
+    {
+      "from": "quantum_cannon",
+      "to": null,
+      "status": "ikinci_asama"
+    },
+    {
+      "from": "omega_amplifier",
+      "to": "amplifier",
+      "status": "birlestirme_adayi"
+    },
+    {
+      "from": "singularity_projector",
+      "to": null,
+      "status": "ikinci_asama"
+    }
+  ],
+  "decks": [
+    {
+      "name": "Dengeli hat",
+      "ids": [
+        "laser",
+        "pulse",
+        "shield",
+        "barrier",
+        "repair",
+        "amplifier"
+      ],
+      "opening": [
+        "laser",
+        "shield",
+        "pulse",
+        "repair",
+        "amplifier",
+        "barrier"
+      ]
+    },
+    {
+      "name": "Zırh ve kümelenme karşılığı",
+      "ids": [
+        "rail",
+        "mortar",
+        "armor",
+        "barrier",
+        "targeting",
+        "emp"
+      ]
+    },
+    {
+      "name": "Dağıtılmış baskı",
+      "ids": [
+        "drone",
+        "arc",
+        "shield",
+        "reflector",
+        "nano",
+        "disruptor"
+      ]
+    },
+    {
+      "name": "Onarım hattını kırma",
+      "ids": [
+        "pulse",
+        "rail",
+        "barrier",
+        "shield",
+        "targeting",
+        "disruptor"
+      ]
+    }
+  ]
+}

@@ -232,7 +232,7 @@
       playerId,
       sessionId = null,
       battleClient = null,
-      protocolVersion = 1,
+      protocolVersion = 2,
     }) {
       if (!playerId) {
         throw new Error("PvP oyuncu kimliği zorunludur.");
@@ -533,13 +533,11 @@
               serverModule.x === null || serverModule.y === null
                 ? null
                 : { x: serverModule.x, y: serverModule.y },
-            isPowered: serverModule.is_powered,
-            powerReason: serverModule.power_reason,
-            energyReceived:
-              serverModule.energy_received,
-            energyRequired:
-              serverModule.energy_required,
-            heat: serverModule.heat,
+            operational: serverModule.operational,
+
+
+
+
           });
         }
 
@@ -1901,7 +1899,7 @@
                   this.playerId,
                 // İlk oyun deneyimi: yönetmenli ilk savaş isteği.
                 // tutorial_script: bu istemcinin tanıdığı sahne sürümü (Kalkan dersi).
-                ...(tutorial ? { tutorial: true, tutorial_script: 2 } : {}),
+                ...(tutorial ? { tutorial: true, tutorial_script: 5 } : {}),
               }),
             }
           );
@@ -3009,7 +3007,7 @@
     constructor({
       healthState,
       expectedVersion = null,
-      expectedProtocolVersion = 1,
+      expectedProtocolVersion = 2,
       requestJson = null,
     }) {
       this.healthState = healthState;

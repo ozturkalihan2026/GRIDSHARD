@@ -6645,6 +6645,7 @@ async def health() -> dict:
         "version": LEGACY_HEALTH_VERSION,
         "release_version": VERSION,
         "pvp_protocol_version": PVP_PROTOCOL_VERSION,
+        "combat_ruleset": "modules_v7",
         # Explicit rollout signal: a client must never silently downgrade a
         # closed-inventory season chest into the legacy instant-open protocol.
         "season_chest_delivery_protocols": ["inbox-v1", "stock-v1"],

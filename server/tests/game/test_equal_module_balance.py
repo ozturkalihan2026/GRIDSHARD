@@ -1,7 +1,7 @@
 from app.game.balance import analyze_balance
 from app.game.simulation import (
     ARMOR_COUNTER_LAYOUT,
-    BATTERY_PULSE_LAYOUT,
+    BURST_PULSE_LAYOUT,
     DEFAULT_SIMULATION_LAYOUTS,
     run_match,
     run_round_robin,
@@ -15,15 +15,15 @@ def test_all_default_competitive_layouts_have_six_modules():
     } == {6}
 
 
-def test_battery_pulse_has_real_armor_counter_from_both_sides():
+def test_burst_pulse_has_real_armor_counter_from_both_sides():
     first = run_match(
         ARMOR_COUNTER_LAYOUT,
-        BATTERY_PULSE_LAYOUT,
+        BURST_PULSE_LAYOUT,
         max_ticks=1800,
     )
 
     second = run_match(
-        BATTERY_PULSE_LAYOUT,
+        BURST_PULSE_LAYOUT,
         ARMOR_COUNTER_LAYOUT,
         max_ticks=1800,
     )

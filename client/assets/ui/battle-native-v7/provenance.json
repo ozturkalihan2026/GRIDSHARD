@@ -1,0 +1,26 @@
+{
+  "method": "Built-in image_gen editing; offline pixel registration, original floor/rim restoration, single WebP per board.",
+  "cyan_prompts": [
+    "Use case: precise-object-edit. Edit target: the attached transparent CYAN sci-fi battle island sprite. This is a production game asset, NOT a screenshot. Make only one change: add a matching tall glowing cyan/blue block tower cluster at BOTH FRONT LOWER corners, immediately outside/behind the existing lower-left and lower-right silver corner caps, matching the two existing upper/back corner tower clusters. The result has FOUR equivalent raised corner tower clusters in the SAME CYAN palette. Keep the original 5 columns x 3 rows dark empty floor, all 15 plate edges, floor size/placement, original silver corner caps, gold connectors, upper towers, overall outer cliff silhouette and lighting unchanged. Do not add towers within or across the floor. Extend each new front-corner cluster upward on the OUTSIDE of its silver corner, like the existing back-corner towers, with top small square block and two taller neighboring dark navy pillars, cyan illuminated seams, matching isometric perspective. Keep full island centered in exact same square canvas registration; do not crop, rescale, shift, or add margins. Transparent background outside island, no shadow rectangle, no text, no icons, no units. Absolutely no red, orange or pink anywhere in cyan asset.",
+    "Use case precise-object-edit. IMPORTANT CORRECTION: EXCHANGE THE TWO PAIRS OF CORNER TOWERS. Do NOT merely make every tower thin. Edit target reference1 original cyan island with chunky upper towers and slender lower towers. The upper pair is visibly bulkier than the lower pair; exchange these exact two pairs. Move the existing TWO THICK/CHUNKY UPPER BACK CORNER CLUSTERS DOWN to the LOWER FRONT corners. Move the existing TWO THIN/SLENDER LOWER FRONT CORNER CLUSTERS UP to the UPPER BACK corners. Final image: thin pair at TOP, thick pair at BOTTOM. Preserve the thick clusters' bulky cap/column proportions and the thin clusters' smaller proportions; all four remain cyan/blue, with left/right mirrored correctly. Attach them naturally outside their corresponding silver corner caps. ONLY swap tower pair geometry/positions. Preserve every other pixel/composition as far as possible: the original 5x3 floor, silver metal caps, gold connectors, edge blocks, lower central cliff, square canvas registration and camera angle. No red annotations or red lights, no labels, no UI, no modules. Transparent background outside the complete island. Do not crop or reframe. The bulky towers MUST STILL EXIST at the BOTTOM corners; they must not be reduced in size.",
+    "Precise correction to this CYAN island production sprite: enforce the user's tower exchange visibly. TOP/BACK pair must be the small SLENDER tower design; BOTTOM/FRONT pair must be the big CHUNKY tower design. Right now the upper ones are still too wide. Make the top pair's cap and column widths about 75-80% of the bottom pair's. Keep the bottom pair big and chunky, with the broad top cubes from the original upper pair. This is an exchange of two sizes, not a request for four small towers. Keep all four corners, matching left/right mirrored geometry and cyan lighting only. Keep the existing floor 5x3 tiles, metal caps, gold connectors, center cliff and whole canvas registration completely unchanged. Only tower clusters change. No labels, no red marks/lights, no units. Transparent background. Thin TOP, thick BOTTOM must be immediately obvious."
+  ],
+  "red_prompt": "Use case: precise-object-edit. Edit target: the RED sci-fi battle island sprite in reference 1. Supporting style/composition reference 2: approved cyan island with FOUR corner tower clusters. Make the RED island have equivalent tall block tower clusters at BOTH LOWER FRONT corners, outside the lower silver caps, matching the successful cyan four-corner design in reference2. Every light on this red island must be RED/ORANGE, never cyan or blue. Keep the original red island's 5x3 dark empty tile floor in exactly the same canvas coordinates and proportions (native 1254-square canvas, floor x264..992 y260..664), gold connectors, silver corner caps and lower cliffs, with no floor tiles covered. Preserve original upper corner towers. Add only two lower tower clusters, same top square cap with dark navy columns and red glowing seams. Same centered 1:1 canvas registration and complete unclipped island silhouette. Real transparent background outside island. No text, no UI, no characters, no modules. Match the cyan reference's cluster size and attachment. Lower side towers should hug silver corner caps, with no additional central/backdrop city blocks.",
+  "selected_sources": {
+    "cyan": "exec-18e2eb78-0916-4b6a-b594-be815a47f235.png",
+    "red": "exec-cc8d82cc-fc06-4a70-94ce-2daa93768ed7.png"
+  },
+  "user_correction": "Cyan: thin pair at TOP, thick pair at BOTTOM, actual exchange.",
+  "original": "../battle-native-v6",
+  "registration": {
+    "canvas": 1254,
+    "native_raster": 1024,
+    "floor": {
+      "left": 264,
+      "top": 260,
+      "width": 728,
+      "height": 404
+    }
+  },
+  "builder": "tools/build-corner-islands.cjs"
+}

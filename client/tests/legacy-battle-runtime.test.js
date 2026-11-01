@@ -21,21 +21,11 @@ test('only the approved painted renderer loads; retired WebGL code cannot start 
   assert.ok(source.includes('GridshardModuleDeviceArt.mount(icon, model.module, model.enemy)'));
 });
 
-test('battery and amplifier pulses have one VFX owner; other signature events remain available',()=>{
-  const start=source.indexOf('  function presentSignatureEvent('),end=source.indexOf('  function processLocalServerEvents(',start);
-  const emissions=[];
-  const sandbox={SIGNATURE_EVENT_TYPES:new Set(['amplifier_pulse','module_cycle_pulse']),
-    findSnapshotModule:(snapshot,player,id)=>snapshot.players[player].modules.find(m=>m.instance_id===id),
-    snapshotOpponentId:()=>null,snapshotModuleDomId:(_s,p,id)=>`${p}:${id}`,
-    emitSignatureBattleEffect:(...args)=>emissions.push(args),CYCLE_PULSE_PRESENTATION:{},localizedUiText:s=>s};
-  vm.runInNewContext(source.slice(start,end)+';this.present=presentSignatureEvent;',sandbox);
-  const snapshot={players:{own:{modules:[{instance_id:'a',definition_id:'amplifier'},
-    {instance_id:'b',definition_id:'battery'},{instance_id:'c',definition_id:'barrier'}]}}};
-  for(const [type,id]of [['amplifier_pulse','a'],['module_cycle_pulse','b']])
-    assert.equal(sandbox.present({type,data:{player_id:'own',module_id:id}},snapshot),true);
-  assert.equal(emissions.length,0,'new module VFX already drew these events');
-  sandbox.present({type:'module_cycle_pulse',data:{player_id:'own',module_id:'c'}},snapshot);
-  assert.equal(emissions.length,1);assert.equal(emissions[0][0],'cycle_pulse');
+test('current amplifier pulses have a single VFX owner',()=>{
+ const vfx=fs.readFileSync(path.join(client,'src/battle/module-vfx.js'),'utf8');
+ assert.doesNotMatch(source,/presentSignatureEvent|CYCLE_PULSE_PRESENTATION/);
+ assert.match(vfx,/e.type==="amplifier_pulse"/);
+ assert.ok(source.includes('moduleVfx.receive(batch.events,batch.snapshot)'));
 });
 
 test('painted devices do not inherit old card glow clocks or duplicate their canvas idle effect',()=>{

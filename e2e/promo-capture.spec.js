@@ -40,7 +40,7 @@ test('record authentic local GRIDSHARD footage without desktop interaction',asyn
   await expect(page.locator('#battle-start-countdown')).toBeHidden({timeout:6000});
   mark('battle');
   // The same deployment path and costs as a human player; no fabricated state.
-  for(const id of ['laser','battery','shield','laser']){
+  for(const id of ['laser','armor','shield','laser']){
     await expect.poll(()=>page.evaluate(id=>window.__GRIDSHARD_TEST_API.deployModule(id),id),{timeout:16000}).toBe(true);
     await page.waitForTimeout(2400);
   }

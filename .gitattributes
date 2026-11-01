@@ -1,0 +1,2 @@
+# Historical contract evidence is verified byte-for-byte on Windows and Linux.
+/docs/archive/current-only-contracts-20261101/** -text whitespace=cr-at-eol

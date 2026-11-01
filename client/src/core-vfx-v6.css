@@ -1,0 +1,52 @@
+/* Core powers have their own geometry, timing and reserved visual layer. */
+.core-vfx { position:absolute; pointer-events:none; overflow:visible; z-index:24; opacity:1; animation:core-v6-life var(--core-fx-ms,900ms) linear both; }
+.core-vfx :is(path,polygon,circle,rect) { vector-effect:non-scaling-stroke; stroke-linecap:round; stroke-linejoin:round; }
+.core-rune,.core-portal,.core-channel-ring { fill:none; stroke:var(--core-fx-color); stroke-width:3; }
+.core-rune { stroke-dasharray:18 7 4 7; }
+.core-white { fill:var(--core-fx-light); stroke:var(--core-fx-color); stroke-width:3; fill-opacity:.8; }
+.core-orbit { transform-box:fill-box; transform-origin:center; animation:core-v6-orbit 2s linear infinite; }
+.core-charge-ring { fill:none; stroke:var(--core-fx-light); stroke-width:4; transform-box:fill-box; transform-origin:center; animation:core-v6-charge 850ms ease-out both; }
+.core-channel-ring { stroke-dasharray:3 9; stroke-width:5; }
+.core-resonance-halo { fill:none; stroke:#ffcf35; stroke-width:17; stroke-opacity:.22; }
+.core-resonance-beam { fill:none; stroke:#fff6bd; stroke-width:6; stroke-dasharray:16 8; animation:core-v6-flow 400ms linear infinite; }
+.core-resonance-impact { fill:#ffe666; fill-opacity:.05; stroke:#ffe666; stroke-width:3; transform-box:fill-box; transform-origin:center; animation:core-v6-impact 800ms ease-out both; }
+.core-resonance-impact:nth-of-type(2) { animation-delay:90ms; }
+.core-resonance-impact:nth-of-type(3) { animation-delay:180ms; }
+.core-citadel { fill:#123c63; fill-opacity:.4; stroke:#a5f4ff; stroke-width:4; }
+.core-fortress-lance { fill:none; stroke:#c8f9ff; stroke-width:9; stroke-dasharray:30 14; animation:core-v6-flow 350ms linear infinite; }
+.core-fortress-seal { fill:#33d8ff; fill-opacity:.15; stroke:#c1f9ff; stroke-width:4; transform-box:fill-box; transform-origin:center; animation:core-v6-impact 700ms ease-out both; }
+.core-target-lines { fill:none; stroke:#5adfff; stroke-width:3; stroke-dasharray:10 12; }
+.core-flame-ribbon { fill:none; stroke:#ff931b; stroke-width:13; stroke-opacity:.7; }
+.core-flame-white { fill:none; stroke:#fff0b1; stroke-width:5; stroke-dasharray:14 8; animation:core-v6-flow 240ms linear infinite; }
+.core-corona { fill:#ff971f; fill-opacity:.18; stroke:#ffdb80; stroke-width:4; }
+.core-fire-impact { fill:#fff5c2; fill-opacity:.2; stroke:#ffb33c; stroke-width:5; transform-box:fill-box; transform-origin:center; animation:core-v6-impact 500ms ease-out both; }
+.core-verdict-cross { fill:none; stroke:#ffe7ff; stroke-width:4; }
+.core-verdict-countdown { fill:none; stroke:#f47aff; stroke-width:5; stroke-dasharray:7 6; transform-box:fill-box; transform-origin:center; animation:core-v6-orbit 1.5s linear infinite; }
+.core-verdict-link { fill:none; stroke:#f9a7ff; stroke-width:5; stroke-dasharray:5 12; }
+.core-verdict-blade { fill:none; stroke:#ffe3ff; stroke-width:8; transform-box:fill-box; transform-origin:center; animation:core-v6-verdict 650ms ease-out both; }
+.core-verdict-seal { fill:#9c24b7; fill-opacity:.2; stroke:#ffbaff; stroke-width:5; }
+.core-portal { stroke-width:4; fill:#062d28; fill-opacity:.15; }
+.core-summon-thread { fill:none; stroke:#80ffdb; stroke-width:5; stroke-dasharray:4 13; animation:core-v6-flow 330ms linear infinite; }
+.core-materialize { fill:#6affdc; fill-opacity:.12; stroke:#c9fff1; stroke-width:2; stroke-dasharray:8 6; transform-box:fill-box; transform-origin:center; animation:core-v6-materialize 1200ms ease-out both; }
+.core-phoenix-wings { fill:#ffaf41; fill-opacity:.27; stroke:#fff0bc; stroke-width:3; transform-box:fill-box; transform-origin:center; animation:core-v6-wings 850ms ease-out both; }
+.core-phoenix-trail { fill:none; stroke:#ffd093; stroke-width:7; stroke-dasharray:20 9; animation:core-v6-flow 300ms linear infinite; }
+.core-life-return { fill:none; stroke:#98ffb4; stroke-width:5; stroke-dasharray:3 11; animation:core-v6-return 450ms linear infinite; }
+.core-life-ring { fill:none; stroke:#acffc0; stroke-width:4; transform-box:fill-box; transform-origin:center; animation:core-v6-impact 850ms ease-out both; }
+.core-void { fill:#090d22; fill-opacity:.85; stroke:#eadcff; stroke-width:4; }
+.core-rift-cut { fill:none; stroke:#fff0ff; stroke-width:7; }
+.core-rift-thread { fill:none; stroke:#ad83ff; stroke-width:5; stroke-dasharray:30 8 4 8; animation:core-v6-flow 300ms linear infinite; }
+.core-rift-shards { fill:none; stroke:#e1ceff; stroke-width:4; transform-box:fill-box; transform-origin:center; animation:core-v6-impact 850ms ease-out both; }
+.core-blocked { fill:none; stroke:#a8dfff; stroke-width:4; stroke-dasharray:6 5; }
+@keyframes core-v6-life { 0%,75% { opacity:1; } 100% { opacity:0; } }
+@keyframes core-v6-orbit { to { transform:rotate(360deg); } }
+@keyframes core-v6-flow { to { stroke-dashoffset:-96; } }
+@keyframes core-v6-return { to { stroke-dashoffset:84; } }
+@keyframes core-v6-charge { from { transform:scale(.5); opacity:.2; } 35% { opacity:1; } to { transform:scale(1.25); opacity:0; } }
+@keyframes core-v6-impact { from { transform:scale(.6); opacity:1; } to { transform:scale(1.35); opacity:0; } }
+@keyframes core-v6-verdict { from { transform:scale(1.5); opacity:.2; } 40% { transform:scale(.65); opacity:1; } to { transform:scale(1); opacity:0; } }
+@keyframes core-v6-materialize { from { transform:scaleY(.15); opacity:1; } 40% { transform:scaleY(1); opacity:.85; } to { opacity:0; } }
+@keyframes core-v6-wings { from { transform:scaleX(.4) scaleY(.8); } 50% { transform:scaleX(1.1) scaleY(1); } to { transform:scaleX(1); opacity:0; } }
+/* Essential source/target geometry remains on low graphics and reduced motion. */
+body[data-graphics="dusuk"] .core-vfx * { animation:none; }
+body[data-graphics="dusuk"] .core-vfx :is(.core-resonance-halo,.core-target-lines,.core-rift-shards) { display:none; }
+@media (prefers-reduced-motion:reduce) { .core-vfx,.core-vfx * { animation:none !important; } }

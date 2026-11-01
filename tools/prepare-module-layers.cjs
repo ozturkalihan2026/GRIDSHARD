@@ -47,6 +47,8 @@ const TIP = { ne: [1, -.7], nw: [-1, -.7], se: [1, .35], sw: [-1, .35], n: [0, -
 // Coil caps of the approved amplifier painting, read on a 10% grid (image space).
 const PAIRS = { amplifier: [[.33, .10], [.72, .16]] };
 
+const activeIds=new Set(require('../server/data/module_roster_v2.json').modules.map(m=>m.id));
+for(const recipes of [RIGS,SINGLES,SINGLES_V2])for(const id of Object.keys(recipes))if(!activeIds.has(id))delete recipes[id];
 async function main() {
   const measure = async (name, dir = ART, lensColor = "orange") => {
     const file = path.join(ROOT, "client", dir, name + ".webp");
@@ -151,6 +153,7 @@ async function main() {
     "globalThis.GridshardModuleLayerData = Object.freeze(" + JSON.stringify(out, null, 1) + ");\n" +
     "if (typeof module !== \"undefined\" && module.exports) module.exports = globalThis.GridshardModuleLayerData;\n";
   fs.writeFileSync(OUTPUT, js);
+  require('node:child_process').execFileSync(process.execPath,[path.join(ROOT,'tools/register-main-module-art-v2.cjs')],{stdio:'inherit'});
   require('node:child_process').execFileSync(process.env.GRIDSHARD_PYTHON || 'python',
     [path.join(ROOT,'tools/audit-module-footprints.py'),'--write-fit'],{stdio:'inherit'});
   console.log(Object.entries(out).map(([k, v]) => k + ":" + (v.heads ? Object.keys(v.heads).length + " baş" : "tek")).join(" "));

@@ -4,7 +4,7 @@ from typing import Any
 from .models import BattleCommand
 from .pvp_setup import InitialModulePlacement, PvPSetupPayload
 
-PVP_PROTOCOL_VERSION = 1
+PVP_PROTOCOL_VERSION = 2  # V7 signatures require the matching renderer/client.
 
 CLIENT_MESSAGE_TYPES = {
     "command",

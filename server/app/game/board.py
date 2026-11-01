@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+import hashlib
 
 from .models import Position
 
@@ -44,6 +45,17 @@ BOARD_HEIGHT = 3
 
 def get_default_board() -> BoardLayout:
     return CANONICAL_BOARD
+
+
+def automatic_deployment_position(*, battle_id: str, player_id: str, definition_id: str,
+                                  instance_id: str, tick: int,
+                                  candidates: list[Position]) -> Position:
+    """The established authoritative random-placement rule, shared by viewers."""
+    if not candidates:
+        raise ValueError("Yerleştirme için boş hücre gerekli.")
+    seed = f"{battle_id}:{player_id}:{definition_id}:{instance_id}:{tick}"
+    digest = hashlib.sha256(seed.encode("utf-8")).digest()
+    return candidates[int.from_bytes(digest[:8], "big") % len(candidates)]
 
 
 CANONICAL_BOARD = BoardLayout(

@@ -5,8 +5,8 @@ from app.game.pvp_session import PvPSessionService
 FULL_BOARD_LAYOUT = (
     ("core", 2, 1),
     ("laser", 1, 1),
-    ("battery", 1, 0),
-    ("capacitor", 3, 0),
+    ("burst_cannon", 1, 0),
+    ("missile_launcher", 3, 0),
     ("shield", 4, 2),
     ("repair", 0, 2),
     ("emp", 3, 1),
@@ -14,8 +14,8 @@ FULL_BOARD_LAYOUT = (
     ("armor", 0, 0),
     ("railgun", 2, 0),
     ("barrier", 4, 0),
-    ("cooler", 0, 1),
-    ("jammer", 1, 2),
+    ("cleanser", 0, 1),
+    ("speed_relay", 1, 2),
     ("virus", 2, 2),
     ("amplifier", 3, 2),
 )

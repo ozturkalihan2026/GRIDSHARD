@@ -142,7 +142,7 @@ def test_collection_exposes_real_engine_effect_lines_for_every_module():
     profile = PlayerProfileService().get_or_create("effect-line-player")
     collection = MetaProgressionService().view(profile)["module_collection"]
 
-    assert len(collection) == 36
+    assert len(collection) == 24
     assert {item["definition_id"] for item in collection} == set(catalog)
     assert all(
         item["effect_lines"] == catalog[item["definition_id"]]

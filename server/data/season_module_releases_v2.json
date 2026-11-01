@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "launch_roster_size": 24,
+  "policy": {
+    "minimum_new_modules_per_season": 1,
+    "catalog_is_cumulative": true,
+    "season_end_removes_cards": false,
+    "paid_exclusive_power": false,
+    "existing_target_priority_changes": false,
+    "existing_random_placement_changes": false,
+    "release_requires": ["runtime", "art", "counterplay", "balance_tests", "arena_unlock", "free_acquisition"]
+  },
+  "roadmap": [
+    {
+      "season_offset": 1,
+      "status": "planned",
+      "modules": [{"id": "echo_relay", "name_tr": "Yankı Rölesi", "category": "taktik", "job": "Bir silahın sonraki atışını düşük güçlü ikinci bir vuruşla tekrarlar.", "feedback": "Silah üzerinde tek yankı yükü; ikinci mermi ayrı görünür.", "counterplay": "Ek vuruş tek isabetlik kalkanı tüketebilir; destek yok edilerek yeni yük engellenir.", "arena_unlock": 3}]
+    },
+    {
+      "season_offset": 2,
+      "status": "planned",
+      "modules": [{"id": "ember_launcher", "name_tr": "Kor Fırlatıcı", "category": "saldırı", "job": "Doğrudan vuruştan sonra kısa süreli yanma bırakır.", "feedback": "Hedef üzerinde kalan yanma süresi ve ayrı hasar tikleri.", "counterplay": "Arındırıcı yanmayı siler; Onarım zaman içinde kaybedilen CAN'ı geri kazandırır.", "arena_unlock": 5}]
+    },
+    {
+      "season_offset": 3,
+      "status": "planned",
+      "modules": [{"id": "impact_guard", "name_tr": "Darbe Muhafızı", "category": "savunma", "job": "Aldığı vuruşlarla dolan tek kullanımlık koruma üretir.", "feedback": "Gövde üzerinde okunur yük halkası ve koruma parlaması.", "counterplay": "Seyrek ağır vuruşlar daha az yük verir; hasar almadan kalkan üretemez.", "arena_unlock": 7}]
+    },
+    {
+      "season_offset": 4,
+      "status": "planned",
+      "modules": [{"id": "recovery_beacon", "name_tr": "Toparlanma Feneri", "category": "taktik", "job": "Bir dost yok olduğunda tek bir yaralı dostu onarır.", "feedback": "Yıkılan modülden yaralı dosta giden tek onarım darbesi.", "counterplay": "Dost kaybı olmadan etkisizdir; korunarak uzun süre ayakta tutulan devrelere karşı fırsatı azdır.", "arena_unlock": 9}]
+    }
+  ]
+}

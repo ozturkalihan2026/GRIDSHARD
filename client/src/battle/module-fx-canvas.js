@@ -1,7 +1,7 @@
 (function(root){
   "use strict";
   // v15 canvas effects for the first ten modules (laser, pulse, missile,
-  // shield, armor, repair, cooler, battery, amplifier, EMP) + destruction.
+  // shield, armor, repair, amplifier, EMP) + destruction.
   // One canvas inside #battle-effect-layer, driven by the battle's existing
   // frame loop (tick); idle when nothing is alive. Coordinates are the same
   // layer-local CSS pixels the module VFX anchors use. Event gating, caps,
@@ -154,21 +154,10 @@
       });
       this.later(ms-120,()=>this.ring(to.x,to.y+6*k,{color:"#6dffa8",r1:22*k,max:420,w:2}));
     }
-    cool(from,to,{k=1}={}){
-      if(!this.start())return;
-      for(let i=0;i<26;i++)this.later(i*22,()=>{const s=rnd(0,.25);
-        this.spark(lerp(from.x,to.x,s),lerp(from.y,to.y,s),{kind:"smoke",add:true,color:"#9feaff55",size:2.6*k,grow:8*k,vx:(to.x-from.x)*rnd(1.3,1.8),vy:(to.y-from.y)*rnd(1.3,1.8)+rnd(-10,10),max:600,drag:.97});});
-      this.later(460,()=>this.burst(to.x,to.y,10,{color:"#e6fbff",vmin:16,vmax:60,lmax:640,smin:.8,smax:1.8*k}));
-    }
     boost(pair,to,{k=1}={}){
       if(!this.start())return;
       for(const p of pair){this.arc(p,to,{color:"#b9ff6a",w:1.6,jit:4*k,max:240});this.burst(p.x,p.y,5,{color:"#d6ff8a",vmin:30,vmax:90,lmax:260,smax:1.4*k});}
       this.ring(to.x,to.y,{color:"#b9ff6a",r1:16*k,max:300,w:2});
-    }
-    battery(p,{k=1}={}){
-      if(!this.start())return;
-      this.ring(p.x,p.y+8*k,{color:"#ffd34a",r1:26*k,max:380,w:2.4});
-      for(let i=0;i<8;i++)this.spark(p.x+rnd(-12,12)*k,p.y+rnd(-4,8)*k,{vy:rnd(-70,-35),vx:rnd(-8,8),max:rnd(420,700),color:"#ffe27a",size:rnd(1,2)*k,drag:.98});
     }
     emp(from,to,{k=1}={}){
       if(!this.start())return;

@@ -69,3 +69,30 @@ test('dead core becomes an opaque wreck without live crystal light and rebirth r
   const reduced=await preview(0);expect(reduced.animation).toBe('none');expect(reduced.imageOpacity).toBe('1');
   await preview(300);
 });
+
+test('a server-destroyed player core remains on the board through the result screens',async({page},info)=>{
+  test.setTimeout(150000);
+  await page.locator('#home-battle-button').click();
+  await expect(page.locator('body')).toHaveAttribute('data-online-status','battle',{timeout:40000});
+  await expect(page.locator('#module-shelf')).toHaveAttribute('data-placement-ready','true',{timeout:30000});
+  // Leave the core undefended: this is the real terminal server snapshot,
+  // including destroyed status/cleared position, not a card-art preview.
+  const wreck=page.locator('#board [data-module-id="core-1"][data-core-wreck="true"]');
+  await expect(wreck).toHaveCount(1,{timeout:90000});
+  await expect(page.locator('.post-match-panel')).toBeVisible({timeout:15000});
+  await expect(wreck.locator('.module-layer-art')).toHaveAttribute('src',/cores-wrecked-v1/);
+  await expect(wreck.locator('.module-core-pulse')).toHaveCount(0);
+  expect(await wreck.evaluate(el=>({x:el.closest('.board-cell').dataset.x,y:el.closest('.board-cell').dataset.y}))).toEqual({x:'2',y:'1'});
+  await page.locator('#post-match-continue').click();
+  await expect(page.locator('#post-match-reward-stage')).toBeVisible();
+  await expect(wreck).toHaveCount(1);
+  await expect(page.locator('.post-match-reward-header')).toBeVisible();
+  const spacing=await page.evaluate(()=>{
+    const outcome=document.getElementById('post-match-reward-outcome').getBoundingClientRect();
+    const heading=document.getElementById('post-match-reward-heading').getBoundingClientRect();
+    const rewards=document.getElementById('post-match-reward-list').getBoundingClientRect();
+    return {titles:heading.top-outcome.bottom,rewards:rewards.top-heading.bottom};
+  });
+  expect(spacing.titles).toBeCloseTo(4,0);expect(spacing.rewards).toBeCloseTo(12,0);
+  await page.screenshot({path:info.outputPath('defeat-wreck-and-compact-rewards.png')});
+});

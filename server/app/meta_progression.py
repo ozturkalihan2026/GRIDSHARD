@@ -6,16 +6,11 @@ import hashlib
 from typing import Callable
 from uuid import uuid4
 
+from .catalog_migration import award_module_shards
 from .game.catalog import BASIC_MODULE_DEFINITIONS
 from .game.catalog_view import build_module_catalog_view
 from .game.core_balance import core_signature
 from .game.core_stats import core_max_hp
-from .game.energy import (
-    BASE_CORE_GENERATION_PER_SECOND,
-    CORE_LEVEL_GENERATION_MULTIPLIER,
-    CORE_RESERVE_BASE_CAPACITY,
-    CORE_RESERVE_PER_LEVEL,
-)
 from .player_profile import CURRENT_SEASON_ID, OPERATOR_TITLE_STAGES, operator_title_view
 from .premium_reward_recovery import wallet_snapshot
 from .reward_delivery import (
@@ -37,7 +32,7 @@ from .arena_canon import (
     REWARD_SHARD_PERCENT_BY_RARITY,
 )
 from threading import RLock
-from .game.talents import core_skill_tree
+
 
 MODULE_RARITY = {key: item["rarity"] for key, item in MODULES.items()}
 MODULE_CATALOG_VIEW = {item["id"]: item for item in build_module_catalog_view()["modules"]}
@@ -74,11 +69,7 @@ CORE_TYPES: tuple[dict, ...] = (
         "role_tr": "Hasarlı çekirdeği 45 CAN onarır.",
         "rarity": "common",
         "unlock_arena": 1,
-        "skills": (
-            {"id": "stable_frequency", "name_tr": "Kararlı Frekans", "requires": None},
-            {"id": "deep_resonance", "name_tr": "Derin Rezonans", "requires": "stable_frequency"},
-            {"id": "second_pulse", "name_tr": "İkinci Darbe", "requires": "deep_resonance"},
-        ),
+        "skills": (),
     },
     {
         "id": "core_guardian",
@@ -86,11 +77,7 @@ CORE_TYPES: tuple[dict, ...] = (
         "role_tr": "Savunma odaklı çekirdek prototipi.",
         "rarity": "rare",
         "unlock_arena": 3,
-        "skills": (
-            {"id": "barrier_seed", "name_tr": "Bariyer Tohumu", "requires": None},
-            {"id": "shield_matrix", "name_tr": "Kalkan Matrisi", "requires": "barrier_seed"},
-            {"id": "last_stand", "name_tr": "Son Direniş", "requires": "shield_matrix"},
-        ),
+        "skills": (),
     },
     {
         "id": "core_overdrive",
@@ -98,11 +85,7 @@ CORE_TYPES: tuple[dict, ...] = (
         "role_tr": "Saldırı temposu odaklı çekirdek prototipi.",
         "rarity": "rare",
         "unlock_arena": 5,
-        "skills": (
-            {"id": "hot_start", "name_tr": "Sıcak Başlangıç", "requires": None},
-            {"id": "surge", "name_tr": "Enerji Sıçraması", "requires": "hot_start"},
-            {"id": "redline", "name_tr": "Kırmızı Hat", "requires": "surge"},
-        ),
+        "skills": (),
     },
     {
         "id": "core_disruptor",
@@ -110,11 +93,7 @@ CORE_TYPES: tuple[dict, ...] = (
         "role_tr": "Sabotaj odaklı çekirdek prototipi.",
         "rarity": "epic",
         "unlock_arena": 7,
-        "skills": (
-            {"id": "static_field", "name_tr": "Statik Alan", "requires": None},
-            {"id": "signal_break", "name_tr": "Sinyal Kırılması", "requires": "static_field"},
-            {"id": "blackout", "name_tr": "Karartma", "requires": "signal_break"},
-        ),
+        "skills": (),
     },
     {
         "id": "core_capacitor",
@@ -122,11 +101,7 @@ CORE_TYPES: tuple[dict, ...] = (
         "role_tr": "Enerji ekonomisi odaklı çekirdek prototipi.",
         "rarity": "epic",
         "unlock_arena": 9,
-        "skills": (
-            {"id": "reserve_cell", "name_tr": "Yedek Hücre", "requires": None},
-            {"id": "fast_charge", "name_tr": "Hızlı Dolum", "requires": "reserve_cell"},
-            {"id": "overflow", "name_tr": "Taşma", "requires": "fast_charge"},
-        ),
+        "skills": (),
     },
     {
         "id": "core_phoenix",
@@ -134,11 +109,7 @@ CORE_TYPES: tuple[dict, ...] = (
         "role_tr": "Kurtarma ve yeniden toparlanma prototipi.",
         "rarity": "legendary",
         "unlock_arena": 11,
-        "skills": (
-            {"id": "ember", "name_tr": "Kor", "requires": None},
-            {"id": "rebirth", "name_tr": "Yeniden Doğuş", "requires": "ember"},
-            {"id": "solar_wing", "name_tr": "Güneş Kanadı", "requires": "rebirth"},
-        ),
+        "skills": (),
     },
     {
         "id": "core_quantum",
@@ -146,30 +117,16 @@ CORE_TYPES: tuple[dict, ...] = (
         "role_tr": "Üst düzey taktik esneklik prototipi.",
         "rarity": "legendary",
         "unlock_arena": 12,
-        "skills": (
-            {"id": "phase_seed", "name_tr": "Faz Tohumu", "requires": None},
-            {"id": "probability_bend", "name_tr": "Olasılık Bükümü", "requires": "phase_seed"},
-            {"id": "singularity", "name_tr": "Tekillik", "requires": "probability_bend"},
-        ),
+        "skills": (),
     },
 )
 
 
-CORE_ROLES = (
-    "Dost devreye onarım darbesi: Çekirdeğe 45, modüllere 15 CAN.",
-    "Dost devreye 4 saniye boyunca modül başına 20 kalkan.",
-    "Tüm dost modüllere 3 saniye +%25 hasar.",
-    "Rakip desteği 2 saniye keser; aktif hasar güçlerini siler.",
-    "Sonraki iki yerleştirmede 1 Akım indirim (asgari maliyet 1).",
-    "Tüm dost modüllere %20 CAN iyileştirmesi.",
-    "İyileştirme ve kısa takım kalkanını birleştirir.",
-)
-# Çekirdek yetenekleri çekirdeğe özeldir (game/talents.py); kimlikler eskisi
-# gibi "<eşik>_energy" ve "<eşik>_charge" olduğu için kayıtlı seçimler geçerlidir.
-CORE_TYPES = tuple(
-    {**core, "role_tr": CORE_ROLES[i], "skills": core_skill_tree(core["id"], core["rarity"])}
-    for i, core in enumerate(CORE_TYPES)
-)
+from .game.core_balance import CORE_POWER_ROLES
+from .game.core_talents_v5 import tree as core_skill_tree_v5,effective_settings as core_settings_v5,description as core_description_v5
+CORE_TYPES = tuple({**core,"role_tr":CORE_POWER_ROLES[core['id']][1],"skills":core_skill_tree_v5(core['id'],core['rarity']),
+    'name_tr':'Takviye Çekirdeği' if core['id']=='core_capacitor' else core['name_tr']}
+    for core in CORE_TYPES)
 
 CHEST_DEFINITIONS: dict[str, dict] = {
     "field_3h": {
@@ -595,7 +552,7 @@ class MetaProgressionService:
                 )
                 shard_rewards[module_id] = generic_shard_count
             for module_id, amount in shard_rewards.items():
-                profile.module_shards[module_id] = profile.module_shards.get(module_id, 0) + amount
+                award_module_shards(profile, module_id, amount)
             module_definition_id = next(iter(shard_rewards), None)
             if module_definition_id:
                 rewards["module_definition_id"] = module_definition_id
@@ -646,6 +603,8 @@ class MetaProgressionService:
             return {"title_id": title_id, "title_tr": stage["title_tr"], "rewards": {"circuit_credits": reward}}
 
     def view(self, profile) -> dict:
+        from .catalog_migration import migrate_profile_roster
+        migrate_profile_roster(profile)
         current_rank = rank_stage_for_rating(profile.rating)
         profile.highest_rating = max(profile.highest_rating, profile.rating)
         now = self._now_func()
@@ -855,6 +814,7 @@ class MetaProgressionService:
         }
 
     def _module_view(self, profile, module_id: str, current_rank: dict) -> dict:
+        reselection=profile.retired_rules_archive.get('module_v7_reselection',{}).get(module_id,{})
         definition = BASIC_MODULE_DEFINITIONS[module_id]
         rarity = MODULE_RARITY.get(module_id, "common")
         unlock_arena = MODULES[module_id]["unlock_arena"]
@@ -883,6 +843,7 @@ class MetaProgressionService:
             "max_level": 15,
             "current_cost": MODULES[module_id]["current_cost"],
             "description_tr": definition.description_tr,
+            "rarity_signature": definition.signature_mechanic,
             "strategic_role": definition.strategic_role,
             "effect_lines": list(MODULE_EFFECT_LINES.get(module_id, ())),
             # İngilizce arayüz bu alanları kullanır; yoksa istemci sözlükten çevirir.
@@ -895,63 +856,41 @@ class MetaProgressionService:
             "signature_mechanic": definition.signature_mechanic,
             "telegraph_tr": definition.telegraph_tr,
             "counterplay_tr": definition.counterplay_tr,
-            # Kendi mekaniğine henüz ayrışmamış kart hangi kartın davranışını
-            # kullanıyorsa arayüz bunu açıkça gösterir.
-            "shared_behavior_tr": (
-                BASIC_MODULE_DEFINITIONS[definition.mechanic_id].name_tr
-                if not definition.signature_mechanic
-                and definition.mechanic_id != module_id
-                and definition.mechanic_id in BASIC_MODULE_DEFINITIONS
-                else ""
-            ),
             "stats": module_stats(definition, level, profile.module_talents.get(module_id)),
             "next_stats": module_stats(definition, level + 1, profile.module_talents.get(module_id)) if level < 14 else None,
-            "talents": [{**node, "selected": profile.module_talents.get(module_id, {}).get(node["tier"])} for node in module_talent_options(module_id)],
+            "talents": [{**node, **({'circuit_credits_cost':0,'flux_cost':0,'transition_free':True} if node['tier'] in reselection.get('free_tiers',[]) else {}), "selected": profile.module_talents.get(module_id, {}).get(node["tier"])} for node in module_talent_options(module_id)],
             "talent_levels": {"common": [5, 8, 11, 14], "rare": [6, 9, 12, 15], "epic": [7, 10, 13, 15], "legendary": [8, 11, 14, 15]}[rarity],
             "selected_talent_count": selected_talent_count,
-            "talent_reset_cost_flux": (
-                selected_talent_count * MODULE_TALENT_RESET_COST_PER_SELECTION
-            ),
+            "talent_reset_cost_flux": 0 if reselection.get('available') else selected_talent_count * MODULE_TALENT_RESET_COST_PER_SELECTION,
+            "talent_transition_reselection":bool(reselection.get('available')),
             "ranked_normalized": False,
         }
 
-    def _core_view(self, profile, core_type: dict, current_rank: dict) -> dict:
-        unlocked = max(profile.highest_rating, profile.rating) >= core_unlock_rating(core_type)
-        counter = max(0, min(14, profile.core_upgrade_levels.get(core_type["id"], 0)))
-        signature = core_signature(core_type["id"])
-        def energy_stats(level_counter: int) -> dict:
-            return {
-                "max_hp": core_max_hp(level_counter + 1),
-                "energy_per_second": round(
-                    BASE_CORE_GENERATION_PER_SECOND
-                    * CORE_LEVEL_GENERATION_MULTIPLIER ** level_counter,
-                    2,
-                ),
-                "energy_capacity": round(
-                    CORE_RESERVE_BASE_CAPACITY + CORE_RESERVE_PER_LEVEL * level_counter,
-                    1,
-                ),
-            }
-
-        return {
-            **{key: value for key, value in core_type.items() if key != "skills"},
-            "unlocked": unlocked, "selected": profile.selected_core_type == core_type["id"],
-            "level": counter + 1, "shards": profile.core_shards_by_type.get(core_type["id"], 0),
-            "legacy_shards": profile.core_shards,
-            **energy_stats(counter),
-            # Bilgi ekranı bir sonraki seviyenin farkını bu değerlerden yazar.
-            "next_stats": energy_stats(counter + 1) if counter < 14 else None,
-            # Enderlik güç eğrisi yoktur; kimliği imza mekaniği taşır (Beta.72).
-            "signature_id": signature["signature_id"],
-            "signature_name_tr": signature["name_tr"],
-            "signature_mechanic": f"{signature['name_tr']} — {signature['signature_tr']}",
-            "telegraph_tr": signature["telegraph_tr"],
-            "counterplay_tr": signature["counterplay_tr"],
-            "next_upgrade_cost": rarity_upgrade_cost(core_type["rarity"], counter) if counter < 14 else None,
-            "skills": [{**skill, "learned": skill["id"] in profile.core_skills.get(core_type["id"], ()),
-                        "tier_selected": any(s.startswith(skill["tier"] + "_") for s in profile.core_skills.get(core_type["id"], ()))} for skill in core_type["skills"]],
-            "ranked_normalized": False,
-        }
+    def _core_view(self, profile, core_type, current_rank):
+        unlocked=max(profile.highest_rating,profile.rating)>=core_unlock_rating(core_type)
+        level=max(0,min(14,profile.core_upgrade_levels.get(core_type['id'],0)))
+        signature=core_signature(core_type['id'])
+        selected=set(profile.core_skills.get(core_type['id'],()))
+        cfg=core_settings_v5(core_type['id'],selected);hp_multiplier=cfg['hp_multiplier']
+        power_values=dict(cfg)
+        if 'damage' in power_values:power_values['damage']=round(power_values['damage']*1.04**level,2)
+        return {**{k:v for k,v in core_type.items() if k!='skills'},'unlocked':unlocked,
+            'selected':profile.selected_core_type==core_type['id'],'level':level+1,
+            'shards':profile.core_shards_by_type.get(core_type['id'],0),'legacy_shards':profile.core_shards,
+            'max_hp':round(core_max_hp(level+1)*hp_multiplier),'next_stats':{'max_hp':round(core_max_hp(level+2)*hp_multiplier)} if level<14 else None,
+            'signature_id':signature['signature_id'],'signature_name_tr':signature['name_tr'],
+            'role_tr':core_description_v5(core_type['id'],selected,level+1),
+            'role_en':core_description_v5(core_type['id'],selected,level+1,True),
+            'signature_mechanic':core_description_v5(core_type['id'],selected,level+1),
+            'signature_mechanic_en':core_description_v5(core_type['id'],selected,level+1,True),
+            'telegraph_tr':signature['telegraph_tr'],
+            'counterplay_tr':f"Güç kullanımından sonraki {35*cfg['charge_multiplier']:g} saniyelik dolum penceresinde karşılık ver.",
+            'targeting':'automatic','first_charge_seconds':round(20*cfg['charge_multiplier'],2),
+            'recharge_seconds':round(35*cfg['charge_multiplier'],2),'power_values':power_values,
+            'next_upgrade_cost':rarity_upgrade_cost(core_type['rarity'],level) if level<14 else None,
+            'skills':[{**skill,'learned':skill['id'] in selected,
+                'tier_selected':any(choice.startswith(skill['tier']+'_') for choice in selected)} for skill in core_type['skills']],
+            'ranked_normalized':False}
 
     def upgrade_core(self, profile, core_id: str, request_id: str) -> dict:
         with self._lock:
@@ -996,6 +935,8 @@ class MetaProgressionService:
 
     def choose_module_talent(self, profile, module_id: str, tier: str, choice: str, request_id: str) -> dict:
         with self._lock:
+            from .catalog_migration import migrate_profile_roster
+            migrate_profile_roster(profile)
             if not request_id.strip() or module_id not in MODULES:
                 raise MetaProgressionError("Geçersiz yetenek isteği.")
             previous = profile.module_upgrade_receipts.get(request_id)
@@ -1006,6 +947,9 @@ class MetaProgressionService:
             node = next((n for n in module_talent_options(module_id) if n["tier"] == tier), None)
             if not node or choice not in {c["id"] for c in node["choices"]}:
                 raise MetaProgressionError("Yetenek bulunamadı.")
+            reselection=profile.retired_rules_archive.get('module_v7_reselection',{}).get(module_id,{})
+            transition_free=tier in reselection.get('free_tiers',[])
+            if transition_free:node={**node,'circuit_credits_cost':0,'flux_cost':0}
             if module_id not in unlocked_module_ids(max(profile.highest_rating, profile.rating), profile.legacy_module_unlocks) or profile.module_upgrade_levels.get(module_id, 0) + 1 < node["level"]:
                 raise MetaProgressionError("Gerekli modül seviyesine ulaşılmadı.")
             choices = profile.module_talents.get(module_id, {})
@@ -1019,12 +963,17 @@ class MetaProgressionService:
             profile.flux_shards -= node["flux_cost"]
             choices = profile.module_talents.setdefault(module_id, {})
             choices[tier] = choice
-            receipt = {"request_id": request_id, "module_definition_id": module_id, "tier": tier, "choice": choice}
+            if transition_free:reselection['free_tiers'].remove(tier)
+            receipt = {"request_id": request_id, "module_definition_id": module_id, "tier": tier, "choice": choice,
+                       "circuit_credits_spent":node['circuit_credits_cost'],"flux_shards_spent":node['flux_cost'],
+                       "talent_ruleset":"modules_v7","transition_free":transition_free}
             profile.module_upgrade_receipts[request_id] = receipt
             return dict(receipt)
 
     def reset_module_talents(self, profile, module_id: str, request_id: str) -> dict:
         with self._lock:
+            from .catalog_migration import migrate_profile_roster
+            migrate_profile_roster(profile)
             clean_request_id = request_id.strip()
             if not clean_request_id or module_id not in MODULES:
                 raise MetaProgressionError("Geçersiz yetenek sıfırlama isteği.")
@@ -1040,7 +989,9 @@ class MetaProgressionService:
             selected = dict(profile.module_talents.get(module_id, {}))
             if not selected:
                 raise MetaProgressionError("Bu modülde sıfırlanacak yetenek yok.")
-            reset_cost = len(selected) * MODULE_TALENT_RESET_COST_PER_SELECTION
+            reselection=profile.retired_rules_archive.get('module_v7_reselection',{}).get(module_id,{})
+            free=bool(reselection.get('available'))
+            reset_cost = 0 if free else len(selected) * MODULE_TALENT_RESET_COST_PER_SELECTION
             if profile.flux_shards < reset_cost:
                 raise MetaProgressionError(
                     f"Yetenekleri sıfırlamak için {reset_cost} Akı gerekli."
@@ -1048,12 +999,15 @@ class MetaProgressionService:
 
             profile.flux_shards -= reset_cost
             profile.module_talents.pop(module_id, None)
+            if free:
+                reselection['available']=False;reselection['free_tiers']=list(reselection['paid_tiers'])
             receipt = {
                 "request_id": clean_request_id,
                 "operation": "talent_reset",
                 "module_definition_id": module_id,
                 "reset_selection_count": len(selected),
                 "flux_shards_spent": reset_cost,
+                "transition_free":free,
             }
             profile.module_upgrade_receipts[clean_request_id] = dict(receipt)
             return receipt
@@ -1419,7 +1373,8 @@ class MetaProgressionService:
         now = self._now_func()
         premium_before = wallet_snapshot(profile)
         if chest.get("fixed_reward") is not None:
-            rewards = dict(chest["fixed_reward"])
+            from .reward_delivery import current_reward_contents
+            rewards = current_reward_contents(chest["fixed_reward"])
             apply_fixed_contents(profile, rewards)
             record_opened_premium_chest(profile, chest, premium_before)
             profile.chest_slots = [item for item in profile.chest_slots if item.get("chest_id") != chest_id]
@@ -1459,7 +1414,7 @@ class MetaProgressionService:
         # changes the player's shard balance.
         profile.module_shards.setdefault(module_id, int(profile.module_shards.get(module_id, 0)))
         if shards:
-            profile.module_shards[module_id] += shards
+            award_module_shards(profile, module_id, shards)
         record_opened_premium_chest(profile, chest, premium_before)
         profile.chest_slots = [item for item in profile.chest_slots if item.get("chest_id") != chest_id]
         receipt = {
@@ -1579,7 +1534,9 @@ class MetaProgressionService:
             profile.circuit_credits -= skill["circuit_credits_cost"]
             profile.flux_shards -= skill["flux_cost"]
             profile.core_skills[core_type_id] = (*profile.core_skills.get(core_type_id, ()), skill_id)
-            receipt = {"request_id": request_id, "core_type_id": core_type_id, "skill_id": skill_id}
+            receipt = {"request_id": request_id, "core_type_id": core_type_id, "skill_id": skill_id,
+                       "circuit_credits_spent":skill['circuit_credits_cost'],"flux_shards_spent":skill['flux_cost'],
+                       "talent_ruleset":"core_roles_v5"}
             profile.core_receipts[request_id] = receipt
             return dict(receipt)
 

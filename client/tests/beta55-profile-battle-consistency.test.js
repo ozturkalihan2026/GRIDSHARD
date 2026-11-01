@@ -17,7 +17,7 @@ assert.match(css, /\.core-quick-actions \{ min-width:96px;max-width:none; \}/);
 assert.match(css, /\.core-detail-dialog \.core-detail-art \{[\s\S]*translateY\(14px\)/);
 assert.match(css, /\.season-reward-action > small \{[\s\S]*font-size:\.44rem/);
 
-assert.ok(app.includes('circuitCredits: 6'));
+assert.ok(app.includes('circuitCredits: 7'));
 assert.ok(app.includes('container.classList.add("battle-module-card")'));
 assert.ok(!app.includes('bar.classList.add("battle-module-hp-bar")'));
 

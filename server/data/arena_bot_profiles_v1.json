@@ -9,12 +9,12 @@
       "rating": 70,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "amplifier",
+        "laser",
+        "pulse_cannon",
         "shield",
-        "cooler",
-        "emp",
-        "battery",
-        "laser"
+        "armor",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -28,11 +28,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "amplifier",
-        "battery",
+        "pulse_cannon",
+        "armor",
         "shield",
-        "emp",
-        "cooler"
+        "amplifier",
+        "repair"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -45,12 +45,12 @@
       "rating": 104,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "cooler",
+        "pulse_cannon",
         "laser",
-        "amplifier",
-        "emp",
+        "repair",
+        "armor",
         "shield",
-        "battery"
+        "amplifier"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -63,12 +63,12 @@
       "rating": 121,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "shield",
         "laser",
-        "amplifier",
-        "emp",
-        "battery",
-        "cooler"
+        "pulse_cannon",
+        "shield",
+        "armor",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -81,12 +81,12 @@
       "rating": 138,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "amplifier",
-        "shield",
-        "battery",
         "laser",
-        "cooler",
-        "emp"
+        "pulse_cannon",
+        "armor",
+        "shield",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -99,12 +99,12 @@
       "rating": 155,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "emp",
         "laser",
-        "amplifier",
+        "pulse_cannon",
         "shield",
-        "battery",
-        "cooler"
+        "repair",
+        "amplifier",
+        "armor"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -113,16 +113,16 @@
       "arena": 1,
       "id": "bot_a01_07",
       "display_name": "EgeNova",
-      "archetype_tr": "Destek Zinciri",
+      "archetype_tr": "Taktik Zinciri",
       "rating": 172,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "cooler",
-        "emp",
+        "pulse_cannon",
         "laser",
         "shield",
-        "battery",
-        "amplifier"
+        "armor",
+        "amplifier",
+        "repair"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -131,16 +131,16 @@
       "arena": 1,
       "id": "bot_a01_08",
       "display_name": "LinaNova",
-      "archetype_tr": "Akım Ekonomisi",
+      "archetype_tr": "Taktik Denge",
       "rating": 189,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "battery",
-        "emp",
-        "cooler",
-        "shield",
         "laser",
-        "amplifier"
+        "pulse_cannon",
+        "armor",
+        "shield",
+        "amplifier",
+        "repair"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -153,11 +153,11 @@
       "rating": 206,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "cooler",
+        "pulse_cannon",
         "laser",
-        "emp",
         "shield",
-        "battery",
+        "armor",
+        "repair",
         "amplifier"
       ],
       "decision_delay_ms": 1780,
@@ -171,12 +171,12 @@
       "rating": 223,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "emp",
-        "amplifier",
         "laser",
-        "cooler",
-        "battery",
-        "shield"
+        "pulse_cannon",
+        "armor",
+        "shield",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
@@ -190,11 +190,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "cooler",
+        "pulse_cannon",
+        "shield",
+        "armor",
         "repair",
-        "emp",
-        "battery",
-        "armor"
+        "amplifier"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -208,11 +208,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "cooler",
-        "battery",
+        "pulse_cannon",
+        "barrier",
         "armor",
-        "emp",
-        "repair"
+        "amplifier",
+        "emp"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -225,12 +225,12 @@
       "rating": 404,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "armor",
-        "repair",
-        "cooler",
+        "pulse_cannon",
+        "laser",
         "emp",
-        "battery",
-        "laser"
+        "armor",
+        "barrier",
+        "repair"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -243,12 +243,12 @@
       "rating": 421,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "armor",
-        "amplifier",
+        "laser",
+        "pulse_cannon",
         "shield",
+        "barrier",
         "repair",
-        "battery",
-        "laser"
+        "armor"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -261,12 +261,12 @@
       "rating": 438,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "amplifier",
-        "armor",
-        "battery",
         "laser",
-        "cooler",
-        "repair"
+        "pulse_cannon",
+        "armor",
+        "barrier",
+        "repair",
+        "emp"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -279,12 +279,12 @@
       "rating": 455,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "emp",
         "laser",
-        "amplifier",
-        "armor",
-        "cooler",
-        "repair"
+        "pulse_cannon",
+        "shield",
+        "emp",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -293,16 +293,16 @@
       "arena": 2,
       "id": "bot_a02_07",
       "display_name": "DenizNova",
-      "archetype_tr": "Destek Zinciri",
+      "archetype_tr": "Taktik Zinciri",
       "rating": 472,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "repair",
-        "cooler",
         "laser",
-        "armor",
-        "battery",
-        "amplifier"
+        "pulse_cannon",
+        "shield",
+        "barrier",
+        "amplifier",
+        "emp"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -311,16 +311,16 @@
       "arena": 2,
       "id": "bot_a02_08",
       "display_name": "SelinNova",
-      "archetype_tr": "Akım Ekonomisi",
+      "archetype_tr": "Taktik Denge",
       "rating": 489,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "battery",
         "laser",
-        "repair",
+        "pulse_cannon",
         "armor",
+        "barrier",
         "amplifier",
-        "cooler"
+        "emp"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -333,12 +333,12 @@
       "rating": 506,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "armor",
+        "laser",
+        "pulse_cannon",
+        "emp",
+        "barrier",
         "repair",
-        "battery",
-        "cooler",
-        "shield",
-        "laser"
+        "amplifier"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -351,12 +351,12 @@
       "rating": 523,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "emp",
-        "shield",
+        "pulse_cannon",
         "laser",
-        "amplifier",
-        "battery",
-        "armor"
+        "barrier",
+        "shield",
+        "emp",
+        "amplifier"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
@@ -369,12 +369,12 @@
       "rating": 682,
       "core_type": "core_guardian",
       "battle_pool_ids": [
+        "laser",
         "pulse_cannon",
+        "shield",
         "armor",
-        "cooler",
-        "emp",
-        "battery",
-        "missile_launcher"
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -388,11 +388,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "cooler",
-        "battery",
-        "missile_launcher",
-        "emp",
-        "pulse_cannon"
+        "railgun",
+        "pulse_cannon",
+        "barrier",
+        "amplifier",
+        "cleanser"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -406,11 +406,11 @@
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
+        "railgun",
         "laser",
-        "cooler",
-        "emp",
-        "shield",
-        "missile_launcher"
+        "armor",
+        "barrier",
+        "repair"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -423,12 +423,12 @@
       "rating": 742,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "shield",
-        "repair",
-        "armor",
+        "laser",
         "pulse_cannon",
-        "battery",
-        "laser"
+        "shield",
+        "barrier",
+        "repair",
+        "armor"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -441,12 +441,12 @@
       "rating": 761,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "cooler",
+        "laser",
+        "railgun",
         "armor",
-        "battery",
-        "missile_launcher",
-        "amplifier",
-        "repair"
+        "barrier",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -459,12 +459,12 @@
       "rating": 781,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "emp",
-        "missile_launcher",
-        "repair",
-        "battery",
         "laser",
-        "cooler"
+        "railgun",
+        "shield",
+        "emp",
+        "cleanser",
+        "repair"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -473,16 +473,16 @@
       "arena": 3,
       "id": "bot_a03_07",
       "display_name": "UmutNova",
-      "archetype_tr": "Destek Zinciri",
+      "archetype_tr": "Taktik Zinciri",
       "rating": 801,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "cooler",
-        "amplifier",
-        "missile_launcher",
-        "battery",
+        "railgun",
         "pulse_cannon",
-        "repair"
+        "shield",
+        "barrier",
+        "amplifier",
+        "cleanser"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -491,16 +491,16 @@
       "arena": 3,
       "id": "bot_a03_08",
       "display_name": "MayaNova",
-      "archetype_tr": "Akım Ekonomisi",
+      "archetype_tr": "Taktik Denge",
       "rating": 821,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "battery",
-        "missile_launcher",
-        "cooler",
+        "laser",
+        "pulse_cannon",
         "armor",
-        "shield",
-        "pulse_cannon"
+        "barrier",
+        "amplifier",
+        "cleanser"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -513,12 +513,12 @@
       "rating": 841,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "missile_launcher",
+        "railgun",
         "laser",
-        "battery",
-        "cooler",
-        "shield",
-        "pulse_cannon"
+        "pulse_cannon",
+        "barrier",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -531,12 +531,12 @@
       "rating": 861,
       "core_type": "core_resonance",
       "battle_pool_ids": [
+        "railgun",
+        "laser",
+        "barrier",
+        "shield",
         "emp",
-        "armor",
-        "missile_launcher",
-        "repair",
-        "battery",
-        "shield"
+        "cleanser"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
@@ -549,12 +549,12 @@
       "rating": 1032,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "missile_launcher",
-        "barrier",
-        "amplifier",
-        "emp",
-        "battery",
-        "pulse_cannon"
+        "laser",
+        "pulse_cannon",
+        "shield",
+        "armor",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -568,11 +568,11 @@
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "laser",
+        "burst_cannon",
+        "railgun",
+        "barrier",
         "amplifier",
-        "battery",
-        "pulse_cannon",
-        "cooler",
-        "missile_launcher"
+        "cleanser"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -586,11 +586,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "pulse_cannon",
-        "missile_launcher",
-        "cooler",
-        "emp",
+        "railgun",
+        "burst_cannon",
         "armor",
-        "laser"
+        "reflector",
+        "repair"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -603,12 +603,12 @@
       "rating": 1092,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "armor",
-        "repair",
-        "barrier",
         "laser",
-        "missile_launcher",
-        "shield"
+        "pulse_cannon",
+        "shield",
+        "barrier",
+        "repair",
+        "reflector"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -621,12 +621,12 @@
       "rating": 1111,
       "core_type": "core_resonance",
       "battle_pool_ids": [
+        "laser",
+        "burst_cannon",
+        "armor",
+        "reflector",
         "repair",
-        "shield",
-        "battery",
-        "pulse_cannon",
-        "cooler",
-        "targeting_computer"
+        "cleanser"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -639,12 +639,12 @@
       "rating": 1131,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "barrier",
+        "laser",
+        "railgun",
+        "shield",
         "emp",
-        "pulse_cannon",
-        "repair",
-        "armor",
-        "laser"
+        "cleanser",
+        "repair"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -653,16 +653,16 @@
       "arena": 4,
       "id": "bot_a04_07",
       "display_name": "MertcanNova",
-      "archetype_tr": "Destek Zinciri",
+      "archetype_tr": "Taktik Zinciri",
       "rating": 1151,
       "core_type": "core_resonance",
       "battle_pool_ids": [
+        "burst_cannon",
+        "railgun",
+        "shield",
+        "reflector",
         "amplifier",
-        "targeting_computer",
-        "missile_launcher",
-        "armor",
-        "battery",
-        "cooler"
+        "cleanser"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -671,16 +671,16 @@
       "arena": 4,
       "id": "bot_a04_08",
       "display_name": "CerenNova",
-      "archetype_tr": "Akım Ekonomisi",
+      "archetype_tr": "Taktik Denge",
       "rating": 1171,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "barrier",
-        "missile_launcher",
-        "cooler",
-        "battery",
-        "shield",
-        "pulse_cannon"
+        "laser",
+        "pulse_cannon",
+        "armor",
+        "reflector",
+        "amplifier",
+        "cleanser"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -693,12 +693,12 @@
       "rating": 1191,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "missile_launcher",
-        "pulse_cannon",
-        "emp",
-        "cooler",
-        "battery",
-        "laser"
+        "burst_cannon",
+        "railgun",
+        "laser",
+        "reflector",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -711,12 +711,12 @@
       "rating": 1211,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "targeting_computer",
+        "burst_cannon",
+        "railgun",
+        "reflector",
         "barrier",
-        "laser",
-        "repair",
-        "battery",
-        "emp"
+        "emp",
+        "cleanser"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
@@ -729,12 +729,12 @@
       "rating": 1394,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "arc_cannon",
-        "barrier",
-        "targeting_computer",
-        "emp",
-        "battery",
-        "laser"
+        "laser",
+        "pulse_cannon",
+        "shield",
+        "armor",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -748,11 +748,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "targeting_computer",
-        "capacitor",
-        "arc_cannon",
-        "emp",
-        "missile_launcher"
+        "burst_cannon",
+        "missile_launcher",
+        "barrier",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -766,11 +766,11 @@
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
-        "arc_cannon",
-        "cooler",
-        "emp",
-        "barrier",
-        "laser"
+        "railgun",
+        "missile_launcher",
+        "armor",
+        "reflector",
+        "repair"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -783,12 +783,12 @@
       "rating": 1462,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
+        "laser",
+        "pulse_cannon",
         "shield",
-        "cooler",
-        "arc_cannon",
-        "missile_launcher",
-        "battery",
-        "barrier"
+        "barrier",
+        "repair",
+        "reflector"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -801,12 +801,12 @@
       "rating": 1484,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "cooler",
-        "barrier",
-        "capacitor",
         "laser",
-        "amplifier",
-        "repair"
+        "missile_launcher",
+        "armor",
+        "reflector",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -819,12 +819,12 @@
       "rating": 1507,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "emp",
-        "capacitor",
         "laser",
-        "cooler",
-        "barrier",
-        "arc_cannon"
+        "railgun",
+        "shield",
+        "emp",
+        "speed_relay",
+        "cleanser"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -833,16 +833,16 @@
       "arena": 5,
       "id": "bot_a05_07",
       "display_name": "EgeVolt",
-      "archetype_tr": "Destek Zinciri",
+      "archetype_tr": "Taktik Zinciri",
       "rating": 1530,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "targeting_computer",
-        "repair",
-        "pulse_cannon",
-        "barrier",
-        "battery",
-        "cooler"
+        "burst_cannon",
+        "railgun",
+        "shield",
+        "reflector",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -851,16 +851,16 @@
       "arena": 5,
       "id": "bot_a05_08",
       "display_name": "LinaVolt",
-      "archetype_tr": "Akım Ekonomisi",
+      "archetype_tr": "Taktik Denge",
       "rating": 1552,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "battery",
+        "laser",
         "pulse_cannon",
+        "armor",
+        "reflector",
         "amplifier",
-        "arc_cannon",
-        "shield",
-        "capacitor"
+        "speed_relay"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -873,12 +873,12 @@
       "rating": 1575,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "pulse_cannon",
         "missile_launcher",
-        "emp",
+        "burst_cannon",
+        "railgun",
+        "reflector",
         "repair",
-        "cooler",
-        "arc_cannon"
+        "cleanser"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -891,12 +891,12 @@
       "rating": 1598,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "emp",
+        "missile_launcher",
+        "railgun",
+        "reflector",
         "barrier",
-        "arc_cannon",
-        "cooler",
-        "battery",
-        "capacitor"
+        "emp",
+        "speed_relay"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
@@ -910,11 +910,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "barrier",
-        "targeting_computer",
-        "emp",
-        "capacitor",
-        "missile_launcher"
+        "pulse_cannon",
+        "shield",
+        "armor",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -927,12 +927,12 @@
       "rating": 1831,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "pulse_cannon",
-        "cooler",
-        "battery",
         "laser",
-        "jammer",
-        "missile_launcher"
+        "burst_cannon",
+        "drone_bay",
+        "barrier",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -945,12 +945,12 @@
       "rating": 1856,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
+        "pulse_cannon",
+        "railgun",
         "missile_launcher",
-        "drone_bay",
-        "repair",
-        "cooler",
-        "shield",
-        "pulse_cannon"
+        "armor",
+        "guardian_dome",
+        "repair"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -963,12 +963,12 @@
       "rating": 1882,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "armor",
-        "repair",
-        "barrier",
         "laser",
-        "drone_bay",
-        "shield"
+        "pulse_cannon",
+        "shield",
+        "barrier",
+        "repair",
+        "guardian_dome"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -981,12 +981,12 @@
       "rating": 1907,
       "core_type": "core_guardian",
       "battle_pool_ids": [
+        "laser",
+        "drone_bay",
+        "armor",
+        "guardian_dome",
         "repair",
-        "barrier",
-        "battery",
-        "pulse_cannon",
-        "targeting_computer",
-        "cooler"
+        "cleanser"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -999,12 +999,12 @@
       "rating": 1933,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
+        "laser",
+        "railgun",
+        "shield",
         "emp",
-        "cooler",
-        "pulse_cannon",
-        "targeting_computer",
-        "barrier",
-        "jammer"
+        "speed_relay",
+        "cleanser"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -1013,16 +1013,16 @@
       "arena": 6,
       "id": "bot_a06_07",
       "display_name": "DenizVolt",
-      "archetype_tr": "Destek Zinciri",
+      "archetype_tr": "Taktik Zinciri",
       "rating": 1958,
       "core_type": "core_resonance",
       "battle_pool_ids": [
+        "burst_cannon",
+        "railgun",
+        "shield",
+        "guardian_dome",
         "amplifier",
-        "cooler",
-        "missile_launcher",
-        "barrier",
-        "capacitor",
-        "targeting_computer"
+        "speed_relay"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -1031,16 +1031,16 @@
       "arena": 6,
       "id": "bot_a06_08",
       "display_name": "SelinVolt",
-      "archetype_tr": "Akım Ekonomisi",
+      "archetype_tr": "Taktik Denge",
       "rating": 1984,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "capacitor",
-        "missile_launcher",
-        "repair",
-        "battery",
+        "laser",
+        "pulse_cannon",
         "armor",
-        "jammer"
+        "guardian_dome",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -1053,12 +1053,12 @@
       "rating": 2009,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
+        "drone_bay",
         "missile_launcher",
-        "laser",
-        "cooler",
-        "amplifier",
-        "barrier",
-        "drone_bay"
+        "burst_cannon",
+        "guardian_dome",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -1071,12 +1071,12 @@
       "rating": 2035,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "battery",
-        "shield",
         "drone_bay",
-        "targeting_computer",
-        "capacitor",
-        "jammer"
+        "railgun",
+        "reflector",
+        "guardian_dome",
+        "emp",
+        "speed_relay"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
@@ -1090,11 +1090,11 @@
       "core_type": "core_disruptor",
       "battle_pool_ids": [
         "laser",
-        "barrier",
-        "targeting_computer",
-        "jammer",
-        "current_balancer",
-        "pulse_cannon"
+        "pulse_cannon",
+        "shield",
+        "armor",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -1107,12 +1107,12 @@
       "rating": 2295,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "pulse_cannon",
-        "cooler",
-        "capacitor",
-        "railgun",
-        "emp",
-        "drone_bay"
+        "laser",
+        "burst_cannon",
+        "drone_bay",
+        "barrier",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -1125,12 +1125,12 @@
       "rating": 2324,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "missile_launcher",
+        "pulse_cannon",
         "railgun",
-        "targeting_computer",
-        "emp",
-        "cooler",
-        "drone_bay"
+        "missile_launcher",
+        "armor",
+        "buffer_shield",
+        "repair"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -1143,12 +1143,12 @@
       "rating": 2352,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
+        "laser",
+        "pulse_cannon",
         "shield",
-        "targeting_computer",
-        "armor",
-        "drone_bay",
-        "current_balancer",
-        "railgun"
+        "barrier",
+        "repair",
+        "guardian_dome"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -1161,12 +1161,12 @@
       "rating": 2380,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
-        "targeting_computer",
-        "battery",
-        "capacitor",
         "laser",
+        "arc_cannon",
+        "armor",
+        "buffer_shield",
         "repair",
-        "cooler"
+        "cleanser"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -1179,12 +1179,12 @@
       "rating": 2409,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "emp",
-        "current_balancer",
         "laser",
-        "targeting_computer",
-        "armor",
-        "jammer"
+        "railgun",
+        "shield",
+        "emp",
+        "speed_relay",
+        "cleanser"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -1193,16 +1193,16 @@
       "arena": 7,
       "id": "bot_a07_07",
       "display_name": "UmutVolt",
-      "archetype_tr": "Destek Zinciri",
+      "archetype_tr": "Taktik Zinciri",
       "rating": 2437,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "cooler",
-        "repair",
-        "pulse_cannon",
-        "armor",
-        "current_balancer",
-        "targeting_computer"
+        "burst_cannon",
+        "railgun",
+        "shield",
+        "buffer_shield",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -1211,16 +1211,16 @@
       "arena": 7,
       "id": "bot_a07_08",
       "display_name": "MayaVolt",
-      "archetype_tr": "Akım Ekonomisi",
+      "archetype_tr": "Taktik Denge",
       "rating": 2465,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "current_balancer",
+        "laser",
         "pulse_cannon",
-        "targeting_computer",
-        "cooler",
-        "barrier",
-        "battery"
+        "armor",
+        "buffer_shield",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -1233,12 +1233,12 @@
       "rating": 2494,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
-        "pulse_cannon",
-        "railgun",
-        "cooler",
+        "arc_cannon",
+        "drone_bay",
+        "missile_launcher",
+        "guardian_dome",
         "repair",
-        "barrier",
-        "laser"
+        "cleanser"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -1251,12 +1251,12 @@
       "rating": 2522,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "jammer",
-        "barrier",
-        "drone_bay",
-        "cooler",
-        "current_balancer",
-        "emp"
+        "arc_cannon",
+        "railgun",
+        "reflector",
+        "buffer_shield",
+        "emp",
+        "speed_relay"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
@@ -1270,11 +1270,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "reflector",
-        "targeting_computer",
-        "jammer",
-        "battery",
-        "railgun"
+        "pulse_cannon",
+        "shield",
+        "armor",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -1287,12 +1287,12 @@
       "rating": 2795,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "pulse_cannon",
-        "targeting_computer",
-        "current_balancer",
-        "railgun",
-        "cooler",
-        "arc_cannon"
+        "laser",
+        "burst_cannon",
+        "drone_bay",
+        "barrier",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -1305,12 +1305,12 @@
       "rating": 2824,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "missile_launcher",
+        "pulse_cannon",
         "railgun",
-        "cooler",
-        "jammer",
-        "reflector",
-        "drone_bay"
+        "missile_launcher",
+        "armor",
+        "buffer_shield",
+        "repair"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -1323,12 +1323,12 @@
       "rating": 2852,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
-        "armor",
-        "nano_medic",
         "laser",
-        "railgun",
-        "battery",
-        "reflector"
+        "pulse_cannon",
+        "shield",
+        "barrier",
+        "repair",
+        "guardian_dome"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -1341,12 +1341,12 @@
       "rating": 2880,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "cooler",
-        "reflector",
-        "current_balancer",
-        "railgun",
-        "nano_medic",
-        "amplifier"
+        "laser",
+        "plasma_mortar",
+        "armor",
+        "phase_armor",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -1359,12 +1359,12 @@
       "rating": 2909,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "jammer",
-        "emp",
+        "laser",
         "railgun",
-        "amplifier",
-        "barrier",
-        "nano_medic"
+        "shield",
+        "emp",
+        "speed_relay",
+        "cleanser"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -1373,16 +1373,16 @@
       "arena": 8,
       "id": "bot_a08_07",
       "display_name": "MertcanVolt",
-      "archetype_tr": "Destek Zinciri",
+      "archetype_tr": "Taktik Zinciri",
       "rating": 2937,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "repair",
-        "nano_medic",
-        "laser",
-        "cooler",
-        "battery",
-        "targeting_computer"
+        "burst_cannon",
+        "railgun",
+        "shield",
+        "buffer_shield",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -1391,16 +1391,16 @@
       "arena": 8,
       "id": "bot_a08_08",
       "display_name": "CerenVolt",
-      "archetype_tr": "Akım Ekonomisi",
+      "archetype_tr": "Taktik Denge",
       "rating": 2965,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
-        "battery",
         "laser",
-        "targeting_computer",
-        "capacitor",
-        "reflector",
-        "current_balancer"
+        "pulse_cannon",
+        "armor",
+        "buffer_shield",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -1413,12 +1413,12 @@
       "rating": 2994,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "laser",
+        "arc_cannon",
+        "plasma_mortar",
         "drone_bay",
-        "emp",
-        "nano_medic",
-        "shield",
-        "railgun"
+        "guardian_dome",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -1431,12 +1431,12 @@
       "rating": 3022,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "jammer",
+        "plasma_mortar",
+        "railgun",
         "reflector",
-        "arc_cannon",
-        "nano_medic",
-        "battery",
-        "emp"
+        "phase_armor",
+        "emp",
+        "speed_relay"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
@@ -1449,12 +1449,12 @@
       "rating": 3267,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
-        "drone_bay",
-        "battery",
-        "overclock_unit",
-        "emp",
-        "cooler",
-        "railgun"
+        "laser",
+        "pulse_cannon",
+        "shield",
+        "armor",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -1468,11 +1468,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "overclock_unit",
-        "battery",
-        "railgun",
-        "cooler",
-        "drone_bay"
+        "burst_cannon",
+        "drone_bay",
+        "barrier",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -1486,11 +1486,11 @@
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "pulse_cannon",
-        "drone_bay",
-        "overclock_unit",
-        "virus",
-        "reflector",
-        "laser"
+        "railgun",
+        "missile_launcher",
+        "armor",
+        "buffer_shield",
+        "repair"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -1503,12 +1503,12 @@
       "rating": 3352,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "shield",
         "laser",
-        "battery",
-        "railgun",
-        "capacitor",
-        "barrier"
+        "pulse_cannon",
+        "shield",
+        "barrier",
+        "repair",
+        "guardian_dome"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -1521,12 +1521,12 @@
       "rating": 3380,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
-        "overclock_unit",
-        "barrier",
-        "battery",
-        "railgun",
-        "nano_medic",
-        "targeting_computer"
+        "laser",
+        "quantum_repeater",
+        "armor",
+        "phase_armor",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -1539,12 +1539,12 @@
       "rating": 3409,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
-        "virus",
-        "jammer",
+        "laser",
         "railgun",
-        "targeting_computer",
         "shield",
-        "emp"
+        "emp",
+        "speed_relay",
+        "cleanser"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -1553,16 +1553,16 @@
       "arena": 9,
       "id": "bot_a09_07",
       "display_name": "EgeArc",
-      "archetype_tr": "Destek Zinciri",
+      "archetype_tr": "Taktik Zinciri",
       "rating": 3437,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "cooler",
-        "nano_medic",
+        "burst_cannon",
         "railgun",
         "shield",
-        "capacitor",
-        "repair"
+        "buffer_shield",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -1571,16 +1571,16 @@
       "arena": 9,
       "id": "bot_a09_08",
       "display_name": "LinaArc",
-      "archetype_tr": "Akım Ekonomisi",
+      "archetype_tr": "Taktik Denge",
       "rating": 3465,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "capacitor",
-        "railgun",
-        "overclock_unit",
-        "current_balancer",
-        "cooler",
-        "battery"
+        "laser",
+        "pulse_cannon",
+        "armor",
+        "buffer_shield",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -1593,12 +1593,12 @@
       "rating": 3494,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "railgun",
-        "laser",
-        "jammer",
-        "cooler",
-        "reflector",
-        "drone_bay"
+        "arc_cannon",
+        "plasma_mortar",
+        "drone_bay",
+        "guardian_dome",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -1611,12 +1611,12 @@
       "rating": 3522,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
+        "quantum_repeater",
+        "railgun",
+        "reflector",
+        "phase_armor",
         "emp",
-        "armor",
-        "laser",
-        "repair",
-        "capacitor",
-        "virus"
+        "speed_relay"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
@@ -1630,11 +1630,11 @@
       "core_type": "core_resonance",
       "battle_pool_ids": [
         "laser",
-        "guardian_dome",
-        "overclock_unit",
-        "cooler",
-        "current_balancer",
-        "plasma_mortar"
+        "pulse_cannon",
+        "shield",
+        "armor",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -1647,12 +1647,12 @@
       "rating": 3810,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "pulse_cannon",
-        "overclock_unit",
-        "cooler",
-        "plasma_mortar",
-        "virus",
-        "laser"
+        "laser",
+        "burst_cannon",
+        "drone_bay",
+        "barrier",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -1665,12 +1665,12 @@
       "rating": 3841,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "missile_launcher",
+        "pulse_cannon",
         "railgun",
-        "overclock_unit",
-        "virus",
-        "cooler",
-        "pulse_cannon"
+        "missile_launcher",
+        "armor",
+        "buffer_shield",
+        "repair"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -1683,11 +1683,11 @@
       "rating": 3872,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
-        "armor",
         "laser",
+        "pulse_cannon",
         "shield",
-        "plasma_mortar",
-        "current_balancer",
+        "barrier",
+        "repair",
         "guardian_dome"
       ],
       "decision_delay_ms": 1230,
@@ -1701,12 +1701,12 @@
       "rating": 3903,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
-        "nano_medic",
-        "reflector",
-        "battery",
-        "plasma_mortar",
-        "overclock_unit",
-        "cooler"
+        "laser",
+        "quantum_repeater",
+        "armor",
+        "phase_armor",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -1719,12 +1719,12 @@
       "rating": 3935,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "virus",
-        "jammer",
-        "plasma_mortar",
-        "amplifier",
-        "armor",
-        "emp"
+        "laser",
+        "railgun",
+        "shield",
+        "emp",
+        "speed_relay",
+        "cleanser"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -1733,16 +1733,16 @@
       "arena": 10,
       "id": "bot_a10_07",
       "display_name": "DenizArc",
-      "archetype_tr": "Destek Zinciri",
+      "archetype_tr": "Taktik Zinciri",
       "rating": 3966,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "cooler",
-        "overclock_unit",
-        "plasma_mortar",
-        "armor",
-        "current_balancer",
-        "nano_medic"
+        "burst_cannon",
+        "railgun",
+        "shield",
+        "buffer_shield",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -1751,16 +1751,16 @@
       "arena": 10,
       "id": "bot_a10_08",
       "display_name": "SelinArc",
-      "archetype_tr": "Akım Ekonomisi",
+      "archetype_tr": "Taktik Denge",
       "rating": 3997,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "current_balancer",
-        "plasma_mortar",
-        "targeting_computer",
-        "battery",
-        "reflector",
-        "capacitor"
+        "laser",
+        "pulse_cannon",
+        "armor",
+        "buffer_shield",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -1773,12 +1773,12 @@
       "rating": 4028,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
+        "arc_cannon",
         "plasma_mortar",
-        "pulse_cannon",
-        "cooler",
-        "battery",
+        "drone_bay",
         "guardian_dome",
-        "railgun"
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -1791,12 +1791,12 @@
       "rating": 4059,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
-        "virus",
-        "barrier",
-        "pulse_cannon",
-        "overclock_unit",
-        "current_balancer",
-        "emp"
+        "shield_breaker",
+        "railgun",
+        "reflector",
+        "phase_armor",
+        "emp",
+        "speed_relay"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
@@ -1810,11 +1810,11 @@
       "core_type": "core_phoenix",
       "battle_pool_ids": [
         "laser",
-        "cooler",
-        "overclock_unit",
-        "virus",
-        "battery",
-        "quantum_repeater"
+        "pulse_cannon",
+        "shield",
+        "armor",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -1827,12 +1827,12 @@
       "rating": 4374,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "pulse_cannon",
-        "overclock_unit",
-        "current_balancer",
-        "plasma_mortar",
-        "cooler",
-        "quantum_repeater"
+        "laser",
+        "burst_cannon",
+        "drone_bay",
+        "barrier",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -1845,12 +1845,12 @@
       "rating": 4408,
       "core_type": "core_guardian",
       "battle_pool_ids": [
-        "missile_launcher",
+        "pulse_cannon",
         "railgun",
-        "chrono_relay",
-        "emp",
-        "cooler",
-        "laser"
+        "missile_launcher",
+        "armor",
+        "buffer_shield",
+        "repair"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -1863,11 +1863,11 @@
       "rating": 4442,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "shield",
-        "chrono_relay",
         "laser",
-        "plasma_mortar",
-        "battery",
+        "pulse_cannon",
+        "shield",
+        "barrier",
+        "repair",
         "guardian_dome"
       ],
       "decision_delay_ms": 1230,
@@ -1881,12 +1881,12 @@
       "rating": 4476,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
-        "chrono_relay",
-        "barrier",
-        "current_balancer",
+        "laser",
         "quantum_repeater",
-        "targeting_computer",
-        "overclock_unit"
+        "armor",
+        "phase_armor",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -1899,12 +1899,12 @@
       "rating": 4510,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
+        "laser",
+        "railgun",
+        "shield",
         "emp",
-        "jammer",
-        "quantum_repeater",
-        "cooler",
-        "guardian_dome",
-        "virus"
+        "virus",
+        "cleanser"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -1913,16 +1913,16 @@
       "arena": 11,
       "id": "bot_a11_07",
       "display_name": "UmutArc",
-      "archetype_tr": "Destek Zinciri",
+      "archetype_tr": "Taktik Zinciri",
       "rating": 4544,
       "core_type": "core_phoenix",
       "battle_pool_ids": [
-        "chrono_relay",
+        "burst_cannon",
+        "railgun",
+        "shield",
+        "buffer_shield",
         "amplifier",
-        "quantum_repeater",
-        "guardian_dome",
-        "battery",
-        "cooler"
+        "speed_relay"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -1931,16 +1931,16 @@
       "arena": 11,
       "id": "bot_a11_08",
       "display_name": "MayaArc",
-      "archetype_tr": "Akım Ekonomisi",
+      "archetype_tr": "Taktik Denge",
       "rating": 4578,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "battery",
-        "quantum_repeater",
-        "amplifier",
-        "current_balancer",
+        "laser",
+        "pulse_cannon",
         "armor",
-        "capacitor"
+        "buffer_shield",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -1953,12 +1953,12 @@
       "rating": 4612,
       "core_type": "core_guardian",
       "battle_pool_ids": [
+        "arc_cannon",
         "plasma_mortar",
-        "laser",
-        "cooler",
-        "overclock_unit",
-        "barrier",
-        "quantum_repeater"
+        "drone_bay",
+        "guardian_dome",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -1971,11 +1971,11 @@
       "rating": 4646,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
+        "shield_breaker",
+        "railgun",
+        "reflector",
+        "phase_armor",
         "emp",
-        "shield",
-        "laser",
-        "nano_medic",
-        "battery",
         "virus"
       ],
       "decision_delay_ms": 1890,
@@ -1989,12 +1989,12 @@
       "rating": 4940,
       "core_type": "core_phoenix",
       "battle_pool_ids": [
+        "laser",
         "pulse_cannon",
-        "phase_armor",
-        "overclock_unit",
-        "cooler",
-        "capacitor",
-        "swarm_fabricator"
+        "shield",
+        "armor",
+        "repair",
+        "amplifier"
       ],
       "decision_delay_ms": 900,
       "mistake_rate": 0.05
@@ -2007,12 +2007,12 @@
       "rating": 4974,
       "core_type": "core_quantum",
       "battle_pool_ids": [
-        "missile_launcher",
-        "overclock_unit",
-        "battery",
-        "quantum_repeater",
-        "cooler",
-        "laser"
+        "laser",
+        "burst_cannon",
+        "drone_bay",
+        "barrier",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1010,
       "mistake_rate": 0.07500000000000001
@@ -2025,12 +2025,12 @@
       "rating": 5008,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "arc_cannon",
-        "plasma_mortar",
-        "chrono_relay",
-        "cooler",
-        "guardian_dome",
-        "pulse_cannon"
+        "pulse_cannon",
+        "railgun",
+        "missile_launcher",
+        "armor",
+        "buffer_shield",
+        "repair"
       ],
       "decision_delay_ms": 1120,
       "mistake_rate": 0.1
@@ -2044,11 +2044,11 @@
       "core_type": "core_guardian",
       "battle_pool_ids": [
         "laser",
-        "chrono_relay",
-        "phase_armor",
-        "quantum_repeater",
-        "capacitor",
-        "shield"
+        "pulse_cannon",
+        "shield",
+        "barrier",
+        "repair",
+        "guardian_dome"
       ],
       "decision_delay_ms": 1230,
       "mistake_rate": 0.125
@@ -2061,12 +2061,12 @@
       "rating": 5076,
       "core_type": "core_overdrive",
       "battle_pool_ids": [
-        "chrono_relay",
-        "reflector",
-        "battery",
-        "swarm_fabricator",
-        "amplifier",
-        "precision_matrix"
+        "laser",
+        "quantum_repeater",
+        "armor",
+        "last_bastion",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1340,
       "mistake_rate": 0.15000000000000002
@@ -2079,12 +2079,12 @@
       "rating": 5110,
       "core_type": "core_disruptor",
       "battle_pool_ids": [
-        "virus",
-        "emp",
-        "swarm_fabricator",
-        "repair",
+        "laser",
+        "railgun",
         "shield",
-        "jammer"
+        "emp",
+        "virus",
+        "cleanser"
       ],
       "decision_delay_ms": 1450,
       "mistake_rate": 0.05
@@ -2093,16 +2093,16 @@
       "arena": 12,
       "id": "bot_a12_07",
       "display_name": "MertcanArc",
-      "archetype_tr": "Destek Zinciri",
+      "archetype_tr": "Taktik Zinciri",
       "rating": 5144,
       "core_type": "core_capacitor",
       "battle_pool_ids": [
-        "precision_matrix",
-        "cooler",
-        "swarm_fabricator",
-        "battery",
-        "capacitor",
-        "chrono_relay"
+        "burst_cannon",
+        "railgun",
+        "shield",
+        "buffer_shield",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1560,
       "mistake_rate": 0.07500000000000001
@@ -2111,16 +2111,16 @@
       "arena": 12,
       "id": "bot_a12_08",
       "display_name": "CerenArc",
-      "archetype_tr": "Akım Ekonomisi",
+      "archetype_tr": "Taktik Denge",
       "rating": 5178,
       "core_type": "core_phoenix",
       "battle_pool_ids": [
-        "capacitor",
-        "swarm_fabricator",
-        "cooler",
-        "battery",
-        "barrier",
-        "current_balancer"
+        "laser",
+        "pulse_cannon",
+        "armor",
+        "buffer_shield",
+        "amplifier",
+        "speed_relay"
       ],
       "decision_delay_ms": 1670,
       "mistake_rate": 0.1
@@ -2133,12 +2133,12 @@
       "rating": 5212,
       "core_type": "core_quantum",
       "battle_pool_ids": [
-        "swarm_fabricator",
-        "pulse_cannon",
-        "battery",
-        "targeting_computer",
-        "cooler",
-        "quantum_repeater"
+        "arc_cannon",
+        "plasma_mortar",
+        "drone_bay",
+        "guardian_dome",
+        "repair",
+        "cleanser"
       ],
       "decision_delay_ms": 1780,
       "mistake_rate": 0.125
@@ -2151,15 +2151,16 @@
       "rating": 5246,
       "core_type": "core_resonance",
       "battle_pool_ids": [
-        "jammer",
-        "armor",
-        "pulse_cannon",
-        "overclock_unit",
-        "cooler",
+        "shield_breaker",
+        "railgun",
+        "reflector",
+        "phase_armor",
+        "emp",
         "virus"
       ],
       "decision_delay_ms": 1890,
       "mistake_rate": 0.15000000000000002
     }
-  ]
+  ],
+  "ruleset": "current_only_readable_v4"
 }

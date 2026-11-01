@@ -4,22 +4,9 @@
   // All paths are also declared in the inert HTML build allowlist.
   const ROOT = "./assets/ui/modules-physical-v1/";
   const VIEW_ROOT = "./assets/ui/modules-views-v3/";
-  const NAMES = Object.freeze({
-    "Lazer":"laser", "Kalkan":"shield", "Soğutucu":"cooler", "Batarya":"battery",
-    "Güçlendirici":"amplifier", "EMP":"emp", "Onarım":"repair", "Onarım Modülü":"repair",
-    "Zırh":"armor", "Sönümleyici":"armor", "Darbe Topu":"pulse_cannon", "Füze Fırlatıcı":"missile_launcher",
-    "Hedefleme Bilgisayarı":"targeting_computer", "Bariyer":"barrier", "Ark Topu":"arc_cannon",
-    "Kapasitör":"capacitor", "Dron Üssü":"drone_bay", "Sinyal Bozucu":"jammer",
-    "Ray Topu":"railgun", "Akım Dengeleyici":"current_balancer", "Yansıtıcı":"reflector",
-    "Nano Sağlıkçı":"nano_medic", "Virüs":"virus", "Aşırı Hızlandırıcı":"overclock_unit",
-    "Plazma Havanı":"plasma_mortar", "Muhafız Kubbesi":"guardian_dome", "Kuantum Tekrarlayıcı":"quantum_repeater",
-    "Krono Rölesi":"chrono_relay", "Faz Zırhı":"phase_armor", "Sürü Fabrikatörü":"swarm_fabricator",
-    "Hassasiyet Matrisi":"precision_matrix", "İyon Mızrağı":"ion_spear", "Prizma Kalkanı":"prism_shield",
-    "Kesici":"disruptor", "Anka Onarım":"phoenix_repair", "Kuantum Topu":"quantum_cannon",
-    "Omega Güçlendirici":"omega_amplifier", "Tekillik Projektörü":"singularity_projector",
-  });
+  const NAMES = Object.freeze({"Sönümleyici":"armor","Onarım Modülü":"repair","Zırh":"armor","Lazer": "laser", "Darbe Topu": "pulse_cannon", "Ray Topu": "railgun", "Füze Fırlatıcı": "missile_launcher", "Dron Üssü": "drone_bay", "Ark Topu": "arc_cannon", "Plazma Havanı": "plasma_mortar", "Kuantum Tekrarlayıcı": "quantum_repeater", "Seri Top": "burst_cannon", "Kalkan Kırıcı": "shield_breaker", "Kalkan": "shield", "Zırh": "armor", "Bariyer": "barrier", "Yansıtıcı": "reflector", "Muhafız Kubbe": "guardian_dome", "Faz Zırhı": "phase_armor", "Tampon": "buffer_shield", "Son Siper": "last_bastion", "Onarım": "repair", "Güçlendirici": "amplifier", "EMP": "emp", "Yavaşlatıcı Virüs": "virus", "Arındırıcı": "cleanser", "Hız Rölesi": "speed_relay"});
   const ATLAS_IDS = new Set(["laser","shield","cooler","battery","amplifier","emp","repair","armor","pulse_cannon","missile_launcher"]);
-  const IDS = new Set([...ATLAS_IDS,"targeting_computer","barrier","arc_cannon","capacitor","drone_bay","jammer","railgun","current_balancer","reflector","nano_medic","virus","overclock_unit","plasma_mortar","guardian_dome","quantum_repeater","chrono_relay","phase_armor","swarm_fabricator","precision_matrix","ion_spear","prism_shield","disruptor","phoenix_repair","quantum_cannon","omega_amplifier","singularity_projector"]);
+  const IDS = new Set(["laser", "pulse_cannon", "railgun", "missile_launcher", "drone_bay", "arc_cannon", "plasma_mortar", "quantum_repeater", "burst_cannon", "shield_breaker", "shield", "armor", "barrier", "reflector", "guardian_dome", "phase_armor", "buffer_shield", "last_bastion", "repair", "amplifier", "emp", "virus", "cleanser", "speed_relay"]);
   const DIRECTIONS = new Set(["ne", "nw", "se", "sw"]);
   // Approved paintings as layers: fixed base + painted heading head (8A v1).
   // Registration is measured from the art by tools/prepare-module-layers.cjs.
@@ -123,7 +110,8 @@
     if (model?.definition_id || model?.definitionId) return null;
     return NAMES[model?.nameTr || model?.name_tr] || null;
   }
-  const url = name => (ATLAS_IDS.has(name) ? ROOT : "./assets/ui/modules-physical-v2/") + name + ".webp";
+  const V3_IDS = new Set(["burst_cannon","shield_breaker","buffer_shield","last_bastion","cleanser","speed_relay"]);
+  const url = name => (V3_IDS.has(name) ? "./assets/ui/modules-physical-v3/" : ATLAS_IDS.has(name) ? ROOT : "./assets/ui/modules-physical-v2/") + name + ".webp";
   function image(doc, className, src) {
     const img = doc.createElement("img");
     img.className = className; img.alt = ""; img.draggable = false;

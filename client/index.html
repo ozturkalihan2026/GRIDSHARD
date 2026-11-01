@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="./src/laser-yaw-v11.css" />
   <link rel="stylesheet" href="./src/modules-yaw-v12.css" />
   <link rel="stylesheet" href="./src/module-vfx-v14.css" />
+  <link rel="stylesheet" href="./src/core-vfx-v6.css" />
   <link rel="stylesheet" href="./src/module-layers-v15.css" />
   <link rel="stylesheet" href="./src/presentation-refinements-v16.css" />
   <link rel="stylesheet" href="./src/battle-platform-v17.css" />
@@ -42,6 +43,20 @@
   <!-- Inert asset allowlist for dynamically rendered art in both web/native
        builds. Templates do not preload or display these images. -->
   <template id="module-device-assets">
+    <audio src="./assets/audio/core_resonance_activate.wav"></audio>
+    <audio src="./assets/audio/core_resonance_shot.wav"></audio>
+    <audio src="./assets/audio/core_guardian_activate.wav"></audio>
+    <audio src="./assets/audio/core_guardian_shot.wav"></audio>
+    <audio src="./assets/audio/core_overdrive_activate.wav"></audio>
+    <audio src="./assets/audio/core_overdrive_shot.wav"></audio>
+    <audio src="./assets/audio/core_disruptor_activate.wav"></audio>
+    <audio src="./assets/audio/core_disruptor_shot.wav"></audio>
+    <audio src="./assets/audio/core_capacitor_activate.wav"></audio>
+    <audio src="./assets/audio/core_capacitor_shot.wav"></audio>
+    <audio src="./assets/audio/core_phoenix_activate.wav"></audio>
+    <audio src="./assets/audio/core_phoenix_shot.wav"></audio>
+    <audio src="./assets/audio/core_quantum_activate.wav"></audio>
+    <audio src="./assets/audio/core_quantum_shot.wav"></audio>
     <img src="./assets/ui/cores-wrecked-v1/core_resonance.webp" alt="">
     <img src="./assets/ui/cores-wrecked-v1/core_guardian.webp" alt="">
     <img src="./assets/ui/cores-wrecked-v1/core_overdrive.webp" alt="">
@@ -51,16 +66,18 @@
     <img src="./assets/ui/cores-wrecked-v1/core_quantum.webp" alt="">
     <img src="./assets/ui/modules-views-v3/laser.webp" alt="">
     <img src="./assets/ui/modules-views-v3/shield.webp" alt="">
-    <img src="./assets/ui/modules-views-v3/battery.webp" alt="">
     <img src="./assets/ui/modules-views-v3/amplifier.webp" alt="">
     <img src="./assets/ui/modules-views-v3/emp.webp" alt="">
     <img src="./assets/ui/modules-views-v3/repair.webp" alt="">
     <img src="./assets/ui/modules-views-v3/armor.webp" alt="">
-    <img src="./assets/ui/modules-views-v3/cooler.webp" alt="">
     <img src="./assets/ui/modules-views-v3/pulse_cannon.webp" alt="">
     <img src="./assets/ui/modules-views-v3/missile_launcher.webp" alt="">
-    <img src="./assets/ui/modules-physical-v1/cooler-se-work.webp" alt="">
-    <img src="./assets/ui/modules-physical-v1/cooler-sw-work.webp" alt="">
+    <img src="./assets/ui/modules-physical-v3/burst_cannon.webp" alt="">
+    <img src="./assets/ui/modules-physical-v3/shield_breaker.webp" alt="">
+    <img src="./assets/ui/modules-physical-v3/buffer_shield.webp" alt="">
+    <img src="./assets/ui/modules-physical-v3/last_bastion.webp" alt="">
+    <img src="./assets/ui/modules-physical-v3/cleanser.webp" alt="">
+    <img src="./assets/ui/modules-physical-v3/speed_relay.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/laser-ne.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/laser-nw.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/laser-se.webp" alt="">
@@ -73,10 +90,6 @@
     <img src="./assets/ui/modules-physical-v1/missile_launcher-nw.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/missile_launcher-se.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/missile_launcher-sw.webp" alt="">
-    <img src="./assets/ui/modules-physical-v1/cooler-ne.webp" alt="">
-    <img src="./assets/ui/modules-physical-v1/cooler-nw.webp" alt="">
-    <img src="./assets/ui/modules-physical-v1/cooler-se.webp" alt="">
-    <img src="./assets/ui/modules-physical-v1/cooler-sw.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/repair-ne.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/repair-ne-work.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/repair-nw.webp" alt="">
@@ -86,10 +99,15 @@
     <img src="./assets/ui/modules-physical-v1/repair-sw.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/repair-sw-work.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/turret-base.webp" alt="">
-    <img src="./assets/ui/modules-physical-v1/cooler-base.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/repair-base.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/laser.webp" alt="">
     <audio src="./assets/audio/modules/laser.wav"></audio>
+    <audio src="./assets/audio/modules/burst_cannon.wav"></audio>
+    <audio src="./assets/audio/modules/shield_breaker.wav"></audio>
+    <audio src="./assets/audio/modules/buffer_shield.wav"></audio>
+    <audio src="./assets/audio/modules/last_bastion.wav"></audio>
+    <audio src="./assets/audio/modules/cleanser.wav"></audio>
+    <audio src="./assets/audio/modules/speed_relay.wav"></audio>
     <audio src="./assets/audio/modules/shield.wav"></audio>
     <audio src="./assets/audio/modules/cooler.wav"></audio>
     <audio src="./assets/audio/modules/battery.wav"></audio>
@@ -125,32 +143,16 @@
     <audio src="./assets/audio/modules/quantum_cannon.wav"></audio>
     <audio src="./assets/audio/modules/omega_amplifier.wav"></audio>
     <audio src="./assets/audio/modules/singularity_projector.wav"></audio>
-    <img src="./assets/ui/modules-physical-v2/targeting_computer.webp" alt="">
     <img src="./assets/ui/modules-physical-v2/barrier.webp" alt="">
     <img src="./assets/ui/modules-physical-v2/arc_cannon.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/capacitor.webp" alt="">
     <img src="./assets/ui/modules-physical-v2/drone_bay.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/jammer.webp" alt="">
     <img src="./assets/ui/modules-physical-v2/railgun.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/current_balancer.webp" alt="">
     <img src="./assets/ui/modules-physical-v2/reflector.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/nano_medic.webp" alt="">
     <img src="./assets/ui/modules-physical-v2/virus.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/overclock_unit.webp" alt="">
     <img src="./assets/ui/modules-physical-v2/plasma_mortar.webp" alt="">
     <img src="./assets/ui/modules-physical-v2/guardian_dome.webp" alt="">
     <img src="./assets/ui/modules-physical-v2/quantum_repeater.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/chrono_relay.webp" alt="">
     <img src="./assets/ui/modules-physical-v2/phase_armor.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/swarm_fabricator.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/precision_matrix.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/ion_spear.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/prism_shield.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/disruptor.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/phoenix_repair.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/quantum_cannon.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/omega_amplifier.webp" alt="">
-    <img src="./assets/ui/modules-physical-v2/singularity_projector.webp" alt="">
     <img src="./assets/ui/cores-physical-v1/core_resonance.webp" alt="">
     <img src="./assets/ui/cores-physical-v1/core_guardian.webp" alt="">
     <img src="./assets/ui/cores-physical-v1/core_overdrive.webp" alt="">
@@ -159,8 +161,6 @@
     <img src="./assets/ui/cores-physical-v1/core_phoenix.webp" alt="">
     <img src="./assets/ui/cores-physical-v1/core_quantum.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/shield.webp" alt="">
-    <img src="./assets/ui/modules-physical-v1/cooler.webp" alt="">
-    <img src="./assets/ui/modules-physical-v1/battery.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/amplifier.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/emp.webp" alt="">
     <img src="./assets/ui/modules-physical-v1/repair.webp" alt="">
@@ -230,7 +230,7 @@
       </div>
     </div>
     <div class="boot-screen-meta">
-      <span id="boot-version" class="boot-version" data-version="2.1.1">Sürüm: 2.1.1</span>
+      <span id="boot-version" class="boot-version" data-version="2.2.0">Sürüm: 2.2.0</span>
     </div>
     <div class="boot-brand">
       <h1 id="startup-title" class="boot-title">GRIDSHARD</h1>
@@ -276,7 +276,7 @@
         <button id="battle-forfeit-button" class="battle-forfeit-button" type="button" hidden>Savaşı Bırak</button>
       </div>
       <div class="battle-status-cluster">
-        <div class="credit-indicator resource-value" id="credit-indicator"><i class="resource-symbol resource-symbol-current is-token" data-token="current" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/><path class="tk-l" d="M13.9 1.5 4.3 13.5h3.4L13.85 5.6Z"/><path class="tk-d" d="M19.7 10.1 8.5 22.5 9.3 18 16.4 10.1Z"/><path class="tk-o" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/></svg></i><span id="credit-indicator-value">Akım: 6 / 12</span></div>
+        <div class="credit-indicator resource-value" id="credit-indicator"><i class="resource-symbol resource-symbol-current is-token" data-token="current" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/><path class="tk-l" d="M13.9 1.5 4.3 13.5h3.4L13.85 5.6Z"/><path class="tk-d" d="M19.7 10.1 8.5 22.5 9.3 18 16.4 10.1Z"/><path class="tk-o" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/></svg></i><span id="credit-indicator-value">Akım: 7 / 12</span></div>
         <button id="battle-settings-button" class="battle-settings-button" type="button" aria-label="Ayarlar" title="Ayarlar"><span class="ui-art" data-ui-art="settings" aria-hidden="true"></span></button>
         <div class="battle-time" id="battle-time">00:00.0</div>
       </div>
@@ -486,16 +486,16 @@
       <section class="daily-meta-stage">
         <span class="screen-kicker">GÜNLÜK DEVRE PROTOKOLÜ</span>
         <h2 id="daily-meta-title">Bugünün Metasını Belirle</h2>
-        <p id="daily-meta-dialog-copy">Yedi eşit olasılıklı stratejiden biri bugünkü savaş planın olacak.</p>
+        <p id="daily-meta-dialog-copy">Beş eşit olasılıklı stratejiden biri bugünkü savaş planın olacak.</p>
         <div class="daily-meta-wheel-shell" aria-hidden="true">
           <span class="daily-meta-wheel-pointer"></span>
           <div id="daily-meta-wheel" class="daily-meta-wheel">
             <div class="daily-meta-wheel-labels">
-              <span><b>HASAR</b></span><span><b>SAVUNMA</b></span><span><b>DESTEK</b></span><span><b>SABOTAJ</b></span><span><b>SİSTEM</b></span><span><b>ÇEKİRDEK</b></span><span><b>AKIM</b></span>
+              <span><b>SALDIRI</b></span><span><b>SAVUNMA</b></span><span><b>TAKTİK</b></span><span><b>ÇEKİRDEK</b></span><span><b>AKIM</b></span>
             </div>
           </div>
           <span class="daily-meta-wheel-focus"></span>
-          <strong class="daily-meta-die"><span>7</span></strong>
+          <strong class="daily-meta-die"><span>5</span></strong>
         </div>
         <article id="daily-meta-result" class="daily-meta-result" hidden>
           <span id="daily-meta-result-glyph" aria-hidden="true">◇</span>
@@ -639,11 +639,9 @@
         </section>
         <nav id="module-category-tabs" class="module-category-tabs" aria-label="Modül sınıfları">
           <button type="button" data-module-filter="all" class="is-active">Tümü</button>
-          <button type="button" data-module-filter="sistem">Sistem</button>
           <button type="button" data-module-filter="saldırı">Saldırı</button>
           <button type="button" data-module-filter="savunma">Savunma</button>
-          <button type="button" data-module-filter="destek">Destek</button>
-          <button type="button" data-module-filter="sabotaj">Sabotaj</button>
+          <button type="button" data-module-filter="taktik">Taktik</button>
         </nav>
         <div id="module-collection-grid" class="module-collection-grid" aria-live="polite"></div>
         <div id="module-quick-actions" class="module-quick-actions" hidden>
@@ -901,7 +899,7 @@
       <nav class="module-detail-tabs" aria-label="Modül bilgi başlıkları">
         <button type="button" data-module-detail-tab="overview" class="is-active" aria-label="Genel"><span>◉</span><small>GENEL</small></button>
         <button type="button" data-module-detail-tab="stats" aria-label="İstatistikler"><span>▥</span><small>İSTATİSTİK</small></button>
-        <button type="button" data-module-detail-tab="talents" aria-label="Yetenek ağacı"><span>✦</span><small>YETENEKLER</small></button>
+        <button type="button" data-module-detail-tab="talents" aria-label="Yetenekler"><span>✦</span><small>YETENEKLER</small></button>
       </nav>
     </dialog>
 
@@ -1156,7 +1154,15 @@
       </div>
       <section class="settings-about-panel" aria-labelledby="settings-about-title">
         <div><h3 id="settings-about-title" data-ui-icon="info:cyan">Hakkında</h3><p>GRIDSHARD · Devreni kur, çekirdeği kır.</p></div>
-        <dl><div><dt>Sürüm</dt><dd id="ui-build-version">2.1.1</dd></div></dl>
+        <details id="game-current-guide"><summary>Nasıl oynanır?</summary>
+          <p>Saldırı, Savunma ve Taktik modüllerini birleştir; rakibin çekirdeğini yok et.</p>
+          <p>7 Akımla başlarsın. Depon 12; her 3 saniyede +1 Akım gelir.</p>
+          <p>Saldırı modüllerin 100 hasar verdiğinde VE Savunma modüllerin 50 CAN kaybettiğinde ek +1 Akım kazanırsın.</p>
+          <p>İki koşul birlikte tamamlanır; artan ilerleme sonraki bonusa taşınır. Engellenen hasar ve onarılan aynı CAN tekrar sayılmaz. Depo dolunca bonus ilerlemesi sıfırlanır.</p>
+          <p>Kalabalık savunmaya karşı zincir ve alan hasarı sağlayan saldırıları dene.</p>
+          <p>Çekirdeğin aldığı veya verdiği hasar bu iki sayacı doldurmaz. Akım veren çekirdek yetenekleri kendi açıklamalarındaki gibi çalışır.</p>
+        </details>
+        <dl><div><dt>Sürüm</dt><dd id="ui-build-version">2.2.0</dd></div></dl>
       </section>
       </section>
       <section id="settings-panel-audio" role="tabpanel" aria-labelledby="settings-tab-audio" data-settings-panel="audio" hidden>
@@ -1705,7 +1711,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
         </aside>
 
         <article class="battle-pool-detail-panel" id="battle-pool-detail">
-          <span id="battle-pool-detail-category" class="pool-detail-category">Sistem</span>
+          <span id="battle-pool-detail-category" class="pool-detail-category">Taktik</span>
           <h3 id="battle-pool-detail-name">Batarya</h3>
           <p id="battle-pool-detail-role">Enerji rezervi</p>
           <div
@@ -1714,11 +1720,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
             aria-label="Modül önizlemesi"
           ></div>
           <dl class="pool-detail-properties">
-            <div><dt>Sınıf</dt><dd id="battle-pool-detail-class">Sistem</dd></div>
+            <div><dt>Sınıf</dt><dd id="battle-pool-detail-class">Taktik</dd></div>
             <div><dt>Can</dt><dd id="battle-pool-detail-hp">150</dd></div>
             <div><dt>Akım</dt><dd id="battle-pool-detail-cost">2</dd></div>
-            <div><dt>Enerji Üretimi</dt><dd id="battle-pool-detail-energy-generation">11/sn</dd></div>
-            <div><dt>Enerji Tüketimi</dt><dd id="battle-pool-detail-energy-consumption">0/sn</dd></div>
+
+
             <div><dt>Temel Hasar</dt><dd id="battle-pool-detail-damage">—</dd></div>
             <div><dt>Bekleme</dt><dd id="battle-pool-detail-cooldown">—</dd></div>
           </dl>
@@ -1726,7 +1732,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
           <section class="pool-detail-explanation">
             <h4>Ne işe yarar?</h4>
             <p id="battle-pool-detail-description" class="pool-detail-description">
-              Enerji kapasitesini artırır ve ani yüklerde devreyi destekler.
+              Kartın görevini ve etkisini burada inceleyebilirsin.
             </p>
             <ul id="battle-pool-detail-effects" class="pool-detail-effects"></ul>
           </section>
@@ -1778,10 +1784,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
     </section>
 
     <section class="combat-summary-panel play-live-panel" data-screen-panel="play" hidden>
-      <strong id="combat-summary">Rakip: 300/300 Çekirdek</strong>
+      <strong id="combat-summary">Rakip: 450/450 Çekirdek</strong>
       <span id="energy-summary">Enerji: 11.0 Ü / 0.0 T</span>
       <span id="active-match-mode">Maç: Bekleniyor</span>
-      <span id="player-core-summary">Sen: Çekirdek 300/300</span>
+      <span id="player-core-summary">Sen: Çekirdek 450/450</span>
             <details class="technical-status-drawer">
         <summary>Beta / Bağlantı Teknik Durumu</summary>
         <div class="technical-status-content">
@@ -1814,7 +1820,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
           <div class="duel-side-heading duel-enemy-identity">
               <button id="enemy-battle-name" class="public-player-link battle-player-link" type="button">AI Rakip</button>
               <div id="enemy-deck-preview" class="enemy-deck-preview" aria-label="Rakip destesi"></div>
-              <span id="enemy-board-status" class="board-vitals" hidden>Çekirdek 300/300</span>
+              <span id="enemy-board-status" class="board-vitals" hidden>Çekirdek 450/450</span>
           </div>
           <section class="duel-side duel-enemy-side">
             <div class="circuit-terrain" aria-hidden="true"><span class="circuit-rim-point" data-circuit-rim="bottom"></span></div>
@@ -1828,7 +1834,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
             <div id="board" class="board" aria-label="Oyuncu Savaş Alanı"></div>
           </section>
           <div class="duel-side-heading duel-player-identity">
-            <span id="player-board-status" class="board-vitals" hidden>Çekirdek 300/300</span>
+            <span id="player-board-status" class="board-vitals" hidden>Çekirdek 450/450</span>
           </div>
           <button id="battle-emoji-button" class="battle-emoji-button" type="button" aria-label="Savaş emojisi gönder" aria-haspopup="menu" aria-expanded="false" aria-controls="battle-emoji-tray" hidden>
             <span id="battle-emoji-button-glyph" aria-hidden="true">🙂</span>
@@ -1837,10 +1843,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
       </section>
 
       <aside class="shelf-panel">
-        <div id="battle-current-bar" class="panel-title-row" role="meter" aria-label="Akım" aria-valuemin="0" aria-valuemax="12" aria-valuenow="6">
+        <div id="battle-current-bar" class="panel-title-row" role="meter" aria-label="Akım" aria-valuemin="0" aria-valuemax="12" aria-valuenow="7">
           <span id="battle-current-fill" class="battle-current-fill" aria-hidden="true"></span>
           <h2>Akım</h2>
-          <strong id="shelf-credit-indicator" class="resource-value resource-value-current"><i class="resource-symbol resource-symbol-current is-token" data-token="current" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/><path class="tk-l" d="M13.9 1.5 4.3 13.5h3.4L13.85 5.6Z"/><path class="tk-d" d="M19.7 10.1 8.5 22.5 9.3 18 16.4 10.1Z"/><path class="tk-o" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/></svg></i><span id="shelf-credit-value">6 / 12</span></strong>
+          <strong id="shelf-credit-indicator" class="resource-value resource-value-current"><i class="resource-symbol resource-symbol-current is-token" data-token="current" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path class="tk-m" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/><path class="tk-l" d="M13.9 1.5 4.3 13.5h3.4L13.85 5.6Z"/><path class="tk-d" d="M19.7 10.1 8.5 22.5 9.3 18 16.4 10.1Z"/><path class="tk-o" d="M13.9 1.5 4.3 13.5h5.8L8.5 22.5 19.7 10.1h-5.9Z"/></svg></i><span id="shelf-credit-value">7 / 12</span></strong>
           <strong id="player-battle-name">Oyuncu</strong>
           <span id="shelf-lock-label">Kilitli</span>
         </div>
@@ -1877,8 +1883,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
       </details>
       </div>
       <section id="post-match-reward-stage" class="post-match-stage post-match-reward-stage" aria-label="Maç ödülleri" hidden>
+        <div class="post-match-reward-header">
         <span id="post-match-reward-outcome" class="post-match-reward-outcome">ZAFER</span>
         <h2 id="post-match-reward-heading">SAVAŞ ÖDÜLLERİ</h2>
+        </div>
         <div id="post-match-reward-list" class="post-match-reward-list" data-accounting-mode="profile">
           <article id="post-match-trophy-card">
             <i class="resource-symbol resource-symbol-trophy is-token is-rating-trophy" data-token="trophy" aria-hidden="true"><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true" draggable="false" decoding="async" /></i>
@@ -1945,6 +1953,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
   <div id="battle-start-countdown" class="battle-start-countdown" role="status" aria-live="polite" aria-label="Battle starts in" hidden><strong>3</strong></div>
   <script src="./runtime-config.js"></script>
   <!-- build:scripts -->
+  <script src="./src/battle/combat-feedback-v4.js"></script>
   <script src="./src/native-secure-storage.js"></script>
   <script src="./src/auth-session.js"></script>
   <script src="./src/native-oauth.js"></script>
@@ -1956,6 +1965,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
   <script src="./src/screens/screen-controller.js"></script>
   <script src="./src/screens/card-swipe.js"></script>
   <script src="./src/tutorial/tutorial-controller.js"></script>
+  <script src="./src/battle/current-economy-v8.js"></script>
   <script src="./src/tutorial/onboarding.js"></script>
   <script src="./src/battle/board-view.js"></script>
   <script src="./src/battle/laser-aim.js"></script>
@@ -1965,6 +1975,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
   <script src="./src/battle/module-motion.js"></script>
   <script src="./src/battle/module-presentation-profiles.js"></script>
   <script src="./src/battle/module-fx-canvas.js"></script>
+  <script src="./src/battle/core-vfx-v6.js"></script>
   <script src="./src/battle/module-vfx.js"></script>
   <script src="./src/battle/module-card-view.js"></script>
   <script src="./src/battle/module-card-state-view.js"></script>

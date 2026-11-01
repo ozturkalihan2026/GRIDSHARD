@@ -9,7 +9,7 @@ assert.ok(app.includes('enerji:"energy"'));
 assert.ok(app.includes('savunma:"defense"'));
 assert.ok(app.includes('sabotaj:"sabotage"'));
 assert.ok(app.includes('unit === "percent" ? "%" : ""'));
-assert.ok(app.includes('Number(item.energy_saved || 0)'));
+assert.ok(!app.includes('Number(item.energy_saved || 0)'));
 assert.ok(app.includes('Number(item.support_value || 0)'));
 assert.ok(app.includes('Number(item.control_seconds || 0)'));
 // Beta.72 enderlik kanunu: bilgi ekranı enderliği bir stat avantajı olarak sunmaz.

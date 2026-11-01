@@ -1,5 +1,4 @@
 from app.game.combat import (
-    ATTACK_COOLDOWN_ID,
     select_target,
 )
 from app.game.engine import BattleEngine
@@ -75,11 +74,11 @@ def test_core_becomes_target_after_other_modules_are_destroyed():
 def test_powered_laser_deals_real_damage():
     engine = two_player_engine()
 
-    engine._process_energy_flow()
     shield = engine.state.players["p2"].modules["p2-shield"]
     before = shield.hp
 
-    engine._process_combat_actions()
+    from app.game.battle_actions_v2 import tick as attack_actions
+    attack_actions(engine)
 
     assert shield.hp < before
     assert any(
@@ -91,11 +90,11 @@ def test_powered_laser_deals_real_damage():
 def test_attack_starts_module_cooldown():
     engine = two_player_engine()
 
-    engine._process_energy_flow()
-    engine._process_combat_actions()
+    from app.game.battle_actions_v2 import tick as attack_actions
+    attack_actions(engine)
 
     assert (
-        ATTACK_COOLDOWN_ID
+        "attack"
         in engine.state.players["p1"]
         .modules["p1-laser"]
         .cooldowns_ready_at_ms
@@ -105,15 +104,16 @@ def test_attack_starts_module_cooldown():
 def test_cooldown_prevents_attack_every_tick():
     engine = two_player_engine()
 
-    engine._process_energy_flow()
     shield = engine.state.players["p2"].modules["p2-shield"]
     before = shield.hp
 
-    engine._process_combat_actions()
+    from app.game.battle_actions_v2 import tick as attack_actions
+    attack_actions(engine)
     hp_after_first = shield.hp
     first_damage = before - hp_after_first
 
-    engine._process_combat_actions()
+    from app.game.battle_actions_v2 import tick as attack_actions
+    attack_actions(engine)
 
     assert shield.hp == hp_after_first
 
@@ -121,22 +121,23 @@ def test_cooldown_prevents_attack_every_tick():
 def test_laser_can_attack_again_when_cooldown_finishes():
     engine = two_player_engine()
 
-    engine._process_energy_flow()
     shield = engine.state.players["p2"].modules["p2-shield"]
     before = shield.hp
 
-    engine._process_combat_actions()
+    from app.game.battle_actions_v2 import tick as attack_actions
+    attack_actions(engine)
     hp_after_first = shield.hp
     first_damage = before - hp_after_first
 
     engine.state.elapsed_ms = 1000
-    engine._process_combat_actions()
+    from app.game.battle_actions_v2 import tick as attack_actions
+    attack_actions(engine)
 
     # İlk atışı Kalkan'ın bloğu karşıladı; ikinci atış blok yeniden hazır
     # olmadan (1,2 sn) geldiği için tam hasar verir.
     second_damage = hp_after_first - shield.hp
-    assert first_damage == 4
-    assert second_damage == 10
+    assert first_damage == 5
+    assert second_damage == 12
 
 
 def test_damage_destroys_module_and_removes_position():
@@ -153,8 +154,8 @@ def test_combat_does_not_pause_battle():
     engine = two_player_engine()
     engine.state.status = type(engine.state.status).RUNNING
 
-    engine._process_energy_flow()
-    engine._process_combat_actions()
+    from app.game.battle_actions_v2 import tick as attack_actions
+    attack_actions(engine)
 
     assert engine.state.status.value == "running"
 
@@ -180,7 +181,6 @@ def test_canonical_target_class_order_then_core():
     targets = (
         add(engine, "p2", "p2-sabotage", "emp", 0, 1),
         add(engine, "p2", "p2-support", "repair", 1, 1),
-        add(engine, "p2", "p2-energy", "battery", 3, 2),
         add(engine, "p2", "p2-attack", "pulse_cannon", 4, 2),
     )
 
@@ -188,7 +188,6 @@ def test_canonical_target_class_order_then_core():
         "p2-shield",
         "p2-sabotage",
         "p2-support",
-        "p2-energy",
         "p2-attack",
         "p2-core",
     ]
@@ -209,8 +208,8 @@ def test_player_without_living_attack_module_deals_no_damage():
     shield = engine.state.players["p2"].modules["p2-shield"]
     before = shield.hp
 
-    engine._process_energy_flow()
-    engine._process_combat_actions()
+    from app.game.battle_actions_v2 import tick as attack_actions
+    attack_actions(engine)
 
     assert shield.hp == before
     assert not any(

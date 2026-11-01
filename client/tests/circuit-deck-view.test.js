@@ -4,7 +4,7 @@ const css=fs.readFileSync(path.join(__dirname,"../src/module-device-v8.css"),"ut
 const terrain=fs.readFileSync(path.join(__dirname,"../src/battle-platform-v17.css"),"utf8");
 const code=source.slice(source.indexOf("  function cablePositionKey(position)"),source.indexOf("  function playerCircuitCableModules()"));
 const cells=Array.from({length:15},(_,i)=>[i%5,Math.floor(i/5)]);
-const moduleAt=(x,y,extra={})=>({definitionId:"laser",position:{x,y},status:"active",hp:100,isPowered:true,...extra});
+const moduleAt=(x,y,extra={})=>({definitionId:"laser",position:{x,y},status:"active",hp:100,operational:true,...extra});
 const core=()=>moduleAt(2,1,{definitionId:"core"});
 
 function fixture(painted=false){
@@ -48,7 +48,7 @@ test("one orthogonal bus reaches a powered destination without filling its recta
   assert.equal(JSON.stringify(modules),before,"Presentation must not change combat data");
 });
 test("unpowered, destroyed, invalid and absent destinations never light cables",()=>{
-  const f=fixture(),result=f.context.routes([core(),moduleAt(4,0,{isPowered:false}),moduleAt(0,0,{hp:0}),
+  const f=fixture(),result=f.context.routes([core(),moduleAt(4,0,{operational:false}),moduleAt(0,0,{hp:0}),
     moduleAt(0,2,{status:"destroyed"}),moduleAt(99,1),moduleAt(1.5,1),moduleAt(0,1,{position:null})]);
   assert.equal(result.energizedEdges.size,0);assert.deepEqual([...result.fedCells],["2,1"]);
   for(const modules of [[],[moduleAt(4,0)],[core(),moduleAt(4,0)].map(m=>({...m,hp:0}))]){
@@ -84,7 +84,7 @@ test("initial empty board waits for actual sockets before building gutter paths"
 test("power and destruction only toggle persistent cable nodes; layout resize remeasures",()=>{
   const f=fixture(),device=moduleAt(4,0);f.context.render(f.board,[core(),device]);
   const live=f.board.querySelector(":scope > .board-cable-current-layer"),nodes=[...live.children],before={...f.counts};
-  f.context.render(f.board,[core(),{...device,isPowered:false}]);
+  f.context.render(f.board,[core(),{...device,operational:false}]);
   assert.equal(f.counts.created,before.created);assert.equal(f.counts.reads,before.reads);
   assert.deepEqual(live.children,nodes);assert.ok(nodes.every(n=>n.attrs.get("visibility")==="hidden"));
   assert.ok(f.board.querySelector(':scope > .board-cable-layer').children.every(n=>n.attrs.get('visibility')==='hidden'));
@@ -99,23 +99,23 @@ test("powered floor cue uses existing cells and never lights empty transit socke
   const cellAt=(x,y)=>sockets.find(c=>c.dataset.x===String(x)&&c.dataset.y===String(y));
   const art={persistent:true};cellAt(4,0).appendChild(art);
   f.context.render(f.board,[core(),device]);const before={...f.counts};
-  assert.equal(cellAt(4,0).classes.has("energy-fed-cell"),true);
-  assert.equal(cellAt(2,1).classes.has("energy-fed-cell"),true);
-  for(const [x,y]of [[3,1],[4,1]])assert.equal(cellAt(x,y).classes.has("energy-fed-cell"),false);
+  assert.equal(cellAt(4,0).classes.has("circuit-active-cell"),true);
+  assert.equal(cellAt(2,1).classes.has("circuit-active-cell"),true);
+  for(const [x,y]of [[3,1],[4,1]])assert.equal(cellAt(x,y).classes.has("circuit-active-cell"),false);
   for(let i=0;i<1000;i++)f.context.render(f.board,[core(),device]);
   assert.deepEqual(f.counts,before,"unchanged energy cue has zero DOM allocation, measurement or write");
-  for(const off of [{...device,isPowered:false},{...device,hp:0},{...device,status:"destroyed"}]){
-    f.context.render(f.board,[core(),off]);assert.equal(cellAt(4,0).classes.has("energy-fed-cell"),false);
-    f.context.render(f.board,[core(),device]);assert.equal(cellAt(4,0).classes.has("energy-fed-cell"),true);
+  for(const off of [{...device,operational:false},{...device,hp:0},{...device,status:"destroyed"}]){
+    f.context.render(f.board,[core(),off]);assert.equal(cellAt(4,0).classes.has("circuit-active-cell"),false);
+    f.context.render(f.board,[core(),device]);assert.equal(cellAt(4,0).classes.has("circuit-active-cell"),true);
   }
   f.context.render(f.board,[{...core(),hp:0},device]);
-  assert.ok(sockets.every(c=>!c.classes.has("energy-fed-cell")));
+  assert.ok(sockets.every(c=>!c.classes.has("circuit-active-cell")));
   assert.deepEqual(f.board.querySelectorAll(".board-cell"),sockets);
   assert.equal(cellAt(4,0).children[0],art);assert.equal(f.counts.created,before.created);assert.equal(f.counts.reads,before.reads);
 });
 
 test("painted socket energy cue is stationary and uses only the existing power state",()=>{
-  const rule=terrain.match(/\.board-cell\.energy-fed-cell\s*\{([^}]+)\}/)[1];
+  const rule=terrain.match(/\.board-cell\.circuit-active-cell\s*\{([^}]+)\}/)[1];
   assert.match(rule,/radial-gradient\(ellipse at 50% 52%,var\(--circuit-cell-glow\)/);
   assert.doesNotMatch(rule,/url\(|circuit-socket-art/,'The platform, not each cell, owns the artwork');
   for(const property of ["animation:none","transition:none","filter:none","will-change:auto"])assert.ok(rule.includes(property));

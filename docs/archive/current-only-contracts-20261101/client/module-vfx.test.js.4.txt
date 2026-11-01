@@ -1,0 +1,19 @@
+test("cooling is an outlet-oriented soft cloud fan, with bounded nodes and shared replacement cleanup",()=>{
+  const f=fixture(),count=n=>1+n.children.reduce((sum,c)=>sum+count(c),0);
+  const key="support:cool:own:cooler:own:laser",rig=f.rigs.get("own:cooler"),billboard=rig.children[0];
+  f.fx.support("cool","own:cooler","own:laser");const first=f.fx.effects.get(key).node;
+  const fan=first.children.find(n=>n.tag==="g"),clouds=fan.children.filter(n=>n.attrs.class==="vfx-cold-cloud");
+  assert.equal(clouds.length,5);assert.ok(count(first)<=20);
+  assert.equal(fan.attrs.transform,"translate(350 420) rotate(90)");
+  assert.equal(first.style["--module-vfx-ms"],"980ms");
+  assert.ok(fan.children.some(n=>n.attrs.class==="vfx-cold-plume"));
+  assert.equal(first.querySelector("filter"),null);assert.equal(first.querySelector("radialGradient").children.at(-1).attrs["stop-opacity"],"0");
+  assert.ok(clouds.every(n=>parseFloat(n.style["--mist-dx"])>0));
+  assert.equal(f.queue.entries.length,1,"one shared expiry per root, no per-cloud timers");
+  f.advance(100);f.fx.support("cool","own:cooler","own:laser");assert.equal(first.parentElement,null);
+  f.advance(980);assert.ok(f.fx.effects.has(key),"old expiry cannot erase the replacement");
+  f.advance(1080);assert.equal(f.fx.effects.has(key),false);assert.equal(f.layer.children.length,0);
+  assert.equal(rig.children[0],billboard,"mist never rebuilds board/module art");
+  const code=fs.readFileSync(path.join(__dirname,"../src/battle/module-vfx.js"),"utf8");
+  assert.doesNotMatch(code,/vfx-cold-wisp|vfx-cold-cone|requestAnimationFrame|setTimeout|setInterval|replaceChildren/);
+});

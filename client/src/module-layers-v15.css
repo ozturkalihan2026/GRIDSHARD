@@ -55,21 +55,11 @@ body[data-graphics="dusuk"] .module-layer-head { transition:none; }
  * flattens the whole enemy 3D chain (paintings lie on the board). */
 :root body[data-app-screen="play"] .vertical-circuit-arena .enemy-board { opacity:1 !important; }
 
-/* ---- v15b (19 Ekim, kullanıcı geri bildirimi) --------------------------------
- * 1) Isı + CAN çubukları çizimin ALTINDA ve önünde: dik çizim üst kenarı örttüğü
- *    için ısı çubuğu kayboluyordu. İkisi alt kenarda üst üste, tahtadan hafif önde.
- * 2) Soket malzemesi ve güç vurgusunun sahibi artık battle-platform-v17.css.
- * 3) Gölge çizimin tabanında. */
-:root body[data-app-screen="play"] .vertical-circuit-arena .module-card > .module-heat-bar {
-  top:auto !important; bottom:6px !important; left:4px !important; right:4px !important;
-  height:3px !important; border-radius:2px !important; transform:translateZ(6px);
-  box-shadow:0 0 0 1px #02090fcc !important; z-index:42;
-}
+/* Health remains below the painting. Heat management is retired. */
 :root body[data-app-screen="play"] .vertical-circuit-arena .module-card.battle-module-card::after {
   left:4px !important; right:4px !important; bottom:1px !important; height:4px !important;
   border-radius:2px !important; transform:translateZ(6px); box-shadow:0 0 0 1px #02090fcc !important;
 }
-:root body[data-app-screen="play"] .vertical-circuit-arena .module-card.has-heat-bar > .module-live-status-row { top:2px !important; }
 .module-device-rig[data-renderer="layers"] > .module-device-ground-shadow {
   top:auto; bottom:-4%; left:12%; right:12%; height:24%;
   background:radial-gradient(closest-side,#000000b0,#00000055 60%,transparent);
@@ -81,9 +71,8 @@ body[data-graphics="dusuk"] .module-layer-head { transition:none; }
 :root body[data-app-screen="play"] .vertical-circuit-arena .module-card:has(.module-device-rig[data-renderer="layers"]):is(.fx-hit,.fx-fire,.fx-shield,.fx-sabotage,[class*="fx-feedback-"]) {
   animation:none !important; filter:none !important;
 }
-/* Hand (shelf) cards show the approved painting like the sample: the art fills
- * the card, the name sits on a dark strip at the bottom and the cost is a small
- * badge in the top-left corner. Same card height; no layout change. */
+/* Shelf art keeps its full height. Long names fit one line horizontally;
+ * Android WebView may enforce a minimum font size, so retain text height. */
 :root body[data-app-screen="play"] #module-shelf .module-card.deck-module-card {
   grid-template-rows:minmax(0,1fr) 11px !important; padding:0 !important; gap:0 !important; position:relative !important;
   height:58px !important; min-height:58px !important;
@@ -92,12 +81,18 @@ body[data-graphics="dusuk"] .module-layer-head { transition:none; }
   grid-area:1 / 1 / 3 / 1 !important; overflow:visible !important;
 }
 :root body[data-app-screen="play"] #module-shelf .module-card.deck-module-card > .module-icon > .module-emblem {
-  inset:-1px auto auto 2px !important; width:calc(100% - 4px) !important; height:calc(100% - 7px) !important; max-width:none !important; max-height:none !important;
+  inset:0 auto auto 2px !important; width:calc(100% - 4px) !important; height:calc(100% - 8px) !important; max-width:none !important; max-height:none !important;
   filter:drop-shadow(0 2px 1px #02090fcc) !important;
 }
-:root body[data-app-screen="play"] #module-shelf .module-card.deck-module-card > .name {
-  grid-area:2 / 1 !important; height:11px; font:700 8px/11px var(--gs-font-copy) !important; letter-spacing:.2px;
-  background:linear-gradient(transparent,#02090fd9 45%); border-radius:0 0 6px 6px; text-transform:uppercase;
+:root body[data-app-screen="play"] #module-shelf .module-card.deck-module-card > .name,
+:root body[data-app-screen="play"] #module-shelf .module-card.deck-module-card > .name[data-long="true"] {
+  grid-area:2 / 1 !important; height:11px; display:block !important;
+  font:700 8px/11px var(--gs-font-copy) !important; letter-spacing:0;
+  max-width:none !important; justify-self:center !important;
+  transform:scaleX(var(--shelf-name-scale,1)) !important; transform-origin:center;
+  white-space:nowrap; overflow-wrap:normal; text-overflow:clip; overflow:hidden;
+  transition:none !important;
+  background:linear-gradient(transparent,#02090fd9 45%); border-radius:0 0 6px 6px; text-transform:none;
 }
 :root body[data-app-screen="play"] #module-shelf .module-card.deck-module-card > .current-cost-badge {
   position:absolute !important; inset:1px auto auto 2px !important; grid-area:auto !important; z-index:2; place-self:auto;

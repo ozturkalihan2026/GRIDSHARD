@@ -1,0 +1,3722 @@
+{
+  "version": 7,
+  "decision_date": "2026-11-01",
+  "status": "implemented_workspace_v7_1_current_v8_phone_v6_unchanged",
+  "scope": "24 ana modül; 3 sınıf; 192 açık yetenek seçeneği. Nihai davranış sözleşmesi; sayılar test başlangıç değerleri, rekabet dengesi onayı değil.",
+  "migration": {
+    "preserve_levels_pieces_receipts_and_paid_tiers": true,
+    "charge_for_mapping_existing_choices": false,
+    "changed_behavior_cards_one_free_reselection": true,
+    "reselection_entitlement_key": "module_id + transition_version",
+    "refund_old_purchase_prices": false,
+    "normal_reset_flux_per_selected_tier_after_transition": 25,
+    "status": "implemented_and_isolated_persistence_tested_not_applied_to_real_player_files"
+  },
+  "effect_contract": {
+    "derived_from_actual_primary_hp_loss": [
+      "missile_followup",
+      "plasma_dot",
+      "quantum_echo",
+      "reflection"
+    ],
+    "derived_damage_retriggers_signatures": false,
+    "primary_damage_counter_sources": [
+      "direct",
+      "secondary",
+      "followup",
+      "dot",
+      "echo"
+    ],
+    "reflection_earns_current": false,
+    "periodic_block_and_dome_apply_to_dot_and_followup": false,
+    "phase_armor_and_hp_shields_apply_to_derived_damage": true,
+    "applied_delayed_effect_survives_source_death": true,
+    "same_target_plasma_or_followup_stacking": "one_effect_stronger_remaining_budget_wins_equal_does_not_refresh",
+    "same_target_virus_stacking": "one_effect_stronger_ratio_wins_equal_does_not_refresh",
+    "same_family_shield_stacking": "max_remaining_or_new_not_sum",
+    "quantum_allocation": "equal_share_to_existing_order_targets_per_target_cap_excess_lost",
+    "buffer_heal_targets": "two_other_injured_noncore_modules_hp_ratio_then_instance_id",
+    "buffer_unused_heal": "no_bank_no_third_recipient",
+    "cleanse_effect_priority": [
+      "core_execution",
+      "plasma_dot",
+      "missile_followup",
+      "emp_disabled",
+      "virus"
+    ],
+    "rounding": "deterministic_fractional_budget_conservation"
+  },
+  "sources": [
+    {
+      "id": "cr_goblins_2024",
+      "title": "Clash Royale — Game Update June 17 (2024)",
+      "url": "https://supercell.com/en/games/clashroyale/blog/release-notes/game-update-june-17/",
+      "observed": "Nadir Demolisher ölüm/düşük CAN koşulu, Destansı Curse dönüşüm, Efsanevi Machine iki saldırı davranışı.",
+      "adaptation": "Kart başına açık mekanik kimlik; bütün enderlikler için evrensel kural iddiası yok."
+    },
+    {
+      "id": "cr_phoenix_monk_2022",
+      "title": "Clash Royale — New Update (26 October 2022)",
+      "url": "https://supercell.com/en/games/clashroyale/blog/release-notes/new-update-october-2022/",
+      "observed": "Phoenix karşı tarafın kırabildiği yumurtayla yerleşim başına tek dönüş; Monk koruma/yansıtma penceresi.",
+      "adaptation": "Son Siper bir kez yıkım tetiki, Faz sınırlı pencere; tekrar sınırı ve karşı hamle."
+    },
+    {
+      "id": "rumble_chimaera",
+      "title": "Warcraft Rumble — Chaos Reigns in Season 2",
+      "url": "https://news.blizzard.com/en-us/article/24033784/warcraft-rumble-chaos-reigns-in-season-2",
+      "observed": "Chimaera yetenekleri zehir miktarı, yıldırımda Frost veya dayanıklılık yönleri sunuyor.",
+      "adaptation": "Plazma iz/yayılım ve Virüs tempo/onarım baskısı arasında farklı uzmanlık; sayılar kopyalanmadı."
+    },
+    {
+      "id": "rumble_earth_moon",
+      "title": "Warcraft Rumble — Turn the Tides of Battle with Earth and Moon",
+      "url": "https://news.blizzard.com/en-us/article/24091203/turn-the-tides-of-battle-with-earth-and-moon",
+      "observed": "Yetenekler süre uzatma, dosta direnç ekleme ve ikinci kullanım arasında farklı sonuçlar verir.",
+      "adaptation": "Yetenek yalnız düz hasar olmak zorunda değil; kapsam/süre/koruma değişebilir. Oyunumuza ikinci kullanım ekonomisi taşınmadı."
+    },
+    {
+      "id": "hs_lifesteal_2017",
+      "title": "Hearthstone — Arise, Knights of the Frozen Throne!",
+      "url": "https://hearthstone.blizzard.com/en-us/news/20944003/arise-knights-of-the-frozen-throne-8-10-2017",
+      "observed": "Lifesteal verilen hasarı kahraman onarımına bağlayan tek adlandırılmış mekanik.",
+      "adaptation": "Dönüşüm anlaşılır tek sonuç üretmeli; Tamponda oranlı ve havuzla sınırlı uygulanır, çekirdeğe ücretsiz sürekli onarım verilmez."
+    }
+  ],
+  "preserved": {
+    "classes": [
+      "saldırı",
+      "savunma",
+      "taktik"
+    ],
+    "module_count": 24,
+    "board_deploy_cells": 14,
+    "deck_distinct_cards": 6,
+    "minimum_attack_cards_in_deck": 1,
+    "random_placement": true,
+    "primary_target_priority": "existing_type_order_and_tiebreak",
+    "per_definition_quota": null,
+    "per_class_quota": null,
+    "economies": [
+      "Akım"
+    ],
+    "energy": false,
+    "heat": false,
+    "starting_current": 7,
+    "current_capacity": 12,
+    "passive_current_ms": 3000,
+    "pressure_new_hp_damage": 100,
+    "pressure_min_interval_ms": 0,
+    "pressure_max_bank": null,
+    "forced_time_limit": null,
+    "overtime_pressure": false,
+    "core_roles": "V5_unchanged",
+    "core_presentation": "V6_leader_reserved",
+    "rarity_stat_multiplier": 1,
+    "level_amount_multiplier": "1.04 ** (level - 1)",
+    "talent_ids": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "talent_choices": [
+      "power",
+      "resilience"
+    ],
+    "talent_reset_flux_per_selected_tier": 25,
+    "joint_defense_new_hp_loss": 50,
+    "joint_requires_both": true,
+    "reset_bonus_progress_at_capacity": true,
+    "core_talent_current_rewards": true
+  },
+  "talent_levels": {
+    "common": [
+      5,
+      8,
+      11,
+      14
+    ],
+    "rare": [
+      6,
+      9,
+      12,
+      15
+    ],
+    "epic": [
+      7,
+      10,
+      13,
+      15
+    ],
+    "legendary": [
+      8,
+      11,
+      14,
+      15
+    ]
+  },
+  "talent_costs_credits_flux": {
+    "common": [
+      [
+        1000,
+        0
+      ],
+      [
+        2000,
+        0
+      ],
+      [
+        4000,
+        0
+      ],
+      [
+        8000,
+        1000
+      ]
+    ],
+    "rare": [
+      [
+        2000,
+        0
+      ],
+      [
+        4000,
+        0
+      ],
+      [
+        10000,
+        1000
+      ],
+      [
+        20000,
+        2000
+      ]
+    ],
+    "epic": [
+      [
+        10000,
+        0
+      ],
+      [
+        20000,
+        1000
+      ],
+      [
+        30000,
+        2000
+      ],
+      [
+        40000,
+        3000
+      ]
+    ],
+    "legendary": [
+      [
+        10000,
+        1000
+      ],
+      [
+        20000,
+        2000
+      ],
+      [
+        30000,
+        3000
+      ],
+      [
+        40000,
+        4000
+      ]
+    ]
+  },
+  "evaluation_order": [
+    "base_override",
+    "signature_set_or_multiply",
+    "job_multipliers_tier_0_2_3_once",
+    "other_tier_multipliers",
+    "level_scale_amounts_once",
+    "safety_caps",
+    "round_with_budget_conservation"
+  ],
+  "safety_caps": {
+    "ordinary_armor_reduction": 0.4,
+    "periodic_block_ratio": 0.8,
+    "dome_guard_ratio": 0.55,
+    "reflection_ratio": 0.5,
+    "phase_duration_ms": 1500,
+    "phase_max_duty_ratio": 0.25,
+    "emp_duration_ms": 1500,
+    "emp_recovery_ms_min": 3000,
+    "virus_interval_penalty": 0.35,
+    "virus_heal_penalty": 0.25,
+    "amplifier_bonus": 0.4,
+    "speed_reduction": 0.3,
+    "buffer_absorb_ratio": 0.7,
+    "buffer_conversion_ratio": 0.6,
+    "quantum_echo_per_target_ratio": 0.2,
+    "quantum_echo_total_ratio": 0.8,
+    "plasma_dot_total_ratio": 0.24,
+    "cleanse_control_duration_reduction": 0.3
+  },
+  "rollout_order": [
+    {
+      "step": 1,
+      "scope": [
+        "effect_provenance",
+        "non_recursive_damage",
+        "budget_rounding",
+        "contribution_telemetry",
+        "snapshot_version"
+      ],
+      "pass_condition": "Kaynak/hedef/efekt bütçesi tekrar güvenli; canlı değerler değişmez."
+    },
+    {
+      "step": 2,
+      "scope": [
+        "plasma_mortar",
+        "missile_launcher",
+        "cleanser"
+      ],
+      "pass_condition": "Süreli iz/yük, ölüm/Faz/temizleme ve kayıt yeniden oynatma testleri."
+    },
+    {
+      "step": 3,
+      "scope": [
+        "buffer_shield",
+        "shield_breaker",
+        "reflector"
+      ],
+      "pass_condition": "Emilim/onarım bütçesi, kalkan silme ve yansıma Akım döngüsü üretmez."
+    },
+    {
+      "step": 4,
+      "scope": [
+        "arc_cannon",
+        "quantum_repeater",
+        "last_bastion"
+      ],
+      "pass_condition": "Dolu tahtada paylaşılan sınırlar; yıkım bir kez; ana hedef sırası aynı."
+    },
+    {
+      "step": 5,
+      "scope": [
+        "all_24_talents",
+        "virus",
+        "cleanser_control_guard",
+        "AI",
+        "collection",
+        "tutorial",
+        "VFX",
+        "sound"
+      ],
+      "pass_condition": "192 seçenek/384 dört-dal kombinasyonu ve tüm seviyeler; eski bedeller/kayıtlar; okunabilir etkiler."
+    },
+    {
+      "step": 6,
+      "scope": [
+        "paired_engine_battles",
+        "phone",
+        "human_strategy_sessions"
+      ],
+      "pass_condition": "İlk kayıp, çekirdek katkısı, kamp ve süre dağılımı raporlanır; test gözlem aşımı kazanma sayılmaz."
+    }
+  ],
+  "modules": [
+    {
+      "id": "laser",
+      "name_tr": "Lazer",
+      "rarity": "common",
+      "category": "saldırı",
+      "arena": 1,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 220,
+        "damage": 12,
+        "period_ms": 1000,
+        "parameters": {}
+      },
+      "decision": "koru",
+      "base_changes": {},
+      "final_rule_tr": "Her 1 saniyede mevcut öncelikli hedefe 12 hasar. Başka pasif yok.",
+      "counterplay_tr": "Kalkan, Zırh ve ateşi üzerine alan Bariyer; tek hedefe karşı güvenilir.",
+      "presentation_tr": "İnce kırmızı ışın ve tek isabet; yük/süre rozeti gerekmiyor.",
+      "primary_field": "damage",
+      "primary_scope_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 5,
+          "circuit_credits_cost": 1000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 8,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Yoğun Işın",
+              "description_tr": "Ana hasar +%8.",
+              "changes": {
+                "multiply": {
+                  "damage": 1.08
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Seri Işın",
+              "description_tr": "Atış çevrimi −%8.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.92
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 11,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 14,
+          "circuit_credits_cost": 8000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pulse_cannon",
+      "name_tr": "Darbe Topu",
+      "rarity": "common",
+      "category": "saldırı",
+      "arena": 1,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 198,
+        "damage": 30,
+        "period_ms": 2500,
+        "parameters": {
+          "windup_ms": 600
+        }
+      },
+      "decision": "koru",
+      "base_changes": {},
+      "final_rule_tr": "0,6 sn görünen hazırlığın ardından 30 hasar; toplam çevrim 2,5 sn.",
+      "counterplay_tr": "EMP hazırlığı geciktirir; hedef değişince mevcut hazırlık kuralı korunur.",
+      "presentation_tr": "Namlu hazırlığı, tek ağır darbe ve ayrı kısa bas sesi.",
+      "primary_field": "damage",
+      "primary_scope_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 5,
+          "circuit_credits_cost": 1000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 8,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Ağır Darbe",
+              "description_tr": "Ana hasar +%10.",
+              "changes": {
+                "multiply": {
+                  "damage": 1.1
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Hazır Namlu",
+              "description_tr": "Hazırlık 0,6 → 0,4 sn; toplam çevrim aynı.",
+              "changes": {
+                "set": {
+                  "windup_ms": 400
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 11,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 14,
+          "circuit_credits_cost": 8000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "railgun",
+      "name_tr": "Ray Topu",
+      "rarity": "rare",
+      "category": "saldırı",
+      "arena": 3,
+      "current_live": {
+        "current_cost": 4,
+        "hp": 275,
+        "damage": 38,
+        "period_ms": 3000,
+        "parameters": {
+          "kept_reduction": 0.6
+        }
+      },
+      "decision": "koru",
+      "base_changes": {},
+      "final_rule_tr": "3 sn çevrimde 38 hasar. Hedefin zırh azaltımının %40’ını yok sayar; gerçek CAN kalkanını veya Fazı delmez.",
+      "counterplay_tr": "Zırhlıya uzman cevap; düşük zırhlı hedefte maliyet avantajı yok.",
+      "presentation_tr": "İnce beyaz delici iz; hedefte yalnız aşılan zırh katkısı gösterilir.",
+      "primary_field": "damage",
+      "primary_scope_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 6,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 9,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Derin Delme",
+              "description_tr": "Zırh azaltımını yok sayma %40 → %55.",
+              "changes": {
+                "set": {
+                  "kept_reduction": 0.45
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Hızlı Ray",
+              "description_tr": "Atış çevrimi −%8; delme aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.92
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 12,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "missile_launcher",
+      "name_tr": "Füze Fırlatıcı",
+      "rarity": "rare",
+      "category": "saldırı",
+      "arena": 5,
+      "current_live": {
+        "current_cost": 4,
+        "hp": 231,
+        "damage": 34,
+        "period_ms": 3000,
+        "parameters": {
+          "windup_ms": 700
+        }
+      },
+      "decision": "yeniden_tanimla",
+      "base_changes": {
+        "damage": 29,
+        "followup_ratio": 0.2,
+        "followup_delay_ms": 600
+      },
+      "final_rule_tr": "0,7 sn hazırlık; 3 sn çevrimde 29 ana hasar. 0,6 sn sonra aynı hedefe ana vuruşun gerçek CAN kaybının %20’si kadar ikinci patlama. Yeni hedef seçmez.",
+      "counterplay_tr": "İlk vuruşu kalkanla emmek ikinci patlamayı da küçültür. Hedef ölürse, Fazdaysa ya da arada arındırılırsa takip patlaması boşa gider.",
+      "presentation_tr": "Füze izi, hedefte küçük geri sayımlı yük ve tek gecikmiş halka.",
+      "primary_field": "damage",
+      "primary_scope_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 6,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 9,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Ağır Başlık",
+              "description_tr": "Takip patlaması oranı %20 → %35; ana hasar ve gecikme aynı.",
+              "changes": {
+                "set": {
+                  "followup_ratio": 0.35
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Hızlı Kilit",
+              "description_tr": "Hazırlık 0,7 → 0,45 sn; takip patlaması 0,6 → 0,3 sn. Toplam çevrim değişmez.",
+              "changes": {
+                "set": {
+                  "windup_ms": 450,
+                  "followup_delay_ms": 300
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 12,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "drone_bay",
+      "name_tr": "Dron Üssü",
+      "rarity": "rare",
+      "category": "saldırı",
+      "arena": 6,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 242,
+        "damage": 8,
+        "period_ms": 900,
+        "parameters": {
+          "secondary_ratios": [
+            0.25
+          ]
+        }
+      },
+      "decision": "koru",
+      "base_changes": {},
+      "final_rule_tr": "0,9 sn çevrimde ana hedefe 8, mevcut sıradaki ikinci modüle bunun %25’i kadar hasar. İkinci hedef yoksa ek paket kaybolur.",
+      "counterplay_tr": "Tek hedef DPS’si Lazerden düşük; iki bağımsız isabetin karşılığı Zırh ve Kubbe.",
+      "presentation_tr": "İki ayrı küçük dron yolu; ikincil paketin daha küçük olduğu görülür.",
+      "primary_field": "damage",
+      "primary_scope_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 6,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 9,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İkinci Kol",
+              "description_tr": "İkinci hedef oranı %25 → %40; ana hasar aynı.",
+              "changes": {
+                "set": {
+                  "secondary_ratios": [
+                    0.4
+                  ]
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Yoğun Sürü",
+              "description_tr": "Ana hasar +%10; ikinci hedef oranı %25 → %10. Tek hedefte uzmanlaşır.",
+              "changes": {
+                "multiply": {
+                  "damage": 1.1
+                },
+                "set": {
+                  "secondary_ratios": [
+                    0.1
+                  ]
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 12,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arc_cannon",
+      "name_tr": "Ark Topu",
+      "rarity": "epic",
+      "category": "saldırı",
+      "arena": 7,
+      "current_live": {
+        "current_cost": 4,
+        "hp": 275,
+        "damage": 22,
+        "period_ms": 1800,
+        "parameters": {
+          "secondary_ratios": [
+            0.45
+          ]
+        }
+      },
+      "decision": "genislet",
+      "base_changes": {
+        "damage": 20,
+        "secondary_ratios": [
+          0.45,
+          0.2
+        ]
+      },
+      "final_rule_tr": "1,8 sn çevrimde 20 ana hasar; mevcut ek hedef sırasındaki iki farklı modüle ana atışın %45 ve %20’si. Ek zincir çekirdeği seçmez.",
+      "counterplay_tr": "Tek hedefte düşük verim. Her hedef kendi zırh/blok/Faz/kalkanından ayrı geçer. Zincir yeniden zincir doğurmaz.",
+      "presentation_tr": "Ana ark ardından en fazla iki ince sıçrama; üç hedef bağı ayrı kalır.",
+      "primary_field": "damage",
+      "primary_scope_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 7,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 10,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Geniş Zincir",
+              "description_tr": "İkinci/üçüncü oran %45/%20 → %55/%25.",
+              "changes": {
+                "set": {
+                  "secondary_ratios": [
+                    0.55,
+                    0.25
+                  ]
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Yoğun Ark",
+              "description_tr": "Ana hasar +%10; üçüncü sıçrama kalkar, ikinci %45 kalır.",
+              "changes": {
+                "multiply": {
+                  "damage": 1.1
+                },
+                "set": {
+                  "secondary_ratios": [
+                    0.45
+                  ]
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 13,
+          "circuit_credits_cost": 30000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 40000,
+          "flux_cost": 3000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plasma_mortar",
+      "name_tr": "Plazma Havanı",
+      "rarity": "epic",
+      "category": "saldırı",
+      "arena": 8,
+      "current_live": {
+        "current_cost": 5,
+        "hp": 270,
+        "damage": 32,
+        "period_ms": 3600,
+        "parameters": {
+          "windup_ms": 1200,
+          "secondary_ratios": [
+            0.3,
+            0.3
+          ]
+        }
+      },
+      "decision": "yeniden_tanimla",
+      "base_changes": {
+        "damage": 29,
+        "dot_per_tick_ratio": 0.05,
+        "dot_ticks": 3,
+        "dot_step_ms": 1000
+      },
+      "final_rule_tr": "1,2 sn hazırlık, 3,6 sn çevrim: 29 ana hasar ve iki ek modüle %30/%30 yayılım. Ana hedefte gerçek ilk CAN kaybının saniyede %5’i, 3 saniye; toplam %15 Plazma İzi.",
+      "counterplay_tr": "Tek hedefte tek Plazma İzi; güçlü iz tamamlanır, eşit/zayıf uygulama süreyi yenilemez. Arındırıcı kalan izi siler. Kaynak ölümü uygulanmış izi silmez.",
+      "presentation_tr": "Mor plazma küresi; ana hedefte 3 küçük iz çentiği ve zamanlı isabetler. Isı barı kullanılmaz.",
+      "primary_field": "damage",
+      "primary_scope_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 7,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 10,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Kalıcı İz",
+              "description_tr": "İz saniyede %5 → %8; iki yayılım %30/%30 → %20/%20. Toplam iz %24.",
+              "changes": {
+                "set": {
+                  "dot_per_tick_ratio": 0.08,
+                  "secondary_ratios": [
+                    0.2,
+                    0.2
+                  ]
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Geniş Yayılım",
+              "description_tr": "Yayılım %30/%30 → %40/%40; iz saniyede %5 → %3. Toplam iz %9.",
+              "changes": {
+                "set": {
+                  "secondary_ratios": [
+                    0.4,
+                    0.4
+                  ],
+                  "dot_per_tick_ratio": 0.03
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 13,
+          "circuit_credits_cost": 30000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 40000,
+          "flux_cost": 3000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quantum_repeater",
+      "name_tr": "Kuantum Tekrarlayıcı",
+      "rarity": "legendary",
+      "category": "saldırı",
+      "arena": 9,
+      "current_live": {
+        "current_cost": 4,
+        "hp": 250,
+        "damage": 10,
+        "period_ms": 1400,
+        "parameters": {
+          "every_hits": 4,
+          "charged_damage": 24
+        }
+      },
+      "decision": "genislet",
+      "base_changes": {
+        "echo_per_target_ratio": 0.2,
+        "echo_total_ratio": 0.6
+      },
+      "final_rule_tr": "1,4 sn çevrimde 10 hasar. Aynı hedefte 4. doğrudan isabet 24 hasar. Bu dördüncü vuruşun gerçek CAN kaybından, diğer rakip modüllere hedef başına en çok %20 / toplam en çok %60 yankı havuzu.",
+      "counterplay_tr": "Yankı çekirdeğe gitmez, yankı doğurmaz. Fazla tamamen boşa çıkan isabet sayılmaz; CAN kalkanına gerçek temas sayılır. Hedef değişince sayaç sıfırlanır. Diğer hedefler mevcut sıra ile seçilir.",
+      "presentation_tr": "1–4 görünür sayaç; dördüncüde küçük çoklu mor yankı. Çekirdek yarığı ve lider sesi kullanılmaz.",
+      "primary_field": "damage",
+      "primary_scope_tr": "Normal ve dördüncü ana hasar birlikte; yankı oranı ayrıca artmaz.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 8,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Normal ve dördüncü ana hasar birlikte; yankı oranı ayrıca artmaz. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 11,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "Yoğun Dördüncü",
+              "description_tr": "Dördüncü temel hasar 24 → 30; toplam yankı %60 → %40. Hedef başına %20 aynı.",
+              "changes": {
+                "set": {
+                  "charged_damage": 30,
+                  "echo_total_ratio": 0.4
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Yaygın Yankı",
+              "description_tr": "Dördüncü temel hasar 24 → 22; toplam yankı %60 → %80. Hedef başına %20 aynı.",
+              "changes": {
+                "set": {
+                  "charged_damage": 22,
+                  "echo_total_ratio": 0.8
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 14,
+          "circuit_credits_cost": 30000,
+          "flux_cost": 3000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 40000,
+          "flux_cost": 4000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Normal ve dördüncü ana hasar birlikte; yankı oranı ayrıca artmaz. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "burst_cannon",
+      "name_tr": "Seri Top",
+      "rarity": "common",
+      "category": "saldırı",
+      "arena": 4,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 240,
+        "damage": 8,
+        "period_ms": 2100,
+        "parameters": {
+          "shots": 3,
+          "spacing_ms": 200
+        }
+      },
+      "decision": "koru",
+      "base_changes": {},
+      "final_rule_tr": "Aynı hedefe 0 / 0,2 / 0,4 sn zamanlarında 3×8 hasar; çevrim 2,1 sn. Hedef ölürse kalan seri iptal.",
+      "counterplay_tr": "Blok yükünü küçük ilk mermiyle harcar; kalın Zırha karşı her mermi ayrı azaltılır.",
+      "presentation_tr": "Üç ayrı mermi ve üç kısa isabet; tek büyük hasar sayısı kullanılmaz.",
+      "primary_field": "damage",
+      "primary_scope_tr": "Her seri mermisinin hasarı; mermi sayısı ve aralığı aynı.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 5,
+          "circuit_credits_cost": 1000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Her seri mermisinin hasarı; mermi sayısı ve aralığı aynı. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 8,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Sıkı Seri",
+              "description_tr": "Mermiler arası süre 0,2 → 0,15 sn; üç mermi ve çevrim aynı.",
+              "changes": {
+                "set": {
+                  "spacing_ms": 150
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Ağır Mermi",
+              "description_tr": "Her merminin hasarı +%10.",
+              "changes": {
+                "multiply": {
+                  "damage": 1.1
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 11,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 14,
+          "circuit_credits_cost": 8000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Her seri mermisinin hasarı; mermi sayısı ve aralığı aynı. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shield_breaker",
+      "name_tr": "Kalkan Kırıcı",
+      "rarity": "epic",
+      "category": "saldırı",
+      "arena": 10,
+      "current_live": {
+        "current_cost": 4,
+        "hp": 230,
+        "damage": 22,
+        "period_ms": 2200,
+        "parameters": {
+          "bypass_periodic_block": true
+        }
+      },
+      "decision": "genislet",
+      "base_changes": {
+        "damage": 20,
+        "shield_strip_ratio": 0.5
+      },
+      "final_rule_tr": "2,2 sn çevrimde 20 hasar; periyodik tek-isabet bloğunu aşar. Vuruştan hemen önce hedefteki gerçek CAN kalkanından ana ham hasarın %50’sine kadar ek kalkan siler; fazladan kısım CAN’a taşmaz.",
+      "counterplay_tr": "Fazı ve zırhı delmez; kalkan yokken ek hasar yok. Tampon havuzu da CAN kalkanı sayılır. Ek kalkan silme onarım veya Akım üretmez.",
+      "presentation_tr": "Turuncu çatlak işareti ve yalnız gerçekten silinen kalkanın parçaları.",
+      "primary_field": "damage",
+      "primary_scope_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 7,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 10,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Derin Kırıcı",
+              "description_tr": "Ek kalkan silme bütçesi %50 → %75; CAN hasarı aynı.",
+              "changes": {
+                "set": {
+                  "shield_strip_ratio": 0.75
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Ağır Kırıcı",
+              "description_tr": "Ana hasar +%10; ek kalkan oranı %50 kalır.",
+              "changes": {
+                "multiply": {
+                  "damage": 1.1
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 13,
+          "circuit_credits_cost": 30000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 40000,
+          "flux_cost": 3000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Ana atış hasarı; ikincil etki oranları ayrıca artmaz. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shield",
+      "name_tr": "Kalkan",
+      "rarity": "common",
+      "category": "savunma",
+      "arena": 1,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 240,
+        "damage": 0,
+        "period_ms": 1200,
+        "parameters": {
+          "block_ratio": 0.6
+        }
+      },
+      "decision": "koru",
+      "base_changes": {
+        "hp": 360
+      },
+      "final_rule_tr": "1,2 sn dolumla, kendisine gelen sıradaki uygun isabetin %60’ını engeller; bir yük saklar.",
+      "counterplay_tr": "Seri küçük darbeler yükü tüketir. Sürekli %60 azaltım değildir.",
+      "presentation_tr": "Tek kalkan yükü hazırken parıltı; harcanınca tek çatlama.",
+      "primary_field": "block_ratio",
+      "primary_scope_tr": "Blok yüzdesi (yüzde puan değil çarpan).",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 5,
+          "circuit_credits_cost": 1000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Blok yüzdesi (yüzde puan değil çarpan). İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 8,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Güçlü Blok",
+              "description_tr": "Blok oranı %60 → %68.",
+              "changes": {
+                "set": {
+                  "block_ratio": 0.68
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Hızlı Blok",
+              "description_tr": "Blok dolum çevrimi −%15.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.85
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 11,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 14,
+          "circuit_credits_cost": 8000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Blok yüzdesi (yüzde puan değil çarpan). İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "armor",
+      "name_tr": "Zırh",
+      "rarity": "common",
+      "category": "savunma",
+      "arena": 1,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 288,
+        "damage": 0,
+        "period_ms": 0,
+        "parameters": {
+          "reduction": 0.25
+        }
+      },
+      "decision": "koru",
+      "base_changes": {
+        "hp": 432
+      },
+      "final_rule_tr": "Kendi aldığı uygun saldırı hasarını sürekli %25 azaltır. Otomatik onarım yok.",
+      "counterplay_tr": "Ray Topu azaltımın bir kısmını deler. Arkadaşları korumaz.",
+      "presentation_tr": "Sabit zırh plakası ve engellenen gerçek miktarda metal kıvılcım.",
+      "primary_field": "reduction",
+      "primary_scope_tr": "Kendi zırh azaltımı (yüzde puan değil çarpan).",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 5,
+          "circuit_credits_cost": 1000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Kendi zırh azaltımı (yüzde puan değil çarpan). İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 8,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Kalın Plaka",
+              "description_tr": "Azaltım %25 → %30.",
+              "changes": {
+                "set": {
+                  "reduction": 0.3
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Sağlam Gövde",
+              "description_tr": "Azami CAN +%12.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.12
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 11,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%4",
+              "description_tr": "Kendi zırh azaltımı (yüzde puan değil çarpan). İlgili mevcut değer ×1.04.",
+              "changes": {
+                "job_multiplier": 1.04
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 14,
+          "circuit_credits_cost": 8000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Kendi zırh azaltımı (yüzde puan değil çarpan). İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "barrier",
+      "name_tr": "Bariyer",
+      "rarity": "common",
+      "category": "savunma",
+      "arena": 2,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 360,
+        "damage": 0,
+        "period_ms": 0,
+        "parameters": {}
+      },
+      "decision": "koru",
+      "base_changes": {
+        "hp": 540
+      },
+      "final_rule_tr": "540 CAN. Mevcut sınıf hedef sırası içindeki Bariyer önceliğiyle ateşi karşılar. Yeni taunt/hedef değiştirme kuralı yok.",
+      "counterplay_tr": "Saldırmaz, kendi kendini onarmaz. En güçlü silahın tek başına arkasında saklanmasını otomatik zafer yapan aura yok.",
+      "presentation_tr": "Büyük siper gövdesi; can kaybı ve onarım açık görünür.",
+      "primary_field": "healing_received_multiplier",
+      "primary_scope_tr": "Bariyerin aldığı onarım çarpanı; taban 1.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 5,
+          "circuit_credits_cost": 1000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Bariyerin aldığı onarım çarpanı; taban 1. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 8,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Derin Siper",
+              "description_tr": "Azami CAN +%12.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.12
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Takviyeli Siper",
+              "description_tr": "Kendi gelen saldırı hasarını %6 azaltır; hedef sırası aynı.",
+              "changes": {
+                "set": {
+                  "reduction": 0.06
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 11,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%4",
+              "description_tr": "Bariyerin aldığı onarım çarpanı; taban 1. İlgili mevcut değer ×1.04.",
+              "changes": {
+                "job_multiplier": 1.04
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 14,
+          "circuit_credits_cost": 8000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Bariyerin aldığı onarım çarpanı; taban 1. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reflector",
+      "name_tr": "Yansıtıcı",
+      "rarity": "rare",
+      "category": "savunma",
+      "arena": 4,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 240,
+        "damage": 0,
+        "period_ms": 1500,
+        "parameters": {
+          "reflect_ratio": 0.3
+        }
+      },
+      "decision": "netlestir",
+      "base_changes": {
+        "hp": 360
+      },
+      "final_rule_tr": "1,5 sn dolumda kendisine gelen uygun doğrudan saldırının gerçek CAN kaybının %30’unu aynı kaynağa geri yollar. Ölümcül son isabet de bir kez yansıyabilir.",
+      "counterplay_tr": "Emilen kalkan/overkill yansıtılmaz. Yansıma kendini/başka yansımayı veya Akım bonusunu tetiklemez. Alan/süreli/ikincil hasar yeni yansıma açmaz.",
+      "presentation_tr": "Gelen kaynakla kısa geri dönüş çizgisi; yalnız gerçek karşı hasar gösterilir.",
+      "primary_field": "reflect_ratio",
+      "primary_scope_tr": "Gerçek CAN kaybından yansıyan oran.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 6,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Gerçek CAN kaybından yansıyan oran. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 9,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Güçlü Yansıma",
+              "description_tr": "Gerçek CAN kaybından dönüş %30 → %40.",
+              "changes": {
+                "set": {
+                  "reflect_ratio": 0.4
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Hızlı Ayna",
+              "description_tr": "Yansıma dolum çevrimi −%15.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.85
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 12,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Gerçek CAN kaybından yansıyan oran. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guardian_dome",
+      "name_tr": "Muhafız Kubbe",
+      "rarity": "rare",
+      "category": "savunma",
+      "arena": 6,
+      "current_live": {
+        "current_cost": 4,
+        "hp": 320,
+        "damage": 0,
+        "period_ms": 2000,
+        "parameters": {
+          "guard_ratio": 0.35
+        }
+      },
+      "decision": "koru",
+      "base_changes": {
+        "hp": 480
+      },
+      "final_rule_tr": "2 sn dolumla başka dosta gelen bir uygun isabetin %35’ini engeller. İlk uygun hazır Kubbe mevcut deterministik sırayla seçilir; kendine işlemez.",
+      "counterplay_tr": "Aynı isabette en çok bir Kubbe. Bu paylaşılmış CAN aktarımı değil doğrudan önlemedir; yansıma ve onarım türetmez.",
+      "presentation_tr": "Kaynak Kubbeden gerçekten korunan hedefe mavi bağlantı ve tek darbe yayı.",
+      "primary_field": "guard_ratio",
+      "primary_scope_tr": "Başka dosta bir isabette sağlanan engelleme oranı.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 6,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Başka dosta bir isabette sağlanan engelleme oranı. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 9,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Güçlü Kubbe",
+              "description_tr": "Engelleme %35 → %42.",
+              "changes": {
+                "set": {
+                  "guard_ratio": 0.42
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Hızlı Kubbe",
+              "description_tr": "Koruma dolum çevrimi −%15.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.85
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 12,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Başka dosta bir isabette sağlanan engelleme oranı. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase_armor",
+      "name_tr": "Faz Zırhı",
+      "rarity": "legendary",
+      "category": "savunma",
+      "arena": 8,
+      "current_live": {
+        "current_cost": 4,
+        "hp": 280,
+        "damage": 0,
+        "period_ms": 6000,
+        "parameters": {
+          "phase_ms": 1000
+        }
+      },
+      "decision": "koru",
+      "base_changes": {
+        "hp": 420
+      },
+      "final_rule_tr": "Mevcut 6 sn Faz çevriminin 1 sn penceresinde gelen saldırı boşa çıkar. Pencere dışında ek azaltım/onarım yok; kendisini korur.",
+      "counterplay_tr": "Pencere açık görünür. EMP altında Faz çalışmaz; hazır konumdaki diğer Fazlar tüm devreyi korumaz. Yeni yerleşimle devreye genel bağışıklık verilmez.",
+      "presentation_tr": "Yalnız kendi gövdesinde yarı saydam titreşim; Faz açık/kapalı keskin anlaşılır.",
+      "primary_field": "phase_ms",
+      "primary_scope_tr": "Faz penceresi süresi.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 8,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Faz penceresi süresi. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 11,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "Uzun Faz",
+              "description_tr": "Faz penceresi 1 → 1,2 sn.",
+              "changes": {
+                "set": {
+                  "phase_ms": 1200
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Sık Faz",
+              "description_tr": "Faz çevrimi 6 → 5,4 sn.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.9
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 14,
+          "circuit_credits_cost": 30000,
+          "flux_cost": 3000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 40000,
+          "flux_cost": 4000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Faz penceresi süresi. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "buffer_shield",
+      "name_tr": "Tampon",
+      "rarity": "epic",
+      "category": "savunma",
+      "arena": 7,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 250,
+        "damage": 0,
+        "period_ms": 6000,
+        "parameters": {
+          "shield_hp": 60,
+          "duration_ms": 5000
+        }
+      },
+      "decision": "yeniden_tanimla",
+      "base_changes": {
+        "period_ms": 8000,
+        "absorb_ratio": 0.7,
+        "heal_conversion_ratio": 0.4,
+        "hp": 375
+      },
+      "final_rule_tr": "8 sn çevrimde mevcut dost seçim kuralıyla bir hedefe 5 sn yaşayan 60 CAN emilim havuzu. Her uygun isabetin en çok %70’i havuzdan emilir. Gerçek emilenin %40’ı en yaralı iki diğer dost modüle onarım olarak pay edilir; çekirdek ve havuz sahibi hariç.",
+      "counterplay_tr": "Havuz başına temel en çok 24 onarım. Kalkan Kırıcı ile silinen havuz onarım üretmez. Aynı hedefte tek Tampon, aynı isabette tek dönüşüm; boşa giden onarım bankalanmaz.",
+      "presentation_tr": "Hedefte havuz değeri olan mavi kalkan rozeti; her gerçek emilimden yaralılara ince yeşil paketler.",
+      "primary_field": "shield_hp",
+      "primary_scope_tr": "Tampon havuzu; emilim ve dönüşüm yüzdeleri ayrıca artmaz.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 7,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Tampon havuzu; emilim ve dönüşüm yüzdeleri ayrıca artmaz. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 10,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Yoğun Tampon",
+              "description_tr": "Havuz 60 → 75; dönüşüm %40 → %30. Havuz başına en çok 22,5 onarım.",
+              "changes": {
+                "set": {
+                  "shield_hp": 75,
+                  "heal_conversion_ratio": 0.3
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Onaran Tampon",
+              "description_tr": "Havuz 60 → 50; dönüşüm %40 → %60. Havuz başına en çok 30 onarım.",
+              "changes": {
+                "set": {
+                  "shield_hp": 50,
+                  "heal_conversion_ratio": 0.6
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 13,
+          "circuit_credits_cost": 30000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 40000,
+          "flux_cost": 3000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Tampon havuzu; emilim ve dönüşüm yüzdeleri ayrıca artmaz. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "last_bastion",
+      "name_tr": "Son Siper",
+      "rarity": "legendary",
+      "category": "savunma",
+      "arena": 12,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 320,
+        "damage": 0,
+        "period_ms": 0,
+        "parameters": {
+          "core_shield_hp": 75
+        }
+      },
+      "decision": "genislet",
+      "base_changes": {
+        "hp": 420,
+        "ally_shield_total": 40,
+        "ally_shield_duration_ms": 5000
+      },
+      "final_rule_tr": "420 CAN. Her savaş örneği yıkılırken bir kez kendi canlı çekirdeğine 75 kalıcı CAN kalkanı ve en yaralı iki dost modüle toplam 40 CAN / 5 sn kalkan bırakır.",
+      "counterplay_tr": "Aynı aile kalkanları toplanmaz; kalanla yeni değerlerden büyük olanı tutulur. Çekirdeği diriltmez; devrede canlı modül yoksa ek 40 kaybolur. Hücre enkazı aynı kalır.",
+      "presentation_tr": "Yıkımda çekirdeğe kalın olmayan altın bağ ve en çok iki mavi koruma paketi; kaynak başına bir defa.",
+      "primary_field": "core_shield_hp",
+      "primary_scope_tr": "Son Siperin çekirdek ve dost kalkan bütçeleri birlikte; yalnız bir defa.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 8,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Son Siperin çekirdek ve dost kalkan bütçeleri birlikte; yalnız bir defa. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 11,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "Çekirdek Mirası",
+              "description_tr": "Çekirdek kalkanı 75 → 90; dost toplamı 40 → 25. Toplam 115 aynı.",
+              "changes": {
+                "set": {
+                  "core_shield_hp": 90,
+                  "ally_shield_total": 25
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Devre Mirası",
+              "description_tr": "Çekirdek kalkanı 75 → 60; dost toplamı 40 → 60. Toplam 120.",
+              "changes": {
+                "set": {
+                  "core_shield_hp": 60,
+                  "ally_shield_total": 60
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 14,
+          "circuit_credits_cost": 30000,
+          "flux_cost": 3000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%4",
+              "description_tr": "Son Siperin çekirdek ve dost kalkan bütçeleri birlikte; yalnız bir defa. İlgili mevcut değer ×1.04.",
+              "changes": {
+                "job_multiplier": 1.04
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 40000,
+          "flux_cost": 4000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Son Siperin çekirdek ve dost kalkan bütçeleri birlikte; yalnız bir defa. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "repair",
+      "name_tr": "Onarım",
+      "rarity": "common",
+      "category": "taktik",
+      "arena": 1,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 180,
+        "damage": 0,
+        "period_ms": 2000,
+        "parameters": {
+          "heal": 15,
+          "duration_ms": 3000
+        }
+      },
+      "decision": "koru",
+      "base_changes": {},
+      "final_rule_tr": "Mevcut en yaralı uygun dost modüle toplam 15 CAN’ı 3 darbeye yayar. İlk darbe uygulamada, diğerleri +1/+2 sn; etki kilidi 3 sn. 2 sn çevrim hazır olsa bile aynı hedefteki yenilenme üst üste binmez. Çekirdeği ve kendini onarmaz.",
+      "counterplay_tr": "Tam CAN’a aşan miktar kaybolur; başka Onarım aynı etkili hedefe yük bindirmez. Kaynak ölse de verilmiş süreli paket tamamlanır.",
+      "presentation_tr": "Kaynak-hedef yeşil bağ, her gerçek onarım darbesinde küçük sayı; toplamı tekrar ekleyen sahte sayı yok.",
+      "primary_field": "heal",
+      "primary_scope_tr": "Onarımın toplam miktarı; her darbe ayrı çarpılmaz.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 5,
+          "circuit_credits_cost": 1000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Onarımın toplam miktarı; her darbe ayrı çarpılmaz. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 8,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Yoğun Onarım",
+              "description_tr": "Toplam onarım +%20; süre ve darbe sayısı aynı.",
+              "changes": {
+                "multiply": {
+                  "heal": 1.2
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "İlk Yardım",
+              "description_tr": "Aynı toplamın ilk darbeye düşen payı 1/3 → %50; sonraki iki darbe %25/%25. Toplam/süre/çevrim aynı.",
+              "changes": {
+                "set": {
+                  "heal_pulse_weights": [
+                    0.5,
+                    0.25,
+                    0.25
+                  ]
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 11,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 14,
+          "circuit_credits_cost": 8000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Onarımın toplam miktarı; her darbe ayrı çarpılmaz. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "amplifier",
+      "name_tr": "Güçlendirici",
+      "rarity": "common",
+      "category": "taktik",
+      "arena": 1,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 162,
+        "damage": 0,
+        "period_ms": 3000,
+        "parameters": {
+          "shot_bonus": 0.25
+        }
+      },
+      "decision": "koru",
+      "base_changes": {},
+      "final_rule_tr": "3 sn çevrimde mevcut dost silah seçicisiyle bir silahın sonraki gerçek atışına +%25 yük. Aynı aileden yalnız en güçlü tek yük.",
+      "counterplay_tr": "Yük birikmez; çekirdek gücü hedef olmaz. Seri Topta yalnız tek mermi; ikincil hedef oranları aynı atışın bonuslu ana bütçesinden hesaplanır.",
+      "presentation_tr": "Güçlendiriciden seçilen silaha tek yeşil yük; atışla tüketilen simge.",
+      "primary_field": "shot_bonus",
+      "primary_scope_tr": "Bir sonraki atış bonusu yüzdesi.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 5,
+          "circuit_credits_cost": 1000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Bir sonraki atış bonusu yüzdesi. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 8,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Güçlü Yük",
+              "description_tr": "Sonraki atış bonusu %25 → %30.",
+              "changes": {
+                "set": {
+                  "shot_bonus": 0.3
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Sık Yükleme",
+              "description_tr": "Yükleme çevrimi −%12.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.88
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 11,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 14,
+          "circuit_credits_cost": 8000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Bir sonraki atış bonusu yüzdesi. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "emp",
+      "name_tr": "EMP",
+      "rarity": "rare",
+      "category": "taktik",
+      "arena": 2,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 144,
+        "damage": 0,
+        "period_ms": 6000,
+        "parameters": {
+          "duration_ms": 1000,
+          "recovery_ms": 3000
+        }
+      },
+      "decision": "koru",
+      "base_changes": {},
+      "final_rule_tr": "6 sn çevrimde mevcut sabotaj seçicisinin bir hedefini 1 sn durdurur; bitişinden sonra 3 sn yeniden EMP hedefi olamama koruması.",
+      "counterplay_tr": "İki EMP süresiz kilit kuramaz. Kesinti büyümesi 3 sn toparlanmayı küçültmez. Çekirdeğin aktif gücü bu kartın hedefi değildir.",
+      "presentation_tr": "Tek elektrik halkası, hedefte kesinti süresi ve ayrı toparlanma işareti.",
+      "primary_field": "duration_ms",
+      "primary_scope_tr": "EMP kesinti süresi; toparlanma korunur.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 6,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "EMP kesinti süresi; toparlanma korunur. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 9,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Uzun Kesinti",
+              "description_tr": "Kesinti 1 → 1,2 sn; toparlanma 3 sn kalır.",
+              "changes": {
+                "set": {
+                  "duration_ms": 1200
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Hızlı Darbe",
+              "description_tr": "EMP çevrimi −%10; kesinti ve toparlanma aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.9
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 12,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "EMP kesinti süresi; toparlanma korunur. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "virus",
+      "name_tr": "Yavaşlatıcı Virüs",
+      "rarity": "epic",
+      "category": "taktik",
+      "arena": 11,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 160,
+        "damage": 0,
+        "period_ms": 7000,
+        "parameters": {
+          "duration_ms": 4000,
+          "interval_penalty": 0.25
+        }
+      },
+      "decision": "uzmanligi_koru",
+      "base_changes": {},
+      "final_rule_tr": "7 sn çevrimde mevcut sabotaj seçicisinin bir hedefinin eylem aralığını 4 sn boyunca %25 uzatır. Yeni bir hasar veya Akım sistemi değildir.",
+      "counterplay_tr": "Tek hedefte tek Virüs; güçlü mevcut etki tamamlanır, aynı/zayıf süre yenilemez. Arındırıcı temizler. Çekirdeğin dolumunu ve aktif gücünü etkilemez.",
+      "presentation_tr": "Hedefte mor çalışma yayı yavaşlar; takvim bitince normal tempoya döner.",
+      "primary_field": "interval_penalty",
+      "primary_scope_tr": "Virüs aralık uzatma yüzdesi; yan onarım cezası ayrıca artmaz.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 7,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Virüs aralık uzatma yüzdesi; yan onarım cezası ayrıca artmaz. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 10,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Yoğun Yavaşlık",
+              "description_tr": "Aralık uzatma %25 → %30; süre aynı.",
+              "changes": {
+                "set": {
+                  "interval_penalty": 0.3
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Onarım Bozucu",
+              "description_tr": "Aralık uzatma %25 → %15; aynı 4 sn boyunca hedefin aldığı onarım −%25. Kalkanı azaltmaz.",
+              "changes": {
+                "set": {
+                  "interval_penalty": 0.15,
+                  "healing_received_penalty": 0.25
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 13,
+          "circuit_credits_cost": 30000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 40000,
+          "flux_cost": 3000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Virüs aralık uzatma yüzdesi; yan onarım cezası ayrıca artmaz. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cleanser",
+      "name_tr": "Arındırıcı",
+      "rarity": "rare",
+      "category": "taktik",
+      "arena": 3,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 200,
+        "damage": 0,
+        "period_ms": 4000,
+        "parameters": {}
+      },
+      "decision": "uzmanligi_koru",
+      "base_changes": {},
+      "final_rule_tr": "4 sn çevrimde tek dosttan tek olumsuz etki siler. Mevcut İmha İşareti hedef önceliği korunur; seçilmiş hedefte silme sırası İmha → Plazma İzi → Takip Füze Yükü → EMP → Virüs.",
+      "counterplay_tr": "Silerken bedava onarım yapmaz. Geçerli olumsuz etki yoksa dolum harcanmaz. Kalkan, enkaz ve dördüncü isabet sayacı olumsuz etki değildir.",
+      "presentation_tr": "Arındırıcıdan gerçek hedefe beyaz-yeşil çizgi; silinen tek rozet görünür biçimde söner.",
+      "primary_field": "cleanse_cadence",
+      "primary_scope_tr": "Arındırma çevrimi kısaltılır; silinen etki sayısı aynı.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 6,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Arındırma −%3",
+              "description_tr": "Arındırma çevrimi −%3; silinen etki sayısı aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.97
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 9,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Sık Arındırma",
+              "description_tr": "Arındırma çevrimi −%15; bir etki siler.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.85
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Temiz Koruma",
+              "description_tr": "Başarılı arındırmadan sonra aynı hedefte 2 sn tek kontrol koruması: sonraki EMP/Virüsün süresi −%30. İmha/hasar yüklerini engellemez; birikmez.",
+              "changes": {
+                "set": {
+                  "cleanse_control_guard_ms": 2000,
+                  "cleanse_control_duration_reduction": 0.3
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 12,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "Arındırma −%6",
+              "description_tr": "Arındırma çevrimi −%6; silinen etki sayısı aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.94
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "speed_relay",
+      "name_tr": "Hız Rölesi",
+      "rarity": "rare",
+      "category": "taktik",
+      "arena": 5,
+      "current_live": {
+        "current_cost": 3,
+        "hp": 170,
+        "damage": 0,
+        "period_ms": 5000,
+        "parameters": {
+          "next_interval_reduction": 0.2
+        }
+      },
+      "decision": "koru",
+      "base_changes": {},
+      "final_rule_tr": "5 sn çevrimde mevcut uygun dost silah seçicisiyle tek hız yükü verir. Sonraki atıştan sonraki bekleme %20 kısalır; mevcut hazırlığı/seri içi mermileri atlatmaz.",
+      "counterplay_tr": "Yükler birikmez; çekirdeğin ateşine veya dolumuna uygulanmaz. Birikmiş anlık atış zinciri üretmez.",
+      "presentation_tr": "Hedef silaha turkuaz ok ve sonraki beklemede kısalan yay.",
+      "primary_field": "next_interval_reduction",
+      "primary_scope_tr": "Sonraki bekleme kısaltma yüzdesi.",
+      "talents": [
+        {
+          "tier": "0",
+          "kind": "basic",
+          "level": 6,
+          "circuit_credits_cost": 2000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%3",
+              "description_tr": "Sonraki bekleme kısaltma yüzdesi. İlgili mevcut değer ×1.03.",
+              "changes": {
+                "job_multiplier": 1.03
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "1",
+          "kind": "signature",
+          "level": 9,
+          "circuit_credits_cost": 4000,
+          "flux_cost": 0,
+          "choices": [
+            {
+              "name_tr": "Güçlü Hız Yükü",
+              "description_tr": "Bekleme kısaltması %20 → %25.",
+              "changes": {
+                "set": {
+                  "next_interval_reduction": 0.25
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "Sık Röle",
+              "description_tr": "Yükleme çevrimi −%12.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.88
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "2",
+          "kind": "tuning",
+          "level": 12,
+          "circuit_credits_cost": 10000,
+          "flux_cost": 1000,
+          "choices": [
+            {
+              "name_tr": "Çevrim −%4",
+              "description_tr": "Atış/eylem çevrimi −%4; hazırlık, seri içi aralık ve etki süresi aynı.",
+              "changes": {
+                "multiply": {
+                  "period_ms": 0.96
+                }
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%5",
+              "description_tr": "Azami CAN ×1.05.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.05
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        },
+        {
+          "tier": "3",
+          "kind": "mastery",
+          "level": 15,
+          "circuit_credits_cost": 20000,
+          "flux_cost": 2000,
+          "choices": [
+            {
+              "name_tr": "İş gücü +%6",
+              "description_tr": "Sonraki bekleme kısaltma yüzdesi. İlgili mevcut değer ×1.06.",
+              "changes": {
+                "job_multiplier": 1.06
+              },
+              "id": "power"
+            },
+            {
+              "name_tr": "CAN +%8",
+              "description_tr": "Azami CAN ×1.08.",
+              "changes": {
+                "multiply": {
+                  "hp": 1.08
+                }
+              },
+              "id": "resilience"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "season_backlog": [
+    {
+      "old": "Yankı Rölesi",
+      "decision": "ertelendi",
+      "reason": "Kuantum yankısıyla ve Güçlendiriciyle görev çakışıyor; ücretsiz ek saldırı zinciri riski."
+    },
+    {
+      "old": "Kor Fırlatıcı",
+      "decision": "yeniden_tasarlanacak",
+      "reason": "Plazma iziyle aynı sürekli hasar görevini tekrar etmemeli."
+    },
+    {
+      "old": "Darbe Muhafızı",
+      "decision": "aday",
+      "reason": "Tampondan ayrışan, gerçek alınan hasarla bir kez dolan kendine kalkan; ayrıntısı sezon öncesi test edilecek."
+    },
+    {
+      "old": "Toparlanma Feneri",
+      "decision": "ertelendi",
+      "reason": "Son Siper ve Onarımla görev çakışması; ölüm→onarım döngüsü ölçülmeden eklenmez."
+    }
+  ],
+  "balance_revision": "V7.1 defense HP +50% versus the V7 initial values; selected by paired policy tests, no class quota or hidden class bonus."
+}

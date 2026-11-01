@@ -1,0 +1,5 @@
+test("approved cooling mist has one renderer even when the canvas effects are available",()=>{
+  const f=fixture();let duplicates=0;f.fx.fx={clear(){},cool(){duplicates++;}};
+  f.fx.receive([f.event('module_cooled',{player_id:'own',source_module_id:'cooler',target_module_id:'laser',heat_before:20,heat_after:5})],f.snapshot);
+  assert.equal(duplicates,0);assert.equal(f.fx.effects.size,0);assert.deepEqual(f.sounds,[]);
+});

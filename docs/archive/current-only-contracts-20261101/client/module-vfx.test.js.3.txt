@@ -1,0 +1,4 @@
+test("cooling distributes real targets at 240ms intervals with one sound and no late target snap",()=>{
+  const f=fixture();f.fx.receive([f.event('module_cooled',{player_id:'own',source_module_id:'cooler',target_module_id:'laser',heat_before:20,heat_after:5})],f.snapshot);
+  assert.equal(f.fx.effects.size,0);assert.deepEqual(f.sounds,[]);f.advance(1000);assert.equal(f.fx.effects.size,0);
+});

@@ -77,9 +77,9 @@ test("heartbeat RTT uses the same client clock and ignores stale/unmatched echoe
   socket.onopen();
   timer();
   now = 225;
-  socket.onmessage({data:JSON.stringify({version:1, type:"heartbeat_ack", payload:{sent_at_ms:100}})});
+  socket.onmessage({data:JSON.stringify({version: 2, type:"heartbeat_ack", payload:{sent_at_ms:100}})});
   assert.equal(manager.lastHeartbeatRoundTripMs, 125);
-  socket.onmessage({data:JSON.stringify({version:1, type:"heartbeat_ack", payload:{sent_at_ms:1791400000000}})});
+  socket.onmessage({data:JSON.stringify({version: 2, type:"heartbeat_ack", payload:{sent_at_ms:1791400000000}})});
   assert.equal(manager.lastHeartbeatRoundTripMs, 125);
   manager.disconnect();
 });
@@ -87,16 +87,16 @@ test("heartbeat RTT uses the same client clock and ignores stale/unmatched echoe
 test("a finished snapshot can present combat but only a published terminal authorizes reward sync", () => {
   const state = new RelayPvPClientState({playerId:"a",sessionId:"m"});
   const snapshot = {session_id:"m", status:"finished", tick:10, result_delivery_pending:true};
-  state.applyServerEnvelope({version:1,type:"snapshot",payload:snapshot});
+  state.applyServerEnvelope({version: 2,type:"snapshot",payload:snapshot});
   assert.equal(state.phase, "finished");
   assert.equal(state.resultDeliveryReady, false);
-  state.applyServerEnvelope({version:1,type:"reconnect_state",payload:{snapshot,final_result:null}});
+  state.applyServerEnvelope({version: 2,type:"reconnect_state",payload:{snapshot,final_result:null}});
   assert.equal(state.resultDeliveryReady, false);
-  state.applyServerEnvelope({version:1,type:"match_finished",payload:{session_id:"m"}});
+  state.applyServerEnvelope({version: 2,type:"match_finished",payload:{session_id:"m"}});
   assert.equal(state.resultDeliveryReady, true);
   state.bindSession("new");
   assert.equal(state.resultDeliveryReady, false);
-  state.applyServerEnvelope({version:1,type:"reconnect_state",payload:{snapshot:{...snapshot,session_id:"new",result_delivery_pending:false},final_result:{session_id:"new"}}});
+  state.applyServerEnvelope({version: 2,type:"reconnect_state",payload:{snapshot:{...snapshot,session_id:"new",result_delivery_pending:false},final_result:{session_id:"new"}}});
   assert.equal(state.resultDeliveryReady, true);
   state.reset();
   assert.equal(state.resultDeliveryReady, false);
@@ -109,7 +109,7 @@ test("a socket lost during result persistence reconnects until the published res
   const manager = new RelayWebSocketConnectionManager({pvpState:state,
     createWebSocket:() => { const socket = {readyState:1,send() {},close() {}}; sockets.push(socket); return socket; },
     setTimer:run => { timers.set(++timerId, run); return timerId; }, clearTimer:id => timers.delete(id)});
-  const receive = (socket, type, payload) => socket.onmessage({data:JSON.stringify({version:1,type,payload})});
+  const receive = (socket, type, payload) => socket.onmessage({data:JSON.stringify({version: 2,type,payload})});
   manager.connect("ws://test");
   sockets[0].onopen();
   receive(sockets[0], "snapshot", {session_id:"m",status:"finished",tick:10,result_delivery_pending:true});

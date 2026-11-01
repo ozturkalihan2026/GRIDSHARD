@@ -10,8 +10,8 @@ test("Beta 38.1 FCT and audio ownership", async ({ page }) => {
   );
   await page.goto("/?e2e=1", { waitUntil:"domcontentloaded" });
   await waitForParticipantReady(page);
-  await page.evaluate(() => window.__GRIDSHARD_TEST_API.startQuickLocalBattle());
-  await expect(page.locator("body")).toHaveAttribute("data-local-status", "battle");
+  await page.locator("#home-battle-button").click();
+  await expect(page.locator("body")).toHaveAttribute("data-online-status", "battle", {timeout:40000});
   await expect(page.locator("body")).toHaveAttribute("data-audio-state", /^(battle_intro|battle|battle_pressure|critical_core)$/);
 
   // The countdown deliberately blocks input. The 2.5D board's bounding-box
@@ -33,10 +33,10 @@ test("Beta 38.1 FCT and audio ownership", async ({ page }) => {
 
   await page.evaluate(() => {
     window.__GRIDSHARD_TEST_API.emitFloatingFeedback(
-      "core-1", "-4 ENERJİ", "energy"
+      "core-1", "+1 AKIM", "energy"
     );
   });
-  await expect(page.locator('.battle-floating-feedback.energy', { hasText:"-4 ENERJİ" })).toHaveCount(1);
+  await expect(page.locator('.battle-floating-feedback.energy', { hasText:"+1 AKIM" })).toHaveCount(1);
 
   expect(errors).toEqual([]);
 });

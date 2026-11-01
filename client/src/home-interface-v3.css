@@ -6,6 +6,14 @@
   --ui-art-message:url("../assets/ui/home-v3/message.webp");
   --ui-art-message-open:url("../assets/ui/home-v3/message-open.webp");
 }
+/* Physical display corners can clip controls even with zero DOM overflow. */
+:root body:not([data-app-screen="play"]) {
+  --gs-shell-bottom:max(86px,calc(74px + env(safe-area-inset-bottom,0px)));
+}
+:root body:not([data-app-screen="play"]) #app-bottom-dock {
+  width:min(calc(100vw - 32px),calc(var(--gs-phone-width) - 32px)) !important;
+  bottom:max(12px,env(safe-area-inset-bottom,0px)) !important;
+}
 .ui-art[data-ui-art="message-open"] { --ui-art-image:var(--ui-art-message-open); }
 
 /* Sabit bir grid satırı: görselin eski genişliği değeri/artıyı alt satıra itemez. */

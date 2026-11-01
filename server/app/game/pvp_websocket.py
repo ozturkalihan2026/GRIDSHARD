@@ -6,7 +6,7 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import Any, Protocol, Callable, Awaitable
 
-from .pvp_protocol import protocol_error_envelope
+from .pvp_protocol import protocol_error_envelope,PVP_PROTOCOL_VERSION
 from .pvp_protocol_handler import PvPProtocolHandler
 from .pvp_session import PvPSessionError, PvPSessionService
 from .models import BattleStatus
@@ -361,7 +361,7 @@ class PvPWebSocketAdapter:
         connection = self.registry.get(connection_id)
         async with connection.send_lock:
             return await self._deliver_locked(connection, {
-                "version": 1, "type": "reconnect_state", "request_id": request_id,
+                "version": PVP_PROTOCOL_VERSION, "type": "reconnect_state", "request_id": request_id,
                 "payload": self.service.reconnect_payload(connection.session_id, connection.player_id),
             })
 
@@ -434,7 +434,7 @@ class PvPWebSocketAdapter:
 
         async with connection.send_lock:
             response = {
-                "version": 1,
+                "version": PVP_PROTOCOL_VERSION,
                 "type": "snapshot",
                 "request_id": request_id,
                 "payload": self.service.snapshot(connection.session_id, connection.player_id),
@@ -463,7 +463,7 @@ class PvPWebSocketAdapter:
         )
 
         response = {
-            "version": 1,
+            "version": PVP_PROTOCOL_VERSION,
             "type": "events",
             "request_id": request_id,
             "payload": payload,
@@ -484,7 +484,7 @@ class PvPWebSocketAdapter:
                 connection.last_pushed_event_cursor = page["cursor"]
                 return None
             return await self._deliver_locked(connection, {
-                "version": 1, "type": "events", "request_id": "server-live-events", "payload": page,
+                "version": PVP_PROTOCOL_VERSION, "type": "events", "request_id": "server-live-events", "payload": page,
             })
 
     async def broadcast_live_events(self, session_id: str) -> int:
@@ -536,7 +536,7 @@ class PvPWebSocketAdapter:
             connection.player_id,
         )
         response = {
-            "version": 1,
+            "version": PVP_PROTOCOL_VERSION,
             "type": "match_finished",
             "request_id": "server-match-finished",
             "payload": payload,

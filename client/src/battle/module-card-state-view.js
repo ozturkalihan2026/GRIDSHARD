@@ -4,10 +4,9 @@
   // Persistent battle DOM only. Game state, localization and artwork stay in
   // their owners; this view never computes combat or restarts transient FX.
   class GridshardBattleCardStateView {
-    constructor({ document, mountIcon, onTooltip = () => {} }) {
+    constructor({ document, mountIcon }) {
       this.document = document;
       this.mountIcon = mountIcon;
-      this.onTooltip = onTooltip;
       this.views = new WeakMap();
     }
     create(model) {
@@ -17,7 +16,7 @@
       const overlay = this.element("span", "module-fx-overlay");
       overlay.setAttribute("aria-hidden", "true");
       card.append(icon, name, overlay);
-      this.views.set(card, { icon, name, rows:new Map(), heat:null, tooltip:null, artwork:null });
+      this.views.set(card, { icon, name, rows:new Map(), artwork:null });
       this.update(card, model);
       return card;
     }
@@ -119,37 +118,8 @@
         this.hidden(view.health,Boolean(model.coreDestroyed || model.hp<=0));
       }
       if (model.core && !model.enemy) this.style(card, "--core-charge", `${model.coreCharge}%`);
-      this.data(card, "powerState", model.powerState);
-      this.toggle(card, "energy-disconnected", Boolean(model.powerMessage));
-      this.attribute(card, "title", model.powerMessage ? `${model.title} · ${model.powerMessage}` : model.title);
-      this.attribute(card, "aria-label", model.coreLabel || model.powerMessage || null);
-      if (model.powerMessage && !view.tooltip) {
-        view.tooltip = this.element("span", "power-state-tooltip");
-        view.tooltip.setAttribute("role", "tooltip");
-        card.appendChild(view.tooltip);
-        // One listener per card; never capture an old module snapshot.
-        const place = () => { if (!view.tooltip.hidden) this.onTooltip(card, view.tooltip); };
-        card.addEventListener("pointerenter", place);
-        card.addEventListener("focusin", place);
-      }
-      if (view.tooltip) {
-        this.hidden(view.tooltip, !model.powerMessage);
-        this.text(view.tooltip, model.powerMessage || "");
-      }
-      const heatVisible = !model.core && (model.physical || model.heat > 0 || model.overheated);
-      this.toggle(card, "has-heat-bar", heatVisible);
-      if (heatVisible && !view.heat) {
-        view.heat = this.element("span", "module-heat-bar");
-        view.heat.setAttribute("role", "img");
-        const fill = this.document.createElement("i"); fill.setAttribute("aria-hidden", "true");
-        view.heat.appendChild(fill); card.appendChild(view.heat);
-      }
-      if (view.heat) {
-        this.hidden(view.heat, !heatVisible);
-        this.data(view.heat, "heatState", model.heatState);
-        this.style(view.heat, "--heat-percent", `${model.overheated ? 100 : Math.round(model.heat)}%`);
-        this.attribute(view.heat, "aria-label", model.heatLabel);
-      }
+      this.attribute(card, "title", model.title);
+      this.attribute(card, "aria-label", model.coreLabel || null);
       this.updateRow(card, view, "module-live-status-row", model.liveBadges || []);
       this.updateRow(card, view, "module-signature-row", model.signatureBadges || []);
     }

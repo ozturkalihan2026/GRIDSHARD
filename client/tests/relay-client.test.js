@@ -94,7 +94,7 @@ function createClient() {
 {
   const fs = require("fs");
   const appSource = fs.readFileSync(path.join(ROOT,"src/canon-data.js"),"utf8");
-  for (const name of ["Güçlendirici", "Darbe Topu", "Sönümleyici", "EMP"]) {
+  for (const name of ["Güçlendirici", "Darbe Topu", "Zırh", "EMP"]) {
     assert.ok(appSource.includes(`"${name}"`));
   }
 }
@@ -102,17 +102,7 @@ function createClient() {
 {
   const fs = require("fs");
   const canonSource = fs.readFileSync(path.join(ROOT,"src/canon-data.js"),"utf8");
-  const definitionIds = [
-    "laser",
-    "shield",
-    "battery",
-    "amplifier",
-    "cooler",
-    "repair",
-    "pulse_cannon",
-    "armor",
-    "emp",
-  ];
+  const definitionIds = ["laser", "pulse_cannon", "railgun", "missile_launcher", "drone_bay", "arc_cannon", "plasma_mortar", "quantum_repeater", "burst_cannon", "shield_breaker", "shield", "armor", "barrier", "reflector", "guardian_dome", "phase_armor", "buffer_shield", "last_bastion", "repair", "amplifier", "emp", "virus", "cleanser", "speed_relay"];
   for (const definitionId of definitionIds) {
     assert.ok(canonSource.includes(`"id": "${definitionId}"`));
   }
@@ -122,7 +112,7 @@ function createClient() {
 {
   const fs = require("fs");
   const src = fs.readFileSync(path.join(ROOT,"src/canon-data.js"),"utf8");
-  for (const name of ["Kapasitör","Ray Topu","Yansıtıcı","Bariyer","Hedefleme Bilgisayarı","Sinyal Bozucu"]) {
+  for (const name of ["Tampon","Ray Topu","Yansıtıcı","Bariyer","Arındırıcı","Hız Rölesi"]) {
     assert.ok(src.includes(`"${name}"`));
   }
 }
@@ -131,7 +121,7 @@ function createClient() {
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/canon-data.js"),"utf8");
-  for (const name of ["Füze Fırlatıcı","Dron Üssü","Ark Topu","Aşırı Hızlandırıcı","Virüs","Kesici"]) {
+  for (const name of ["Füze Fırlatıcı","Dron Üssü","Ark Topu","Seri Top","Yavaşlatıcı Virüs","Kalkan Kırıcı"]) {
     assert.ok(src.includes(`"${name}"`));
   }
 }
@@ -191,9 +181,9 @@ function createClient() {
   const fs = require("fs");
   const src = fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
 
-  assert.ok(src.includes('powerState:flowing ? "flowing" : required > 0 ? "disconnected" : "passive"'));
+  assert.ok(src.includes("operational:serverModule.operational !== false"));
   const view=fs.readFileSync(path.join(ROOT,"src/battle/module-card-state-view.js"),"utf8");
-  assert.ok(view.includes('this.toggle(card, "energy-disconnected", Boolean(model.powerMessage));'));
+  assert.ok(!view.includes("powerMessage"));
 }
 
 
@@ -205,7 +195,7 @@ function createClient() {
   assert.ok(!src.includes("modulePorts"));
   assert.ok(!src.includes("areConnected"));
   const view = fs.readFileSync(path.join(ROOT,"src/battle/module-card-state-view.js"),"utf8");
-  assert.ok(view.includes("energy-disconnected"));
+  assert.ok(!view.includes("energy-disconnected"));
 }
 
 
@@ -257,16 +247,16 @@ function createClient() {
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(!src.includes('return "Hasar +%15"'));
   assert.ok(!src.includes('return "Cooldown -%15"'));
-  assert.ok(src.includes("Aşırı Hızlandırma"));
+  assert.ok(!src.includes("Aşırı Hızlandırma"));
 }
 
 {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
-  assert.ok(src.includes("moduleHeatEffectLabel"));
-  assert.ok(src.includes("AŞIRI ISI"));
-  assert.ok(src.includes("AŞIRI YÜK"));
-  assert.ok(src.includes("Saldırı engellendi: kritik ısı"));
+  assert.ok(!src.includes("function moduleHeatEffectLabel"));
+  assert.ok(!src.includes("AŞIRI ISI"));
+  assert.ok(!src.includes("AŞIRI YÜK"));
+  assert.ok(!src.includes("Saldırı engellendi: kritik ısı"));
 }
 
 
@@ -281,9 +271,9 @@ function createClient() {
   const fs=require("fs");
   const src=fs.readFileSync(path.join(ROOT,"src/app.js"),"utf8");
   assert.ok(src.includes("Sabotaj direnci"));
-  assert.ok(src.includes("Sabotaj engellendi"));
-  assert.ok(src.includes("Sabotaj temizlendi"));
-  assert.ok(src.includes("Sabotaj süresi azaltıldı"));
+  assert.ok(!src.includes("Sabotaj engellendi"));
+  assert.ok(!src.includes("Sabotaj temizlendi"));
+  assert.ok(!src.includes("Sabotaj süresi azaltıldı"));
 }
 
 {
@@ -394,7 +384,7 @@ function createClient() {
   assert.strictEqual(pvp.phase, PVP_PHASE.LOBBY);
 
   const lobbyResult = pvp.applyServerEnvelope({
-    version: 1,
+    version: 2,
     type: "lobby_state",
     payload: {
       status: "waiting",
@@ -489,7 +479,7 @@ function createClient() {
   });
 
   pvp.applyServerEnvelope({
-    version: 1,
+    version: 2,
     type: "snapshot",
     payload: {
       session_id: "m",
@@ -511,7 +501,7 @@ function createClient() {
               x: 2,
               y: 2,
               direction: "up",
-              is_powered: true,
+              operational: true,
               heat: 5,
             },
           ],
@@ -537,7 +527,7 @@ function createClient() {
   });
 
   pvp.applyServerEnvelope({
-    version: 1,
+    version: 2,
     type: "match_finished",
     payload: {
       session_id: "m",
@@ -572,7 +562,7 @@ function createClient() {
   pvp.markDisconnected();
 
   pvp.applyServerEnvelope({
-    version: 1,
+    version: 2,
     type: "reconnect_state",
     payload: {
       last_command_sequence: 7,
@@ -1103,7 +1093,7 @@ function createClient() {
 
   manager.connect("ws://test");
   pvp.applyServerEnvelope({
-    version: 1,
+    version: 2,
     type: "match_finished",
     payload: {
       session_id: "finished-match",
@@ -3404,10 +3394,10 @@ function createClient() {
   const gate = new RelayServerBootGate({
     healthState: health,
     expectedVersion: "2.1.0-beta.72",
-    expectedProtocolVersion: 1,
+    expectedProtocolVersion: 2,
     requestJson: async (requestPath) => {
       requested.push(requestPath);
-      return { status: "ok", version: "2.1.0-beta.72", pvp_protocol_version: 1 };
+      return { status: "ok", version: "2.1.0-beta.72", pvp_protocol_version: 2 };
     },
   });
 
@@ -3433,12 +3423,12 @@ function createClient() {
   const mismatch = new RelayServerBootGate({
     healthState: new RelayServerHealthState(),
     expectedVersion: "2.1.0-beta.72",
-    requestJson: async () => ({ status: "ok", version: "2.1.0-beta.42", pvp_protocol_version: 1 }),
+    requestJson: async () => ({ status: "ok", version: "2.1.0-beta.42", pvp_protocol_version: 2 }),
   });
   const degraded = new RelayServerBootGate({
     healthState: new RelayServerHealthState(),
     expectedVersion: "2.1.0-beta.72",
-    requestJson: async () => ({ status: "degraded", version: "2.1.0-beta.72", pvp_protocol_version: 1 }),
+    requestJson: async () => ({ status: "degraded", version: "2.1.0-beta.72", pvp_protocol_version: 2 }),
   });
   const unreachable = new RelayServerBootGate({
     healthState: new RelayServerHealthState(),

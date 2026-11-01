@@ -99,3 +99,27 @@ test("separate boards and new cells cannot reuse another session's card", () => 
   const a = fixture(), b = fixture(); a.view.render([moduleAt()], a.options); b.view.render([moduleAt()], b.options);
   assert.notEqual(a.cell.firstElementChild, b.cell.firstElementChild);
 });
+
+test("destroyed core stays in its fixed cell after position removal, updates and revival",()=>{
+  const f=fixture();f.cell.dataset={x:"2",y:"1"};
+  const core={...moduleAt(300,"core-1"),definitionId:"core",position:{x:2,y:1}};
+  f.view.render([core],f.options);const card=f.cell.firstElementChild;
+  const wreck={...core,hp:0,status:"destroyed",position:null};
+  f.view.render([wreck],f.options);
+  assert.equal(f.cell.firstElementChild,card);
+  assert.equal(card.hp,0);
+  assert.equal(wreck.position,null,"rendering must not restore an authoritative placement");
+  f.view.render([wreck],{...f.options,force:true});
+  assert.equal(f.cell.firstElementChild,card);
+  f.view.render([core],f.options);
+  assert.equal(f.cell.firstElementChild,card);assert.equal(card.hp,300);
+  assert.equal(f.counts().created,1);
+});
+
+test("terminal snapshot mounts a core wreck, while destroyed weapons stay removed",()=>{
+  const f=fixture();f.cell.dataset={x:"2",y:"1"};
+  f.view.render([{instanceId:"core-1",definitionId:"core",status:"destroyed",hp:0,position:null}],f.options);
+  assert.equal(f.cell.firstElementChild?.hp,0);
+  f.view.render([{...moduleAt(0),status:"destroyed",position:{x:2,y:1}}],f.options);
+  assert.equal(f.cell.children.length,0);
+});

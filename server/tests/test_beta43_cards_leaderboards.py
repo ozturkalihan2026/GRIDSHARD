@@ -164,7 +164,7 @@ def _interactive_canonical_engine() -> BattleEngine:
     for instance_id, definition_id in (
         ("laser-1", "laser"),
         ("shield-1", "shield"),
-        ("battery-1", "battery"),
+        ("armor-1", "armor"),
     ):
         engine.grant_module("p1", instance_id, definition_id)
     engine.start()

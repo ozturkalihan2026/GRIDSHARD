@@ -27,7 +27,7 @@ assert.ok(css.includes(".profile-summary-panel > .profile-identity-card { displa
 
 // Yazılar çarkla aynı geçişle ters döner; merkez rozet dönen çarkın dışında.
 assert.ok(css.includes("rotate(calc(-1 * (var(--label-angle) + var(--daily-meta-rotation,0deg))))"));
-assert.ok(html.includes('<strong class="daily-meta-die"><span>7</span></strong>'));
+assert.ok(html.includes('<strong class="daily-meta-die"><span>5</span></strong>'));
 assert.ok(app.includes("function createBattleEmojiVisual"));
 assert.ok(app.includes('document.createElement(source ? "img" : "span")'));
 assert.ok(app.includes('const SYMBOLIC_EMOJI_ART = Object.freeze({'));

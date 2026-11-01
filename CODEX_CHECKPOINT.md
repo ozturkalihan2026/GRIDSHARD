@@ -1,4 +1,1427 @@
+# Güncel kısa ek
+
+browser-cleanup2.log24PASS; two-client-final2.log3PASS; server-final-focused2.log
+125PASS. browser-performance2.log Chrome127,2/126,1FPS sıfırdonma PASS;
+WindowsWebKit9,8FPSfail, gerçekmacOSCIzorunlu. Eşiklerdüşürülmedi.
+Sonbuildd55414e2c408d7ec,2.2.0/code11. 8906ikiclienttestisonlandığıiçin yeni
+Playwrightkoşususerbest. AWSreadonlydenemesitekrar8snzaman aşımı; EC2giriş
+yenitab1378269626browser3markHandoff. Kullanıcıgirişsorusuzateneskiturdanbekliyor.
+
+# 1 Kasım 2026 — aktif temizlik / ödül kaynakları / 2.2.0 adayı
+
+Kullanıcı önce hataları ve kaldırılmış modül/Enerji/Isı savaş yollarını temizle,
+testleri güncelle, sonra commit+push, CI yeşil olunca mevcut AWS ve AAB dedi.
+Ek son talep: bütün ödül kaynaklarından eski parçaları çıkar, yeni modüller kullan.
+Bu sıra devam ediyor; henüz commit/push, yeni uzak CI, AWS dağıtımı veya AAB yok.
+
+Bu tur: energy.py/heat.py/support.py/module_cycles.py/rarity_identity.py kaldırıldı;
+ana motor/AI/models/combat/sabotage/talents/core_balance/pvp/result temizlendi.
+`operational` anlık görüntüsü; eski indirim ve deney Akım modları silindi.
+Tek ekonomi 7/12/3000ms ve Saldırı100 VE Savunma gerçekCAN50. Borç/iade/ödenmiş
+seçim kimlikleri korundu. İç eski kategori yalnız hedef önceliğini korur.
+İstemci eski imza/ısı/enerji/kule/cooler yolları temizlendi; gerçek V7 modül ve
+V6 kahraman çekirdek sunumu/kablo geometrisi/DOM yaşam döngüsü korunur.
+
+Ödül taraması: Devre Yolu Arena2–12 hedefleri yeni arenakartları; CAN/hasar
+kamu katalog kopyası gerçek module_roster ile eşit. Bütün yeni parçalar ortak
+award_module_shards korumasından geçer. Eski sabit sandık açılışı artık hem
+cüzdan hem yeni makbuzda1:1 evrensel gösterir; tarihselmakbuzlar değişmez.
+Yeni server/tests/test_current_reward_sources.py: yolun bütündurakları, giriş,
+heriki sezon, bütünsandık/teslim/mağaza, zafermail, haftalık/turnuva/sezon
+sıralaması ve18eski sabitsandık tekseferhak dönüşümü. Günlükemirler XP/Akı,
+modülparçasıvermez. Kullanıcıeski birikimler için1:1evrensel/seviyearşivi onaylı.
+Yeni hesapilk kayıt migrationişaretlerinitamamlar; ikincigirişdrifti düzeltildi.
+
+Kanıt artifacts/release-v8-20261101/: server-cleanup5.log1918PASS44SKIP;
+client-final.log762PASS; tools-tests.log30PASS; imports-final.log453/0;
+build-tests-final.log10PASS; server-final-focused2.logsondar test;
+combat-replay.log70gerçek deterministiksavaşaynı. Referansbefore-source-cleanup
+vecombat-reference-v8.jsonignoredizolekopya; canlıdosyadeğiştirmeden yüklenir.
+Eski23test+7araç veJSsoğutucutestleri docs/archive/current-only-contracts-20261101
+hashmanifestlerindekarşılıklarıylasaklandı; skip/xfail/eşikdüşürmeyok.
+Rapor docs/SADELESTIRME_VE_ODUL_DENETIMI_20261101.md.
+
+Web/nativeversions2.2.0Androidcode11olarakbump: config/package/server/UI/release
+guard/build.gradle/tests. Eski2.1.0-beta.72healthaliasıaynenkorundu.
+Yeni buildfinal.log. MağazaZIPdahasonraREADME+manifestreleasebilgisiyleyenilenmeli.
+
+TARAYICI: browser-cleanup2.log24PASS4.1dk (ikiChromeprojesi, günceleğitim/katalog).
+İlkbrowser-cleanup.log33PASS3FAIL; hepsi sonrakikoşudadüzeldi.
+İlkperformancekoşusu eskiBatarya/Soğutucudestesindetakıldı ve aynıandaiki
+Playwrightglobalteardowntekpidfile nedeniylebirbirininsunucusunukapattı.
+Şimdi günceldeste ile8904özelkoşu browser-performance2.logdevamediyor; başka
+Playwright'ıeşzamanlıçalıştırma. Eşikleraynı; örnek≥5cihaz/FPSbudget/freeze0.
+8891telefonsunucusunadokunulmadı. Yenioptionalonboardingtestiveonboardingvisibility
+geçti. LocalgerçekPG/Redis44SKIPuzakCIdedoğrulanacak.
+
+Gitmainfetchbaşarılı,HEADileorigin/mainaynı(a92145b);604değişmiş/yeni dosya,
+çoğuönceki24kartgeçişiişleri. Secret/privateartifact/deliverablesstagedolmamalı.
+Sonraki: kalanbrowserperf+WebKit/two-client, docsonuçları, commitpushCI,
+yedekkorumalıAWSveAAB. Kullanıcıdoğrudanbunlarıyetkilendirdi; tekrarsorma.
+AWSreadonlySSHzamanaşımıveEdgeEC2girişbekleyişi öncekinotlarda; özelkeyokuma,
+eskiproduction_cutoverresetaracınıçalıştırma,telefon8891sunucusunudurdurma.
+
+---
+
+# Son durum — 1 Kasım 2026, mağaza paketi teslim / açılış güncel / AWS erişimi bekliyor
+
+Kullanıcı görsel+TR/EN açıklama+notları klasör/ZIP istedi; sonra açılışı kontrol,
+mevcut AWS sunucusunu güncelleme, AAB ve yayın istedi. OVH'ye taşıma YOK:
+async soruya açık cevap “Mevcut AWS sunucusunu güncelleyelim”. Anahtarların
+D:\Projects altında olduğunu söyledi. Dosyalar bulundu; içerikleri okunmadı.
+
+HAZIR ve commentary'de linkleri verildi:
+deliverables/GRIDSHARD_MAGAZA_2026-11-01/ + aynı adlı ZIP (23.394.475 bayt).
+index.html önizleme; 8'er TR/EN gerçek 1080x1920 PNG (16 toplam), onaylı512ikon,
+yeni1024x500afiş, kısa/tam açıklamalar ve sürüm notları (dil etiketli dahil),
+README/manifest/hash/prompt kaydı. En son refresh ile EN yetenek yardım satırı
+çevirisi de pakete girdi; ZIP bu refresh'ten sonra oluşturuldu. Dosya ölçüleri/
+metin limitleri PASS. PlayConsole yükleme/yayın YOK. Numara hâlâ2.1.1/code10;
+sonraki sürüm kodu/versiyonu kesinleştirilmedi, AAB üretilmedi.
+
+AFİŞ: Kullanıcı iki düzeltme istedi: kendi devresine atıyormuş gibi duran sol
+Laser Onarım ile değişti; rakibin ateş etmeyen 2Laser'i de Onarım/Güçlendirici
+oldu. Yerleşik image_gen 3hedefli düzenleme. Son kaynak generated_images aynı
+chat/exec-e596dad4-959e-4540-920d-0437a7065bc5.png. Tek karşı platform atışı
+korundu. 7.mağaza görseli kullanıcı isteğiyle gerçek sandık/ödül listesi/premium
+kesitlerinden Sharp kolajı; sahte UI/imagegen ekran görüntüsü yok. İlk6/8
+gerçek oyundur, yeni yalıtılmış misafirler/AI savaşı, VFX gerçek corecommand.
+Kaynaklar artifacts/store-final-20261101; publicpakete hesabın/logların izi yok.
+Araçlar tools/capture-store-final-20261101.cjs (artık ek mağaza parts alır),
+tools/package-store-final-20261101.cjs (--refresh yalnız teslimöncesi). Paket
+yenilenecekse ZIP de explicitForce ile yeniden üretilmeli; eski link geçerli.
+
+AÇILIŞ: eski circuit-scene.webp içinde3Batarya+boşta2Laser kalmıştı. Yerleşik
+image_gen ile güncel taktiklerle değişti; tekçalışan Laser karşıkalkana gider;
+büyükçekirdek aynıkonumda CSSglow kayıtlı. Kaynak/prompt artifacts/startup-final-20261101.
+1024x1536 RGBWebP282300bayt, mevcut client/assets/branding/startup-circuit-v1/
+circuit-scene.webp yenilendi. Başkaçizim/CSS/JSanimasyon eklenmedi.
+Yeni ENyetenek yardım satırı i18n-catalog.js'eeklendi (coreveModule ortakcümle).
+Build d304c308b1ff3323. 11startupunit+18tarayıcıPASS, yeniartsonrası6görsel/
+hizalama/reducedmotionPASS. 769/769 tamclient,10build,3releaseboundaryPASS.
+StartupQAconfig tools/playwright-startup-final.config.cjs (8899externalserver).
+Rapordosyası artık absolute doğru artifacts/store-final-20261101/startup-results.json;
+6sonkoşununsayısıvar,18öncekikoşuterminaldePASS. QAserver8899 bu tur izole
+temporarydata ilebaşlatıldı;8891telefonV6sunucusunadokunulmadı.
+
+YAYINENGELİ1: kayıtlı pinnedSSH helper
+artifacts/server-aws-20261008-billing-r13-candidate/release-ops.ps1 üzerinden
+readonly dockerps denemesi8snzaman aşımı. Üretimdekomut/dağıtım yapılmadı.
+Kayıtlıknownhosts/fingerprintmevcut, eskiadresyakınartifacts/prodlaunchknown_hosts.
+EdgeAWSyenisekme1378269594 (browser3) EC2eu-central-1 sign-in sayfasında.
+Kullanıcıya async “Edge’de AWS giriş sekmesini açtım; hesabına giriş yapabilir
+misin” sorusu gönderildi; HENÜZ cevap yok. Soruyu tekrarlama. Sonraki iş AWS
+girişsonrası instancegüncelIP/SSHsecuritygroup saltokunurkontrol. Özelkeyve
+originIP'yi takip edilenbelgeye/sunumadosyalarınayazma. MevcutPlayConsolestore
+editsekmesi1378269522; dokunulmadı. CUA öncedeninitoldu; contextsummarysonrası
+devamederkenrewriteDocumentationgerekiyor. İlkAWSgirişsorusuapprovaldeğil
+oturumeksikliği; auto-reviewrejectionyok.
+
+YAYINENGELİ2: genişsunucutesti eski36/Enerji/Isı/coreV1/protocol1sözleşmeleri
+nedeniylebaşarısız; “tamserverPASS” DEMEYİN. İlk2sandboxfullkoşuprotokol1
+bekleyenasyncfixture'datakıldı; yalnızkomutlarıeşleşen4476ve14412pythonPID
+leridurduruldu. Boundedlog server-blockers.log:5fail22pass. Nextaudit2:
+20fail64pass;eskiBatarya,36count,coreRezonansselfheal45,beta51oldwave;uyum
+testleri güncellenmeli, ürünenerjiısıgeri eklenmez. Testskapatma/eşikdüşürme yok.
+İki somutfixturefix yapıldı: test_active_capacity nonmemberarmorartıkstarter;
+missile_launcher+membershipassert kullanır. test_battle_start_and_delivery
+heartbeat/reconnect ve test_battle_transport_backpressure wrongsession
+packetlerigüncelPVP_PROTOCOL_VERSION kullanır; pvp_protocol negativeversion1
+redditestikorundu. Bunlarsonrakifullkoşudavar.
+
+SONKOŞU BİTTİ: functions exec session46225 exit1; escalatedfullpytest --maxfail350,
+servercwd, --basetemp=../artifacts/release-v8-20261101/pytest-full-audit,
+stdout artifacts/release-v8-20261101/server-full-audit.log: 577PASS/350FAIL,
+kalanlar350hatasınırınedeniyleçalışmadı. Hepsitestuyumsuzluğudemeyin;
+tektekincelenmedi. docs/YAYIN_ON_KONTROL_20261101.md dürüstsondurumraporu.
+eski sözleşmeleri güncel karşılıklarına güvenli taşımadan canlıya çıkma.
+Legacytest_balance_rollout.py artıkolmayan _process_energy_flow çağırır;
+birçoktest emekli36modül/Isıve6energyvarsayımı. Testleri sadeceyoksayarak
+PASSiddiaetme; halen geçerli hedefleme/idempotency/kontrolkorumaları korunmalı.
+Mevcut24V7/CurrentV8/coreV5 için yeni güçlütestler de var. TamCI henüz
+bu472dirty/untrackeddeğişiklikleçalışmadı; commit/pushyok. Öncekioperatörplanı
+soncommitCIyeşilolmadanliveupdatenoolddatareset; eski production_cutover.py
+25EkimSIFIRLAMAaracıdır, BUtur veri reset yetkisi YOK, çalıştırmayın.
+MevcutAWSDB/sırlar/ödeme/WIF/volume/hesaplar korunacak, yedek+restoreprovası
+gerekir. User“anahtarburada”demesi yayınQAkapılarınıkaldırmaz.
+
+Paketçıktılarınınsunucukaynağınagirmemesi için deliverables/ .gitignore,
+.dockerignore, package_release.PRIVATE_OR_GENERATED_PREFIXES'eeklendi;
+test_release_data_boundary birallowlistdışlamaörneğiyle3/3 geçti. ZIPsadece
+publicallowlistklasöründendir. Key/auth/hesap/hamlog alınmadı.
+
+---
+
+# Son durum — 1 Kasım 2026, canlı Google Play mağaza incelemesi ve yeni metin taslakları
+
+Kullanıcı “Mağazada değişmesi gerekenler var mı; oyun hakkında/resimler” diye
+KONTROL istedi. KamuTRveENGooglePlay sayfaları EdgeCUAileokundu;8görseltek
+tekaçıldı. Webopenmağazayaerişemedi,tarayıcıbaşarılı. Güncellenme25Eki2026.
+MAĞAZA/PLAYCONSOLE/ÜRETİMKODU/TELEFON değişmedi. Yeni afiş/8liçekimüretilmedi.
+
+Kesinbulgular:açıklama36modül5sınıf;24/3euyarlanmalı. Coregücünübütün
+devreyi etkileyengüçgibi anlatıyor;directateş/imha/takviyeveotohedefolmalı.
+Akımyzamanlabirikir seviyesinde;7başlangıç12depo3sn+1/100Attack+50yalnız
+SavunmaHPgerçekVE+1 eklenmeli. YeniliklereskiR8/Soğutucu/Isı/enerjisatırları.
+ENgörünümündeYeniliklerTRve8görselTR:8/8kamuassetURLeşitliğidoğrulandı;
+otomatikmi manuelçevirimiConsolegörülmedenkesinleştirmeyin.
+
+CANLIGALERİSIRASI(yereldosyadandeğilgözlendi):1anaekran,2modüller,
+3core,4DevreYolu,5shop,6events,7takımkur,8savaş. Home/road/battleeskibatarya
+cooler;module5sekme/retiredkartlar. Core1/7eskigörünüm. Event19–25Eki+eski
+meta. Teamboşform“krediyetersiz”. Battle8.sıradan1etaşınmalı;corepower2,
+3sınıfkartlar3,gerçekilerleme/yetenekler/detaylarsonra.8görselyenidendüzenle.
+
+İKON:Canlıboyalımintcoreonaylıapp-iconsourceileuyumlu;yenilemekgerekmiyor.
+AFİŞKAPSAMI:KamuPlay sayfasındaseçili1024x500afişgörünmedi,Consoleseçimi
+doğrulanmadı. Yerel22EkipaketiafişindeBataryalarvepureShield/pureLaservar;
+bunuyeniV8teslimindetekrarkullanma. Yeni briefkarmaiki taraf/hero/noBatarya.
+Şuanliveafişkesinbudurdemeyin. Görselüretimyapılmadı.
+
+YAYINSIRASI:Mağazaeskiüretimpaketiyledoğruolabilir;V8kodhenüzyayınlanmadı.
+Yeni açıklama/görselleruygunAndroidpaketiylebirlikteyayımlanmalı,öndenözellik
+varmışgibisayfayüklenmemeli. Storegirişgüncellemesikapsamında izinistenmedi;
+gerek yok çünkühiçkaydetme/upload/publish yapılmadı;yalnızkamuokuma/taslak.
+
+TESLİM docs/PLAY_STORE_AUDIT_20261101.md ve docs/PLAY_STORE_LISTING.md.
+İkinci belgegüncelV8TR/ENappname/short/full/notes kaynağı;öncekitarihsel
+docs/archive/PLAY_STORE_LISTING_BEFORE_V8_20261101.md saklandı. EskiassetAI
+değerlendirmesi22EkiAIüretimineotomatiktaşınmasındiyenolgusalnotvar;
+etiket/beyan/Verigüvenliği/hukukisahadaişlemyok/hukukitavsiyeyok.
+
+artifacts/play-store-audit-20261101/proposed-text/:7hazırUTF8metin+Console
+trTR/enUSnotetiketdosyası. TRshort71/80,full2262/4000,notes342/500;
+ENshort72/80,full2206/4000,notes387/500;name9/30. DoğrulamaPASS. Ana6/14/
+24/3/7/12/7Akım3000/10050SourceassertPASS. Phoneimagesiçinyeniçekim1080x1920.
+KaynakGoogleHelp9859152(text),9866151(assets),9859348(notes)1Kasımokundu.
+
+KAMUKANIT9asset (8shot+icon)CUApageAssetsbundleilesandboxTemp'tenalınıp
+artifacts/play-store-audit-20261101/published'eaynencopyedildi. KişiselGoogle
+avatarıveemailALINMADI. Kopyalar810x1440WebpCDNtürevi,Consoleorijinalboyutu
+kanıtlamaz. 01-home,02-modules,03-cores,04-road,05-shop,06-events,07-team,
+08-battle.webp isimligözlemsırasıaliaslarıvar;source-manifestveimage-inventory.
+AsılyeniuploadsetiDEĞİL;reportkarşılaştırmasıiçin. Imagenoedit/imagegenyok.
+audit-manifest.jsonmetinlimitleri+gözlem+sources+gerçekV8kaynakfacts.
+
+CUAbrowserEdgeid3kullanıldı;researchtablarotomatikturnsonukapanır,markyok.
+GeneloyunV8/öğreticiV5/QA8898durumuaşağıdakiöncekiturdakiyleaynı.
+
+---
+
+# Son durum — 1 Kasım 2026, Akım V8 ana koda ve eğitim V5'e alındı
+
+Kullanıcı karma devrenin yalnız Saldırı/Savunmaya üstünlüğünü ONAYLADI;
+eğitim/tanıtım anlatımı ve kalan incelemeleri istedi, sonra “devam et” dedi.
+Karma kazanımını sırf100% diye azaltma hedefi YOK. Seçili model artık ANA KOD:
+DEFAULT_CIRCUIT_CREDIT_CONFIG açık7başlangıç/12depo/3000mspasif/100Saldırı
+yeniCAN+50yalnızSavunmakartınınaldığıyeniCAN/bekleme0. Config sınıfınınkurucu
+defaultları tarihsel testler için legacy6/2500/200dür; normalEngine/PvP
+DEFAULT nesnesini kullanır, gerçek oturumda7 doğrulandı. Constructor’a bakıp
+anaekonomiyi hâlâeski sanmayın. Rastgele yerleşim/anahedef/kota/CAN/maliyet
+aynı. 100+50 birlikte, fazlalık taşınır; depo12debonusbankatemizlenir.
+
+Önemli yetenek uyumu: allow_core_current_rewards=True yalnız anaDEFAULTte;
+İmhaKazancı başarılıimha+1’i açıklaması/fiyatı korunarak çalışır. Önceki
+deneylerde ayrıcoregeliriniayırmakiçinkapalıydı; anaoyundaödenmişyeteneği
+boşbırakmadık. Corehasarı100’e, kendiCoreHP50’ye girmiyor. Bu perk genel
+bonustan açıkistisnadır. coreV5 motor testi güncellendi; 648stratmatrisi
+coreyeteneğiseçilmemişti,tümyetenekkarmalarınındengeonayıiddiasıYOK.
+
+EĞİTİM:TUTORIAL_SCRIPT_VERSION5 / clienttutorial_script5. Beş aşama:
+deploy_laser,watch_laser,deploy_defense,current_pressure,core_power. 24sn,
+oyun beklemez; istendiğikartoynanabilir/ipucuGEÇilebırakılır. Başlangıç7,
+3snpasif,100+50VE,engellenenhasarınsayılmadığıanlatıldı. Yönetmensizipucu,
+yetersizAkımmetni,değerönizlemeleri7aynı. Ayarlar/Hakkında/NasılOynanır
+kalıcıTR/ENaçıklama+depo/fazlalık/onarılmışHP/coreperkistisnasıvealan/zincir
+ipucu. Yeni current-economy-v8.js istemci iki gerçeközel sayacıoranlar;
+göstergeikiçizgi+erişilebilirx/100+y/50etiketi. Tekkoşulhazırgösterilmez.
+pvp_session.current_bonus owneronly;yeni alanrakibeverilmez/protokol2aynı.
+
+AI:newjointmodunda silahıvarSavunmasıyoksatercihpuanı+12; oyuncukotasıdeğil.
+Aggressivefallback4silah+Zırh+Hız; tüm240botdestesindezateniki sınıfvar.
+İsim/rating/gerçekoyuncuverileri yenidenyazılmadı. GerçekAIplantestleriPASS.
+
+TAMPON incelemesi tools/probe_buffer_counters_v8.py: aynı eski34/36uzama
+6core×3level×2taraf aynenüretildi. Kuantum+Dron2W34sürer;Kuantum+Kırıcı
+7W29sürer;Kuantum+Plazma27W9sürer;Kırıcı+Plazma36W0sürer. Erkenarena
+yasalhavuz ayrıeş:Laser+Dron24W12sürer;Laser→Ark36W0sürer. Diğerkartlar
+aynı. TamponArena7,Ark7,Plazma8,Kırıcı10. YalnızKırıcıherdurumuçözüyordeme.
+Toplam216maç,artifacts/buffer-counters-v8. TAMPONNERFYOK:karşıseçimçalışıyor;
+zamanbaskısı/gizlikota/hasar/targetdeğişmedi. Arenaunlock=eldekesinvar demekdeğil.
+
+TANITIM:public-site/content.js TR/EN3sınıf/7başlangıç3sn100+50 metnigüncel.
+Yerelbuild/public-sitehazır,17test+30yereltarayıcısayfaPASS. CANLIsite/Play
+yayınıYOK. READMEyerelhazırlıknote. Hukuki/iade/gizlilikmetninedokunulmadı.
+CanonicalV7json/doc ve üreticitool AkımV8e güncellendi; kartlarfiyatlarsabit.
+Tarihseldeneyraporlarıoandaki“anaoyundeğişmedi”kanıtıolarakkorunuyor;
+enüstbuyeni checkpointve docs/AKIM_V8_ANA_OYUN_VE_EGITIM_20261101.md geçerli.
+
+SONTESTLER:385odaklıserver/PvP/websocket/reconnect/AI/tutorial PASS;
+769client,10build,3releaseboundary PASS. Tasarım384tamağaç/1152aritmetik
+auditPASS(bumotor maçıdeğil). Tam tarihselserver/telefonPASSiddiasıYOK.
+GerçekilkmaçTR320/TR393/EN393:7başlangıç,bütün5sahne,savaş24snilerler,
+privatecounter,0JS/0eksikvarlık/0taşma. Hakkında gerçekkontrolünden açıldı.
+Kanıt artifacts/current-v8-browser;driver tools/check_current_v8.cjs.
+Sonwebbuild f4551a68a1c88371. APKüretilmedi/yüklenmedi. TelefonV6/protokol1
+ve8891eskiçalışanaDOKUNULMADI. Üretimyayını/profilmigrasyonçalıştırmaYOK.
+
+QA8898geçiciizole:ilk14796yalnızownpidkontrolüstopped,sonlauncher23468/
+gerçek7728 (current-v8-qa-final-stderr.log ilk4satırdan doğrula);sonAIkoduyla.
+8891phoneilekarıştırma. HamWSloglarınıtokenriskiyleyazdırma.
+Kalaninsandenemesi:100+50VE veSavunmaHP/emilimayrımıokumadananlaşılıyormu?
+Bu test otomatikUIkontrolüyleispatlanmaz,karmaüstünlüğünüyumuşatmagerekçesi değil.
+
+---
+
+# Son durum — 1 Kasım 2026, 100 verilen + yalnız SAVUNMA modülünde 50 CAN adayı
+
+Kullanıcı sonaday:100gidenhasar+SAVUNMAMODÜLLERİNİNaldığı50hasar=+1Akım,
+3snpasif+1. Önceki7başlangıçve12depokorundu,bonusbeklemesi0. Commentary'de
+ALINAN=gerçekCANkaybı,emilim/engellemedeğil diyeaçıklandı. Saldırı/Taktik/core
+kendiHPkaybı50yeeklenmez. SaldırımodülüyeniHP100+SavunmakartıyeniHP50birlikte
+tüketilir/fazlalıktaşınır/depo12debankatemizlenir. OnarılmışaynıHP/overkill/
+dost/yansıma/boşkalkan/silmeharici. Coregidenhasarı100ekoşulunaeklenmez;
+düşmancoreSavunmayaHPverirse50yesayılır. AyrıİmhaKazancıadaydagatekapalı.
+
+CircuitCreditConfig.joint_received_defense_only=False yenioptinbayrak;
+True yalnız joint_received_threshold>0ilegeçerli. credit_received_damage
+target.combat_class=='savunma' filtresi. Anaekonomi6/12/2500ms/200hasar+6sn
+varsayılanı DEĞİŞMEDİ. Telefon/sunucu/profil/UIyok. Randomplacement/anahedef/
+CAN/hasar/maliyet/yetenekfiyatı/kota değişmedi. Coreyeteneklerikapalıtestler.
+
+ANA:648gerçekmotormaçı=3deste×6core×3level×3politikaçifti×2taraf×2seed.
+Öncekikontrolveanyreceivedkayıtlarıyladeck/core/level/seed/sideasserteşit.
+Tümü648bitti0aşım,ortanca88.3sn. Karma→yalnızAtak216/216(%100);
+karma→yalnızSavunma216/216(%100). Atak→savunma216/216. Genel432erkatılım:
+atak216W216L,savunma0W432L,karma432W0L. Atakvesavunmabonus0/432.
+Karmabonus5891toplam,9.65/dakika,24/432karmamaçtabonusgerekmemiş.
+Bu seçilibot/desteörneklemi,insanwinrate/evrenselmetaonayıdeğil.Takviyehariç.
+
+EK:aynı6kartiki tarafta,yeni847seed,6core/3level324maç. Yeni adaykarma→atak
+108/108; →savunma74W34sürer/108. Bonuskapalıkontrolkarma→atak60W48L/108;
+→savunma76W32sürer/108. Süren34ünHEPSİKuantum/Dron/Zırh/Tampon/Onarım/Virüs
+havuzu; pureDefTamponyığılmasınaKırıcı/AoEerişimiyok. Kontroldede32sürer;
+hepsiniyenibonusabasitçebağlama. Zorunlumaçsonu/gizlihasarartışıeklenmedi.
+KAMP:1canlısilah+Savunma/onarım3deste×3core×3level×2taraf54eş:yenide54/54,
+7/3snbonuskapalıkontrolde54/54karmakazanır,0aşım. Kotaoyuncukuralıdeğil.
+YETENEK:SV15Güç54/Dayanıklılık54;hepsibiter,karmaherikiuçpolitika18/18.
+Coreyetenekseçimiyok,bütünkarışıkağaçkombolarıtestedildidemeyin.
+ALTERNATİFKARMA:Kuantum/Kırıcı/Faz/SonSiper/EMP/Virüs18eş;bonusyok0W18L,
+yenide18W0L. Ekonomisınıfbileşiminibüyükölçüdegüçlendiriyor;budesteye
+matematiksel“yanlış/kötü”etiketivermeyin. Karşıkarar/incebeceribastırılıyormu
+insantestindebakılmalı. Sonuçhedefedoğrugüçlüama“nihaiherşeydengeli”değil.
+
+KARAR:Anaörneklemdekarmaikiuçtanüstünhedefsağlandı,öncekianyHPmodeli
+safatağıödüllendiriyordu,bufiltreonuçözdü. KalanincelemeTamponyığılması/
+karşıkartvesınıfbonusuavantajbüyüklüğü. Anaoyunaotomatikgeçişyapılmadı.
+325odaklıserverPASS(11yeni+314önceki),py_compile/diffcheckPASS.Tamclient/
+telefononayıyok. docs/AKIM_100_HASAR_50_SAVUNMA_CAN_BASLANGIC7_TESTI_20261101.md
+tools/report_defense_received_current_v7.py üretir;assert eşleştirme.
+artifacts/defense-received-final/battles.json/summary.json,diğerdefense-received-*
+hamseriler. tools/probe_defense_received_camp_v7.py kalıcıkampkarşılaştırması.
+Sonözelmodelleringenelmotorarayüzlerioptin,eskiadayraporlarıtarihseldir.
+TelefonV6/protokol1,8891eskiçalışanaynen;V7/yeniAkımAPKyüklenmedi.
+
+---
+
+# Son durum — 1 Kasım 2026, 7 başlangıç / 3sn pasif / 100 verilen + 50 alınan test edildi
+
+Kullanıcı yeni aday istedi:100 verilen+50 ALINAN hasar=+1,3sn pasif+1;
+ardından başlangıç7dedi. TestteALINAN=gerçekCANkaybı olarak açıklandı;
+emilim değil. Altı saniye bonus beklemesi yine0, depo12. Ana varsayılan ve
+telefon değişmedi. İsteğe bağlı CircuitCreditConfig.joint_received_threshold=50
+eklendi; joint_absorption_threshold ile birlikte açılamaz. Ortak joint_threshold
+property; eski emilim adayı aynı kalır. Yeni oyuncu received sayaçları yalnız
+probe/private state. Regen0 yalnızjointadayda, buadayregen3000.
+
+GidenyeniCAN100:yalnızSaldırı kaynaklıgerçekyeniHP. AlınanyeniCAN50:herkendi
+modülü/çekirdeği, düşmanSaldırı veyaçekirdek kaynağından gerçekHPkaybı.
+Kalkan/armor/phaseönlediğikısımalınandeğil; yansıma/dost/overkill/onarılmışaynı
+CANtekrar gelirdeğil. AyrıHP-lowest alınanmarkıvar. Heriki eşikbirliktetüketilir,
+fazlalıktaşınır/aynıandamultiödemevar. Pasif veya bonus depoyu12yapınca
+TÜMjoint sayaçlarıtemizlenir (yeniPasifcaptesti). Core gidenhasarı100eeklenmez;
+eskiİmhaKazancı ayrı+1 adaydagatekapalı, anayeteneğedokunulmadı. ClientUI yok.
+
+AYNIadaptifbot/3deste/6çekirdek(Takviyehariç)/SV1,8,15/2seed523,624/2taraf
+her3ekonomide648er=1944benzersizkarşılaştırmamaçı. Eşdecks/core/level/seed/side
+raporassert. Mevcut6başla2.5sn/200+6sn:648biter0sürer; karma→atak202/216.
+Kontrol7başla3snBONUSYOK:648biter0sürer,ortanca109.3sn; karma→atak170/216.
+Aday7başla3sn100+50:581biter67/648(%10.34)900sndesürer, bitenaltküme
+ortanca81.6sn (bütünmaçortancasıDEĞİL). Karma→atak28W121L67sürer/216;
+karma→savunma216W0L0sürer. Saltatak→savunma216W. Asılkarmahedefsağlanmadı.
+Aday geneli432erkatılım:atak337W28L67sürer,savunma0W432L,karma244W121L67sürer.
+İnsanwinrate/metaonayı değil. Modül/çekirdek yetenekleri seçili değil.
+
+Ekcombatgelir/dakika(toplamgelir/toplamoyunsüresi,pasifhariç):atak54.83,
+karma34.31,savunma0. Savunmahasarıazaltıncaalınan50sayacınıyavaşlatıyor;
+yalnızatakdavurupvurularakbonusaluıyor. YeniAkımyokluğudeğil,aşırıgelir/
+yenidenkurulumakıșıuzatıyor. İlk900snörnekteatak859bonus338kurulum;
+karma557bonus267kurulum. SürenlerSV1:6/216,SV8:10/216,SV15:51/216.
+Otomatik900snmaçbitişi yok; uzayanlarsonsuzilanedilmedi/yenikayıpsayılmadı.
+
+tools/probe_strategy_v7.py --starting7 --regen3000 --threshold100
+--joint-received50 (gerçekCLI'da bayrak/değer arasıboşluk). Yeni--deck-index
+0/1/2 shardgrupları; sonuç216+216+216birleşti. İlk büyük runnerdeck0sonrası
+aynımaçlarıtekrarlıyordu; PID3744 komutuCIMiledoğrulanıpYALNIZbuözelpython
+testisonduruldu;freeze216 korunur, telefonserverine dokunulmadı.
+artifacts/received-current-final/deck0-frozen.json,battles.json,summary.json;
+controlsreceived-current-live-control/received-current-passive-control.
+tools/report_received_current_v7.py bütünlüğüdoğrularve
+docs/AKIM_100_VERILEN_50_ALINAN_BASLANGIC7_TESTI_20261101.md üretir.
+
+314odaklıserverPASS (14yeni+15öncekijoint+285mevcut),py_compile/diffcheckPASS.
+Tamserver/client/telefonPASSiddiasıyok. ÖNERİ:7başlangıç/3snpasifalınanbonusla
+aynıkararsayılmasın; bonusalınanCANyerinegerçekSavunmaemilimiyleyeniden
+denenebilir. Bu SONRAKİkombinasyonuygulanmadı/testedilmedi. Varsayılananaoyun
+6başlangıç12depo2.5snpasif/200hasar6snbonusaynı. TelefonV6/protokol1aynı.
+
+---
+
+# Son durum — 1 Kasım 2026, yalnız 150 hasar + 100 emilim Akım adayı test edildi
+
+Kullanıcı: 150 verilen hasar VE 100 emilen hasarda +1 Akım; pasif 2.5sn gelir
+YOK, 6sn bonus beklemesi YOK; tek kazanç saldırı+koruma. TEST istendi.
+İsteğe bağlı CircuitCreditConfig.joint_absorption_threshold=100 eklendi;
+regen=0/threshold=150/min_interval=0 ile açılır. VARSAYILAN ANA OYUN DEĞİŞMEDİ:
+6başlangıç/12depo/2.5sn+1/200yeniCAN+1/enaz6sn. Telefon/sunucu/profil yok.
+
+Aday iki sayacı birlikte tüketir, fazlalık taşınır, çoklu ödeme aynı anda;
+12depoda iki sayaç silinir. Saldırı sınıfı gerçek yeni CAN (onarılmış aynıCAN
+tekrar yok); savunma sınıfı gerçek önlenen CAN: armor/shield/phase/dome/HPshield.
+Her aşama cappedHP önce-sonra farkı; aynıhasar iki sayılmaz, overkill/boşkalkan/
+kalkan-silme/dost/yansıma gelir değil. Çekirdek saldırısı 150yi/kendikoruması
+100ü doldurmaz. Savunmanın çekirdeği/düşmançekirdek ateşini koruması sayılır.
+Engine award kapısı yalnız adayda attack_and_protection kabul eder; İmha
+Kazancı eski+1 de adayda kapalıdır. Canlı yetenek değişmedi. AI/yerleşim/hedef/
+CAN/hasar/maliyet/kopya/sınıf kotası değişmedi. Client sunumu yok, yalnız motor.
+
+tools/probe_strategy_v7.py --regen0 --threshold150 --joint-absorption100,
+--all-cores --seeds2 --seed-base523 --mixed-third buffer (bayraklar boşluklu).
+İki ayrı bot politikası × mevcut/adaya 648er=2592maç; aynı deck/core/level/
+seed/side doğrulandı. Önceki adaptif bot mevcut648biter0aşım; aday482biter,
+166/648(%25.62)900snde sürer. Karma→Saldırı114kazanır38kaybeder64sürer/216;
+Karma→Savunma170kazanır0kaybeder46sürer/216. Saldırı ve Savunma432erkez0gelir;
+Karma357/432 hiçgelir yok. Ortanca1kurulum. İnsanwinrate iddiası yok.
+
+--economy-aware ek kontrol: ucuzSaldırı/Savunma başlangıcı + alınabilir kart
+varken pasif beklememe. AYNIpolitika her iki ekonomide. Bu AIiyileştirmesi
+DEĞİL, yalnız probe. Mevcut516biter132sürer; aday489biter159/648(%24.54)sürer.
+Aday Karma→Saldırı139W12L65sürer/216; →Savunma166W6L44sürer. Karma255/432
+geliryok, ortanca2kurulum. İkinci politikanın mevcut ekonomideki132uzamasını
+yeni ekonomi kaynaklı sayma; cheapbot mevcut güçlüadaptifbottan kötü olabilir.
+
+tools/probe_joint_current_v7.py: bütçe adayı sorunlarından14örnek3600sn
+gözlendi;14ü de sürüyor. İmha/İmha yalnız çekirdek+0/1Akım: normalmodülsüz
+infazhedefiyok, yenisilahalınamıyor. Bu sabit zaman sınırı değil softlock.
+EkTakviye18maç18biter (rastgeleSaldırıçağırabilir; ana pureDefense dışında).
+Bir karma destenin enucuzSaldırı4+Savunma3=7>başlangıç6. Yeni3Akımkartı
+finanseetmek450yeniCAN+300engelleme ister; ilkmodüller ölünce çıkış yok.
+SONUÇ: Tekgelir150/100+6başlangıç buhaliyle ana sürüme önerilmiyor. Örtülü
+pasif/ücretsizkurtarma/kota/maçbitişi eklenmedi. Yenidenkurulum çıkışı gerek.
+
+300odaklıserverPASS (15aday+285mevcut), gitdiffcheckPASS. Tam tarihi/client/
+telefon testi iddiası yok. docs/AKIM_150_HASAR_100_EMILIM_TESTI_20261101.md;
+tools/report_joint_current_v7.py üretir. Kanıt artifacts/joint-current-*,
+joint-budgeted-*, joint-current-diagnostics/paired-results.json.
+Telefon hâlâ V6/protokol1; V7APK yüklenmedi. 8891 eski çalışana dokunulmadı.
+
+---
+
+# Son durum — 1 Kasım 2026, V7.1 uygulandı / strateji ve Akım testleri
+
+Kullanıcı nihai kararları uygulama ve yalnız Saldırı / yalnız Savunma / karma
+bot testleri istedi. Yanlışlıkla yazdığı “Saldırı yüksek kazanmalı” cümlesini
+DÜZELTTİ: doğru karma hem yalnız Saldırıdan hem yalnız Savunmadan üstün olmalı.
+En sonda 3sn/100hasar Akım adayını da istemişti; ölçüldü, mevcut2.5sn/200korundu.
+
+ANA KOD:24kart V7mekanik+192yetenek uygulandı. battle_actions_v2.py ve
+module_effects_v7.py:Plazma3iz,Füzegecikme,Kuantum4.isabettepaylaşılanYankı,
+Ark3hedef,Kırıcıgerçekkalkansilme,Tampon70%emilim/60havuz/40%onarım/8sn,
+YansıtıcıyalnızgerçekdoğrudanCAN,SonSiper75çekirdek+40dostkalkanı,Virüs
+onarımcezasıdalı,Arındırıcıtek-kullanımkontrolkoruması. Türevlertürevdoğurmaz,
+kalkan/overkill/yansıma/yenidenonanmışCAN ekAkımdeğil. Kesirlifloorcarryvar.
+Tampononarımcezasınıyenidenhealdeneyerekgeriçeviremez;zayıfhavuzeski büyük
+havuzun dönüşümoranını değiştiremez. Kaynak ölse bile uygulanmış iztamamlanır.
+
+V7.1TESTKARARI:İlkV7kadrosundan8SavunmaCAN×1.5. YeniCAN:Kalkan360,Zırh432,
+Bariyer540,Yansıtıcı360,Kubbe480,Tampon375,Faz420,SonSiper420. SonSiperilk
+V7adayı280idi;eskiV6da320. ×1.75/×2benzerkazanımafazlagözlemaşımıgetirdi.
+Saldırı/TaktikCANveAkımbedellerideğişmedi. Gizlikarmabonus/kotaeklenmedi.
+
+YETENEKLER:server/data/module_talents_v7.json yeniaktifveri; eski
+module_talents_v3.py modüladı/0-3/power-resilience/eşik/fiyatAPI korunur.
+İmzaönce,görevçarpanlarısonra,seviye1kez. 384tamağaçparametresiPASS.
+Geçiş:catalog_migration.grant_v7_reselection,12davranışıdeğişenkartta önceden
+seçilmiş ücretli eşikler korunur ve kartbaşına1ücretsizyenidenseçimverilir.
+Ücretsizhak=sıfırlama0+yalnızeskiücretlieşikleryeniden0. Yeni eşikler ücretli;
+sonrakireset25Akı/eşik. Replay/save-loadPASS; gerçek kullanıcıJSONlarına işlemYOK.
+
+İSTEMCİ:Koleksiyona yeni özel değerler/kısa2diletiketler/simgeler, ücretsiz
+geçişmetni;iz/fünye/korumabadgeleri. Süreli/ikincilisabet yeni namlu atışı
+başlatmaz. Kuantum13hedeftekSVG/düşükkalitegörünür, tüm gerçek hedefler ayrı
+işaretli;kaynakölümü/tekrar/maçsonu/hidden cleanup. Mevcut modülsesleriyle
+sınırlıisabetler,çekirdekV6lidergörsel+14ses korunur. Isıbarıyok.
+
+AI:Yeniimzalaraaitkarşı-tercihler. Rakipyalnızsavunmaveya1silah+kampleoynarsa
+saldırıkapasitesinibüyütür;butercihoyuncukuralıdeğil. Randomplacement/anahedef
+sırasıdokunulmadı. Sezonhenüzhazırolmayanadaylargeri gelmedi,24aktifkart.
+
+PROTOKOL2:game/pvp_protocol.py, websocket push versiyonları,build_manifest,
+istemci boot/transport birlikte2. EskiAPKyenisunucuyasessizbağlanamaz.
+ZIP/Dockerstatikverilistelerine roster/talents/season eklendi;5açıkJSON,
+kişiselJSONlarhariç. Gitignore yeni module_talents_v7.json girişine izinverir.
+
+TEST:439odaklısunucu+765istemci+10build+3kaynakpaket-sınırıPASS.
+Tam tarihsel sunucu kümesi PASS iddiası YOK.320/393gerçekilkmaç,V7parametre/
+dal/protokol2/0ısı/0taşma/0JS/0eksikvarlıkPASS. YeniVFXekranıaçıksunumfixture,
+gerçekhasarkaydı motor test+simülasyonda. Son webdistad4e1d3965baf0ce,
+VFXyankıgruplamasıdahildir; mobilpaket değil. TelefonAPKbu tur üretilmedi.
+
+STRATEJİ:tools/probe_strategy_v7.py. İlk ucuzkartbotu sahte yanlış sonuç verdi;
+silahaiçinbiriktirme+tehdideadaptifkarmapolitikasıyladüzeltildi. İlk kötükarma
+3.destedeonarım/güçlendirmeyoktu;alanhasarınasürekliyenildi. İyikarma3.deste
+Kuantum/Dron/Zırh/Tampon/Onarım/Virüs. Adaytohum19/120; sonholdout523/624.
+Aynıdeste/çekirdek/seviye/seed/taraf öncesi-sonrası648çift maçher motoriçin.
+6çekirdek (Takviyehariç;Savunma-onlykoşulunarastgeleSaldırıçağırabilir),
+SV1/8/15,3deste,2taraf,2tohum. Son648/648bitti,0aşım;ortanca95.35sn,
+p90125.1,max162.1,ilkkayıp21.5sn(önce18.3).Karma→Saldırı202/216=%93.52
+(önce29/216),Karma→Savunma216/216. Politika genel:Karma418/432=%96.76,
+Saldırı230/432=%53.24,Savunma0/432. İnsan oranı/evrenselmeta iddiasıYOK.
+Aynı6kartkontrol324maç:karmaSaldırıya88/108,Savunmaya108/108. Zayıfkarma da
+bu kontrolün içinde kaldı. Yeteneksol/sağ54ermaç;sağkamptakılaşmasıkarmanın
+kampakarşıdahasaldırgankararalmasıylagiderildi. 1canlısilah+koruma/onarımkampı
+54maç:karma54kazandı,0aşım,ortanca120.5sn. Oyuncuyakotayok.
+
+AKIM SON:6başla/12depo/2.5sn+1/200yeniCAN+1/enaz6snbonus/tekbankaynı.
+3sn100,3sn200,2.5sn100karşılaştırıldı;soniyikarmagrubunda54/54farkıaynı,
+3sn100ortanca90.4sn(2.5sn20094.1),savaşıuzatmadı. Yeni değişim gerekmiyor.
+
+RAPOR:docs/V7_UYGULAMA_VE_STRATEJI_TESTLERI_20261101.md ve nihaiV7json/md
+güncel. tools/report_module_v7_rollout.py ile üretilir, kanıt
+artifacts/module-v7-rollout/final-results.json. Diğerhammaçlarstrategy-v7-*.
+
+TELEFON/ÜRETİM:Bu tur APKyüklenmedi,Play/üretimyayınıyok. TelefondaV6/protokol1
+ve eski8891sunucusu (öncekibaşlatıcı21388/gerçek11936)duruyor; yenidenbaşlatma
+yapılmadı. Kullanıcı testederken dokunma. Yeni kodla8891başlatılacaksa V7APK
+ve sunucu birlikte güncellenmeli, yoksa eskiAPK sürümkapısında kalır.
+V7tarayıcıQA8897geçiciisolated,başlatıcı12624,gerçekPIDqa-server3-stderr.log
+ilk4satırdan/CIMkomutundan doğrula. Bu telefon sunucusu değil. Ham WebSocket
+loglarında token olabilir; hamlogyazdırma.
+
+---
+
+# Son durum — 1 Kasım 2026, 24 kart enderlik/yetenek nihai tasarım V7
+
+Kullanıcı bütün modüller ve yetenekler için benzer oyunları inceleyerek nihai
+karar belgesi istedi. Çalışma tamamlandı: docs/NIHAI_MODUL_ENDERLIK_YETENEK_V7_20261101.md
+ve makine okunur NIHAI_MODUL_ENDERLIK_YETENEK_V7.json. Bu TASARIM sözleşmesidir;
+ana motor/telefon/gerçek oyuncu verisi bu tur DEĞİŞMEDİ. Yeni sayılar test başlangıcı,
+oynanmış denge onayı değil. Çalışan V5 motor+V6 sunum ve telefon aynı kalır.
+Resmî Supercell Goblin/Phoenix/Monk; Blizzard Rumble Chimaera/Earth and Moon
+yetenekleri; Hearthstone Lifesteal incelendi. Tarihli örnek, güncel meta iddiası yok.
+24 kart / 10Saldırı8Savunma6Taktik, 8Yaygın8Nadir5Destansı3Efsanevi sabit.
+Her kart dört eşikte iki dal =192 seçenek; 48 özel imza dalı, diğer eşikler sade.
+Fiyat/eşik/kimlikler/eski emek/rastgele yerleşim/ana hedef sırası/Akım aynı.
+Tasarımda davranışı değişen kartlara bir defalık ücretsiz yeniden seçim hakkı;
+uygulanmadı. Normal seçili eşik başına25Akı sıfırlama değişmiyor.
+Plazma29+3×%5gerçekCANizi, Füze29+%20gecikme, Ark20+%45/%20zincir;
+Kırıcı20+%50ekgerçekkalkansilme; Tampon60havuz/%70emilim/%40dönüşüm/8sn;
+Kuantum4.isabet24gerçekCANdan hedefbaşına%20/toplam%60paylaşılan yankı;
+SonSiper280CAN+75çekirdek+40dostkalkan. Özel dallar miktarı/dağılımı değiştirir,
+Virüs dalında daha az yavaşlık+onarımcezası, Arındırıcı dalında kısa kontrol koruması.
+Yansıma yalnız doğrudan gerçekCANkaybından, kalkan/overkill ve ikinciller sayılmaz.
+Kaynak/etki sınıfları, özyineleme yok, kesir bütçesi, temizleme/yığılma açık.
+Çekirdek V5rol/yetenek/V6lidergörselleri korunur. Yeni sezonda kimlik çakışan
+YankıRölesi/KorFırlatıcı/ToparlanmaFeneri adayları ertelendi/yeniden tasarlanacak;
+hersezonenaz1kart+birikenkatalog kuralı değişmedi, yeni kart yayına eklenmedi.
+tools/document_module_decisions_v7.py yalnız docs+tasarım denetimi yazar.
+24kapsam/192seçenek/384tamağaç/1152aritmetikstres/2088yasalboş-kısmiseçim
+denetimi PASS,12arena veeskifiyatlarbirebir. GERÇEKSAVAŞTESTİDEĞİL.
+Kanıt artifacts/module-decisions-v7/design-audit.json. İleride uygulama sırası:
+etkikaynağı/bütçe → Plazma/Füze/Arındırıcı → Tampon/Kırıcı/Yansıtıcı →
+Ark/Kuantum/SonSiper → tüm yetenekler+AI/UI/öğretici/VFX → eşleştirilmiş savaş/telefon.
+Her adım sonrası test ve sonraki karar; belgede inceleme eşikleri var.
+Bu belgedeki yeni mekaniklerin uygulandığını veya telefona gittiğini söyleme.
+
+---
+
+# Son durum — 1 Kasım 2026, V6 telefona kuruldu
+
+Kullanıcı telefonu bağladı. Hazır V6 APK başarıyla install-r ile yüklendi;
+com.gridshard.localdebug hesabı/verileri korundu. Mobilbuild567425426a9db700,
+JSgridshard-212e55279034e5fa.js nativeWebView'da doğrulandı. 24modül/7çekirdek/
+42yetenek,375×771/DPR3,25,taşma0/JS0/eksikvarlık0. Açılış/sunucu/koleksiyon
+kontrolü yapıldı, maç başlatılmadı; yedi gerçek telefon savaşı iddiası YOK.
+Telefon ana ekranda kullanıcı denemesine hazır bırakıldı. Isı kaldırılması ve
+yedi çekirdek VFX/özgünses V6 artık telefonda; enderlik mekanikleri hâlâ ÖNERİ.
+Yerel API kapalıydı; eski kalıcıtestdirruntime-no-overtime-20261028 ile açıldı.
+Başlatıcı21388/gerçek11936,8891,CORShttpslocalhost. USBreverse8891 açık,
+CDPforward9224 kapalı. USB ve bilgisayar açık kalmalı. Kullanıcı test ederken
+sunucu/uygulama yeniden başlatma. Ham WebSocket loglarında token olabilir.
+Kanıt artifacts/core-hero-v6/phone-20261101/result.json ve phone-*.png;
+android-package.json kurulumu kaydeder. Sunumraporu kurulumdurumuyla güncel.
+QAaracı çıktıdizini ve beklenenpaket env seçenekleri aldı; yeni günün günlük
+meta diyaloğunu bekleme yarışı düzeltildi, telefon tekrar kontrolü PASS.
+
+---
+
+# Son durum — 31 Ekim 2026, ısı çubuğu kaldırıldı / çekirdek lider sunumu V6
+
+Kullanıcı telefonda kalan ısı çubuklarını ve çekirdeğin yalnız yazı/normal silah
+benzeri sunumunu bildirdi; yedi çekirdeğe özel güçlü sunum ve 24modülün enderlik
+özellikleri için resmî oyun araştırması istedi. Bu tur çalışan modül CAN/hasar/
+Akım/enderlik/fiyatları DEĞİŞMEDİ. Enderlik yeni mekanikleri somut ÖNERİ belgesinde.
+
+ISI: module-card-state-view.js fiziksel görseller dahil hiç ısı barı OLUŞTURMAZ;
+eski heat bilgisi gelse bile rozet/çubuk yok. Gerçek CAN barları aynı. Eski v15
+ısıbarı konumlandırması da kaldırıldı. Sadece CSS ile gizleme yapılmadı.
+
+ÇEKİRDEK: yeni client/src/battle/core-vfx-v6.js + core-vfx-v6.css. ModuleVfx ayrı
+coreVfx sahibine aktarır; 7ayrı geometri ve14özgün aktivasyon/isabetWAV. Eski modül
+sesleri kullanılmaz. Rezonans altın dalga+yüzükler, Kale kale mührü+mızrak,
+Alev çift ateş akışı, İmha silinebilir hedefmührü+gerçek imhada kapanış,
+Takviye geçit+gerçek kurulanmodülde belirme, Anka kanat+gerçekonarımdacan dönüşü,
+Kuantum siyah/viyole yarık. Kaynak VEhedef anahtarı sayesinde Rezonans3hedef
+birbirini silmez. Ölen hedefkonumu sunucu core_attackolayında target_position
+olarak aktarılır; eskihücre/olaykonumu geri dönüşüyle darbe boşa çizilmez.
+Sadece sunum değişikliği: hasar/target/charge V5kuralları aynı. Yeni sunucu test1.
+
+CoreVfx bütçe12kök/düşükkalite8,256olaycache; ortak süpürücü, yeni JSvuruş/parçacık
+zamanlayıcısı yok. Ana modül efekt yükü yüksek diye çekirdeğin hedef bağı düşmez.
+Gizle/bitir/reset temizler. Düşük kalite/hareket azaltmada esas geometri görünür.
+14WAV486596bayt,mono22kHz;28OGG/AAC türevi var. tools/generate-core-audio-v6.py.
+
+TEST:762istemci,353odaklısunucu,10paket PASS. Tam tarihselserverPASS iddiasıYOK.
+320/393gerçekilkmaçta0ısıbarı/0JS/0eksikvarlık/0taşma; Rezo sunucu hedefleri
+çizilen hedeflerle birebir. Son393koşusunda3hedefayrıdalgaaynıanda. Yediçekirdek
+ayrıca SUNUM FIXTURE'LARI ile fotoğraflandı,7gerçekmaç oynandı SANMA.
+14sesisteği200,hashlerbirbirindenve24modüldenfarklı. SonuçtaVFXtemiz.
+Kanıt artifacts/core-hero-v6/, araçtools/check_core_hero_v6.cjs. QA8896başlatıcı
+20052; gerçekPID ve kaydıcore-v6-server-stderr.log içinde,telefonla karıştırma.
+
+ENDERLİK: Resmî Supercell Haziran2024 GoblinDemolisher/Curse/Machine, Ekim2022
+Phoenix/Monk, Blizzard Ragnaros tanıtımı incelendi. Kaynaklinkleri ve yorum ayrımı
+raporda. Öneri: yaygın sadegörev/nadir uzman/destansı dönüşüm/efsanevi koşulluimza.
+Tüm24kartkoru/iyileştir/yenidentanımla tektekincelendi; sabitenderlik/3sınıf/
+24kart/rastgelehücre/hedeföncelikleri/eskiyetenekfiyatları korunacak.
+Öncelik: Plazma5%×3sniz(32→29anaaday), Tampon70%emilim60havuz+40%emileniyeni
+CANpayı(max24/8snaday), Kuantum4.isabettepaylaşılanmax60%yankı(herhedefmax20%).
+14modüleherbirine%20=toplam3,6kat;70%emilimin tümünüonarım netCANüretebilir.
+Bu adaylar HENÜZ ANA MOTORA UYGULANMADI, deneymodu/ayrıoyun açılmadı.
+Budgetaracı yalnız matematik, savaşsimülasyonu veya insanmetasıkanıtıdeğil.
+Rapor docs/MODUL_ENDERLIK_INCELEMESI_V6_20261031.md,24kartverisi
+MODUL_ENDERLIK_ADAYLARI_V6.json. tools/analyze_rarity_budgets_v6.py.
+
+TELEFON: Yeni TEST APK DERLENDİ/AUDIT539dosya+v2imzaPASS, HENÜZ KURULMADI.
+SonkontroldeADB0cihaz. Kullanıcıya asyncsoru:USB bağlayıp kilidiaçması istendi;
+yanıtbekleniyor. Bağlarsa eskiyetkiyle install-r, uygulama/hesap silme YOK.
+Yeni mobilebuild567425426a9db700,JSgridshard-212e55279034e5fa.js,
+APK SHA000E654A3951F49238B22B505897C8EFAB33A18F31EA75F5EA9C597F95BF61A9.
+APK .mobile-debug/android/app/build/outputs/apk/debug/app-debug.apk.
+Telefonda şu an hâlâ öncekiV5kurulu, onun sunumu V6değil! Distşu an yerelAPI8891
+MOBİLpaketi; üretim/webpaketi sanma. Üretim/Playyayını/oyuncuparası değişmedi.
+8891telefonAPIsonbaşlatıcı19368/gerçek13868,aynıkalıcıtestdirruntime-no-overtime-
+20261028,CORShttpslocalhostkorundu,sağlıklı/0bağlantı. Logtokenlerini yazdırma.
+Hatalı önceki14464başlatma portdolu nedeniyleçıkmıştı; artık13868sağlıklı.
+Yeni telefonkurulumu yapılamadıysa tamamlandıdemekYOK; kullanıcıcevabında devam.
+Sunumraporu docs/CEKIRDEK_SUNUMU_V6_20261031.md;apkmeta artifacts/core-hero-v6/
+android-package.json. Kurunca bu durumları ve docdaki kurulumdurumunu güncelle.
+
+---
+
+# Son durum — 31 Ekim 2026, V5 telefona yüklendi ve bağlantı doğrulandı
+
+Kullanıcı bağlı telefondaki TEST uygulamasına son değişiklikleri istedi.
+Başarılı `adb install -r`, com.gridshard.localdebug, mevcut test hesabı/veriler
+korundu. Mağaza paketi/yayın değiştirilmedi. Aşağıdaki "APK yüklenmedi" notları
+bu bölümle aşılır. Ana kurallar ve fiyatlar 30 Ekim V5 bölümündeki gibidir.
+
+Mobilbuild aec9becb22f16531, JS gridshard-eac52556788d5507.js, APK SHA256
+C1F2D2A134603AE50777678AE264BF4574512CF806B98051631EDB579A81AE35.
+JDK21/SDK36 çevrimdışı assembleDebug PASS;511webdosya APKeşleşmesi ve v2imzaPASS.
+Dist şu an MOBİL yerelAPI8891 paketi; üretim veya web paketi sanma.
+
+İlk açılışta kullanıcı "sunucuya bağlanılamıyor" bildirdi. Gerçek WebView
+MissingAllowOriginHeader gösterdi. tools/e2e_server.py retained --runtime-dir
+modunda CORS_ORIGINS=https://localhost eklenerek kalıcı düzeltildi; farklıorigin
+izin almıyor. YeniAPI8891 sağlık/telefonmeta/hesap bağlantısı doğrulandı.
+USB reverse8891 açık. CDP9224 inceleme forward'ı KAPALI; yeniden kontrol için
+cihazdaki com.gridshard.localdebug PID'sini bulup onun WebView soketine bağla.
+Başka uygulama/Chrome sekmelerine dokunma.
+
+Telefonun375×771/DPR3,25 nativeWebView'ında 24modül/7çekirdek/42yetenek doğrulandı;
+Rezonans istatistiği yeni hasarlı rolü gösteriyor,6dal UI'da var; taşma0/JS0/eksik
+varlık0. Kontrol savaş/satınalma yapmadı, anaekrana döndü; kullanıcı denemeye
+başlayabilir. Kullanıcı test ederken sunucuyu/uygulamayı yeniden başlatma.
+USB ve bilgisayar açık kalmalı. Eski kalıcıtest dizini
+.mobile-debug/runtime-no-overtime-20261028; sunucu localhost8891, başlatıcı19420,
+gerçekPID için artifacts/core-roles-v5/phone-server-stderr.log başlangıcını veya
+8891dinleyicisini doğrula. Logların WebSocket satırlarında oturum parametreleri
+olabilir; ham logları yazdırma, gerekiyorsa sorgu bölümünü maskele.
+
+Rapor docs/TELEFON_V5_GUNCELLEME_20261031.md. Kanıt
+artifacts/core-roles-v5/phone-20261031/result.json + phone-*.png.
+Tekrar aracı tools/check_native_core_roles_v5.cjs. Kullanıcı hâlen oynuyor
+olabilir; yeni talimat gelmeden otomatik maç/hesap değişikliği yapma.
+
+---
+
+# Son durum — 30 Ekim 2026, doğrudan çekirdek rolleri + yetenek ağacı V5
+
+Bu bölüm aşağıdaki V4 çekirdek destek güçlerini ve 2200ms/100 normalize CAN
+Akım notlarını AŞAR. Kullanıcının son açık kararı: 5/9/13. seviye iki dallı
+çekirdek yetenekleri ESKİ MALİYETLERLE geri gelecek; yeni rollere uygun olabilir.
+Ana oyun 3 sınıf/24 modül. Eski hedef öncelikleri ve rastgele yerleşim korunur.
+Enerji/Isı, sınıf-kopya kotası, süre baskısı yok. Telefon kurulumu/yayın yapılmadı.
+
+ÇEKİRDEK ROLLERİ: core_balance.CORE_ROLES_V5; core_actions_v5.py aktif uygulama.
+Rezonans90/45/45 öncelikli3hedef; Kale6sn×1sn20hasar+kendi%60hasar azaltımı;
+Alev6sn×500ms18hasar, kendi ateşi, silah gerektirmez; İmha en yüksek bedelli
+RAKİP MODÜLÜ1,5sn sonra siler, Arındırıcı temizler/Faz engeller/kaynak ölürse iptal;
+Takviye kendi6deste kartından1bedelsiz, kendi seviye/yetenekleri, olağan rastgele
+boş hücre; Anka150hasar+gerçek CAN kaybı kadar kendi onarımı; Kuantum en yüksek
+CAN'lı rakip MODÜLÜN mevcut CAN'ının%50si, zırh/kalkanı aşar/Faz engeller.
+İmha/Kuantum rakip çekirdeğe uygulanmaz. Sabit hasar çekirdekseviyesiyle1.04^n.
+İlk20/sonra35sn. Ölünce ateş durur; kesintide atış biriktirmez. Anka yansımayla
+ölünce onaramaz. Takviye dolu/enkazlı alanda dolumunu kaybetmez, başarısız isteği
+kart değiştirmek için kullanamaz. Doğrudan hasar/koruma/imha/takviye/onarım gerçek
+katkıları ve sonuç metni var. VFX gerçek olaylara bağlı, sınırlı ve tekrar güvenli;
+7çekirdek atış cue'su sessiz mevcutWAVları kullanır; yeni saldırı zamanlayıcısı yok.
+
+ÇEKİRDEK YETENEKLERİ: core_talents_v5.py,42seçenek; her eşikte1dal. Eski IDs
+0_energy/0_charge vb korunur; Enerji mekaniği DEĞİL, görünen yeni role uygunadlar.
+SV5güç+%8 (işaret bekleme−%8/takviyeCAN+%8/yarık oranı+%8) veya kendiCAN+%5.
+SV9herçekirdekte2özel rol tercihi; ayrıntı raporda. SV13dolum−%10 veyaCAN+%12.
+Eski kredi/Akı fiyatları talents.py'den, bağımsız25Ekimfixture ile99cüzdan testi.
+Koleksiyonda3çekirdek sekmesi var; gerçek etkin açıklama/CAN/dolum savaşlaortak.
+Arşivlenmiş geçerli ücretli çekirdek seçimleri birdefa ücretsiz geri yüklenir;
+güncel seçimi ve eski makbuzları korur. catalog_migration.restore_core_talents_v5.
+Gerçek oyuncu verisi açılmadı/değiştirilmedi. İzole save/load testleri PASS.
+AI çekirdek seviyesi ve SATIN ALINMIŞ eşikler kullanıcıyla eşleşir, rolüne göredal
+seçer. CoreHP AIeşlemesi sonrası engine.start'ta yenilenir. Modül yetenekleri ve
+maliyetleri mevcut V3 düzeninde; bu tur onları değiştirmedi.
+
+AKIM SON KARAR:6başlangıç/12depo/+1her2500ms. 200YENİGÖRÜNENrakipCANkaybı+1,
+en erken6000ms birbonus; bank ençok1bonus. Gizli seviye normalizasyonu YOK.
+Normal silah ve doğrudan çekirdek hasarı sayılır. Onarılmış aynıCAN, overkill,
+kalkan, yansıma, dost hasarı gelir sayılmaz. Depoda bonusstoklamaz; pasif dolum
+herzaman sürer. pressure_current.py. Kullanıcı UI/eğitimi200/2,5sn/6sn bilgisiyle
+uyumlu. Üçüncü dakikada hasar artışı/onarım azaltımı ve zorla240sn bitiş YOK.
+
+DOĞRULAMA:352odaklısunucu,754istemci,10paket PASS. Tüm tarihsel sunucu testleri
+yeşil iddiası YOK. 320/393tarayıcı gerçekilkmaç4engellemeyenipucu,gerçekçekirdek
+hasarı200Akımsayacı/sonuçkatkısı/6ses/taşma0/JS0/temizlik PASS. Eski yetenek
+fiyatları/320-393yerleşimi/önizleme ve modülreset akışı için2Playwright PASS.
+96ekonomi senaryosu96bitiş; seçilen200görünen/6sn sınırda bonus payıortanca%21,2,
+karma16savaşortancası86,3sn, kamp0/8. Aynırollerde eski2200/100normalize95,1sn;
+daha yavaş pasif akımın maçları mutlaka uzattığı sonucu ÇIKARMA.
+56çekirdekaçık-kapalı savaş56bitiş,28çiftin8'inde kazanan değişti;9imha/14takviye.
+42tamçekirdek+modülyetenekli savaş42bitiş67,7–274,3sn. 84modülyetenekli savaş84bitiş
+61,3–277,6sn,ilkmodülkaybıgruportancası16,55–20,55sn.900sn araçgözlemsınırı
+oyun süre sınırıdeğil. İnsanmetası/evrenseltek-silahkaybı kanıtıdeğil.
+
+Rapor docs/CEKIRDEK_ROLLERI_YETENEK_VE_AKIM_V5.md. Kanıt artifacts/core-roles-v5/
+ve artifacts/core-roles-v5-module-talents/. Araçlar probe_current_v5.py,
+probe_core_roles_v5.py,probe_core_talents_v5.py,check_core_roles_v5.cjs.
+Son web dist77cb74081ed18a58. Yerel QA8895 (GERÇEKPID23060/başlatıcı23744),
+komut ve stderrden doğrula; eski8894/8891 süreçleriyle karıştırma. İzole runtime.
+Üretim/APK/yayın yapılmadı. Sonraki adım kullanıcıyla gerçek strateji+çekirdek
+karşıhamle testi; isterse bu sürümü telefonatestpaketiyle taşı. Geçişin yeni
+mekaniklerini eski enerji/ısı/çekirdekdestek testleriyle geri alma.
+
+---
+
+# Son durum — 30 Ekim 2026, çekirdekler ve bütünleşik savaş kuralları
+
+Bu bölüm aşağıdaki eski çekirdek sayıları/2ipucu/yalnız pasif Akım notlarını AŞAR.
+Kullanıcı AI desteleri/kuralları, ilk eğitim, yeni modül VFX+sesleri, hissedilir
+çekirdek ve savunma-tek-silah dengesini istedi. Ek vurgusu: çekirdeğin gerçek
+oynanış etkisi olmalı. ANA 3sınıf/24kart üzerinde uygulandı; ayrı deney yok.
+Rastgele hücre/teknik hedef tercihleri ve kotasız yerleşim aynı. Enerji/Isı yok.
+Modül yetenek fiyatları/eşikleri/reset25Akı kararı değişmedi.
+
+ÇEKİRDEK: core_balance.CORE_TUNING tek kaynak. İlk20sn/sonra35sn.
+Rezonans çekirdek+2dosta %25onarım; Muhafız %30kalkan/8sn; AşırıYük 2silahın
+4atışına+%60; Kesinti2silah2,5sn (hazırlık da ertelenir,toparlanma koruması);
+Kapasitör+5Akım/depo12; Anka uygun yıkılmış modül%70CAN; Kuantum çekirdek+2
+dosta6sn içinde2hasarlıisabeti engelleyen perde. Otomatik hedef seçimi sürer.
+core_impact gerçek onarım/ekCANhasarı/emilenhasar/geri dönenCAN/akım/kesinti
+süresi kaydeder. Fazla öldürme hasarı ek katkı sayılmaz; Akım rakipten gizli.
+Bildirim+hedef bağlantıları+gerçek sayılar+maçsonu çekirdek katkı metni var.
+
+AKIM:6başlangıç/12depo/+1her2200ms temel dolum korunur. pressure_current.py:
+seviye1'e normalize100YENİrakipCANhasarı +1Akım; ençok6sn'de1,ilerleme ençok
+birbonus. Kalkan/yansıma/dost/overkill/onarılmış aynıCAN çift gelir yapmaz.
+Anka dönüşü izini sıfırlamaz. Ekonomi ayrı hesap paralarına dokunmaz.
+İnce turkuaz ilerleme çizgisi ve gerçek+1AKIM geri bildirimi var.
+
+ÖNEMLİ DENGE BULGUSU:Ek Akım tek başına çokluOnarım tıkanmasını çözmedi.
+Onarım 15CAN'ı3sn'de3darbeyle verir; aynıhedefte yenilenme BİRİKMEZ, diğer
+yaralıdosta gidebilir. Kartın2sn eylem dolumu korunur. Yeşilrozet/darbeler,
+tanım/parametreler güncellendi. Küçük onarım bonusları kesir taşıyarak işler.
+Kullanıcıya yeni bir modül/sınıf kotası veya süre baskısı konmadı.
+
+AI:11farklıarketipdestesi;120kaynakbot yenilendi,120üretilen eşi devralır.
+240bot6farklı/açılabilir kart PASS. Üç görünen sınıf eğilimleri; enerji/sabotaj
+sınıf tabanları yok. Bot becerileri ve çekirdek kararları yeni güçlere uyar.
+İlk savaş betiği V4:4engellemeyen/GEÇilebilir ipucu, ençok16sn; kart/3sınıf/
+ekAkım/otomatik hedefli çekirdek. clientrelay tutorial_script4;sunucu4.
+
+VFX/SES:6yeniözgünWAV,24aktifkart24farklıhash;22kHzmono,toplamyaklaşık60KB
+yeni6dosya. Mevcut ses bütçesi korunur; çekirdeğin ayrıöncelikcue'ları var.
+Tampon/Arındırıcı/HızRölesi olaya bağlı;SonSiper ölü kaynakta da corekalkanı
+görünür. Alan/zincir hedef efektleri birbirini silmez; faz gerçekrozete bağlı.
+Bildirim/efektler sonuç/menü/gizleme/boyutdeğişiminde temizlenir. Enderliklerin
+mevcut mekanik kimlikleri görünür; ilavegenelHP/hasarçarpanı/pasif eklenmedi.
+
+TEST:352odaklısunucu,752istemci,10build PASS. TAM TARİHSEL SUNUCU SUİTE
+YEŞİL iddiası yok.2gerçektarayıcıakışı320x740/393x852 PASS:4ipucu,gerçek
+coreonarımı/maçsonuaynıtoplam,+Akım,6ses200,JS/eksikvarlık/taşma0,temizlik.
+56aynı-deste/coreaçık-kapalı savaşın56'sı bitti;28çiftin6'sında kazanan değişti.
+Savunmayığıp30snsonra1aktif-silahpolitikası:33/33bitiş,0kampgalibiyeti;
+bonus açıkortanca75,6sn;kapalı102,7sn (aynısonkurallar). İnsanmetasıkanıtıdeğil.
+Yetenekli84ekAI savaşı84bitiş,0adet900sn gözlem aşımı;54,2–308,9sn.
+
+Rapor docs/CEKIRDEK_AI_AKIM_VE_EGITIM_V4.md;kanıt artifacts/combat-readability-v4/
+ve combat-readability-v4-talents/. Araçlar sync_ai_decks_v4.py,
+probe_combat_readability_v4.py,probe_core_powers_v4.py,check_combat_readability_v4.cjs.
+Webdist d351d19a46c734ce.8894izoleanaQA son gerçekPID19564/başlatıcı12736;
+stderrden doğrula.8891ilekarıştırma. Üretim/gerçekoyuncuverisi/yayın/APK kurulumu
+yok. Sonrakiadım insanstrateji/çekirdek seçimi testleri veya kullanıcıisterse
+güncelistemci+sunucuyla telefonpaketi. Telefona kuruldu/yayınlandı sayma.
+
+---
+
+# Son karar — 30 Ekim 2026, modül yetenekleri geri geldi
+
+Kullanıcı 24 aktif modülün yeteneklerini ESKİ MALİYETLERLE ve mevcut işlerine
+göre geri istedi. Uygulandı. Bu bölüm aşağıdaki yetenek arşivle/kapalı notlarını
+aktif kartlar açısından AŞAR. 3 sınıf/24 kart/Akım tek ekonomi kararı sürüyor.
+Enerji/Isı/emekli kart/kota/hedef/yerleşim/çekirdek dalları geri getirilmedi.
+
+Kaynak server/app/game/module_talents_v3.py: 4 eşik×2 dal. Temel iş+%3/CAN+%5;
+imza kartın iki mevcut özellik uzmanlığı; ince ayar çevrim−%4 (pasifte iş+%4)
+/CAN+%5; ustalık iş+%6/CAN+%8. Eski TALENT_LEVELS ve TALENT_COSTS değişmedi;
+sıfırlama seçili eşik başına25Akı. Eski tier0..3 ve power/resilience kimlikleri
+korundu. Detay/fiyat/48imza dalı docs/YETENEK_KANONU.md; koddan üretici
+tools/document_module_talents_v3.py. Yeni kart yayınında iki uzmanlığını da ekle.
+
+Kart önizleme ve canlı aksiyonlar aynı hesaplanmış parametreleri kullanır.
+960ms çevrimin her seferinde1000ms'ye yuvarlanıp hızı boşa çıkarması düzeltildi;
+artık zaman farkı taşınır, hazırlıklı silahlar da testli. Blok/şifa/kuantum4.
+isabet/seri atış/EMP/Virüs gerçek etkileri testli. Rozetler gerçek yüzde/süre.
+Modül YETENEKLER sekmesi aktif; çekirdek skills[] kapalı. Bilgi açıldığında
+arkadaki hızlı işlem kutusu kapanır. Font lisans gösterimi whitespace eşitlendi.
+
+VERİ: catalog_migration.restore_active_module_talents, özel arşivdeki geçerli
+ücretli AKTİF kart seçimlerini ücretsiz bir kez bağlar; mevcut seçimleri ezmez.
+module_talents_v3_restored özel bayrağı kalıcıdır; reset tekrar geri gelmez.
+18emekli kartın kayıtları arşivde,1:1parça dönüşümü geçerli, işlem fişleri aynı.
+Gerçek oyuncu dosyaları bu tur açılmadı/değiştirilmedi; izole test verisi.
+
+SON DOĞRULAMA:323 odaklı sunucu PASS (118 yeni yetenek),746 istemci PASS,
+10build PASS,2Chrome tarayıcı PASS.320x568/393x852 tüm4enderlik maliyet/8dal/
+kilitli önizleme0POST;4seçim/100Akıreset UI fixture (gerçek harcama sanma).
+84eşlenmiş AI savaşı:84bitiş,0adet900sn gözlem aşımı. Seviye15 ortanca
+yeteneksiz101,15sn/sol85,6sn/sağ130,3sn. İnsan strateji dengesi kanıtı değil.
+TAM TARİHSEL SUNUCU SUİTE YEŞİL iddiası yok; eski sözleşme taşıma işi sürüyor.
+Rapor docs/MODUL_YETENEKLERI_GERI_DONUS_V3.md, kanıt artifacts/module-talents-v3/.
+Araç tools/probe_module_talents_v3.py; ana probe'a opsiyonel seçim eklendi.
+
+Web dist özeti f7d269f404135f04.8894 yerel ana QA güncel; son gerçekPID27292,
+başlatıcı18896 (stderrden doğrula).8891ile karıştırma. APK/telefon kurulumu,
+üretim verisi/yayın yok. Sonraki adım gerçek oyuncu strateji testi veya kullanıcı
+isterse güncel istemci+sunucuyla telefon paketi; kuruldu/yayınlandı sayma.
+
+---
+
+# Güncel durum — 30 Ekim 2026, ana oyun 24 kart
+
+BU BÖLÜM aşağıdaki eski deney/aday/ana oyun değişmedi notlarını AŞAR.
+Kullanıcının onayıyla 3 sınıflı24 modüllü plan ANA OYUNA taşındı. Kaynak:
+server/data/module_roster_v2.json.10Saldırı/8Savunma/6Taktik;8Yaygın/8Nadir/
+5Epik/3Efsanevi.18 eski kart aktif katalog/arena/bot/ödül havuzundan çıktı.
+6 yeni kartın gerçek PNG+WebP görselleri,2silahın8yönü tamam.187eski resim
+artifacts/retired-v2/ arşivinde. Aktif build içinde emekli modül görseli0.
+Rastgele yerleşim ve tercihli hedefler aynen korunur. Üç görünen sınıf ile
+legacy_target_category ayrıdır; hedef sırasını görünür sınıfa çevirme.
+Enerji/Isı/kopya-sınıf kotaları/süre hasar baskısı yok. Akım6/12,+1/2200ms.
+52 eski aksiyon yöntemi ana motordan kaldırıldı; eski yardımcı kütüphaneler
+henüz tarihsel testlerce okunur.7çekirdek otomatik hedef,ilk20sn/sonra35sn.
+
+VERİ KARARI:18 kartın mevcut parçaları1:1 evrensel parçaya; eski seviyeler
+ve yetenek seçimleri özel arşive. Korunan kartların seviyeleri değişmez.
+catalog_migration.py profil yükle/kaydet yolunda; tekrarlı dönüşüm yok.
+İmzalı iade borcu korunur; tarihsel iade/ödül hareketleri evrensel parçaya
+yönelir. İşlem fişleri değiştirilmez. GERÇEK VERİLERE/üretime/APK'ya bu tur
+dokunulmadı. Yeni sunucu/eski APK karmasıyla yayın yapma; beraber güncelle.
+
+GÜNLÜK META da uyarlandı:5eşit seçenek, Saldırı hasarı+%10,Savunma CAN+%10,
+Taktik CAN+%10,Çekirdek CAN+%10,Akım+%15. Eski support/sabotage/system
+seçimleri getter üzerinden tactics'e eşlenir.5dilimli çark/metinler düzeltildi.
+Tam menü öğreticisi artık Ayarlar'dan isteğe bağlı. İlk savaşta2kısa ipucu,
+blocking:false,GEÇ;motor okumayı beklemez ve8sn'de ipuçları biter.
+
+DOĞRULANAN:746istemci testiPASS;177odaklı sunucu testiPASS;10build testiPASS.
+Ana motor56AIeşleşme:56bitiş;59,4–237,7sn;ortanca99,3sn;24kartın hepsi ve
+7çekirdek,338güç kullanımı. İlk42testte3adet900sn gözlem aşımı vardı; botlar
+devre büyürken saldırı da kuracak şekilde tercih puanı aldı (oyuncuya kota yok).
+Son sette0gözlem aşımı.900sn oyun süresi kuralı DEĞİL. İnsan denge kanıtı değil.
+Tarayıcı320x740/393x852/1080x1000:taşma0,JS/eksikresim0;24koleksiyon/3sınıf,
+6yeni sanat,yerleştirme/sonuçPASS. Gerçek yeni hesap:rehbersiz menü;ipucu açıkken
+Kalkan oynama;ipucu kapanma;20sn çekirdek gücünün otomatik kullanımıPASS.
+Kanıt artifacts/main-roster-v2/. Son rapor docs/ANA_OYUN_24_MODUL_GECISI_V2.md.
+
+ÖNEMLİ KALAN: TAM TARİHSEL SUNUCU SUİTE YEŞİL DEĞİL. Eski enerji/ısı yöntemlerini
+doğrudan çağıran ve36kart/kota/eski bot destesi bekleyen sözleşmeler var.
+En son geniş koşu maxfail12:12fail/13pass; bunları177PASS gibi sayma.
+Günlükler artifacts/main-v2-full-server-audit*.log. Yeni öğretici/simülasyon
+şablonu testleri taşındı; eski öğretici dosyası yerel tarihsel arşivde.
+Sıradaki kod işi eski sunucu sözleşmelerini yeni kurala taşıyıp tüm regresyonları
+doğrulamak. Sonra oyuncu strateji testi ve güncel sunucuya bağlı telefon paketi.
+Telefon kurulumunu yapmış sayma. Üretime yayın/mağaza güncelleme yetkisi yok.
+
+SEZON:server/data/season_module_releases_v2.json. Her yeni sezon>=1kart,
+katalog birikir24→25+;sezonsonu kart silinmez. İlk4sezon üretim fikri:Yankı
+Rölesi, Kor Fırlatıcı,Darbe Muhafızı,Toparlanma Feneri;henüz AKTİF DEĞİL.
+Runtime/art/counterplay/balance/arena/free-acquisition yayın kapıları var.
+
+Ayrı8893deney sunucusu kapandı;client/lab,API,başlatıcı ve deney testleri
+artifacts/retired-v2/ altında. Tek seferlik taşıma betikleri
+artifacts/main-v2-transition-tools/ arşivinde; eski plan üreticisini tekrar
+çalıştırma. Güncel araçlar:tools/probe_main_roster_v2.py,
+tools/check_main_roster_v2.cjs,tools/check_first_battle_v2.cjs,
+tools/register-main-module-art-v2.cjs. Yeni PNGmasterlar gitignore;WebPtracked.
+Yerleşik image_gen kullanıldı;prompts.json ve yaw-prompts.json görsel klasöründe.
+Yerel ANA oyun sunucusu8894,songerçekPID15660/başlatıcı11964 (stderrden doğrula),
+yalnız izole QA verileri.8891eski telefon test sunucusuyla karıştırma.
+
+---
+
+# Güncel ana oyun geçişi — 29 Ekim 2026 (çalışma sürüyor)
+
+ÖNCEKİ DENEY NOTLARINI AŞAN KULLANICI KARARI: Ayrı deney bırakıldı. Onaylanan
+24 kart (10 Saldırı / 8 Savunma / 6 Taktik) artık ANA OYUN katalog kaynağıdır.
+18 kart aktif tanımlardan ve arena/bot havuzlarından çıktı. 6 yeni kartın
+PNG/WebP görselleri ve iki silahın 8 yön resmi üretildi. Ana motor yeni 24
+mekaniği çalıştırır; 52 eski enerji/ısı/yetenek aksiyon yöntemi kaldırıldı.
+Rastgele yerleşim ve eski teknik hedef profilleri korunur; görünür sınıflar3.
+Enerji/Isı/kopya-sınıf kotaları/süre hasar baskısı yok. Akım6/12,+1/2200ms.
+7 çekirdek gücü otomatik hedef seçer; ilk20sn/sonra35sn. Sayılar kaynak ve raporda.
+
+Kullanıcı bu tur veri geçişini seçti: 18 kartın parçaları1:1 evrensel parçaya,
+seviyeleri özel arşive. catalog_migration.py idempotent; imzalı iade borçları
+korunur. Eski yetenek/seçimler arşivlenir, işlem fişleri değişmez. Geçiş kodu
+izole testte; GERÇEK OYUNCU VERİLERİ/üretim/APK güncellenmedi.
+
+İlk26 ana motor testi geçti;4 veri geçiş testi geçti;10 derleme testi geçti.
+PvP+ödül regresyonunda43pass/1eski36sayısı beklentisi. Tam istemci testinde
+eski36kart/enerji/ısı/yetenek sözleşmeleri hâlâ güncellenmeli. Sonuçları bitmiş
+sayma. Yerel ANA oyun QA sunucusu8894, PID3428 (başlatıcı712), izole runtime.
+Arayüz ve denge QA, sezon planı ve eski deney kaldırma sürüyor.
+
+Yeni dosyalar: server/data/module_roster_v2.json, server/app/module_roster.py,
+server/app/game/battle_actions_v2.py, server/app/catalog_migration.py,
+server/data/season_module_releases_v2.json, server/app/season_module_releases.py.
+Yeni görseller client/assets/ui/modules-physical-v3/; prompts.json kaynak.
+Eski kayıt yedeği server/migrations/legacy_module_catalog_v1.json (oyuncu verisi
+DEĞİL). Öncesi kod yedeği artifacts/main-v2-before/. Eski plan üreticisi
+ generate_current_only_design.py artık aktif kaynak için çalıştırılmamalı.
+
+---
 # GRIDSHARD geliştirme kontrol noktası
+
+## Son ek — enderlikler ve otomatik çekirdek seçimi, 29 Ekim 2026
+
+Kullanıcı çekirdeğin yararlanacak modülleri kendisinin seçmesini netleştirdi ve
+24adaykartın enderliklerinin/farklarının belirlenmesini istedi. Yapıldı:
+8Yaygın/8Nadir/5Epik/3Efsanevi. Tek kaynak `server/app/game/rarity_identity.py`;
+üretici,adayJSON,Markdown ve10kartlık deney bunu okur. Efsaneviler:
+Kuantum Tekrarlayıcı(4Akım),Faz Zırhı(4),Son Siper(3). İlk6kart Yaygın;
+ilkNadirA2,EpikA7,EfsaneviA8. Arena kartları/eşikler aynı.
+Enderlik ekCAN/hasar/hız/Akım çarpanı uygulamaz(1,0),seviye eğrisi ortak%4;
+kart başına bir imza/gerekçe ve görünür mekanik farkı var. Ayrı gizli pasif/kota
+eklenmedi. Ayrıntılar `docs/ENDERLIK_VE_OTOMATIK_CEKIRDEK_V2_20261029.md`.
+
+Çekirdek hedefleri OTOMATİK;oyuncu sadece kullanma anını seçer. Rezo en yaralı2,
+Muhafız ateş altındaki+yaralı dost. AşırıYük artık tamyüklü silahları atlar;
+çalışanlar önce,temelhasar×eksikyük potansiyeli büyük2silah,sonra yerleşme sırası.
+“En eski iki silah” açıklaması bu düzeltmeyle AŞILDI. Eşit ihtiyaçta Yaygın kart
+da seçilir;enderlik seçim ölçütü değildir. API elle hedef göndermeyi reddeder.
+Dolum20/35sn ve gücün sayısal oranları aynı;diğer4çekirdek henüz yeni düzende yok.
+
+92otomatik test PASS;Chrome3ölçüPASS(taşma0,JS0),etiketler ve4enderlik açıklaması
+görünür. Raf isimleri tek satır/görseller tam. Yeni kaynak81senaryo:81bitiş,
+84,9–393sn,medyan116,5sn;gerçekkatkısı0olan kendiçekirdeği senaryosu0.
+Kanıt `artifacts/rarity-core-v2-20261029/`;başlatıcıPIDserver.pid,gerçekPIDstderr.
+8893yereldeney açık. 24kartın tüm mekanikleri uygulanmış DEĞİL;deneyde10kart var,
+bu10un bazı iş/sayıları24adayla birebir aynı değil. Yeni6kart görselleri yok.
+Anaoyun/APK/sandıkoranı/yükseltmeekonomisi/oyuncuyatırımı geçişi yapılmadı.
+
+## Güncel karar ve çalışan deney — 29 Ekim 2026, Akım V2
+
+KULLANICI KARARI: Mevcut rastgele yerleşim ve öncelikli hedef türü/sırası
+DEĞİŞMEYECEK. Sınıflar Saldırı/Savunma/Taktik; “Koruma” adı kullanılmıyor.
+Enerji/Isı kaldırılacak; devrede tek ekonomi Akım. Aynı kart2/aynı sınıf3 ve
+saldırı dışı-saldırı oranı gibi yerleştirme kotaları olmayacak. Kullanıcı açıkça
+Batarya,Kapasitör,Akım Dengeleyici,Soğutucu'yu Akım işlevine dönüştürmeyi REDDETTİ;
+bu dört kart yeni düzenden çıkarılacak. Bazı destek/sabotaj kartları da ayrılacak,
+kalacaklar tek ana işe sadeleşecek; yeni kartlar tüm arenalara dağıtılacak.
+Oyuncu öğreticiyi okumadan oynayabilmeli, sahada ne olduğunu görebilmeli.
+
+Çalışan ayrı yerel deney http://127.0.0.1:8893/ (`gridshard-current-only-v2`).
+10 kart,3 sınıf,enerji/ısı yok; kotasız14hücre. Ana motorun rastgele seçim formülü
+`board.automatic_deployment_position` ortak fonksiyonuna çıkarıldı; ana motor
+aynı formülü kullanıyor. Deney saldırıda `combat.selectable_targets`, EMP'de
+`sabotage.select_sabotage_target` kullanıyor. V1'in sırayla hücre doldurma ve
+“en eski modül” hedefi KALDIRILDI. Önceliği yeniden tasarlama önerisi artık geçersiz.
+Ark ikincil hedefi de hücre komşuluğu değil, öncelik sırasındaki sonraki modül.
+Üç görünen sınıf eski teknik hedef grubunu/sırasını değiştirmez.
+
+Yeni aday katalog: `docs/AKIM_UC_SINIF_ARENA_KATALOG_V2.md`,
+`server/data/current_only_design_v2.json`; üretici `tools/generate_current_only_design.py`.
+24kart=10Saldırı/8Savunma/6Taktik;18eski kimlik sadeleşir,6yeni tasarım:
+Seri Top,Kalkan Kırıcı,Tampon,Son Siper,Arındırıcı,Hız Rölesi.
+12mevcut arena adı/kupa eşiği korunur,her arenada yeni kart;A1'de6kart.
+Dört emeklilik kullanıcı kararı,diğer14 eski kartı ayırma henüz TASARIM ÖNERİSİ.
+36eski kimlik18korunan/18ayrılan olarak tam eşlendi; hiçbir sahiplik/seviye/yetenek/
+satın alma geçmişi silinmedi. 6yeni kartın mekanik/görselleri henüz oluşturulmadı.
+Deneydeki10kartın bütün sayıları/işlevleri de24adayla birebir aynı sayılmaz.
+
+84otomatik test PASS (deney/API/tasarım+mevcut tahta/komut/savaş regresyonu).
+Chrome1080×1000,375×812,320×740:oynama/inceleme/yeniden deneme PASS;taşma0,JS hata0.
+Hiç silah koymadan doğal Akımla3Kalkan aynı anda sahaya kondu; kota engeli yok.
+81senaryonun81'i bitti:85–296,5sn,medyan116,5sn. İlk modül kaybı20–70,5sn;
+yok edilen silahların senaryo medyanları5,1–100,2sn. Bazı silahlar hâlâ kısa yaşar;
+denge/anlaşılabilirlik bitmiş DEĞİL. V1'in36kilitlenmesi bu sette yok; koşullar
+değiştiğinden tek değişken kanıtı değildir. Rapor:
+`docs/GRIDSHARD_CURRENT_ONLY_V2_TEST_20261029.md`;kanıtlar
+`artifacts/current-only-v2-20261029/`. Eski V1 sonuçlarını V2 kanıtı sayma.
+
+Ana oyunun enerji/ısı/katalog/öğretici/arena-ödül geçişi ve telefon APK'sı topluca
+dönüştürülmedi. Bu tur normal motordaki tek müdahale aynı yerleşim formülünün
+ortak yardımcıya taşınması; normal kota davranışı hâlâ eski, regresyonları geçiyor.
+Sıradaki iş başlangıç altılısını aday tanımlara tamamlamak,sonra arena paketlerini
+uygulayıp ayrı test etmek. Kotasız14aynı kart/onarım/kontrol zinciri testlerini sürdür;
+sorunu kota veya uzatma hasar baskısıyla geri getirme. Gerçek oyuncu anlama testi,
+telefon doğrulaması ve eski kart/lig ödülü geçişi henüz yapılmadı. Godot göçü yok.
+V2başlatıcıPID `artifacts/current-only-v2-20261029/server.pid`;gerçekPIDstderr'de.
+Normal8891telefon sunucusunu durdurma. Codex sağ tarayıcıda V2 açılacak/kuyruklanacak.
+
+## Önceki deney — sade savaş V1; aşağıdaki yön bazı kararlarda AŞILDI
+
+Kullanıcı sadeleştirmeyi uygulayıp denemeyi, görsel açıklık için gerekirse yalnız
+savaş çizicisini değiştirmeyi onayladı. AYRI yerel deney hazır:
+http://127.0.0.1:8893/ (`tools/simple_lab_server.py`). 10 kart, Saldırı/Koruma/Taktik,
+tek Akım 6/12 ve 2,2sn/+1, altılı deste, 3 belirgin aktif çekirdek. Enerji/ısı/
+yetenekler bu deneyde yok. Ana oyun, hesaplar, Devre Yolu ve telefon APK'sı aynı.
+Rapor `docs/GRIDSHARD_SADE_DENEY_V1_SONUCLARI_20261029.md`.
+
+Canvas2D mevcut v7 görselleriyle gerçek hedefi, silah yönünü, atış/onarım/destek
+bağını, EMP sayacını, geçici kalkanı ve yüklü atışları gösteriyor. Dokunarak açıklama,
+olay paneli ve gerçek çekirdek katkısı var. Yeni motor/kurallar servisi ayrı:
+`server/app/game/simple_lab.py`, `server/app/simple_lab_api.py`, `client/lab/`.
+Godot göçü yapılmadı; bu görünürlük örneği mevcut teknolojiyle çalıştı. Fiziksel
+telefon performansı/oyuncu anlayışı bu tur test edilmedi.
+
+45 otomatik test PASS (deney/API + mevcut stratejik savaş/modül regresyonu).
+Gerçek Chrome 1080×1000,375×812,320×740: oynama/duraklatma/güç/inceleme/yeniden
+kurulum PASS; yatay taşma0,JS hata0, raf adları tek satır, görseller tam.
+81 senaryo İKİ TUR: her tur45 çekirdek yıkımı,36 maç900sn'de hâlâ sürüyor.
+Son tur biten maçlar163,5–448,4sn,medyan215,8sn. 900sn yalnız gözlem üst sınırı;
+oyunda süre/uzatma hasar/onarım baskısı yok. Savunma kilitlenmesi ÇÖZÜLMEDİ;
+bu sürüm tamamlanmış denge diye sunulmaz. Sonraki odak çekirdeğe anlaşılır ilerleme
+kuralı; genel CAN/akım artırmak veya motor değiştirmek bu bulguyu çözmüyor.
+Muhafız eski iki modülü koruduğunda altı senaryoda sıfır katkılıydı; testten sonra
+ateş altındaki modülü öncelikli koruyacak şekilde değişti. İkinci turda sıfır katkılı
+kendi çekirdeği senaryosu0. Kanıtlar `artifacts/simple-lab-20261029/`.
+
+Yerel servis yalnız loopback8893; hesap/kalıcılık geçitlerini içe aktarmıyor.
+Sunucu başlatıcısı PID `artifacts/simple-lab-20261029/server.pid`, gerçek uygulama
+PID'si stderr başlangıcında; mevcut8891 telefon sunucusunu durdurma. Oturumlar
+bellekte; kapanınca silinir. Codex sağ tarayıcı paneline deney açıldı/kuyruklandı.
+Normal mobil derleme değişmedi; yeni deney telefona kurulmuş DEĞİL.
+
+## Güncel konu — anlaşılabilirlik, sade modüller ve belirgin çekirdekler
+
+Kullanıcı gerçek oyunculardan "kuralları anlamadım / kim ne yapıyor" geri
+bildirimi aktardı; Sistem/enerji, destek-sabotaj kalabalığı ve çekirdeklerin
+etkisiz hissedilmesini ele almak istiyor. Mevcut GRIDSHARD'da kalınıyor.
+`docs/GRIDSHARD_SADELESTIRME_CEKIRDEK_ODAKLI_PLAN_V1.md` hazır; ANA OYUNA
+UYGULANMADI; yukarıdaki ayrı deney artık çalışıyor. 36kimlik ve7çekirdek için değerlendirme yönü belgede.
+
+Doğrulananlar:36kart=11Saldırı/7Savunma/3Sistem/10Destek/5Sabotaj;
+normal hedef sırası Savunma→Sabotaj→Destek→Sistem→Saldırı ve sonra çekirdek.
+Batarya hâlâ4,5enerji/sn+20depo; Kapasitör10depo; Dengeleyici enerji gideri
+azaltır. Enerji anlamsızlığı kullanıcı deneyimi yorumu; kodda etkisiz değil.
+Eğitim24sahne ve enerji/ısı için hazırlanmış örnekler içeriyor.
+Rezonans gerçek formülle seviyede1/8/15:çekirdekCAN450/771/1322,
+onarım45/57/73=%10/%7,39/%5,52. AşırıYük1seviye3sn+%25/35sn temel
+dolum; yalın sürekli saldırıda%2,14 ortalama ekhasar referansı, gerçekmaç
+etkisi veya yeni simülasyon değil. Envanter/hashler `docs/sadelestirme-v1/mevcut-durum.json`.
+
+Öneri:tekAkım ekonomisi, genelenerji+ısı kaldırılmış ayrı testkuralları;
+Saldırı/Koruma/Taktik üçsınıf; tek ana iş/kart. İlk deney10kart
+(Lazer,Darbe,Ray,Ark,Kalkan,Bariyer,Zırh,Onarım,Güçlendirici,EMP).
+Bu10kart yayınkataloğu değil; A1'de6 ve A2–12'de≥1yenikart için≥17kart
+gerekir, ligkartları ayrıca. Eski36kart yatırımı/geçerli desteler/ödüller
+için geçiştablosu hazırlanmadan silme/birleştirme uygulanmaz.
+
+Çekirdekler:tek belirgin aktifgüç; önceRezonans/Muhafız/AşırıYük deneyi.
+Rezonanscore+2modül anlamlıoranonarım; Muhafızcore+2modülkalkan;
+AşırıYük2silahınsonraki3atışıgüçlü. Diğer4 için tek ana kimlik belgede.
+İlkdolum20sn/sonraki35sn ve oranlar SADECE aday. Büyük yetenek ağaçları
+deneyde ayrılır, oyuncu kayıtları silinmez. Gizli5sınıfhedefsırasına sade
+görünen hedef aday kuralı ve kaynak/hedefişaretleri; otomatikyerleşim
+başlangıçtutulur, yeni hücrekuralları aynıdeneye yığılmaz. Kullanıcıya
+henüz uygulanmış/tested denge diye anlatılmamalı. Sonkurulu telefon paketi
+ve mevcutoyun aşağıdaki gibi aynı; bu tur sadece analiz/tasarım belgeleri.
+
+## Son kurulu telefon paketi — tek satır raf adları; 29 Ekim 2026
+
+Kullanıcı telefon yüklemesini yeniden istedi; son GRIDSHARD TEST kuruldu
+ve gerçek telefonda kısa savaşla doğrulandı. Güncel rapor:
+`docs/TELEFON_GUNCELLEME_VE_RAF_ADLARI_20261029.md`.
+
+SON KURULU: `com.gridshard.localdebug`, build `ecdd1f3bedbf8345`,
+JS `gridshard-70ebb2d97dcdae3a.js`; APK SHA256
+`4DBB771DBB03C72DC97163B0067F1FDDCACBFF4736B90D1CE838649B518DD2E3`.
+Yeni APK mevcut `.mobile-debug/android/app/build/outputs/apk/debug/app-debug.apk`.
+V7 tahta görselleri (mavide üst ince/alt kalın) ve uzatmasız motor artık
+telefon testinde kullanılan sürüme dahil. Enerji/ısı ve mevcut GRIDSHARD
+oynanışı korunuyor; tasarım önerileri uygulanmadı.
+
+Raf adları üç noktayla kesiliyordu. İki satır denemesi kullanıcı tarafından
+REDEDİLDİ: isim bölünmesi ve lazerin üstünün kaybolması. Bu düzen geri alındı.
+Son düzen tek satır/11px ad şeridi, 58px kart, yaklaşık48,15px görsel.
+`module-layers-v15.css` görsel yüksekliğini korur; `app.js` raf adlarını tek
+canvas ile ölçüp gerektiğinde yatay sığdırır. Telefonda 5px font talebi8px
+hesaplandığı için yalnız punto küçültmek yeterli değildi. Raf/yerleşim/font
+hazır değişiminde çalışır; yeni animasyon saati yok. Kısa ad sözlüğü aynı.
+
+746istemci/10paket testiPASS; assembleDebug+671dosyaAPKauditPASS; install-rPASS.
+Gerçek WebView375×771/DPR3,25:36maliyet ve35birinci-seviyeCAN/hasar eşleme,
+v7görselhashleri,15+15hücre,UIileLazer,taşma0,JS-hata0,anaekranadönüşPASS.
+36rafadı × (normal/32px alan)=72bileşen örneği: üretimdeki aynı fitter
+kodu gerçekWebView/font üzerinde çalıştırıldı, kesilme0. 36ayrıgerçekdeste
+maçı değildir. Kısa kontrol; doğal çekirdek yıkımı/3dk sonrası bu tur yeniden
+oynanmadı. Fiziksel ADB fotoğrafı gözle incelendi; adlar tek satır tam.
+Kanıt `artifacts/shelf-labels-single-line-20261029/` (result.json ve phone-*).
+
+Yerel test sunucusuPID16420/8891 açık; kalıcıQAdepo
+`.mobile-debug/runtime-no-overtime-20261028`. USBreverse8891 açık; kullanıcı
+denemesi için USB+bilgisayar açık kalmalı. EkranUSBstayon eski0'a geri alındı,
+CDP9224 kaldırıldı. Telefon anaekranda bırakıldı. Canlı/Play/üretimapp yok.
+Alttaki "henüz kurulmadı/cihaz yok/telefon ertelendi" kayıtları tarihsel;
+son telefon durumu bu bölümdür.
+
+## Etkin yön — mevcut GRIDSHARD üzerinden devam
+
+29 Ekim 2026: Kullanıcı mevcut GRIDSHARD üzerinden devam etmeyi seçti.
+Yeni oyun veya oyun motoru dönüşümü etkin çalışma planı değildir.
+Aşağıdaki uygulanmamış tasarım çalışmaları geçmiş önerilerdir;
+kendiliğinden uygulama talimatı olarak alınmamalıdır.
+Telefon yüklemesi 29 Ekim'de yeniden istendi ve tamamlandı; güncel kurulum
+ve test durumu yukarıdaki son kurulu paket bölümündedir.
+
+## Son tasarım isteği — mevcut oynanıştan bağımsız Hat Savaşı, uygulanmadı
+
+29 Ekim 2026: Kullanıcı sıfırdan oyun fikri istedi; modül/enerji/akım/çekirdek
+ve önceki üç sınıfla sınırlanmamayı, Devre Yolu ile her arenada yeni kartları
+korumayı açıkça söyledi. Yeni çalışma `docs/SIFIRDAN_OYUN_HAT_SAVASI_V1.md`.
+Öneri: ortak hareketli alan, üç ele geçirme bölgesi; 8 kartlık deste
+(5 farklı birlik + 3 emir), her çatışmada 4 birlik. Beş çatışma; aday
+10 sn gizli eşzamanlı hazırlık + 30 sn canlı savaş + 3 sn sonuç = 215 sn.
+Çatışmada bir emir ve bir tek-birlik yön değiştirme hakkı; kullanılan emir
+sonraki çatışmada dinlenir. Birlikler çatışmalar arasında tam yenilenir;
+toplam bölge puanı kalır, ekonomik kartopu oluşmaz. Alan kontrolü puanı
+galibiyeti belirler; eşitlik beraberlik. Saat hasar/onarım çarpanı değiştirmez.
+
+Devre Yolu: 12 arena çalışma adlarıyla; ilk arenada 5 birlik + 3 emir,
+sonraki 11 arenanın her birinde 1 birlik + 1 emir = 16 birlik / 14 emir,
+30 kart. Tüm özellik/açıklar ve garantili kart kazanma akışı belgede.
+Derecelide standart kart gücü, ustalıkta kozmetik önerildi; üretim veya
+hesap dönüşümü onayı değil. Önceki tek Akım/16 modül tasarımı ayrı alternatif.
+Kullanıcı telefon yüklemesini sonraya bıraktı; ADB/kurulum için tekrar
+sormayın veya kendiliğinden yeniden başlatmayın. Bu tur sadece tasarım
+belgesi ve checkpoint değişti. Denge/oyun testi yapılmış gibi sunulmasın.
+
+## Yeni çalışma — tek Akım / üç sınıf / 16 modül TASARIMI, uygulanmadı
+
+Kullanıcı önceki tekAkım+Saldırı/Savunma/Taktik açıklamasını seçip ayrıntılı
+çalışma istedi. `docs/AKIM_UC_SINIF_MODUL_CALISMASI_V1.md` hazır:6Saldırı,
+4Savunma,6Taktik;16kartınCAN/Akım/çevrim/özellik/bedel/karşılıkları,
+yerleşim ve açıkhatçekirdek erişimi, onarım/CC/etkiyığılma kuralları,
+4örnekdeste ve açılış,36mevcutkartın tamamı için tasarım sınıflandırması.
+Eski kısa önerideDronarkahedefidi; yeni çalışmada Dron3küçükisabetleblok
+yükünüharcatır, arkahedefeerişim Hedefleme'ye ayrıldı. Bozucu2Akım/150CAN,
+4sn%20alınanhasarartışı+%50onarım azalması; sayılarprototipadayı.
+
+`docs/tasarim-akim-v1/moduller.json` makineokunurtasarım verisi;
+incele.py izolearitmetik+tutarlılık (tamoyun simülatörüDEĞİL) ve
+aritmetik.json çıktı.16tekil/6-4-6/36eskiIDkapsama/4geçerli6kartdeste
+kontrolleriPASS. Çıplak260CANhedef silahlara göre18–24sn; Ray%35Zırhta
+Lazerdenhızlı, Kalkan'dadaha yavaş. Önemliuyarı: tekLazer%35Zırh+Onarım
+karşısındanet0,36DPS; ikiLazerde8,71. Bukâğıtdeğerleriylekilitlenmeler
+çözüldüdenmesin; hedeferişimi/konum/karşıoyun ayrıprototipte sınanmalı.
+
+Bu tur SADECE tasarım dosyaları/checkpoint yazıldı. Enerji,ısı,oyun kodu,
+APK, telefon ve canlı hesaplar değiştirilmedi. Yükseltme/kartbirleştirme
+planıuygulanmadı. Anotasyonlu kullanıcıisteğinefinalde
+:codex-annotation{index="1"} direktifiyle yanıt verilmeli.
+
+## Son durum — dört köşe, mavi kule değişimi, uzatma kaldırıldı; APK hazır
+
+Kullanıcının en son düzeltmesi ÖNEMLİ: mavi tahtada ÜSTTEKİ KALIN kule
+çifti ALTA, alttaki İNCE çift ÜSTE geçecek. Yalnız tümünü inceltmek YANLIŞ.
+Son gerçek asset bunu yapıyor. Yeni `client/assets/ui/battle-native-v7/`
+player/enemyWebP/registration/provenance; CSS+E2Eön yükleme v7'ye bağlı.
+imagegen built-in üretim/düzeltme, sonmaviPNG exec-18e2eb78-0916-4b6a-b594-
+be815a47f235.png; kırmızı exec-cc8d82cc-fc06-4a70-94ce-2daa93768ed7.png.
+Provenance tamistemleri içerir. `tools/build-corner-islands.cjs` offline
+kayıt+özgünzemin/çerçevekoruma+WebP; görüntüleme hâlâ2tekWebP, yeniDOMyok.
+Boyut135244/130728bayt, raster1024;5×3hücrekayıtları aynı.
+
+3dksonrası genel hasar artışı/onarım düşüşü KALDIRILDI. Eski çarpanAPI'leri
+1döndürür, wireovertime=false/null/1/1; olay/uyarı/saatkırmızısı yok.
+Zamana bağlı3çekirdek koruma yeteneği aynı seçimID'leriyle CAN≤%40'ta%20
+korumaya çevrildi; yetenek açıklaması/kanon güncellendi. Enerji/ısı SİLİNMEDİ.
+Enerji önerisi ayrı `docs/ENERJI_VE_MODUL_TASARIM_ONERISI_20261028.md`:
+tekAkım ekonomisi,3sınıf(Saldırı/Savunma/Taktik),16ayrıgörev, oyuncu yer
+seçimi; yalnızÖNERİ, hiçbir kart/yatırım dönüştürülmedi.
+
+1969sunucuPASS/44koşulluSKIP;746istemci/10paket/6sonzeminPASS. AndroidChrome
+veWebKit gerçekyerelAPItahta/kamera/dokunma2E2EPASS (320/393dahil); ekranlar
+gözleincelendi, maviüstince/alttakalın açık. 180/600/900sn hasar/onarım
+eşitliği davranışregresyonuPASS. artifacts/four-corners-no-overtime-20261028/.
+25deste36kart3seviyeayna=1800maç900sngözlem:1787bitti,13sürüyor (8/5/0).
+Medyan146,35/147,15/112,75; p90=322,8/332,4/178,5. Uzayanbazılarındaçekirdek
+hasarı sürüyor, bazılarıyenidenkurulumdöngüsü; sonsuzlukkanıtıdenmesin.
+Saatcezasıgerieklenmedi;destekkarşıoyunuinceayarıgerekiyor.
+
+YENİ APK HAZIR:974dac4246b0b5af; SHA256
+06C47AEABFE8302B263EBC56DD4A010EFE69A0D56297CEFBEF9D67EB958BD1D3.
+AssembleDebug+671dosyadenetimPASS. .mobile-debug/android/app/build/outputs/
+apk/debug/app-debug.apk. HENÜZ KURULMADI: kullanıcı"bağladım"dese de sonADB/
+WindowsPNPcihazgörmedi. Kullanıcı telefon yüklemesini sonraya bıraktı;
+bekleyen cihaz bağlantısı talebi yok. Yeni telefon testi yok, son kurulu
+doğrulanmış ddd44b832480e8ad. USBstayon değişmedicihazyok.
+GerekirsesadecebuAPKinstall-r,debugapp .MainActivity; asılapp'ideğiştirme.
+
+Yerel8891motoru yeni kodla güncel:PID13764, localhost, CORShttps://localhost.
+Eski22752testprofilikaybolmasın diye ownhealthpath'ten proje .mobile-debug/
+runtime-no-overtime-20261028'e KOPYALANDI; hesaplar korundu. e2e_server.py
+--runtime-dir yalnız .mobile-debugaltıkabul; varsayılanbrowsergeçicidepoaynı.
+Telefonbağlanınca8891reversegerekebilir. Canlı/Play/push/üretimapp yok.
+Rapor `docs/DORT_KOSE_UZATMASIZ_TEST_20261028.md`. Önceki aşağıdakistatüler
+tarihsel;"köşeönizlemesadece" ve"uzatmaaktif" artıkgeçersiz.
+
+## 28 Ekim — daha uzun savaş için CAN/Akım adayı telefonda doğrulandı
+
+Kullanıcı 2–3 atışta yok olan silahlar yerine strateji kurmaya zaman veren
+görünür savaş istedi. Önceki "CAN/Akım aynı kalsın" kararı bu hedef için
+GEÇERSİZ; alttaki değerlendirme tarihsel. Yeni rapor:
+`docs/STRATEJIK_SAVAS_DENGESI_20261028.md` (36 kart tablo + kalan ince ayar).
+
+UYGULANDI: 36 kartın CAN'ı: saldırı×2,2; savunma×1,6; destek/enerji/sabotaj
+×1,8, tam sayıya yuvarlama. Çekirdek300→450, 1/8/15=450/771/1322, büyüme1,08.
+Ray hasarı44→38, İyon40→32. Prizma/Anka/Tekillik4→3Akım. Başlangıç6,
+depo12, dolum2500→2200ms. JSON/client canon/çekirdek yedek değerleri/TR-EN
+metinler/kanon belgesi eşlendi; kart sırası/adları korundu. Genel ısı0,9aynı:
+0,5adayı Soğutucu farkını yeterince çözmediği için ALINMADI. Diğer hasar,
+enerji, çevrim, onarım/sabotaj kuralları bu tur aynı. AI üründe değişmedi.
+
+Yeni araştırma11.696maç koşumu+440kontrollü; bağımsız oyuncu sayısı değil.
+Kanıt `artifacts/strategy-window-20261028/`,13deney+00referans,decision.json
+son kaynak hashleri. Son12-final-candidate:25deste/36kart/1-8-15/ayna/
+15'te2tohum=2400maç;600sn'de0yarım. Medyan146,35/147,15/113sn;
+p90=246,3/243,8/176,9sn; en uzun346,8/315,9/281,5sn. Oyuncu başına zaman
+ortalamalı canlı modül medyanı5,97/6,26/5,56. Dört modüle ulaşanlar
+1197/1200,1193/1200,2317/2400. Bütün ölen silahların ömür medyanı10/8,5/7,5sn;
+takviye silahları dahil, ilk korumalı silahın ömrü gibi yorumlama.
+
+240sn oyun bitiş sınırı DEĞİLDİ; eski iki kesinti246,9/258,1sn'de bitti.
+Yeni600sn gözlem ürüne sınır koymuyor;600snsonrasıçekirdek/maçotomatikbitmez
+regresyonuPASS. Mevcut180snsonrası hasar artışı/onarım düşüşü korundu.
+13-final-capacity son kaynaklarla672ekmaç:12/14/16depo,2politika,2seviye,
+8deste. Her büyük depoda224eşleşmede0kazanan/15süre değişimi; medyanlar aynı,
+ortanca tavanda bekleme0. Depo12kararı korundu.
+
+Regresyon:1965sunucuPASS/44koşulluSKIP;746istemci/10paketPASS. 6yeni
+strateji testi: gerçek Akımla savunma/onarım biriktirirken silahların yaşaması
+(1/8/15),2200ms sınırı/depo12,600sn sonrasında zorla bitiş olmaması,36CANeşleme.
+AndroidChrome/WebKit320/393px4UIkontrolü ve sonAPIileAndroid320tekrarıPASS.
+Sandbox atomikrename/hardlink kısıtları normal izinli yeniden koşuda geçti;
+eski180CAN/4Akım bekleyen iki sözleşme yeni değerlere güncellendi.
+
+YENİ KURULU APK: GRIDSHARD TEST / com.gridshard.localdebug,
+build ddd44b832480e8ad; SHA256
+FC06F22750B1E79BA9B4F3D283282D04E885806A620219D5449E57D06637E496.
+AssembleDebug ve671dosya denetimiPASS, install-rPASS. Yalnız ayrı debugapp;
+üretim com.gridshardgame.app/Play/canlı/push değişmedi. Fiziksel test:
+`tools/check_native_strategy_window.cjs`, native/result.json/runtime.json.
+Gerçek UI komutlu maç171,1sn'de çekirdek yıkımıyla bitti (oyuncu yenildi),
+28yerleştirme/aynıanda6modül/0JS hata; CAN-maliyet-hasar36kart hem paket hem
+yerelAPI ile eşleşti. Günlükbonus çekirdeği495yaptığı için ilk sabit450test
+beklentisi düzeltildi; gerçek sunucu maksimumu DOM ile aynı. Testhookyok.
+GerçekADBfotoğraflarıphone-formation.png/phone-result.png gözle incelendi.
+Telefonmenu/idle'da; USBstayon eski0'a geri döndü, CDP9224 kaldırıldı.
+USBreverse8891 ve yeni yalıtılmış localhost sunucusu22752 AÇIK, kullanıcı
+deneyebilir. Eski10128yok; yeni sunucu geçici depolu, testhesabı aynıID.
+
+NİHAİ META TAMAMLANDI DENMESİN: son15seviye bot matrisinde kullanıcı tek
+silahlıefsanevi destesi%50, diğer efsanevi%67; pierce%92/chain_balanced%88
+hâlâgüçlü; Soğutucusuz ağır desteler ve düşükseviye tek-silah efsanevi zayıf.
+Sonrakiinceayar: insan kurulumu/karşıstrateji/yetenek/enerji ayrımıyla bu
+eşleşmeleri ölçmek; kör genelHP/ısı/depo artışı değil. Bu bir YEREL OYNANIŞ
+ADAYI. Yeni köşe kuleleri aşağıdaki gibi hâlâ yalnız görselönizleme.
+
+## 28 Ekim — CAN ve Akım sıralı değerlendirme tamamlandı; mevcut sayılar korundu
+
+Kullanıcı silah→savunma→destek→çekirdek sırasını uygulamayı, en son Akım
+dolumu/depo12 artışını değerlendirmeyi istedi. Yeni okuma amaçlı araçlar
+`tools/audit_durability_current.py`, `tools/probe_durability_roles.py`.
+Canlı/hesap deposu/gateway import edilmedi; adaylar yalnız worker belleğinde.
+Önceki reddedilmiş27Ekim adayı uygulanmadı. Önceki CAN/hasar değişimleri
+mevcut; bu tur EK CAN/hasar/kurulum Akımı değişikliği yapılmadı.
+
+1)25deste/36kart/1-8-15/ayna taraf/1tohum:1.800maç.15seviyede yıkılan
+4.881silahın36'sı ilk atışını yapamadı(%0,74). Ağır silahlar medyan2–3atış;
+silah başı ilk atışsız yıkım%0,2–1,8. Yeni genel CAN artışı gerekmedi.
+2)462savunma/nötr karşılaştırma: aynı kurulum Akımındaki normal hedefe
+göre15seviyede medyan1,83–3,73kat dayanma. Ek tank CAN'ı yok.
+3)İlk katkı ölçerinde soğutma/sabotaj olay alanları düzeltildi; aynı1.800maç
+tekrarlandı(bağımsız yeni örnek değil).432uygun-fırsat deneyi:18destek/enerji/
+sabotaj kartı katkısını yaptı. Kapasitör aksiyon boşalması genel katkı
+olayında eksik göründüğü için HP yetersizliği diye yorumlanmadı; şarjlı
+depo/boş çekirdek rezervinde gerçek boşalma sayacıyla doğrulandı.
+4)330çekirdek deneyi: çıplak1silah medyan23,5/31,6/38,4sn;2silah
+10,9/14,5/18,5sn.15seviyede tek Kalkan2silaha karşı28sn, Sönümleyici34,5sn.
+Çekirdek300/514/881CAN korunuyor. Tüm330deneyde yıkım oluştu.
+5)Akım6ayar×3seviye×600eşleşme=10.800maç; ayrıca1.344gecikmeli/tek taraf
+bekleyen/iki taraf25sn biriktiren politika deneyi.2,5sn/12referans;
+2,5sn/14ve16 aktifAI'da bütün1.800referansla kazanan/süre/modül/harcama/
+yerleştirmede birebir aynı. Bank açılışında tavan gerçek fark üretiyor,
+genel gereklilik gösterilmedi.2sn'de1.seviye Darbe/Onarım eşleşmesinin
+iki yönü240sn'de bitmedi→reddedildi.2,2sn'de15seviye ortalama canlı modül
+medyanı1,79→2,24; fakat ilk atışsız yıkım%0,74→%2,45 ve deste sonuçları
+değişti. BU TUR KABUL EDİLMEDİ. Nihai başlangıç6/depo12/dolum2500ms aynı.
+
+Toplam15.744motor koşumu (tekrarlanan tohumlar dahil),1.224kontrollüdeney;
+bunlar canlı/bağımsız oyuncu örneklemi değil.179mevcut CAN/savaş/Akım
+regresyonu PASS. Venvpytest yoktu; mevcut C:/Program Files/Python312/python.exe
+ile çalıştı. Cache yazı izni uyarısı test sonucunu etkilemedi.
+Rapor `docs/CAN_AKIM_ASAMALI_DEGERLENDIRME_20261028.md`;36kart tablo dahil.
+Ham kanıt `artifacts/durability-current-20261028/`; decision.json kaynak
+hashleri/korunan değerler; engine-regressions.xml. Yeni APK/canlı/Play/push
+yok; telefon hâlâ7c6b64bdbf721cd7. Dört köşe kule fikri aşağıdaki gibi
+yalnız imagegen önizlemesi; oyuna alınmış sayılmasın.
+
+## 28 Ekim — dört köşede aynı kule fikri için yalnız görsel önizleme
+
+Kullanıcı kırmızı/mavi devrelerin arka köşelerindeki yüksek blokların dört
+köşeye de kendi rengiyle konmasını önerdi (“nasıl olur?”). imagegen becerisi
+okundu; built-in imagegen ile gerçek ekran üstünde KONSEPT önizleme üretildi.
+İkinci dar düzeltme, mavi ön köşelerde kalan iki kırmızı parçayı mavi yaptı.
+Son resim: C:/Users/S-A/.codex/generated_images/01a17e1e-a7f2-72f0-916e-bb574e0de13c/
+exec-097858d0-c4a7-42bd-90d2-160d8cbcaf99.png . Her devrede dört köşe kulesi,
+kendi rengi, oyun hücreleri açık. Bu üretim asset'i değildir; görselde ufak
+yeniden çizim farkları var. Kod/asset/APK/telefon sürümü değiştirilmedi.
+Son çalışan paket hâlâ7c6b64bdbf721cd7; gerçek enkaz testi aşağıda tamam.
+
+## 28 Ekim — sonuç başlıkları, görünür yan kuleler ve gerçek çekirdek enkazı
+
+Kullanıcı başlık aralığını fazla buldu, düz renk katmanının yan kuleleri
+örttüğünü ve kendi yok olmuş çekirdeğinin devrede kalmadığını bildirdi.
+Rakip kimlik zemini yeniden saydam; ek tekrarlı uçurum ::after kapalı.
+Asıl yan kuleler örtülmüyor. Sonuç+Ödül başlıkları tek .post-match-reward-header
+grubunda4px; eski marj/translate kaldırıldı. Ödül/teklif aralıkları12px aynı.
+
+Asıl enkaz hatası: board-view yalnız active modülleri çiziyor, gerçek
+destroyed çekirdek (konumu da null olabiliyor) hücreden çıkarılıyordu.
+displayPosition yalnız destroyed/hp0 core için görsel yerini korur/fixed2,1'e
+bağlar; oyun durumunu değiştirmez. Diğer ölü modüller kaldırılır. Kalıcı
+kart/hücre ve rebirth korunur. İki yeni regresyon önce FAIL sonra PASS.
+746 istemci,10paket testi; Android ve WebKit'te gerçek sunuculu yıkım+sonuç
+akışı geçti (eski görsel HP preview'sinden farklı). Enkaz ödül aşamasında
+da kaldı, canlı ışık yok; başlık4/ödüle12px. Serverbalance değişmedi.
+
+APK build `7c6b64bdbf721cd7`, SHA256
+`A96CB971A154DCD3751737F493CD6222013521457CEC3D935AD8106E6B77780D`;
+AssembleDebug/671dosya paket denetimi PASS. Yeni APK mevcut debug uygulamasına
+veri silmeden başarıyla kuruldu; 8891 reverse/sunucu10128 açık.
+SON FİZİKSEL TEST DE TAMAMLANDI: kullanıcı kilidi açtı. Ayrı APK'nın gerçek
+Android WebView'ında doğal savunmasız çekirdek yıkımı beklendi; enkaz2,1'de
+cores-wrecked-v1 resmiyle kaldı, canlı ışık0; ödül aşamasında da korundu.
+Başlık4px/ödüle12px/teklif12-12px; taşma0/JS hata0. Header saydam ve ek
+uçurum yok; yan kuleler gerçek ADB fotoğraflarında görünür. Üç fotoğraf
+incelendi. Yalnız enkaz fotoğrafında sonuç paneli geçici gizlenip geri alındı.
+`tools/check_native_core_wreck.cjs` PASS; native/result.json ve phone-*.png
+aynı kanıt klasöründe. Telefon ana ekranda bırakıldı; geçici USBstayon
+eski0 değerine geri döndü, CDP9224 kaldırıldı; reverse8891/sunucu10128 açık.
+
+Rapor `docs/CEKIRDEK_ENKAZ_VE_BASLIK_DUZELTMELERI_20261028.md`;
+kanıt `artifacts/core-wreck-title-fixes-20261028/`. Canlı/Play/AAB/push yok.
+
+## 28 Ekim — fiziksel köşe payları, sade rakip üst alanı, sonuç aralıkları
+
+Kullanıcının telefon dışından çektiği fotoğraflara göre görünüm düzeltildi.
+Rakip adı/kartlarının arkasındaki tekrarlı uçurum katmanı kaldırıldı;
+kimlik alanı düz #0a1933. Ana devre/bize bakan bloklar/hücreler aynı.
+Savaş dışı dock yatay16px/alt12px içeride; içerik alt rezervi artırıldı.
+Savaş rafı yatay~16px/alt~20px içeride. Ödül aşaması görünürken display:grid
+eksikliği giderildi; ödüller/Premium/reklam arasında12px boşluk artık etkin.
+Kısa ekranın içeriği safe center/start ile kaydırılarak erişilebilir.
+
+16 ilgili istemci/paket testi, Android savaş+dock2 ve WebKit savaş1 geçti.
+320×568/375×771/393×852 gerçek sunuculu ek tarayıcı sonuç/dock ölçümleri geçti.
+Yeni APK telefona veri silmeden kuruldu. Son fiziksel kısa yerleşim kontrolü:
+dock16/15,62/11,92px; savaşrafı16/15,62/19,92px; bölme boşlukları12/12px,
+JS hata0. Gerçek ADB ekran görüntüleri incelendi. Birleşik uzun kontroller
+önce ekran kilidi sonra USByenilenmesiyle kesildi; son dar koşum başarılı.
+Telefon kilidini kullanıcı açtı. USBscreen-stay-on geçici0→USB, sonunda0'a
+geri alındı. CDP9224 kaldırıldı; USBreverse8891/sunucu10128 kullanıcı için açık.
+
+Mobil build `fd3a984261b54fae`; APK SHA256
+`2D16EA4C40130BE5BD253420B0985C67ED2E424130D6C4829FBA325F72C24DE9`.
+Telefon **GRIDSHARD TEST** ana ekranda. Canlı/Play/AAB/push yok.
+Rapor `docs/TELEFON_KOSE_VE_SONUC_DUZELTMELERI_20261028.md`; kanıt
+`artifacts/phone-ui-fixes-20261028/native/layout-result.json` ve
+aynı klasörde `phone-home-final`, `phone-battle-final`, `phone-rewards-final` PNG.
+
+## 28 Ekim — güncel APK telefona kuruldu, native WebView testi geçti
+
+Kullanıcı telefonu bağlayıp son güncellemeleri yükleyerek denemeyi istedi.
+Mevcut Play uygulaması/hesabı korundu; ayrı `com.gridshard.localdebug`
+paketi **GRIDSHARD TEST** adıyla kuruldu. İlk ADB yüklemesi telefonun USB
+kurulum kısıtıyla reddedildi; kullanıcı ayarı açınca ikinci deneme başarılı.
+JDK21/SDK36 bu makinede artık mevcut. AssembleDebug, 671 dosyalı APK
+içerik/kimlik/API/ağ/güvenli depo denetimi ve APK v2 imza kontrolü geçti.
+Mobil build `64a5da0c3bfa4ecb`; JS `gridshard-e0813b0692b6ee0b.js`.
+
+Gerçek Android16/WebView155: 375×771 CSS px/DPR3,25. 36 kartın değerleri,
+altı detay paneli, çekirdek ikonu, aynı satırda 77,9×22px/9px Ödül Listesi,
+iki 15hücreli tahta, görünür kartla yerleştirme, emoji gönderimi ve 100
+aç/kapa temizliği geçti. Taşma/JS hata0; mavi alt pay7,24px. 10sn rAF
+119,1FPS/p95 8,4ms; kısa/az modüllü örnek, uzun maç/bellek garantisi değil.
+Arka plan/geri dönüş aynı yerel misafirle geçti. CDP ekran yakalama sabit
+alt katmanları görselde sıkıştırıyor; gerçek ADB `phone-*.png` ekranında
+raf doğru (kart58px/görsel49px). Bu yüzden CSS değiştirilmedi.
+
+Telefon ana ekranda kullanıcı denemesine hazır. Yalıtılmış yerel sunucu
+`tools/e2e_server.py` 127.0.0.1:8891'de AÇIK BIRAKILDI; kullanıcı denemesi
+için USB/computer açık kalmalı. `adb reverse tcp:8891 tcp:8891` gerekli.
+Sunucu PID kaydı `qa_reports/e2e-server.pid.json`; mevcut oturumda PID10128.
+CORS yalnız `https://localhost`. Yeni geçici misafir; üretim hesabı/DB yok.
+WebView CDP forward9224 test sonunda kaldırıldı; reverse8891 tutuldu.
+Sunucu yeniden başlatılırsa geçici hesaplar yenilenir; eski test kimliğini
+gerekirse yalnız bu debug uygulamasında ele al. Canlı/Play/AAB/push yok.
+
+Rapor `docs/ANDROID_TELEFON_TESTI_20261028.md`; kanıt
+`artifacts/native-android-20261028/`; native tekrar aracı
+`tools/check_native_balance_on_android.cjs`. APK `.mobile-debug/android/app/
+build/outputs/apk/debug/app-debug.apk`; SHA256
+`206E594BBF3DE1A976D7520395F71955F20B33487058B85AED7CBB055E76AE4D`.
 
 ## 28 Ekim — 36 modül denge planı sırayla uygulandı ve test edildi
 

@@ -35,7 +35,7 @@ test('eight authentic 2.1.1 portrait store screenshots',async({page})=>{
   await expect(page.locator('body')).toHaveAttribute('data-online-status','battle',{timeout:40000});
   await expect(page.locator('#battle-start-countdown')).toBeHidden({timeout:6000});
   await expect.poll(()=>page.evaluate(()=>window.__GRIDSHARD_TEST_API.getOnlineBattleState().elapsedMs)).toBeGreaterThan(0);
-  for(const id of ['laser','battery','shield']){
+  for(const id of ['laser','armor','shield']){
     await expect.poll(()=>page.evaluate(id=>window.__GRIDSHARD_TEST_API.deployModule(id),id),{timeout:12000}).toBe(true);
     await expect(page.locator('#board [data-device="'+id+'"]')).toBeVisible({timeout:12000});
   }

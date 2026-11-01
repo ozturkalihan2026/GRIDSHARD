@@ -12,6 +12,16 @@
       this.cellViews = new WeakMap();
     }
 
+    displayPosition(module) {
+      // A dead core is permanent scenery until the next setup/rebirth. The
+      // server may clear its placement; keep that state untouched and anchor
+      // only its rendered wreck to the fixed core socket.
+      if (module.definitionId === "core" && module.status === "destroyed" && Number(module.hp) <= 0) {
+        return module.position || { x:2, y:1 };
+      }
+      return module.status === "active" ? module.position : null;
+    }
+
     render(
       modules,
       {
@@ -35,8 +45,9 @@
       }
       const moduleByCell = new Map();
       for (const module of modules) {
-        if (module.status !== "active" || !module.position) continue;
-        moduleByCell.set(`${Number(module.position.x)},${Number(module.position.y)}`, module);
+        const position = this.displayPosition(module);
+        if (!position) continue;
+        moduleByCell.set(`${Number(position.x)},${Number(position.y)}`, module);
       }
 
       const dataCells = [];
@@ -170,9 +181,10 @@
         );
       }
       for (const module of modules) {
-        if (module.status !== "active" || !module.position) continue;
+        const position = this.displayPosition(module);
+        if (!position) continue;
         const cell = this.board.querySelector(
-          `.board-cell[data-x="${module.position.x}"][data-y="${module.position.y}"]`
+          `.board-cell[data-x="${position.x}"][data-y="${position.y}"]`
         );
         if (!cell) continue;
         cell.dataset.occupied = "true";

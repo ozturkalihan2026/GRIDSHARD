@@ -101,8 +101,8 @@ class PvPTickRunner:
             # energy regeneration nor combat advances behind the overlay.
             stats.snapshot_broadcasts += await self.websocket_adapter.broadcast_snapshot(session_id)
             return True
-        # İlk oyun deneyimi: yönetmenli savaşta oyuncu okurken motor durur ve
-        # rakibin hamlelerini betik yapar (bkz. tutorial.TutorialDirector).
+        # Kısa ilk-savaş ipuçlarında motor çalışır; yalnız rakibin ilk hamlesini
+        # betik belirler. GEÇ anında normal AI kararlarına dönülür.
         director=session.tutorial
         if director is not None:
             running=director.before_tick(self.service.now_func())

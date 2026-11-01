@@ -1,3 +1,4 @@
+from .catalog_migration import award_module_shards
 from dataclasses import dataclass, field
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
@@ -466,6 +467,9 @@ class PlayerProfile:
     unlocked_badge_ids: tuple[str, ...] = ()
     unlocked_rank_trophy_ids: tuple[str, ...] = ()
     universal_module_shards: int = 0
+    module_roster_revision: int = 2
+    retired_module_archive: dict = field(default_factory=dict)
+    retired_rules_archive: dict = field(default_factory=dict)
     reward_inbox: list[dict] = field(default_factory=list)
     reward_inbox_receipts: dict[str, dict] = field(default_factory=dict)
     active_meta_season_id: str = CURRENT_SEASON_ID
@@ -960,6 +964,8 @@ class PlayerProfileService:
     def _get_or_create(self, player_id: str, *, display_name=None, day_key=None) -> PlayerProfile:
         profile = self._profiles.get(player_id)
         if profile is not None:
+            from .catalog_migration import migrate_profile_roster
+            migrate_profile_roster(profile)
             # Upgrade only the untouched auto-ID name, never a chosen name.
             # Normal persistence saves this with the other profile changes.
             if profile.display_name == player_id and is_automatic_player_id(player_id):
@@ -979,6 +985,10 @@ class PlayerProfileService:
             active_meta_season_id=season_descriptor(self.now())["id"],
         )
         self._profiles[player_id] = profile
+        # A new account must be canonical before its first persistence too;
+        # otherwise its next login mutates the just-saved profile.
+        from .catalog_migration import migrate_profile_roster
+        migrate_profile_roster(profile)
         self._sync_season(profile)
         self._sync_daily_missions(profile, day_key)
         self._sync_login_period(profile)
@@ -1190,10 +1200,7 @@ class PlayerProfileService:
         module_id = reward["module_definition_id"]
         profile.circuit_credits += int(reward["circuit_credits"])
         profile.flux_shards += int(reward["flux_shards"])
-        profile.module_shards[module_id] = (
-            int(profile.module_shards.get(module_id, 0))
-            + int(reward["module_shards"])
-        )
+        award_module_shards(profile, module_id, int(reward["module_shards"]))
         core_shards = int(reward.get("core_shards", 0))
         core_type_id = reward.get("core_type_id")
         if core_shards and core_type_id:
@@ -1320,7 +1327,7 @@ class PlayerProfileService:
         module_shards = int(reward.get("module_shards", 0))
         if module_shards:
             module_id = reward["module_definition_id"]
-            profile.module_shards[module_id] = int(profile.module_shards.get(module_id, 0)) + module_shards
+            award_module_shards(profile, module_id, module_shards)
         profile.claimed_season_tiers = tuple(
             sorted({*profile.claimed_season_tiers, tier})
         )
@@ -1395,7 +1402,7 @@ class PlayerProfileService:
         module_shards = int(reward.get("module_shards", 0))
         if module_shards:
             module_id = reward["module_definition_id"]
-            profile.module_shards[module_id] = int(profile.module_shards.get(module_id, 0)) + module_shards
+            award_module_shards(profile, module_id, module_shards)
         profile.claimed_premium_season_tiers = tuple(
             sorted({*profile.claimed_premium_season_tiers, tier})
         )

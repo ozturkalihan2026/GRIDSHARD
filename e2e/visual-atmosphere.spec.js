@@ -99,7 +99,7 @@ test("devre atmosferi, ortak dock ve kazanılmış profil koleksiyonu", async ({
   await page.evaluate(()=>{
     __visualAudit.profile({player_id:"isolated-visual",display_name:"Görsel Test",rating:4374,
       honors:{rank_trophy_ids:[],badge_ids:[]},selected_core:{id:"core_resonance",level:1},
-      featured_deck:{module_ids:["laser","shield","cooler","battery","emp","amplifier"],matches:12}});
+      featured_deck:{module_ids:["laser","shield","repair","armor","emp","amplifier"],matches:12}});
     document.getElementById("public-profile-dialog").showModal();
   });
   await expect(page.locator("#public-profile-content .profile-honor-item")).toHaveCount(0);

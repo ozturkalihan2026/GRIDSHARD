@@ -57,23 +57,11 @@ class ModuleDefinition:
     max_hp: int
     rarity: str = "common"
     current_cost: int = 0
-    behavior_id: str = ""
     effect_multiplier: float = 1.0
 
-    @property
-    def mechanic_id(self) -> str:
-        return self.behavior_id or self.id
-
-    # alpha.7 — rol ve savaş/enerji tanım temeli.
-    # Bu alanlar henüz gerçek saldırı/enerji simülasyonu değildir;
-    # sonraki motor fazları için kanonik modül verisidir.
+    # Current card identity, target profile and action parameters.
     strategic_role: str = ""
     description_tr: str = ""
-    energy_generation: float = 0.0
-    energy_consumption: float = 0.0
-    # Sürekli bakım enerjisi (energy_consumption) ile aksiyon başına harcanan
-    # enerji ayrıdır; saldırı/onarım/sabotaj işi yaptığı anda öder.
-    action_energy_cost: float = 0.0
     base_damage: float = 0.0
     cooldown_ms: int = 0
     strong_against: tuple[str, ...] = ()
@@ -84,6 +72,8 @@ class ModuleDefinition:
     signature_mechanic: str = ""
     telegraph_tr: str = ""
     counterplay_tr: str = ""
+    combat_class: str = ""
+    runtime_parameters: dict | None = None
 
 
 @dataclass(slots=True)
@@ -94,21 +84,13 @@ class BattleModule:
     status: ModuleStatus = ModuleStatus.RESERVE
     position: Position | None = None
     # alpha.5 — maç içi durum kalıcılığı
-    heat: float = 0.0
-    stored_energy: float = 0.0
     debuffs: dict[str, TimedModuleEffect] = field(default_factory=dict)
     persistent_effects: dict[str, TimedModuleEffect] = field(default_factory=dict)
     cooldowns_ready_at_ms: dict[str, int] = field(default_factory=dict)
     # İmza mekaniklerinin maç içi durumu (sayaç, yük, kilit, borç, diriltme izi).
     mechanic_state: dict[str, Any] = field(default_factory=dict)
 
-    is_powered: bool = True
-    energy_received_last_tick: float = 0.0
-    energy_required_last_tick: float = 0.0
-    energy_waiting: bool = False
     # Enerji sırasında beklerken ayırdığı aksiyon maliyeti.
-    energy_wait_cost: float = 0.0
-    last_action_energy_cost: float = 0.0
 
     @classmethod
     def create(
@@ -139,14 +121,11 @@ class PlayerBattleState:
     modules: dict[str, BattleModule] = field(default_factory=dict)
     circuit_credits: int = 0
     current_regen_remainder_ms: int = 0
-    # energy.CORE_STARTING_ENERGY ile aynı; rezerv tavanı Çekirdek seviyesine bağlıdır.
-    energy_stock: float = 16.0
-    energy_load_ratio: float = 0.0
-    energy_support_multiplier: float = 1.0
-    # Enerji sırası: önce beklemeye giren aksiyon önce ödenir; sonradan gelen
-    # ucuz aksiyonlar ancak sıradakilerin payı kalıyorsa araya girer.
-    energy_wait_queue: list[str] = field(default_factory=list)
-    energy_wait_touched: set[str] = field(default_factory=set)
+    damage_current_progress: float = 0.0
+    damage_current_earned: int = 0
+    attack_current_total: float = 0.0
+    defense_current_progress: float = 0.0
+    defense_current_total: float = 0.0
     core_type: str = "core_resonance"
     core_level: int = 1
     core_skills: tuple[str, ...] = ()
@@ -154,24 +133,17 @@ class PlayerBattleState:
     # Savaşta paylaşılabilen emojiler (herkese açıklar + kazanılanlar).
     battle_emoji_ids: tuple[str, ...] = ()
     last_battle_emoji_at_ms: int = -10_000
-    discounted_deployments: int = 0
     total_circuit_credits_earned: int = 0
     total_circuit_credits_spent: int = 0
     battle_pool: BattlePool | None = None
     # Hareketsizlik: Akım tavanda ve boş hücre varken kart basılmayan süre.
     idle_at_cap_ms: int = 0
     inactivity_warned: bool = False
-    energy_generated_total: float = 0.0
-    energy_consumed_total: float = 0.0
-    energy_wasted_total: float = 0.0
-    # Per-definition telemetry is kept on the transient battle state so the
-    # result sheet can explain what support and energy modules contributed.
-    module_energy_consumed: dict[str, float] = field(default_factory=dict)
-    module_energy_discharged: dict[str, float] = field(default_factory=dict)
     cell_debris_until_ms: dict[str, int] = field(default_factory=dict)
     core_power_charge: float = 0.0
     core_power_ready_emitted: bool = False
     core_power_uses: int = 0
+    core_contributions: dict[str,float] = field(default_factory=dict)
     consumed_core_power_request_ids: set[str] = field(default_factory=set)
     # Çekirdek imzası izleri: dolu bekleme süresi, zincir sayısı, doğuş hakkı.
     core_signature_state: dict[str, Any] = field(default_factory=dict)

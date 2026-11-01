@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import argparse
 import os
 from pathlib import Path
 import sys
@@ -18,13 +19,23 @@ PID_PATH = ROOT / "qa_reports" / "e2e-server.pid.json"
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--runtime-dir", help="Retain native QA data inside this workspace's .mobile-debug folder")
+    args = parser.parse_args()
     base = urlsplit(os.environ.get("GRIDSHARD_E2E_BASE_URL", "http://127.0.0.1:8879"))
     if base.scheme != "http" or base.hostname not in {"localhost", "127.0.0.1"}:
         raise RuntimeError("The owned E2E server only listens on localhost HTTP")
     # Every browser run gets fresh identities and every runtime store. Never
     # inherit a developer's database, Redis or server/data file paths.
-    isolated = tempfile.TemporaryDirectory(prefix="gridshard-browser-e2e-")
-    test_root = Path(isolated.name)
+    isolated = None
+    if args.runtime_dir:
+        test_root = Path(args.runtime_dir).resolve()
+        if not test_root.is_relative_to((ROOT / ".mobile-debug").resolve()):
+            raise RuntimeError("Retained native test data must stay inside .mobile-debug")
+        test_root.mkdir(parents=True, exist_ok=True)
+    else:
+        isolated = tempfile.TemporaryDirectory(prefix="gridshard-browser-e2e-")
+        test_root = Path(isolated.name)
     for variable in tuple(os.environ):
         if variable in {"DATABASE_URL", "DATABASE_URL_FILE", "REDIS_URL", "REDIS_URL_FILE"} or variable.endswith("_PATH") and variable.startswith(("GRIDSHARD_", "RELAY_")):
             os.environ.pop(variable, None)
@@ -35,6 +46,10 @@ def main() -> None:
                        "GRIDSHARD_AUTH_SIGNING_KEY": "e2e-only-signing-key-change-in-production",
                        "GRIDSHARD_MATCHMAKING_AI_ONLY": "0" if os.environ.get("GRIDSHARD_E2E_HUMAN_MATCHMAKING") == "1" else "1",
                        "GRIDSHARD_PUSH_ENABLED": "0", "GRIDSHARD_PURCHASE_TEST_MODE": "0", "GRIDSHARD_AD_TEST_MODE": "0"})
+    if args.runtime_dir:
+        # The packaged Android WebView uses HTTPS localhost while its retained
+        # USB test API is HTTP localhost. Authorize this exact native origin.
+        os.environ["GRIDSHARD_CORS_ORIGINS"] = "https://localhost"
     os.environ.pop("GRIDSHARD_AUTH_SIGNING_KEY_FILE", None)
     PID_PATH.parent.mkdir(parents=True, exist_ok=True)
     PID_PATH.write_text(
@@ -69,7 +84,8 @@ def main() -> None:
         server.run()
     finally:
         PID_PATH.unlink(missing_ok=True)
-        isolated.cleanup()
+        if isolated is not None:
+            isolated.cleanup()
         # Windows'ta AnyIO/Psycopg yardımcı thread'leri Uvicorn kapandıktan
         # sonra yorumlayıcıyı canlı tutabiliyor. Bu süreç yalnız E2E sunucusudur.
         os._exit(0)

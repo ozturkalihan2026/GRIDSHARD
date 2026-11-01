@@ -148,7 +148,7 @@ test("savaş efektleri kademelidir: sıradan vuruş sade, ağır vuruşta halka 
     }
   }
   // Güç alan hücre sürekli parlamaz.
-  const fed = slice(fx, ".board-cell.energy-fed-cell {", "}");
+  const fed = slice(fx, ".board-cell.circuit-active-cell {", "}");
   assert.match(fed, /animation:none !important;/);
   assert.match(fed, /filter:none !important;/);
 });

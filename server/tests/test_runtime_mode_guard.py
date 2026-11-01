@@ -19,10 +19,11 @@ class RuntimeModeGuardTests(unittest.TestCase):
         env.pop("GRIDSHARD_AUTH_SIGNING_KEY", None)
         env.update(overrides or {})
         return subprocess.run(
-            [sys.executable, "-c", "import server.app.main"],
+            [sys.executable, "-X", "utf8", "-c", "import server.app.main"],
             cwd=ROOT,
             env=env,
             text=True,
+            encoding="utf-8",
             capture_output=True,
             check=False,
         )

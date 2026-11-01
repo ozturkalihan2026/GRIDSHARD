@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 import pytest
 
 from app import main as gateway
-from app.game.energy import process_energy_tick
 from app.game.engine import BattleEngine
 from app.game.models import BattleState, ModuleStatus, Position
 from app.player_data_store import InMemoryPlayerDataRepository
@@ -29,16 +28,16 @@ def _active(engine: BattleEngine, definition_id: str, x: int, y: int):
     return module
 
 
-def test_daily_meta_catalog_has_seven_unique_equal_options_and_utc_reset():
+def test_daily_meta_catalog_has_five_unique_equal_options_and_utc_reset():
     moment = datetime(2026, 9, 19, 21, 30, tzinfo=timezone.utc)
     catalog = daily_meta_catalog_view(moment)
 
     assert catalog["day"] == "2026-09-19"
     assert catalog["resets_at"] == "2026-09-20T00:00:00Z"
-    assert catalog["dice_sides"] == 7
-    assert catalog["probability_per_meta"] == pytest.approx(1 / 7)
-    assert len(catalog["options"]) == 7
-    assert len({item["id"] for item in catalog["options"]}) == 7
+    assert catalog["dice_sides"] == 5
+    assert catalog["probability_per_meta"] == pytest.approx(1 / 5)
+    assert len(catalog["options"]) == 5
+    assert len({item["id"] for item in catalog["options"]}) == 5
 
 
 def test_seeded_ai_meta_is_stable_for_identity_and_day():
@@ -55,9 +54,7 @@ def test_seeded_ai_meta_is_stable_for_identity_and_day():
     (
         ("damage", "laser", "base_damage"),
         ("defense", "shield", "max_hp"),
-        ("support", "repair", "effect_multiplier"),
-        ("sabotage", "emp", "effect_multiplier"),
-        ("system", "battery", "effect_multiplier"),
+        ("tactics", "repair", "max_hp"),
         ("core", "core", "max_hp"),
     ),
 )
@@ -96,23 +93,6 @@ def test_current_support_meta_speeds_up_current_regeneration_only():
     engine.state.player_daily_meta_ids["p1"] = "system"
     assert engine._current_regen_interval_ms("p1") == base_interval
     assert current_after("current_support", 200) > current_after("", 200)
-    for definition_id in ("battery", "capacitor", "current_balancer"):
-        assert _grant("current_support", definition_id).definition.effect_multiplier == pytest.approx(
-            _grant("", definition_id).definition.effect_multiplier
-        )
-
-
-@pytest.mark.parametrize("meta_id", ("system",))
-def test_energy_daily_metas_increase_real_circuit_generation(meta_id):
-    def generated(active_meta_id: str) -> float:
-        engine = BattleEngine(BattleState(battle_id=f"beta58-energy-{active_meta_id}"))
-        player = engine.add_player("p1")
-        engine.state.player_daily_meta_ids["p1"] = active_meta_id
-        _active(engine, "core", 2, 1)
-        _active(engine, "battery", 0, 0)
-        return process_energy_tick(player).generated
-
-    assert generated(meta_id) > generated("")
 
 
 def test_daily_meta_roll_is_same_day_immutable_and_persisted(monkeypatch):

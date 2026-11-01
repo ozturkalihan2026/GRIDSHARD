@@ -8,26 +8,9 @@ const styles = fs.readFileSync("./src/styles.css", "utf8");
 require("../src/gridshard-audio.js");
 const cues = global.GRIDSHARD_SFX_CUES;
 
-// İmza efektleri motorun gerçek olaylarına bağlıdır.
-for (const eventType of [
-  "quantum_repeat",
-  "quantum_collapse",
-  "swarm_released",
-  "phoenix_rebirth",
-  "prism_energy_converted",
-  "sabotage_echo_applied",
-  "signature_secondary_hit",
-  "nano_repair_pulse",
-  "chrono_window_started",
-  "chrono_debt_started",
-  "attack_windup_started",
-]) {
-  assert.ok(app.includes(`"${eventType}"`), `${eventType} olayı işlenmiyor`);
-}
-assert.ok(app.includes("if (presentSignatureEvent(event, snapshot)) {"));
-assert.ok(app.includes('startsWith("Faz Zırhı · Faz")'));
-assert.ok(app.includes('source?.definition_id === "omega_amplifier"'));
-assert.ok(app.includes("destructionFxPlayed.delete(`${ownerId}:${data.target_module_id}`)"));
+const vfx=fs.readFileSync('./src/battle/module-vfx.js','utf8');
+for(const type of ['attack_performed','module_repaired','module_debuff_removed','damage_reflected','amplifier_pulse','module_signature_triggered'])assert.ok(vfx.includes(type),type);
+assert.ok(!app.includes('presentSignatureEvent'));
 
 // Arena sarsıntısı tek yoldan geçer; eski sınıflar kalmadı.
 assert.ok(app.includes("function pulseArenaImpact(level=\"light\")"));
@@ -54,27 +37,7 @@ assert.ok(cardView.includes("model.signatureBadges"));
 // Ses adları mevcut dosyalara bağlanır; Beta.71 mobil biçimleri dosya adıyla seçer.
 const formats = fs.readFileSync("./src/gridshard-audio-formats.js", "utf8");
 for (const cue of [
-  "quantum_charge",
-  "repeat_echo",
-  "swarm_release",
-  "phoenix_revive",
-  "prism_shield",
-  "phase_evade",
-  "singularity_field",
-  "sabotage_echo",
-  "omega_link",
-  "chrono_shift",
-  "target_lock",
-  "nano_pulse",
-  "kill_confirm",
-  "module_lost",
-  "shield_activate",
-  "warning",
-  "plasma_mortar_fire",
-  "quantum_repeater_fire",
-  "ion_spear_fire",
-  "swarm_fabricator_fire",
-  "quantum_cannon_fire",
+ "kill_confirm", "module_lost", "shield_activate", "warning", "plasma_mortar_fire", "quantum_repeater_fire",
 ]) {
   assert.ok(cues[cue], `${cue} ipucu yok`);
   const asset = cues[cue].asset.replace("./assets/audio/", "");

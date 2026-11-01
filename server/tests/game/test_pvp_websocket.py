@@ -1,3 +1,4 @@
+from app.game.pvp_protocol import PVP_PROTOCOL_VERSION
 import asyncio
 
 import pytest
@@ -26,6 +27,7 @@ class FakeWebSocket:
         return self.incoming.pop(0)
 
     async def send_json(self, data):
+        assert data['version']==PVP_PROTOCOL_VERSION
         self.sent.append(data)
 
     async def close(self, code=1000):
@@ -44,7 +46,7 @@ def setup_service():
 
 def request_snapshot_message():
     return {
-        "version": 1,
+        "version": PVP_PROTOCOL_VERSION,
         "type": "request_snapshot",
         "session_id": "match",
         "player_id": "a",

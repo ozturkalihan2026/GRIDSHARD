@@ -27,14 +27,14 @@ test("default countdown timers retain the browser Window receiver", () => {
 test("a reconnect/live overlap is consumed once, with bounded history and no stale rollback", () => {
   const state = new RelayPvPClientState({playerId:"a", sessionId:"match"});
   const events = Array.from({length:5000}, (_, i) => ({type:"module_damaged", cursor:i + 1, at_ms:i * 100, data:{}}));
-  const reconnect = {version:1, type:"reconnect_state", payload:{snapshot:snapshot(5000), event_cursor:5000, events}};
+  const reconnect = {version: 2, type:"reconnect_state", payload:{snapshot:snapshot(5000), event_cursor:5000, events}};
   assert.equal(state.applyServerEnvelope(reconnect).events.length, 5000);
   assert.equal(state.events.length, 256);
   assert.equal(state.applyServerEnvelope(reconnect).events.length, 0);
-  assert.equal(state.applyServerEnvelope({version:1,type:"events",payload:{cursor:5000,events}}).events.length, 0);
-  const overlapping = state.applyServerEnvelope({version:1,type:"events",payload:{cursor:5002,events:[events[4999],{cursor:5001},{cursor:5002}]}});
+  assert.equal(state.applyServerEnvelope({version: 2,type:"events",payload:{cursor:5000,events}}).events.length, 0);
+  const overlapping = state.applyServerEnvelope({version: 2,type:"events",payload:{cursor:5002,events:[events[4999],{cursor:5001},{cursor:5002}]}});
   assert.deepEqual(overlapping.events.map(e => e.cursor), [5001, 5002]);
-  assert.equal(state.applyServerEnvelope({version:1,type:"snapshot",payload:snapshot(4999)}).ignored, true);
+  assert.equal(state.applyServerEnvelope({version: 2,type:"snapshot",payload:snapshot(4999)}).ignored, true);
   assert.equal(state.snapshot.tick, 5000);
   assert.equal(state.buildHeartbeat(123).payload.event_cursor, 5002);
 });

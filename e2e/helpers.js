@@ -2,12 +2,7 @@ const { expect } = require("@playwright/test");
 
 // Sunucunun varsayılan başlangıç destesi (arena_canon.STARTER_IDS).
 const DEFAULT_POOL = [
-  "laser",
-  "shield",
-  "battery",
-  "cooler",
-  "emp",
-  "amplifier"
+  "laser", "pulse_cannon", "shield", "armor", "repair", "amplifier"
 ];
 
 // Başlangıç devresi yalnız merkezdeki Çekirdektir; kartlar sunucuda rastgele
@@ -110,7 +105,7 @@ async function closeSocket(client, code = 4000, reason = "e2e-network-drop") {
 async function sendSocket(client, sessionId, type, requestId, payload) {
   await client.page.evaluate(({ sessionId, playerId, type, requestId, payload }) => {
     window.__gridshardE2ESocket.send(JSON.stringify({
-      version: 1,
+      version: 2,
       type,
       session_id: sessionId,
       player_id: playerId,

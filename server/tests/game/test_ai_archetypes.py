@@ -43,20 +43,12 @@ def test_balanced_variants_play_balanced_but_carry_their_theme():
     economy = get_ai_archetype("balanced_economy")
     for archetype in (control, economy):
         assert archetype.category_bias == ()
-        categories = [get_module_definition(module).category for module in archetype.battle_pool_ids]
+        categories = [get_module_definition(module).combat_class for module in archetype.battle_pool_ids]
         assert categories.count("saldırı") >= 2
-        # Tema kartı genişleme listesinde öne alınmaz; küçük bir öncelik bile
-        # simülasyonda AI'yi saldırı kurmadan kilitliyordu.
-        assert all(
-            get_module_definition(module).category not in {"sabotaj", "enerji"}
-            for module in archetype.expansion_module_ids
-        )
-    assert control.sabotage_floor == 1
-    assert economy.energy_floor == 1
-    assert sum(get_module_definition(m).category == "sabotaj" for m in control.battle_pool_ids) >= 2
-    assert "battery" in control.battle_pool_ids
-    assert {"battery", "current_balancer"} <= set(economy.battle_pool_ids)
-    assert any(get_module_definition(m).category == "sabotaj" for m in economy.battle_pool_ids)
+        assert set(archetype.expansion_module_ids)<=set(archetype.battle_pool_ids)
+    assert {'emp','virus','cleanser'} <= set(control.battle_pool_ids)
+    assert {'buffer_shield','amplifier','speed_relay'} <= set(economy.battle_pool_ids)
+    assert all(get_module_definition(m).combat_class in {'saldırı','savunma','taktik'} for x in (control,economy) for m in x.battle_pool_ids)
 
 
 def test_defensive_family_carries_a_second_attack_card():
@@ -69,16 +61,17 @@ def test_defensive_family_carries_a_second_attack_card():
             if get_module_definition(module).category == "saldırı"
         ]
         assert len(attacks) >= 2
-        assert {"shield", "barrier", "repair"} <= set(archetype.battle_pool_ids)
-        assert archetype.defense_floor == 2
+        assert 'repair' in archetype.battle_pool_ids
+        assert sum(get_module_definition(m).combat_class=='savunma' for m in archetype.battle_pool_ids)>=2
 
 
-def test_aggressive_family_expands_with_cooler_before_drone_bay():
+def test_attack_styles_have_distinct_current_roster_specializations():
     for archetype_id in ("aggressive", "fast_pressure", "heavy_damage", "area_damage"):
         archetype = get_ai_archetype(archetype_id)
-        assert archetype.expansion_module_ids[0] == "cooler"
-        assert archetype.expansion_module_ids[-1] == "drone_bay"
-        assert "drone_bay" in archetype.battle_pool_ids
+        assert 'cooler' not in archetype.battle_pool_ids
+        assert all(m in archetype.battle_pool_ids for m in archetype.expansion_module_ids)
+    assert {'arc_cannon','plasma_mortar'} <= set(get_ai_archetype('area_damage').battle_pool_ids)
+    assert {'pulse_cannon','railgun','missile_launcher'} <= set(get_ai_archetype('heavy_damage').battle_pool_ids)
 
 
 def test_arena_defense_bots_carry_a_second_attack_card():

@@ -8,7 +8,7 @@ const html = fs.readFileSync(path.join(client, "index.html"), "utf8");
 const styles = [...html.match(/<!-- build:styles -->([\s\S]*?)<!-- \/build:styles -->/)[1]
   .matchAll(/href="([^"]+)"/g)].map(match => path.resolve(client, match[1]));
 
-test("ilk giriş eğitimi savaş çizim döngüsü olmadan menüde kendiliğinden başlar", async ({ page }) => {
+test("menü turu ilk girişi engellemez ve Ayarlardan açıkça başlatılabilir", async ({ page }) => {
   test.setTimeout(90_000);
   const errors = [];
   page.on("pageerror", error => errors.push(String(error)));
@@ -19,10 +19,13 @@ test("ilk giriş eğitimi savaş çizim döngüsü olmadan menüde kendiliğinde
   const guide = page.locator("dialog.guide-overlay");
   await expect(page.locator("body")).toHaveAttribute("data-app-screen", "menu");
   await expect(page.locator("body")).toHaveAttribute("data-online-status", "idle");
-  await expect(guide).toBeVisible();
-  await expect(guide).toHaveAttribute("data-step", "welcome:");
+  await expect(guide).toBeHidden();
   await page.reload({ waitUntil:"domcontentloaded" });
   await waitForParticipantReady(page, 60_000);
+  await expect(guide).toBeHidden();
+  await page.locator('#lobby-menu-button').click();
+  await page.locator('[data-open-screen="settings"]').click();
+  await page.locator('#settings-tutorial-replay').click();
   await expect(guide).toBeVisible();
   await expect(guide).toHaveAttribute("data-step", "welcome:");
   await guide.locator(".guide-next").click();
@@ -113,11 +116,7 @@ test("eşleştirme hatası eğitim altında kilitlenmez; tekrar denemede ilk sav
   await waitForParticipantReady(page);
   const guide = page.locator("dialog.guide-overlay");
   const tapBattleTarget = async () => {
-    await expect(guide).toBeVisible();
-    await expect(guide).toHaveAttribute("data-step", "battle:start");
-    const hole = await guide.locator(".guide-hole").boundingBox();
-    expect(hole).not.toBeNull();
-    await page.mouse.click(hole.x + hole.width / 2, hole.y + hole.height / 2);
+    await page.locator('#home-battle-button').click();
   };
   await tapBattleTarget();
   await expect(page.locator("body")).toHaveAttribute("data-online-status", "error");
@@ -130,6 +129,7 @@ test("eşleştirme hatası eğitim altında kilitlenmez; tekrar denemede ilk sav
   await expect(page.locator("body")).toHaveAttribute("data-online-status", "battle", {timeout:40_000});
   await expect(page.locator("#home-matchmaking-overlay")).toBeHidden();
   await expect(page.locator("#board .module-card").first()).toBeVisible();
-  await expect(guide).toHaveAttribute("data-step", "battle:arena");
+  await expect(guide).toHaveAttribute("data-step", /battle:(deploy_laser|watch_laser)/);
+  await expect(guide).toHaveAttribute("data-blocking", "false");
   expect(errors).toEqual([]);
 });

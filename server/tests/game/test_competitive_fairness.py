@@ -52,8 +52,8 @@ def test_simultaneous_tick_attacks_are_marked_in_event():
             "laser", 1, 1
         )
 
-    engine._process_energy_flow()
-    engine._process_combat_actions()
+    from app.game.battle_actions_v2 import tick
+    tick(engine)
 
     attack_events = [
         event for event in engine.state.events

@@ -139,7 +139,7 @@ def test_pvp_events_and_reserve_modules_are_private_to_owner():
     engine.add_player("player-a") if "player-a" not in engine.state.players else None
     engine.add_player("player-b") if "player-b" not in engine.state.players else None
     engine.set_battle_pool("player-a", [
-        "battery", "laser", "pulse_cannon", "shield", "repair", "targeting_computer",
+        "armor", "laser", "pulse_cannon", "shield", "repair", "amplifier",
     ])
 
     player_a_events = service.events_since("privacy", "player-a")["events"]

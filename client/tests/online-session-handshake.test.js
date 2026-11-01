@@ -25,7 +25,7 @@ function fixture({ queued = false, tutorial = false } = {}) {
       const socket = {url, readyState:0, sent:[], close() { this.readyState = 3; },
         send(raw) { this.sent.push(JSON.parse(raw)); },
         open() { this.readyState = 1; this.onopen(); },
-        receive(type, payload) { this.onmessage({data:JSON.stringify({version:1, type, payload})}); },
+        receive(type, payload) { this.onmessage({data:JSON.stringify({version: 2, type, payload})}); },
       };
       sockets.push(socket);
       return socket;

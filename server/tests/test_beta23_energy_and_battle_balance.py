@@ -4,7 +4,7 @@ from app.game.simulation import (
     OFFENSE_LAYOUT,
     DEFENSE_LAYOUT,
     SABOTAGE_LAYOUT,
-    BATTERY_PULSE_LAYOUT,
+    BURST_PULSE_LAYOUT,
     ARMOR_COUNTER_LAYOUT,
     run_round_robin,
 )
@@ -18,7 +18,7 @@ def test_six_layout_round_robin_resolves_without_a_timer_and_has_multiple_counte
         OFFENSE_LAYOUT,
         DEFENSE_LAYOUT,
         SABOTAGE_LAYOUT,
-        BATTERY_PULSE_LAYOUT,
+        BURST_PULSE_LAYOUT,
         ARMOR_COUNTER_LAYOUT,
     )
     report=run_round_robin(

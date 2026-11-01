@@ -6,7 +6,7 @@ require("../src/module-view-data.js");
 function fixture(){
   let now=0,hidden=false,quality="yuksek",load=0;
   class Element{
-    constructor(tag){this.tag=tag;this.children=[];this.dataset={};this.attrs={};this.classes=new Set();this.classList={contains:n=>this.classes.has(n),add:(...n)=>n.forEach(v=>this.classes.add(v)),remove:(...n)=>n.forEach(v=>this.classes.delete(v))};this.style={setProperty:(k,v)=>this.style[k]=v};}
+    constructor(tag){this.tag=tag;this.children=[];this.dataset={};this.attrs={};this.classes=new Set();this.classList={contains:n=>this.classes.has(n),add:(...n)=>n.forEach(v=>this.classes.add(v)),remove:(...n)=>n.forEach(v=>this.classes.delete(v)),toggle:(n,on)=>on?this.classes.add(n):this.classes.delete(n)};this.style={setProperty:(k,v)=>this.style[k]=v};}
     setAttribute(k,v){this.attrs[k]=String(v);}appendChild(n){this.children.push(n);n.parentElement=this;return n;}
     addEventListener(name,fn){(this.listeners||={})[name]=fn;}
     remove(){if(this.parentElement){const p=this.parentElement;p.children=p.children.filter(n=>n!==this);this.parentElement=null;}}
@@ -14,8 +14,8 @@ function fixture(){
   }
   const doc={createElement:n=>new Element(n),createElementNS:(_ns,n)=>new Element(n)},layer=new Element("div"),rigs=new Map(),sounds=[],anchorCalls=[];
   const queue=new GridshardBattleDeferredQueue({now:()=>now,onError:error=>{throw error;}});
-  const module=(id,def,x=0,y=0)=>({instance_id:id,definition_id:def,x,y,hp:100,status:"active",is_powered:true});
-  const own=[module("laser","laser"),module("cooler","cooler"),module("repair","repair"),module("emp","emp"),module("amp","amplifier"),module("battery","battery"),module("shield","shield"),module("armor","armor")];
+  const module=(id,def,x=0,y=0)=>({instance_id:id,definition_id:def,x,y,hp:100,status:"active",operational:true});
+  const own=[module("laser","laser"),module("repair","repair"),module("emp","emp"),module("amp","amplifier"),module("shield","shield"),module("armor","armor")];
   const snapshot={session_id:"vfx",elapsed_ms:1000,status:"running",players:{own:{modules:own},enemy:{modules:[module("target","laser",4,2)]}}};
   const domId=(p,m)=>p+":"+m.instance_id;
   for(const[p,state]of Object.entries(snapshot.players))for(const m of state.modules){const rig=new Element("span"),bb=new Element("span");rig.dataset={device:m.definition_id,view:"2"};bb.classList.add("module-device-billboard");rig.appendChild(bb);rigs.set(domId(p,m),rig);}
@@ -26,7 +26,36 @@ function fixture(){
   return{fx,layer,rigs,snapshot,event,sounds,anchorCalls,setTime:t=>now=t,advance:t=>{now=t;queue.flush(now);},setHidden:v=>hidden=v,setQuality:v=>quality=v,setLoad:v=>load=v,queue};
 }
 
-test("36 canon profiles own unique quiet WAVs and are present in the web/native asset list",()=>{
+test("V7 delayed impacts do not relaunch a weapon and survive source death",()=>{
+  const f=fixture();f.snapshot.players.own.modules[0].hp=0;
+  const event=f.event('attack_performed',{attacker_player_id:'own',attacker_module_id:'laser',target_player_id:'enemy',target_module_id:'target',damage_kind:'dot',damage:3});
+  f.fx.receive([event],f.snapshot);
+  assert.equal(f.layer.children.filter(n=>n.dataset.signatureV7==='dot').length,1);
+  assert.ok(![...f.fx.effects.keys()].some(k=>k.startsWith('weapon:')));
+  f.fx.receive([event],f.snapshot);
+  assert.equal(f.layer.children.filter(n=>n.dataset.signatureV7==='dot').length,1);
+  f.advance(1000);assert.equal(f.layer.children.length,0);
+});
+
+test("V7 echo retains separate target impacts and resets with the battle",()=>{
+  const f=fixture();f.snapshot.players.enemy.modules.push({...f.snapshot.players.enemy.modules[0],instance_id:'second'});
+  const events=['target','second'].map(id=>f.event('attack_performed',{attacker_player_id:'own',attacker_module_id:'laser',target_player_id:'enemy',target_module_id:id,damage_kind:'echo',damage:4}));
+  f.fx.receive(events,f.snapshot);
+  const echo=f.layer.children.filter(n=>n.dataset.signatureV7==='echo');
+  assert.equal(echo.length,1);assert.equal(echo[0].children.filter(n=>n.dataset.echoTarget).length,2);
+  f.fx.reset();assert.equal(f.layer.children.length,0);
+});
+
+test("V7 full-board echo keeps thirteen target marks inside one low-quality root",()=>{
+ const f=fixture();f.setQuality('dusuk');
+ f.snapshot.players.enemy.modules=Array.from({length:13},(_,i)=>({...f.snapshot.players.enemy.modules[0],instance_id:'target-'+i}));
+ const events=f.snapshot.players.enemy.modules.map(m=>f.event('attack_performed',{attacker_player_id:'own',attacker_module_id:'laser',target_player_id:'enemy',target_module_id:m.instance_id,damage_kind:'echo',damage:1}));
+ f.fx.receive(events,f.snapshot);assert.equal(f.fx.effects.size,1);
+ assert.equal(f.layer.children[0].children.filter(n=>n.dataset.echoTarget).length,13);
+ f.setHidden(true);f.fx.receive([],f.snapshot);assert.equal(f.layer.children.length,0);
+});
+
+test("24 canon profiles use bounded quiet WAVs and are present in the web/native asset list",()=>{
   const profiles=require("../src/battle/module-presentation-profiles.js"),crypto=require("node:crypto");
   require("../src/canon-data.js");
   assert.deepEqual(Object.keys(profiles).sort(),globalThis.GRIDSHARD_CANON_MODULES.map(m=>m.id).sort());
@@ -43,12 +72,30 @@ test("36 canon profiles own unique quiet WAVs and are present in the web/native 
     assert.ok(peak>0&&peak<.23,p.id);
     hashes.add(crypto.createHash("sha256").update(bytes).digest("hex"));
   }
-  assert.equal(hashes.size,36);
+  assert.equal(Object.keys(profiles).length,24);assert.equal(hashes.size,24);
 });
-test("battery production uses its quiet battle alias, not the full-scale UI energy cue",()=>{
-  const f=fixture();
-  f.fx.receive([f.event('module_cycle_pulse',{player_id:'own',module_id:'battery'})],f.snapshot);
-  assert.deepEqual(f.sounds,['battery_charge']);
+
+
+test('core shots follow authoritative hits once, stay bounded and clear with battle lifecycle',()=>{
+  const f=fixture();f.snapshot.players.own.modules.push({instance_id:'core',definition_id:'core',hp:450,status:'active',x:2,y:1});
+  const e=f.event('attack_performed',{attacker_player_id:'own',attacker_module_id:'core',target_player_id:'enemy',target_module_id:'target',core_attack:true,power_id:'core_overdrive',damage:18});
+  f.fx.receive([e],f.snapshot);f.fx.receive([e],f.snapshot);
+  assert.deepEqual(f.sounds,['core_overdrive_shot']);
+  assert.equal(f.fx.coreVfx.effects.size,1);
+  assert.equal(f.fx.coreVfx.effects.get('hit:own:target').node.dataset.corePower,'core_overdrive');
+  f.advance(1000);assert.equal(f.fx.coreVfx.effects.size,0);
+  f.setHidden(true);f.fx.receive([f.event(e.type,e.data,1500)],f.snapshot);
+  assert.equal(f.sounds.length,1);assert.equal(f.fx.effects.size,0);
+  f.setHidden(false);f.snapshot.status='finished';f.fx.receive([f.event(e.type,e.data,1600)],f.snapshot);
+  assert.equal(f.fx.effects.size,0);
+});
+
+test('every direct core shot cue is a packaged quiet WAV',()=>{
+  require('../src/gridshard-audio.js');
+  for(const id of ['resonance','guardian','overdrive','disruptor','capacitor','phoenix','quantum']){
+    const cue=globalThis.GRIDSHARD_SFX_CUES[`core_${id}_shot`];assert.ok(cue.gain<=.4);
+    assert.equal(fs.readFileSync(path.join(__dirname,'..',cue.asset)).toString('ascii',0,4),'RIFF');
+  }
 });
 
 test("shield remains inside a device-sized footprint even on a wide board",()=>{
@@ -62,19 +109,19 @@ test("every added weapon has bounded signature geometry and cleanup without a se
   const profiles=require("../src/battle/module-presentation-profiles.js");
   for(const p of Object.values(profiles).filter(p=>p.travel!==null)){
     const f=fixture();assert.equal(f.fx.attack("own:laser","enemy:target",p.id),p.travel);
-    assert.ok(f.fx.effects.has("weapon:own:laser"),p.id);
+    assert.ok([...f.fx.effects.keys()].some(key=>key.startsWith("weapon:own:laser")),p.id);
     assert.equal(f.sounds.length,0,p.id);
     f.advance(1600);assert.equal(f.fx.effects.size,0,p.id);
   }
 });
 test("passive module events are bounded, replay-safe and keep music priority",()=>{
   const f=fixture();
-  f.snapshot.players.own.modules.push({instance_id:"chrono",definition_id:"chrono_relay",x:1,y:1,hp:100,status:"active"});
-  const e=f.event("module_cycle_pulse",{player_id:"own",module_id:"chrono",kind:"speed"});
+  f.snapshot.players.own.modules.push({instance_id:"chrono",definition_id:"speed_relay",x:1,y:1,hp:100,status:"active"});
+  const e=f.event("amplifier_pulse",{player_id:"own",source_module_id:"chrono",charged_module_ids:["laser"]});
   f.fx.receive([e],f.snapshot);
-  assert.deepEqual(f.sounds,["module_chrono_relay"]);
-  const node=f.fx.effects.get("signature:own:chrono:own:chrono").node;
-  f.fx.receive([e],f.snapshot);assert.equal(f.fx.effects.get("signature:own:chrono:own:chrono").node,node);
+  assert.deepEqual(f.sounds,["module_speed_relay"]);
+  const node=f.fx.effects.get("signature:own:chrono:own:laser").node;
+  f.fx.receive([e],f.snapshot);assert.equal(f.fx.effects.get("signature:own:chrono:own:laser").node,node);
   f.setHidden(true);f.fx.receive([],f.snapshot);assert.equal(f.fx.effects.size,0);
 });
 test("laser is one red 1s beam per source, replaced on new target with no invented cadence",()=>{
@@ -86,16 +133,7 @@ test("laser is one red 1s beam per source, replaced on new target with no invent
   assert.equal(f.sounds.length,0,"weapon cues remain owned by the existing attack handler");
 });
 
-test("cooling distributes real targets at 240ms intervals with one sound and no late target snap",()=>{
-  const f=fixture(),ids=["laser","repair","emp"];
-  const events=ids.map(id=>f.event("module_cooled",{player_id:"own",source_module_id:"cooler",target_module_id:id,heat_before:20,heat_after:15}));
-  f.fx.receive(events,f.snapshot);
-  const count=()=>[...f.fx.effects.keys()].filter(k=>k.startsWith("support:cool")).length;
-  assert.equal(count(),1);f.advance(240);assert.equal(count(),2);f.advance(480);assert.equal(count(),3);
-  assert.deepEqual(f.sounds,["cooling_air"]);
-  const g=fixture();g.fx.receive(events,g.snapshot);g.fx.clearEffects();g.advance(480);assert.equal(g.fx.effects.size,0);
-  const h=fixture();h.fx.receive(events,h.snapshot);h.advance(1000);assert.equal(h.fx.effects.size,0,"Late queue does not replay obsolete turns");
-});
+
 test("cannon and missile hit after travel even when the shared queue drains 200ms late",()=>{
   for(const[weapon,travel]of[["pulse_cannon",340],["missile_launcher",500]]){
     const f=fixture();assert.equal(f.fx.attack("own:laser","enemy:target",weapon),travel);
@@ -128,83 +166,35 @@ test("only actual repair/cooling/EMP/charge events emit targeted support effects
     f.event("sabotage_applied",{attacker_player_id:"own",attacker_module_id:"emp",target_player_id:"enemy",target_module_id:"target",duration_ms:500}),
     f.event("amplifier_pulse",{player_id:"own",module_id:"amp",charged_module_ids:["laser","repair"]})];
   const before=JSON.stringify(f.snapshot);f.fx.receive(events,f.snapshot);
-  for(const type of["repair","cool","emp","boost"])assert.ok([...f.fx.effects.keys()].some(k=>k.startsWith("support:"+type)));
-  assert.deepEqual(f.sounds,["repair_beam","cooling_air","emp","amplifier_charge"]);
-  const nodes=f.layer.children.slice();f.fx.receive(events,f.snapshot);assert.deepEqual(f.layer.children,nodes);assert.equal(f.sounds.length,4);
+  for(const type of["repair","emp","boost"])assert.ok([...f.fx.effects.keys()].some(k=>k.startsWith("support:"+type)));
+  assert.deepEqual(f.sounds,["repair_beam","emp","amplifier_charge"]);
+  const nodes=f.layer.children.slice();f.fx.receive(events,f.snapshot);assert.deepEqual(f.layer.children,nodes);assert.equal(f.sounds.length,3);
   assert.equal(JSON.stringify(f.snapshot),before);
 });
-test("cooling is an outlet-oriented soft cloud fan, with bounded nodes and shared replacement cleanup",()=>{
-  const f=fixture(),count=n=>1+n.children.reduce((sum,c)=>sum+count(c),0);
-  const key="support:cool:own:cooler:own:laser",rig=f.rigs.get("own:cooler"),billboard=rig.children[0];
-  f.fx.support("cool","own:cooler","own:laser");const first=f.fx.effects.get(key).node;
-  const fan=first.children.find(n=>n.tag==="g"),clouds=fan.children.filter(n=>n.attrs.class==="vfx-cold-cloud");
-  assert.equal(clouds.length,5);assert.ok(count(first)<=20);
-  assert.equal(fan.attrs.transform,"translate(350 420) rotate(90)");
-  assert.equal(first.style["--module-vfx-ms"],"980ms");
-  assert.ok(fan.children.some(n=>n.attrs.class==="vfx-cold-plume"));
-  assert.equal(first.querySelector("filter"),null);assert.equal(first.querySelector("radialGradient").children.at(-1).attrs["stop-opacity"],"0");
-  assert.ok(clouds.every(n=>parseFloat(n.style["--mist-dx"])>0));
-  assert.equal(f.queue.entries.length,1,"one shared expiry per root, no per-cloud timers");
-  f.advance(100);f.fx.support("cool","own:cooler","own:laser");assert.equal(first.parentElement,null);
-  f.advance(980);assert.ok(f.fx.effects.has(key),"old expiry cannot erase the replacement");
-  f.advance(1080);assert.equal(f.fx.effects.has(key),false);assert.equal(f.layer.children.length,0);
-  assert.equal(rig.children[0],billboard,"mist never rebuilds board/module art");
-  const code=fs.readFileSync(path.join(__dirname,"../src/battle/module-vfx.js"),"utf8");
-  assert.doesNotMatch(code,/vfx-cold-wisp|vfx-cold-cone|requestAnimationFrame|setTimeout|setInterval|replaceChildren/);
-});
-test("approved cooling mist has one renderer even when the canvas effects are available",()=>{
-  const f=fixture();let duplicates=0;
-  f.fx.fx={clear(){},cool(){duplicates++;}};
-  const event=f.event("module_cooled",{player_id:"own",source_module_id:"cooler",target_module_id:"laser",heat_before:20,heat_after:5});
-  f.fx.receive([event],f.snapshot);
-  assert.equal(duplicates,0,"the legacy canvas cooling stream must not run behind the painted mist");
-  assert.ok(f.fx.effects.has("support:cool:own:cooler:own:laser"));
-  assert.equal(f.queue.entries.length,1,"only the approved mist's shared expiry is scheduled");
-  assert.deepEqual(f.sounds,["cooling_air"]);
-  f.fx.receive([event],f.snapshot);assert.equal(f.queue.entries.length,1,"replays cannot restart it");
-});
 
-test("cooling cloud quality, hidden/load gates, death, session reset and reduced motion remain bounded",()=>{
-  const descendants=n=>[n,...n.children.flatMap(descendants)];
-  for(const[quality,expected]of[["yuksek",5],["orta",4],["dusuk",2]]){
-    const f=fixture();f.setQuality(quality);f.fx.support("cool","own:cooler","own:laser");
-    assert.equal(descendants(f.layer).filter(n=>n.attrs.class==="vfx-cold-cloud").length,expected);
-  }
-  const r=fixture();r.fx.reduced=()=>true;r.fx.support("cool","own:cooler","own:laser");
-  assert.equal(descendants(r.layer).filter(n=>n.attrs.class==="vfx-cold-cloud").length,1);
-  r.advance(200);assert.equal(r.layer.children.length,0);
-  for(const stop of [f=>f.fx.forget("own:laser"),f=>f.fx.reset(),f=>{f.setHidden(true);f.fx.receive([],f.snapshot);}]){
-    const f=fixture();f.fx.support("cool","own:cooler","own:laser");stop(f);assert.equal(f.layer.children.length,0);f.advance(2000);assert.equal(f.layer.children.length,0);
-  }
-  for(const gate of [f=>f.setHidden(true),f=>f.setLoad(2)]){
-    const f=fixture();gate(f);f.fx.support("cool","own:cooler","own:laser");assert.equal(f.layer.children.length,0);assert.equal(f.queue.entries.length,0);assert.equal(f.anchorCalls.length,0);
-  }
-  const f=fixture();f.setQuality("dusuk");for(let i=0;i<100;i++)f.fx.support("cool","cooler"+i,"own:laser");
-  assert.equal(f.fx.effects.size,8);assert.equal(f.layer.children.length,8);assert.equal(f.queue.entries.length,8);
-  const css=fs.readFileSync(path.join(__dirname,"../src/module-vfx-v14.css"),"utf8");
-  assert.match(css,/@keyframes gs-cool-cloud/);assert.doesNotMatch(css,/vfx-cold-wisp|filter:blur|feTurbulence/);
-  assert.match(css,/\.vfx-cold-cloud \{ animation:none; opacity:\.45; \}/);
-});
+
+
+
 test("zero work and windup do not fabricate VFX; completed last-energy events still show",()=>{
-  const f=fixture();f.snapshot.players.own.modules.find(m=>m.instance_id==="repair").is_powered=false;
+  const f=fixture();f.snapshot.players.own.modules.find(m=>m.instance_id==="repair").operational=false;
   f.fx.receive([f.event("attack_windup_started",{player_id:"own",module_id:"laser"}),
     f.event("module_cooled",{player_id:"own",source_module_id:"cooler",target_module_id:"laser",heat_before:0,heat_after:0}),
     f.event("module_repaired",{player_id:"own",source_module_id:"repair",target_module_id:"laser",repair:3})],f.snapshot);
   assert.deepEqual(f.sounds,["repair_beam"]);assert.equal([...f.fx.effects.keys()].filter(k=>k.startsWith("support")).length,1);
 });
 test("battery/amplifier ambient is persistent, updates registered coil pairs, and stops on unpowered/hidden",()=>{
-  const f=fixture();f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,3);
+  const f=fixture();f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,2);
   const svg=f.fx.ambient.get("own:amp"),first=svg.querySelector("path").attrs.d;
   f.rigs.get("own:amp").dataset.view="3";GridshardModuleVfx.syncArt(f.rigs.get("own:amp"));assert.notEqual(svg.querySelector("path").attrs.d,first);
   f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.get("own:amp"),svg);
-  f.snapshot.players.own.modules.find(m=>m.instance_id==="battery").is_powered=false;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,2);
+  f.snapshot.players.own.modules.find(m=>m.instance_id==="amp").operational=false;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,1);
   f.setHidden(true);f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,0);assert.equal(f.layer.children.length,0);
 });
 test("a destruction ahead of the snapshot cannot resurrect ambient; later active rebirth may restore it",()=>{
-  const f=fixture();f.fx.receive([],f.snapshot);assert.ok(f.fx.ambient.has("own:battery"));
-  f.fx.receive([f.event("module_destroyed",{player_id:"own",module_id:"battery"},1100)],f.snapshot);
-  f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.has("own:battery"),false);
-  f.snapshot.elapsed_ms=1200;f.fx.receive([],f.snapshot);assert.ok(f.fx.ambient.has("own:battery"));
+  const f=fixture();f.fx.receive([],f.snapshot);assert.ok(f.fx.ambient.has("own:amp"));
+  f.fx.receive([f.event("module_destroyed",{player_id:"own",module_id:"amp"},1100)],f.snapshot);
+  f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.has("own:amp"),false);
+  f.snapshot.elapsed_ms=1200;f.fx.receive([],f.snapshot);assert.ok(f.fx.ambient.has("own:amp"));
 });
 test("shield ray meets its local device shield; damper field is only on the actual defense event",()=>{
   const p=ellipseHit({x:0,y:0},{x:100,y:0},{x:100,y:0,rx:20,ry:10});assert.equal(p.x,80);assert.equal(p.y,0);
@@ -263,8 +253,8 @@ test("a powered shield keeps one stable shell even at low quality and releases i
   GridshardModuleVfx.syncArt(f.rigs.get("own:shield"));
   assert.equal(svg.querySelector("path").attrs.d,shape,"electricity updates cannot replace shield geometry");
   const shield=f.snapshot.players.own.modules.find(m=>m.instance_id==="shield");
-  shield.is_powered=false;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,0);
-  shield.is_powered=true;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,1);
+  shield.operational=false;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,0);
+  shield.operational=true;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,1);
   shield.hp=0;f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,0);
   f.fx.reset();assert.equal(f.queue.entries.length,0);
 });
@@ -281,7 +271,7 @@ test("shield shell follows the raised painting stage, survives repeated snapshot
   assert.equal(shell.parentElement,null,"old painted stage cannot retain a ghost dome");
   assert.equal(f.fx.ambient.get("own:shield").parentElement,billboard,"legacy atlas fallback still works");
   f.setHidden(true);f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,0);
-  f.setHidden(false);f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,3);
+  f.setHidden(false);f.fx.receive([],f.snapshot);assert.equal(f.fx.ambient.size,2);
   f.fx.reset();assert.equal(f.fx.ambient.size,0);
 });
 test("client integration has a single first-ten VFX owner and preserves native audio asset resolution",()=>{
@@ -332,4 +322,45 @@ test("overlapping hit feedback never forces layout or restarts the per-device cl
   for(let i=0;i<20;i++){f.fx.strike("own:laser");f.advance(i*5);}
   assert.equal(adds,1);assert.equal(rig.classes.has("is-struck"),true);
   f.advance(400);assert.equal(rig.classes.has("is-struck"),false);
+});
+
+test("new support modules react to actual main-engine events and expire",()=>{
+  for(const [id,type,data]of[
+    ['buffer_shield','core_effect_applied',{value:35}],
+    ['cleanser','module_debuff_removed',{}],
+    ['speed_relay','amplifier_pulse',{charged_module_ids:['laser']}],
+  ]){
+    const f=fixture();f.snapshot.players.own.modules.push({instance_id:'new',definition_id:id,x:1,y:1,hp:100,status:'active'});
+    f.fx.receive([f.event(type,{player_id:'own',source_module_id:'new',module_id:'new',target_module_id:'laser',...data})],f.snapshot);
+    assert.ok(f.fx.effects.size>0,id);assert.ok(f.sounds.includes('module_'+id),id);
+    f.advance(4000);assert.equal(f.fx.effects.size,0,id);
+  }
+});
+
+test("last bastion still protects visibly after its source was destroyed",()=>{
+  const f=fixture();f.snapshot.players.own.modules.push({instance_id:'dead',definition_id:'last_bastion',x:null,y:null,hp:0,status:'destroyed'});
+  f.fx.receive([f.event('core_effect_applied',{player_id:'own',source_module_id:'dead',target_module_id:'laser',value:75})],f.snapshot);
+  assert.ok(f.fx.effects.size>0);assert.deepEqual(f.sounds,['module_last_bastion']);
+  f.advance(4000);assert.equal(f.fx.effects.size,0);
+});
+
+test("core waves use bounded real beneficiaries, ignore replay and clear on finish",()=>{
+  const f=fixture();f.snapshot.players.own.modules.push({instance_id:'core',definition_id:'core',x:2,y:1,hp:450,status:'active'});
+  const e=f.event('core_power_used',{player_id:'own',power_id:'core_guardian',affected_targets:[{player_id:'own',module_id:'laser'}]});
+  f.fx.receive([e,e],f.snapshot);assert.equal(f.fx.coreVfx.effects.size,1);
+  assert.ok(f.fx.coreVfx.effects.get('activation:own'));
+  f.snapshot.status='finished';f.fx.receive([],f.snapshot);assert.equal(f.fx.coreVfx.effects.size,0);
+});
+
+test("area and chain weapons keep their separate real target effects",()=>{
+  for(const id of ['arc_cannon','plasma_mortar','drone_bay']){
+    const f=fixture();f.fx.attack('own:laser','enemy:target',id);f.fx.attack('own:laser','own:shield',id);
+    assert.equal(f.fx.effects.size,2,id);f.advance(2000);assert.equal(f.fx.effects.size,0,id);
+  }
+});
+
+test("legendary phase follows the real badge and clears on suspension",()=>{
+  const f=fixture(),m=f.snapshot.players.own.modules[0];m.definition_id='phase_armor';m.signature_badges=[{kind:'phase'}];
+  f.fx.receive([],f.snapshot);assert.ok(f.rigs.get('own:laser').classes.has('is-phase-active'));
+  f.fx.clearEffects();assert.equal(f.rigs.get('own:laser').classes.has('is-phase-active'),false);
 });

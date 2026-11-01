@@ -27,14 +27,14 @@
 :root body[data-app-screen="play"] .vertical-circuit-arena .duel-side {
   position:absolute; left:calc(50% - var(--gs-vertical-board-size) / 2); margin:0 !important;
   z-index:auto !important;
-  --circuit-platform-art:url("../assets/ui/battle-native-v6/island-player.webp");
+  --circuit-platform-art:url("../assets/ui/battle-native-v7/island-player.webp");
   --circuit-light:#73fff0;
   --circuit-conduit:#28546a;
   --circuit-cell-glow:#57f5d828;
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena .duel-enemy-side {
   top:var(--scene-enemy-top,90px);
-  --circuit-platform-art:url("../assets/ui/battle-native-v6/island-enemy.webp");
+  --circuit-platform-art:url("../assets/ui/battle-native-v7/island-enemy.webp");
   --circuit-light:#ff583d;
   --circuit-conduit:#60343e;
   --circuit-cell-glow:#ff526d26;
@@ -65,14 +65,10 @@
   background:var(--circuit-platform-art) center / 100% 100% no-repeat;
   pointer-events:none; animation:none; filter:none;
 }
-/* The upper cliff keeps the painting's original downward pillar orientation.
- * Sink its lower tips behind the enemy rim to close the name/deck backdrop. */
+/* The name/deck sit on the arena's plain navy. The main island retains
+ * its complete facing cliff; do not repeat those pillars behind the header. */
 :root body[data-app-screen="play"] .duel-enemy-side > .circuit-terrain::after {
-  content:""; position:absolute; z-index:-1;
-  /* Source y820..1254: pillars only, excluding the platform fascia. */
-  left:-50%; width:200%; bottom:85%; height:107.425743%;
-  background:var(--circuit-platform-art) center bottom / 100% 288.940092% no-repeat;
-  transform:none; pointer-events:none; animation:none; filter:none;
+  content:none;
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena .board {
   position:relative; z-index:2;
@@ -121,6 +117,18 @@
 :root body[data-app-screen="play"] .vertical-circuit-arena .duel-enemy-identity {
   position:absolute; top:0; left:0; right:0; width:100% !important;
   margin:0 !important; padding:0 !important;
+  z-index:3; background:transparent !important;
+  border:0 !important; box-shadow:none !important;
+}
+
+/* Rounded phone glass needs clearance beyond the rectangular CSS viewport.
+ * Keep the scene full width while insetting only the bottom control shelf. */
+:root body[data-app-screen="play"]:is([data-local-status="battle"],[data-online-status="battle"]) .battle-layout {
+  padding-bottom:max(14px,env(safe-area-inset-bottom,0px)) !important;
+}
+:root body[data-app-screen="play"]:is([data-local-status="battle"],[data-online-status="battle"]) .shelf-panel {
+  width:calc(100% - 24px) !important;
+  justify-self:center;
 }
 :root body[data-app-screen="play"] .vertical-circuit-arena .enemy-deck-card {
   --preview-size:clamp(24px,8vw,36px);
@@ -195,7 +203,7 @@
   top:100%; bottom:auto; left:18%; right:18%; height:7%; translate:0 -100%;
   border-radius:50%; background:#01070c99;
 }
-:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell.energy-fed-cell {
+:root body[data-app-screen="play"] .vertical-circuit-arena .board-cell.circuit-active-cell {
   background-image:radial-gradient(ellipse at 50% 52%,var(--circuit-cell-glow),transparent 50%) !important;
   animation:none !important; transition:none !important; filter:none !important; will-change:auto !important;
 }

@@ -205,8 +205,8 @@ test("only private demo skips automatic guide; manual tutorial and ordinary play
     return {hidden,started};
   }
   assert.deepEqual(run({review:true}), {hidden:1,started:0});
-  assert.deepEqual(run({review:false}), {hidden:0,started:1});
-  assert.deepEqual(run({review:true,requested:true}), {hidden:0,started:1});
+  assert.deepEqual(run({review:false}), {hidden:1,started:0});
+  assert.deepEqual(run({review:true,requested:true}), {hidden:1,started:0});
   assert.deepEqual(run({review:false,dialog:true}), {hidden:1,started:0});
   assert.match(app,/settings-tutorial-replay[\s\S]{0,180}reviewTutorialRequested = true;/);
 });

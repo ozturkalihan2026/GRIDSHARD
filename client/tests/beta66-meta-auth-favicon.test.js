@@ -12,7 +12,7 @@ assert.ok(html.includes('gridshard-favicon-192.png?v=brand-20261001'));
 assert.ok(fs.existsSync("./assets/branding/gridshard-favicon-32.png"));
 assert.ok(fs.existsSync("./assets/branding/gridshard-favicon-192.png"));
 
-assert.ok(html.includes("<span><b>HASAR</b></span>"));
+assert.ok(html.includes("<span><b>SALDIRI</b></span>"));
 assert.ok(css.includes(".daily-meta-wheel-labels span > b"));
 assert.ok(css.includes("translateY(calc(-1 * var(--wheel-label-radius)))"));
 assert.ok(app.includes('selected?.effect_tr || ""'));

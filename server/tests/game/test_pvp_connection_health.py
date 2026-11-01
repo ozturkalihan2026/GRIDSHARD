@@ -1,3 +1,4 @@
+from app.game.pvp_protocol import PVP_PROTOCOL_VERSION
 import asyncio
 from app.game.pvp_session import PvPSessionService
 from app.game.pvp_websocket import PvPWebSocketAdapter
@@ -24,7 +25,7 @@ def test_heartbeat_updates_last_seen_and_echoes_foreign_clock_without_fake_rtt()
     async def scenario():
         c=Clock(); s=service()
         sock=FakeSocket([{
-            "version":1,"type":"heartbeat","session_id":"m",
+            "version": PVP_PROTOCOL_VERSION,"type":"heartbeat","session_id":"m",
             "player_id":"a","request_id":"hb",
             "payload":{"sent_at_ms":1791400000000.0},
         }])

@@ -155,7 +155,21 @@ def mailbox_messages(profile) -> tuple[list[dict], list[dict]]:
     return rewards, purchases
 
 
+def current_reward_contents(rewards: dict) -> dict:
+    """Keep historical fixed entitlements, without returning a retired card."""
+    from .module_roster import RETIRED_MODULE_IDS
+    result = deepcopy(rewards)
+    if result.get('module_definition_id') in RETIRED_MODULE_IDS:
+        result['universal_module_shards'] = int(result.get('universal_module_shards', 0)) + int(result.pop('module_shards', 0))
+        for key in ('module_definition_id', 'module_rarity', 'module_drop'):
+            result.pop(key, None)
+    return result
+
+
 def apply_fixed_contents(profile, rewards: dict) -> None:
+    if rewards.get('module_definition_id') and rewards.get('module_shards'):
+        from .catalog_migration import award_module_shards
+        award_module_shards(profile, rewards['module_definition_id'], int(rewards['module_shards']))
     for field in ("circuit_credits", "flux_shards", "universal_module_shards"):
         setattr(profile, field, getattr(profile, field) + max(0, int(rewards.get(field, 0))))
     for key, attribute in PLAYER_UNLOCKS.items():

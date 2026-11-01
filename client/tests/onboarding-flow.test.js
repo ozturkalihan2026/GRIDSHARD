@@ -354,7 +354,7 @@ test("eğitim metinlerinin hepsinin İngilizcesi vardır", () => {
     if (text && text.includes(" ") && !/^[#.\[]/.test(text)) texts.add(text);
   }
 
-  assert.ok(texts.size > 80, `beklenenden az metin bulundu: ${texts.size}`);
+  assert.ok(texts.size > 60, `beklenenden az metin bulundu: ${texts.size}`);
   const missing = [...texts].filter((text) => i18n.translateText(text, "en") === text);
   assert.deepEqual(missing, []);
 });
@@ -373,7 +373,7 @@ test("uygulama adımları: atlama düğmesi yoktur ve savaş sunucudan yönetmen
   }
   assert.match(app, /tutorial:\s*onboardingWantsDirectedBattle\(\)/);
   // İstemci tanıdığı sahne sürümünü de bildirir; sunucu eski istemciye yeni sahne göndermez.
-  assert.match(relay, /tutorial \? \{ tutorial: true, tutorial_script: 2 \} : \{\}/);
+  assert.match(relay, /tutorial \? \{ tutorial: true, tutorial_script: 5 \} : \{\}/);
   assert.match(app, /kind:"tutorial_ack"/);
 });
 
@@ -383,13 +383,13 @@ test("yönetmenli savaşın her sahnesinin istemcide metni vardır", () => {
     path.join(ROOT, "..", "server", "app", "game", "tutorial.py"),
     "utf8"
   );
-  const stageIds = [...server.matchAll(/TutorialStage\("([a-z0-9_]+)"/g)].map((match) => match[1]);
+  const stageIds = [...server.matchAll(/TutorialStage\(['"]([a-z0-9_]+)['"]/g)].map((match) => match[1]);
   const block = app.slice(
     app.indexOf("const DIRECTED_BATTLE_STAGES = Object.freeze({"),
     app.indexOf("const DIRECTED_FINALE_BANNER_MS")
   );
 
-  assert.ok(stageIds.length >= 20);
+  assert.ok(stageIds.length === 5);
   for (const stageId of stageIds) {
     assert.match(block, new RegExp(`\\n    ${stageId}:\\{`), `sahne metni eksik: ${stageId}`);
   }

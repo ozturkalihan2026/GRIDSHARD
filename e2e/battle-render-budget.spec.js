@@ -47,7 +47,7 @@ test("savaş hareketleri ve VFX aynı kare bütçesinde kalır", async ({page}, 
     const frames=window.__battleNativeFrames={count:0,last:0,maxGap:0,slow:0,active:true};
     const observe=now=>{if(!frames.active)return;if(frames.last){const gap=now-frames.last;frames.maxGap=Math.max(frames.maxGap,gap);if(gap>50)frames.slow++;}frames.last=now;frames.count++;requestAnimationFrame(observe);};
     requestAnimationFrame(observe);
-    const deck=["laser","battery","cooler","shield","laser","amplifier","laser","battery","cooler","laser"];
+    const deck=["laser","shield","repair","amplifier","laser","armor","laser","pulse_cannon","repair","laser"];
     const start=performance.now();let next=0;
     while(performance.now()-start<18_000){
       if(next<deck.length && window.__GRIDSHARD_TEST_API.deployModule(deck[next]))next++;

@@ -18,7 +18,7 @@ function fixture(quality = "orta") {
   });
   const attack = () => {
     const a = { x:80, y:400 }, b = { x:120, y:80 };
-    fx.laser(a,b); fx.missiles(a,b,500); fx.emp(a,b); fx.repair(a,b); fx.cool(a,b);
+    fx.laser(a,b); fx.missiles(a,b,500); fx.emp(a,b); fx.repair(a,b); fx.boost([a,a],b);
   };
   return { fx, attack, layer, ctx, get layoutReads(){return layoutReads;}, get wakes() { return wakes; }, get activeOnWake() { return activeOnWake; },
     setTime(time) { now = time; }, tick(time) { now = time; return fx.tick(time); },

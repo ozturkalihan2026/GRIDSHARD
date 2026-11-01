@@ -74,17 +74,16 @@ def test_simultaneous_equal_core_destruction_is_draw():
     assert engine.state.finish_reason=="simultaneous_core_destroyed"
 
 
-def test_summary_contains_energy_and_credit_data():
+def test_summary_contains_current_and_no_removed_energy_data():
     engine=base_engine()
     engine.state.players["a"].circuit_credits=42
-    engine.state.players["a"].energy_generated_total=12.5
     core=engine.state.players["b"].modules["b-core"]
     engine.apply_damage("b","b-core",core.hp)
     engine._evaluate_battle_end()
 
     summary=engine.state.result_summary["a"]
     assert summary["circuit_credits"]==42
-    assert summary["energy_generated_total"]==12.5
+    assert not any("energy" in key or "heat" in key for key in summary)
     assert all(row["definition_id"] != "core" for row in summary["damage_by_module"])
 
 

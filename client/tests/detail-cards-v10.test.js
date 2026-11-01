@@ -75,7 +75,7 @@ function appFixture(){
   const f=fixture(),m=f.card("module"),c=f.card("core");
   const item={definition_id:"laser",name_tr:"Lazer",unlocked:true,level:2,rarity:"common",category:"saldırı",shards:3,unlock_trophies:0,
     next_upgrade_cost:{shards:4,circuit_credits:200,flux_shards:0},stats:{max_hp:106,base_damage:13.2,cooldown_ms:980,energy_per_second:1.2},next_stats:{max_hp:109,base_damage:13.86,cooldown_ms:970,energy_per_second:1.21}};
-  const core={id:"core_resonance",name_tr:"Rezonans Çekirdeği",unlocked:true,selected:false,level:2,shards:1,legacy_shards:1,energy_per_second:5,energy_capacity:20,next_stats:{energy_per_second:5.2,energy_capacity:22},next_upgrade_cost:{shards:3,flux_shards:20},skills:[]};
+  const core={id:"core_resonance",name_tr:"Rezonans Çekirdeği",unlocked:true,selected:false,level:2,shards:1,legacy_shards:1,max_hp:486,next_stats:{max_hp:525},next_upgrade_cost:{shards:3,flux_shards:20},skills:[]};
   const icon=()=>f.make("span","ui-icon"),calls=[];
   const context={document:f.doc,window:{GridshardDetailPages:{mount:()=>{}}},GridshardDetailPages:api,item,core,calls,participantPlayerId:"preview",
     metaProgressionState:{unavailable:false,universal_module_shards:0,circuit_credits:500,flux_shards:100,cores:{types:[core]},module_collection:[item]},
@@ -133,7 +133,7 @@ test("core statistics use the same icon/label/value layout and real next-level g
   const f=appFixture();vm.runInContext(between("  function renderCoreDetailTab(","  function openCoreDetail(")+"\nthis.renderCore=renderCoreDetailTab;",f.context);
   f.context.renderCore("stats");const list=f.c.host.querySelector("dl");assert.equal(list.children.length,6);
   for(const row of list.children){assert.equal(row.children[0].className,"ui-icon");assert.equal(row.children[1].tag,"dt");assert.equal(row.children[2].tag,"dd");}
-  assert.ok(list.children.find(row=>row.children[1].textContent==="Enerji üretimi").children[2].querySelector(".stat-next-gain"));
+  assert.ok(list.children.find(row=>row.children[1].textContent==="CAN").children[2].querySelector(".stat-next-gain"));
 });
 test("overview tiles stack icon, label and value without a written next-level row",()=>{
   const f=fixture(),host=f.make("div"),context={document:f.doc,localizedUiText:s=>s,createUiIcon:()=>f.make("span","ui-icon"),

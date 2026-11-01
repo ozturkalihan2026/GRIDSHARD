@@ -5,6 +5,7 @@ import random
 import struct
 import subprocess
 import wave
+import argparse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,7 +15,10 @@ profiles = json.loads(subprocess.check_output(
     cwd=ROOT, text=True))
 out = ROOT / "client/assets/audio/modules"
 out.mkdir(parents=True, exist_ok=True)
+parser=argparse.ArgumentParser();parser.add_argument('--only',nargs='*');args=parser.parse_args()
+generated=0
 for index, (name, p) in enumerate(profiles.items()):
+    if args.only and name not in args.only:continue
     rng = random.Random(191019 + index)
     duration, hz = p["seconds"], p["hz"]
     low = smooth = phase = 0.0
@@ -43,4 +47,5 @@ for index, (name, p) in enumerate(profiles.items()):
         audio.setsampwidth(2)
         audio.setframerate(RATE)
         audio.writeframes(b"".join(struct.pack("<h", round(s * 32767)) for s in samples))
-print(f"{len(profiles)} original mono cues generated.")
+    generated+=1
+print(f"{generated} original mono cues generated.")

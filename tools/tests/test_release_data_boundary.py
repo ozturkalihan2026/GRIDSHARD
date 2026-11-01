@@ -10,7 +10,7 @@ from tools.package_release import ROOT, STATIC_SERVER_DATA_FILES, release_files,
 
 class ReleaseDataBoundaryTests(unittest.TestCase):
     def test_secrets_and_generated_test_outputs_are_excluded_even_if_tracked(self) -> None:
-        for path in ("qa_reports/startup-phone.png", "artifacts/app-debug.apk",
+        for path in ("qa_reports/startup-phone.png", "artifacts/app-debug.apk", "deliverables/GRIDSHARD_MAGAZA_2026-11-01.zip",
                      ".mobile-debug/old-identities.json", "deploy/.env.production",
                      "android/signing.jks", "nested/auth.key", "nested/app.p12",
                      "nested/google-services.json", "nested/project-firebase-adminsdk-secret.json",

@@ -32,7 +32,7 @@ Kontrol süreleri kendi tavanında durur. Virüs süresi 6 sn sabittir; hasarı 
 | Kapasitör | Sistem | Depo dolumu | 1 sn | 0,89 sn | Depo 10 → 16,2 |
 | Dron Üssü | Saldırı | Saldırı aralığı | 0,9 sn | 0,8 sn | Teorik hasar/sn 8,89/sn → 17,23/sn; Sıçrama %25 |
 | Sinyal Bozucu | Sabotaj | Sabotaj aralığı | 5 sn | 4,47 sn | Etki süresi 3 sn → 4 sn; Destek azaltma %35 → %50 |
-| Ray Topu | Saldırı | Saldırı aralığı | 3 sn | 2,68 sn | Teorik hasar/sn 14,67/sn → 28,42/sn; Delme %40 |
+| Ray Topu | Saldırı | Saldırı aralığı | 3 sn | 2,68 sn | Teorik hasar/sn 12,67/sn → 24,54/sn; Delme %40 |
 | Akım Dengeleyici | Sistem | Sürekli | — | — | Enerji tasarrufu %8 → %12,9 |
 | Yansıtıcı | Savunma | Ayna aralığı | 1 sn | 0,89 sn | Yansıtma %30 → %40; Koruma %25 → %40,5 |
 | Nano Sağlıkçı | Destek | Onarım aralığı | 2 sn | 1,79 sn | Onarım 2×9 → 2×15 |
@@ -45,7 +45,7 @@ Kontrol süreleri kendi tavanında durur. Virüs süresi 6 sn sabittir; hasarı 
 | Faz Zırhı | Savunma | Faz çevrimi | 6 sn | 5,36 sn | Koruma %18 → %29,1; Faz süresi 1 sn |
 | Sürü Fabrikatörü | Saldırı | Saldırı aralığı | 0,9 sn | 0,8 sn | Teorik hasar/sn 11,11/sn → 21,54/sn; Sürü 3×%45 |
 | Hassasiyet Matrisi | Destek | Odak aralığı | 1,5 sn | 1,34 sn | Kademe hasarı 4×%4 → 4×%6,5; Kademe hızı 4×%3 → 4×%4,9 |
-| İyon Mızrağı | Saldırı | Saldırı aralığı | 3,2 sn | 2,86 sn | Teorik hasar/sn 12,5/sn → 24,22/sn; Delme %60; Taşma %55 |
+| İyon Mızrağı | Saldırı | Saldırı aralığı | 3,2 sn | 2,86 sn | Teorik hasar/sn 10/sn → 19,37/sn; Delme %60; Taşma %55 |
 | Prizma Kalkanı | Savunma | Blok aralığı | 1,3 sn | 1,16 sn | Blok %55 → %73,4; Dönüşüm %8 → %10,7; Blok tavanı 3 |
 | Kesici | Sabotaj | Sabotaj aralığı | 6,5 sn | 5,81 sn | Etki süresi 3 sn → 4 sn |
 | Anka Onarım | Destek | Onarım aralığı | 2 sn | 1,79 sn | Onarım 17 → 28; Diriliş canı %30; Diriltme 30 sn |

@@ -1,0 +1,8 @@
+test("cooler painted rotor advances only during work; hidden rest is idempotent",()=>{
+  const s=setup("cooler");
+  s.receive([s.event("module_cooled",{player_id:"own",source_module_id:"same",target_module_id:"friend"})]);
+  s.motion.tick();s.setTime(100);s.motion.tick();assert.equal(s.draws.at(-1).frame,0);
+  s.setTime(190);s.motion.tick();assert.equal(s.draws.at(-1).frame,1);
+  s.setHidden(true);s.motion.tick();const count=s.draws.length;
+  s.motion.tick();assert.equal(s.draws.length,count);
+});

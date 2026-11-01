@@ -6,7 +6,7 @@ from app.game.engine import (
 from app.game.models import BattleCommand, BattleState, BattleStatus
 from app.game.pvp_session import PvPSessionService
 
-DECK = ("laser", "shield", "repair", "cooler", "battery", "amplifier")
+DECK = ("laser", "shield", "repair", "armor", "pulse_cannon", "amplifier")
 # Akım 6 ile başlar, 2,5 sn'de +1: tavana (12) 15 sn'de ulaşır.
 SECONDS_TO_CAP = 15
 

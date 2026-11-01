@@ -53,7 +53,7 @@ def test_ai_waits_when_no_card_is_affordable():
     assert build_ai_action_plan(engine, "ai", "opponent") is None
 
 
-ROTATION_DECK = ("laser", "drone_bay", "missile_launcher", "pulse_cannon", "amplifier", "overclock_unit")
+ROTATION_DECK = ("laser", "drone_bay", "missile_launcher", "pulse_cannon", "amplifier", "speed_relay")
 
 
 def rotation_engine() -> BattleEngine:

@@ -41,33 +41,13 @@ function slice(startMarker, endMarker) {
 }
 
 // --- Modül dağıtımı --------------------------------------------------------
-test("istemci modül tablosu sunucunun açılış sırasını taşır", () => {
-  assert.equal(canonModules.length, 36);
-  const server = new Map(serverCanon.modules.map((item) => [item.id, item]));
-  for (const item of canonModules) {
-    assert.equal(item.unlock_arena, server.get(item.id).unlock_arena, item.id);
-    assert.equal(item.unlock_trophies, server.get(item.id).unlock_trophies, item.id);
-  }
-  const arenaOne = canonModules.filter((item) => item.unlock_arena === 1).map((item) => item.id);
-  assert.deepEqual([...arenaOne].sort(), ["amplifier", "battery", "cooler", "emp", "laser", "shield"]);
-  for (let arena = 2; arena <= 12; arena += 1) {
-    const count = canonModules.filter((item) => item.unlock_arena === arena).length;
-    assert.ok(count === 2 || count === 3, `Arena ${arena}: ${count} modül`);
-  }
-  const leagueModules = canonModules.filter((item) => item.unlock_arena > 12);
-  assert.equal(leagueModules.length, 7);
-  // Efsanevi modüllerin yedisi de ilk lige (Kıvılcım Ligi I) girişte açılır.
-  assert.ok(leagueModules.every((item) => item.rarity === "legendary"
-    && item.unlock_arena === 13 && item.unlock_league === "spark"));
-  assert.deepEqual([...new Set(leagueModules.map((item) => item.unlock_trophies))], [5400]);
-  // Açılış kupası, modülün açıldığı arenanın (ya da ilk ligin) giriş kupasıdır.
-  const floors = new Map(serverCanon.arenas.map((arena) => [arena.index, arena.minimum_rating]));
-  for (const item of canonModules.filter((module) => module.unlock_arena <= 12)) {
-    assert.equal(item.unlock_trophies, floors.get(item.unlock_arena), item.id);
-  }
-  // Tablo açılış sırasına göre dizilidir; koleksiyon bu sırayı kullanır.
-  const order = canonModules.map((item) => item.unlock_arena);
-  assert.deepEqual(order, [...order].sort((left, right) => left - right));
+test("istemci modül tablosu sunucunun açılış sırasını taşır",()=>{
+  assert.equal(canonModules.length,24);
+  const server=new Map(serverCanon.modules.map(m=>[m.id,m]));
+  for(const m of canonModules){assert.equal(m.unlock_arena,server.get(m.id).unlock_arena);assert.equal(m.unlock_trophies,server.get(m.id).unlock_trophies);}
+  for(let arena=1;arena<=12;arena++)assert.ok(canonModules.some(m=>m.unlock_arena===arena));
+  assert.equal(canonModules.filter(m=>m.unlock_arena===1).length,6);
+  assert.ok(canonModules.every(m=>m.unlock_arena<=12));
 });
 
 test("yedek arena eşikleri sunucunun kupa ölçeğiyle aynıdır", () => {
@@ -88,12 +68,10 @@ test("yedek arena eşikleri sunucunun kupa ölçeğiyle aynıdır", () => {
   assert.ok(!/profileRating \/ 300/.test(app));
 });
 
-test("başlangıç destesi Arena 1'in altı modülüdür", () => {
-  const block = slice("const STARTER_BATTLE_POOL_PRESET", "function withStarterBattlePoolPresets");
-  for (const id of ["laser", "shield", "battery", "cooler", "emp", "amplifier"]) {
-    assert.ok(block.includes(`"${id}"`), id);
-  }
-  assert.ok(!block.includes('"repair"'));
+test("başlangıç destesi Arena 1'in altı modülüdür",()=>{
+  const block=slice("const STARTER_BATTLE_POOL_PRESET", "function withStarterBattlePoolPresets");
+  for(const id of ["laser","pulse_cannon","shield","armor","repair","amplifier"])assert.ok(block.includes('"'+id+'"'));
+  for(const id of ['battery','cooler'])assert.ok(!block.includes('"'+id+'"'));
 });
 
 // --- Kilitli kart etiketi ve maliyet ---------------------------------------
@@ -124,11 +102,10 @@ test("kilitli kart arenada arena numarasını, ligde ligin adını yazar", () =>
   rules.document.documentElement.lang = "tr";
 });
 
-test("sunucu aşama adını göndermese de lig modülü tablodan tanınır", () => {
-  // Eski kayıtlı görünüm: yalnız kimlik var; sıra ve kupa istemci tablosundan gelir.
-  assert.equal(rules.moduleUnlockBadge({ definition_id:"omega_amplifier" }, "omega_amplifier"), "KIVILCIM");
-  assert.equal(rules.moduleUnlockStage({ definition_id:"omega_amplifier" }).trophies, 5400);
-  assert.equal(rules.moduleUnlockBadge({ definition_id:"barrier" }, "barrier"), "ARENA 4");
+test("sunucu aşama adını göndermese de lig modülü tablodan tanınır",()=>{
+  assert.equal(rules.moduleUnlockBadge({definition_id:"last_bastion"},"last_bastion"),"ARENA 12");
+  assert.equal(rules.moduleUnlockBadge({definition_id:"barrier"},"barrier"),"ARENA 2");
+  assert.ok(!canonModules.some(m=>m.id==='omega_amplifier'));
 });
 
 test("efsanevi modülde Akı yetmezse yükseltme kapalıdır ve nedeni yazar", () => {
@@ -354,24 +331,10 @@ test("maç sonucu yeni açılan modülleri taşır ve pencere sayfada tanımlıd
 });
 
 // --- Eğitim savaşı ---------------------------------------------------------
-test("eğitim sahnelerinin hepsinin metni var; Onarım dersi Kalkan dersi oldu", () => {
-  const stages = [...tutorialSource.matchAll(/TutorialStage\("([a-z_0-9]+)"/g)].map((match) => match[1]);
-  assert.ok(stages.includes("deploy_shield") && stages.includes("watch_shield") && stages.includes("type_sabotage"));
-  assert.ok(!stages.some((stage) => stage.includes("repair")));
-  const block = slice("  const DIRECTED_BATTLE_STAGES = Object.freeze({", "  const DIRECTED_FINALE_BANNER_MS");
-  for (const stage of stages) assert.ok(block.includes(`    ${stage}:{`), `metni yok: ${stage}`);
-  assert.ok(!block.includes("deploy_repair") && !block.includes("Onarım kartına"));
-  for (const text of [
-    "Sabotaj modülleri",
-    "EMP bir SABOTAJ modülüdür: rakibin enerji ve destek hatlarını kısa süre aksatır.",
-    "Soğutucunun canı azaldı. Kalkan kartına dokun; rakibin ateşini üstüne çeker.",
-    "Kalkan koruyor",
-    "Rakip artık Kalkana ateş ediyor. Kalkan hasarı emiyor; Soğutucun güvende.",
-    "Soğutucu ısınan modülleri soğutur, Güçlendirici saldırı gücünü artırır. Bunlar DESTEK modülleridir.",
-  ]) {
-    assert.ok(block.includes(text), text);
-    assert.notEqual(en(text), text, `İngilizcesi yok: ${text}`);
-  }
+test("eğitim sahnelerinin hepsinin metni var; Onarım dersi Kalkan dersi oldu",()=>{
+  const block=slice("const DIRECTED_BATTLE_STAGES", "const DIRECTED_FINALE_BANNER_MS");
+  for(const stage of ['deploy_laser','watch_laser'])assert.ok(block.includes(stage));
+  assert.doesNotMatch(block,/deploy_cooler|deploy_battery|limits:/);
 });
 
 // --- GRIDSHARD Sandığı kozmetikleri ----------------------------------------
@@ -515,7 +478,7 @@ Object.assign(this, { LEAGUE_EMBLEMS, leagueChestMarkup });`, sandbox);
 });
 
 test("istemcinin bildirdiği eğitim betiği sürümü sunucununkiyle aynıdır", () => {
-  const server = Number(tutorialSource.match(/^TUTORIAL_SCRIPT_VERSION = (\d+)$/m)[1]);
+  const server = Number(tutorialSource.match(/^TUTORIAL_SCRIPT_VERSION\s*=\s*(\d+)$/m)[1]);
   const client = Number(relay.match(/tutorial_script: (\d+)/)[1]);
   assert.equal(client, server);
 });

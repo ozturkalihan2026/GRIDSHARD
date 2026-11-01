@@ -19,7 +19,7 @@ assert.ok(css.includes("translateY(-50%)"));
 
 // 8A circuit contract; executable routing/lifecycle checks live separately.
 assert.ok(app.includes("function circuitCableRoutes(modules)"));
-assert.ok(app.includes("m.isPowered===false"));
+assert.ok(app.includes("m.operational===false"));
 assert.ok(app.includes("function shortestCircuitPaths(graph, sourceKey)"));
 assert.ok(app.includes("energizedEdges.add"));
 

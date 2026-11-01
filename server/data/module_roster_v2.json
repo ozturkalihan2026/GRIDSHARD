@@ -1,0 +1,1061 @@
+{
+  "version": 2,
+  "status": "active_main_roster",
+  "rules": {
+    "placement": "preserve_existing_random_rule",
+    "targeting": "preserve_existing_target_type_and_tiebreak",
+    "classes": [
+      "Saldırı",
+      "Savunma",
+      "Taktik"
+    ],
+    "economies": [
+      "Akım"
+    ],
+    "energy": false,
+    "heat": false,
+    "class_placement_limits": null,
+    "definition_placement_limits": null,
+    "physical_deploy_cells": 14,
+    "change_current_rate": false,
+    "change_core_powers_in_this_step": true
+  },
+  "rarity_identities": {
+    "common": {
+      "label": "Yaygın",
+      "color": "#aebdcb",
+      "identity": "Temel ve güvenilir görev",
+      "difference": "Doğrudan ateş, dayanıklılık, onarım veya basit güçlendirme."
+    },
+    "rare": {
+      "label": "Nadir",
+      "color": "#71baff",
+      "identity": "Belirli ihtiyaca uzman cevap",
+      "difference": "Delme, yansıtma, kesinti, arındırma veya tek hedefli destek."
+    },
+    "epic": {
+      "label": "Epik",
+      "color": "#c79cff",
+      "identity": "Belirgin etki penceresi ve kapsam",
+      "difference": "Zincir/alan baskısı, blok aşma, süreli kalkan veya yavaşlatma."
+    },
+    "legendary": {
+      "label": "Efsanevi",
+      "color": "#f4ca70",
+      "identity": "Görünür özel tetik ve savaş anı",
+      "difference": "Dördüncü isabet, faza geçiş veya yıkımda çekirdeği koruma."
+    }
+  },
+  "rarity_policy": {
+    "fixed_per_card": true,
+    "rarity_changes_with_level": false,
+    "hp_multiplier": 1.0,
+    "damage_multiplier": 1.0,
+    "cooldown_multiplier": 1.0,
+    "current_cost_multiplier": 1.0,
+    "uniform_level_growth": 1.04,
+    "extra_passives": false,
+    "extra_jobs": false,
+    "affects_target_priority": false,
+    "affects_random_placement": false,
+    "affects_core_target_selection": false,
+    "acquisition_and_upgrade_economy_status": "not_changed_in_this_step"
+  },
+  "core_targeting": {
+    "mode": "automatic",
+    "player_selects": "activation_time_only",
+    "resonance": "Çekirdek ve en yaralı iki dost modül.",
+    "guardian": "Çekirdek; ateş altındaki modül ve en yaralı diğer dost modül.",
+    "overdrive": "Tam yüklü olmayan silahlar: çalışanlar önce, ek hasar potansiyeli en yüksek iki silah."
+  },
+  "modules": [
+    {
+      "id": "laser",
+      "name_tr": "Lazer",
+      "combat_class": "Saldırı",
+      "current_cost": 3,
+      "candidate_hp": 220,
+      "candidate_period_ms": 1000,
+      "one_job": "Her 1 saniyede mevcut öncelikli hedefe 12 hasar. Başka pasif yok.",
+      "candidate_effect": "12 hasar / 1 sn",
+      "visible_feedback": "İnce kırmızı ışın ve tek isabet; yük/süre rozeti gerekmiyor.",
+      "counterplay": "Kalkan, Zırh ve ateşi üzerine alan Bariyer; tek hedefe karşı güvenilir.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "saldırı",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "common",
+      "rarity_label": "Yaygın",
+      "rarity_color": "#aebdcb",
+      "rarity_signature": "Her 1 saniyede mevcut öncelikli hedefe 12 hasar. Başka pasif yok.",
+      "category": "saldırı",
+      "max_hp": 220,
+      "base_damage": 12,
+      "cooldown_ms": 1000,
+      "parameters": {},
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "introduced_season": 0
+    },
+    {
+      "id": "pulse_cannon",
+      "name_tr": "Darbe Topu",
+      "combat_class": "Saldırı",
+      "current_cost": 3,
+      "candidate_hp": 198,
+      "candidate_period_ms": 2500,
+      "one_job": "0,6 sn görünen hazırlığın ardından 30 hasar; toplam çevrim 2,5 sn.",
+      "candidate_effect": "30 hasar / 2,5 sn",
+      "visible_feedback": "Namlu hazırlığı, tek ağır darbe ve ayrı kısa bas sesi.",
+      "counterplay": "EMP hazırlığı geciktirir; hedef değişince mevcut hazırlık kuralı korunur.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "saldırı",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "common",
+      "rarity_label": "Yaygın",
+      "rarity_color": "#aebdcb",
+      "rarity_signature": "0,6 sn görünen hazırlığın ardından 30 hasar; toplam çevrim 2,5 sn.",
+      "category": "saldırı",
+      "max_hp": 198,
+      "base_damage": 30,
+      "cooldown_ms": 2500,
+      "parameters": {
+        "windup_ms": 600
+      },
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "introduced_season": 0
+    },
+    {
+      "id": "railgun",
+      "name_tr": "Ray Topu",
+      "combat_class": "Saldırı",
+      "current_cost": 4,
+      "candidate_hp": 275,
+      "candidate_period_ms": 3000,
+      "one_job": "3 sn çevrimde 38 hasar. Hedefin zırh azaltımının %40’ını yok sayar; gerçek CAN kalkanını veya Fazı delmez.",
+      "candidate_effect": "38 hasar; azaltımın %40’ını aşar",
+      "visible_feedback": "İnce beyaz delici iz; hedefte yalnız aşılan zırh katkısı gösterilir.",
+      "counterplay": "Zırhlıya uzman cevap; düşük zırhlı hedefte maliyet avantajı yok.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "saldırı",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "rare",
+      "rarity_label": "Nadir",
+      "rarity_color": "#71baff",
+      "rarity_signature": "3 sn çevrimde 38 hasar. Hedefin zırh azaltımının %40’ını yok sayar; gerçek CAN kalkanını veya Fazı delmez.",
+      "category": "saldırı",
+      "max_hp": 275,
+      "base_damage": 38,
+      "cooldown_ms": 3000,
+      "parameters": {
+        "kept_reduction": 0.6
+      },
+      "unlock_arena": 3,
+      "unlock_trophies": 600,
+      "introduced_season": 0
+    },
+    {
+      "id": "missile_launcher",
+      "name_tr": "Füze Fırlatıcı",
+      "combat_class": "Saldırı",
+      "current_cost": 4,
+      "candidate_hp": 231,
+      "candidate_period_ms": 3000,
+      "one_job": "0,7 sn hazırlık; 3 sn çevrimde 29 ana hasar. 0,6 sn sonra aynı hedefe ana vuruşun gerçek CAN kaybının %20’si kadar ikinci patlama. Yeni hedef seçmez.",
+      "candidate_effect": "34 hasar / 3 sn",
+      "visible_feedback": "Füze izi, hedefte küçük geri sayımlı yük ve tek gecikmiş halka.",
+      "counterplay": "İlk vuruşu kalkanla emmek ikinci patlamayı da küçültür. Hedef ölürse, Fazdaysa ya da arada arındırılırsa takip patlaması boşa gider.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "saldırı",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "rare",
+      "rarity_label": "Nadir",
+      "rarity_color": "#71baff",
+      "rarity_signature": "0,7 sn hazırlık; 3 sn çevrimde 29 ana hasar. 0,6 sn sonra aynı hedefe ana vuruşun gerçek CAN kaybının %20’si kadar ikinci patlama. Yeni hedef seçmez.",
+      "category": "saldırı",
+      "max_hp": 231,
+      "base_damage": 29,
+      "cooldown_ms": 3000,
+      "parameters": {
+        "windup_ms": 700,
+        "followup_ratio": 0.2,
+        "followup_delay_ms": 600
+      },
+      "unlock_arena": 5,
+      "unlock_trophies": 1300,
+      "introduced_season": 0
+    },
+    {
+      "id": "drone_bay",
+      "name_tr": "Dron Üssü",
+      "combat_class": "Saldırı",
+      "current_cost": 3,
+      "candidate_hp": 242,
+      "candidate_period_ms": 900,
+      "one_job": "0,9 sn çevrimde ana hedefe 8, mevcut sıradaki ikinci modüle bunun %25’i kadar hasar. İkinci hedef yoksa ek paket kaybolur.",
+      "candidate_effect": "8 ana + 2 ikinci hedef / 0,9 sn",
+      "visible_feedback": "İki ayrı küçük dron yolu; ikincil paketin daha küçük olduğu görülür.",
+      "counterplay": "Tek hedef DPS’si Lazerden düşük; iki bağımsız isabetin karşılığı Zırh ve Kubbe.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "saldırı",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "rare",
+      "rarity_label": "Nadir",
+      "rarity_color": "#71baff",
+      "rarity_signature": "0,9 sn çevrimde ana hedefe 8, mevcut sıradaki ikinci modüle bunun %25’i kadar hasar. İkinci hedef yoksa ek paket kaybolur.",
+      "category": "saldırı",
+      "max_hp": 242,
+      "base_damage": 8,
+      "cooldown_ms": 900,
+      "parameters": {
+        "secondary_ratios": [
+          0.25
+        ]
+      },
+      "unlock_arena": 6,
+      "unlock_trophies": 1700,
+      "introduced_season": 0
+    },
+    {
+      "id": "arc_cannon",
+      "name_tr": "Ark Topu",
+      "combat_class": "Saldırı",
+      "current_cost": 4,
+      "candidate_hp": 275,
+      "candidate_period_ms": 1800,
+      "one_job": "1,8 sn çevrimde 20 ana hasar; mevcut ek hedef sırasındaki iki farklı modüle ana atışın %45 ve %20’si. Ek zincir çekirdeği seçmez.",
+      "candidate_effect": "22 ana + %45 ikinci hedef / 1,8 sn",
+      "visible_feedback": "Ana ark ardından en fazla iki ince sıçrama; üç hedef bağı ayrı kalır.",
+      "counterplay": "Tek hedefte düşük verim. Her hedef kendi zırh/blok/Faz/kalkanından ayrı geçer. Zincir yeniden zincir doğurmaz.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "saldırı",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "epic",
+      "rarity_label": "Epik",
+      "rarity_color": "#c79cff",
+      "rarity_signature": "1,8 sn çevrimde 20 ana hasar; mevcut ek hedef sırasındaki iki farklı modüle ana atışın %45 ve %20’si. Ek zincir çekirdeği seçmez.",
+      "category": "saldırı",
+      "max_hp": 275,
+      "base_damage": 20,
+      "cooldown_ms": 1800,
+      "parameters": {
+        "secondary_ratios": [
+          0.45,
+          0.2
+        ]
+      },
+      "unlock_arena": 7,
+      "unlock_trophies": 2150,
+      "introduced_season": 0
+    },
+    {
+      "id": "plasma_mortar",
+      "name_tr": "Plazma Havanı",
+      "combat_class": "Saldırı",
+      "current_cost": 5,
+      "candidate_hp": 270,
+      "candidate_period_ms": 3600,
+      "one_job": "1,2 sn hazırlık, 3,6 sn çevrim: 29 ana hasar ve iki ek modüle %30/%30 yayılım. Ana hedefte gerçek ilk CAN kaybının saniyede %5’i, 3 saniye; toplam %15 Plazma İzi.",
+      "candidate_effect": "32 ana + sonraki iki hedefe %30 / 3,6 sn",
+      "visible_feedback": "Mor plazma küresi; ana hedefte 3 küçük iz çentiği ve zamanlı isabetler. Isı barı kullanılmaz.",
+      "counterplay": "Tek hedefte tek Plazma İzi; güçlü iz tamamlanır, eşit/zayıf uygulama süreyi yenilemez. Arındırıcı kalan izi siler. Kaynak ölümü uygulanmış izi silmez.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "saldırı",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "epic",
+      "rarity_label": "Epik",
+      "rarity_color": "#c79cff",
+      "rarity_signature": "1,2 sn hazırlık, 3,6 sn çevrim: 29 ana hasar ve iki ek modüle %30/%30 yayılım. Ana hedefte gerçek ilk CAN kaybının saniyede %5’i, 3 saniye; toplam %15 Plazma İzi.",
+      "category": "saldırı",
+      "max_hp": 270,
+      "base_damage": 29,
+      "cooldown_ms": 3600,
+      "parameters": {
+        "windup_ms": 1200,
+        "secondary_ratios": [
+          0.3,
+          0.3
+        ],
+        "dot_per_tick_ratio": 0.05,
+        "dot_ticks": 3,
+        "dot_step_ms": 1000
+      },
+      "unlock_arena": 8,
+      "unlock_trophies": 2650,
+      "introduced_season": 0
+    },
+    {
+      "id": "quantum_repeater",
+      "name_tr": "Kuantum Tekrarlayıcı",
+      "combat_class": "Saldırı",
+      "current_cost": 4,
+      "candidate_hp": 250,
+      "candidate_period_ms": 1400,
+      "one_job": "1,4 sn çevrimde 10 hasar. Aynı hedefte 4. doğrudan isabet 24 hasar. Bu dördüncü vuruşun gerçek CAN kaybından, diğer rakip modüllere hedef başına en çok %20 / toplam en çok %60 yankı havuzu.",
+      "candidate_effect": "10 normal; dördüncü atış 24",
+      "visible_feedback": "1–4 görünür sayaç; dördüncüde küçük çoklu mor yankı. Çekirdek yarığı ve lider sesi kullanılmaz.",
+      "counterplay": "Yankı çekirdeğe gitmez, yankı doğurmaz. Fazla tamamen boşa çıkan isabet sayılmaz; CAN kalkanına gerçek temas sayılır. Hedef değişince sayaç sıfırlanır. Diğer hedefler mevcut sıra ile seçilir.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "saldırı",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "legendary",
+      "rarity_label": "Efsanevi",
+      "rarity_color": "#f4ca70",
+      "rarity_signature": "1,4 sn çevrimde 10 hasar. Aynı hedefte 4. doğrudan isabet 24 hasar. Bu dördüncü vuruşun gerçek CAN kaybından, diğer rakip modüllere hedef başına en çok %20 / toplam en çok %60 yankı havuzu.",
+      "category": "saldırı",
+      "max_hp": 250,
+      "base_damage": 10,
+      "cooldown_ms": 1400,
+      "parameters": {
+        "every_hits": 4,
+        "charged_damage": 24,
+        "echo_per_target_ratio": 0.2,
+        "echo_total_ratio": 0.6
+      },
+      "unlock_arena": 9,
+      "unlock_trophies": 3150,
+      "introduced_season": 0
+    },
+    {
+      "id": "burst_cannon",
+      "name_tr": "Seri Top",
+      "combat_class": "Saldırı",
+      "current_cost": 3,
+      "candidate_hp": 240,
+      "candidate_period_ms": 2100,
+      "one_job": "Aynı hedefe 0 / 0,2 / 0,4 sn zamanlarında 3×8 hasar; çevrim 2,1 sn. Hedef ölürse kalan seri iptal.",
+      "candidate_effect": "Üç adet 8 hasar / 2,1 sn",
+      "visible_feedback": "Üç ayrı mermi ve üç kısa isabet; tek büyük hasar sayısı kullanılmaz.",
+      "counterplay": "Blok yükünü küçük ilk mermiyle harcar; kalın Zırha karşı her mermi ayrı azaltılır.",
+      "origin": "new_design",
+      "legacy_target_category": "saldırı",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "common",
+      "rarity_label": "Yaygın",
+      "rarity_color": "#aebdcb",
+      "rarity_signature": "Aynı hedefe 0 / 0,2 / 0,4 sn zamanlarında 3×8 hasar; çevrim 2,1 sn. Hedef ölürse kalan seri iptal.",
+      "category": "saldırı",
+      "max_hp": 240,
+      "base_damage": 8,
+      "cooldown_ms": 2100,
+      "parameters": {
+        "shots": 3,
+        "spacing_ms": 200
+      },
+      "unlock_arena": 4,
+      "unlock_trophies": 950,
+      "introduced_season": 0
+    },
+    {
+      "id": "shield_breaker",
+      "name_tr": "Kalkan Kırıcı",
+      "combat_class": "Saldırı",
+      "current_cost": 4,
+      "candidate_hp": 230,
+      "candidate_period_ms": 2200,
+      "one_job": "2,2 sn çevrimde 20 hasar; periyodik tek-isabet bloğunu aşar. Vuruştan hemen önce hedefteki gerçek CAN kalkanından ana ham hasarın %50’sine kadar ek kalkan siler; fazladan kısım CAN’a taşmaz.",
+      "candidate_effect": "22 hasar / 2,2 sn",
+      "visible_feedback": "Turuncu çatlak işareti ve yalnız gerçekten silinen kalkanın parçaları.",
+      "counterplay": "Fazı ve zırhı delmez; kalkan yokken ek hasar yok. Tampon havuzu da CAN kalkanı sayılır. Ek kalkan silme onarım veya Akım üretmez.",
+      "origin": "new_design",
+      "legacy_target_category": "saldırı",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "epic",
+      "rarity_label": "Epik",
+      "rarity_color": "#c79cff",
+      "rarity_signature": "2,2 sn çevrimde 20 hasar; periyodik tek-isabet bloğunu aşar. Vuruştan hemen önce hedefteki gerçek CAN kalkanından ana ham hasarın %50’sine kadar ek kalkan siler; fazladan kısım CAN’a taşmaz.",
+      "category": "saldırı",
+      "max_hp": 230,
+      "base_damage": 20,
+      "cooldown_ms": 2200,
+      "parameters": {
+        "bypass_periodic_block": true,
+        "shield_strip_ratio": 0.5
+      },
+      "unlock_arena": 10,
+      "unlock_trophies": 3650,
+      "introduced_season": 0
+    },
+    {
+      "id": "shield",
+      "name_tr": "Kalkan",
+      "combat_class": "Savunma",
+      "current_cost": 3,
+      "candidate_hp": 360,
+      "candidate_period_ms": 1200,
+      "one_job": "1,2 sn dolumla, kendisine gelen sıradaki uygun isabetin %60’ını engeller; bir yük saklar.",
+      "candidate_effect": "1,2 sn’de bir isabetin %60’ı",
+      "visible_feedback": "Tek kalkan yükü hazırken parıltı; harcanınca tek çatlama.",
+      "counterplay": "Seri küçük darbeler yükü tüketir. Sürekli %60 azaltım değildir.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "savunma",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "common",
+      "rarity_label": "Yaygın",
+      "rarity_color": "#aebdcb",
+      "rarity_signature": "1,2 sn dolumla, kendisine gelen sıradaki uygun isabetin %60’ını engeller; bir yük saklar.",
+      "category": "savunma",
+      "max_hp": 360,
+      "base_damage": 0,
+      "cooldown_ms": 1200,
+      "parameters": {
+        "block_ratio": 0.6
+      },
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "introduced_season": 0
+    },
+    {
+      "id": "armor",
+      "name_tr": "Zırh",
+      "combat_class": "Savunma",
+      "current_cost": 3,
+      "candidate_hp": 432,
+      "candidate_period_ms": 0,
+      "one_job": "Kendi aldığı uygun saldırı hasarını sürekli %25 azaltır. Otomatik onarım yok.",
+      "candidate_effect": "%25 hasar azaltma; kendini onarma yok",
+      "visible_feedback": "Sabit zırh plakası ve engellenen gerçek miktarda metal kıvılcım.",
+      "counterplay": "Ray Topu azaltımın bir kısmını deler. Arkadaşları korumaz.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "savunma",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "common",
+      "rarity_label": "Yaygın",
+      "rarity_color": "#aebdcb",
+      "rarity_signature": "Kendi aldığı uygun saldırı hasarını sürekli %25 azaltır. Otomatik onarım yok.",
+      "category": "savunma",
+      "max_hp": 432,
+      "base_damage": 0,
+      "cooldown_ms": 0,
+      "parameters": {
+        "reduction": 0.25
+      },
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "introduced_season": 0
+    },
+    {
+      "id": "barrier",
+      "name_tr": "Bariyer",
+      "combat_class": "Savunma",
+      "current_cost": 3,
+      "candidate_hp": 540,
+      "candidate_period_ms": 0,
+      "one_job": "540 CAN. Mevcut sınıf hedef sırası içindeki Bariyer önceliğiyle ateşi karşılar. Yeni taunt/hedef değiştirme kuralı yok.",
+      "candidate_effect": "Ek onarım veya sabotaj temizliği yok",
+      "visible_feedback": "Büyük siper gövdesi; can kaybı ve onarım açık görünür.",
+      "counterplay": "Saldırmaz, kendi kendini onarmaz. En güçlü silahın tek başına arkasında saklanmasını otomatik zafer yapan aura yok.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "savunma",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "common",
+      "rarity_label": "Yaygın",
+      "rarity_color": "#aebdcb",
+      "rarity_signature": "540 CAN. Mevcut sınıf hedef sırası içindeki Bariyer önceliğiyle ateşi karşılar. Yeni taunt/hedef değiştirme kuralı yok.",
+      "category": "savunma",
+      "max_hp": 540,
+      "base_damage": 0,
+      "cooldown_ms": 0,
+      "parameters": {},
+      "unlock_arena": 2,
+      "unlock_trophies": 300,
+      "introduced_season": 0
+    },
+    {
+      "id": "reflector",
+      "name_tr": "Yansıtıcı",
+      "combat_class": "Savunma",
+      "current_cost": 3,
+      "candidate_hp": 360,
+      "candidate_period_ms": 1500,
+      "one_job": "1,5 sn dolumda kendisine gelen uygun doğrudan saldırının gerçek CAN kaybının %30’unu aynı kaynağa geri yollar. Ölümcül son isabet de bir kez yansıyabilir.",
+      "candidate_effect": "1,5 sn’de bir %30 yansıtma",
+      "visible_feedback": "Gelen kaynakla kısa geri dönüş çizgisi; yalnız gerçek karşı hasar gösterilir.",
+      "counterplay": "Emilen kalkan/overkill yansıtılmaz. Yansıma kendini/başka yansımayı veya Akım bonusunu tetiklemez. Alan/süreli/ikincil hasar yeni yansıma açmaz.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "savunma",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "rare",
+      "rarity_label": "Nadir",
+      "rarity_color": "#71baff",
+      "rarity_signature": "1,5 sn dolumda kendisine gelen uygun doğrudan saldırının gerçek CAN kaybının %30’unu aynı kaynağa geri yollar. Ölümcül son isabet de bir kez yansıyabilir.",
+      "category": "savunma",
+      "max_hp": 360,
+      "base_damage": 0,
+      "cooldown_ms": 1500,
+      "parameters": {
+        "reflect_ratio": 0.3
+      },
+      "unlock_arena": 4,
+      "unlock_trophies": 950,
+      "introduced_season": 0
+    },
+    {
+      "id": "guardian_dome",
+      "name_tr": "Muhafız Kubbe",
+      "combat_class": "Savunma",
+      "current_cost": 4,
+      "candidate_hp": 480,
+      "candidate_period_ms": 2000,
+      "one_job": "2 sn dolumla başka dosta gelen bir uygun isabetin %35’ini engeller. İlk uygun hazır Kubbe mevcut deterministik sırayla seçilir; kendine işlemez.",
+      "candidate_effect": "2 sn’de bir %35 engelleme",
+      "visible_feedback": "Kaynak Kubbeden gerçekten korunan hedefe mavi bağlantı ve tek darbe yayı.",
+      "counterplay": "Aynı isabette en çok bir Kubbe. Bu paylaşılmış CAN aktarımı değil doğrudan önlemedir; yansıma ve onarım türetmez.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "savunma",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "rare",
+      "rarity_label": "Nadir",
+      "rarity_color": "#71baff",
+      "rarity_signature": "2 sn dolumla başka dosta gelen bir uygun isabetin %35’ini engeller. İlk uygun hazır Kubbe mevcut deterministik sırayla seçilir; kendine işlemez.",
+      "category": "savunma",
+      "max_hp": 480,
+      "base_damage": 0,
+      "cooldown_ms": 2000,
+      "parameters": {
+        "guard_ratio": 0.35
+      },
+      "unlock_arena": 6,
+      "unlock_trophies": 1700,
+      "introduced_season": 0
+    },
+    {
+      "id": "phase_armor",
+      "name_tr": "Faz Zırhı",
+      "combat_class": "Savunma",
+      "current_cost": 4,
+      "candidate_hp": 420,
+      "candidate_period_ms": 6000,
+      "one_job": "Mevcut 6 sn Faz çevriminin 1 sn penceresinde gelen saldırı boşa çıkar. Pencere dışında ek azaltım/onarım yok; kendisini korur.",
+      "candidate_effect": "6 sn’de bir 1 sn faz; ek zırh yok",
+      "visible_feedback": "Yalnız kendi gövdesinde yarı saydam titreşim; Faz açık/kapalı keskin anlaşılır.",
+      "counterplay": "Pencere açık görünür. EMP altında Faz çalışmaz; hazır konumdaki diğer Fazlar tüm devreyi korumaz. Yeni yerleşimle devreye genel bağışıklık verilmez.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "savunma",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "legendary",
+      "rarity_label": "Efsanevi",
+      "rarity_color": "#f4ca70",
+      "rarity_signature": "Mevcut 6 sn Faz çevriminin 1 sn penceresinde gelen saldırı boşa çıkar. Pencere dışında ek azaltım/onarım yok; kendisini korur.",
+      "category": "savunma",
+      "max_hp": 420,
+      "base_damage": 0,
+      "cooldown_ms": 6000,
+      "parameters": {
+        "phase_ms": 1000
+      },
+      "unlock_arena": 8,
+      "unlock_trophies": 2650,
+      "introduced_season": 0
+    },
+    {
+      "id": "buffer_shield",
+      "name_tr": "Tampon",
+      "combat_class": "Savunma",
+      "current_cost": 3,
+      "candidate_hp": 375,
+      "candidate_period_ms": 8000,
+      "one_job": "8 sn çevrimde mevcut dost seçim kuralıyla bir hedefe 5 sn yaşayan 60 CAN emilim havuzu. Her uygun isabetin en çok %70’i havuzdan emilir. Gerçek emilenin %40’ı en yaralı iki diğer dost modüle onarım olarak pay edilir; çekirdek ve havuz sahibi hariç.",
+      "candidate_effect": "6 sn’de bir 60 CAN; 5 sn sürer",
+      "visible_feedback": "Hedefte havuz değeri olan mavi kalkan rozeti; her gerçek emilimden yaralılara ince yeşil paketler.",
+      "counterplay": "Havuz başına temel en çok 24 onarım. Kalkan Kırıcı ile silinen havuz onarım üretmez. Aynı hedefte tek Tampon, aynı isabette tek dönüşüm; boşa giden onarım bankalanmaz.",
+      "origin": "new_design",
+      "legacy_target_category": "savunma",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "epic",
+      "rarity_label": "Epik",
+      "rarity_color": "#c79cff",
+      "rarity_signature": "8 sn çevrimde mevcut dost seçim kuralıyla bir hedefe 5 sn yaşayan 60 CAN emilim havuzu. Her uygun isabetin en çok %70’i havuzdan emilir. Gerçek emilenin %40’ı en yaralı iki diğer dost modüle onarım olarak pay edilir; çekirdek ve havuz sahibi hariç.",
+      "category": "savunma",
+      "max_hp": 375,
+      "base_damage": 0,
+      "cooldown_ms": 8000,
+      "parameters": {
+        "shield_hp": 60,
+        "duration_ms": 5000,
+        "absorb_ratio": 0.7,
+        "heal_conversion_ratio": 0.4
+      },
+      "unlock_arena": 7,
+      "unlock_trophies": 2150,
+      "introduced_season": 0
+    },
+    {
+      "id": "last_bastion",
+      "name_tr": "Son Siper",
+      "combat_class": "Savunma",
+      "current_cost": 3,
+      "candidate_hp": 420,
+      "candidate_period_ms": 0,
+      "one_job": "420 CAN. Her savaş örneği yıkılırken bir kez kendi canlı çekirdeğine 75 kalıcı CAN kalkanı ve en yaralı iki dost modüle toplam 40 CAN / 5 sn kalkan bırakır.",
+      "candidate_effect": "Çekirdek kalkanını 75 CAN’a tamamlar",
+      "visible_feedback": "Yıkımda çekirdeğe kalın olmayan altın bağ ve en çok iki mavi koruma paketi; kaynak başına bir defa.",
+      "counterplay": "Aynı aile kalkanları toplanmaz; kalanla yeni değerlerden büyük olanı tutulur. Çekirdeği diriltmez; devrede canlı modül yoksa ek 40 kaybolur. Hücre enkazı aynı kalır.",
+      "origin": "new_design",
+      "legacy_target_category": "savunma",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "legendary",
+      "rarity_label": "Efsanevi",
+      "rarity_color": "#f4ca70",
+      "rarity_signature": "420 CAN. Her savaş örneği yıkılırken bir kez kendi canlı çekirdeğine 75 kalıcı CAN kalkanı ve en yaralı iki dost modüle toplam 40 CAN / 5 sn kalkan bırakır.",
+      "category": "savunma",
+      "max_hp": 420,
+      "base_damage": 0,
+      "cooldown_ms": 0,
+      "parameters": {
+        "core_shield_hp": 75,
+        "ally_shield_total": 40,
+        "ally_shield_duration_ms": 5000
+      },
+      "unlock_arena": 12,
+      "unlock_trophies": 4800,
+      "introduced_season": 0
+    },
+    {
+      "id": "repair",
+      "name_tr": "Onarım",
+      "combat_class": "Taktik",
+      "current_cost": 3,
+      "candidate_hp": 180,
+      "candidate_period_ms": 2000,
+      "one_job": "Mevcut en yaralı uygun dost modüle toplam 15 CAN’ı 3 darbeye yayar. İlk darbe uygulamada, diğerleri +1/+2 sn; etki kilidi 3 sn. 2 sn çevrim hazır olsa bile aynı hedefteki yenilenme üst üste binmez. Çekirdeği ve kendini onarmaz.",
+      "candidate_effect": "3 saniyede 15 CAN; aynı hedefte tek yenilenme.",
+      "visible_feedback": "Kaynak-hedef yeşil bağ, her gerçek onarım darbesinde küçük sayı; toplamı tekrar ekleyen sahte sayı yok.",
+      "counterplay": "Tam CAN’a aşan miktar kaybolur; başka Onarım aynı etkili hedefe yük bindirmez. Kaynak ölse de verilmiş süreli paket tamamlanır.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "destek",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "common",
+      "rarity_label": "Yaygın",
+      "rarity_color": "#aebdcb",
+      "rarity_signature": "Mevcut en yaralı uygun dost modüle toplam 15 CAN’ı 3 darbeye yayar. İlk darbe uygulamada, diğerleri +1/+2 sn; etki kilidi 3 sn. 2 sn çevrim hazır olsa bile aynı hedefteki yenilenme üst üste binmez. Çekirdeği ve kendini onarmaz.",
+      "category": "taktik",
+      "max_hp": 180,
+      "base_damage": 0,
+      "cooldown_ms": 2000,
+      "parameters": {
+        "heal": 15,
+        "duration_ms": 3000
+      },
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "introduced_season": 0
+    },
+    {
+      "id": "amplifier",
+      "name_tr": "Güçlendirici",
+      "combat_class": "Taktik",
+      "current_cost": 3,
+      "candidate_hp": 162,
+      "candidate_period_ms": 3000,
+      "one_job": "3 sn çevrimde mevcut dost silah seçicisiyle bir silahın sonraki gerçek atışına +%25 yük. Aynı aileden yalnız en güçlü tek yük.",
+      "candidate_effect": "Sonraki atışa %25; hedefte tek yük",
+      "visible_feedback": "Güçlendiriciden seçilen silaha tek yeşil yük; atışla tüketilen simge.",
+      "counterplay": "Yük birikmez; çekirdek gücü hedef olmaz. Seri Topta yalnız tek mermi; ikincil hedef oranları aynı atışın bonuslu ana bütçesinden hesaplanır.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "destek",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "common",
+      "rarity_label": "Yaygın",
+      "rarity_color": "#aebdcb",
+      "rarity_signature": "3 sn çevrimde mevcut dost silah seçicisiyle bir silahın sonraki gerçek atışına +%25 yük. Aynı aileden yalnız en güçlü tek yük.",
+      "category": "taktik",
+      "max_hp": 162,
+      "base_damage": 0,
+      "cooldown_ms": 3000,
+      "parameters": {
+        "shot_bonus": 0.25
+      },
+      "unlock_arena": 1,
+      "unlock_trophies": 0,
+      "introduced_season": 0
+    },
+    {
+      "id": "emp",
+      "name_tr": "EMP",
+      "combat_class": "Taktik",
+      "current_cost": 3,
+      "candidate_hp": 144,
+      "candidate_period_ms": 6000,
+      "one_job": "6 sn çevrimde mevcut sabotaj seçicisinin bir hedefini 1 sn durdurur; bitişinden sonra 3 sn yeniden EMP hedefi olamama koruması.",
+      "candidate_effect": "1 sn kesinti / 6 sn",
+      "visible_feedback": "Tek elektrik halkası, hedefte kesinti süresi ve ayrı toparlanma işareti.",
+      "counterplay": "İki EMP süresiz kilit kuramaz. Kesinti büyümesi 3 sn toparlanmayı küçültmez. Çekirdeğin aktif gücü bu kartın hedefi değildir.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "sabotaj",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "rare",
+      "rarity_label": "Nadir",
+      "rarity_color": "#71baff",
+      "rarity_signature": "6 sn çevrimde mevcut sabotaj seçicisinin bir hedefini 1 sn durdurur; bitişinden sonra 3 sn yeniden EMP hedefi olamama koruması.",
+      "category": "taktik",
+      "max_hp": 144,
+      "base_damage": 0,
+      "cooldown_ms": 6000,
+      "parameters": {
+        "duration_ms": 1000,
+        "recovery_ms": 3000
+      },
+      "unlock_arena": 2,
+      "unlock_trophies": 300,
+      "introduced_season": 0
+    },
+    {
+      "id": "virus",
+      "name_tr": "Yavaşlatıcı Virüs",
+      "combat_class": "Taktik",
+      "current_cost": 3,
+      "candidate_hp": 160,
+      "candidate_period_ms": 7000,
+      "one_job": "7 sn çevrimde mevcut sabotaj seçicisinin bir hedefinin eylem aralığını 4 sn boyunca %25 uzatır. Yeni bir hasar veya Akım sistemi değildir.",
+      "candidate_effect": "4 sn boyunca eylem aralığı +%25; hasar yok",
+      "visible_feedback": "Hedefte mor çalışma yayı yavaşlar; takvim bitince normal tempoya döner.",
+      "counterplay": "Tek hedefte tek Virüs; güçlü mevcut etki tamamlanır, aynı/zayıf süre yenilemez. Arındırıcı temizler. Çekirdeğin dolumunu ve aktif gücünü etkilemez.",
+      "origin": "existing_redefined",
+      "legacy_target_category": "sabotaj",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "epic",
+      "rarity_label": "Epik",
+      "rarity_color": "#c79cff",
+      "rarity_signature": "7 sn çevrimde mevcut sabotaj seçicisinin bir hedefinin eylem aralığını 4 sn boyunca %25 uzatır. Yeni bir hasar veya Akım sistemi değildir.",
+      "category": "taktik",
+      "max_hp": 160,
+      "base_damage": 0,
+      "cooldown_ms": 7000,
+      "parameters": {
+        "duration_ms": 4000,
+        "interval_penalty": 0.25
+      },
+      "unlock_arena": 11,
+      "unlock_trophies": 4200,
+      "introduced_season": 0
+    },
+    {
+      "id": "cleanser",
+      "name_tr": "Arındırıcı",
+      "combat_class": "Taktik",
+      "current_cost": 3,
+      "candidate_hp": 200,
+      "candidate_period_ms": 4000,
+      "one_job": "4 sn çevrimde tek dosttan tek olumsuz etki siler. Mevcut İmha İşareti hedef önceliği korunur; seçilmiş hedefte silme sırası İmha → Plazma İzi → Takip Füze Yükü → EMP → Virüs.",
+      "candidate_effect": "Hazır bekler; temizlikten sonra 4 sn dolum",
+      "visible_feedback": "Arındırıcıdan gerçek hedefe beyaz-yeşil çizgi; silinen tek rozet görünür biçimde söner.",
+      "counterplay": "Silerken bedava onarım yapmaz. Geçerli olumsuz etki yoksa dolum harcanmaz. Kalkan, enkaz ve dördüncü isabet sayacı olumsuz etki değildir.",
+      "origin": "new_design",
+      "legacy_target_category": "destek",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "rare",
+      "rarity_label": "Nadir",
+      "rarity_color": "#71baff",
+      "rarity_signature": "4 sn çevrimde tek dosttan tek olumsuz etki siler. Mevcut İmha İşareti hedef önceliği korunur; seçilmiş hedefte silme sırası İmha → Plazma İzi → Takip Füze Yükü → EMP → Virüs.",
+      "category": "taktik",
+      "max_hp": 200,
+      "base_damage": 0,
+      "cooldown_ms": 4000,
+      "parameters": {},
+      "unlock_arena": 3,
+      "unlock_trophies": 600,
+      "introduced_season": 0
+    },
+    {
+      "id": "speed_relay",
+      "name_tr": "Hız Rölesi",
+      "combat_class": "Taktik",
+      "current_cost": 3,
+      "candidate_hp": 170,
+      "candidate_period_ms": 5000,
+      "one_job": "5 sn çevrimde mevcut uygun dost silah seçicisiyle tek hız yükü verir. Sonraki atıştan sonraki bekleme %20 kısalır; mevcut hazırlığı/seri içi mermileri atlatmaz.",
+      "candidate_effect": "Sonraki bekleme %20 kısa; tek görünür yük",
+      "visible_feedback": "Hedef silaha turkuaz ok ve sonraki beklemede kısalan yay.",
+      "counterplay": "Yükler birikmez; çekirdeğin ateşine veya dolumuna uygulanmaz. Birikmiş anlık atış zinciri üretmez.",
+      "origin": "new_design",
+      "legacy_target_category": "destek",
+      "art_status": "runtime_registered",
+      "runtime_status": "main_game",
+      "rarity": "rare",
+      "rarity_label": "Nadir",
+      "rarity_color": "#71baff",
+      "rarity_signature": "5 sn çevrimde mevcut uygun dost silah seçicisiyle tek hız yükü verir. Sonraki atıştan sonraki bekleme %20 kısalır; mevcut hazırlığı/seri içi mermileri atlatmaz.",
+      "category": "taktik",
+      "max_hp": 170,
+      "base_damage": 0,
+      "cooldown_ms": 5000,
+      "parameters": {
+        "next_interval_reduction": 0.2
+      },
+      "unlock_arena": 5,
+      "unlock_trophies": 1300,
+      "introduced_season": 0
+    }
+  ],
+  "retired": [
+    {
+      "id": "battery",
+      "name_tr": "Batarya",
+      "status": "retired",
+      "reason": "Enerji/Isı ekonomisi kaldırılıyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "capacitor",
+      "name_tr": "Kapasitör",
+      "status": "retired",
+      "reason": "Enerji/Isı ekonomisi kaldırılıyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "cooler",
+      "name_tr": "Soğutucu",
+      "status": "retired",
+      "reason": "Enerji/Isı ekonomisi kaldırılıyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "targeting_computer",
+      "name_tr": "Hedefleme Bilgisayarı",
+      "status": "retired",
+      "reason": "Paylaştırılan hız kilidi yerine tek hedefli Hız Rölesi öneriliyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "jammer",
+      "name_tr": "Sinyal Bozucu",
+      "status": "retired",
+      "reason": "Destek verim katsayısı savaşta zor okunuyor; EMP/Virüs yeterli aday.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "overclock_unit",
+      "name_tr": "Aşırı Hızlandırıcı",
+      "status": "retired",
+      "reason": "Isı bedeli kalkınca iki bonuslu rolü gereksizleşiyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "disruptor",
+      "name_tr": "Kesici",
+      "status": "retired",
+      "reason": "Enerji kaynağı hedefi ortadan kalkıyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "current_balancer",
+      "name_tr": "Akım Dengeleyici",
+      "status": "retired",
+      "reason": "Enerji/Isı ekonomisi kaldırılıyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "nano_medic",
+      "name_tr": "Nano Sağlıkçı",
+      "status": "retired",
+      "reason": "Çift onarım yerine temel Onarım tek işi açıkça üstleniyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "chrono_relay",
+      "name_tr": "Krono Rölesi",
+      "status": "retired",
+      "reason": "Hızlanma ve zaman borcu görünmeyen iki ayrı kural üretiyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "swarm_fabricator",
+      "name_tr": "Sürü Fabrikatörü",
+      "status": "retired",
+      "reason": "Dron Üssü ve seri atışla örtüşen birikim sistemi azaltma adayı.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "precision_matrix",
+      "name_tr": "Hassasiyet Matrisi",
+      "status": "retired",
+      "reason": "Hasar/hız kademeleri başlangıç kataloğunda fazla örtüşüyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "ion_spear",
+      "name_tr": "İyon Mızrağı",
+      "status": "retired",
+      "reason": "Ray ve zincir/alan saldırılarıyla rol örtüşmesini azaltma adayı.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "prism_shield",
+      "name_tr": "Prizma Kalkanı",
+      "status": "retired",
+      "reason": "Enerjiye dönüşüm işi kalkıyor; yeni Tampon savunma rolünü dolduruyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "phoenix_repair",
+      "name_tr": "Anka Onarım",
+      "status": "retired",
+      "reason": "Diriltme istisnaları ve tekrar döngüsü bu sade katalogdan ayrılıyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "quantum_cannon",
+      "name_tr": "Kuantum Topu",
+      "status": "retired",
+      "reason": "Boşa giden enerjiden yük üretme işi kalkıyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "omega_amplifier",
+      "name_tr": "Omega Güçlendirici",
+      "status": "retired",
+      "reason": "Sınıf sayısına bağlı bütçe sade üç sınıfla örtüşmüyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    },
+    {
+      "id": "singularity_projector",
+      "name_tr": "Tekillik Projektörü",
+      "status": "retired",
+      "reason": "Birden fazla hedefte kesinti ilk katalog için gereksiz örtüşüyor.",
+      "collection_policy": "Do not delete ownership, levels, talents or purchase history."
+    }
+  ],
+  "arenas": [
+    {
+      "index": 1,
+      "name_tr": "Başlangıç Devresi",
+      "minimum_rating": 0,
+      "new_cards": [
+        "laser",
+        "pulse_cannon",
+        "shield",
+        "armor",
+        "repair",
+        "amplifier"
+      ]
+    },
+    {
+      "index": 2,
+      "name_tr": "Röle Sokakları",
+      "minimum_rating": 300,
+      "new_cards": [
+        "barrier",
+        "emp"
+      ]
+    },
+    {
+      "index": 3,
+      "name_tr": "Akım Kavşağı",
+      "minimum_rating": 600,
+      "new_cards": [
+        "railgun",
+        "cleanser"
+      ]
+    },
+    {
+      "index": 4,
+      "name_tr": "İletken Dökümhane",
+      "minimum_rating": 950,
+      "new_cards": [
+        "burst_cannon",
+        "reflector"
+      ]
+    },
+    {
+      "index": 5,
+      "name_tr": "Neon Omurga",
+      "minimum_rating": 1300,
+      "new_cards": [
+        "missile_launcher",
+        "speed_relay"
+      ]
+    },
+    {
+      "index": 6,
+      "name_tr": "Plazma Kanalları",
+      "minimum_rating": 1700,
+      "new_cards": [
+        "drone_bay",
+        "guardian_dome"
+      ]
+    },
+    {
+      "index": 7,
+      "name_tr": "Darbe Surları",
+      "minimum_rating": 2150,
+      "new_cards": [
+        "arc_cannon",
+        "buffer_shield"
+      ]
+    },
+    {
+      "index": 8,
+      "name_tr": "Kuantum Hattı",
+      "minimum_rating": 2650,
+      "new_cards": [
+        "plasma_mortar",
+        "phase_armor"
+      ]
+    },
+    {
+      "index": 9,
+      "name_tr": "İyon Kalesi",
+      "minimum_rating": 3150,
+      "new_cards": [
+        "quantum_repeater"
+      ]
+    },
+    {
+      "index": 10,
+      "name_tr": "Çekirdek Sınırı",
+      "minimum_rating": 3650,
+      "new_cards": [
+        "shield_breaker"
+      ]
+    },
+    {
+      "index": 11,
+      "name_tr": "Shard Nexus",
+      "minimum_rating": 4200,
+      "new_cards": [
+        "virus"
+      ]
+    },
+    {
+      "index": 12,
+      "name_tr": "Apex Devre",
+      "minimum_rating": 4800,
+      "new_cards": [
+        "last_bastion"
+      ]
+    }
+  ],
+  "roster_revision": 2,
+  "base_module_count": 24,
+  "season_policy": {
+    "minimum_new_modules": 1,
+    "catalog_is_cumulative": true,
+    "paid_power_exclusivity": false
+  },
+  "combat_ruleset": "modules_v7",
+  "ruleset_revision": 7
+}

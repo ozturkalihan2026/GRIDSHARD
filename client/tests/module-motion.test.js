@@ -3,7 +3,7 @@ const test = require("node:test"), assert = require("node:assert/strict");
 const { GridshardModuleMotion, headingFor } = require("../src/battle/module-motion.js");
 const art = require("../src/module-device-art.js");
 const moduleAt = (id, definition, x, y, other={}) => ({instance_id:id, definition_id:definition,
-  x,y,hp:100,status:"active",is_powered:true,...other});
+  x,y,hp:100,status:"active",operational:true,...other});
 function setup(definition="laser") {
   let now=0, hidden=false, reduced=false, missing=false;
   const draws=[];
@@ -21,7 +21,7 @@ function setup(definition="laser") {
   return {motion,snapshot,draws,receive,event,attack,setTime:v=>{now=v;},setHidden:v=>{hidden=v;},setReduced:v=>{reduced=v;},setMissing:v=>{missing=v;}};
 }
 test("new support and reflector events retain the actual server target",()=>{
-  for(const [definition,type,rival] of [["overclock_unit","module_overclocked",false],["phoenix_repair","phoenix_rebirth",false],["nano_medic","module_repaired",false],["reflector","damage_reflected",true]]){
+  for(const [definition,type,rival] of [["repair","module_repaired",false],["reflector","damage_reflected",true]]){
     const s=setup(definition), target=rival?"same":"friend",player=rival?"rival":"own";
     s.receive([s.event(type,{player_id:"own",source_player_id:"own",source_module_id:"same",target_player_id:player,target_module_id:target})]);
     s.motion.tick();
@@ -47,18 +47,7 @@ test("four screen-space quadrants and axial ties",()=>{
   assert.equal(headingFor(from,from,"se"),"se");
 });
 
-test("cooler visits each real target once per pulse and keeps the final lock",()=>{
-  const s=setup("cooler");
-  s.snapshot.players.own.modules.push({...s.snapshot.players.own.modules[1],instance_id:"friend2",x:2,y:0},
-    {...s.snapshot.players.own.modules[1],instance_id:"friend3",x:0,y:2});
-  const ids=["friend","friend2","friend3"];
-  s.receive(ids.map(id=>s.event("module_cooled",{player_id:"own",source_module_id:"same",target_module_id:id,heat_before:20,heat_after:15})));
-  for(const [i,id]of ids.entries()){
-    s.setTime(i*240);s.motion.tick();assert.equal([...s.motion.actions.values()][0].target,JSON.stringify(["own",id]));
-  }
-  s.setTime(1000);s.motion.tick();assert.equal(s.motion.actions.size,0);
-  assert.equal(s.motion.aimLocks.get('["own","same"]').target,'["own","friend3"]');
-});
+
 test("actual attack IDs, aim/work/recover/rest, no state mutation or redraw per frame",()=>{
   const s=setup(), before=JSON.stringify(s.snapshot);
   s.receive([s.attack()]); s.motion.tick();
@@ -76,7 +65,7 @@ test("same instance IDs across players remain distinct",()=>{
   assert.equal(s.draws.find(x=>x.key==='["rival","same"]' && x.phase==="aim").heading,"sw");
 });
 test("repair and cooling use same-side target; support is coalesced without invented extra actions",()=>{
-  for(const [definition,type] of [["repair","module_repaired"],["cooler","module_cooled"]]) {
+  for(const [definition,type] of [["repair","module_repaired"]]) {
     const s=setup(definition);
     s.receive([s.event(type,{player_id:"own",source_module_id:"same",target_module_id:"friend"}),
       s.event("module_cycle_pulse",{player_id:"own",module_id:"same"})]);
@@ -105,8 +94,7 @@ test("duplicate, old and out-of-order snapshot events are not replayed",()=>{
 });
 test("destroyed target, overheat, power loss and finish cancel motion",()=>{
   for(const mutate of [s=>{s.snapshot.players.rival.modules[0].status="destroyed";},
-    s=>{s.snapshot.players.own.modules[0].overheated=true;},
-    s=>{Object.assign(s.snapshot.players.own.modules[0],{is_powered:false,energy_required:3});},
+    s=>{Object.assign(s.snapshot.players.own.modules[0],{operational:false});},
     s=>{s.snapshot.status="finished";}]) {
     const s=setup();s.receive([s.attack()]);s.motion.tick();mutate(s);s.snapshot.elapsed_ms=1100;s.receive([]);s.motion.tick();
     assert.equal(s.motion.actions.size,0);
@@ -137,14 +125,7 @@ test("destruction events ahead of a snapshot cancel immediately, later rebirth c
   s.receive([s.event("attack_performed",s.attack().data,1200)]);
   assert.equal(s.motion.actions.size,1);
 });
-test("cooler painted rotor advances only during work; hidden rest is idempotent",()=>{
-  const s=setup("cooler");
-  s.receive([s.event("module_cooled",{player_id:"own",source_module_id:"same",target_module_id:"friend"})]);
-  s.motion.tick();s.setTime(100);s.motion.tick();assert.equal(s.draws.at(-1).frame,0);
-  s.setTime(190);s.motion.tick();assert.equal(s.draws.at(-1).frame,1);
-  s.setHidden(true);s.motion.tick();const count=s.draws.length;
-  s.motion.tick();assert.equal(s.draws.length,count);
-});
+
 test("direction/action swap only the painted head frame; shadow and host stay",()=>{
   let made=0;
   class Element {

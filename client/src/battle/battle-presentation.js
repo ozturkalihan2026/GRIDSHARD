@@ -5,16 +5,16 @@
   // frame. Old particles are not gameplay and must never become a replay queue.
   const IMPORTANT_EVENTS = new Set([
     "command_rejected", "inactivity_warning", "player_inactive",
-    "battle_forfeited", "battle_overtime_started",
+    "battle_forfeited",
   ]);
   // Rare events that explain a visible state change; they keep the long age
   // window. Everything else is routine combat feedback: after a stall (slow
   // frame, network hiccup, return from background) only its newest part is
   // shown, so a late batch never plays back as a pile of effects.
   const DECISIVE_EVENTS = new Set([
-    "module_destroyed", "module_overheated", "phoenix_rebirth",
+    "module_destroyed",
     "core_power_ready", "core_power_activated", "core_power_used",
-    "core_signature_triggered", "battle_emoji",
+     "battle_emoji",
   ]);
   class GridshardBattlePresentationQueue {
     constructor({

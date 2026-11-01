@@ -3,7 +3,7 @@ const math=require("../src/battle/laser-aim.js"),art=require("../src/module-devi
 require("../src/module-view-data.js");
 const vm=require("node:vm");
 const {GridshardModuleMotion}=require("../src/battle/module-motion.js");
-const ids=["laser","shield","battery","amplifier","emp","repair","armor","cooler","pulse_cannon","missile_launcher"];
+const ids=["laser","shield","amplifier","emp","repair","armor","pulse_cannon","missile_launcher"];
 test("all registered painted devices keep continuous aim without allocating new elements",()=>{
   let made=0;
   class Element{
@@ -27,13 +27,13 @@ test("all registered painted devices keep continuous aim without allocating new 
     assert.equal(turns.size,8,id);assert.equal(made,count);assert.equal(rig.children[0],shadow);
     assert.equal(rig.dataset.renderer,"layers");assert.equal(rig.dataset.yaw,"continuous");
     if(layered){const n=Object.keys(layers[id].heads).filter(k=>!k.endsWith("-work")).length;assert.equal(heads.size,n,id);
-      for(const src of heads)assert.match(src,new RegExp(`modules-physical-v1/${id}-(ne|nw|se|sw|y\\d\\d)(-work)?\\.webp$`));}
+      for(const src of heads)assert.match(src,new RegExp(`modules-physical-v[13]/${id}-(ne|nw|se|sw|y\\d\\d)(-work)?\\.webp$`));}
     else assert.match(art0,new RegExp(`modules-physical-v1/${id}\\.webp$`));
   }
 });
 test("EMP uses the real sabotage target and passives do not invent a new aim on self-contribution",()=>{
   let now=0;const draws=[];
-  const module=(instance,definition,x,y)=>({instance_id:instance,definition_id:definition,x,y,status:"active",hp:100,is_powered:true});
+  const module=(instance,definition,x,y)=>({instance_id:instance,definition_id:definition,x,y,status:"active",hp:100,operational:true});
   const snapshot={session_id:"v12",elapsed_ms:1000,status:"running",players:{own:{modules:[module("emp","emp",0,0),module("battery","battery",1,1)]},enemy:{modules:[module("target","laser",2,2)]}}};
   const motion=new GridshardModuleMotion({now:()=>now,pointFor:r=>({x:r.module.x,y:r.module.y}),draw:(r,p)=>{draws.push({id:r.module.instance_id,...p});return true;}});
   motion.receive([{type:"sabotage_applied",at_ms:1000,data:{attacker_player_id:"own",attacker_module_id:"emp",target_player_id:"enemy",target_module_id:"target"}}],snapshot,{ownPlayerId:"own",domId:(p,m)=>p+m.instance_id});
@@ -109,11 +109,11 @@ test("all seven reactor registrations remain prominent, bottom anchored and boun
   }
 });
 
-test("all 36 modules consume their measured pedestal fit instead of the padded canvas centre",()=>{
+test("all 24 modules consume their measured pedestal fit instead of the padded canvas centre",()=>{
   const layers=require("../src/module-layer-data.js");
   const doc={createElement:()=>({ownerDocument:doc,children:[],dataset:{},classList:{add(){}},style:{setProperty(){}},setAttribute(){},appendChild(n){this.children.push(n);},replaceChildren(...n){this.children=n;}})};
   const modules=Object.entries(layers).filter(([,layer])=>!layer.core);
-  assert.equal(modules.length,36);
+  assert.equal(modules.length,24);
   for(const [id,layer]of modules){
     const host=doc.createElement();art.mount(host,{definitionId:id});
     const stage=host.children[0].children[1].children[0].children[0],fit=layer.socketFit;

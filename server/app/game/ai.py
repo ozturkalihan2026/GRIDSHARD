@@ -5,14 +5,7 @@ import hashlib
 from .ai_archetypes import get_ai_archetype
 from .catalog import get_module_definition
 from .composition import deployment_rejection_reason
-from .core_balance import (
-    CORE_POWER_FULL_CHARGE,
-    DISCHARGE_FULL_RESERVE_RATIO,
-    LAST_STAND_HP_RATIO,
-    STATIC_CHARGE_INTERVAL_MS,
-)
-from .energy import action_energy_per_second, core_reserve_capacity
-from .heat import HEAT_SLOWDOWN_START, HEAT_SLOWDOWN_STEP, is_overheated
+from .core_balance import CORE_POWER_FULL_CHARGE
 from .models import ModuleStatus, PlayerBattleState
 
 
@@ -42,37 +35,15 @@ def should_use_core_power(ai_player: PlayerBattleState, opponent: PlayerBattleSt
     core = next((module for module in living if module.definition.id == "core"), None)
     if core is None:
         return False
-    damaged = any(module.hp < module.definition.max_hp for module in living)
-    held_ms = int(ai_player.core_signature_state.get("held_ms", 0))
-    held_too_long = held_ms >= CORE_POWER_HOLD_LIMIT_MS
     core_type = ai_player.core_type
-    if core_type == "core_resonance":
-        return damaged
-    if core_type == "core_phoenix":
-        # Dolum Küllerden Doğuş sigortasıdır: Çekirdek zayıfken saklanır.
-        return damaged and core.hp >= core.definition.max_hp * 0.6
-    if core_type == "core_guardian":
-        return core.hp < core.definition.max_hp * LAST_STAND_HP_RATIO or held_too_long
-    if core_type == "core_overdrive":
-        return any(module.definition.category == "saldırı" for module in living)
-    if core_type == "core_disruptor":
-        rival_active = [
-            module
-            for module in (opponent.modules.values() if opponent is not None else ())
-            if module.status == ModuleStatus.ACTIVE
-        ]
-        # Rakip Aşırı Yük açtıysa hemen siler; yoksa en az iki Statik yük biriktirir.
-        if any("core_overdrive" in module.persistent_effects for module in rival_active):
-            return True
-        rival_supports = any(module.definition.category == "destek" for module in rival_active)
-        return rival_supports and held_ms >= STATIC_CHARGE_INTERVAL_MS * 2
-    if core_type == "core_capacitor":
-        full_reserve = (
-            ai_player.energy_stock
-            >= core_reserve_capacity(ai_player) * DISCHARGE_FULL_RESERVE_RATIO
-        )
-        return full_reserve or held_too_long
-    return True
+    enemies=[u for u in (opponent.modules.values() if opponent else ()) if u.status==ModuleStatus.ACTIVE and u.hp>0]
+    if core_type=='core_capacitor':return bool(ai_player.battle_pool) and len(living)<15
+    if core_type in {'core_disruptor','core_quantum'}:return any(u.definition.id!='core' for u in enemies)
+    if core_type=='core_phoenix':
+        damage=150*1.04**(ai_player.core_level-1)
+        return bool(enemies) and (core.hp<core.definition.max_hp*.9 or any(u.hp<=damage*1.5 for u in enemies))
+    return bool(enemies)
+
 
 
 def _variety_key(player_id: str, deploy_count: int, definition_id: str) -> int:
@@ -88,7 +59,6 @@ class ThreatProfile:
     defense_count: int
     support_count: int
     sabotage_count: int
-    energy_count: int
 
 
 @dataclass(slots=True, frozen=True)
@@ -118,7 +88,6 @@ def build_threat_profile(
         "savunma": 0,
         "destek": 0,
         "sabotaj": 0,
-        "enerji": 0,
     }
 
     for module in active:
@@ -134,7 +103,6 @@ def build_threat_profile(
         defense_count=counts["savunma"],
         support_count=counts["destek"],
         sabotage_count=counts["sabotaj"],
-        energy_count=counts["enerji"],
     )
 
 
@@ -201,7 +169,8 @@ def choose_deploy_definition(
     ai_player: PlayerBattleState,
     opponent: PlayerBattleState,
     archetype_id: str = "balanced",
-    regen_interval_ms: int = 2_500,
+    regen_interval_ms: int = 2_200,
+    *, prefer_balanced_opening: bool = False,
 ) -> str | None:
     """Choose one of the six deck cards; deployed definitions may repeat.
 
@@ -222,7 +191,7 @@ def choose_deploy_definition(
     for module in active_modules:
         definition_id = module.definition.id
         counts[definition_id] = counts.get(definition_id, 0) + 1
-        category = module.definition.category
+        category = module.definition.combat_class
         category_counts[category] = category_counts.get(category, 0) + 1
     # Modüller yok edilince de oyuncu durumunda kalır; sözlük sırası basım sırasıdır.
     history = [
@@ -232,56 +201,50 @@ def choose_deploy_definition(
     ]
     deployed_counts = Counter(history)
     recent = history[-3:]
-    # Isı yavaşlatma eşiğini aşmış ya da susmuş modül sayısı (Soğutucu kararı).
-    hot_modules = sum(
-        1
-        for module in active_modules
-        if is_overheated(module)
-        or module.heat >= HEAT_SLOWDOWN_START + HEAT_SLOWDOWN_STEP
-    )
-
     candidates: list[tuple[float, int, int, str]] = []
     for definition_id in ai_player.battle_pool.module_definition_ids:
         definition = get_module_definition(definition_id)
         if deployment_rejection_reason(ai_player, definition) is not None:
             continue
-        if definition_id == "jammer" and threat_profile.support_count == 0:
-            continue
-        if definition_id == "disruptor" and threat_profile.energy_count == 0:
-            continue
-        cost = max(1, definition.current_cost - (1 if ai_player.discounted_deployments else 0))
+        cost = max(1, definition.current_cost)
         counter = score_counter_candidate(definition_id, threat_profile)
-        score = float(counter.score + archetype.bias_for(definition.category))
+        score = float(counter.score + archetype.bias_for(definition.combat_class))
         # Önce çalışan bir saldırı omurgası, sonra arketipin sınıf tabanları.
         if definition.category == "saldırı" and category_counts.get("saldırı", 0) == 0:
             score += 20
-        if definition.category == "saldırı" and category_counts.get("saldırı", 0) < archetype.attack_foundation_target:
+        # With composition quotas removed, bots must grow their offense too.
+        # This is a preference score, never a restriction on player placement.
+        desired_weapons = max(archetype.attack_foundation_target, (len(active_modules) + 1) // 2)
+        if ((threat_profile.attack_count==0 and len(threat_profile.active_definition_ids)>1)
+                or (threat_profile.attack_count<=1 and len(threat_profile.active_definition_ids)>=4)):
+            desired_weapons=max(desired_weapons,(len(active_modules)*3+3)//4)
+        if definition.category == "saldırı" and category_counts.get("saldırı", 0) < desired_weapons:
             score += 8
         if definition.category == "savunma" and category_counts.get("savunma", 0) < archetype.defense_floor:
             score += 9
-        if definition.category == "enerji" and category_counts.get("enerji", 0) < archetype.energy_floor:
-            score += 8
-        if definition.category == "sabotaj" and category_counts.get("sabotaj", 0) < archetype.sabotage_floor:
+        # A preference for earning the joint bonus, never a deployment quota.
+        if (prefer_balanced_opening and definition.combat_class=='savunma'
+                and category_counts.get('saldırı',0)>0 and category_counts.get('savunma',0)==0):
+            score += 12
+        if definition.combat_class == "taktik" and category_counts.get("taktik", 0) < archetype.tactics_floor:
             score += 7
         if definition_id in archetype.expansion_module_ids:
             # Arketip kimliği küçük bir tercih; dönüşüm cezasını ezmemeli.
             score += max(0, 3 - archetype.expansion_module_ids.index(definition_id))
-        # Enerji açığında Batarya doğrudan üretim ekler; Kapasitör yalnız
-        # biriktirecek fazla varken işe yarar.
-        if definition_id == "battery" and ai_player.energy_load_ratio > 1.0:
-            score += 10 if ai_player.energy_load_ratio > 1.3 else 6
-        if ai_player.energy_load_ratio > 1.2:
-            if definition_id == "current_balancer":
-                score += 10
-            elif definition_id == "capacitor" and ai_player.energy_stock > 0:
-                score += 4
-            elif definition.category == "saldırı":
-                # Saldırılar enerjiyi atış anında öder; yük yüksekken
-                # saniyelik enerji talebi büyük olan kartlar geri planda kalır.
-                score -= max(0.0, action_energy_per_second(definition) - 1.5) * 4
-        if definition_id == "cooler" and hot_modules:
-            # Isınan devre Soğutucu ister; iki ve üzeri sıcak modülde öncelikli.
-            score += 9 if hot_modules >= 2 else 5
+        if definition_id == "repair" and any(u.hp < u.definition.max_hp for u in active_modules if u.definition.id != 'core'):
+            score += 4
+        if definition_id == "cleanser" and not any(u.debuffs for u in active_modules):
+            score -= 5
+        if definition_id == "cleanser" and any(u.debuffs for u in active_modules):
+            score += 5
+        if definition_id == "shield_breaker" and any(k in threat_profile.active_definition_ids for k in ('shield','buffer_shield','last_bastion')):
+            score += 3
+        if definition_id in {'arc_cannon','plasma_mortar','quantum_repeater'} and len(threat_profile.active_definition_ids)>=4:
+            score += 2
+        if definition_id == "buffer_shield" and sum(u.hp<u.definition.max_hp for u in active_modules if u.definition.id!='core')>=2:
+            score += 3
+        if definition_id in {"emp", "virus"} and threat_profile.attack_count == 0:
+            score -= 6
         # Tek kart spamini yasaklamadan çeşitliliği teşvik et.
         score -= counts.get(definition_id, 0) * 2.5
         score -= deployed_counts.get(definition_id, 0) * ROTATION_PENALTY
@@ -298,8 +261,8 @@ def choose_deploy_definition(
     if not candidates:
         return None
     candidates.sort(key=lambda item: (-item[0], item[1]))
-    # Rebuild an offense after losses. Spending every two regenerated Current
-    # on a Battery otherwise prevents ever affording a three/four-cost weapon.
+    # Rebuild an offense after losses; avoid spending every regenerated point
+    # on a cheap support card before a weapon can be afforded.
     if category_counts.get("saldırı", 0) == 0:
         # After repeated mutual wipes, don't rebuild identical naked weapons
         # forever. One affordable frontline changes that exchange. Once it
@@ -366,6 +329,7 @@ def build_ai_action_plan(
         opponent,
         archetype_id,
         engine.circuit_credit_config.current_regen_interval_ms,
+        prefer_balanced_opening=True,
     )
     if definition_id is None:
         return None

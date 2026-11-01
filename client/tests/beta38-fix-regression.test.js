@@ -32,7 +32,7 @@ assert.match(app, /event\?\.type === "module_damaged"[\s\S]{0,900}`-\$\{damage\}
 assert.match(app, /event\?\.type === "module_repaired"[\s\S]{0,900}`\+\$\{repair\}`/);
 assert.match(app, /preventedDamage[\s\S]{0,500}`\$\{preventedDamage\}`/);
 assert.match(app, /event\?\.type === "sabotage_applied"[\s\S]{0,900}`-\$\{durationSeconds\}`/);
-assert.ok(app.includes("AŞIRI ISI!"));
+assert.ok(!app.includes("AŞIRI ISI!"));
 assert.ok(css.includes('.battle-floating-feedback.sabotage'));
 assert.ok(css.includes('[data-impact="large"]'));
 assert.ok(canonCss.includes("gs-beta50-combat-number"));

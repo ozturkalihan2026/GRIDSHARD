@@ -7,7 +7,7 @@
     shield:"Belirli aralıklarla gelen tek saldırının bir kısmını engeller.",
     cooler:"Bir müttefik modüle soğuk hava üfleyerek ısısını azaltır.",
     battery:"Devreye ek enerji üretir.",
-    amplifier:"Uygun müttefik modüllere enerji desteği verir.",
+    amplifier:"Bir dost silahın sonraki atışını güçlendirir.",
     emp:"Rakip modülün çalışmasını kısa süreli kesintiye uğratır.",
     repair:"Hasarlı bir müttefik modülün canını onarır.",
     armor:"Gelen hasarın bir kısmını sönümler.",

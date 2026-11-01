@@ -7,34 +7,15 @@ const i18n = fs.readFileSync("./src/i18n.js", "utf8");
 
 // Çekirdek enderliği güç eğrisi değildir; bilgi ekranı imzayı gösterir.
 const coreDetail = app.slice(app.indexOf("  function renderCoreDetailTab("), app.indexOf("  function openCoreDetail("));
-assert.ok(coreDetail.includes("Seviye ve yeteneklerle gelişir; enderlik güç katmaz."));
+assert.ok(coreDetail.includes("Seviyeyle gelişir; enderlik ek güç çarpanı katmaz."));
 assert.ok(coreDetail.includes("const signature = createStatSignature(core);"));
 assert.ok(coreDetail.includes("if (signature) host.appendChild(signature);"));
-assert.ok(app.includes("const signature = item.signature_mechanic || item.shared_behavior_tr;"));
+assert.ok(app.includes("const signature = item.signature_mechanic;"));
 
-// Motorun çekirdek imza olayı sahnede ve şeritte görünür.
-assert.ok(app.includes('"core_signature_triggered"'));
-for (const signatureId of [
-  "ember_rebirth",
-  "last_stand",
-  "overdrive_chain",
-  "static_charge",
-  "reserve_discharge",
-  "half_phase",
-]) {
-  assert.ok(app.includes(`${signatureId}:{`), `${signatureId} sunumu yok`);
-}
-for (const effect of [
-  "core_rebirth",
-  "core_last_stand",
-  "core_chain",
-  "core_static",
-  "core_discharge",
-  "core_half_phase",
-]) {
-  assert.ok(app.includes(`${effect}:{ priority:`), `${effect} efekti yok`);
-  assert.ok(css.includes(`[data-signature="${effect}"]`), `${effect} rengi yok`);
-}
+const vfx=fs.readFileSync('./src/battle/core-vfx-v6.js','utf8');
+assert.ok(vfx.includes('receive(events,s)'));
+assert.ok(!app.includes('core_signature_triggered'));
+assert.ok(app.includes('moduleVfx.receive(batch.events,batch.snapshot)'));
 
 // Rakip çekirdeğin imza rozeti de çizilir (Anka doğuşu karşı oyun için görünür).
 assert.ok(app.includes("mockEnemyCoreBadges=normalizeSignatureBadges(enemyCore?.signature_badges);"));
@@ -46,11 +27,7 @@ for (const badge of ["ember", "static", "last_stand", "chain"]) {
 }
 
 // Kuantum Yarım Faz: güç yarım dolumda kullanılabilir ve gösterge bunu yazar.
-assert.ok(app.includes('(halfPhaseReady ? "YARIM" : "HAZIR")'));
+assert.ok(app.includes('corePowerButtonEl.dataset.halfPhase="false"'));
 assert.ok(i18n.includes('"YARIM":"HALF"'));
 
-// Sesler mevcut dosyalara bağlanır.
-require("../src/gridshard-audio.js");
-for (const cue of ["core_rebirth", "overdrive_chain"]) {
-  assert.ok(global.GRIDSHARD_SFX_CUES[cue], `${cue} ipucu yok`);
-}
+// Current hero audio is checked by core-hero-vfx-v6.test.js.

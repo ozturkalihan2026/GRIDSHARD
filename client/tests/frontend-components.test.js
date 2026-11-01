@@ -238,7 +238,7 @@ test("Beta.43 kartlar, çekirdek ayrıntısı ve lider panosu akışlarını sun
   assert.match(app, /repairBattleDeckAgainstCollection/);
   assert.match(app, /onlineStatus:\s*"matchmaking"/);
   assert.match(app, /renderBoardCables/);
-  assert.match(app, /energy-fed-cell/);
+  assert.match(app, /circuit-active-cell/);
   assert.match(css, /\.module-detail-art[\s\S]*place-items:center/);
   assert.match(css, /\.vertical-circuit-arena \.board[\s\S]*gap: 8px !important/);
   assert.match(css, /\.board-cable-layer[\s\S]*z-index:2 !important/);

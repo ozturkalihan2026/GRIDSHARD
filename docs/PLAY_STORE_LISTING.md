@@ -1,186 +1,209 @@
-# GRIDSHARD — Google Play mağaza girişi
+# GRIDSHARD — Google Play mağaza girişi, Akım V8
 
-Play Console → Kullanıcı sayısını artırın → Play Store'daki varlığı → Mağaza girişleri → Varsayılan mağaza girişi (tr-TR) için metinler ve görsellerin kaydı. İngilizce metinler ve görseller, konsolda İngilizce (en-US) çevirisi eklenirse kullanılır.
+**1 Kasım 2026: sonraki Android sürümü için hazırlanmış taslak.** Canlı mağaza
+bu çalışma sırasında değiştirilmedi. Yayındaki sayfa 25 Ekim sürümünü gösteriyor;
+24 modül/3 sınıf ve Akım V8 kaynakta hazır, henüz yeni üretim Android paketiyle
+yayımlanmadı. Metin ve görseller aynı özellikleri taşıyan paketle birlikte kullanılmalı.
 
-**Durum (7 Ekim 2026):** metinler ve görseller hazırlandı; konsola yüklenmedi. Yüklemeyi ve kaydı kullanıcı yapar.
+Bu belge güncel mağaza metin kaynağıdır. Önceki 36 modül/5 sınıflı sürümün planı
+`docs/archive/PLAY_STORE_LISTING_BEFORE_V8_20261101.md` içinde tarihsel olarak saklandı.
+Canlı sayfa ve sekiz görselin incelemesi: `docs/PLAY_STORE_AUDIT_20261101.md`.
 
-**Güncelleme (13 Ekim 2026, ev bilgisayarı):** oyunun görsel dili değişti (görsel tur 2–6); simge, özellik grafiği ve sekiz ekran görüntüsü yeni arayüzle yeniden üretildi (aşağıda "Görseller"). Metinler değişmedi. **Yeni görseller konsola yüklenmedi;** yüklemeyi kullanıcı yapar. Görüntüler bu depodaki çalışma ağacının arayüzüdür: konsola, bu arayüzü taşıyan paket (sürüm kodu 9) yayınlanırken yüklenmelidir; kapalı testteki v8 paketi eski arayüzdedir.
+## Hazır metinler
 
-## Uyulan kurallar
+Düz metin dosyaları: `artifacts/play-store-audit-20261101/proposed-text/`.
+İçerik, mevcut 24 kart/3 sınıf/7 çekirdek/12 arena ve ana Akım config’iyle karşılaştırıldı.
+Sezon başına planlanan kartlar henüz yayımlanmış gibi anlatılmadı. Hücre seçimi veya
+manuel hedefleme vaadi yok; boş hücre ve çekirdek hedeflerinin otomatik olduğu açık.
 
-7 Ekim 2026'da Google'ın iki yardım sayfası okundu: meta veri politikası (`support.google.com/googleplay/android-developer/answer/9898842`) ve önizleme öğeleri (`.../answer/9866151`). Metinleri ve görselleri bağlayanlar:
 
-- Kısa açıklama en çok 80 karakterdir. Tek cümleyse sonuna nokta konmaz. Özel karakter, emoji, yinelenen noktalama ve vurgu için büyük harf kullanılmaz. Uygulama adı, mağazadaki ad da büyük harfli olduğu için büyük yazılabilir.
-- Hiçbir metin ve görselde sıralama, ödül, indirme sayısı, fiyat ya da indirim iddiası ("en iyi", "1 numara", "yeni", "ücretsiz", "indirim") ve "hemen indir / şimdi oyna" gibi çağrı bulunmaz. Kullanıcı yorumu alıntılanmaz, anahtar kelime listesi yazılmaz.
-- Tam açıklama en çok 4000 karakterdir; kısa, doğru ve yalın olmalıdır.
-- Özellik grafiği 1024×500, JPEG ya da alfasız 24 bit PNG'dir. Önemli öğeler ortada durur, kenarlar kırpılabilir. Simgeye benzeyen büyük bir marka görseli, cihaz çerçevesi ve mağaza rozeti kullanılmaz.
-- Ekran görüntüleri JPEG ya da alfasız 24 bit PNG'dir; kenarlar 320–3840 piksel, uzun kenar kısa kenarın en çok iki katıdır. Oyunlarda öne çıkarılma için en az üç adet 9:16 dikey (en az 1080×1920) ve oyunun kendisini gösteren görüntü gerekir. Görüntüler oyunun gerçek ekranları olmalıdır.
-- Hedef kitle 13 yaş ve üzeri seçildiği için görsellerde küçük çocuklara hitap eden karakter ya da görsel yoktur (`docs/CHILD_AUDIENCE_AUDIT.md`).
-
-## Metinler
-
-Açıklamadaki her özellik koddan, oyunun ekranlarından ya da `docs/GRIDSHARD_2_1_KANONIK_TASARIM.md` belgesinden doğrulandı: 36 modül, 5 sınıf, 7 çekirdek, 12 arena, dört haftalık sezon, yapay zekâ rakibe düşen eşleştirme, hazır mesajlı sohbet, sandık olasılıkları, ebeveyn denetimi. Gerçek cihazda doğrulanmamış özellikler (Google Play Games ile giriş) ve kapalı olanlar (gerçek parayla satın alma, reklam) açıklamaya yazılmadı. Oyun değişirse açıklama da güncellenmelidir.
-
-### Uygulama adı
+## Uygulama adı — 9/30 karakter
 
 ```text
 GRIDSHARD
 ```
 
-### Kısa açıklama (Türkçe)
+
+## Türkçe kısa açıklama — 71/80 karakter
 
 ```text
-Modül kartlarıyla devreni kur, gerçek zamanlı savaşta rakip çekirdeği yık
+Saldırı ve savunmayla devreni kur, gerçek zamanlı savaşta çekirdeği yık
 ```
 
-### Tam açıklama (Türkçe)
+
+## Türkçe tam açıklama — 2262/4000 karakter
 
 ```text
-GRIDSHARD, dikey ekranda oynanan gerçek zamanlı bir devre savaşı oyunudur. Altı modül kartından oluşan desteni ve çekirdeğini seç, savaş sürerken modüllerini devre tahtana yerleştir ve rakibinin çekirdeğini devre dışı bırak.
+GRIDSHARD, dikey ekranda oynanan gerçek zamanlı bir devre savaşı oyunudur. Altı modül kartından oluşan desteni ve çekirdeğini seç. Hangi kartı ne zaman oynayacağına karar ver; rakibinin çekirdeğini yok et.
 
-Savaş nasıl işler
+Savaş nasıl işler?
 
-Her oyuncunun 15 hücrelik bir devre tahtası vardır; ortasında çekirdek durur. Savaş boyunca Akım birikir. Yeterli Akımın olduğunda destendeki bir karta dokunursun, modül tahtandaki boş bir hücreye yerleşir ve çalışmaya başlar. Savaş sen karar verirken durmaz: saldırı modülleri ateş eder, savunma modülleri korur, destek modülleri onarır ve güçlendirir, sabotaj modülleri rakibin düzenini bozar. Çekirdeğinin gücü dolduğunda tek dokunuşla bütün devreni etkileyen özel gücünü kullanırsın. Çekirdeği önce tükenen taraf kaybeder.
+Devrenin ortasında çekirdeğin, çevresinde modül yerleştirebileceğin 14 hücre bulunur. Yeterli Akımın olduğunda destendeki bir karta dokun: boş hücre otomatik seçilir ve modül çalışmaya başlar. Hücre seçmen veya her atışı yönetmen gerekmez. Savaş, karar verirken durmaz.
 
-Desteni kur
+Üç sınıf, birlikte çalışan bir devre
 
-• Beş sınıfta 36 modül: Saldırı, Savunma, Destek, Sistem ve Sabotaj.
-• Her biri farklı bir özel güce sahip 7 çekirdek.
-• Modüllerini parçalarla yükselt, yeteneklerini kendi tarzına göre seç.
-• Enderlik gizli güç vermez: ender kartlar farklı kurallarla oynar ve başka taktiklere kapı açar.
+Saldırı ateş eder, Savunma korur, Taktik onarım, güçlendirme veya rakibi bozma gibi avantajlar sağlar. Üç sınıftaki 24 modülle farklı desteler kur. Zincir ve alan hasarı, kalkanlar, gecikmeli saldırılar ve kontrol etkileriyle karşı hamleni seç. Modüllerini parçalarla yükselt, yeteneklerini oyun tarzına göre belirle.
 
-Arenalarda yüksel
+Akımını saldırı ve savunmayla yönet
 
-• 12 arenalık Devre Yolu: kupa kazandıkça modüller, çekirdekler ve ödüller açılır.
-• Arenaların ardından ligler ve dört haftalık sezonlar gelir.
-• Günlük görevler, günlük giriş ödülleri ve sezon ödül yolu ilerlemeni hızlandırır.
-• Kupa sayına yakın oyuncularla eşleşirsin; uygun rakip bulunamazsa yapay zekâ rakiple oynarsın.
+7 Akımla başlarsın; depon 12'dir. Her 3 saniyede +1 Akım gelir. Saldırı modüllerin toplam 100 gerçek hasar verdiğinde VE Savunma modüllerin toplam 50 CAN kaybettiğinde birlikte ek +1 Akım kazanırsın. İki koşulun da tamamlanması gerekir; engellenen hasar ve onarılan aynı CAN tekrar sayılmaz. Saldırı ve savunmayı birlikte kullanarak devreni büyüt.
+
+Çekirdeğin savaşın merkezinde
+
+7 çekirdek farklı savaş güçleri sunar. Gücü dolduğunda dokun; türüne göre doğrudan ateş açar, rakip modülü imha eder, destenden takviye çağırır veya başka bir özel hamle yapar. Gücün hedefini çekirdeğin otomatik seçer.
+
+Devre Yolu'nda ilerle
+
+12 arenalı Devre Yolu'nda kupalar kazan; yeni modüller, çekirdekler ve ödüller aç. Günlük görevler ve giriş ödülleriyle koleksiyonunu geliştir. Etkinlik ve turnuva duyurularını oyun içinden takip et.
 
 Birlikte oyna
 
-• Takım kur ya da bir takıma katıl, takım arkadaşlarınla modül parçası paylaş.
-• Haftalık turnuvada ve takımlar arası turnuvada sıralamaya gir.
-• Arkadaşlarınla kupa kaybetmeden dostluk maçı yap.
-• Sohbette yalnız hazır mesajlar kullanılır.
+Takım kur veya bir takıma katıl, modül parçalarını paylaş. Arkadaşlarınla dostluk maçı yap. Kupa sayına uygun rakiplerle eşleş; uygun insan rakip bulunamadığında yapay zekâ rakiplere karşı oyna.
 
 Bilmen gerekenler
 
-• Oyun internet bağlantısı gerektirir.
-• Hesap oluşturmadan misafir olarak oynayabilirsin.
-• Oyun dili Türkçe ve İngilizcedir.
-• Mağazadaki sandıkların içeriği ve olasılıkları satın almadan önce gösterilir.
-• Ebeveynler, Ayarlar ekranından belirledikleri şifreyle sohbeti ve arkadaşlık isteklerini kapatabilir.
+• İnternet bağlantısı gerekir.
+• Misafir olarak başlayabilirsin.
+• Türkçe ve İngilizce dil seçenekleri bulunur.
+• Sandık içerikleri ve olasılıkları satın almadan önce gösterilir.
+• Sohbette hazır mesajlar kullanılır; ebeveyn denetimleri Ayarlar'dadır.
 
 Destek: gridshardgame@gmail.com
 Site: https://gridshardgame.com
 ```
 
-### Kısa açıklama (İngilizce)
+
+## İngilizce kısa açıklama — 72/80 karakter
 
 ```text
-Build your circuit with module cards and break the rival core in real time
+Build a balanced circuit and destroy the enemy Core in real-time battles
 ```
 
-### Tam açıklama (İngilizce)
+
+## İngilizce tam açıklama — 2206/4000 karakter
 
 ```text
-GRIDSHARD is a real-time circuit battle game played in portrait. Choose a deck of six module cards and a core, place your modules on your circuit board while the battle runs, and shut down your opponent's core.
+GRIDSHARD is a real-time circuit battle game played in portrait. Choose six module cards and a Core. Decide which card to play and when, then destroy the opposing Core.
 
-How a battle works
+How battles work
 
-Each player has a 15-cell circuit board with a core at its center. Current builds up throughout the battle. When you have enough Current, tap a card in your deck: the module lands on an empty cell of your board and starts working. The battle never waits for your decision. Attack modules fire, defense modules protect, support modules repair and boost, and sabotage modules disrupt your opponent. When your core is charged, one tap releases its special power across your whole circuit. The player whose core runs out first loses.
+Your Core sits at the center of the board, surrounded by 14 cells for modules. When you have enough Current, tap a card: an empty cell is selected automatically and the module starts working. You do not need to pick a cell or control every shot. The battle keeps running while you decide.
 
-Build your deck
+Three classes working together
 
-• 36 modules in five classes: Attack, Defense, Support, System and Sabotage.
-• 7 cores, each with a different special power.
-• Upgrade modules with shards and pick talents that suit your play style.
-• Rarity adds no hidden power: rarer cards play by different rules and open up different tactics.
+Attack fires, Defense protects, and Tactics provides advantages such as repairs, boosts or disruption. Build different decks from 24 modules in three classes. Respond with chain and area damage, shields, delayed attacks and control effects. Upgrade modules with shards and choose talents to suit your play style.
 
-Climb the arenas
+Manage Current through attack and defense
 
-• A 12-arena Circuit Road: winning trophies unlocks modules, cores and rewards.
-• Leagues and four-week seasons follow the arenas.
-• Daily missions, daily login rewards and the season reward track speed up your progress.
-• You are matched with players near your trophy count; if no suitable opponent is found, you play against an AI opponent.
+Start with 7 Current and a capacity of 12. Gain +1 Current every 3 seconds. Deal a total of 100 actual damage with Attack modules AND lose a total of 50 HP on Defense modules to earn +1 extra Current. Both conditions must be completed; prevented damage and re-damaging repaired HP do not count. Combine attack and defense to expand your circuit.
+
+Your Core leads the battle
+
+7 Cores offer different combat powers. Tap when charged: depending on the Core, it fires directly, destroys an enemy module, summons a card from your deck or performs another special action. The Core selects its targets automatically.
+
+Follow the Circuit Road
+
+Earn trophies across 12 arenas to unlock modules, Cores and rewards. Grow your collection through daily missions and login rewards. Follow in-game announcements for events and tournaments.
 
 Play together
 
-• Create or join a team and share module shards with teammates.
-• Compete in the weekly tournament and the team tournament.
-• Play friendly matches with friends without risking trophies.
-• Chat uses preset messages only.
+Create or join a team and share module shards. Play friendly matches with friends. Match with opponents near your trophy count, or face AI opponents when no suitable human opponent is available.
 
 Good to know
 
 • An internet connection is required.
-• You can play as a guest without creating an account.
-• The game is available in Turkish and English.
-• Chest contents and odds are shown in the shop before you buy.
-• Parents can turn off chat and friend requests in Settings with a passcode they set.
+• You can start as a guest.
+• Turkish and English are supported.
+• Chest contents and odds are shown before purchase.
+• Chat uses preset messages. Parental controls are in Settings.
 
 Support: gridshardgame@gmail.com
 Website: https://gridshardgame.com
 ```
 
-## Görseller
 
-Güncel set `artifacts/play-store-listing-20261013/` altındadır (git'te izlenmez; 13 Ekim'de ev bilgisayarında üretildi). Türkçe set `tr-TR/`, İngilizce set `en-US/` klasöründedir. 7 Ekim'de iş bilgisayarında üretilen ilk set (`artifacts/play-store-listing-20261007/`) eski arayüzdedir.
+## Türkçe Yenilikler — 342/500 karakter
 
-| Öğe | Dosya | Biçim |
+```text
+Savaşlar 3 sınıf ve 24 modülle sadeleştirildi: Saldırı, Savunma, Taktik.
+Enerji ve Isı kaldırıldı; tek savaş kaynağı Akım.
+7 Akımla başla, her 3 saniyede +1 kazan. 100 Saldırı hasarı ve Savunmanın 50 CAN kaybı birlikte ek +1 Akım getirir.
+Çekirdek güçleri, modül yetenekleri ve başlangıç eğitimi güncellendi.
+Savaş alanı ve arayüz düzenlendi.
+```
+
+
+## İngilizce Yenilikler — 387/500 karakter
+
+```text
+Combat now uses 24 modules in 3 classes: Attack, Defense and Tactics.
+Energy and Heat were removed; Current is the only battle resource.
+Start with 7 Current and gain +1 every 3 seconds. Deal 100 Attack damage and lose 50 Defense HP together to earn +1 extra Current.
+Core powers, module talents and the first-battle tutorial were updated.
+Battlefield and interface layouts were refined.
+```
+
+
+## Görsel planı
+
+- İkon: mevcut boyalı çekirdek korunabilir; uygulama ikonunun da aynı kaynağı
+  kullandığı 27 Ekim üretim kaydıyla tutarlı. İndirme sayısı/ödül rozeti eklenmez.
+- 1024×500 özellik grafiği: yerel 22 Ekim afişinde kaldırılmış Batarya var.
+  Yeni afişte iki tarafta da çalışan Saldırı/Savunma ve görünür çekirdek kullanılsın;
+  referans oyun varlıklarının kimliği korunsun. Bu afiş henüz yeniden üretilmedi.
+  Play Console’da seçili afiş, kamu sayfasından doğrulanamadı.
+- Sekiz ekran görüntüsü yeni paketin gerçek çalışan ekranlarından tekrar çekilmeli.
+  Eski kamu görselleri `artifacts/play-store-audit-20261101/published/` içinde
+  **inceleme kanıtıdır; yeni yükleme dosyası değildir**.
+
+| Sıra | Yeni ekran | Amaç |
 |---|---|---|
-| Uygulama simgesi | `client/assets/branding/gridshard-store-icon-512.png` (depoda; kopyası `icon-512.png`) | 512×512, 24 bit PNG, 134 KB |
-| Özellik grafiği | `feature-graphic-1024x500.png` | 1024×500, 24 bit PNG |
-| Telefon ekran görüntüleri | `phone/01…08-*.png` | 1080×1920 (9:16), 24 bit PNG, her biri 1,3 MB altında |
+| 1 | Güncel devrede karma saldırı/savunma savaşı | İlk bakışta gerçek oynanış |
+| 2 | Gerçek çekirdek gücü kullanımı | Çekirdeğin görünür savaş rolü |
+| 3 | Saldırı/Savunma/Taktik sekmeleri ve deste | Sade üç sınıf |
+| 4 | Çekirdek seçimi veya gerçek çekirdek yeteneği detayı | Farklı güçler |
+| 5 | Güncel Devre Yolu ve arena kartları | Her arenada ilerleme |
+| 6 | Modül yetenekleri / gerçek bir kartın ayrıntıları | Deste stratejisi |
+| 7 | Kompakt Ödül Listesi ile güncel sandık mağazası | Güncel arayüz |
+| 8 | Takım özelliklerini gösteren ekran veya gerçekten aktif etkinlik | Sosyal/ilerleme özelliği |
 
-Ekran görüntülerinin sırası ve isteğe bağlı alternatif metinleri (en çok 140 karakter):
+Boş takım kurma formu ve “Devre Kredisi yetersiz” ekranı tanıtımda öncelik
+almamalı. Çekirdekte yalnız 1/7 görünümü yerine aynı gerçek arayüzde rollerini
+anlatan detay tercih edilmeli; sahte sahiplik/ilerleme çizilmemeli. Savaşta gerçek
+hasar/VFX çekilmeli; metin, yapay düşman veya uydurulmuş UI ile fotoğraf üretilmemeli.
+TR ve EN arayüzlerinden ayrı setler hazırlanmalı. Gerçek para fiyatlı/günlük
+süreli ekranlar daha çabuk eskidiği için ilk üç görselde kullanılmamalı.
 
-| Sıra | Ekran | Alternatif metin (Türkçe) | Alternatif metin (İngilizce) |
-|---|---|---|---|
-| 1 | Savaş | İki devre tahtasında modüller karşılıklı ateş ediyor; altta altı kartlık deste ve Akım göstergesi | Modules fire across two circuit boards; the six-card deck and Current meter sit below |
-| 2 | Çekirdek gücü | Çekirdek gücü kullanılmış savaş anı; oyuncunun devresi onarılıyor | A battle moment with the core power active; the player's circuit is being repaired |
-| 3 | Kartlar | Altı kartlık savaş destesi ve seviyeleriyle modül koleksiyonu | The six-card battle deck and the module collection with levels |
-| 4 | Çekirdekler | Seçili savaş çekirdeği ve açılmış çekirdekler | The selected battle core and the unlocked cores |
-| 5 | Devre Yolu | Arena 7'de kupa eşiklerine bağlı modül parçası, Devre Kredisi ve Akı ödülleri | Arena 7 rewards tied to trophy milestones: module shards, Circuit Credits and Flux |
-| 6 | Maç sonucu | Zafer ekranı ve iki oyuncunun modül bazında hasar dökümü | Victory screen with each player's damage by module |
-| 7 | Takım sohbeti | Hazır mesajlarla yazışan takım üyeleri ve mesaj seçici | Team members chatting with preset messages and the message picker |
-| 8 | Ana ekran | Oyuncu adı, kupa sayısı, arena ilerlemesi, seçili deste ve Savaş düğmesi | Player name, trophies, arena progress, selected deck and the Battle button |
+## Teknik sınırlar ve kaynaklar
 
-Özellik grafiğinin alternatif metni: "GRIDSHARD yazısı ve sloganı; iki yanda savaş ve kartlar ekranı" / "The GRIDSHARD wordmark and tagline between the battle and cards screens".
+- İsim 30, kısa açıklama 80, tam açıklama 4000 karakter:
+  [Play Console ürün ayrıntıları](https://support.google.com/googleplay/android-developer/answer/9859152?hl=en).
+- Yenilikler dil başına 500 Unicode karakter:
+  [Sürüm notları](https://support.google.com/googleplay/android-developer/answer/9859348?hl=en).
+- İkon 512×512 PNG; afiş 1024×500, alfasız PNG/JPEG. Telefon için gerçek
+  oynanıştan 1080×1920 dikey PNG/JPEG seçildi; bu 9:16 sunum, oyunun gerçek
+  arayüzünü göstermeli. Telefon türü başına en fazla 8 görsel:
+  [Google önizleme öğeleri](https://support.google.com/googleplay/android-developer/answer/9866151?hl=en).
 
-### Nasıl üretildi (13 Ekim 2026)
+Eski belgedeki 13 Ekim görsellerinin üretim/etiketleme değerlendirmesi sonraki
+varlıklar için otomatik olarak kullanılamaz. Sonraki 22 Ekim ikon/afiş üretim
+kaydı `docs/MAGAZA_GORSELLERI_2_1_1.md` içindedir. Bu çalışma bir beyan
+kutusunu değiştirmedi ve hukuki/Veri güvenliği alanlarına işlem yapmadı.
+# Nihai teslim — 1 Kasım 2026
 
-- Ekran görüntüleri oyunun kendi ekranlarıdır; üstlerine yazı, çerçeve ya da süsleme eklenmedi. Yalıtılmış bir yerel sunucuda (geçici veri klasörü, yalnız yapay zekâ eşleşmesi, reklam ve ödeme kapalı) kurulu Chrome ile 360×640 CSS pikseli ve 3 kat çözünürlükte çekildi. Canlı sunucuya ve gerçek oyuncu verisine dokunulmadı.
-- Hesap, takım üyeleri ve takım adı bu çekim için oluşturulmuş örnek veridir (Arena 7, 2380 kupa; Türkçe sette "Kıvılcım" ve "Akım Birliği", İngilizce sette "Sparkline" ve "Arc Union"; üye adları da örnektir). Arena eşikleri 7 Ekim'den sonra değiştiği için ilk setteki 1846 kupa artık Arena 6'ya düşer; Arena 7 alternatif metni doğru kalsın diye 2380 kupa kullanıldı. Savaşlar gerçekten oynandı; rakip, oyunun yapay zekâ rakibidir. Çekirdek gücü görüntüsü güç kullanıldıktan yaklaşık yarım saniye sonra, maç sonucu görüntüsü aynı maçın bitiminde alındı.
-- Gerçek para fiyatı ya da indirim yazısı gösteren ekranlar (mağaza, sezon ödülleri) bilerek sete alınmadı.
-- Özellik grafiği oyunun yazı tipleriyle (GRIDSHARD yazısı Orbitron, slogan Oxanium), oyunun desenli mavi zeminiyle ve iki gerçek ekran görüntüsüyle kuruldu (HTML/CSS düzeni, Chrome'da çizildi). Slogan tanıtım sitesindekiyle aynıdır. Cihaz çerçevesi, mağaza rozeti ve simgeye benzeyen marka görseli yoktur; iki ekran, oyundaki levhalar gibi koyu konturlu ve dudaklı panellerdir.
-- Uygulama simgesi `tools/generate_brand_assets.py` ile yeniden çizildi (aynı motif: altın halkada çatlamış kristal; yeni çizim dili: dolu gövde, aydınlık ve gölge yüz, koyu kontur, desenli düz zemin). Web simgeleri, yükleme ekranı amblemi ve Android / iOS simge ve açılış görselleri aynı betikten çıkar.
-- Çekim betikleri depoda değildir; `artifacts/gorsel-tur6-20261013/` altındadır (`store.js`, `feature.js`, örnek veriyi kuran `probe_server.py`).
-- **Sınır:** görüntüler masaüstü Chrome'un telefon boyutundaki görünümündendir, gerçek cihazdan değil.
+`deliverables/GRIDSHARD_MAGAZA_2026-11-01/` ve aynı adlı ZIP hazırdır.
+İki dilde açıklamalar ve yeni sürüm notları; dil başına 8 gerçek 1080×1920
+telefon görseli; onaylı 512×512 ikon ve yeni 1024×500 afiş içerir.
+7. görsel, kullanıcının son isteğiyle gerçek sandık/ödül listesi/premium
+ekranlarından kolajdır. 8. görsel ana ekrandır. 4. görsel gerçek yeni hesabın
+çekirdek koleksiyonudur; sahte sahiplik eklenmedi.
 
-## Yapay zekayla üretilmiş öğe beyanı
+Afişte boşta saldırı kartları iki tarafta Onarım/Güçlendirici ile değiştirildi;
+tek atış karşı devredeki kalkana gider. Açılış sahnesindeki eski bataryalar da
+güncel taktik kartlarıyla değiştirildi. Görsel üretim yerleşik image_gen;
+ekran çekimleri gerçek oyun, kolaj teknik yerleşimdir.
 
-Mağaza girişi ekranının sonunda iki seçenekli bir beyan vardır: "Öğeleri etiketleme" ve "Öğeleri yapay zekayla oluşturulmuş veya düzenlenmiş olarak etiketle" (ikincisinde öğeler sonraki adımda tek tek işaretlenir).
-
-**Okunan kaynaklar (7 Ekim 2026):**
-
-- Google'ın yardım sayfası "Declaring AI-generated content in Play Console" (`support.google.com/googleplay/android-developer/answer/17262077`): beyan geliştiricinin kendi değerlendirmesine dayanır; her görsel ve video ayrı değerlendirilir; kutu, geliştiricinin **düzenlemelerin kapsamında gördüğü** öğeler için işaretlenir; işaretlenen öğe Play Store'da yapay zekâ etiketiyle gösterilir; işaret sonradan kaldırılabilir. Sayfa hangi durumların kapsamda olduğunu tanımlamaz.
-- AB Yapay Zekâ Tüzüğü, madde 50/4 ve madde 3/60 (`artificialintelligenceact.eu` üzerinden; 2 Ağustos 2026'dan beri uygulanır): içeriği kullanan taraf için açıklama yükümlülüğü iki durumdadır. Biri "deep fake", yani gerçek kişi, nesne, yer ya da olaya benzeyen ve gerçekmiş gibi görünen yapay görüntü, ses ya da videodur. Diğeri, kamuyu ilgilendiren konularda bilgilendirme amacıyla yayımlanan yapay metindir; insan gözden geçirmiş ve yayın sorumluluğunu üstlenmişse bu yükümlülük uygulanmaz.
-- Başka ülkelerin kuralları okunmadı.
-
-**Öğelerin nasıl üretildiği (olgular):**
-
-| Öğe | Nasıl üretildi | Görsel üreten bir yapay zekâ modelinin çıktısı mı |
-|---|---|---|
-| Uygulama simgesi | `tools/generate_brand_assets.py` çizim betiğinin çıktısı (Pillow; dış görsel servisi yok, her çalıştırmada aynı sonuç). Betiğin çizim bölümü 13 Ekim'de bir yapay zekâ kodlama aracıyla (Claude) yeniden yazıldı: biçimler kodla tarif edilen çokgen, halka ve çizgilerdir; motif 30 Eylül'deki simgeyle aynıdır. | Hayır |
-| Özellik grafiği | Claude'un yazdığı HTML/CSS düzeninin Chrome'da çizilmiş hali: oyunun yazı tipleri, marka renkleri ve iki gerçek ekran görüntüsü. | Hayır |
-| Ekran görüntüleri | Çalışan oyunun ekranları; çekimi bir betik yaptı, görüntüye dokunulmadı. | Hayır |
-| Kısa ve tam açıklama | Claude yazdı, özellikleri koddan doğruladı; kullanıcı gözden geçirip konsola girdi. | Metin; yapay zekâ taslağı |
-
-İstemcide marka klasöründeki altı dosya dışında hazır resim yoktur; ekranlarda görünen her şey kodla çizilir.
-
-**Değerlendirme (hukuki görüş değildir):** görsellerin hiçbiri bir üretken modelin çıktısı ya da yapay zekâyla değiştirilmiş bir fotoğraf/video değildir ve hiçbiri "deep fake" tanımına girmez. Açıklama metni tanıtım metnidir, kamuyu ilgilendiren bir bilgilendirme değildir ve insan gözden geçirmiştir. Bu okumayla hiçbir öğe düzenlemelerin zorunlu etiket kapsamında görünmüyor; önerilen seçenek **"Öğeleri etiketleme"**. Kapsam değerlendirmesi geliştiricinin beyanıdır; karar kullanıcınındır. Daha açık olmak istenirse simge ve özellik grafiği gönüllü olarak etiketlenebilir (ikisini de yapay zekâ araçları üretti); o zaman mağazada bu öğelerde yapay zekâ etiketi görünür. Ekran görüntüleri her iki durumda da etiketlenmez.
-
-**Kullanıcının seçimi:** henüz görülmedi.
-
-İleride mağazaya bir üretken modelle yapılmış görsel ya da video (ör. tanıtım videosu, yapay zekâyla üretilmiş illüstrasyon) yüklenirse bu değerlendirme o öğe için yeniden yapılmalıdır.
+Dosya ölçüleri, dil başına 8 görsel, metin sınırları ve SHA-256 manifestte
+doğrulandı. Play Console'a yükleme/yayın yapılmadı; uyumlu sunucu ve Android
+sürümüyle birlikte yayımlanacaktır. Aşağıdaki görsel planı önceki incelemedir;
+teslimdeki gerçek dosya sırası README ve manifesttir.

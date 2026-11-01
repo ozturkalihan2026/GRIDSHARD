@@ -27,7 +27,7 @@ def test_beta24_menu_preparation_and_result_markup():
     assert 'id="battle-pool-confirm" type="button" disabled>Savaş</button>' in html
 
 
-def test_core_energy_powers_a_repair_module_anywhere_on_the_board():
+def test_repair_operates_anywhere_without_an_energy_bus():
     engine = BattleEngine(BattleState(battle_id="beta24-energy"))
     engine.add_player("player")
     engine.grant_module("player", "core", "core")
@@ -44,10 +44,11 @@ def test_core_energy_powers_a_repair_module_anywhere_on_the_board():
     engine.step()
 
     repair = engine.state.players["player"].modules["repair"]
-    assert repair.is_powered is True
-    # Onarım enerjiyi eylem anında öder; yayınlanan akış 2,5 enerji / 2 sn.
-    assert repair.energy_required_last_tick == pytest.approx(0.125)
-    assert repair.energy_received_last_tick == pytest.approx(0.125)
+    from app.game.operations import module_is_operational
+    assert module_is_operational(repair)
+    assert not hasattr(repair, "is_powered")
+    assert not hasattr(repair, "energy_required_last_tick")
+    assert not hasattr(repair, "energy_received_last_tick")
 
 
 def test_local_ai_gateway_returns_server_authoritative_dual_snapshot():
@@ -66,7 +67,7 @@ def test_local_ai_gateway_returns_server_authoritative_dual_snapshot():
     snapshot = payload["snapshot"]
     assert snapshot["status"] == "running"
     assert len(snapshot["players"]) == 2
-    assert snapshot["players"]["beta24-player"]["circuit_credits"] == 6
+    assert snapshot["players"]["beta24-player"]["circuit_credits"] == 7
 
     player_modules = snapshot["players"]["beta24-player"]["modules"]
     core = next(

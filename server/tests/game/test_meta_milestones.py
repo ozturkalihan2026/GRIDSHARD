@@ -7,8 +7,8 @@ from app.game.catalog import (
 from app.game.engine import MAX_ACTIVE_MODULES
 
 
-def test_catalog_has_36_player_modules_plus_core():
-    assert len(PLAYER_SELECTABLE_MODULE_IDS) == 36
+def test_catalog_has_24_player_modules_plus_core():
+    assert len(PLAYER_SELECTABLE_MODULE_IDS) == 24
     assert set(BASIC_MODULE_DEFINITIONS) == {"core", *PLAYER_SELECTABLE_MODULE_IDS}
 
 
@@ -36,4 +36,4 @@ def test_counter_strategy_metadata_is_broadly_configured():
         for module in BASIC_MODULE_DEFINITIONS.values()
         if module.strong_against or module.weak_against
     ]
-    assert len(configured) >= 12
+    assert {m.id for m in configured} == {"emp"}  # Preference only, no hidden damage multiplier.

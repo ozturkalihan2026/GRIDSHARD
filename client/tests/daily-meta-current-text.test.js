@@ -14,7 +14,7 @@ const app = read("src", "app.js");
 const server = read("..", "server", "app", "season_competition.py");
 
 // Metin sunucudan gelir; istemci onu olduğu gibi gösterir.
-assert.ok(server.includes('"effect_tr": "Akım üretimi +%15"'));
+assert.match(server, /['"]effect_tr['"]:\s*['"]Akım üretimi \+%15['"]/);
 assert.ok(!server.includes("Akım modülü etkisi"));
 assert.ok(app.includes('effect.textContent = selected?.effect_tr || "";'));
 

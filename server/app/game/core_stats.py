@@ -1,6 +1,6 @@
 """Shared core durability for the battle engine and collection preview."""
 
-CORE_BASE_HP = 300
+CORE_BASE_HP = 450
 CORE_HP_PER_LEVEL = 1.08
 
 

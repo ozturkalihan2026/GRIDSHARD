@@ -39,6 +39,7 @@ secrets
 .pytest-temp*
 .qa-*
 artifacts
+deliverables
 test-results
 playwright-report
 android
@@ -52,3 +53,6 @@ tools/tests
 client/tests
 e2e
 CODEX_CHECKPOINT.md
+!server/data/module_roster_v2.json
+!server/data/module_talents_v7.json
+!server/data/season_module_releases_v2.json

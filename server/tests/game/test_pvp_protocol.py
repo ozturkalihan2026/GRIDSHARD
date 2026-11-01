@@ -12,6 +12,7 @@ def running_handler():
 
 def test_protocol_rejects_wrong_version():
     with pytest.raises(PvPProtocolError): parse_client_envelope(command_message(version=999))
+    with pytest.raises(PvPProtocolError): parse_client_envelope(command_message(version=1))
 
 def test_protocol_rejects_unknown_client_type():
     m=command_message(); m["type"]="hack"

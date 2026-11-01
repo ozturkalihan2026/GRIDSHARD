@@ -18,7 +18,7 @@ def test_current_support_meta_effect_text():
 def test_no_daily_meta_text_names_a_nonexistent_current_module():
     options = daily_meta_catalog_view()["options"]
 
-    assert len(options) == len(DAILY_META_DEFINITIONS) == 7
+    assert len(options) == len(DAILY_META_DEFINITIONS) == 5
     for meta in options:
         for field in ("meta_name_tr", "description_tr", "effect_tr"):
             assert "Akım modül" not in meta[field], (meta["id"], field)

@@ -138,7 +138,7 @@ def test_login_and_season_shards_ignore_the_deck_and_shrink_with_rarity():
     profile.rating = profile.highest_rating = TOP_RATING
     deck = set(profile.preferred_battle_pool_ids)
     unlocked = set(unlocked_module_ids(TOP_RATING))
-    assert len(deck) == 6 and len(unlocked) == 36
+    assert len(deck) == 6 and len(unlocked) == 24
 
     view = profile.engagement_view()
     base_by_key = {

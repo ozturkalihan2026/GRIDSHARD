@@ -17,19 +17,17 @@ from .competition_control import competition_eligible, launch_status, minimum_pa
 
 
 DAILY_META_DEFINITIONS: tuple[dict, ...] = (
-    {"id": "damage", "meta_name_tr": "Hasar Metası", "category_tr": "Hasar", "glyph": "⚡", "accent": "#ff6c80", "description_tr": "Saldırı modülleri bugün daha yüksek baskı kurar.", "effect_tr": "Saldırı modülü hasarı +%10", "modifier": {"category": "saldırı", "stat": "damage", "multiplier": 1.10}},
-    {"id": "defense", "meta_name_tr": "Savunma Metası", "category_tr": "Savunma", "glyph": "⬡", "accent": "#77b5ff", "description_tr": "Savunma modülleri bugün daha dayanıklı bir hat kurar.", "effect_tr": "Savunma CAN ve etkisi +%10", "modifier": {"category": "savunma", "stat": "defense", "multiplier": 1.10}},
-    {"id": "support", "meta_name_tr": "Destek Metası", "category_tr": "Destek", "glyph": "✚", "accent": "#8aef85", "description_tr": "Onarım ve destek zincirleri bugün güçlenir.", "effect_tr": "Destek etkisi +%12", "modifier": {"category": "destek", "stat": "support", "multiplier": 1.12}},
-    {"id": "sabotage", "meta_name_tr": "Sabotaj Metası", "category_tr": "Sabotaj", "glyph": "◉", "accent": "#c783ff", "description_tr": "Kesinti ve bozucu etkiler bugün daha kuvvetlidir.", "effect_tr": "Sabotaj etkisi +%10", "modifier": {"category": "sabotaj", "stat": "sabotage", "multiplier": 1.10}},
-    {"id": "system", "meta_name_tr": "Sistem Metası", "category_tr": "Sistem", "glyph": "▣", "accent": "#57e8d9", "description_tr": "Sistem modülleri bugün daha verimli çalışır.", "effect_tr": "Sistem etkisi +%10", "modifier": {"category": "sistem", "stat": "system", "multiplier": 1.10}},
-    {"id": "core", "meta_name_tr": "Çekirdek Metası", "category_tr": "Çekirdek", "glyph": "◇", "accent": "#ffe06d", "description_tr": "Çekirdek bugün daha yüksek dayanıklılıkla savaşa girer.", "effect_tr": "Çekirdek CAN +%10", "modifier": {"category": "çekirdek", "stat": "core_hp", "multiplier": 1.10}},
-    {"id": "current_support", "meta_name_tr": "Akım Desteği Metası", "category_tr": "Akım Desteği", "glyph": "ϟ", "accent": "#67f5ee", "description_tr": "Savaşta Akım bugün daha hızlı yenilenir.", "effect_tr": "Akım üretimi +%15", "modifier": {"category": "sistem", "stat": "current", "multiplier": 1.15}},
+    {'id': 'damage', 'meta_name_tr': 'Hasar Metası', 'category_tr': 'Saldırı', 'glyph': '⚡', 'accent': '#ff6c80', 'description_tr': 'Saldırı modülleri bugün daha sert vurur.', 'effect_tr': 'Saldırı hasarı +%10', 'modifier': {'category': 'saldırı', 'stat': 'damage', 'multiplier': 1.1}},
+    {'id': 'defense', 'meta_name_tr': 'Savunma Metası', 'category_tr': 'Savunma', 'glyph': '⬡', 'accent': '#77b5ff', 'description_tr': 'Savunma modülleri bugün daha dayanıklıdır.', 'effect_tr': 'Savunma CAN +%10', 'modifier': {'category': 'savunma', 'stat': 'hp', 'multiplier': 1.1}},
+    {'id': 'tactics', 'meta_name_tr': 'Taktik Metası', 'category_tr': 'Taktik', 'glyph': '✚', 'accent': '#8aef85', 'description_tr': 'Taktik modülleri bugün daha dayanıklıdır.', 'effect_tr': 'Taktik CAN +%10', 'modifier': {'category': 'taktik', 'stat': 'hp', 'multiplier': 1.1}},
+    {'id': 'core', 'meta_name_tr': 'Çekirdek Metası', 'category_tr': 'Çekirdek', 'glyph': '◇', 'accent': '#ffe06d', 'description_tr': 'Çekirdek bugün daha yüksek dayanıklılıkla savaşa girer.', 'effect_tr': 'Çekirdek CAN +%10', 'modifier': {'category': 'çekirdek', 'stat': 'core_hp', 'multiplier': 1.1}},
+    {'id': 'current_support', 'meta_name_tr': 'Akım Desteği Metası', 'category_tr': 'Akım Desteği', 'glyph': 'ϟ', 'accent': '#67f5ee', 'description_tr': 'Savaşta Akım bugün daha hızlı yenilenir.', 'effect_tr': 'Akım üretimi +%15', 'modifier': {'category': 'sistem', 'stat': 'current', 'multiplier': 1.15}},
 )
 
 
 AI_TEAM_DEFINITIONS: tuple[dict, ...] = (
     {"team_id": "ai-team-anka", "name": "Anka Devresi", "strategy_tr": "Hızlı baskı"},
-    {"team_id": "ai-team-kutup", "name": "Kutup Hattı", "strategy_tr": "Savunma ve soğutma"},
+    {"team_id": "ai-team-kutup", "name": "Kutup Hattı", "strategy_tr": "Savunma ve onarım"},
     {"team_id": "ai-team-prizma", "name": "Prizma Birliği", "strategy_tr": "Dengeli karşı-meta"},
     {"team_id": "ai-team-poyraz", "name": "Poyraz Akımı", "strategy_tr": "Akım ekonomisi"},
     {"team_id": "ai-team-miras", "name": "Miras Çekirdeği", "strategy_tr": "Sürdürülebilirlik"},
@@ -105,6 +103,8 @@ def build_ai_population(base_bots: list[dict], arena_bounds: dict[int, tuple[int
 
 
 def daily_meta_by_id(meta_id: str) -> dict | None:
+    # Old saved rolls remain usable; their public identity is now Tactics.
+    meta_id={'support':'tactics','sabotage':'tactics','system':'tactics'}.get(str(meta_id),str(meta_id))
     """Return a detached daily-meta definition safe for API responses."""
     match = next(
         (item for item in DAILY_META_DEFINITIONS if item["id"] == str(meta_id)),
@@ -128,7 +128,7 @@ def daily_meta_catalog_view(moment: datetime | None = None) -> dict:
         "resets_at": _iso(next_day),
         "dice_sides": len(DAILY_META_DEFINITIONS),
         "probability_per_meta": round(1 / len(DAILY_META_DEFINITIONS), 8),
-        "selection_rule_tr": "Her oyuncu için günde bir kez, yedi eşit olasılıktan biri seçilir.",
+        "selection_rule_tr": "Her oyuncu için günde bir kez, beş eşit olasılıktan biri seçilir.",
         "options": [daily_meta_by_id(item["id"]) for item in DAILY_META_DEFINITIONS],
     }
 

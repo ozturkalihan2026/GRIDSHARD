@@ -666,6 +666,9 @@ class PlayerDataStoreService:
             "core_shards_by_type": dict(profile.core_shards_by_type),
             "core_upgrade_levels": dict(profile.core_upgrade_levels),
             "module_talents": dict(profile.module_talents),
+            "module_roster_revision": profile.module_roster_revision,
+            "retired_module_archive": deepcopy(profile.retired_module_archive),
+            "retired_rules_archive": deepcopy(profile.retired_rules_archive),
             "lifetime_stats": dict(profile.lifetime_stats),
             "module_shards": dict(profile.module_shards),
             "module_upgrade_levels": dict(profile.module_upgrade_levels),
@@ -966,6 +969,9 @@ class PlayerDataStoreService:
             core_shards_by_type={str(k): int(v) for k, v in meta.get("core_shards_by_type", {}).items()},
             core_upgrade_levels={str(k): max(0, min(14, int(v))) for k, v in meta.get("core_upgrade_levels", {}).items()},
             module_talents={str(k): dict(v) for k, v in meta.get("module_talents", {}).items()},
+            module_roster_revision=int(meta.get("module_roster_revision", 1)),
+            retired_module_archive=deepcopy(meta.get("retired_module_archive", {})),
+            retired_rules_archive=deepcopy(meta.get("retired_rules_archive", {})),
             lifetime_stats=dict(meta.get("lifetime_stats", {})),
             module_shards={
                 **default_shards,
@@ -1114,6 +1120,8 @@ class PlayerDataStoreService:
                 if isinstance(receipt, dict)
             },
         )
+        from .catalog_migration import migrate_profile_roster
+        migrate_profile_roster(profile)
         self.profile_service._profiles[
             player_id
         ] = profile

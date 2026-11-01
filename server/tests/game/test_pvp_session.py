@@ -134,7 +134,7 @@ def test_snapshot_is_viewer_scoped_and_deterministic():
     assert first["viewer_player_id"] == "alice"
 
 
-def test_snapshot_exposes_embedded_power_state():
+def test_snapshot_modules_work_without_an_energy_supply():
     service, session = setup_service()
     install_minimal_board(session, "alice")
     laser = session.engine.grant_module(
@@ -164,8 +164,9 @@ def test_snapshot_exposes_embedded_power_state():
     modules = service.snapshot("pvp-1", "alice")["players"]["alice"]["modules"]
     by_id = {module["instance_id"]: module for module in modules}
 
-    assert by_id["alice-laser"]["power_reason"] == "powered"
-    assert by_id["alice-isolated"]["power_reason"] == "powered"
+    assert by_id["alice-laser"]["operational"] is True
+    assert by_id["alice-isolated"]["operational"] is True
+    assert all("heat" not in module and "energy_consumption" not in module for module in modules)
 
 
 def test_events_since_uses_cursor():

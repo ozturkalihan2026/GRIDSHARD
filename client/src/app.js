@@ -12,8 +12,9 @@
     }
   })();
 
+  const CORE_BASE_HP = 450;
   const moduleDefinitions = [
-    { id: "core", name_tr: "Çekirdek", max_hp: 300, category: "çekirdek", current_cost: 0 },
+    { id: "core", name_tr: "Çekirdek", max_hp: CORE_BASE_HP, category: "çekirdek", current_cost: 0 },
     ...(Array.isArray(globalThis.GRIDSHARD_CANON_MODULES)
       ? globalThis.GRIDSHARD_CANON_MODULES
       : []),
@@ -27,7 +28,7 @@
     status: item.id === "core" ? "active" : "reserve",
     position: item.id === "core" ? {x: 2, y: 1} : null,
     isDeckTemplate: item.id !== "core",
-    energyRequired: 0, energyReceived: 0, isPowered: true, storedEnergy: 0,
+      operational: true,
   }));
 
   const commandLog = [];
@@ -71,17 +72,11 @@
   );
   const moduleCatalogById =
     new Map();
-  const POOL_CATEGORY_ORDER = [
-    "enerji",
-    "saldırı",
-    "savunma",
-    "destek",
-    "sabotaj",
-  ];
+  const POOL_CATEGORY_ORDER = ["saldırı", "savunma", "taktik"];
   const STARTER_BATTLE_POOL_PRESET = Object.freeze({
     name: "Başlangıç Devresi",
     module_definition_ids: Object.freeze([
-      "laser", "shield", "battery", "cooler", "emp", "amplifier",
+      "laser", "pulse_cannon", "shield", "armor", "repair", "amplifier",
     ]),
     favorite: true,
     last_used_at_ms: null,
@@ -155,7 +150,7 @@
     )
   );
   let focusedPoolModuleId =
-    "battery-1";
+    "laser-1";
   const collapsedPoolCategories = {
     global:new Set(),
     selected:new Set(),
@@ -166,7 +161,7 @@
   let quickLoadoutFilter = "all";
   const client = new RelayBattleClient({
     modules: moduleDefinitions,
-    circuitCredits: 6,
+    circuitCredits: 7,
     emitCommand(command) {
       const pvpEnvelope =
         pvpState.sessionId
@@ -796,7 +791,6 @@
   const BATTLE_MUSIC_PHASE_ORDER = Object.freeze({ intro:0, battle:1, pressure:2 });
   let battleMusicPhase = "intro";
   let battleMusicTension = 0;
-  let battleOvertimeActive = false;
   const audioStateOwner =
     typeof GridshardAudioStateOwner === "function"
       ? new GridshardAudioStateOwner({
@@ -1273,7 +1267,7 @@
     const english = document.documentElement.lang === "en";
     const number = Math.abs(change).toLocaleString(uiLocale(), { maximumFractionDigits:2 });
     const sign = change > 0 ? "+" : "−";
-    if (unit === "percent" || unit === "heat") return english ? `${sign}${number}%` : `${sign}%${number}`;
+    if (unit === "percent") return english ? `${sign}${number}%` : `${sign}%${number}`;
     if (unit === "seconds") return `${sign}${number} ${english ? "sec" : "sn"}`;
     if (unit === "per_second") return `${sign}${number}/${english ? "sec" : "sn"}`;
     return `${sign}${number}`;
@@ -1709,7 +1703,7 @@
     speed:'<path class="f" d="M3 5.6 11 12l-8 6.4ZM12.4 5.6l8 6.4-8 6.4Z"/>',
     flame:'<path class="f" d="M12 2.5c.9 3.4 5.4 5.3 5.4 10.3a5.4 5.4 0 0 1-10.8 0c0-1.9.9-3.4 1.9-4.4.3 1.6 1 2.4 2 2.8-.4-3 .3-6.3 1.5-8.7Z"/>',
     hourglass:'<path d="M6.6 3h10.8v3.3L13.6 12l3.8 5.7V21H6.6v-3.3L10.4 12 6.6 6.3Z"/><path d="M9.5 18.5h5"/>',
-    battery:'<rect x="3.2" y="7" width="15.2" height="10" rx="2.2"/><path d="M20.8 10.2v3.6M7 10.4v3.2M10.4 10.4v3.2M13.8 10.4v3.2"/>',
+
     bolt:'<path class="f" d="M13.6 2 5 13.4h5.4L9 22l9-12.4h-5.7Z"/>',
     energy:'<circle cx="12" cy="12" r="9"/><path class="f" d="M12.9 6.4 8.6 12.5h2.8l-.7 5.1 4.6-6.4h-2.9Z"/>',
     gauge:'<path d="M4 16.5a8 8 0 1 1 16 0"/><path d="m12 16.5 4.4-5.8"/><circle class="f" cx="12" cy="16.5" r="1.7"/>',
@@ -1758,11 +1752,14 @@
     hourglass:"detail-cycle", rings:"detail-core", echo:"detail-core",
     convert:"detail-energy", percent:"statistics", branch:"detail-talent",
     flame:"detail-damage", bug:"detail-damage", pierce:"detail-damage", swarm:"detail-damage",
-    wrench:"detail-repair", revive:"detail-repair", snow:"detail-cooler", battery:"detail-battery",
+    wrench:"detail-repair", revive:"detail-repair", snow:"detail-cooler",
     key:"detail-unlock", eye:"profile",
   });
   // Değer anahtarı → simge ve renk tonu.
   const STAT_ICONS = Object.freeze({
+    healing_received_multiplier:["hp", "green"],
+"windup_ms":["cycle", "blue"],"kept_reduction":["damage", "red"],"every_hits":["target", "gold"],"charged_damage":["damage", "red"],"shots":["damage", "red"],"spacing_ms":["cycle", "blue"],"block_ratio":["guard", "blue"],"reduction":["guard", "blue"],"reflect_ratio":["guard", "cyan"],"guard_ratio":["guard", "blue"],"phase_ms":["cycle", "violet"],"shield_hp":["guard", "blue"],"core_shield_hp":["core", "gold"],"duration_ms":["cycle", "blue"],"heal":["hp", "green"],"shot_bonus":["damage", "green"],"interval_penalty":["cycle", "violet"],"next_interval_reduction":["cycle", "green"],"secondary_1":["damage", "red"],"secondary_2":["damage", "red"],"recovery_ms":["guard", "blue"],
+"followup_ratio":["damage","red"],"followup_delay_ms":["cycle","red"],"dot_per_tick_ratio":["damage","violet"],"dot_ticks":["cycle","violet"],"dot_step_ms":["cycle","violet"],"echo_per_target_ratio":["damage","violet"],"echo_total_ratio":["damage","violet"],"shield_strip_ratio":["guard","red"],"absorb_ratio":["guard","blue"],"heal_conversion_ratio":["hp","green"],"ally_shield_total":["guard","blue"],"ally_shield_duration_ms":["cycle","blue"],"healing_received_penalty":["hp","violet"],"cleanse_control_guard_ms":["guard","green"],"cleanse_control_duration_reduction":["cycle","green"],
     hp:["hp", "green"], damage:["damage", "red"], cycle:["cycle", "blue"], dps:["dps", "red"],
     energy:["energy", "cyan"], current:["current", "gold"],
     block:["shield", "blue"], reduction:["reduction", "steel"], reflect:["reflect", "violet"],
@@ -1771,9 +1768,9 @@
     conversion_cap:["energy", "cyan"], support_reduction:["guard", "violet"],
     repair:["wrench", "green"], revive:["revive", "orange"], revive_hp:["hp", "orange"],
     cooling:["snow", "cyan"], damage_boost:["boost", "red"], speed_boost:["speed", "gold"],
-    heat:["flame", "orange"], boost:["hourglass", "gold"], debt:["hourglass", "steel"],
+     boost:["hourglass", "gold"], debt:["hourglass", "steel"],
     resonance:["rings", "pink"], duration:["hourglass", "violet"], virus_damage:["bug", "green"],
-    echo:["echo", "violet"], storage:["battery", "cyan"], saving:["percent", "green"],
+    echo:["echo", "violet"], storage:["core", "cyan"], saving:["percent", "green"],
     pierce:["pierce", "orange"], lock:["lock", "gold"], secondary:["branch", "orange"],
     swarm:["swarm", "orange"], charge_bonus:["bolt", "violet"],
   });
@@ -2908,7 +2905,7 @@
     core_guardian: Object.freeze({ nameTr:"Muhafız Çekirdeği", glyph:"⬡", accent:"#79b6ff" }),
     core_overdrive: Object.freeze({ nameTr:"Aşırı Yük Çekirdeği", glyph:"ϟ", accent:"#ff6e82" }),
     core_disruptor: Object.freeze({ nameTr:"Kesinti Çekirdeği", glyph:"⌁", accent:"#bf7dff" }),
-    core_capacitor: Object.freeze({ nameTr:"Kapasitör Çekirdeği", glyph:"▣", accent:"#62e4ff" }),
+    core_capacitor: Object.freeze({ nameTr:"Takviye Çekirdeği", glyph:"▣", accent:"#62e4ff" }),
     core_phoenix: Object.freeze({ nameTr:"Anka Çekirdeği", glyph:"✹", accent:"#ffb85e" }),
     core_quantum: Object.freeze({ nameTr:"Kuantum Çekirdeği", glyph:"✧", accent:"#f28cff" }),
   });
@@ -3199,16 +3196,22 @@
     const intro = document.createElement("p");
     intro.className = "module-detail-tab-intro";
     if (tabName === "stats") {
-      intro.textContent = "Seviye ve yeteneklerle gelişir; enderlik güç katmaz.";
+      intro.textContent = "Seviyeyle gelişir; enderlik ek güç çarpanı katmaz.";
       const list = document.createElement("dl");
       list.className = "module-stat-tiles core-stat-tiles";
       for (const [label, value, icon, tone] of [
         ["Enderlik", moduleRarityLabel(core.rarity), "rarity", "gold"],
-        ["Sınıf", "Sistem", "grid", "blue"],
-        ["Enerji üretimi", `${core.energy_per_second}/sn`, "energy", "cyan"],
-        ["Enerji deposu", core.energy_capacity, "battery", "blue"],
+        ["CAN", core.max_hp, "hp", "green"],
+        ["İlk dolum", `${core.first_charge_seconds ?? 20} sn`, "cycle", "cyan"],
+        ["Sonraki dolum", `${core.recharge_seconds ?? 35} sn`, "cycle", "blue"],
+        ["Hedef seçimi", "Otomatik", "grid", "blue"],
         ["Seviye", `${core.level} / 15`, "boost", "green"],
-        ["Yetenek", (core.skills || []).filter(skill => skill.learned).length, "star", "violet"],
+        ...(core.power_values?.damage ? [["Güç hasarı",core.power_values.damage,"damage","red"]]:[]),
+        ...(core.power_values?.duration_ms ? [["Etkin süre",`${core.power_values.duration_ms/1000} sn`,"cycle","gold"]]:[]),
+        ...(core.power_values?.delay_ms ? [["İşaret süresi",`${core.power_values.delay_ms/1000} sn`,"cycle","violet"]]:[]),
+        ...(core.power_values?.hp_ratio ? [["Mevcut CAN kaybı",`%${Math.round(core.power_values.hp_ratio*100)}`,"damage","red"]]:[]),
+        ...(core.power_values?.reduction ? [["Kendi koruması",`%${Math.round(core.power_values.reduction*100)}`,"guard","blue"]]:[]),
+
       ]) {
         const row = document.createElement("div");
         row.dataset.tone = tone;
@@ -3219,8 +3222,8 @@
         const amount = document.createElement("dd");
         amount.textContent = String(value);
         if (core.unlocked && core.next_stats) {
-          const key = label === "Enerji üretimi" ? "energy_per_second" : label === "Enerji deposu" ? "energy_capacity" : null;
-          const gain = key && createStatGain(core[key], core.next_stats[key], key === "energy_per_second" ? "per_second" : "");
+          const key = label === "CAN" ? "max_hp" : null;
+          const gain = key && createStatGain(core[key], core.next_stats[key], "");
           if (gain) amount.append(" ", gain);
         }
         row.append(createUiIcon(icon, tone), name, amount);
@@ -3337,8 +3340,8 @@
     const nextStats = core.unlocked ? core.next_stats : null;
     renderDetailStatRow(document.getElementById("core-detail-stats"), [
       { label:"CAN", value:core.max_hp, current:core.max_hp, next:nextStats?.max_hp, icon:"hp", tone:"green" },
-      { label:"ENERJİ", value:`${core.energy_per_second}/sn`, current:core.energy_per_second, next:nextStats?.energy_per_second, unit:"per_second", icon:"energy", tone:"cyan" },
-      { label:"DEPO", value:core.energy_capacity, current:core.energy_capacity, next:nextStats?.energy_capacity, icon:"battery", tone:"blue" },
+      { label:"İlk dolum", value:`${core.first_charge_seconds ?? 20} sn`, icon:"cycle", tone:"cyan" },
+      { label:"Sonraki dolum", value:`${core.recharge_seconds ?? 35} sn`, icon:"cycle", tone:"blue" },
       { label:"YETENEK", value:(core.skills || []).filter((skill) => skill.learned).length, icon:"star", tone:"gold" },
     ]);
     const select = document.getElementById("core-detail-select");
@@ -4777,10 +4780,10 @@
     const english = document.documentElement.lang === "en";
     const unit = special?.unit;
     const number = Number(special?.value || 0).toLocaleString(uiLocale(), {
-      maximumFractionDigits:unit === "percent" || unit === "hp" || unit === "energy" || unit === "damage" ? 1 : 2,
+      maximumFractionDigits:unit === "percent" || unit === "hp" || unit === "damage" ? 1 : 2,
     });
     const times = Number(special?.times) > 1 ? `${special.times}×` : "";
-    if (unit === "percent" || unit === "heat") return `${times}${english ? `${number}%` : `%${number}`}`;
+    if (unit === "percent") return `${times}${english ? `${number}%` : `%${number}`}`;
     if (unit === "seconds") return `${times}${number} ${english ? "sec" : "sn"}`;
     if (unit === "per_second") return `${times}${number}/${english ? "sec" : "sn"}`;
     return `${times}${number}`;
@@ -4794,7 +4797,7 @@
 
   // Authoritative identity, not an invented talent or a second damage source.
   function createStatSignature(item) {
-    const signature = item.signature_mechanic || item.shared_behavior_tr;
+    const signature = item.signature_mechanic;
     if (!signature) return null;
     const panel = document.createElement("section");
     panel.className = "module-stat-signature";
@@ -4869,23 +4872,15 @@
     const list = document.createElement("dl");
     list.className = "module-stat-tiles";
     const cycle = moduleCycleEntry(stats, nextStats);
-    // Modüle özgü değerler sunucudan gelir (seviye ve yetenek dahil); eski
-    // sunucu göndermezse soyut etki çarpanı yazılır.
+    // Modüle özgü gerçek değerler sunucudan gelir; soyut çarpan gösterilmez.
     const specials = specialEntries(stats, nextStats);
     for (const tile of [
       { key:"hp", icon:"hp", tone:"green", label:"CAN", value:number(stats.max_hp), current:stats.max_hp, next:nextStats?.max_hp, meter:Number(stats.max_hp || 0) / peak("max_hp") },
       ...(Number(stats.base_damage) > 0
         ? [{ key:"damage", icon:"damage", tone:"red", label:"HASAR", value:number(stats.base_damage, 1), current:stats.base_damage, next:nextStats?.base_damage, meter:Number(stats.base_damage || 0) / peak("base_damage") }]
         : []),
-      { key:"cooldown", icon:"cycle", tone:"blue", ...cycle },
-      ...(specials.length
-        ? specials.map((special) => ({ ...special, key:`special-${special.key}` }))
-        : [{ key:"effect", icon:"star", tone:"violet", label:"ETKİ ÇARPANI", value:`×${number(stats.effect_multiplier, 2)}`, meter:Number(stats.effect_multiplier || 0) / peak("effect_multiplier") }]),
-      // Tüketim, bakım ile aksiyon bedelinin saniyeye düşen payının toplamıdır;
-      // üretici modül (Batarya) tüketim yerine üretimini gösterir.
-      Number(stats.energy_generation) > 0
-        ? { key:"energy", icon:"energy", tone:"cyan", label:"ENERJİ ÜRETİMİ", value:`+${number(stats.energy_generation, 1)}/sn`, current:stats.energy_generation, next:nextStats?.energy_generation, unit:"per_second" }
-        : { key:"energy", icon:"energy", tone:"cyan", label:"ENERJİ TÜKETİMİ", value:`${number(stats.energy_per_second ?? stats.energy_consumption, 1)}/sn`, current:stats.energy_per_second, next:nextStats?.energy_per_second, unit:"per_second" },
+      ...(Number(stats.cooldown_ms) > 0 ? [{ key:"cooldown", icon:"cycle", tone:"blue", ...cycle }] : []),
+      ...specials.map((special) => ({ ...special, key:`special-${special.key}` })),
       { key:"current", icon:"current", tone:"gold", label:"AKIM MALİYETİ", value:number(item.current_cost) },
     ]) {
       const row = document.createElement("div");
@@ -4925,7 +4920,7 @@
     const text = document.createElement("p");
     text.className = "module-detail-tab-intro";
     if (tabName === "stats") {
-      text.textContent = "Seviye ve yeteneklerle gelişir; enderlik güç katmaz.";
+      text.textContent = `${moduleRarityLabel(item.rarity)} · ${document.documentElement.lang==="en" ? item.description_en : (item.rarity_signature||item.signature_mechanic||item.description_tr)}`;
       const chips = document.createElement("div");
       chips.className = "module-stat-chips";
       for (const [label, value, kind, icon, tone] of [
@@ -4951,8 +4946,8 @@
         const note = document.createElement("p");
         note.className = "module-stat-note";
         note.textContent = document.documentElement.lang === "en"
-          ? "Theoretical DPS = raw damage / interval; not an extra hit. Heat, energy, defenses and tick rounding affect actual output."
-          : "Teorik hasar/sn = ham hasar / aralık; ek vuruş değildir. Isı, enerji, savunma ve zaman adımı/yuvarlama gerçek sonucu değiştirir.";
+          ? "Theoretical DPS = raw damage / interval; not an extra hit. Defenses and tick rounding affect actual output."
+          : "Teorik hasar/sn = ham hasar / aralık; ek vuruş değildir. Savunma ve zaman adımı/yuvarlama gerçek sonucu değiştirir.";
         host.appendChild(note);
       }
     } else if (tabName === "talents") {
@@ -5038,11 +5033,11 @@
         ?? (item.talents || []).filter((node) => Boolean(node.selected)).length
       );
       if (selectedCount > 0) {
-        const resetCost = Number(item.talent_reset_cost_flux || selectedCount * 25);
+        const resetCost = Number(item.talent_reset_cost_flux ?? selectedCount * 25);
         const resetPanel = document.createElement("section");
         resetPanel.className = "module-talent-reset-panel";
         const resetCopy = document.createElement("span");
-        resetCopy.textContent = `${selectedCount} seçim`;
+        resetCopy.textContent = item.talent_transition_reselection ? "Yeni özellikler: bir defalık ücretsiz yeniden seçim" : `${selectedCount} seçim`;
         const resetButton = document.createElement("button");
         resetButton.type = "button";
         resetButton.className = "module-talent-reset";
@@ -5076,6 +5071,7 @@
     const item = activeMetaModule();
     const definition = metaModuleDefinition(item);
     if (!item || !definition) return;
+    document.getElementById("module-quick-actions")?.setAttribute("hidden", "");
     const setText = (id, value) => {
       const element = document.getElementById(id);
       if (element) element.textContent = String(value);
@@ -6921,7 +6917,7 @@
     if (copy) {
       copy.textContent = selected
         ? "Bugünkü meta kilitlendi. Yarın yeniden çark çevirebilirsin."
-        : "Yedi eşit olasılıklı stratejiden biri bugünkü savaş planın olacak.";
+        : "Beş eşit olasılıklı stratejiden biri bugünkü savaş planın olacak.";
     }
     if (glyph) glyph.textContent = selected?.glyph || "◇";
     if (name) name.textContent = selected?.meta_name_tr || "—";
@@ -7028,7 +7024,7 @@
     dailyMetaRollPending = true;
     const wheel = document.getElementById("daily-meta-wheel");
     const status = document.getElementById("daily-meta-dialog-status");
-    if (status) status.textContent = "Yedi yüzlü meta zarı atılıyor…";
+    if (status) status.textContent = "Meta çarkı dönüyor…";
     renderDailyMetaDialog();
     try {
       const payload = await requestJsonWithDeadline(
@@ -8639,8 +8635,8 @@
       healthState:
         serverHealthState,
       expectedVersion:
-        "2.1.1",
-      expectedProtocolVersion: 1,
+        "2.2.0",
+      expectedProtocolVersion: 2,
     });
   const playReadinessGate =
     new RelayPlayReadinessGate({
@@ -8681,7 +8677,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.1.1",
+    build: "2.2.0",
   });
 
   const postMatchSync =
@@ -8957,6 +8953,8 @@
       );
       renderTrophyValue(trophy, Math.max(0, Math.round(rating)));
       coreCopy.append(coreName, coreLevel, trophy);
+      const contribution=globalThis.GridshardCombatFeedback?.coreTotalsText(summary.core_contributions,document.documentElement.lang==="en");
+      if(contribution){const impact=document.createElement("small");impact.className="post-match-core-impact";impact.textContent=contribution;coreCopy.appendChild(impact);}
       coreCard.append(coreGlyph, coreCopy);
 
       const damageColumn = document.createElement("div");
@@ -8975,10 +8973,6 @@
         Number(item.damage || 0)
         + Number(item.damage_absorbed || 0) * 0.8
         + Number(item.repair || 0) * 0.9
-        + Number(item.heat_reduced || 0) * 0.4
-        + Number(item.energy_generated || 0) * 0.35
-        + Number(item.energy_discharged || 0) * 0.35
-        + Number(item.energy_saved || 0) * 0.45
         + Number(item.support_value || 0) * 0.8
         + Number(item.control_seconds || 0) * 5
         + Number(item.control_actions || 0) * 30
@@ -9438,6 +9432,14 @@
     doc:document, now:() => performance.now(), fx:moduleFx,
     layer:() => document.getElementById("battle-effect-layer"),
     anchor:moduleVfxAnchor,
+    cellAnchor:(playerId,position) => {
+      if(!position)return null;
+      const root=playerId===participantPlayerId?board:enemyBoard;
+      const cell=root?.querySelector(`.board-cell[data-x="${Number(position.x)}"][data-y="${Number(position.y)}"]`);
+      const layer=battleAnchorRects().layer;if(!cell||!layer)return null;
+      const r=cell.getBoundingClientRect();
+      return {center:{x:r.left+r.width/2-layer.left,y:r.top+r.height/2-layer.top},size:Math.min(r.width,r.height)};
+    },
     boardRect:id => {
       const root=id.startsWith("enemy-") ? enemyBoard : board;
       const batch=battleAnchorRects(),rect=batch.boards.get(root),layer=batch.layer;
@@ -9474,7 +9476,7 @@
     cancelFrame:(id) => window.cancelAnimationFrame(id),
     rememberEvents:rememberServerDestructions,
     // Sahnede karşılığı olmayan olaylar (bkz. processLocalServerEvents).
-    ignoredTypes:["module_cooldown_started", "module_heat_changed"],
+    ignoredTypes:["module_cooldown_started"],
     present:({ snapshot, events, snapshotChanged }) => syncOnlineServerBattle({
       type:"presentation", payload:{ snapshot, events, snapshotChanged },
     }),
@@ -9589,27 +9591,12 @@
       fx:"laser",
       travelMs:240,
     },
-    ion_spear:{
-      cue:"ion_spear_fire",
-      impactCue:"electrical_hit",
-      fx:"railgun",
-      travelMs:220,
-    },
-    swarm_fabricator:{
-      cue:"swarm_fabricator_fire",
-      impactCue:"kinetic_hit",
-      fx:"drone",
-      travelMs:430,
-    },
-    quantum_cannon:{
-      cue:"quantum_cannon_fire",
-      impactCue:"kinetic_hit",
-      fx:"pulse",
-      travelMs:380,
-    },
+
+
+
   });
 
-  const CRAFTED_WEAPON_IDS = new Set(["laser","shield","cooler","battery","amplifier","emp","repair","armor","pulse_cannon","missile_launcher"]);
+  const CRAFTED_WEAPON_IDS = new Set(["laser","shield","amplifier","emp","repair","armor","pulse_cannon","missile_launcher"]);
 
   function weaponPresentation(
     definitionId
@@ -10028,21 +10015,9 @@
     corePowerButtonEl.dataset.targeting=String(corePowerTargeting);
     corePowerButtonEl.disabled=localBattleFinished || battleCountdown.active || !corePowerReady || !battleTransportReady();
     corePowerButtonEl.setAttribute("aria-pressed",String(corePowerTargeting));
-    // Kuantum · Yarım Faz: güç %50'de kullanılabilir, tam dolmadan yalnız kalkan verir.
-    const halfPhaseReady = corePowerReady && charge < 100;
-    corePowerButtonEl.dataset.halfPhase=String(halfPhaseReady);
-    corePowerButtonEl.title=corePowerReady
-      ? (halfPhaseReady
-          ? "Yarım Faz hazır · yalnız kalkan; tam dolumda onarım da gelir"
-          : (corePowerTargeting
-              ? "Çekirdek gücünü kullan"
-              : "Çekirdek gücü hazır"))
-      : `Çekirdek gücü doluyor · %${charge}`;
-    if (corePowerChargeEl) {
-      corePowerChargeEl.textContent=corePowerReady
-        ? (halfPhaseReady ? "YARIM" : "HAZIR")
-        : `%${charge}`;
-    }
+    corePowerButtonEl.dataset.halfPhase="false";
+    corePowerButtonEl.title=corePowerReady ? "Çekirdek gücü hazır · hedefler otomatik seçilir" : `Çekirdek gücü doluyor · %${charge}`;
+    if(corePowerChargeEl)corePowerChargeEl.textContent=corePowerReady ? "HAZIR" : `%${charge}`;
     renderBattleEmojiControl();
   }
 
@@ -10150,14 +10125,18 @@
   }
 
   function syncCorePowerFromSnapshot(player) {
-    client.currentDiscountRemaining = Number(player?.discounted_deployments || 0);
-    client.energyLoadRatio = Number(player?.energy_load_ratio || 0);
-    client.energyStock = Number(player?.energy_stock || 0);
-    // Enerji sırası rezervi bekleyen aksiyon için biriktirdiği için rezerv
-    // sıfıra nadiren iner; açığı yük oranı gösterir.
-    document.getElementById("board")?.classList.toggle("energy-strain", client.energyLoadRatio > 1.1);
+    const currentIndicator=document.getElementById("shelf-credit-indicator");
+    if(currentIndicator){
+      const view=GridshardCurrentRules.progress(player,document.documentElement.lang==="en");
+      currentIndicator.dataset.pressure=String(view.percent);
+      currentIndicator.style.setProperty("--pressure-progress",`${view.percent}%`);
+      currentIndicator.style.setProperty("--attack-progress",`${view.damagePercent}%`);
+      currentIndicator.style.setProperty("--defense-progress",`${view.defensePercent}%`);
+      currentIndicator.title=view.text;
+      currentIndicator.setAttribute("aria-label",view.text);
+    }
     const summary = document.getElementById("player-core-summary");
-    if (summary) summary.title = `Enerji yükü %${Math.round(client.energyLoadRatio * 100)} · Depo ${client.energyStock}`;
+    if (summary) summary.title = "Çekirdek gücü: hazır olduğunda dokun; hedefler otomatik seçilir.";
     const power=player?.core_power;
     if (!power) return;
     corePowerCharge=Number(power.charge || 0);
@@ -10183,7 +10162,7 @@
       kind:"use_core_power",
       payload:{
         request_id:corePowerRequestId(),
-        target_module_id:module.instanceId,
+
       },
     });
     corePowerTargeting=false;
@@ -10209,6 +10188,8 @@
   // Mobil tarayıcı çubuğu kayınca görüntü alanı değişir; tepsi düğmeye bağlı kalır.
   window.addEventListener("resize", () => {
     if (battleEmojiTrayEl?.hidden === false) positionBattleEmojiTray();
+    // One-shot geometry belongs to the old viewport; discard it on resize.
+    moduleVfx.clearEffects();
   });
   const presetGalleryEl =
     document.getElementById(
@@ -10306,14 +10287,6 @@
   const poolDetailDescriptionEl =
     document.getElementById(
       "battle-pool-detail-description"
-    );
-  const poolDetailEnergyGenerationEl =
-    document.getElementById(
-      "battle-pool-detail-energy-generation"
-    );
-  const poolDetailEnergyConsumptionEl =
-    document.getElementById(
-      "battle-pool-detail-energy-consumption"
     );
   const poolDetailDamageEl =
     document.getElementById(
@@ -10606,13 +10579,13 @@
     },
     balanced_control:{
       name_tr:"Dengeli Kontrol", name_en:"Balanced Control",
-      description_tr:"Dengeli oynar; rakibin kilit sistemini EMP ve Sinyal Bozucu ile susturur, Batarya ve Soğutucuyla temposunu korur.",
-      description_en:"Plays balanced; silences a key enemy system with EMP and Jammer and keeps its tempo with Battery and Cooler.",
+      description_tr:"EMP ve Virüs ile rakibin silahlarını yavaşlatır; Arındırıcı ile kendi devresini korur.",
+      description_en:"Uses EMP and Virus against enemy weapons; Cleanser protects its own circuit.",
     },
     balanced_economy:{
-      name_tr:"Dengeli Ekonomi", name_en:"Balanced Economy",
-      description_tr:"Dengeli oynar; Batarya ve Akım Dengeleyiciyle enerjisini sağlam tutar, Sinyal Bozucu ile rakibin destek hattını keser.",
-      description_en:"Plays balanced; keeps its energy steady with Battery and Current Balancer and cuts the enemy support line with Jammer.",
+      name_tr:"Taktik Denge", name_en:"Tactical Balance",
+      description_tr:"Tampon ile ateş hattını korur; Güçlendirici ve Hız Rölesiyle saldırı temposu kurar.",
+      description_en:"Protects the firing line with Buffer; Amplifier and Speed Relay build attack tempo.",
     },
   });
   let selectedAiArchetype = "balanced";
@@ -10680,8 +10653,8 @@
   const floatingFeedbackLive = new Map();
   let battleLiveTickerTimer = null;
 
-  let mockEnemyCoreHp = 300;
-  let mockEnemyCoreMaxHp = 300;
+  let mockEnemyCoreHp = CORE_BASE_HP;
+  let mockEnemyCoreMaxHp = CORE_BASE_HP;
   let mockEnemyCoreBadges = [];
   let mockEnemyCoreType = "core_resonance";
   let mockEnemyModules = [];
@@ -11360,7 +11333,7 @@
 
   function moduleVfxAnchor(moduleId, aimAt=null) {
     const batch=battleAnchorRects(),layer=batch.layer,entry=batch.devices.get(String(moduleId));
-    const rect=batch.modules.get(String(moduleId));if(!layer||!rect)return null;
+    const rect=batch.modules.get(String(moduleId)) || resolveModuleAnchor(moduleId);if(!layer||!rect)return null;
     const local=p=>({x:p.x-layer.left,y:p.y-layer.top});
     let center={x:rect.left+rect.width/2,y:rect.top+rect.height/2},emitter=center,pair=null;
     if(entry){
@@ -11799,9 +11772,9 @@
     if (powerId === "core_disruptor") return "sabotage";
     if (powerId === "core_overdrive") return "attack";
     if (powerId === "core_guardian") return "defense";
-    if (powerId === "core_capacitor") return "energy";
+    if (powerId === "core_capacitor") return "hybrid";
     if (powerId === "core_quantum") return "hybrid";
-    return "heal";
+    return "attack";
   }
 
   function coreEffectFeedback(effectKind, value, unit="") {
@@ -11815,6 +11788,11 @@
   }
 
   const coreWaveEntries = new WeakMap();
+  const coreImpactNotices = new Map();
+  function clearCoreImpactNotices(){
+    for(const {node,cleanup} of coreImpactNotices.values()){cleanup.cancelled=true;node.remove();}
+    coreImpactNotices.clear();
+  }
 
   function presentCorePowerActivation(snapshot, data) {
     const waveEffect = data.effect_kind || corePowerEffect(data.power_id);
@@ -11840,7 +11818,7 @@
       });
       coreWaveEntries.set(waveBoard, cleanup);
     }
-    if (waveEffect === "sabotage") {
+    if (!data.role && waveEffect === "sabotage") {
       const sourceId = data.player_id === participantPlayerId ? "core-1" : "enemy-core";
       const targetId = data.player_id === participantPlayerId ? "enemy-core" : "core-1";
       emitDuelAttackEffect(sourceId, targetId, "core-sabotage", "core_disruptor");
@@ -11867,7 +11845,17 @@
       if (!affectedModule) continue;
       pulseBattleFx(serverModuleDomId(target.player_id, affectedModule), feedbackKind);
     }
-    setBattleLiveTicker(`${coreModule?.name_tr || "Çekirdek"} gücü devreye yayıldı`, waveEffect);
+    const impactText=globalThis.GridshardCombatFeedback?.corePowerText(data,document.documentElement.lang==="en")||"Çekirdek gücü etkin";
+    setBattleLiveTicker(impactText, waveEffect);
+    const host=waveBoard?.parentElement;
+    if(host){
+      const previous=coreImpactNotices.get(host);
+      if(previous){previous.cleanup.cancelled=true;previous.node.remove();}
+      const node=document.createElement("div");node.className="battle-core-impact";
+      node.textContent=impactText;node.setAttribute("role","status");host.appendChild(node);
+      const cleanup=scheduleBattleSweep(3600,()=>{node.remove();coreImpactNotices.delete(host);});
+      coreImpactNotices.set(host,{node,cleanup});
+    }
   }
 
   function presentBattleEmoji(playerId, emojiId) {
@@ -11913,55 +11901,17 @@
   }
 
   // Beta.72 imza mekaniklerinin yalnız görsel/ses karşılığı olan olayları.
-  const SIGNATURE_EVENT_TYPES = new Set([
-    "quantum_repeat",
-    "quantum_collapse",
-    "swarm_released",
-    "phoenix_rebirth",
-    "prism_energy_converted",
-    "sabotage_echo_applied",
-    "signature_secondary_hit",
-    "nano_repair_pulse",
-    "chrono_window_started",
-    "chrono_debt_started",
-    "attack_windup_started",
-    "core_signature_triggered",
-    "module_talent_triggered",
-    "core_talent_triggered",
-    "module_cycle_pulse",
-    "amplifier_pulse",
-  ]);
+
 
   // Modül çevrimi iş yaptığında savaşta görünen karşılık. Savunma tepkileri
   // (blok, ayna, kubbe, sabotaj direnci) adıyla; destek darbeleri yalnız bir
   // halkayla gösterilir.
-  const CYCLE_PULSE_PRESENTATION = Object.freeze({
-    block:{ effect:"cycle_block", label:"BLOK" },
-    mirror:{ effect:"cycle_mirror", label:"AYNA" },
-    dome_guard:{ effect:"cycle_dome", label:"KUBBE" },
-    sabotage_guard:{ effect:"cycle_guard", label:"DİRENÇ" },
-  });
+
 
   // Çekirdek imzası → efekt türü, etiket ve (varsa) canlı şerit metni.
-  const CORE_SIGNATURE_PRESENTATION = Object.freeze({
-    ember_rebirth:{
-      effect:"core_rebirth",
-      label:"DOĞUŞ",
-      ownTicker:"Küllerden Doğuş · Çekirdeğin ayakta kaldı",
-      rivalTicker:"Rakip Çekirdek küllerden doğdu",
-    },
-    last_stand:{ effect:"core_last_stand", label:"SON HAT" },
-    overdrive_chain:{ effect:"core_chain", label:"ZİNCİR" },
-    static_charge:{ effect:"core_static", label:"STATİK" },
-    reserve_discharge:{ effect:"core_discharge", label:"DEŞARJ" },
-    half_phase:{ effect:"core_half_phase", label:"YARIM FAZ" },
-  });
 
-  function snapshotOpponentId(snapshot, playerId) {
-    return Object.keys(snapshot?.players || {}).find(
-      (candidate) => candidate !== playerId
-    ) || null;
-  }
+
+
 
   function snapshotModuleDomId(snapshot, playerId, moduleId) {
     if (!playerId || !moduleId) return null;
@@ -11973,183 +11923,7 @@
 
   // İmza olayını sahnede gösterir. Yalnız imzaya ait olaylar için true döner;
   // saldırı ve katkı olayları ayrıca kendi işleyicilerinden de geçer.
-  function presentSignatureEvent(event, snapshot) {
-    const type = event?.type;
-    const data = event?.data || {};
-    if (type === "attack_performed") {
-      if (String(data.defense_type || "").startsWith("Faz Zırhı · Faz")) {
-        emitSignatureBattleEffect(
-          "phase_evade",
-          snapshotModuleDomId(snapshot, data.target_player_id, data.target_module_id),
-          { label:"FAZ" }
-        );
-      }
-      return false;
-    }
-    if (type === "module_contribution") {
-      const sourcePlayerId = data.source_player_id || data.player_id;
-      const source = findSnapshotModule(snapshot, sourcePlayerId, data.source_module_id);
-      if (source?.definition_id === "omega_amplifier") {
-        const omegaId = serverModuleDomId(sourcePlayerId, source);
-        const attackId = snapshotModuleDomId(
-          snapshot,
-          data.target_player_id || data.player_id,
-          data.target_module_id
-        );
-        emitSignatureBattleEffect("omega_link", attackId, {
-          links:[[omegaId, attackId]],
-          throttleKey:omegaId,
-        });
-      }
-      return false;
-    }
-    if (!SIGNATURE_EVENT_TYPES.has(type)) {
-      return false;
-    }
 
-    const ownerId = data.player_id;
-    const rivalId = snapshotOpponentId(snapshot, ownerId);
-    const own = (moduleId) => snapshotModuleDomId(snapshot, ownerId, moduleId);
-    const rival = (moduleId) => snapshotModuleDomId(snapshot, rivalId, moduleId);
-    if (type === "quantum_repeat") {
-      const sourceId = own(data.module_id);
-      const targetId = rival(data.target_module_id);
-      emitSignatureBattleEffect("repeat_echo", targetId, {
-        links:[[sourceId, targetId]],
-        label:"YANKI",
-      });
-    } else if (type === "quantum_collapse") {
-      emitSignatureBattleEffect("quantum_charge", own(data.module_id), {
-        label:"ÇÖKÜŞ",
-        arena:Number(data.charge_consumed || 0) >= 20 ? "heavy" : "light",
-      });
-    } else if (type === "swarm_released") {
-      const sourceId = own(data.module_id);
-      const targetIds = (data.target_module_ids || []).map(rival).filter(Boolean);
-      emitSignatureBattleEffect("swarm_release", sourceId, {
-        links:targetIds.map((targetId) => [sourceId, targetId]),
-        label:"SÜRÜ",
-      });
-    } else if (type === "phoenix_rebirth") {
-      // Dirilen modül yeniden düşerse patlaması tekrar oynatılabilsin.
-      destructionFxPlayed.delete(`${ownerId}:${data.target_module_id}`);
-      const sourceId = own(data.source_module_id);
-      const revivedId = own(data.target_module_id);
-      emitSignatureBattleEffect("phoenix_revive", revivedId, {
-        links:[[sourceId, revivedId]],
-        label:"DİRİLİŞ",
-      });
-    } else if (type === "prism_energy_converted") {
-      emitSignatureBattleEffect("prism_shield", own(data.module_id), {
-        label:"PRİZMA",
-      });
-    } else if (type === "sabotage_echo_applied") {
-      const sourceId = snapshotModuleDomId(
-        snapshot,
-        data.attacker_player_id,
-        data.attacker_module_id
-      );
-      const targetId = snapshotModuleDomId(
-        snapshot,
-        data.target_player_id,
-        data.target_module_id
-      );
-      const singularity = data.definition_id === "singularity_projector";
-      emitSignatureBattleEffect(
-        singularity ? "singularity_field" : "disruptor_echo",
-        targetId,
-        {
-          links:[[sourceId, targetId]],
-          label:singularity ? "TEKİLLİK" : "YANKI",
-        }
-      );
-    } else if (type === "signature_secondary_hit") {
-      const sourceId = own(data.module_id);
-      const targetId = snapshotModuleDomId(
-        snapshot,
-        data.target_player_id,
-        data.target_module_id
-      );
-      emitSignatureBattleEffect("secondary_hit", targetId, {
-        links:[[sourceId, targetId]],
-      });
-    } else if (type === "nano_repair_pulse") {
-      const sourceId = own(data.source_module_id);
-      const targetIds = (data.target_module_ids || []).map(own).filter(Boolean);
-      emitSignatureBattleEffect("nano_pulse", sourceId, {
-        links:targetIds.map((targetId) => [sourceId, targetId]),
-      });
-    } else if (type === "chrono_window_started") {
-      emitSignatureBattleEffect("chrono_window", own(data.source_module_id), {
-        label:"KRONOS",
-      });
-    } else if (type === "chrono_debt_started") {
-      emitSignatureBattleEffect("chrono_debt", own(data.source_module_id), {
-        label:"BORÇ",
-      });
-    } else if (type === "core_signature_triggered") {
-      const presentation = CORE_SIGNATURE_PRESENTATION[data.signature_id];
-      const coreId = own(data.module_id)
-        || (ownerId === participantPlayerId ? "core-1" : "enemy-core");
-      if (presentation) {
-        emitSignatureBattleEffect(presentation.effect, coreId, {
-          label:presentation.label,
-        });
-        const ticker = ownerId === participantPlayerId
-          ? presentation.ownTicker
-          : presentation.rivalTicker;
-        if (ticker) {
-          setBattleLiveTicker(ticker, ownerId === participantPlayerId ? "heal" : "danger");
-        }
-      }
-    } else if (type === "module_cycle_pulse" || type === "amplifier_pulse") {
-      const source = findSnapshotModule(snapshot, ownerId, data.module_id);
-      if ((type === "amplifier_pulse" && source?.definition_id === "amplifier")
-        || (type === "module_cycle_pulse" && source?.definition_id === "battery")) {
-        // moduleVfx.receive already owns their physical/canvas pulses. The old
-        // generic ring/link was a second presentation of the same server event.
-        return true;
-      }
-      const sourceId = own(data.module_id);
-      const presentation = CYCLE_PULSE_PRESENTATION[data.kind];
-      if (!presentation) {
-        // Destek darbesi: kaynağın üstünde halka, yüklenen modüllere ince bağ.
-        emitSignatureBattleEffect("cycle_pulse", sourceId, {
-          links:(data.charged_module_ids || []).slice(0, 4).map((moduleId) => [sourceId, own(moduleId)]),
-        });
-      } else {
-        const links = [];
-        if (data.kind === "mirror" && data.attacker_module_id) links.push([sourceId, rival(data.attacker_module_id)]);
-        if (data.kind === "dome_guard" && data.target_module_id) links.push([sourceId, own(data.target_module_id)]);
-        emitSignatureBattleEffect(presentation.effect, sourceId, {
-          links,
-          label:localizedUiText(presentation.label),
-        });
-      }
-    } else if (type === "module_talent_triggered") {
-      emitSignatureBattleEffect("talent", own(data.module_id), {
-        label:talentDisplayName(data).toLocaleUpperCase(uiLocale()),
-      });
-    } else if (type === "core_talent_triggered") {
-      const coreId = own(data.module_id)
-        || (ownerId === participantPlayerId ? "core-1" : "enemy-core");
-      emitSignatureBattleEffect("talent", coreId, {
-        label:talentDisplayName(data).toLocaleUpperCase(uiLocale()),
-      });
-    } else if (type === "attack_windup_started") {
-      const sourceId = own(data.module_id);
-      const targetId = rival(data.target_module_id);
-      const windupMs = Number(data.ready_at_ms) - Number(event.at_ms);
-      emitSignatureBattleEffect("target_lock", targetId, {
-        links:[[sourceId, targetId]],
-        label:"KİLİT",
-        lifetimeMs:Number.isFinite(windupMs) && windupMs > 0
-          ? Math.min(1400, windupMs + 160)
-          : null,
-      });
-    }
-    return true;
-  }
 
   function processLocalServerEvents(
     events,
@@ -12160,21 +11934,9 @@
     requestBattleMotionFrame();
     for (const event of events || []) {
       const data=event.data || {};
-      if (presentSignatureEvent(event, snapshot)) {
-        continue;
-      }
+
       if (event?.type === "battle_emoji") {
         presentBattleEmoji(data.player_id, data.emoji_id);
-        continue;
-      }
-      if (event?.type === "battle_overtime_started") {
-        setBattleLiveTicker(
-          "AŞIRI YÜK · Hasar artıyor, onarım zayıflıyor",
-          "danger"
-        );
-        triggerGridshardCue("warning");
-        battleOvertimeActive = true;
-        syncCriticalCoreAudioState();
         continue;
       }
       if (
@@ -12245,7 +12007,20 @@
           corePowerTargeting=false;
           renderCorePowerControl();
         }
-        triggerGridshardCue("shield_activate");
+        // The dedicated core renderer owns activation and impact audio.
+        continue;
+      }
+      if(event?.type==="circuit_credits_awarded"&&data.reason==="damage_pressure"&&data.player_id===participantPlayerId){
+        const core=snapshot.players?.[data.player_id]?.modules?.find(m=>m.definition_id==="core");
+        if(core)emitServerModuleFeedback(snapshot,data.player_id,core.instance_id,"+1 AKIM","energy");
+        setBattleLiveTicker("Saldırı baskısı: +1 Akım","energy");continue;
+      }
+      if(event?.type==="core_contribution"){
+        if(["damage_boosted","damage_blocked"].includes(data.contribution_kind)){
+          const n=Math.round(Number(data.value||0));
+          if(n>0)emitServerModuleFeedback(snapshot,data.target_player_id,data.target_module_id,
+            `ÇEKİRDEK ${data.contribution_kind==="damage_boosted"?"+":""}${n}`,data.contribution_kind==="damage_boosted"?"hit":"shield");
+        }
         continue;
       }
       if (event?.type === "module_damaged") {
@@ -12280,6 +12055,10 @@
         if (reflectedTarget) {
           pulseBattleFx(serverModuleDomId(data.target_player_id, reflectedTarget), "reflect");
         }
+        continue;
+      }
+      if (event?.type === "module_debuff_removed") {
+        emitServerModuleFeedback(snapshot, data.player_id, data.target_module_id || data.module_id, "ARINDI", "heal");
         continue;
       }
       if (event?.type === "module_repaired") {
@@ -12333,7 +12112,7 @@
         const variants = {
           enerji:"energy",
           sistem:"energy",
-          destek:"heal",
+          taktik:"heal",
           savunma:"defense",
           sabotaj:"sabotage",
         };
@@ -12352,52 +12131,9 @@
         );
         continue;
       }
-      if (event?.type === "module_cooled") {
-        const heatBefore = Number(data.heat_before || 0);
-        const heatAfter = Number(data.heat_after || 0);
-        const reduced = Math.max(0, Math.round((heatBefore - heatAfter) * 10) / 10);
-        emitServerModuleFeedback(
-          snapshot,
-          data.player_id,
-          data.target_module_id,
-          `-${reduced}`,
-          "cool"
-        );
-        continue;
-      }
-      if (event?.type === "module_overclocked") {
-        // Gerçek güç/hız yüzdesi saldırı gerçekleştiğinde sunucunun
-        // module_contribution olayıyla gösterilir.
-        continue;
-      }
-      if (event?.type === "attack_support_applied") {
-        if (Array.isArray(data.contributions) && data.contributions.length > 0) {
-          continue;
-        }
-        const supportBits = [];
-        if (Number(data.damage_multiplier || 1) > 1) {
-          supportBits.push(`+${Math.round((Number(data.damage_multiplier || 1) - 1) * 100)}% GÜÇ`);
-        }
-        if (Number(data.cooldown_multiplier || 1) < 1) {
-          supportBits.push(`+${Math.round((1 - Number(data.cooldown_multiplier || 1)) * 100)}% HIZ`);
-        }
-        if (data.targeting_active) {
-          supportBits.push("+HEDEFLEME");
-        }
-        if (data.overclock_active && supportBits.length === 0) {
-          supportBits.push("Destek");
-        }
-        if (supportBits.length > 0) {
-          emitServerModuleFeedback(
-            snapshot,
-            data.player_id,
-            data.module_id,
-            `${supportBits.join(" · ")} · DESTEK`,
-            "boost"
-          );
-        }
-        continue;
-      }
+
+
+
       if (event?.type === "sabotage_applied") {
         if (data.contribution_event_emitted) {
           continue;
@@ -12415,67 +12151,12 @@
         );
         continue;
       }
-      if (event?.type === "sabotage_blocked") {
-        emitServerModuleFeedback(
-          snapshot,
-          data.target_player_id,
-          data.target_module_id,
-          "SABOTAJ ENGELLENDİ · BARİYER",
-          "defense"
-        );
-        continue;
-      }
-      if (event?.type === "sabotage_cleansed") {
-        emitServerModuleFeedback(
-          snapshot,
-          data.player_id,
-          data.target_module_id,
-          "SABOTAJ TEMİZLENDİ · DESTEK",
-          data.cleanser === "cooler" ? "cool" : "heal"
-        );
-        continue;
-      }
-      if (event?.type === "sabotage_duration_reduced") {
-        const reductionSeconds = Math.max(0, Math.round(Number(data.reduction_ms || 0) / 100) / 10);
-        emitServerModuleFeedback(
-          snapshot,
-          data.player_id,
-          data.target_module_id,
-          `-${reductionSeconds}`,
-          "cool"
-        );
-        continue;
-      }
-      if (event?.type === "attack_skipped_unpowered") {
-        emitServerModuleFeedback(
-          snapshot,
-          data.player_id,
-          data.module_id,
-          "ENERJİ KESİLDİ",
-          "sabotage"
-        );
-        continue;
-      }
-      if (event?.type === "support_skipped_jammed") {
-        emitServerModuleFeedback(
-          snapshot,
-          data.player_id,
-          data.module_id,
-          "SİNYAL BOZULDU · DESTEK DURDU",
-          "sabotage"
-        );
-        continue;
-      }
-      if (event?.type === "module_overheated" || event?.type === "attack_skipped_overheated") {
-        emitServerModuleFeedback(
-          snapshot,
-          data.player_id,
-          data.module_id,
-          "AŞIRI ISI!",
-          "warning"
-        );
-        continue;
-      }
+
+
+
+
+
+
       if (event?.type === "module_destroyed") {
         const owner = snapshot.players?.[data.player_id];
         const destroyedModule = owner?.modules?.find(
@@ -12498,6 +12179,8 @@
         continue;
       }
 
+      if (data.core_attack) continue; // Core shots have one VFX/audio owner in module-vfx.
+      if (["dot","followup","echo"].includes(data.damage_kind)) continue; // Server-timed signature impact; never launch another weapon.
       const attackerIsPlayer=
         data.attacker_player_id
         === participantPlayerId;
@@ -12660,7 +12343,7 @@
     mockEnemyCoreHp=Number(
       enemyCore?.hp || 0
     );
-    mockEnemyCoreMaxHp=Number(enemyCore?.max_hp || 300);
+    mockEnemyCoreMaxHp=Number(enemyCore?.max_hp || CORE_BASE_HP);
     mockEnemyCoreBadges=normalizeSignatureBadges(enemyCore?.signature_badges);
     mockEnemyCoreType=CORE_VISUALS[enemy.core_type] ? enemy.core_type : "core_resonance";
     mockEnemyModules=(
@@ -12692,21 +12375,14 @@
           kind:
             module.category
             || "module",
-          isPowered:Boolean(
-            module.is_powered
-          ),
-          energyReceived:Number(
-            module.energy_received || 0
-          ),
-          energyRequired:Number(
-            module.energy_required || 0
-          ),
-          powerReason:
-            module.power_reason,
-          heat:Number(module.heat || 0),
-          heatPenalty:Number(module.heat_penalty || 0),
-          energyWaiting:Boolean(module.energy_waiting),
-          overheated:Boolean(module.overheated),
+          operational:module.operational !== false,
+
+
+
+
+
+
+
           debuffs:Array.isArray(module.debuffs) ? module.debuffs : [],
           signatureBadges:normalizeSignatureBadges(module.signature_badges),
         })
@@ -12773,14 +12449,14 @@
             destroyed || serverModule.x === null || serverModule.y === null
               ? null
               : {x:Number(serverModule.x), y:Number(serverModule.y)},
-          isPowered:Boolean(serverModule.is_powered),
-          powerReason:serverModule.power_reason,
-          energyReceived:Number(serverModule.energy_received || 0),
-          energyRequired:Number(serverModule.energy_required || 0),
-          heat:Number(serverModule.heat || 0),
-          heatPenalty:Number(serverModule.heat_penalty || 0),
-          energyWaiting:Boolean(serverModule.energy_waiting),
-          overheated:Boolean(serverModule.overheated),
+          operational:serverModule.operational !== false,
+
+
+
+
+
+
+
           debuffs:Array.isArray(serverModule.debuffs) ? serverModule.debuffs : [],
           signatureBadges:normalizeSignatureBadges(serverModule.signature_badges),
         });
@@ -12910,23 +12586,14 @@
                 x:Number(serverModule.x),
                 y:Number(serverModule.y),
               },
-        isPowered:Boolean(
-          serverModule.is_powered
-        ),
-        powerReason:
-          serverModule.power_reason,
-        energyReceived:Number(
-          serverModule.energy_received || 0
-        ),
-        energyRequired:Number(
-          serverModule.energy_required || 0
-        ),
-        heat:Number(
-          serverModule.heat || 0
-        ),
-        heatPenalty:Number(serverModule.heat_penalty || 0),
-        energyWaiting:Boolean(serverModule.energy_waiting),
-        overheated:Boolean(serverModule.overheated),
+        operational:serverModule.operational !== false,
+
+
+
+
+
+
+
         debuffs:Array.isArray(serverModule.debuffs)
           ? serverModule.debuffs
           : [],
@@ -13139,6 +12806,7 @@
   // Sahnedeki bütün geçici efektleri ve bekleyen efekt işlerini bırakır; savaş
   // durumu (tahta, Akım, Çekirdek gücü) yerinde kalır.
   function clearBattleEffects() {
+    clearCoreImpactNotices();
     clearBattleEmojiResources();
     clearBattleDeployments();
     moduleMotion.reset();
@@ -13173,6 +12841,7 @@
   function handleBattleVisibilityChange() {
     syncBattleClockVisibility();
     if (document.hidden) {
+      clearCoreImpactNotices();
       clearBattleEmojiResources();
       clearBattleDeployments();
       moduleMotion.clear();
@@ -13249,10 +12918,10 @@
         position:isCore
           ? {x:2,y:1}
           : initialConfig?.position || null,
-        energyReceived:0,
-        isPowered:true,
-        storedEnergy:0,
-        heat:0,
+
+        operational:true,
+
+
         debuffs:[],
         signatureBadges:[],
       });
@@ -13292,7 +12961,7 @@
       null;
     // Rakip devresi sunucunun ilk anlık görüntüsüyle dolar.
     mockEnemyCoreHp =
-      300;
+      CORE_BASE_HP;
     mockEnemyCoreBadges =
       [];
     mockEnemyCoreType =
@@ -13301,7 +12970,7 @@
       [];
 
     client.applyServerEconomyState({
-      circuitCredits:6,
+      circuitCredits:7,
     });
     client.clearPendingPlacements();
     client.updateElapsedMs(0);
@@ -13563,12 +13232,10 @@
     if (!battleActive) {
       const wasActive =
         criticalCoreAudioRequested
-        || battleMusicPhase !== "intro"
-        || battleOvertimeActive;
+        || battleMusicPhase !== "intro";
       criticalCoreAudioRequested = false;
       battleMusicPhase = "intro";
       battleMusicTension = 0;
-      battleOvertimeActive = false;
       if (wasActive) requestOwnedAudioState("critical_core_inactive");
       return;
     }
@@ -13587,15 +13254,15 @@
       / Math.max(
           1,
           Number(
-            core.maxHp || 300
+            core.maxHp || CORE_BASE_HP
           )
         );
     const enemyRatio =
       Math.max(0, Number(mockEnemyCoreHp || 0))
-      / Math.max(1, Number(mockEnemyCoreMaxHp || 300));
+      / Math.max(1, Number(mockEnemyCoreMaxHp || CORE_BASE_HP));
     const critical = ratio > 0 && ratio <= .33;
     const targetPhase =
-      battleOvertimeActive || ratio <= .6 || enemyRatio <= .4
+      ratio <= .6 || enemyRatio <= .4
         ? "pressure"
         : Number(client.elapsedMs || 0) < BATTLE_MUSIC_INTRO_MS
           ? "intro"
@@ -13643,12 +13310,12 @@
           0,
           Number(core?.hp || 0)
         )
-      }/${core?.maxHp || 300}`
+      }/${core?.maxHp || CORE_BASE_HP}`
     );
 
     setHudText(
       playerBoardStatusEl,
-      `Çekirdek ${Math.max(0,Number(core?.hp||0))}/${core?.maxHp||300} · Enerji %${Math.round(Number(client.energyLoadRatio || 0) * 100)}`
+      `Çekirdek ${Math.max(0,Number(core?.hp||0))}/${core?.maxHp||CORE_BASE_HP}`
     );
 
     const playerSide=
@@ -13664,7 +13331,7 @@
           / Math.max(
               1,
               Number(
-                core?.maxHp || 300
+                core?.maxHp || CORE_BASE_HP
               )
             )
           <= .33
@@ -14392,36 +14059,6 @@
   // ayarı Düşük/Orta iken parçacık ve efekt bütçesi küçülür.
   const SIGNATURE_EFFECTS = Object.freeze({
     kill_confirm:{ priority:4, lifetimeMs:980, particles:8, cue:null },
-    quantum_charge:{ priority:3, lifetimeMs:1180, particles:10, cue:"quantum_charge", arena:"heavy" },
-    phoenix_revive:{ priority:3, lifetimeMs:1280, particles:12, cue:"phoenix_revive", arena:"medium" },
-    singularity_field:{ priority:3, lifetimeMs:1200, particles:10, cue:"singularity_field", arena:"medium" },
-    swarm_release:{ priority:3, lifetimeMs:1040, particles:8, cue:"swarm_release", arena:"light" },
-    prism_shield:{ priority:3, lifetimeMs:900, particles:6, cue:"prism_shield", minRepeatMs:700 },
-    omega_link:{ priority:2, lifetimeMs:820, particles:0, cue:"omega_link", minRepeatMs:1400, cueIntervalMs:1400 },
-    nano_pulse:{ priority:2, lifetimeMs:900, particles:6, cue:"nano_pulse" },
-    chrono_window:{ priority:2, lifetimeMs:1000, particles:6, cue:"chrono_shift" },
-    phase_evade:{ priority:2, lifetimeMs:820, particles:6, cue:"phase_evade", minRepeatMs:400 },
-    target_lock:{ priority:2, lifetimeMs:900, particles:0, cue:"target_lock", cueIntervalMs:500 },
-    disruptor_echo:{ priority:2, lifetimeMs:900, particles:6, cue:"sabotage_echo" },
-    repeat_echo:{ priority:1, lifetimeMs:860, particles:6, cue:"repeat_echo", arena:"light" },
-    chrono_debt:{ priority:1, lifetimeMs:900, particles:0, cue:null },
-    secondary_hit:{ priority:1, lifetimeMs:760, particles:0, cue:null },
-    // Modül imza yeteneği tetiklendi: modülün üstünde yeteneğin adı belirir.
-    talent:{ priority:2, lifetimeMs:1100, particles:6, cue:null, minRepeatMs:900 },
-    // Modül çevrimleri: savunma tepkileri ve destek darbeleri.
-    cycle_block:{ priority:2, lifetimeMs:760, particles:4, cue:null, minRepeatMs:500 },
-    cycle_mirror:{ priority:2, lifetimeMs:820, particles:4, cue:null, minRepeatMs:500 },
-    cycle_dome:{ priority:2, lifetimeMs:820, particles:4, cue:null, minRepeatMs:600 },
-    cycle_guard:{ priority:2, lifetimeMs:900, particles:4, cue:null, minRepeatMs:600 },
-    cycle_pulse:{ priority:1, lifetimeMs:680, particles:0, cue:null, minRepeatMs:900 },
-    // Çekirdek imzaları. Güç kullanımının zaten sesi olduğu için yalnız güç
-    // dışında tetiklenen Doğuş ve Zincir kendi sesini çalar.
-    core_rebirth:{ priority:4, lifetimeMs:1400, particles:14, cue:"core_rebirth", arena:"heavy" },
-    core_last_stand:{ priority:3, lifetimeMs:1100, particles:8, cue:null },
-    core_chain:{ priority:3, lifetimeMs:900, particles:6, cue:"overdrive_chain", arena:"light" },
-    core_static:{ priority:3, lifetimeMs:1100, particles:10, cue:null },
-    core_discharge:{ priority:3, lifetimeMs:1000, particles:8, cue:null },
-    core_half_phase:{ priority:3, lifetimeMs:1000, particles:6, cue:null },
   });
   const signatureEffectLastAt = new Map();
   let signatureEffectsLive = 0;
@@ -15923,12 +15560,10 @@
     category
   ) {
     const labels = {
-      enerji:"Sistem",
-      sistem:"Sistem",
+      çekirdek:"Çekirdek",
       saldırı:"Saldırı",
       savunma:"Savunma",
-      destek:"Destek",
-      sabotaj:"Sabotaj",
+      taktik:"Taktik",
     };
     const value=labels[category]
       || category;
@@ -16120,18 +15755,6 @@
       catalog
     );
 
-    setTextOrDash(
-      poolDetailEnergyGenerationEl,
-      catalog
-        ? `${catalog.energy_generation || 0}/sn`
-        : localizedUiText("Sunucu kataloğu bekleniyor")
-    );
-    setTextOrDash(
-      poolDetailEnergyConsumptionEl,
-      catalog
-        ? `${catalog.energy_consumption || 0}/sn`
-        : localizedUiText("Sunucu kataloğu bekleniyor")
-    );
     setTextOrDash(
       poolDetailDamageEl,
       catalog
@@ -16837,6 +16460,7 @@
     const refresh = () => {
       battleLayoutRefreshQueued = false;
       fitCircuitScene();
+      fitBattleShelfNames();
       if (board) renderBoardCables(board, playerCircuitCableModules());
       if (enemyBoard) renderBoardCables(enemyBoard, enemyCircuitCableModules());
       positionCircuitVs();
@@ -17004,7 +16628,7 @@
     const core=live.find(m=>m.definitionId==="core" || m.nameTr==="Çekirdek");
     const fedCells=new Set(),energizedEdges=new Set();
     if(core)for(const m of live){
-      if(m!==core && m.isPowered===false)continue;
+      if(m!==core && m.operational===false)continue;
       const key=cablePositionKey(m.position);fedCells.add(key);
       if(m!==core)energizedEdges.add(key);
     }
@@ -17107,7 +16731,7 @@
       state.fedSignature=signature;
       for(const cell of boardElement.querySelectorAll(".board-cell")){
         const fed=fedCells.has(`${cell.dataset.x},${cell.dataset.y}`);
-        cell.classList.toggle("energy-fed-cell",fed);cell.dataset.energyFed=String(fed);
+        cell.classList.toggle("circuit-active-cell",fed);cell.dataset.circuitActive=String(fed);
       }
     }
     if(coreKey && !state.routeCache.has(coreKey))state.routeCache.set(coreKey,shortestCircuitPaths(state.graph,coreKey));
@@ -17133,7 +16757,7 @@
       hp:mockEnemyCoreHp,
       status:"active",
       position:{x:2,y:1},
-      isPowered:mockEnemyCoreHp > 0,
+      operational:mockEnemyCoreHp > 0,
     };
     const deployed=mockEnemyModules.map((module) => {
       const definition=moduleDefinitions.find(
@@ -17201,99 +16825,25 @@
   }
 
 
-  // Isı barı kartın üst kenarında durur: CAN barından ince, iki yandan içeride
-  // ve termometre gibi sarıdan kırmızıya ilerler. Isı yüzdedir: %40 (üstünde
-  // her %5 modülü %5 yavaşlatır) ve %70 (yüksek ısı; susmuş modül bunun altında
-  // yeniden çalışır) çentikle işaretlidir; bar %100'de dolar ve modül susar.
-  // Isısı olmayan kartta çizilmez.
-  const MODULE_MAX_HEAT = 100;
-  const MODULE_HEAT_SLOWDOWN_START = 40;
-  const MODULE_HEAT_SLOWDOWN_STEP = 5;
-  const MODULE_HEAT_HIGH = 70;
-  // Isı eylem modüllerinin aralığını uzatır, sürekli sistemlerin etkisini düşürür.
-  const HEAT_ACTION_DEFINITION_IDS = new Set(["repair", "nano_medic", "phoenix_repair"]);
-
-  function moduleHeatPenaltyPercent(moduleLike) {
-    const reported = Number(moduleLike?.heatPenalty);
-    if (Number.isFinite(reported) && reported > 0) return Math.round(reported);
-    const heat = Math.min(MODULE_MAX_HEAT, Math.max(0, Number(moduleLike?.heat || 0)));
-    if (heat < MODULE_HEAT_SLOWDOWN_START + MODULE_HEAT_SLOWDOWN_STEP) return 0;
-    return Math.floor((heat - MODULE_HEAT_SLOWDOWN_START) / MODULE_HEAT_SLOWDOWN_STEP) * 5;
-  }
-
-  function moduleHeatEffectLabel(moduleLike) {
-    const penalty = moduleHeatPenaltyPercent(moduleLike);
-    if (penalty <= 0) return "";
-    const category = String(moduleLike?.category || moduleLike?.kind || "");
-    if (category === "saldırı") return `Atış aralığı +%${penalty}`;
-    if (category === "sabotaj" || HEAT_ACTION_DEFINITION_IDS.has(String(moduleLike?.definitionId || ""))) {
-      return `Eylem aralığı +%${penalty}`;
-    }
-    return `Etki -%${Math.round(100 - 100 / (1 + penalty / 100))}`;
-  }
-
-
-  // Beta.72 — kart üstü imza rozetleri. Başlıklar sabit metindir (çeviri
-  // sözlüğünden geçer); sayı yalnız rozetin kendi yazısındadır.
   const SIGNATURE_BADGE_KINDS = Object.freeze({
-    repeat:{
-      label:(badge) => `↻${badge.value}/${badge.max}`,
-      title:"Kuantum Tekrar · aynı hedefe 4. vuruşta yankı",
-    },
-    swarm:{
-      label:(badge) => `✥${badge.value}/${badge.max}`,
-      title:"Sürü deposu · 4 dronda toplu salınım",
-    },
-    quantum:{
-      label:(badge) => `◎${badge.value}%`,
-      title:"Kuantum yükü · sonraki atışta boşalır",
-    },
-    lock:{
-      label:() => "⌖",
-      title:"Hedefe kilitleniyor",
-    },
-    chrono:{
-      label:(badge) => (badge.phase === "debt" ? "⧗−" : "⧗+"),
-      title:(badge) => (
-        badge.phase === "debt"
-          ? "Kronos borcu · saldırılar yavaşladı"
-          : "Kronos penceresi · saldırılar hızlandı"
-      ),
-    },
-    phase:{
-      label:() => "FAZ",
-      title:"Faz penceresi · saldırılar boşa çıkar",
-    },
-    resonance:{
-      label:(badge) => `Ω${badge.value}`,
-      title:"Omega rezonansı · devredeki farklı kategori sayısı",
-    },
-    focus:{
-      label:(badge) => `⊕${badge.value}`,
-      title:"Hassas odak · aynı hedefe art arda vuruş",
-    },
-    reborn:{
-      label:() => "✦",
-      title:"Anka ile dirildi · yeniden diriltilemez",
-    },
-    ember:{
-      label:() => "✹",
-      title:"Küllerden Doğuş hazır · Çekirdek bir kez yok olmaz",
-    },
-    static:{
-      label:(badge) => `⚡${badge.value}/${badge.max}`,
-      title:"Statik Birikim · Kesinti gücü uzuyor",
-    },
-    last_stand:{
-      label:() => "◆",
-      title:"Son Hat · Muhafız kalkanı güçlü",
-    },
-    chain:{
-      label:(badge) => `⛓${badge.value}`,
-      title:"Zincir · Aşırı Yük uzadı",
-    },
+    plasma_dot:{label:b => `◉${b.value}`,title:"Plazma İzi: kalan süreli hasar darbeleri; Arındırıcı silebilir"},
+    fuse:{label:() => "⌛",title:"Takip füze yükü: aynı hedefte patlar; Arındırıcı silebilir"},
+    control_guard:{label:() => "◇",title:"Arındırma koruması: sonraki kesinti veya yavaşlatma daha kısa"},
+    execution:{label:b => `✕${b.value}s`,title:"İmha İşareti: Arındırıcı silebilir; faz engeller"},
+    core_firing:{label:b => `🔥${b.value}s`,title:"Çekirdek kendisi ateş ediyor"},
+    repeat:{label:b => `↻${b.value}/${b.max}`,title:"Aynı hedefte dördüncü vuruş daha güçlü"},
+    regeneration:{label:() => "+CAN",title:"Yenilenme sürüyor; aynı hedefte birikmez"},
+    quantum_guard:{label:b => `◇${b.value}`,title:"Kuantum Perdesi: engellenecek isabet"},
+    lock:{label:() => "⌖",title:"Atışa hazırlanıyor"},
+    phase:{label:() => "FAZ",title:"Faz açık: gelen vuruşu engeller"},
+    charged:{label:b => `✦${b.value}`,title:"Çekirdek: sonraki atışlar güçlendi"},
+    boost:{label:b => `+${b.value || 25}%`,title:"Sonraki atış güçlendi"},
+    speed:{label:() => "»",title:"Sonraki atıştan sonra daha hızlı dolar"},
+    shield:{label:b => `◆${b.value}`,title:"Kalan CAN kalkanı"},
+    paused:{label:() => "Ⅱ",title:"Geçici kesinti: modül durdu"},
+    slowed:{label:() => "↓",title:"Yavaşlatıldı: dolumu daha uzun"},
   });
-  const SIGNATURE_BADGE_LIMIT = 2;
+  const SIGNATURE_BADGE_LIMIT = 3;
 
   function normalizeSignatureBadges(badges) {
     if (!Array.isArray(badges)) return [];
@@ -17323,7 +16873,6 @@
       }
       else mountModuleEmblem(icon, model.module);
     },
-    onTooltip:updateShelfTooltipPlacement,
   });
 
   function battleUiText(value) {
@@ -17332,36 +16881,16 @@
   }
 
   function battleCardModel(moduleLike, { enemy=false }={}) {
-    const name = GridshardModuleDeviceArt.idFor(moduleLike) === "armor"
-      ? "Sönümleyici" : moduleLike.nameTr ?? moduleLike.name ?? "";
+    const name = moduleLike.nameTr ?? moduleLike.name ?? "";
     const core = moduleLike.definitionId === "core" || moduleLike.kind === "core" || name === "Çekirdek";
     const coreDestroyed = core && Number(moduleLike.hp) <= 0;
     const coreType = enemy ? mockEnemyCoreType : metaProgressionState?.cores?.selected_core_type || "core_resonance";
-    const received = Math.max(0, Number(moduleLike.energyReceived || 0));
-    const required = Math.max(0, Number(moduleLike.energyRequired || 0));
-    const flowing = core ? moduleLike.isPowered && received > 0 : moduleLike.isPowered && required > 0 && received > 0;
-    let powerMessage = "";
-    if (!flowing && required > 0) powerMessage = battleUiText({
-      emp_disabled:"EMP etkisi bu modülün enerji sistemini devre dışı bıraktı.",
-      singularity_disabled:"Tekillik bu modülü kısa süreliğine durdurdu; modül hâlâ hedef alınabilir.",
-      core_support_disabled:"Rakip Çekirdek gücü bu desteği kısa süreliğine durdurdu.",
-      line_disrupted:"Kesici etkisi bu modülün enerji hattını geçici olarak kopardı.",
-      insufficient_supply:"Çekirdek enerji ihtiyacı: " + required.toFixed(1) + " Ü, gelen: " + received.toFixed(1) + " Ü.",
-      waiting_energy:"Enerji rezervi bu modülün sıradaki eylemine yetmiyor; enerji birikince ateşler.",
-    }[moduleLike.powerReason] || "Bu modül devre dışı. Sabotaj etkilerini ve Çekirdek enerji baskısını kontrol edin.");
-    const heat = Math.min(MODULE_MAX_HEAT, Math.max(0, Number(moduleLike.heat || 0)));
-    const heatEffect = moduleHeatEffectLabel(moduleLike);
-    const heatText = "Isı %" + Math.round(heat);
+
     const liveBadges = [];
     const addLive = (key, label, kind, title) => liveBadges.push({
       key, label, className:"module-live-status " + kind, title:battleUiText(title),
     });
-    if (moduleLike.overheated) addLive("heat", "♨", "heat-critical overheated",
-      "Aşırı ısındı · " + heatText + " · %70'in altına inince yeniden çalışır");
-    else if (heat >= MODULE_HEAT_HIGH) addLive("heat", "♨", heat >= MODULE_MAX_HEAT ? "heat-critical" : "heat-high",
-      heatEffect ? heatText + " · " + heatEffect : heatText);
-    if (moduleLike.energyWaiting) addLive("waiting", "ϟ", "energy-waiting", "Enerji bekliyor · enerji sırası gelince çalışır");
-    const debuffs = (Array.isArray(moduleLike.debuffs) ? moduleLike.debuffs : []).filter(id => id !== "overheated");
+    const debuffs = (Array.isArray(moduleLike.debuffs) ? moduleLike.debuffs : []);
     if (debuffs.length) addLive("debuff", "!" + (debuffs.length > 1 ? debuffs.length : ""), "debuffed", "Aktif olumsuz etki: " + debuffs.join(", "));
     const signatureBadges = normalizeSignatureBadges(moduleLike.signatureBadges).map((badge, index) => {
       const kind = SIGNATURE_BADGE_KINDS[badge.kind];
@@ -17381,12 +16910,11 @@
       category:moduleLike.category ?? moduleLike.kind ?? "", name:battleUiText(name),
       shortName:battleUiText(moduleShortNameFor(moduleLike)), title:battleUiText(title),
       artwork:core ? "core:" + coreType + (coreDestroyed ? ":wreck" : "") : (moduleLike.definitionId || "") + ":" + name + ":" + physical,
-      hp:moduleLike.hp, maxHp:moduleLike.maxHp, heat, overheated:Boolean(moduleLike.overheated),
+      hp:moduleLike.hp, maxHp:moduleLike.maxHp,
       coreCharge, coreReady:corePowerReady && !coreDestroyed,
       coreLabel:coreDestroyed ? battleUiText("Çekirdek enkazı") : core && !enemy ? battleUiText("Çekirdek gücü · " + (corePowerReady ? "Hazır" : "%" + coreCharge)) : "",
-      powerState:flowing ? "flowing" : required > 0 ? "disconnected" : "passive", powerMessage,
-      heatState:moduleLike.overheated ? "overheated" : heat >= 100 ? "critical" : heat >= 70 ? "high" : heat >= 45 ? "slowed" : "warm",
-      heatLabel:battleUiText(moduleLike.overheated ? "Aşırı ısındı · " + heatText : heatEffect ? heatText + " · " + heatEffect : heatText),
+
+
       liveBadges, signatureBadges,
     };
   }
@@ -17414,14 +16942,7 @@
       moduleLike.status ?? "active",
       moduleLike.hp,
       moduleLike.maxHp,
-      Math.round(Number(moduleLike.heat || 0)),
-      moduleLike.heatPenalty || 0,
-      Boolean(moduleLike.overheated),
-      Boolean(moduleLike.energyWaiting),
-      moduleLike.isPowered,
-      Math.round(Number(moduleLike.energyReceived || 0) * 10),
-      Math.round(Number(moduleLike.energyRequired || 0) * 10),
-      moduleLike.powerReason || "",
+      moduleLike.operational,
       moduleLike.debuffs || [],
       moduleLike.signatureBadges || [],
     ]);
@@ -20343,52 +19864,7 @@
     };
   }
 
-  const LIVE_UTILITY_CATEGORIES = new Set([
-    "savunma", "destek", "enerji", "sabotaj",
-  ]);
-  const LIVE_CATEGORY_LIMITS = Object.freeze({
-    savunma:3,
-    destek:3,
-    enerji:3,
-    sabotaj:3,
-  });
-
-  function normalizeBattleCategory(category) {
-    return category === "sistem" ? "enerji" : category;
-  }
-
-  function deploymentCompositionRejection(module) {
-    if (!module || !LIVE_UTILITY_CATEGORIES.has(normalizeBattleCategory(module.category))) return null;
-    const definitionId = module.definitionId || clientDefinitionId(module.instanceId);
-    const active = [...client.modules.values()].filter((candidate) => (
-      candidate.status === "active"
-      && Number(candidate.hp || 0) > 0
-      && (candidate.definitionId || clientDefinitionId(candidate.instanceId)) !== "core"
-    ));
-    const sameDefinitionCount = active.filter((candidate) => (
-      (candidate.definitionId || clientDefinitionId(candidate.instanceId)) === definitionId
-    )).length;
-    if (sameDefinitionCount >= 2) {
-      return `${module.nameTr} için aynı anda en fazla 2 kopya kullanılabilir.`;
-    }
-    const categoryCount = active.filter(
-      (candidate) => normalizeBattleCategory(candidate.category) === normalizeBattleCategory(module.category)
-    ).length;
-    const categoryLimit = LIVE_CATEGORY_LIMITS[normalizeBattleCategory(module.category)];
-    if (categoryCount >= categoryLimit) {
-      return `${poolCategoryLabel(module.category)} sınırı dolu: ${categoryCount}/${categoryLimit}.`;
-    }
-    const attackCount = active.filter(
-      (candidate) => candidate.category === "saldırı"
-    ).length;
-    const utilityCount = active.filter(
-      (candidate) => LIVE_UTILITY_CATEGORIES.has(normalizeBattleCategory(candidate.category))
-    ).length;
-    if (utilityCount + 1 > attackCount + 2) {
-      return "Devre dengesi için önce bir Saldırı modülü yerleştir.";
-    }
-    return null;
-  }
+  function deploymentCompositionRejection() { return null; }
 
   function battleDeploymentMotionAllowed() {
     return !document.hidden && document.body.dataset.appScreen === 'play'
@@ -20520,12 +19996,10 @@
   function renderShelf() {
     const placement = modulePlacementSlotState();
     const deckModules = battleDeckInstanceIds().map(id => client.modules.get(id)).filter(Boolean);
-    const discounted = Number(client.currentDiscountRemaining || 0) > 0;
-    const costFor = m => Math.max(1, Number(m.currentCost) - (discounted ? 1 : 0));
+    const costFor = m => Number(m.currentCost);
     const signature = JSON.stringify([
       placement.ready,
       client.circuitCredits,
-      discounted,
       deckModules.map(m => m.instanceId),
       [...client.modules.values()]
         .filter((module) => module.status === "active" && Number(module.hp || 0) > 0)
@@ -20559,6 +20033,7 @@
       if (!enabled) card.classList.add("locked", "placement-locked");
       shelf.appendChild(card);
     }
+    fitBattleShelfNames();
   }
 
   function renderBoard(
@@ -20579,14 +20054,14 @@
         position:module.position,
         hp:module.hp,
         maxHp:module.maxHp,
-        heat:module.heat,
-        heatPenalty:module.heatPenalty,
-        overheated:module.overheated,
-        energyWaiting:module.energyWaiting,
-        isPowered:module.isPowered,
-        energyReceived:module.energyReceived,
-        energyRequired:module.energyRequired,
-        powerReason:module.powerReason,
+
+
+
+
+        operational:module.operational,
+
+
+
         debuffs:module.debuffs,
         signatureBadges:module.signatureBadges,
       })),
@@ -20652,6 +20127,28 @@
     element.textContent = text;
     if (text.length >= 11) element.dataset.long = "true";
   }
+
+  let shelfNameMeasureContext = null;
+  function fitBattleShelfNames() {
+    if (!shelf) return;
+    const names = [...shelf.querySelectorAll('.deck-module-card > .name')].filter(name => name.clientWidth > 0);
+    if (!names.length) return;
+    shelfNameMeasureContext ||= document.createElement('canvas').getContext('2d');
+    if (!shelfNameMeasureContext) return;
+    shelfNameMeasureContext.font = `700 8px ${getComputedStyle(names[0]).fontFamily}`;
+    // Read all widths before writing sizes. This runs on shelf/layout changes,
+    // never on an animation clock, and reuses one measurement canvas.
+    const layouts = names.map(name => {
+      const available = Math.max(1, name.parentElement.clientWidth - 2);
+      const width = Math.max(available, Math.ceil(shelfNameMeasureContext.measureText(name.textContent).width) + 1);
+      return {width, scale:Math.floor(Math.min(1, available / width) * 10000) / 10000};
+    });
+    names.forEach((name, index) => {
+      name.style.setProperty('width', `${layouts[index].width}px`);
+      name.style.setProperty('--shelf-name-scale', layouts[index].scale);
+    });
+  }
+  document.fonts?.ready.then(() => fitBattleShelfNames());
 
   function createModuleCard(module) {
     const card = battleCardStateView.create(battleCardModel(module));
@@ -20748,7 +20245,7 @@
     } else {
       setHudText(shelfHelp, placement.available <= 0
         ? "Devre dolu; boş hücre açılınca yerleştirebilirsin."
-        : "Akım yenileniyor: 2,5 saniyede +1.");
+        : "Akım yenileniyor: 3 saniyede +1.");
     }
   }
 
@@ -20765,45 +20262,24 @@
     if (entry.kind === "module_repaired") {
       return `Onarım · +${entry.repair} Can`;
     }
-    if (entry.kind === "module_cooled") {
-      return `Soğutma · Isı ${Math.round(entry.heatBefore)} → ${Math.round(entry.heatAfter)}`;
-    }
-    if (entry.kind === "module_overclocked") {
-      return `Aşırı Hızlandırma · saldırı temposu arttı`;
-    }
-    if (entry.kind === "module_heat_changed") {
-      const before = Number(entry.heatBefore || 0);
-      const after = Number(entry.heatAfter || 0);
-      if (Math.abs(after - before) < 10) return "";
-      return `Isı · ${Math.round(before)} → ${Math.round(after)}`;
-    }
-    if (entry.kind === "module_overheated") {
-      return `AŞIRI YÜK · ${entry.selfDamage} öz hasar`;
-    }
-    if (entry.kind === "attack_skipped_overheated") {
-      return `Saldırı engellendi: kritik ısı`;
-    }
+
+
+
+
+
     if (entry.kind === "sabotage_applied") {
       return `Sabotaj uygulandı · ${entry.effectId || entry.effect_id}`;
     }
     if (entry.kind === "virus_damage") {
       return `Virüs: ${entry.damage} hasar`;
     }
-    if (entry.kind === "support_skipped_jammed") {
-      return `Destek engellendi · Sinyal Bozma`;
-    }
+
     if (entry.kind === "sabotage_resisted") {
       return `Sabotaj direnci çalıştı`;
     }
-    if (entry.kind === "sabotage_blocked") {
-      return `Sabotaj engellendi`;
-    }
-    if (entry.kind === "sabotage_cleansed") {
-      return `Sabotaj temizlendi · ${entry.effectId || entry.effect_id}`;
-    }
-    if (entry.kind === "sabotage_duration_reduced") {
-      return `Sabotaj süresi azaltıldı`;
-    }
+
+
+
     if (entry.kind === "battle_finished") {
       if (entry.isDraw || entry.is_draw) return `MAÇ BİTTİ · Berabere`;
       return `MAÇ BİTTİ · Kazanan ${entry.winnerPlayerId || entry.winner_player_id}`;
@@ -20938,7 +20414,6 @@
   const BATTLE_HUD_RENDER_INTERVAL_MS = 250;
   let lastBattleHudRenderAt = -Infinity;
   let renderedClockText = null;
-  let renderedClockOvertime = null;
 
   function requestBattleMotionFrame() {
     // Effects can wake us from inside tick(). The current frame owns that
@@ -21143,13 +20618,7 @@
       renderedClockText = clockText;
       timeEl.textContent = clockText;
     }
-    const overtime =
-      elapsedMs >= 180000
-      && (localServerAuthoritative || activePlayMode === "online");
-    if (overtime !== renderedClockOvertime) {
-      renderedClockOvertime = overtime;
-      timeEl.classList.toggle("is-overtime", overtime);
-    }
+
 
     renderLockState();
     renderCapacity();
@@ -22415,12 +21884,7 @@
         emitFloatingBattleFeedback(moduleId, text, variant),
       emitModuleExplosion,
       // Presentation-only activation preview; same handler as server events.
-      previewCoreActivation:(effectKind="energy")=>{
-        if(!["heal","attack","sabotage","defense","energy","hybrid"].includes(effectKind))return false;
-        presentCorePowerActivation(pvpState.snapshot || localServerState.snapshot || {players:[]},
-          {player_id:participantPlayerId,effect_kind:effectKind,power_id:"core_capacitor",affected_targets:[]});
-        return true;
-      },
+
       // Presentation-only death/rebirth preview; never mutates authoritative
       // modules, rewards or the server. Removed with this API in production.
       previewCoreState:({hp=0}={})=>{
@@ -22469,7 +21933,7 @@
   // burada adımlar ve uygulama bağlamı tanımlanır.
   //
   // İlk savaşı sunucu sahne sahne yönetir (server/app/game/tutorial.py):
-  // oyuncu okurken savaş durur; sahne anlık görüntüdeki `tutorial` alanıyla
+  // savaş okuma beklemeden sürer; sahne anlık görüntüdeki `tutorial` alanıyla
   // gelir, "İLERİ" sunucuya `tutorial_ack` komutuyla bildirilir. İlk savaş
   // normal Arena maçıdır. Eğitim Ayarlar'dan yeniden başlatıldığında aynı
   // savaş eğitim maçı olarak oynanır: kupa ve ödül vermez, oyuncu Başlangıç
@@ -22509,7 +21973,7 @@
     {
       id:"current",
       title:"Akım",
-      body:"Kart oynamak Akım harcar; Akım zamanla dolar. Kartın altındaki sayı bedelidir.",
+      body:"7 Akımla başlarsın; her 3 saniyede +1 gelir. Saldırı modüllerin 100 hasar verdiğinde VE Savunma modüllerin 50 CAN kaybettiğinde ek +1 Akım kazanırsın.",
       target:"#shelf-credit-indicator",
       when:(context) => context.battle,
     },
@@ -22525,21 +21989,21 @@
     {
       id:"auto",
       title:"Modüller kendi savaşır",
-      body:"Yerleşen modüller kendiliğinden saldırır, savunur ya da enerji üretir. Saldırı, savunma ve desteği dengeli kur.",
+      body:"Saldırı vurur, Savunma korur, Taktik avantaj sağlar. Modüller kendiliğinden çalışır.",
       target:"#board",
       when:(context) => context.battle,
     },
     {
       id:"core-power",
       title:"Çekirdek Gücü",
-      body:"Düğme dolunca dokun: Çekirdeğinin özel gücü savaşın gidişini değiştirir.",
+      body:"Düğme dolunca dokun. Çekirdeğin kendisi ateş eder, imha işareti koyar veya takviye çağırır; bildirim gerçek katkısını gösterir.",
       target:"#core-power-button",
       when:(context) => context.battle,
     },
     {
       id:"finish",
       title:"Hazırsın",
-      body:"3. dakikadan sonra Devre Gerilimi başlar ve saldırılar hızlanır. İyi savaşlar!",
+      body:"Savaşın süre sınırı yok. Rakibin Çekirdeğini yok eden kazanır.",
       target:null,
       when:(context) => context.battle,
     },
@@ -22597,116 +22061,11 @@
   // tutorial.STAGES ile aynıdır; hedefi sunucunun `deploy` ve `focus` alanları
   // ya da buradaki `target` belirler.
   const DIRECTED_BATTLE_STAGES = Object.freeze({
-    arena:{
-      title:"Savaş alanı",
-      body:"Üstteki devre rakibin, alttaki senin. Ortadaki elmas Çekirdek: rakibin Çekirdeğini yok eden kazanır.",
-      target:() => document.getElementById("enemy-board"),
-    },
-    current:{
-      title:"Akım",
-      body:"Kart oynamak Akım harcar; Akım zamanla dolar. Kartın altındaki sayı o kartın bedelidir.",
-      target:() => document.getElementById("shelf-credit-indicator"),
-    },
-    deploy_laser:{
-      title:"İlk modülün",
-      body:"Lazer kartına dokun. Kart devrende boş bir hücreye kendiliğinden yerleşir.",
-    },
-    watch_laser:{
-      title:"Lazer ateş ediyor",
-      body:"Modüller kendiliğinden savaşır. Lazerin rakibin Çekirdeğine ateş ediyor.",
-    },
-    type_attack:{
-      title:"Saldırı modülleri",
-      body:"Lazer bir SALDIRI modülüdür: rakibin modüllerine ve Çekirdeğine hasar verir. Maçı saldırı modülleri kazandırır.",
-      target:() => onboardingShelfCard("laser"),
-    },
-    type_defense:{
-      title:"Savunma modülleri",
-      body:"Kalkan bir SAVUNMA modülüdür. Rakip önce savunma modüllerine ateş eder; Kalkan hasarı emer, diğer modüllerin ayakta kalır.",
-      target:() => onboardingShelfCard("shield"),
-    },
-    type_support:{
-      title:"Destek modülleri",
-      body:"Soğutucu ısınan modülleri soğutur, Güçlendirici saldırı gücünü artırır. Bunlar DESTEK modülleridir.",
-      target:() => document.getElementById("module-shelf"),
-      emphasize:() => ["cooler", "amplifier"].map(onboardingShelfCard),
-    },
-    type_sabotage:{
-      title:"Sabotaj modülleri",
-      body:"EMP bir SABOTAJ modülüdür: rakibin enerji ve destek hatlarını kısa süre aksatır.",
-      target:() => onboardingShelfCard("emp"),
-    },
-    type_system:{
-      title:"Sistem modülleri",
-      body:"Batarya bir SİSTEM modülüdür: devrene ek enerji sağlar. Devren büyüdükçe enerji ihtiyacın artar.",
-      target:() => onboardingShelfCard("battery"),
-    },
-    limits:{
-      title:"Devre sınırları",
-      body:[
-        "Devrende Çekirdek dışında 14 hücre var.",
-        "Savunma, Destek ve Sistem modüllerinden aynı anda en çok 3'er tane, aynı karttan en çok 2 tane kurabilirsin.",
-        "Saldırı dışı modüllerin sayısı, saldırı modüllerini en fazla 2 geçebilir.",
-      ],
-      target:() => document.getElementById("board"),
-    },
-    hp_bar:{
-      title:"Can çubuğu",
-      body:"Her modülün altındaki yeşil çubuk CAN'ıdır. Hasar aldıkça kısalır; bitince modül yok olur.",
-    },
-    heat_bar:{
-      title:"Isı çubuğu",
-      body:"Üstteki çubuk ISI'dır. Modül çalıştıkça ısınır; ısı %100'e ulaşınca modül susar ve soğuyana kadar çalışmaz. Lazerin aşırı ısındı: ateş edemiyor!",
-    },
-    deploy_cooler:{
-      title:"Soğutucu",
-      body:"Soğutucu kartına dokun; ısınan modüllerini soğutur.",
-    },
-    watch_cooler:{
-      title:"Lazer soğuyor",
-      body:"Soğutucu Lazeri soğutuyor; birazdan yeniden ateş edecek.",
-    },
-    enemy_attack:{
-      title:"Rakip saldırıyor!",
-      body:"Rakip bir Lazer kurdu ve modüllerine ateş ediyor.",
-    },
-    deploy_shield:{
-      title:"Kalkan",
-      body:"Soğutucunun canı azaldı. Kalkan kartına dokun; rakibin ateşini üstüne çeker.",
-    },
-    watch_shield:{
-      title:"Kalkan koruyor",
-      body:"Rakip artık Kalkana ateş ediyor. Kalkan hasarı emiyor; Soğutucun güvende.",
-    },
-    energy_low:{
-      title:"Enerji azaldı",
-      body:"Devren büyüdü; modüllerin enerji bekliyor.",
-    },
-    deploy_battery:{
-      title:"Batarya",
-      body:"Modüller enerjiyle çalışır; ϟ işareti enerji bekleyen modülü gösterir. Batarya kartına dokun; devrene enerji sağlar.",
-    },
-    watch_battery:{
-      title:"Enerji geldi",
-      body:"Batarya devreni besliyor; modüllerin yeniden çalışıyor.",
-    },
-    enemy_boost:{
-      title:"Rakip güçlendi",
-      body:"Rakip devresine Kalkan ve Güçlendirici ekledi: artık daha dayanıklı ve daha sert vuruyor. Sen de devreni güçlendir.",
-      target:() => document.getElementById("enemy-board"),
-    },
-    deploy_laser_2:{
-      title:"Devre dengesi",
-      body:"Güçlendirici için önce saldırı gücün artmalı: saldırı dışı modüller, saldırı modüllerini en fazla 2 geçebilir. İkinci bir Lazer koy.",
-    },
-    deploy_amplifier:{
-      title:"Güçlendirici",
-      body:"Güçlendirici kartına dokun; Lazerlerinin hasarını artırır.",
-    },
-    finale:{
-      title:"Sıra sende!",
-      body:"Akımın doldukça kart oyna ve rakibin Çekirdeğini yok et!",
-    },
+    deploy_laser:{title:"Kartına dokun",body:"7 Akımla başlarsın. Karta dokun; boş hücre otomatik seçilir.",target:() => onboardingShelfCard("laser")},
+    watch_laser:{title:"Devren savaşıyor",body:"Saldırı hasar verir, Savunma korur, Taktik avantaj sağlar. Modüller kendiliğinden çalışır.",target:() => document.getElementById("enemy-board")},
+    deploy_defense:{title:"Saldırıya Savunma ekle",body:"Savunma kartını da kullan. Saldırın vururken Savunman CAN kaybetsin; ikisi birlikte ek Akım sağlar.",target:() => onboardingShelfCard("shield")},
+    current_pressure:{title:"İki koşul, +1 Akım",body:"Her 3 saniyede +1 Akım gelir. Saldırı modüllerin 100 hasar verdiğinde VE Savunma modüllerin 50 CAN kaybettiğinde ek +1 kazanırsın. Engellenen hasar sayılmaz.",target:() => document.getElementById("shelf-credit-indicator")},
+    core_power:{title:"Sıra kahramanında",body:"Çekirdek gücü dolunca dokun; hedefini kendisi seçer. Çekirdeğine göre doğrudan ateş eder, rakibi imha eder veya destenden takviye çağırır.",target:() => document.getElementById("core-power-button")},
   });
   // Serbest oyunda kart oyuncunun önünü kapatmaz; bir süre sonra kaybolur.
   const DIRECTED_FINALE_BANNER_MS = 9000;
@@ -22737,9 +22096,10 @@
         ? onboardingShelfCard(stage.deploy)
         : copy.target ? copy.target() : onboardingBoardCard(stage.focus),
       emphasize:copy.emphasize ? copy.emphasize() : [],
-      mode:stage.kind === "ack" ? "next" : deploy ? "tap" : "wait",
+      mode:"next",
+      nextLabel:"GEÇ",
       shade:stage.kind === "watch" ? "none" : "soft",
-      blocking:!finale,
+      blocking:false,
       stuck:"release",
       onNext:() => sendTutorialAcknowledgement(stage.stage),
       // Sunucu sahneyi değiştirene kadar ikinci dokunuş ikinci kart koymasın.
@@ -23070,7 +22430,9 @@
 
   // İlk savaş yönetmenli istenir; yalnız akış savaş adımına geldiyse.
   function onboardingWantsDirectedBattle() {
-    return onboardingFlow.active && onboardingFlow.currentStep()?.id === "battle";
+    return (onboardingFlow.active && onboardingFlow.currentStep()?.id === "battle")
+      || (!ONBOARDING_AUTOMATION_OPT_OUT && !onboardingFlow.isCompleted()
+          && statisticsState.viewModel()?.totalMatches === 0);
   }
 
   // Yönetmensiz ilk savaşta eski ipucu kartları gösterilir.
@@ -23111,25 +22473,14 @@
       onboardingFlow.startAt("battle");
     }
     if (!onboardingFlow.active) {
-      // Yalnız hiç maç bitirmemiş oyuncu; istatistik sunucudan gelmeden başlamaz.
-      if (
-        ONBOARDING_AUTOMATION_OPT_OUT
-        || onboardingFlow.isCompleted()
-        || participantBootstrapResult?.ok !== true
-        || startupLoading?.active
-        || (startupLoading?.root && !startupLoading.root.hidden)
-        || !context.hub
-        || context.inMatchFlow
-      ) {
-        return;
-      }
-      const totalMatches = statisticsState.viewModel()?.totalMatches;
-      if (totalMatches !== 0) {
-        // Yarıda kalan akış ilk maçtan sonra sürdürülmez; izi kapatılır.
-        if (totalMatches > 0 && onboardingFlow.read(ONBOARDING_PROGRESS_KEY)) onboardingFlow.finish();
-        return;
-      }
-      onboardingFlow.start();
+      // The full menu walkthrough is optional, opened from Settings.
+      onboardingOverlay.hide();
+      return;
+    }
+    if (!reviewTutorialRequested && context.battle && !context.directed) {
+      onboardingFlow.finish();
+      onboardingOverlay.hide();
+      return;
     }
     onboardingFlow.update(context);
     syncBattleHints(context);

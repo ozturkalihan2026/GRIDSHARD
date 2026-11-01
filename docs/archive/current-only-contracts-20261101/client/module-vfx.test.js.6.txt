@@ -1,0 +1,21 @@
+test("cooling cloud quality, hidden/load gates, death, session reset and reduced motion remain bounded",()=>{
+  const descendants=n=>[n,...n.children.flatMap(descendants)];
+  for(const[quality,expected]of[["yuksek",5],["orta",4],["dusuk",2]]){
+    const f=fixture();f.setQuality(quality);f.fx.support("cool","own:cooler","own:laser");
+    assert.equal(descendants(f.layer).filter(n=>n.attrs.class==="vfx-cold-cloud").length,expected);
+  }
+  const r=fixture();r.fx.reduced=()=>true;r.fx.support("cool","own:cooler","own:laser");
+  assert.equal(descendants(r.layer).filter(n=>n.attrs.class==="vfx-cold-cloud").length,1);
+  r.advance(200);assert.equal(r.layer.children.length,0);
+  for(const stop of [f=>f.fx.forget("own:laser"),f=>f.fx.reset(),f=>{f.setHidden(true);f.fx.receive([],f.snapshot);}]){
+    const f=fixture();f.fx.support("cool","own:cooler","own:laser");stop(f);assert.equal(f.layer.children.length,0);f.advance(2000);assert.equal(f.layer.children.length,0);
+  }
+  for(const gate of [f=>f.setHidden(true),f=>f.setLoad(2)]){
+    const f=fixture();gate(f);f.fx.support("cool","own:cooler","own:laser");assert.equal(f.layer.children.length,0);assert.equal(f.queue.entries.length,0);assert.equal(f.anchorCalls.length,0);
+  }
+  const f=fixture();f.setQuality("dusuk");for(let i=0;i<100;i++)f.fx.support("cool","cooler"+i,"own:laser");
+  assert.equal(f.fx.effects.size,8);assert.equal(f.layer.children.length,8);assert.equal(f.queue.entries.length,8);
+  const css=fs.readFileSync(path.join(__dirname,"../src/module-vfx-v14.css"),"utf8");
+  assert.match(css,/@keyframes gs-cool-cloud/);assert.doesNotMatch(css,/vfx-cold-wisp|filter:blur|feTurbulence/);
+  assert.match(css,/\.vfx-cold-cloud \{ animation:none; opacity:\.45; \}/);
+});

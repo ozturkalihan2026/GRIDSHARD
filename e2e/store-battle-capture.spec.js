@@ -35,7 +35,7 @@ test('capture a real two-player battle at Play phone screenshot dimensions',asyn
       await expect.poll(()=>c.page.evaluate(()=>window.__GRIDSHARD_TEST_API.getOnlineBattleState().elapsedMs)).toBeGreaterThan(0);
       await expect(c.page.locator('#battle-start-countdown')).toBeHidden();
     }
-    for(const id of['shield','battery','laser']){
+    for(const id of['shield','armor','laser']){
       await Promise.all([a,b].map(async c=>{
         await expect.poll(async()=>{
           if(await c.page.locator(`#board [data-device="${id}"]`).count())return true;

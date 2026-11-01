@@ -55,7 +55,8 @@ def test_heartbeat_acknowledges_cursor_without_event_feedback_loop_and_checks_bo
     service, session, _ = make_service(0)
     handler = PvPProtocolHandler(service)
     cursor = len(session.engine.state.events)
-    request = dict(version=1, type="heartbeat", session_id="match", player_id="a", request_id="hb", payload={"sent_at_ms":123,"event_cursor":cursor})
+    from app.game.pvp_protocol import PVP_PROTOCOL_VERSION
+    request = dict(version=PVP_PROTOCOL_VERSION, type="heartbeat", session_id="match", player_id="a", request_id="hb", payload={"sent_at_ms":123,"event_cursor":cursor})
     assert handler.handle(request, "a")["type"] == "heartbeat_ack"
     assert session.slots["a"].acknowledged_event_cursor == cursor
     assert service.reconnect_payload("match", "a")["events"] == []
@@ -72,7 +73,8 @@ def test_reconnect_delivery_advances_live_cursor_without_replaying_full_history(
             async def accept(self): pass
             async def send_json(self, data): self.sent.append(data)
             async def receive_json(self):
-                return dict(version=1,type="reconnect",session_id="match",player_id="a",request_id="r",payload={})
+                from app.game.pvp_protocol import PVP_PROTOCOL_VERSION
+                return dict(version=PVP_PROTOCOL_VERSION,type="reconnect",session_id="match",player_id="a",request_id="r",payload={})
         adapter = PvPWebSocketAdapter(service)
         socket = Socket()
         connection = await adapter.connect(connection_id="c", session_id="match", player_id="a", socket=socket)

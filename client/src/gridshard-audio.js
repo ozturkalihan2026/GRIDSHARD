@@ -239,6 +239,7 @@
     // available for real shots/hits. No extra voices or a second mixing bus.
     supportRetriggerMs:420,
     supportCues:Object.freeze([
+      "module_buffer_shield", "module_cleanser", "module_speed_relay",
       "battery_charge", "amplifier_charge", "repair_beam", "cooling_air",
       "omega_link", "chrono_shift", "target_lock", "nano_pulse",
       ...["battery","amplifier","repair","cooler","capacitor","current_balancer",
@@ -246,12 +247,28 @@
         "precision_matrix","omega_amplifier","phoenix_repair"].map(id=>"module_"+id),
     ]),
     priorityCues:Object.freeze([
+      "core_resonance_activate", "core_guardian_activate", "core_overdrive_activate", "core_disruptor_activate", "core_capacitor_activate", "core_phoenix_activate", "core_quantum_activate",
+      "core_resonance_shot", "core_guardian_shot", "core_overdrive_shot", "core_disruptor_shot", "core_capacitor_shot", "core_phoenix_shot", "core_quantum_shot",
       "core_hit", "kill_confirm", "module_lost", "warning",
       "shield_activate", "phoenix_revive", "core_rebirth", "emp",
     ]),
   });
 
   const GRIDSHARD_SFX_CUES = Object.freeze({
+    core_resonance_activate:{asset:"./assets/audio/core_resonance_activate.wav",gain:0.52,identity:"core v6 resonance activate"},
+    core_resonance_shot:{asset:"./assets/audio/core_resonance_shot.wav",gain:0.32,identity:"core v6 resonance shot"},
+    core_guardian_activate:{asset:"./assets/audio/core_guardian_activate.wav",gain:0.52,identity:"core v6 guardian activate"},
+    core_guardian_shot:{asset:"./assets/audio/core_guardian_shot.wav",gain:0.32,identity:"core v6 guardian shot"},
+    core_overdrive_activate:{asset:"./assets/audio/core_overdrive_activate.wav",gain:0.52,identity:"core v6 overdrive activate"},
+    core_overdrive_shot:{asset:"./assets/audio/core_overdrive_shot.wav",gain:0.32,identity:"core v6 overdrive shot"},
+    core_disruptor_activate:{asset:"./assets/audio/core_disruptor_activate.wav",gain:0.52,identity:"core v6 disruptor activate"},
+    core_disruptor_shot:{asset:"./assets/audio/core_disruptor_shot.wav",gain:0.32,identity:"core v6 disruptor shot"},
+    core_capacitor_activate:{asset:"./assets/audio/core_capacitor_activate.wav",gain:0.52,identity:"core v6 capacitor activate"},
+    core_capacitor_shot:{asset:"./assets/audio/core_capacitor_shot.wav",gain:0.32,identity:"core v6 capacitor shot"},
+    core_phoenix_activate:{asset:"./assets/audio/core_phoenix_activate.wav",gain:0.52,identity:"core v6 phoenix activate"},
+    core_phoenix_shot:{asset:"./assets/audio/core_phoenix_shot.wav",gain:0.32,identity:"core v6 phoenix shot"},
+    core_quantum_activate:{asset:"./assets/audio/core_quantum_activate.wav",gain:0.52,identity:"core v6 quantum activate"},
+    core_quantum_shot:{asset:"./assets/audio/core_quantum_shot.wav",gain:0.32,identity:"core v6 quantum shot"},
     ...Object.fromEntries(Object.values(global.GridshardModulePresentation || {}).map(p=>[p.cue,{asset:p.asset,gain:p.gain,identity:p.id+" · "+p.shape}])),
     cooling_air:{
       asset:"./assets/audio/cooling_air.wav",

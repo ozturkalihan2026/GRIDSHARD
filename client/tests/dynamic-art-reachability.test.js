@@ -13,13 +13,13 @@ function documentStub(){
 }
 function nodes(host){return [host,...host.children.flatMap(nodes)];}
 
-test("server canon → client canon → presentation profiles → mounted paintings covers all 36 current modules",()=>{
+test("server canon → client canon → presentation profiles → mounted paintings covers all 24 current modules",()=>{
   const sandbox={GridshardModuleLayerData:layers};
   vm.runInNewContext(read("src/canon-data.js"),sandbox);
   vm.runInNewContext(read("src/module-device-art.js"),sandbox);
   vm.runInNewContext(read("src/battle/module-card-view.js"),sandbox);
   const ids=canon.map(m=>m.id).sort();
-  assert.equal(ids.length,36);
+  assert.equal(ids.length,24);
   assert.deepEqual(Array.from(sandbox.GRIDSHARD_CANON_MODULES,m=>m.id).sort(),ids);
   assert.deepEqual(Object.keys(profiles).sort(),ids);
   assert.deepEqual(Object.keys(layers).filter(id=>!layers[id].core).sort(),ids);

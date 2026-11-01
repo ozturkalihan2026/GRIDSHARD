@@ -1,3 +1,4 @@
+from app.game.pvp_protocol import PVP_PROTOCOL_VERSION
 from fastapi.testclient import TestClient
 import app.main as main_module
 
@@ -56,7 +57,7 @@ def test_health_exposes_version():
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
     assert response.json()["version"] == "2.1.0-beta.72"
-    assert response.json()["release_version"] == "2.1.1"
+    assert response.json()["release_version"] == "2.2.0"
 
 
 def test_post_match_lazily_recovers_a_finished_session(monkeypatch):
@@ -178,7 +179,7 @@ def test_websocket_protocol_round_trip_snapshot():
 
         websocket.send_json(
             {
-                "version": 1,
+                "version": PVP_PROTOCOL_VERSION,
                 "type": "request_snapshot",
                 "session_id": "web",
                 "player_id": "a",
@@ -205,7 +206,7 @@ def test_websocket_identity_spoof_returns_protocol_error():
 
         websocket.send_json(
             {
-                "version": 1,
+                "version": PVP_PROTOCOL_VERSION,
                 "type": "request_snapshot",
                 "session_id": "web",
                 "player_id": "b",

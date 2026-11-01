@@ -78,12 +78,9 @@ test("outer board cache does not hide definition/name/category/core artwork chan
 });
 
 test("client category aliases share server-style utility/copy limits",()=>{
-  const start=source.indexOf("  const LIVE_UTILITY_CATEGORIES");const end=source.indexOf("  function deployDeckModule",start);
-  const modules=new Map([['a',{instanceId:'a',definitionId:'battery',category:'enerji',status:'active',hp:100}],
-    ['b',{instanceId:'b',definitionId:'capacitor',category:'sistem',status:'active',hp:100}],
-    ['c',{instanceId:'c',definitionId:'other-system',category:'sistem',status:'active',hp:100}]]);
-  const sandbox={client:{modules},clientDefinitionId:id=>id,poolCategoryLabel:()=>"Sistem"};
-  vm.runInNewContext(source.slice(start,end)+"\nthis.reject=deploymentCompositionRejection;",sandbox);
-  const candidate={definitionId:'current_balancer',category:'sistem',nameTr:'Akım Dengeleyici'};
-  assert.equal(sandbox.reject(candidate),"Sistem sınırı dolu: 3/3.");
+  const start=source.indexOf("  function deploymentCompositionRejection");
+  const end=source.indexOf("  function battleDeploymentMotionAllowed",start);
+  const sandbox={};vm.runInNewContext(source.slice(start,end)+"\nthis.reject=deploymentCompositionRejection;",sandbox);
+  for(const category of ['saldırı','savunma','taktik'])assert.equal(sandbox.reject({category}),null);
+  assert.doesNotMatch(source,/aynı anda en fazla 2 kopya|önce bir Saldırı modülü/);
 });

@@ -287,39 +287,39 @@ Lig sandığı mağazada ya da başka bir yerde bulunmaz; içeriği şansa bağl
 
 | # | Modül | Sınıf | Enderlik | Açılış | Kupa | Akım | Temel CAN | Temel Hasar |
 |---:|---|---|---|---|---:|---:|---:|---:|
-| 1 | Lazer | Saldırı | Sıradan | Arena 1 | 0 | 3 | 100 | 12 |
-| 2 | Kalkan | Savunma | Sıradan | Arena 1 | 0 | 3 | 150 | 0 |
-| 3 | Batarya | Sistem | Sıradan | Arena 1 | 0 | 2 | 120 | 0 |
-| 4 | Soğutucu | Destek | Sıradan | Arena 1 | 0 | 2 | 100 | 0 |
-| 5 | EMP | Sabotaj | Ender | Arena 1 | 0 | 3 | 80 | 0 |
-| 6 | Güçlendirici | Destek | Ender | Arena 1 | 0 | 3 | 90 | 0 |
-| 7 | Onarım | Destek | Sıradan | Arena 2 | 300 | 3 | 100 | 0 |
-| 8 | Zırh | Savunma | Sıradan | Arena 2 | 300 | 3 | 180 | 0 |
-| 9 | Darbe Topu | Saldırı | Ender | Arena 3 | 600 | 3 | 90 | 30 |
-| 10 | Füze Fırlatıcı | Saldırı | Ender | Arena 3 | 600 | 3 | 105 | 32 |
-| 11 | Hedefleme Bilgisayarı | Destek | Ender | Arena 4 | 950 | 3 | 85 | 0 |
-| 12 | Bariyer | Savunma | Ender | Arena 4 | 950 | 3 | 165 | 0 |
-| 13 | Ark Topu | Saldırı | Ender | Arena 5 | 1.300 | 4 | 125 | 22 |
-| 14 | Kapasitör | Sistem | Ender | Arena 5 | 1.300 | 2 | 90 | 0 |
-| 15 | Dron Üssü | Saldırı | Ender | Arena 6 | 1.700 | 3 | 110 | 8 |
-| 16 | Sinyal Bozucu | Sabotaj | Ender | Arena 6 | 1.700 | 2 | 85 | 0 |
-| 17 | Ray Topu | Saldırı | Destansı | Arena 7 | 2.150 | 4 | 125 | 44 |
-| 18 | Akım Dengeleyici | Sistem | Ender | Arena 7 | 2.150 | 3 | 100 | 0 |
-| 19 | Yansıtıcı | Savunma | Destansı | Arena 8 | 2.650 | 3 | 110 | 0 |
-| 20 | Nano Sağlıkçı | Destek | Ender | Arena 8 | 2.650 | 3 | 95 | 0 |
-| 21 | Virüs | Sabotaj | Destansı | Arena 9 | 3.150 | 3 | 70 | 0 |
-| 22 | Aşırı Hızlandırıcı | Destek | Destansı | Arena 9 | 3.150 | 3 | 80 | 0 |
-| 23 | Plazma Havanı | Saldırı | Destansı | Arena 10 | 3.650 | 4 | 125 | 34 |
-| 24 | Muhafız Kubbesi | Savunma | Destansı | Arena 10 | 3.650 | 4 | 155 | 0 |
-| 25 | Kuantum Tekrarlayıcı | Saldırı | Destansı | Arena 11 | 4.200 | 4 | 105 | 18 |
-| 26 | Krono Rölesi | Destek | Destansı | Arena 11 | 4.200 | 3 | 88 | 0 |
-| 27 | Faz Zırhı | Savunma | Destansı | Arena 12 | 4.800 | 4 | 150 | 0 |
-| 28 | Sürü Fabrikatörü | Saldırı | Destansı | Arena 12 | 4.800 | 3 | 105 | 10 |
-| 29 | Hassasiyet Matrisi | Destek | Destansı | Arena 12 | 4.800 | 3 | 110 | 0 |
-| 30 | İyon Mızrağı | Saldırı | Efsanevi | Kıvılcım Ligi | 5.400 | 4 | 130 | 40 |
-| 31 | Prizma Kalkanı | Savunma | Efsanevi | Kıvılcım Ligi | 5.400 | 4 | 165 | 0 |
-| 32 | Kesici | Sabotaj | Efsanevi | Kıvılcım Ligi | 5.400 | 2 | 80 | 0 |
-| 33 | Anka Onarım | Destek | Efsanevi | Kıvılcım Ligi | 5.400 | 4 | 100 | 0 |
-| 34 | Kuantum Topu | Saldırı | Efsanevi | Kıvılcım Ligi | 5.400 | 4 | 135 | 42 |
-| 35 | Omega Güçlendirici | Destek | Efsanevi | Kıvılcım Ligi | 5.400 | 3 | 95 | 0 |
-| 36 | Tekillik Projektörü | Sabotaj | Efsanevi | Kıvılcım Ligi | 5.400 | 4 | 90 | 0 |
+| 1 | Lazer | Saldırı | Sıradan | Arena 1 | 0 | 3 | 220 | 12 |
+| 2 | Kalkan | Savunma | Sıradan | Arena 1 | 0 | 3 | 240 | 0 |
+| 3 | Batarya | Sistem | Sıradan | Arena 1 | 0 | 2 | 216 | 0 |
+| 4 | Soğutucu | Destek | Sıradan | Arena 1 | 0 | 2 | 180 | 0 |
+| 5 | EMP | Sabotaj | Ender | Arena 1 | 0 | 3 | 144 | 0 |
+| 6 | Güçlendirici | Destek | Ender | Arena 1 | 0 | 3 | 162 | 0 |
+| 7 | Onarım | Destek | Sıradan | Arena 2 | 300 | 3 | 180 | 0 |
+| 8 | Zırh | Savunma | Sıradan | Arena 2 | 300 | 3 | 288 | 0 |
+| 9 | Darbe Topu | Saldırı | Ender | Arena 3 | 600 | 3 | 198 | 30 |
+| 10 | Füze Fırlatıcı | Saldırı | Ender | Arena 3 | 600 | 3 | 231 | 32 |
+| 11 | Hedefleme Bilgisayarı | Destek | Ender | Arena 4 | 950 | 3 | 153 | 0 |
+| 12 | Bariyer | Savunma | Ender | Arena 4 | 950 | 3 | 264 | 0 |
+| 13 | Ark Topu | Saldırı | Ender | Arena 5 | 1.300 | 4 | 275 | 22 |
+| 14 | Kapasitör | Sistem | Ender | Arena 5 | 1.300 | 2 | 162 | 0 |
+| 15 | Dron Üssü | Saldırı | Ender | Arena 6 | 1.700 | 3 | 242 | 8 |
+| 16 | Sinyal Bozucu | Sabotaj | Ender | Arena 6 | 1.700 | 2 | 153 | 0 |
+| 17 | Ray Topu | Saldırı | Destansı | Arena 7 | 2.150 | 4 | 275 | 38 |
+| 18 | Akım Dengeleyici | Sistem | Ender | Arena 7 | 2.150 | 3 | 180 | 0 |
+| 19 | Yansıtıcı | Savunma | Destansı | Arena 8 | 2.650 | 3 | 176 | 0 |
+| 20 | Nano Sağlıkçı | Destek | Ender | Arena 8 | 2.650 | 3 | 171 | 0 |
+| 21 | Virüs | Sabotaj | Destansı | Arena 9 | 3.150 | 3 | 126 | 0 |
+| 22 | Aşırı Hızlandırıcı | Destek | Destansı | Arena 9 | 3.150 | 3 | 144 | 0 |
+| 23 | Plazma Havanı | Saldırı | Destansı | Arena 10 | 3.650 | 4 | 275 | 34 |
+| 24 | Muhafız Kubbesi | Savunma | Destansı | Arena 10 | 3.650 | 4 | 248 | 0 |
+| 25 | Kuantum Tekrarlayıcı | Saldırı | Destansı | Arena 11 | 4.200 | 4 | 231 | 18 |
+| 26 | Krono Rölesi | Destek | Destansı | Arena 11 | 4.200 | 3 | 158 | 0 |
+| 27 | Faz Zırhı | Savunma | Destansı | Arena 12 | 4.800 | 4 | 240 | 0 |
+| 28 | Sürü Fabrikatörü | Saldırı | Destansı | Arena 12 | 4.800 | 3 | 231 | 10 |
+| 29 | Hassasiyet Matrisi | Destek | Destansı | Arena 12 | 4.800 | 3 | 198 | 0 |
+| 30 | İyon Mızrağı | Saldırı | Efsanevi | Kıvılcım Ligi | 5.400 | 4 | 286 | 32 |
+| 31 | Prizma Kalkanı | Savunma | Efsanevi | Kıvılcım Ligi | 5.400 | 3 | 264 | 0 |
+| 32 | Kesici | Sabotaj | Efsanevi | Kıvılcım Ligi | 5.400 | 2 | 144 | 0 |
+| 33 | Anka Onarım | Destek | Efsanevi | Kıvılcım Ligi | 5.400 | 3 | 180 | 0 |
+| 34 | Kuantum Topu | Saldırı | Efsanevi | Kıvılcım Ligi | 5.400 | 4 | 297 | 42 |
+| 35 | Omega Güçlendirici | Destek | Efsanevi | Kıvılcım Ligi | 5.400 | 3 | 171 | 0 |
+| 36 | Tekillik Projektörü | Sabotaj | Efsanevi | Kıvılcım Ligi | 5.400 | 3 | 162 | 0 |

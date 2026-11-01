@@ -52,17 +52,17 @@ test("CAN/heat/energy/badge changes retain icon, SVG, overlay and surviving badg
   assert.equal(card.children[0],icon);assert.equal(icon.children[0],svg);assert.equal(card.children[2],children[2]);
   assert.equal(card.children.find(n=>n.className==="module-signature-row").children[0],signature);
   assert.equal(signature.textContent,"↻2/4");assert.equal(card.style.getPropertyValue("--hp-percent"),"30%");
-  assert.ok(card.classList.contains("fx-hit"));assert.ok(card.classList.contains("energy-disconnected"));assert.equal(f.metrics.mounts,1);
+  assert.ok(card.classList.contains("fx-hit"));assert.ok(!card.classList.contains("energy-disconnected"));assert.equal(f.metrics.mounts,1);
 });
 
-test("heat and tooltip hide/show reuse their nodes and listeners", () => {
+test("retired heat never creates a meter; tooltip reuses its node and listeners", () => {
   const f=dom(),card=f.view.create(model({powerMessage:"EMP"}));
   const tooltip=card.children.find(n=>n.className==="power-state-tooltip"), heat=card.children.find(n=>n.className==="module-heat-bar");
   const listeners=f.metrics.listeners;
   f.view.update(card,model({heat:0,powerMessage:"",liveBadges:[]}));
-  assert.ok(heat.hidden && tooltip.hidden);
+  assert.equal(heat,undefined);assert.equal(tooltip,undefined);
   f.view.update(card,model({powerMessage:"Kesici"}));
-  assert.ok(!heat.hidden && !tooltip.hidden);assert.equal(tooltip.textContent,"Kesici");assert.equal(f.metrics.listeners,listeners);
+  assert.equal(card.children.some(n=>n.className==="power-state-tooltip"),false);assert.equal(f.metrics.listeners,listeners);
 });
 
 test("core type remounts only artwork; targeting and charge patch existing card", () => {
@@ -112,17 +112,18 @@ test("core death/rebirth remounts only once per boundary and retains its socket/
   assert.equal(card.children[0],icon);assert.equal(card.children[2],overlay);assert.equal(f.metrics.listeners,listeners);
 });
 
-test("physical modules have persistent foreground HP AND heat tracks, including zero heat",()=>{
+test("physical modules retain only CAN, even when stale data claims heat",()=>{
   for(const enemy of[false,true]){
     const f=dom(),initial=model({physical:true,enemy,heat:0,liveBadges:[],signatureBadges:[]});
     const card=f.view.create(initial),hp=card.children.find(n=>n.className==='module-health-bar');
     const heat=card.children.find(n=>n.className==='module-heat-bar');
-    assert.ok(hp&&!hp.hidden&&heat&&!heat.hidden);
+    assert.ok(hp&&!hp.hidden);assert.equal(heat,undefined);
     const same={...f.metrics};for(let i=0;i<100;i++)f.view.update(card,initial);
     assert.deepEqual(f.metrics,same);
     f.view.update(card,{...initial,hp:40,heat:70,heatLabel:'70%'});
     assert.equal(hp.getAttribute('aria-valuenow'),'40');
-    assert.equal(heat.style.getPropertyValue('--heat-percent'),'70%');
+    assert.equal(card.children.some(n=>n.className==='module-heat-bar'),false);
+    assert.equal(card.classList.contains('has-heat-bar'),false);
     assert.equal(f.metrics.nodes,same.nodes);
   }
 });

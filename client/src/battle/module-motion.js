@@ -4,7 +4,7 @@
   // Presentation only. No combat mutations, timers, rAF ownership or DOM reads.
   // First ten devices share continuous aim geometry and upright view atlases.
   // Events, never local guesses, supply their targets. The board owns camera.
-  const MOVING = new Set(["laser", "pulse_cannon", "missile_launcher", "repair", "cooler", "emp", "shield", "battery", "amplifier", "armor","targeting_computer","barrier","arc_cannon","capacitor","drone_bay","jammer","railgun","current_balancer","reflector","nano_medic","virus","overclock_unit","plasma_mortar","guardian_dome","quantum_repeater","chrono_relay","phase_armor","swarm_fabricator","precision_matrix","ion_spear","prism_shield","disruptor","phoenix_repair","quantum_cannon","omega_amplifier","singularity_projector"]);
+  const MOVING = new Set(["laser", "pulse_cannon", "missile_launcher", "repair",  "emp", "shield",  "amplifier", "armor","barrier","arc_cannon","drone_bay","railgun","reflector","virus","plasma_mortar","guardian_dome","quantum_repeater","phase_armor",]);
   const keyFor = (player, instance) => JSON.stringify([player, instance]);
   const alive = module => module && module.status === "active" && Number(module.hp) > 0
     && module.x != null && module.y != null;
@@ -48,10 +48,7 @@
       this.geometryDirty = false;
     }
     disabled(record) {
-      // Waiting for the NEXT energy charge must not suppress a real shot or
-      // support pulse that the server has just completed. No event = no action.
-      return Boolean(record.module.overheated
-        || (record.module.is_powered === false && Number(record.module.energy_required) > 0));
+      return record.module.operational === false;
     }
     remember(event) {
       // Server BattleEvent has no event ID; identical tick/type/payload is a replay.
@@ -123,6 +120,7 @@
         let player, sourceId, targetPlayer, targetId, windup = false;
         switch (event.type) {
           case "attack_performed":
+            if (["dot","followup","echo"].includes(data.damage_kind)) continue;
           case "sabotage_applied":
             player = data.attacker_player_id; sourceId = data.attacker_module_id;
             targetPlayer = data.target_player_id; targetId = data.target_module_id; break;
@@ -131,9 +129,6 @@
             targetPlayer = data.target_player_id || Object.keys(snapshot.players).find(p => p !== player);
             targetId = data.target_module_id; windup = true; break;
           case "module_repaired":
-          case "module_overclocked":
-          case "phoenix_rebirth":
-          case "module_cooled":
             player = data.player_id; sourceId = data.source_module_id;
             targetPlayer = data.target_player_id || player;
             targetId = data.target_module_id || data.module_id; break;
@@ -144,7 +139,6 @@
             player=data.player_id; sourceId=data.module_id;
             if (!["shield","armor"].includes(records.get(keyFor(player,sourceId))?.definition)) continue;
             targetPlayer=data.source_player_id; targetId=data.source_module_id; break;
-          case "module_cycle_pulse":
           case "amplifier_pulse":
             player = data.player_id; sourceId = data.module_id || data.source_module_id;
             targetPlayer=data.target_player_id || player;
@@ -153,7 +147,7 @@
             player = data.source_player_id || data.player_id; sourceId = data.source_module_id;
             // Contributions for active attackers/support repeat their primary
             // event. Passive devices may face their real contribution receiver.
-            if (["laser","pulse_cannon","missile_launcher","repair","cooler","emp","arc_cannon","drone_bay","jammer","railgun","reflector","nano_medic","virus","overclock_unit","plasma_mortar","quantum_repeater","swarm_fabricator","ion_spear","disruptor","phoenix_repair","quantum_cannon","singularity_projector"].includes(records.get(keyFor(player, sourceId))?.definition)) continue;
+            if (["laser","pulse_cannon","missile_launcher","repair","emp","arc_cannon","drone_bay","railgun","reflector","virus","plasma_mortar","quantum_repeater",].includes(records.get(keyFor(player, sourceId))?.definition)) continue;
             targetPlayer=data.target_player_id || player;
             targetId=data.target_module_id;
             break;
@@ -176,15 +170,8 @@
           candidate.targetPoint = lock.targetPoint;
         }
         const running=this.actions.get(key);
-        const previous = chosen.get(key) || (source.definition==="cooler" && running?.stamp===candidate.stamp ? running : null);
-        if(source.definition === "cooler" && event.type === "module_cooled"){
-          candidate.targets=[candidate.target];
-          if(previous?.targets && previous.stamp===candidate.stamp){
-            if(!previous.targets.includes(candidate.target) && previous.targets.length<3)previous.targets.push(candidate.target);
-            chosen.set(key,previous);
-            continue;
-          }
-        }
+        const previous = chosen.get(key) || (null);
+
         // Multi-target support: one action, first real target in this tick; never
         // queue simultaneous repairs as sequential extra gameplay actions.
         if (!previous || candidate.stamp > previous.stamp || (previous.windup && !windup)) chosen.set(key, candidate);
@@ -208,7 +195,7 @@
         if (!source || this.disabled(source) || (action.target && !target)) {
           this.actions.delete(key); this.dirty.add(key); continue;
         }
-        const work = source.definition === "repair" ? 340 : source.definition === "cooler" ? 150 : 170;
+        const work = source.definition === "repair" ? 340 : 170;
         if (age < 0 || age > action.aim + (action.windup ? 120 : work + 150)) {
           this.actions.delete(key); this.dirty.add(key); continue;
         }
@@ -230,8 +217,7 @@
         const phase = age < action.aim ? "aim" : action.windup ? "recover"
           : age < action.aim + work ? "work" : "recover";
         const visualPhase = reduced ? "rest" : phase;
-        const frame = !reduced && phase === "work" && source.definition === "cooler"
-          ? Math.floor((age - action.aim) / 90) % 2 : 0;
+        const frame = 0;
         if (action.phase !== visualPhase || action.frame !== frame || this.dirty.has(key) || (!reduced && phase === "aim" && action.aimAge !== age)) {
           if (this.draw(source, { heading:action.heading, angle:action.angle, targetPoint:action.targetPoint, phase:visualPhase, frame,
             aimProgress:phase === "aim" ? Math.min(1,age/Math.max(1,action.aim)) : 1, disabled:false }) !== false) {

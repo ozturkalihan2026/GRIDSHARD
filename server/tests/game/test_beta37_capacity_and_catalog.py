@@ -15,9 +15,9 @@ def test_pvp_snapshot_publishes_authoritative_capacity() -> None:
     assert "next_module_slot_in_ms" not in capacity
 
 
-def test_catalog_has_complete_english_copy_for_all_36_modules() -> None:
+def test_catalog_has_complete_english_copy_for_all_24_modules() -> None:
     view = build_module_catalog_view()
-    assert len(view["modules"]) == 36
+    assert len(view["modules"]) == 24
     assert view["category_labels_en"]["saldırı"] == "Attack"
     for module in view["modules"]:
         assert module["strategic_role_en"]

@@ -1,0 +1,757 @@
+{
+  "version": 7,
+  "caps": {
+    "ordinary_armor_reduction": 0.4,
+    "periodic_block_ratio": 0.8,
+    "dome_guard_ratio": 0.55,
+    "reflection_ratio": 0.5,
+    "phase_duration_ms": 1500,
+    "phase_max_duty_ratio": 0.25,
+    "emp_duration_ms": 1500,
+    "emp_recovery_ms_min": 3000,
+    "virus_interval_penalty": 0.35,
+    "virus_heal_penalty": 0.25,
+    "amplifier_bonus": 0.4,
+    "speed_reduction": 0.3,
+    "buffer_absorb_ratio": 0.7,
+    "buffer_conversion_ratio": 0.6,
+    "quantum_echo_per_target_ratio": 0.2,
+    "quantum_echo_total_ratio": 0.8,
+    "plasma_dot_total_ratio": 0.24,
+    "cleanse_control_duration_reduction": 0.3
+  },
+  "modules": {
+    "laser": {
+      "primary_field": "damage",
+      "specializations": [
+        {
+          "name_tr": "Yoğun Işın",
+          "description_tr": "Ana hasar +%8.",
+          "changes": {
+            "multiply": {
+              "damage": 1.08
+            }
+          },
+          "id": "power",
+          "name_en": "Dense Beam",
+          "description_en": "Damage +8%."
+        },
+        {
+          "name_tr": "Seri Işın",
+          "description_tr": "Atış çevrimi −%8.",
+          "changes": {
+            "multiply": {
+              "period_ms": 0.92
+            }
+          },
+          "id": "resilience",
+          "name_en": "Rapid Beam",
+          "description_en": "Firing interval -8%."
+        }
+      ]
+    },
+    "pulse_cannon": {
+      "primary_field": "damage",
+      "specializations": [
+        {
+          "name_tr": "Ağır Darbe",
+          "description_tr": "Ana hasar +%10.",
+          "changes": {
+            "multiply": {
+              "damage": 1.1
+            }
+          },
+          "id": "power",
+          "name_en": "Heavy Pulse",
+          "description_en": "Damage +10%."
+        },
+        {
+          "name_tr": "Hazır Namlu",
+          "description_tr": "Hazırlık 0,6 → 0,4 sn; toplam çevrim aynı.",
+          "changes": {
+            "set": {
+              "windup_ms": 400
+            }
+          },
+          "id": "resilience",
+          "name_en": "Ready Barrel",
+          "description_en": "Windup becomes 0.4 seconds; cycle unchanged."
+        }
+      ]
+    },
+    "railgun": {
+      "primary_field": "damage",
+      "specializations": [
+        {
+          "name_tr": "Derin Delme",
+          "description_tr": "Zırh azaltımını yok sayma %40 → %55.",
+          "changes": {
+            "set": {
+              "kept_reduction": 0.45
+            }
+          },
+          "id": "power",
+          "name_en": "Deep Pierce",
+          "description_en": "Ignore 55% of armor reduction."
+        },
+        {
+          "name_tr": "Hızlı Ray",
+          "description_tr": "Atış çevrimi −%8; delme aynı.",
+          "changes": {
+            "multiply": {
+              "period_ms": 0.92
+            }
+          },
+          "id": "resilience",
+          "name_en": "Rapid Rail",
+          "description_en": "Firing interval -8%."
+        }
+      ]
+    },
+    "missile_launcher": {
+      "primary_field": "damage",
+      "specializations": [
+        {
+          "name_tr": "Ağır Başlık",
+          "description_tr": "Takip patlaması oranı %20 → %35; ana hasar ve gecikme aynı.",
+          "changes": {
+            "set": {
+              "followup_ratio": 0.35
+            }
+          },
+          "id": "power",
+          "name_en": "Heavy Warhead",
+          "description_en": "Follow-up damage becomes 35% of actual primary HP loss."
+        },
+        {
+          "name_tr": "Hızlı Kilit",
+          "description_tr": "Hazırlık 0,7 → 0,45 sn; takip patlaması 0,6 → 0,3 sn. Toplam çevrim değişmez.",
+          "changes": {
+            "set": {
+              "windup_ms": 450,
+              "followup_delay_ms": 300
+            }
+          },
+          "id": "resilience",
+          "name_en": "Quick Lock",
+          "description_en": "Windup 0.45s; follow-up delay 0.3s; cycle unchanged."
+        }
+      ]
+    },
+    "drone_bay": {
+      "primary_field": "damage",
+      "specializations": [
+        {
+          "name_tr": "İkinci Kol",
+          "description_tr": "İkinci hedef oranı %25 → %40; ana hasar aynı.",
+          "changes": {
+            "set": {
+              "secondary_ratios": [
+                0.4
+              ]
+            }
+          },
+          "id": "power",
+          "name_en": "Second Wing",
+          "description_en": "Secondary damage becomes 40%."
+        },
+        {
+          "name_tr": "Yoğun Sürü",
+          "description_tr": "Ana hasar +%10; ikinci hedef oranı %25 → %10. Tek hedefte uzmanlaşır.",
+          "changes": {
+            "multiply": {
+              "damage": 1.1
+            },
+            "set": {
+              "secondary_ratios": [
+                0.1
+              ]
+            }
+          },
+          "id": "resilience",
+          "name_en": "Focused Swarm",
+          "description_en": "Primary damage +10%; secondary ratio becomes 10%."
+        }
+      ]
+    },
+    "arc_cannon": {
+      "primary_field": "damage",
+      "specializations": [
+        {
+          "name_tr": "Geniş Zincir",
+          "description_tr": "İkinci/üçüncü oran %45/%20 → %55/%25.",
+          "changes": {
+            "set": {
+              "secondary_ratios": [
+                0.55,
+                0.25
+              ]
+            }
+          },
+          "id": "power",
+          "name_en": "Wide Chain",
+          "description_en": "Secondary ratios become 55% and 25%."
+        },
+        {
+          "name_tr": "Yoğun Ark",
+          "description_tr": "Ana hasar +%10; üçüncü sıçrama kalkar, ikinci %45 kalır.",
+          "changes": {
+            "multiply": {
+              "damage": 1.1
+            },
+            "set": {
+              "secondary_ratios": [
+                0.45
+              ]
+            }
+          },
+          "id": "resilience",
+          "name_en": "Dense Arc",
+          "description_en": "Primary damage +10%; remove third target, keep second at 45%."
+        }
+      ]
+    },
+    "plasma_mortar": {
+      "primary_field": "damage",
+      "specializations": [
+        {
+          "name_tr": "Kalıcı İz",
+          "description_tr": "İz saniyede %5 → %8; iki yayılım %30/%30 → %20/%20. Toplam iz %24.",
+          "changes": {
+            "set": {
+              "dot_per_tick_ratio": 0.08,
+              "secondary_ratios": [
+                0.2,
+                0.2
+              ]
+            }
+          },
+          "id": "power",
+          "name_en": "Lasting Trace",
+          "description_en": "Damage over time becomes 8% per tick; splash ratios become 20% each."
+        },
+        {
+          "name_tr": "Geniş Yayılım",
+          "description_tr": "Yayılım %30/%30 → %40/%40; iz saniyede %5 → %3. Toplam iz %9.",
+          "changes": {
+            "set": {
+              "secondary_ratios": [
+                0.4,
+                0.4
+              ],
+              "dot_per_tick_ratio": 0.03
+            }
+          },
+          "id": "resilience",
+          "name_en": "Wide Spread",
+          "description_en": "Splash ratios become 40% each; damage over time becomes 3% per tick."
+        }
+      ]
+    },
+    "quantum_repeater": {
+      "primary_field": "damage",
+      "specializations": [
+        {
+          "name_tr": "Yoğun Dördüncü",
+          "description_tr": "Dördüncü temel hasar 24 → 30; toplam yankı %60 → %40. Hedef başına %20 aynı.",
+          "changes": {
+            "set": {
+              "charged_damage": 30,
+              "echo_total_ratio": 0.4
+            }
+          },
+          "id": "power",
+          "name_en": "Focused Fourth",
+          "description_en": "Fourth-hit damage 30; total echo budget 40%; per-target cap 20%."
+        },
+        {
+          "name_tr": "Yaygın Yankı",
+          "description_tr": "Dördüncü temel hasar 24 → 22; toplam yankı %60 → %80. Hedef başına %20 aynı.",
+          "changes": {
+            "set": {
+              "charged_damage": 22,
+              "echo_total_ratio": 0.8
+            }
+          },
+          "id": "resilience",
+          "name_en": "Wide Echo",
+          "description_en": "Fourth-hit damage 22; total echo budget 80%; per-target cap 20%."
+        }
+      ]
+    },
+    "burst_cannon": {
+      "primary_field": "damage",
+      "specializations": [
+        {
+          "name_tr": "Sıkı Seri",
+          "description_tr": "Mermiler arası süre 0,2 → 0,15 sn; üç mermi ve çevrim aynı.",
+          "changes": {
+            "set": {
+              "spacing_ms": 150
+            }
+          },
+          "id": "power",
+          "name_en": "Tight Burst",
+          "description_en": "Round spacing becomes 0.15 seconds."
+        },
+        {
+          "name_tr": "Ağır Mermi",
+          "description_tr": "Her merminin hasarı +%10.",
+          "changes": {
+            "multiply": {
+              "damage": 1.1
+            }
+          },
+          "id": "resilience",
+          "name_en": "Heavy Round",
+          "description_en": "Damage per round +10%."
+        }
+      ]
+    },
+    "shield_breaker": {
+      "primary_field": "damage",
+      "specializations": [
+        {
+          "name_tr": "Derin Kırıcı",
+          "description_tr": "Ek kalkan silme bütçesi %50 → %75; CAN hasarı aynı.",
+          "changes": {
+            "set": {
+              "shield_strip_ratio": 0.75
+            }
+          },
+          "id": "power",
+          "name_en": "Deep Breaker",
+          "description_en": "Additional shield removal becomes 75% of raw damage."
+        },
+        {
+          "name_tr": "Ağır Kırıcı",
+          "description_tr": "Ana hasar +%10; ek kalkan oranı %50 kalır.",
+          "changes": {
+            "multiply": {
+              "damage": 1.1
+            }
+          },
+          "id": "resilience",
+          "name_en": "Heavy Breaker",
+          "description_en": "Primary damage +10%; shield removal ratio unchanged."
+        }
+      ]
+    },
+    "shield": {
+      "primary_field": "block_ratio",
+      "specializations": [
+        {
+          "name_tr": "Güçlü Blok",
+          "description_tr": "Blok oranı %60 → %68.",
+          "changes": {
+            "set": {
+              "block_ratio": 0.68
+            }
+          },
+          "id": "power",
+          "name_en": "Strong Block",
+          "description_en": "Block 68% of one hit."
+        },
+        {
+          "name_tr": "Hızlı Blok",
+          "description_tr": "Blok dolum çevrimi −%15.",
+          "changes": {
+            "multiply": {
+              "period_ms": 0.85
+            }
+          },
+          "id": "resilience",
+          "name_en": "Quick Block",
+          "description_en": "Block recharge -15%."
+        }
+      ]
+    },
+    "armor": {
+      "primary_field": "reduction",
+      "specializations": [
+        {
+          "name_tr": "Kalın Plaka",
+          "description_tr": "Azaltım %25 → %30.",
+          "changes": {
+            "set": {
+              "reduction": 0.3
+            }
+          },
+          "id": "power",
+          "name_en": "Thick Plate",
+          "description_en": "Own damage reduction becomes 30%."
+        },
+        {
+          "name_tr": "Sağlam Gövde",
+          "description_tr": "Azami CAN +%12.",
+          "changes": {
+            "multiply": {
+              "hp": 1.12
+            }
+          },
+          "id": "resilience",
+          "name_en": "Sturdy Body",
+          "description_en": "Maximum HP +12%."
+        }
+      ]
+    },
+    "barrier": {
+      "primary_field": "healing_received_multiplier",
+      "specializations": [
+        {
+          "name_tr": "Derin Siper",
+          "description_tr": "Azami CAN +%12.",
+          "changes": {
+            "multiply": {
+              "hp": 1.12
+            }
+          },
+          "id": "power",
+          "name_en": "Deep Cover",
+          "description_en": "Maximum HP +12%."
+        },
+        {
+          "name_tr": "Takviyeli Siper",
+          "description_tr": "Kendi gelen saldırı hasarını %6 azaltır; hedef sırası aynı.",
+          "changes": {
+            "set": {
+              "reduction": 0.06
+            }
+          },
+          "id": "resilience",
+          "name_en": "Reinforced Cover",
+          "description_en": "Own incoming damage -6%; target priority unchanged."
+        }
+      ]
+    },
+    "reflector": {
+      "primary_field": "reflect_ratio",
+      "specializations": [
+        {
+          "name_tr": "Güçlü Yansıma",
+          "description_tr": "Gerçek CAN kaybından dönüş %30 → %40.",
+          "changes": {
+            "set": {
+              "reflect_ratio": 0.4
+            }
+          },
+          "id": "power",
+          "name_en": "Strong Reflection",
+          "description_en": "Reflect 40% of actual HP lost from a direct hit."
+        },
+        {
+          "name_tr": "Hızlı Ayna",
+          "description_tr": "Yansıma dolum çevrimi −%15.",
+          "changes": {
+            "multiply": {
+              "period_ms": 0.85
+            }
+          },
+          "id": "resilience",
+          "name_en": "Quick Mirror",
+          "description_en": "Reflection recharge -15%."
+        }
+      ]
+    },
+    "guardian_dome": {
+      "primary_field": "guard_ratio",
+      "specializations": [
+        {
+          "name_tr": "Güçlü Kubbe",
+          "description_tr": "Engelleme %35 → %42.",
+          "changes": {
+            "set": {
+              "guard_ratio": 0.42
+            }
+          },
+          "id": "power",
+          "name_en": "Strong Dome",
+          "description_en": "Prevent 42% of one allied hit."
+        },
+        {
+          "name_tr": "Hızlı Kubbe",
+          "description_tr": "Koruma dolum çevrimi −%15.",
+          "changes": {
+            "multiply": {
+              "period_ms": 0.85
+            }
+          },
+          "id": "resilience",
+          "name_en": "Quick Dome",
+          "description_en": "Guard recharge -15%."
+        }
+      ]
+    },
+    "phase_armor": {
+      "primary_field": "phase_ms",
+      "specializations": [
+        {
+          "name_tr": "Uzun Faz",
+          "description_tr": "Faz penceresi 1 → 1,2 sn.",
+          "changes": {
+            "set": {
+              "phase_ms": 1200
+            }
+          },
+          "id": "power",
+          "name_en": "Long Phase",
+          "description_en": "Phase window becomes 1.2 seconds."
+        },
+        {
+          "name_tr": "Sık Faz",
+          "description_tr": "Faz çevrimi 6 → 5,4 sn.",
+          "changes": {
+            "multiply": {
+              "period_ms": 0.9
+            }
+          },
+          "id": "resilience",
+          "name_en": "Frequent Phase",
+          "description_en": "Phase cycle -10%."
+        }
+      ]
+    },
+    "buffer_shield": {
+      "primary_field": "shield_hp",
+      "specializations": [
+        {
+          "name_tr": "Yoğun Tampon",
+          "description_tr": "Havuz 60 → 75; dönüşüm %40 → %30. Havuz başına en çok 22,5 onarım.",
+          "changes": {
+            "set": {
+              "shield_hp": 75,
+              "heal_conversion_ratio": 0.3
+            }
+          },
+          "id": "power",
+          "name_en": "Dense Buffer",
+          "description_en": "Pool 75 HP; convert 30% of absorbed damage into shared repair."
+        },
+        {
+          "name_tr": "Onaran Tampon",
+          "description_tr": "Havuz 60 → 50; dönüşüm %40 → %60. Havuz başına en çok 30 onarım.",
+          "changes": {
+            "set": {
+              "shield_hp": 50,
+              "heal_conversion_ratio": 0.6
+            }
+          },
+          "id": "resilience",
+          "name_en": "Repairing Buffer",
+          "description_en": "Pool 50 HP; convert 60% of absorbed damage into shared repair."
+        }
+      ]
+    },
+    "last_bastion": {
+      "primary_field": "core_shield_hp",
+      "specializations": [
+        {
+          "name_tr": "Çekirdek Mirası",
+          "description_tr": "Çekirdek kalkanı 75 → 90; dost toplamı 40 → 25. Toplam 115 aynı.",
+          "changes": {
+            "set": {
+              "core_shield_hp": 90,
+              "ally_shield_total": 25
+            }
+          },
+          "id": "power",
+          "name_en": "Core Legacy",
+          "description_en": "Core shield 90; total allied shield 25."
+        },
+        {
+          "name_tr": "Devre Mirası",
+          "description_tr": "Çekirdek kalkanı 75 → 60; dost toplamı 40 → 60. Toplam 120.",
+          "changes": {
+            "set": {
+              "core_shield_hp": 60,
+              "ally_shield_total": 60
+            }
+          },
+          "id": "resilience",
+          "name_en": "Circuit Legacy",
+          "description_en": "Core shield 60; total allied shield 60."
+        }
+      ]
+    },
+    "repair": {
+      "primary_field": "heal",
+      "specializations": [
+        {
+          "name_tr": "Yoğun Onarım",
+          "description_tr": "Toplam onarım +%20; süre ve darbe sayısı aynı.",
+          "changes": {
+            "multiply": {
+              "heal": 1.2
+            }
+          },
+          "id": "power",
+          "name_en": "Dense Repair",
+          "description_en": "Total repair +20%."
+        },
+        {
+          "name_tr": "İlk Yardım",
+          "description_tr": "Toplam onarımın ilk darbeye düşen payı 1/3 → %50; diğer iki darbe %25/%25. Toplam, süre ve çevrim aynı.",
+          "changes": {
+            "set": {
+              "heal_pulse_weights": [
+                0.5,
+                0.25,
+                0.25
+              ]
+            }
+          },
+          "id": "resilience",
+          "name_en": "First Aid",
+          "description_en": "Front-load 50% of the same repair total, then 25% and 25%."
+        }
+      ]
+    },
+    "amplifier": {
+      "primary_field": "shot_bonus",
+      "specializations": [
+        {
+          "name_tr": "Güçlü Yük",
+          "description_tr": "Sonraki atış bonusu %25 → %30.",
+          "changes": {
+            "set": {
+              "shot_bonus": 0.3
+            }
+          },
+          "id": "power",
+          "name_en": "Strong Charge",
+          "description_en": "Next-shot damage bonus becomes 30%."
+        },
+        {
+          "name_tr": "Sık Yükleme",
+          "description_tr": "Yükleme çevrimi −%12.",
+          "changes": {
+            "multiply": {
+              "period_ms": 0.88
+            }
+          },
+          "id": "resilience",
+          "name_en": "Frequent Charge",
+          "description_en": "Charge interval -12%."
+        }
+      ]
+    },
+    "emp": {
+      "primary_field": "duration_ms",
+      "specializations": [
+        {
+          "name_tr": "Uzun Kesinti",
+          "description_tr": "Kesinti 1 → 1,2 sn; toparlanma 3 sn kalır.",
+          "changes": {
+            "set": {
+              "duration_ms": 1200
+            }
+          },
+          "id": "power",
+          "name_en": "Long Interruption",
+          "description_en": "Disable for 1.2 seconds; recovery remains 3 seconds."
+        },
+        {
+          "name_tr": "Hızlı Darbe",
+          "description_tr": "EMP çevrimi −%10; kesinti ve toparlanma aynı.",
+          "changes": {
+            "multiply": {
+              "period_ms": 0.9
+            }
+          },
+          "id": "resilience",
+          "name_en": "Quick Pulse",
+          "description_en": "Recharge -10%."
+        }
+      ]
+    },
+    "virus": {
+      "primary_field": "interval_penalty",
+      "specializations": [
+        {
+          "name_tr": "Yoğun Yavaşlık",
+          "description_tr": "Aralık uzatma %25 → %30; süre aynı.",
+          "changes": {
+            "set": {
+              "interval_penalty": 0.3
+            }
+          },
+          "id": "power",
+          "name_en": "Stronger Slow",
+          "description_en": "Action interval penalty becomes 30%."
+        },
+        {
+          "name_tr": "Onarım Bozucu",
+          "description_tr": "Aralık uzatma %25 → %15; aynı 4 sn boyunca hedefin aldığı onarım −%25. Kalkanı azaltmaz.",
+          "changes": {
+            "set": {
+              "interval_penalty": 0.15,
+              "healing_received_penalty": 0.25
+            }
+          },
+          "id": "resilience",
+          "name_en": "Repair Disruption",
+          "description_en": "Action interval penalty 15%; received repair -25% during infection."
+        }
+      ]
+    },
+    "cleanser": {
+      "primary_field": "cleanse_cadence",
+      "specializations": [
+        {
+          "name_tr": "Sık Arındırma",
+          "description_tr": "Arındırma çevrimi −%15; bir etki siler.",
+          "changes": {
+            "multiply": {
+              "period_ms": 0.85
+            }
+          },
+          "id": "power",
+          "name_en": "Frequent Cleanse",
+          "description_en": "Cleanse recharge -15%; remove one effect."
+        },
+        {
+          "name_tr": "Temiz Koruma",
+          "description_tr": "Başarılı arındırmadan sonra aynı hedefte 2 sn tek kontrol koruması: sonraki EMP/Virüsün süresi −%30. İmha/hasar yüklerini engellemez; birikmez.",
+          "changes": {
+            "set": {
+              "cleanse_control_guard_ms": 2000,
+              "cleanse_control_duration_reduction": 0.3
+            }
+          },
+          "id": "resilience",
+          "name_en": "Clean Ward",
+          "description_en": "After cleansing, a 2-second ward shortens the next EMP or Virus duration by 30%; one use."
+        }
+      ]
+    },
+    "speed_relay": {
+      "primary_field": "next_interval_reduction",
+      "specializations": [
+        {
+          "name_tr": "Güçlü Hız Yükü",
+          "description_tr": "Bekleme kısaltması %20 → %25.",
+          "changes": {
+            "set": {
+              "next_interval_reduction": 0.25
+            }
+          },
+          "id": "power",
+          "name_en": "Stronger Haste",
+          "description_en": "Next-interval reduction becomes 25%."
+        },
+        {
+          "name_tr": "Sık Röle",
+          "description_tr": "Yükleme çevrimi −%12.",
+          "changes": {
+            "multiply": {
+              "period_ms": 0.88
+            }
+          },
+          "id": "resilience",
+          "name_en": "Frequent Relay",
+          "description_en": "Charge interval -12%."
+        }
+      ]
+    }
+  }
+}

@@ -260,20 +260,12 @@ BOTS = build_ai_population(
     {int(arena["index"]): (int(arena["minimum_rating"]), int(arena["maximum_rating"])) for arena in ARENAS},
 )
 STARTER_IDS = tuple(item["id"] for item in CANON["modules"] if int(item["unlock_arena"]) == 1)
-from .game.talents import TALENT_LEVELS, module_talent_tree, stat_modifiers
+from .game.talents import TALENT_LEVELS
 
 
-def module_talent_options(module_id: str) -> tuple[dict, ...]:
-    """Modülün dört yetenek eşiği: temel uzmanlık, imza yeteneği, ince ayar, ustalık."""
-    # Katalog bu dosyayı içe aktarır; bekleme bilgisi çağrı anında okunur.
-    from .game.catalog import BASIC_MODULE_DEFINITIONS
-
-    return module_talent_tree(
-        module_id,
-        MODULES[module_id]["category"],
-        MODULES[module_id]["rarity"],
-        BASIC_MODULE_DEFINITIONS[module_id].cooldown_ms > 0,
-    )
+def module_talent_options(module_id):
+    from .game.module_talents_v3 import tree
+    return tree(module_id)
 LEAGUE_NAMES = tuple(stage["name_tr"] for stage in _LEAGUE_OUTLINE)
 # Lig sandıkları (12 Ekim 2026, kullanıcı kararı): lig sonundaki sandık mağazada
 # ya da başka bir yerde bulunmaz. Adı, içeriği ve görünümü lige özeldir; içeriği
@@ -525,7 +517,6 @@ RARITY_STAT_PROFILES = {
         "attack": 1.00,
         "effect": 1.00,
         "cooldown": 1.00,
-        "energy": 1.00,
     }
     for rarity in ("common", "rare", "epic", "legendary")
 }
@@ -538,47 +529,17 @@ RARITY_STAT_MULTIPLIER = {
 }
 
 
-def module_stats(definition, upgrade_level: int, talents: dict | None = None) -> dict:
-    # Legacy storage counts upgrades from zero; the user-facing level is 1..15.
-    level = max(0, min(14, int(upgrade_level)))
-    # Yetenek dallarının sayısal etkisi; imza yeteneği savaşta ayrıca çalışır.
-    talent = stat_modifiers(talents, definition.cooldown_ms > 0)
-    power = talent["power"]
-    resilience = talent["hp"]
-    rarity = str(getattr(definition, "rarity", "common") or "common").lower()
-    rarity_profile = RARITY_STAT_PROFILES.get(
-        rarity,
-        RARITY_STAT_PROFILES["common"],
-    )
-    cooldown_ms = round(
-        definition.cooldown_ms * rarity_profile["cooldown"] * max(.88, .992 ** level) * talent["cooldown"]
-    )
-    upkeep = round(
-        definition.energy_consumption * rarity_profile["energy"] * max(.92, .996 ** level) * talent["energy"], 2
-    )
-    # Bilgi ekranındaki "enerji tüketimi" modülün saniyede gerçekten harcadığı
-    # enerjidir: sürekli bakım ve (saldırı, onarım, sabotaj gibi iş yaptıkça
-    # ödeyen kartlarda) aksiyon bedelinin bekleme süresine bölümü. Yalnız bakım
-    # gösterilince bu kartlarda 0 yazıyordu.
-    action_cost = float(getattr(definition, "action_energy_cost", 0.0) or 0.0) * talent["energy"]
-    action_rate = action_cost / (cooldown_ms / 1000) if action_cost > 0 and cooldown_ms > 0 else 0.0
-    stats = {"level": level + 1, "rarity": rarity,
-            "max_hp": round(definition.max_hp * rarity_profile["hp"] * 1.045 ** level * resilience),
-            "base_damage": round(definition.base_damage * rarity_profile["attack"] * 1.04 ** level * power, 2),
-            "cooldown_ms": cooldown_ms,
-            "effect_multiplier": rarity_profile["effect"] * (1.03 if definition.category == "sabotaj" else 1.035) ** level * power * talent["effect"],
-            "energy_consumption": upkeep,
-            "action_energy_cost": round(action_cost, 2),
-            "energy_per_second": round(upkeep + action_rate, 2),
-            "energy_generation": round(float(getattr(definition, "energy_generation", 0.0) or 0.0), 2)}
-    # Modüle özgü değerler ve çevrimin adı (bilgi ekranı); motorla aynı
-    # sabitlerden hesaplanır. İçe aktarım döngüsü olmasın diye burada yapılır.
-    from .game.module_sheet import cycle_label, module_specials
-    if stats["energy_generation"] > 0:
-        # Batarya üretimi etki çarpanıyla büyür (energy.py).
-        stats["energy_generation"] = round(stats["energy_generation"] * stats["effect_multiplier"], 2)
-    stats["cycle_label_tr"], stats["cycle_label_en"] = cycle_label(definition)
-    stats["specials"] = module_specials(definition, stats)
+def module_stats(definition, upgrade_level, talents=None):
+    level=max(0,min(14,int(upgrade_level)))
+    scale=1.04**level
+    stats={'level':level+1,'rarity':definition.rarity,'max_hp':round(definition.max_hp*scale),
+        'base_damage':round(definition.base_damage*scale,2),'cooldown_ms':definition.cooldown_ms,
+        'effect_multiplier':scale}
+    from .game.module_talents_v3 import effective_stats
+    stats=effective_stats(definition.id,stats,talents)
+    from .game.module_sheet import cycle_label,module_specials
+    stats['cycle_label_tr'],stats['cycle_label_en']=cycle_label(definition)
+    stats['specials']=module_specials(definition,stats)
     return stats
 
 def select_bot(rating: int, session_id: str) -> dict:
@@ -592,42 +553,4 @@ def select_bot(rating: int, session_id: str) -> dict:
     roll = int(hashlib.sha256(session_id.encode()).hexdigest()[:12], 16)
     selected = dict(candidates[roll % len(candidates)])
     selected["match_rating"] = selected["rating"] if stage["kind"] == "arena" else rating
-    if stage["kind"] != "arena":
-        selected["battle_pool_ids"] = league_bot_battle_pool(
-            selected["battle_pool_ids"], stage, session_id
-        )
     return selected
-
-
-def league_bot_battle_pool(battle_pool_ids, stage: dict, session_id: str) -> list[str]:
-    """Lig botu efsanevi modüllerle güçlenir; ilerideki liglerde daha çok taşır.
-
-    Efsanevi modüllerin hepsi ilk lige girişte açılır. Zorluk yine lig lig
-    artsın diye bot, liginin sırası kadar (Kıvılcım 1 … Efsanevi 7) modül
-    arasından seçer; Arena 12 destesindeki aynı sınıftan kart onunla değişir.
-    Oyuncunun henüz açamadığı modül bota verilmez. Seçim maç kimliğine bağlı ve
-    kararlıdır.
-    """
-    deck = list(battle_pool_ids)
-    league_modules = sorted(
-        (
-            module_id for module_id, item in MODULES.items()
-            if item.get("unlock_league") and int(stage["minimum_rating"]) >= item["unlock_trophies"]
-        ),
-        key=lambda module_id: hashlib.sha256(f"{session_id}:order:{module_id}".encode()).hexdigest(),
-    )[:max(1, int(stage.get("league_order", 1)))]
-    for module_id in league_modules:
-        if module_id in deck:
-            continue
-        roll = int(hashlib.sha256(f"{session_id}:{module_id}".encode()).hexdigest()[:8], 16)
-        if roll % 2:
-            continue
-        category = MODULES[module_id]["category"]
-        slot = next(
-            (index for index, current in enumerate(deck)
-             if MODULES[current]["category"] == category and not MODULES[current].get("unlock_league")),
-            None,
-        )
-        if slot is not None:
-            deck[slot] = module_id
-    return deck

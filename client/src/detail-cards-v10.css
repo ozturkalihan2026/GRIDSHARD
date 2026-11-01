@@ -11,8 +11,8 @@
 .ui-art[data-ui-art="detail-guard"] { --ui-art-image:url("../assets/ui/detail-icons-v1/guard.webp"); }
 /* Approved physical devices are reused for their own effects, not redrawn. */
 .ui-art[data-ui-art="detail-repair"] { --ui-art-image:url("../assets/ui/modules-physical-v1/repair.webp"); }
-.ui-art[data-ui-art="detail-cooler"] { --ui-art-image:url("../assets/ui/modules-physical-v1/cooler.webp"); }
-.ui-art[data-ui-art="detail-battery"] { --ui-art-image:url("../assets/ui/modules-physical-v1/battery.webp"); }
+.ui-art[data-ui-art="detail-cooler"] { --ui-art-image:url("../assets/ui/modules-physical-v3/cleanser.webp"); }
+.ui-art[data-ui-art="detail-battery"] { --ui-art-image:url("../assets/ui/detail-icons-v1/energy.webp"); }
 .ui-art[data-ui-art="detail-unlock"] { --ui-art-image:url("../assets/ui/dock-casual-v1/battle-swords-v2.webp"); }
 :root body[data-app-screen] [data-leaderboard-tab] { display:grid !important; place-content:center; justify-items:center; gap:3px; }
 :root body[data-app-screen] [data-leaderboard-tab] > .ui-icon { display:block; width:30px; height:30px; margin:0; }

@@ -1,5 +1,13 @@
 # GRIDSHARD public site — Cloudflare Pages
 
+## 1 November 2026 — Current V8 copy prepared locally
+
+TR/EN game introduction now explains Attack/Defense/Tactics and the approved
+7 starting Current, +1 every 3 seconds, plus 100 Attack damage AND 50 actual
+HP lost by Defense modules for +1 bonus. Local build and browser checks pass.
+This source update has **not** been published to Pages or Google Play.
+Earlier publication records below remain historical; legal copy is unchanged.
+
 ## 9 October 2026, 23:57–23:59 TR — Terms published and Google URL saved
 
 The user approved publishing the agreed TR/EN Terms in the existing

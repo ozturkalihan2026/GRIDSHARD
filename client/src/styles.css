@@ -981,7 +981,7 @@ body[data-app-screen="settings"] .battle-shell { width: min(980px, 94vw); }
 .statistics-module-card { display:flex; align-items:center; gap:12px; min-width:0; padding:11px 13px; border:1px solid rgba(53,229,210,.18); border-left:3px solid #35e5d2; border-radius:3px 11px 3px 11px; background:rgba(17,30,48,.86); }
 .statistics-module-card[data-category="saldırı"] { border-left-color:#ff617b; }
 .statistics-module-card[data-category="savunma"] { border-left-color:#69b9ff; }
-.statistics-module-card[data-category="destek"] { border-left-color:#8fe36c; }
+.statistics-module-card[data-category="taktik"] { border-left-color:#8fe36c; }
 .statistics-module-card[data-category="sabotaj"] { border-left-color:#b87cff; }
 .statistics-module-icon { display:grid; place-items:center; flex:0 0 38px; width:38px; height:38px; border:1px solid currentColor; border-radius:50%; color:#78f4df; font-size:1.25rem; background:rgba(53,229,210,.07); }
 .statistics-module-copy { display:grid; min-width:0; gap:3px; }
@@ -2043,7 +2043,7 @@ body {
   color:var(--gs-defense);
 }
 
-.pool-category-group[data-category="destek"] .pool-category-title,
+.pool-category-group[data-category="taktik"] .pool-category-title,
 .pool-choice[data-category="Destek"] .pool-choice-select {
   color:var(--gs-support);
 }
@@ -2062,7 +2062,7 @@ body {
 .module-card[data-category="savunma"] {
   border-top-color:var(--gs-defense);
 }
-.module-card[data-category="destek"] {
+.module-card[data-category="taktik"] {
   border-top-color:var(--gs-support);
 }
 .module-card[data-category="sabotaj"] {
@@ -3033,7 +3033,7 @@ body[data-app-screen="play"][data-online-status="battle"] .board-cell {
 .module-card[data-category="enerji"] .module-icon { color:var(--gs-arc-cyan,#36d9ff); }
 .module-card[data-category="saldırı"] .module-icon { color:var(--gs-overload-red,#ff5f6d); }
 .module-card[data-category="savunma"] .module-icon { color:#8cbcff; }
-.module-card[data-category="destek"] .module-icon { color:var(--gs-ion-green,#63d58a); }
+.module-card[data-category="taktik"] .module-icon { color:var(--gs-ion-green,#63d58a); }
 .module-card[data-category="sabotaj"] .module-icon { color:var(--gs-interference-violet,#af75ff); }
 .board-cell .hp-bar {
   width:82%;
@@ -3684,7 +3684,7 @@ body[data-app-screen="play"] .board-cell .hp-bar {
 .module-explosion[data-category="attack"],.module-explosion[data-category="saldırı"] { --explosion-color:#ff5f72; }
 .module-explosion[data-category="defense"],.module-explosion[data-category="savunma"] { --explosion-color:#72b7ff; }
 .module-explosion[data-category="energy"],.module-explosion[data-category="enerji"] { --explosion-color:#41ffe0; }
-.module-explosion[data-category="support"],.module-explosion[data-category="destek"] { --explosion-color:#a8ff72; }
+.module-explosion[data-category="support"],.module-explosion[data-category="taktik"] { --explosion-color:#a8ff72; }
 .module-explosion[data-category="sabotage"],.module-explosion[data-category="sabotaj"] { --explosion-color:#c58aff; }
 .module-explosion[data-category="core"] { --explosion-color:#ffe06b; }
 .module-explosion.core-explosion .explosion-flash {
@@ -3906,7 +3906,7 @@ body[data-app-screen="play"] .board-cell .hp-bar {
 .pool-module-card[data-category="enerji"] .pool-module-icon { color:var(--gs-energy); }
 .pool-module-card[data-category="saldırı"] .pool-module-icon { color:var(--gs-attack); }
 .pool-module-card[data-category="savunma"] .pool-module-icon { color:var(--gs-defense); }
-.pool-module-card[data-category="destek"] .pool-module-icon { color:var(--gs-support); }
+.pool-module-card[data-category="taktik"] .pool-module-icon { color:var(--gs-support); }
 .pool-module-card[data-category="sabotaj"] .pool-module-icon { color:var(--gs-sabotage); }
 
 .pool-choice.pool-module-card.selected {
@@ -4929,6 +4929,9 @@ body[data-app-screen="settings"] .battle-shell {
   box-shadow:inset 0 1px rgba(255,255,255,.05),0 12px 28px rgba(0,0,0,.18);
 }
 .settings-about-panel h3 { margin:4px 0 5px; }
+#game-current-guide { grid-column:1/-1; min-width:0; }
+#game-current-guide summary { cursor:pointer; font-weight:700; }
+.settings-about-panel #game-current-guide p { margin:10px 0; line-height:1.5; overflow-wrap:anywhere; }
 .settings-about-panel p { margin:0;color:#9eb2ce; }
 .settings-about-panel dl { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0; }
 .settings-about-panel dl > div { padding:10px;border:1px solid rgba(104,150,210,.24);border-radius:10px;background:rgba(5,13,28,.48); }
@@ -5309,7 +5312,7 @@ body[data-app-screen="rewards"] .season-rewards-screen {
 }
 .pool-detail-preview-card[data-category="saldırı"] .pool-detail-preview-icon { color:var(--gs-attack); }
 .pool-detail-preview-card[data-category="savunma"] .pool-detail-preview-icon { color:var(--gs-defense); }
-.pool-detail-preview-card[data-category="destek"] .pool-detail-preview-icon { color:var(--gs-support); }
+.pool-detail-preview-card[data-category="taktik"] .pool-detail-preview-icon { color:var(--gs-support); }
 .pool-detail-preview-card[data-category="sabotaj"] .pool-detail-preview-icon { color:var(--gs-sabotage); }
 .shelf-category-group {
   display:block;
@@ -7507,7 +7510,7 @@ body[data-app-screen="play"] .vertical-circuit-arena .duel-player-identity stron
 
 .enemy-deck-card[data-category="saldırı"] { --deck-accent:#ff6578; }
 .enemy-deck-card[data-category="savunma"] { --deck-accent:#78afff; }
-.enemy-deck-card[data-category="destek"] { --deck-accent:#7ee5a6; }
+.enemy-deck-card[data-category="taktik"] { --deck-accent:#7ee5a6; }
 .enemy-deck-card[data-category="sabotaj"] { --deck-accent:#bd83ff; }
 .enemy-deck-card[data-category="enerji"] { --deck-accent:#48f4e0; }
 
@@ -8185,7 +8188,7 @@ body[data-home-matchmaking="true"] #app-bottom-dock { visibility:hidden !importa
 
 .unified-module-tile[data-category="saldırı"] { --module-accent:#ff6178; }
 .unified-module-tile[data-category="savunma"] { --module-accent:#75aefe; }
-.unified-module-tile[data-category="destek"] { --module-accent:#8ee977; }
+.unified-module-tile[data-category="taktik"] { --module-accent:#8ee977; }
 .unified-module-tile[data-category="sabotaj"] { --module-accent:#be78ff; }
 .unified-module-tile[data-category="enerji"] { --module-accent:#48f4e0; }
 .unified-module-tile[data-locked="true"] { filter:grayscale(1); opacity:.4; }
@@ -8379,7 +8382,7 @@ body[data-home-matchmaking="true"] #app-bottom-dock { visibility:hidden !importa
 .module-detail-art { --module-accent:#48f4e0; width:88px; height:88px; display:grid; place-items:center; border:1px solid var(--module-accent); border-radius:16px; color:var(--module-accent); background:radial-gradient(circle,rgba(72,244,224,.22),#08172b 70%); font-size:2.7rem; filter:drop-shadow(0 0 9px currentColor); }
 .module-detail-art[data-category="saldırı"] { --module-accent:#ff6178; }
 .module-detail-art[data-category="savunma"] { --module-accent:#75aefe; }
-.module-detail-art[data-category="destek"] { --module-accent:#8ee977; }
+.module-detail-art[data-category="taktik"] { --module-accent:#8ee977; }
 .module-detail-art[data-category="sabotaj"] { --module-accent:#be78ff; }
 .module-detail-hero span { color:#ffdd76; font:800 .55rem var(--gs-font-display); letter-spacing:.1em; }
 .module-detail-hero h2 { margin:3px 0; font:900 1.25rem var(--gs-font-display); }

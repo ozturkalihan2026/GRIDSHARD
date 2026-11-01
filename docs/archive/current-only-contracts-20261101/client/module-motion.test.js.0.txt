@@ -1,0 +1,12 @@
+test("cooler visits each real target once per pulse and keeps the final lock",()=>{
+  const s=setup("cooler");
+  s.snapshot.players.own.modules.push({...s.snapshot.players.own.modules[1],instance_id:"friend2",x:2,y:0},
+    {...s.snapshot.players.own.modules[1],instance_id:"friend3",x:0,y:2});
+  const ids=["friend","friend2","friend3"];
+  s.receive(ids.map(id=>s.event("module_cooled",{player_id:"own",source_module_id:"same",target_module_id:id,heat_before:20,heat_after:15})));
+  for(const [i,id]of ids.entries()){
+    s.setTime(i*240);s.motion.tick();assert.equal([...s.motion.actions.values()][0].target,JSON.stringify(["own",id]));
+  }
+  s.setTime(1000);s.motion.tick();assert.equal(s.motion.actions.size,0);
+  assert.equal(s.motion.aimLocks.get('["own","same"]').target,'["own","friend3"]');
+});

@@ -109,7 +109,7 @@ test("kupa seçimi, günlük meta ve tüm modül çizimleri mevcut arayüze bağ
   await page.locator('[data-shell-screen="modules"]').click();
   await expect(page.locator(".module-deck-editor > .mobile-section-heading")).toHaveCSS("border-left-width","0px");
   const collectionArt = page.locator("#module-collection-grid .unified-module-tile .module-emblem");
-  await expect(collectionArt).toHaveCount(36);
+  await expect(collectionArt).toHaveCount(24);
   expect(await collectionArt.evaluateAll(images=>images.every(image=>image.tagName==="IMG" && image.src.includes("modules-physical-")))).toBe(true);
 });
 

@@ -30,7 +30,7 @@
     + '<path class="me-ink" d="M10 6h28q4 0 4 4v28q0 4-4 4H10q-4 0-4-4V10q0-4 4-4Z"/>'
     + '<path class="me-fill me-w" d="M17 25a7 7 0 1 0 14 0a7 7 0 1 0 -14 0Z"/>'
     + '<path class="me-ink" d="M17 25a7 7 0 1 0 14 0a7 7 0 1 0 -14 0Z"/>';
-  const CATEGORIES = Object.freeze(["saldırı", "savunma", "destek", "sistem", "sabotaj"]);
+  const CATEGORIES = Object.freeze(["saldırı", "savunma", "taktik"]);
 
   class GridshardModuleCardView {
     // Painted canon identity first; unknown/unsupported IDs get a generic chip.

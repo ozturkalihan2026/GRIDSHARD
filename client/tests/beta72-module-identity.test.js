@@ -8,8 +8,9 @@ const css = fs.readFileSync("./src/canon.css", "utf8");
 assert.ok(!app.includes("Nadirlik avantajı"));
 assert.ok(app.includes("const signature = createStatSignature(item);"));
 assert.ok(app.includes("if (signature) host.appendChild(signature);"));
-assert.ok(app.includes("item.shared_behavior_tr"));
-assert.ok(app.includes("Seviye ve yeteneklerle gelişir; enderlik güç katmaz."));
+assert.ok(!app.includes("item.shared_behavior_tr"));
+assert.ok(app.includes("item.signature_mechanic"));
+assert.ok(app.includes("Seviyeyle gelişir; enderlik ek güç çarpanı katmaz."));
 
 // Koyu zeminli içerik kartlarında (tur 4) yazı/zemin kontrastı en az 4.5:1 olmalı.
 function rgb(hex) {

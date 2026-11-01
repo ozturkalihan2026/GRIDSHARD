@@ -8,8 +8,6 @@ def test_beta9_rich_pool_detail_markup_exists():
     html=client.get("/").text
 
     for element_id in (
-        "battle-pool-detail-energy-generation",
-        "battle-pool-detail-energy-consumption",
         "battle-pool-detail-damage",
         "battle-pool-detail-cooldown",
         "battle-pool-detail-effects",
@@ -18,3 +16,6 @@ def test_beta9_rich_pool_detail_markup_exists():
         "battle-pool-detail-synergy",
     ):
         assert f'id="{element_id}"' in html
+
+    assert 'id="battle-pool-detail-energy-generation"' not in html
+    assert 'id="battle-pool-detail-energy-consumption"' not in html

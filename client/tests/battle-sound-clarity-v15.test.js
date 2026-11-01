@@ -2,10 +2,11 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const app=fs.readFileSync(path.join(__dirname,"../src/app.js"),"utf8");
 require("../src/gridshard-audio.js");
+require("../src/battle/module-presentation-profiles.js");
 const {GridshardBattleDeferredQueue}=require("../src/battle/battle-lifecycle.js");
 function fixture(){
   let now=0;const sounds=[],context={performance:{now:()=>now},battleVisualGeneration:1,BATTLE_FX_LATE_LIMIT_MS:300,
-    document:{hidden:false},triggerGridshardCue:name=>sounds.push(name)};
+    GridshardModulePresentation:globalThis.GridshardModulePresentation,document:{hidden:false},triggerGridshardCue:name=>sounds.push(name)};
   const queue=new GridshardBattleDeferredQueue({now:()=>now,onError:e=>{throw e;}});
   context.scheduleBattleSweep=(delay,fn)=>queue.schedule(delay,fn);
   const start=app.indexOf("  const WEAPON_PRESENTATION = Object.freeze({"),end=app.indexOf("  function selectedBattlePoolDefinitionIds()",start);
@@ -15,8 +16,8 @@ function fixture(){
 test("each weapon contact uses its own acoustic family, never energy-transfer pings",()=>{
   const {context:c}=fixture();
   for(const [sourceDefinitionId,expected]of Object.entries({laser:null,quantum_repeater:null,
-    pulse_cannon:"kinetic_hit",railgun:"kinetic_hit",drone_bay:"kinetic_hit",swarm_fabricator:"kinetic_hit",quantum_cannon:"kinetic_hit",
-    missile_launcher:"missile_explosion",plasma_mortar:"missile_explosion",arc_cannon:"electrical_hit",ion_spear:"electrical_hit"})){
+    pulse_cannon:"kinetic_hit",railgun:null,drone_bay:null,burst_cannon:null,shield_breaker:null,
+    missile_launcher:"missile_explosion",plasma_mortar:null,arc_cannon:null})){
     for(const targetDefinitionId of ["core","laser","shield"])assert.equal(c.impact({sourceDefinitionId,targetDefinitionId}),expected);
     assert.equal(c.impact({sourceDefinitionId,defended:true}),"shield_absorb");
   }

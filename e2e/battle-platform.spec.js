@@ -26,7 +26,7 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
     });
     window.__deploymentObserver.observe(document.body,{childList:true});
   });
-  for(const id of ['laser','battery','shield']) {
+  for(const id of ['laser','armor','shield']) {
     await expect.poll(()=>page.evaluate(id=>window.__GRIDSHARD_TEST_API.deployModule(id),id),{timeout:14000}).toBe(true);
     await expect(page.locator(`#board [data-device="${id}"]`)).toBeVisible({timeout:14000});
   }
@@ -34,7 +34,7 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
   await expect(page.locator('.battle-deployment-flight')).toHaveCount(0);
   expect(await page.evaluate(()=>window.__deploymentFlights.every(f=>!f.isConnected))).toBe(true);
   await page.evaluate(()=>window.__deploymentObserver.disconnect());
-  await page.evaluate(async()=>Promise.all(['battle-native-v6/island-player','battle-native-v6/island-enemy'].map(async name=>{
+  await page.evaluate(async()=>Promise.all(['battle-native-v7/island-player','battle-native-v7/island-enemy'].map(async name=>{
     const image=new Image();image.src=`./assets/ui/${name}.webp`;await image.decode();
   })));
   const waves=[];
@@ -177,7 +177,7 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
         environmentColor:getComputedStyle(document.querySelector('.arena-panel')).backgroundColor,
         rootBackground:getComputedStyle(document.body).backgroundImage,
         arenaShadow:getComputedStyle(document.querySelector('.arena-panel')).boxShadow,
-        enemyExtension:getComputedStyle(document.querySelector('.duel-enemy-side > .circuit-terrain'),'::after').backgroundImage,
+        enemyExtension:getComputedStyle(document.querySelector('.duel-enemy-side > .circuit-terrain'),'::after').content,
         legacyGrid:getComputedStyle(document.querySelector('.vertical-circuit-arena'),'::after').content,
         overflow:document.documentElement.scrollWidth>innerWidth+1,
         animatedBus:document.getAnimations().some(a=>a.effect?.target?.closest?.('.board-cable-layer,.board-cable-current-layer'))};
@@ -226,7 +226,7 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
     expect(layout.environment).toBe('none');
     expect(layout.environmentColor).toBe('rgb(10, 25, 51)');
     expect(layout.rootBackground).toBe('none');expect(layout.arenaShadow).toBe('none');
-    expect(layout.enemyExtension).toContain('island-enemy.webp');
+    expect(layout.enemyExtension).toBe('none');
     expect(layout.legacyGrid).toBe('none');
     expect(layout.sockets.every(s=>!s.art.includes('url(') && s.animation==='none' && s.filter==='none' && s.pointer!=='none' && s.images===0 && s.fits)).toBe(true);
     expect(layout.sockets.every(s=>s.wellDisplay==='none'&&s.retiredWell==='none')).toBe(true);
@@ -332,7 +332,7 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
   // artwork here (temporarily) so a hidden bar cannot pass on geometry alone.
   const crowded=await page.evaluate(async()=>{
     const saved=[],cards=[],core=Object.keys(GridshardModuleLayerData).find(id=>GridshardModuleLayerData[id].core);
-    const ids=['laser','battery','shield','cooler'];
+    const ids=['laser','armor','shield','repair'];
     const view=new GridshardBattleCardStateView({document,mountIcon:(host,m)=>m.core
       ?GridshardModuleDeviceArt.mountCore(host,m.artwork)
       :GridshardModuleDeviceArt.mount(host,{definitionId:m.artwork},m.enemy)});

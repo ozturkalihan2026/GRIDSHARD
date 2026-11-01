@@ -10,7 +10,7 @@ async function balancePanels(page,{baseURL='',widths=[320,393],screenshotDir}={}
   await page.goto(`${baseURL}/?e2e=1`,{waitUntil:'domcontentloaded'});
   await waitForParticipantReady(page);
   const payload=await(await ready).json();
-  expect(payload.module_collection).toHaveLength(36);
+  expect(payload.module_collection).toHaveLength(24);
   for(const item of payload.module_collection){
     const source=canon.find(row=>row.id===item.definition_id);
     expect(item.current_cost).toBe(source.current_cost);
@@ -19,7 +19,7 @@ async function balancePanels(page,{baseURL='',widths=[320,393],screenshotDir}={}
       expect(item.stats.base_damage).toBe(source.base_damage);
     }
   }
-  const ids=['quantum_cannon','prism_shield','virus','jammer','singularity_projector','precision_matrix'];
+  const ids=['quantum_repeater','buffer_shield','virus','cleanser','last_bastion','burst_cannon'];
   for(const width of widths||[null]){
     if(width)await page.setViewportSize({width,height:width===320?568:852});
     await page.locator('[data-shell-screen="modules"]').click();

@@ -1,10 +1,11 @@
+from app.game.pvp_protocol import PVP_PROTOCOL_VERSION
 from app.game.battle_pool import default_battle_pool
 from app.game.pvp_protocol_handler import PvPProtocolHandler
 from app.game.pvp_session import PvPSessionService
 
 def setup_message(player):
     return {
-        "version":1,"type":"submit_setup","session_id":"match",
+        "version": PVP_PROTOCOL_VERSION,"type":"submit_setup","session_id":"match",
         "player_id":player,"request_id":f"s-{player}",
         "payload":{
             "battle_pool_ids":list(default_battle_pool().module_definition_ids),
@@ -16,7 +17,7 @@ def setup_message(player):
 
 def ready_message(player):
     return {
-        "version":1,"type":"set_ready","session_id":"match",
+        "version": PVP_PROTOCOL_VERSION,"type":"set_ready","session_id":"match",
         "player_id":player,"request_id":f"r-{player}",
         "payload":{"ready":True},
     }
@@ -43,7 +44,7 @@ def test_set_ready_protocol_message():
 def test_request_lobby_protocol_message():
     h,s=build()
     r=h.handle({
-        "version":1,"type":"request_lobby","session_id":"match",
+        "version": PVP_PROTOCOL_VERSION,"type":"request_lobby","session_id":"match",
         "player_id":"a","request_id":"l","payload":{}
     },"a")
     assert r["type"]=="lobby_state"

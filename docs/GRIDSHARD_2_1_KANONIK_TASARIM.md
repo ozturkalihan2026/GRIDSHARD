@@ -1,4 +1,13 @@
 
+> **1 Kasım 2026 kaynak önceliği:** Bu dosyanın aşağıdaki 36 kart/Enerji/Isı ve
+> eski kota bölümleri tarihsel tasarımdır. Çalışan ana oyun 24 kart/3 sınıf ve
+> yalnız Akım; güncel durum `CODEX_CHECKPOINT.md`, ana kadro V2 ve çekirdek V5
+> raporlarındadır. Yeni modül/enderlik/yetenek davranışlarının **nihai tasarım
+> kararı** [V7 belgesidir](NIHAI_MODUL_ENDERLIK_YETENEK_V7_20261101.md).
+> V7.1 ana koda uygulandı; güncel testler V7 uygulama raporundadır. Telefonda hâlâ
+> önceki V6 paket vardır. Ana Akım kuralı artık V8: 7 başlangıç / 3 sn pasif /
+> 100 Saldırı hasarı + Savunmanın 50 CAN kaybı → +1; eğitim V5. Bu tarihsel dosyadaki eski kuralları tekrar uygulamayın.
+
 ## 1. Yeni ürün omurgası
 
 GRIDSHARD dikey telefonda oynanan, gerçek zamanlı ve sunucu otoriteli bir PvP oyunudur. Oyuncu savaş öncesinde **6 modüllük Savaş Destesi** ve **1 Çekirdek** seçer. Savaş başladıktan sonra simülasyon hiçbir seçim nedeniyle durmaz. Savaş alanı **5 sütun × 3 satırdan oluşan 15 hücrelik devre tahtasıdır**. **2. satır 3. hücre Çekirdek için sabit ve rezerve merkez hücredir**; bu nedenle oyuncunun modül yerleştirebildiği aktif hücre sayısı **14** olur. Bu merkez yerleşim değiştirilemez.

@@ -10,7 +10,7 @@ from .telemetry import InMemoryTelemetryService
 from .web_test import WEB_TEST_BUILD
 
 
-PVP_PROTOCOL_VERSION = 1
+from .game.pvp_protocol import PVP_PROTOCOL_VERSION
 
 
 def build_manifest(

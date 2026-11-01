@@ -31,7 +31,7 @@ async function check() {
   const { server, origin } = await startPreviewServer();
   let browser;
   try {
-    browser = await chromium.launch();
+    browser = await chromium.launch({channel:process.env.GRIDSHARD_QA_BROWSER_CHANNEL || undefined});
     const screenshots = path.resolve(__dirname, "../test-results/public-site");
     fs.mkdirSync(screenshots, { recursive: true });
     let checks = 0;

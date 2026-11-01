@@ -32,7 +32,7 @@ assert.ok(!css.includes(".daily-meta-wheel::before"));
 // 8A: stationary single-route buses replace the all-shortest-path animation.
 // Behavior, power filtering and persistent nodes: circuit-deck-view.test.js.
 assert.ok(app.includes("function circuitCableRoutes(modules)"));
-assert.ok(app.includes("m.isPowered===false"));
+assert.ok(app.includes("m.operational===false"));
 assert.ok(app.includes("function shortestCircuitPaths(graph, sourceKey)"));
 assert.ok(app.includes("energizedEdges.add"));
 

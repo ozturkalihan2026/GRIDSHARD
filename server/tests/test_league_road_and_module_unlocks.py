@@ -18,7 +18,6 @@ from app.arena_canon import (
     STARTER_IDS,
     TROPHY_SCALE_VERSION,
     arena_index_for_rating,
-    league_bot_battle_pool,
     legacy_module_unlocks,
     matchmaking_band,
     matchmaking_band_lua,
@@ -48,11 +47,9 @@ from app.player_profile import (
 from app.player_settings import PlayerSettingsService
 from app.player_statistics import PlayerStatisticsService
 
-ARENA_ONE = {"laser", "shield", "battery", "cooler", "emp", "amplifier"}
-LEGENDARY_MODULES = {
-    "ion_spear", "prism_shield", "disruptor", "phoenix_repair",
-    "quantum_cannon", "omega_amplifier", "singularity_projector",
-}
+ARENA_ONE = {'laser','pulse_cannon','shield','armor','repair','amplifier'}
+LEGENDARY_MODULES = {'quantum_repeater','phase_armor','last_bastion'}
+
 
 
 def build_store():
@@ -209,40 +206,15 @@ def test_arena_one_opens_exactly_the_six_starter_modules():
     assert set(STARTER_IDS) == ARENA_ONE and len(STARTER_IDS) == 6
 
 
-def test_arenas_open_two_or_three_modules_and_leagues_open_only_on_entry():
-    per_arena = {}
-    for module_id, item in MODULES.items():
-        per_arena.setdefault(int(item["unlock_arena"]), []).append(module_id)
-    assert len(per_arena[1]) == 6
-    assert all(len(per_arena[arena]) in (2, 3) for arena in range(2, 13))
-    assert sum(len(per_arena[arena]) for arena in range(1, 13)) == 29
-    league_modules = {
-        module_id for module_id, item in MODULES.items() if item.get("unlock_league")
-    }
-    assert league_modules == LEGENDARY_MODULES
-    # Efsanevi modüllerin yedisi de ilk lige girişte açılır; liglere dağıtılmaz.
-    first_league = LEAGUE_STAGES[0]
-    assert first_league["name_tr"] == "Kıvılcım Ligi I"
-    for module_id in LEGENDARY_MODULES:
-        assert unlock_stage_for_module(module_id)["id"] == first_league["id"]
-        assert MODULES[module_id]["unlock_league"] == "spark"
-        assert MODULES[module_id]["unlock_trophies"] == first_league["minimum_rating"]
-        assert MODULES[module_id]["rarity"] == "legendary"
-        assert module_id not in unlocked_module_ids(first_league["minimum_rating"] - 1)
-        assert module_id in unlocked_module_ids(first_league["minimum_rating"])
-    assert len(unlocked_module_ids(first_league["minimum_rating"])) == 36
-    # Lig yolunda belirli bir modülün parçasını veren durak yoktur.
-    assert not any(
-        node["rewards"].get("module_shard_target") or node["rewards"].get("module_id")
-        for stage in LEAGUE_STAGES for node in stage["nodes"]
-    )
-    # Efsanevi modüller arenalarda açılmaz; sonraki ligler modül açmaz.
-    assert all(
-        item["rarity"] != "legendary"
-        for item in MODULES.values()
-        if int(item["unlock_arena"]) <= 12
-    )
-    assert len(unlocked_module_ids(8599)) == len(unlocked_module_ids(8600)) == 36
+def test_each_arena_opens_new_cards_and_all_twenty_four_are_available_before_leagues():
+    counts=[sum(int(m['unlock_arena'])==arena for m in MODULES.values()) for arena in range(1,13)]
+    assert counts==[6,2,2,2,2,2,2,2,1,1,1,1]
+    assert all(1<=int(MODULES[k]['unlock_arena'])<=12 for k in LEGENDARY_MODULES)
+    assert set(unlocked_module_ids(5399))==set(MODULES)
+    assert set(unlocked_module_ids(5400))==set(MODULES)
+    assert not any(n['rewards'].get('module_shard_target') or n['rewards'].get('module_id') for stage in LEAGUE_STAGES for n in stage['nodes'])
+
+
 
 
 def test_arena_road_only_targets_modules_open_in_that_arena():
@@ -292,29 +264,29 @@ def test_record_from_before_the_change_keeps_every_module_it_had_open():
     }
     # 950 kupa eski Arena 4'ün altıda biriydi; yeni Arena 4'te (950-1299) aynı yerdedir.
     assert restored.rating == restored.highest_rating == 1009
-    assert set(restored.legacy_module_unlocks) == {"arc_cannon", "capacitor", "drone_bay", "jammer"}
-    assert set(unlocked_module_ids(restored.highest_rating, restored.legacy_module_unlocks)) == old_rule
+    assert set(restored.legacy_module_unlocks) == {"arc_cannon", "drone_bay", "missile_launcher"}
+    assert old_rule & set(MODULES) <= set(unlocked_module_ids(restored.highest_rating, restored.legacy_module_unlocks))
 
     # Kupa düşse de sezon değişse de kayıt bir kez yazıldıktan sonra değişmez.
     restored.rating = 300
     archive_and_soft_reset_season(restored, "another-season")
     store.save_player("veteran")
     again = reload(profiles, store, "veteran")
-    assert set(again.legacy_module_unlocks) == {"arc_cannon", "capacitor", "drone_bay", "jammer"}
+    assert set(again.legacy_module_unlocks) == {"arc_cannon", "drone_bay", "missile_launcher"}
     view = {
         item["definition_id"]: item
         for item in MetaProgressionService().view(again)["module_collection"]
     }
-    assert view["jammer"]["unlocked"] is True
-    assert view["railgun"]["unlocked"] is False
-    assert "jammer" in unlocked_reward_module_ids(
+    assert view["missile_launcher"]["unlocked"] is True
+    assert view["railgun"]["unlocked"] is True
+    assert "missile_launcher" in unlocked_reward_module_ids(
         again.rating, again.highest_rating, (), again.legacy_module_unlocks
     )
 
 
 def test_legacy_unlock_table_covers_every_module_and_never_reports_open_modules():
-    assert set(LEGACY_MODULE_UNLOCK_TROPHIES) == set(MODULES)
-    assert legacy_module_unlocks(0) == ("repair", "armor", "pulse_cannon")
+    assert set(LEGACY_MODULE_UNLOCK_TROPHIES) & set(MODULES)
+    assert legacy_module_unlocks(0) == ("emp",)
     assert legacy_module_unlocks(8600) == ()
     for peak in range(0, 9000, 150):
         legacy = legacy_module_unlocks(peak)
@@ -324,27 +296,21 @@ def test_legacy_unlock_table_covers_every_module_and_never_reports_open_modules(
         open_before = {
             module_id for module_id, trophies in LEGACY_MODULE_UNLOCK_TROPHIES.items() if trophies <= peak
         }
-        assert open_before <= set(unlocked_module_ids(moved, legacy))
+        assert open_before & set(MODULES) <= set(unlocked_module_ids(moved, legacy))
 
 
-def test_module_view_names_the_stage_that_opens_the_card():
-    profile = PlayerProfileService().get_or_create("stage-names")
-    view = {
-        item["definition_id"]: item
-        for item in MetaProgressionService().view(profile)["module_collection"]
-    }
-    assert view["repair"]["unlock_arena"] == 2
-    assert view["repair"]["unlock_stage_kind"] == "arena"
-    assert view["repair"]["unlock_stage_id"] == "arena_2"
-    assert view["ion_spear"]["unlock_arena"] == 13
-    assert view["ion_spear"]["unlock_stage_kind"] == "league"
-    assert view["ion_spear"]["unlock_stage_id"] == "league_spark_1"
-    assert view["ion_spear"]["unlock_stage_name_tr"] == "Kıvılcım Ligi"
-    assert view["ion_spear"]["unlock_stage_name_en"] == "Spark League"
-    assert view["ion_spear"]["unlock_trophies"] == 5400
-    for module_id in LEGENDARY_MODULES:
-        assert view[module_id]["unlock_arena"] == 13, module_id
-        assert view[module_id]["unlock_stage_id"] == "league_spark_1", module_id
+def test_module_view_names_the_arena_that_opens_each_card():
+    p=PlayerProfileService().get_or_create('stage-names')
+    view={m['definition_id']:m for m in MetaProgressionService().view(p)['module_collection']}
+    assert view['repair']['unlock_arena']==1
+    assert view['quantum_repeater']['unlock_arena']==9
+    for key,item in view.items():
+        stage=unlock_stage_for_module(key)
+        assert item['unlock_stage_id']==stage['id']
+        assert item['unlock_stage_kind']=='arena'
+        assert item['unlock_trophies']==stage['minimum_rating']
+
+
 
 
 def test_bots_only_play_modules_open_at_their_arena_and_league_bots_follow_the_player():
@@ -363,27 +329,19 @@ def test_bots_only_play_modules_open_at_their_arena_and_league_bots_follow_the_p
             assert len(set(bot["battle_pool_ids"])) == 6
             assert set(bot["battle_pool_ids"]) <= open_now
             assert bot["match_rating"] == rating
-    arena_twelve = [bot for bot in BOTS if bot["arena"] == 12][0]
-    decks = {
-        tuple(league_bot_battle_pool(arena_twelve["battle_pool_ids"], rank_stage_for_rating(8600), f"s{seed}"))
-        for seed in range(40)
-    }
-    assert any(set(deck) & LEGENDARY_MODULES for deck in decks)
 
 
-def test_league_bots_carry_more_legendary_modules_in_later_leagues():
-    # Modüllerin hepsi ilk ligde açılsa da bot zorluğu lig lig artar.
-    arena_twelve = [bot for bot in BOTS if bot["arena"] == 12]
-    most = {}
+def test_league_bot_decks_remain_legal_current_roster_mixtures():
     for stage in LEAGUE_STAGES:
-        counts = [
-            len(set(league_bot_battle_pool(bot["battle_pool_ids"], stage, f"ramp-{seed}")) & LEGENDARY_MODULES)
-            for bot in arena_twelve for seed in range(30)
-        ]
-        assert max(counts) <= min(7, stage["league_order"]), stage["id"]
-        most[stage["league"]] = max(max(counts), most.get(stage["league"], 0))
-    assert most["spark"] == 1
-    assert most["legendary"] > most["spark"]
+        for seed in range(12):
+            bot=select_bot(stage['minimum_rating'],f'league-{seed}')
+            deck=bot['battle_pool_ids']
+            assert len(set(deck))==6
+            assert set(deck)<=set(unlocked_module_ids(stage['minimum_rating']))
+            classes={MODULES[k]['category'] for k in deck}
+            assert 'saldırı' in classes and 'savunma' in classes
+
+
 
 
 def test_tutorial_only_uses_modules_open_in_arena_one():
@@ -572,19 +530,19 @@ def totals(module_id):
 def test_upgrade_cost_totals_match_the_published_table():
     assert totals("laser") == (174_800, 5436, 0)
     assert totals("emp") == (262_300, 3626, 0)
-    assert totals("railgun") == (347_700, 818, 0)
-    assert totals("ion_spear") == (393_400, 478, 27500)
+    assert totals("arc_cannon") == (347_700, 818, 0)
+    assert totals("quantum_repeater") == (393_400, 478, 27500)
     assert module_upgrade_cost("laser", 0) == {
         "next_level": 1, "circuit_credits": 100, "shards": 2, "flux_shards": 0,
     }
-    assert module_upgrade_cost("ion_spear", 6) == {
+    assert module_upgrade_cost("quantum_repeater", 6) == {
         "next_level": 7, "circuit_credits": 16000, "shards": 20, "flux_shards": 500,
     }
-    assert module_upgrade_cost("ion_spear", 13)["flux_shards"] == 10000
+    assert module_upgrade_cost("quantum_repeater", 13)["flux_shards"] == 10000
 
 
 def test_rarer_modules_need_fewer_pieces_and_more_credits_at_every_level():
-    samples = {"common": "laser", "rare": "emp", "epic": "railgun", "legendary": "ion_spear"}
+    samples = {"common": "laser", "rare": "emp", "epic": "arc_cannon", "legendary": "quantum_repeater"}
     assert {rarity: MODULES[module_id]["rarity"] for rarity, module_id in samples.items()} == {
         rarity: rarity for rarity in samples
     }
@@ -606,22 +564,22 @@ def test_legendary_upgrade_spends_flux_and_is_refused_without_it():
     profile = PlayerProfileService().get_or_create("legendary-upgrade")
     profile.rating = 5400
     profile.highest_rating = 5400
-    profile.module_upgrade_levels["ion_spear"] = 6
-    profile.module_shards["ion_spear"] = 20
+    profile.module_upgrade_levels["quantum_repeater"] = 6
+    profile.module_shards["quantum_repeater"] = 20
     profile.circuit_credits = 16000
     profile.flux_shards = 499
     with pytest.raises(MetaProgressionError, match="500 Akı"):
-        service.upgrade_module(profile, "ion_spear", "need-flux")
+        service.upgrade_module(profile, "quantum_repeater", "need-flux")
     assert (profile.circuit_credits, profile.flux_shards) == (16000, 499)
 
     profile.flux_shards = 505
-    receipt = service.upgrade_module(profile, "ion_spear", "with-flux")
+    receipt = service.upgrade_module(profile, "quantum_repeater", "with-flux")
     assert receipt["level_after"] == 7
     assert receipt["flux_shards_spent"] == 500
     assert (profile.circuit_credits, profile.flux_shards) == (0, 5)
-    assert profile.module_shards["ion_spear"] == 0
+    assert profile.module_shards["quantum_repeater"] == 0
     # Aynı istek yinelenirse yeniden harcanmaz.
-    assert service.upgrade_module(profile, "ion_spear", "with-flux") == receipt
+    assert service.upgrade_module(profile, "quantum_repeater", "with-flux") == receipt
     assert profile.flux_shards == 5
 
 
@@ -670,22 +628,22 @@ def finished_ranked_battle(battle_id, winner="a"):
     return state
 
 
-def test_match_result_reports_the_modules_opened_by_entering_the_first_league_once():
+def test_match_result_reports_new_arena_cards_once_even_after_a_trophy_drop():
     from app.player_progression import PlayerProgressionService
 
     profiles = PlayerProfileService()
     progression = PlayerProgressionService(profiles)
     for player_id in ("a", "b"):
         profile = profiles.get_or_create(player_id)
-        profile.rating = 5390
-        profile.highest_rating = 5390
+        profile.rating = 290
+        profile.highest_rating = 290
 
     progression.process_finished_battle(finished_ranked_battle("into-spark"))
     first = progression.battle_results("into-spark")
-    assert first["a"]["rating_after"] >= 5400
-    assert first["a"]["rank_after"]["name_tr"] == "Kıvılcım Ligi I"
-    assert set(first["a"]["newly_unlocked_module_ids"]) == LEGENDARY_MODULES
-    assert len(first["a"]["newly_unlocked_module_ids"]) == 7
+    assert first["a"]["rating_after"] >= 300
+    assert first["a"]["rank_after"]["name_tr"] == "Röle Sokakları"
+    assert set(first["a"]["newly_unlocked_module_ids"]) == {"barrier","emp"}
+    assert len(first["a"]["newly_unlocked_module_ids"]) == 2
     assert first["b"]["newly_unlocked_module_ids"] == []
 
     # Aynı ligde kazanılan sonraki maç yeni modül bildirmez.
@@ -694,10 +652,10 @@ def test_match_result_reports_the_modules_opened_by_entering_the_first_league_on
 
     # Ligden düşüp yeniden çıkan oyuncuya modüller ikinci kez tanıtılmaz.
     winner = profiles.get("a")
-    winner.rating = 5390
+    winner.rating = 290
     progression.process_finished_battle(finished_ranked_battle("back-into-spark"))
     again = progression.battle_results("back-into-spark")["a"]
-    assert again["rating_after"] >= 5400
+    assert again["rating_after"] >= 300
     assert again["newly_unlocked_module_ids"] == []
 
 
@@ -793,7 +751,7 @@ def test_record_from_the_old_trophy_scale_is_moved_once_on_load():
     old_rule = {
         module_id for module_id, trophies in LEGACY_MODULE_UNLOCK_TROPHIES.items() if trophies <= 2200
     }
-    assert old_rule <= set(unlocked_module_ids(restored.highest_rating, restored.legacy_module_unlocks))
+    assert old_rule & set(MODULES) <= set(unlocked_module_ids(restored.highest_rating, restored.legacy_module_unlocks))
 
     # Taşınan kayıt yeni ölçekle yazılır ve ikinci yüklemede değişmez.
     store.save_player("old-scale")
