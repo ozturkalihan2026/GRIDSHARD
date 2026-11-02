@@ -11,6 +11,9 @@ from app.player_profile import PlayerProfileError, PlayerProfileService
 from app.team_service import InMemoryTeamRepository, TeamService, TeamServiceError, team_appearance_unlocked
 
 
+NOW = datetime(2026,11,2,tzinfo=timezone.utc)
+
+
 def registry():
     return CosmeticReleaseRegistry(json.loads(releases.CATALOG_PATH.read_text(encoding="utf-8")))
 
@@ -33,9 +36,9 @@ def test_drafts_do_not_award_and_two_periods_receive_different_real_designs():
     r = registry().reserve("weekly_tournament", "2027-W01", "weekly-2027-01")
     base = {"flux_shards": 10, "avatar_id": "weekly_champion"}
     assert r.reward("weekly_tournament", "2027-W01", 1, base) == base
-    r = r.publish("weekly-2027-01")
+    r = r.publish("weekly-2027-01", now=NOW)
     first = r.reward("weekly_tournament", "2027-W01", 1, base)
-    r = r.reserve("weekly_tournament", "2027-W02", "weekly-2027-02").publish("weekly-2027-02")
+    r = r.reserve("weekly_tournament", "2027-W02", "weekly-2027-02").publish("weekly-2027-02", now=NOW)
     second = r.reward("weekly_tournament", "2027-W02", 1, base)
     assert first["avatar_frame_id"] != second["avatar_frame_id"]
     assert first["profile_background_id"] != second["profile_background_id"]
@@ -48,7 +51,7 @@ def test_drafts_do_not_award_and_two_periods_receive_different_real_designs():
 def test_stock_exhaustion_never_wraps_and_a_published_reward_cannot_change():
     r = registry()
     for week in range(1, 4):
-        r = r.reserve("weekly_tournament", f"2027-W{week:02}", f"week-{week}").publish(f"week-{week}")
+        r = r.reserve("weekly_tournament", f"2027-W{week:02}", f"week-{week}").publish(f"week-{week}", now=NOW)
     with pytest.raises(CosmeticReleaseError, match="exhausted"):
         r.reserve("weekly_tournament", "2027-W04", "week-4")
     modified = deepcopy(r.document)
@@ -72,6 +75,13 @@ def test_renamed_or_recolored_visual_and_wrong_field_or_period_are_rejected():
         CosmeticReleaseRegistry(doc)
     with pytest.raises(CosmeticReleaseError):
         registry().reserve("weekly_tournament", "2027-W99", "invalid-week")
+    doc = registry().reserve("weekly_tournament", "2027-W01", "wrong-field").document
+    doc["releases"][0]["placements"][0]["cosmetics"] = {"avatar_frame_id":"aurora_sigil"}
+    with pytest.raises(CosmeticReleaseError, match="field mismatch"):
+        CosmeticReleaseRegistry(doc)
+    doc["releases"][0]["placements"][0]["cosmetics"] = {"team_emblem_id":"aurora_sigil"}
+    with pytest.raises(CosmeticReleaseError, match="player-only source"):
+        CosmeticReleaseRegistry(doc)
 
 
 def test_season_preview_claim_and_retry_use_the_same_frozen_new_cosmetics(monkeypatch):
@@ -99,7 +109,7 @@ def test_scheduled_team_reward_does_not_substitute_or_replay_after_50_other_gran
     teams = TeamService(repo)
     created = teams.create_team(player_id="cosmetic-owner", name="Kutup Denemesi", request_id="create")
     team_id = created["team_id"]
-    r = registry().reserve("team_tournament", "2027-01-04", "team-january").publish("team-january")
+    r = registry().reserve("team_tournament", "2027-01-04", "team-january").publish("team-january", now=NOW)
     reward = r.reward("team_tournament", "2027-01-04", 1, {})
     opened = teams.grant_reward_cosmetics(team_id, reward, grant_id="team-period-first")
     assert set(opened.values()) == {reward[field] for field in releases.TEAM_FIELDS}
@@ -115,9 +125,9 @@ def test_scheduled_team_reward_does_not_substitute_or_replay_after_50_other_gran
 def test_started_period_cannot_be_replaced_and_awarded_mail_keeps_its_snapshot(monkeypatch):
     r = registry().reserve("weekly_tournament", "2026-W01", "old-week")
     with pytest.raises(CosmeticReleaseError, match="already started"):
-        r.publish("old-week")
+        r.publish("old-week", now=NOW)
     from app import main as gateway
-    r = registry().reserve("weekly_tournament", "2027-W01", "mail-week").publish("mail-week")
+    r = registry().reserve("weekly_tournament", "2027-W01", "mail-week").publish("mail-week", now=NOW)
     monkeypatch.setattr(releases, "REGISTRY", r)
     profile = PlayerProfileService().get_or_create("cosmetic-frozen-mail")
     assert gateway._queue_competition_reward(profile, source="weekly_tournament", period_id="2027-W01", position=1,
