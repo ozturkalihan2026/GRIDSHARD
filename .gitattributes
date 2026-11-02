@@ -1,2 +1,4 @@
 # Historical contract evidence is verified byte-for-byte on Windows and Linux.
 /docs/archive/current-only-contracts-20261101/** -text whitespace=cr-at-eol
+# Applied PostgreSQL migration checksums use the originally released bytes.
+/server/migrations/*.sql -text whitespace=cr-at-eol
