@@ -120,12 +120,24 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def assert_canonical_migration_bytes(files: list[Path]) -> None:
+    """SQL checksums are persisted in PostgreSQL; checkout newline conversion is unsafe."""
+    for path in files:
+        relative = path.relative_to(ROOT).as_posix()
+        if not relative.startswith("server/migrations/") or not relative.endswith(".sql"):
+            continue
+        canonical = subprocess.check_output(["git", "show", ":" + relative], cwd=ROOT)
+        if path.read_bytes() != canonical:
+            raise ValueError("Migration bytes differ from the Git index (including line endings): " + relative)
+
+
 def main(output_dir: Path | None = None) -> int:
     release_dir = (output_dir or ROOT).resolve()
     release_dir.mkdir(parents=True, exist_ok=True)
     archive = release_dir / f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}.zip"
     checksum = release_dir / f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}.zip.sha256"
     files = release_files()
+    assert_canonical_migration_bytes(files)
     commit = subprocess.check_output(
         ["git", "rev-parse", "HEAD"],
         cwd=ROOT,

@@ -5,10 +5,22 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.package_release import ROOT, STATIC_SERVER_DATA_FILES, release_files, is_release_input
+from tools.package_release import ROOT, STATIC_SERVER_DATA_FILES, release_files, is_release_input, assert_canonical_migration_bytes
 
 
 class ReleaseDataBoundaryTests(unittest.TestCase):
+    def test_source_package_rejects_checkout_line_ending_changes_to_migrations(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gridshard-migration-bytes-") as temporary:
+            root = Path(temporary)
+            sql = root / "server/migrations/001_example.sql"
+            sql.parent.mkdir(parents=True)
+            with patch("tools.package_release.ROOT", root), patch("tools.package_release.subprocess.check_output", return_value=b"SELECT 1;\n"):
+                sql.write_bytes(b"SELECT 1;\r\n")
+                with self.assertRaisesRegex(ValueError, "Migration bytes differ"):
+                    assert_canonical_migration_bytes([sql])
+                sql.write_bytes(b"SELECT 1;\n")
+                assert_canonical_migration_bytes([sql])
+
     def test_versioned_system_updates_ship_in_source_and_production_image(self) -> None:
         relative = "server/data/game_updates.json"
         self.assertIn(relative, STATIC_SERVER_DATA_FILES)

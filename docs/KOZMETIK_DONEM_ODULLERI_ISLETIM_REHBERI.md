@@ -97,3 +97,9 @@ gerçek ödül hakkı sunucu testlerinde doğrulanır.
 Yayın öncesi yeni bir minor sürüm seçilmeli, onun sistem mesajı eklenmeli ve
 ilgili dönemlerin yeni içerikleri yeterli olmalıdır. 2.2.1 sürüm numarasıyla
 bu özellikler ikinci bir yama paketi gibi yayımlanmaz.
+
+Kaynak paketi ayrıca SQL migration dosyalarının Git index'iyle bayt eşitliğini
+kontrol eder. Windows CRLF dönüşümü dahil fark varsa paketleme durur. Sunucu
+geçişinde mevcut veritabanındaki migration özetleri yeni imajla API durdurulmadan
+önce karşılaştırılmalıdır; uygulanmış SQL dosyaları veya geçmiş DB özetleri
+uydurularak değiştirilmez.
