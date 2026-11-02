@@ -33,6 +33,8 @@ jobs:
         # Check deleted/moved symbols as well as the modules imported by tests.
         # Archived historical tools intentionally are outside the active scan.
         run: python tools/check_imports.py
+      - name: Validate reviewed cosmetic catalog and generated previews
+        run: python tools/prepare_liveops_rewards.py validate
       - name: Run server regression tests
         working-directory: server
         run: python -m pytest
@@ -224,7 +226,7 @@ jobs:
           e2e/visual-atmosphere.spec.js
           e2e/onboarding-visibility.spec.js
           e2e/presentation-refinements.spec.js
-          e2e/battle-polish.spec.js e2e/release221-social.spec.js
+          e2e/battle-polish.spec.js e2e/release221-social.spec.js e2e/liveops-cosmetics.spec.js
           e2e/beta381-battle-events.spec.js e2e/battle-density.spec.js
           e2e/mobile-battle.spec.js
           ${{ matrix.projects }}

@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "require_fresh_from": {},
+  "items": [
+    {
+      "id": "aurora_frame",
+      "field": "avatar_frame_id",
+      "name_tr": "Kutup Işığı Halkası",
+      "name_en": "Aurora Frame",
+      "theme": "aurora",
+      "design_id": "aurora_frame_v1",
+      "status": "approved",
+      "look": {
+        "color": "#83f7d7",
+        "accent": "#173d6d",
+        "pattern": "arcs"
+      }
+    },
+    {
+      "id": "aurora_banner",
+      "field": "profile_background_id",
+      "name_tr": "Kutup Işığı Devresi",
+      "name_en": "Aurora Circuit",
+      "theme": "aurora",
+      "design_id": "aurora_banner_v1",
+      "status": "approved",
+      "look": {
+        "color": "#83f7d7",
+        "accent": "#173d6d",
+        "pattern": "arcs"
+      }
+    },
+    {
+      "id": "aurora_sigil",
+      "field": "team_emblem_id",
+      "name_tr": "Kutup Işığı Arması",
+      "name_en": "Aurora Sigil",
+      "theme": "aurora",
+      "design_id": "aurora_sigil_v1",
+      "status": "approved",
+      "look": {
+        "color": "#83f7d7",
+        "accent": "#173d6d",
+        "pattern": "arcs",
+        "path": "M3 17 14 3l-2 8 9-2-14 14 2-8Z"
+      }
+    },
+    {
+      "id": "aurora_team_frame",
+      "field": "team_frame_id",
+      "name_tr": "Kutup Işığı Takım Çerçevesi",
+      "name_en": "Aurora Team Frame",
+      "theme": "aurora",
+      "design_id": "aurora_team_frame_v1",
+      "status": "approved",
+      "look": {
+        "color": "#83f7d7",
+        "accent": "#173d6d",
+        "pattern": "arcs"
+      }
+    },
+    {
+      "id": "aurora_team_name",
+      "field": "team_name_color_id",
+      "name_tr": "Kutup Işığı İsim Rengi",
+      "name_en": "Aurora Name Color",
+      "theme": "aurora",
+      "design_id": "aurora_team_name_v1",
+      "status": "approved",
+      "look": {
+        "color": "#83f7d7",
+        "accent": "#173d6d",
+        "pattern": "arcs"
+      }
+    },
+    {
+      "id": "solar_frame",
+      "field": "avatar_frame_id",
+      "name_tr": "Güneş Ocağı Halkası",
+      "name_en": "Solar Forge Frame",
+      "theme": "solar",
+      "design_id": "solar_frame_v1",
+      "status": "approved",
+      "look": {
+        "color": "#ffd078",
+        "accent": "#7a3429",
+        "pattern": "rays"
+      }
+    },
+    {
+      "id": "solar_banner",
+      "field": "profile_background_id",
+      "name_tr": "Güneş Ocağı Devresi",
+      "name_en": "Solar Forge Circuit",
+      "theme": "solar",
+      "design_id": "solar_banner_v1",
+      "status": "approved",
+      "look": {
+        "color": "#ffd078",
+        "accent": "#7a3429",
+        "pattern": "rays"
+      }
+    },
+    {
+      "id": "solar_sigil",
+      "field": "team_emblem_id",
+      "name_tr": "Güneş Ocağı Arması",
+      "name_en": "Solar Forge Sigil",
+      "theme": "solar",
+      "design_id": "solar_sigil_v1",
+      "status": "approved",
+      "look": {
+        "color": "#ffd078",
+        "accent": "#7a3429",
+        "pattern": "rays",
+        "path": "M12 3 15 8 21 8 18 13 21 18 15 18 12 23 9 18 3 18 6 13 3 8 9 8Z"
+      }
+    },
+    {
+      "id": "solar_team_frame",
+      "field": "team_frame_id",
+      "name_tr": "Güneş Ocağı Takım Çerçevesi",
+      "name_en": "Solar Forge Team Frame",
+      "theme": "solar",
+      "design_id": "solar_team_frame_v1",
+      "status": "approved",
+      "look": {
+        "color": "#ffd078",
+        "accent": "#7a3429",
+        "pattern": "rays"
+      }
+    },
+    {
+      "id": "solar_team_name",
+      "field": "team_name_color_id",
+      "name_tr": "Güneş Ocağı İsim Rengi",
+      "name_en": "Solar Forge Name Color",
+      "theme": "solar",
+      "design_id": "solar_team_name_v1",
+      "status": "approved",
+      "look": {
+        "color": "#ffd078",
+        "accent": "#7a3429",
+        "pattern": "rays"
+      }
+    },
+    {
+      "id": "abyss_frame",
+      "field": "avatar_frame_id",
+      "name_tr": "Derin Akım Halkası",
+      "name_en": "Deep Current Frame",
+      "theme": "abyss",
+      "design_id": "abyss_frame_v1",
+      "status": "approved",
+      "look": {
+        "color": "#a8c8ff",
+        "accent": "#352361",
+        "pattern": "tides"
+      }
+    },
+    {
+      "id": "abyss_banner",
+      "field": "profile_background_id",
+      "name_tr": "Derin Akım Devresi",
+      "name_en": "Deep Current Circuit",
+      "theme": "abyss",
+      "design_id": "abyss_banner_v1",
+      "status": "approved",
+      "look": {
+        "color": "#a8c8ff",
+        "accent": "#352361",
+        "pattern": "tides"
+      }
+    },
+    {
+      "id": "abyss_sigil",
+      "field": "team_emblem_id",
+      "name_tr": "Derin Akım Arması",
+      "name_en": "Deep Current Sigil",
+      "theme": "abyss",
+      "design_id": "abyss_sigil_v1",
+      "status": "approved",
+      "look": {
+        "color": "#a8c8ff",
+        "accent": "#352361",
+        "pattern": "tides",
+        "path": "M12 3 17 8 17 14 21 12 18 20 12 24 6 20 3 12 7 14 7 8Z"
+      }
+    },
+    {
+      "id": "abyss_team_frame",
+      "field": "team_frame_id",
+      "name_tr": "Derin Akım Takım Çerçevesi",
+      "name_en": "Deep Current Team Frame",
+      "theme": "abyss",
+      "design_id": "abyss_team_frame_v1",
+      "status": "approved",
+      "look": {
+        "color": "#a8c8ff",
+        "accent": "#352361",
+        "pattern": "tides"
+      }
+    },
+    {
+      "id": "abyss_team_name",
+      "field": "team_name_color_id",
+      "name_tr": "Derin Akım İsim Rengi",
+      "name_en": "Deep Current Name Color",
+      "theme": "abyss",
+      "design_id": "abyss_team_name_v1",
+      "status": "approved",
+      "look": {
+        "color": "#a8c8ff",
+        "accent": "#352361",
+        "pattern": "tides"
+      }
+    }
+  ],
+  "releases": []
+}

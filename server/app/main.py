@@ -98,6 +98,7 @@ from .safe_chat import team_description_text, visible_message
 from .match_accounting import TUTORIAL_TRAINING_MATCH_TYPE
 from .version import VERSION, LEGACY_HEALTH_VERSION
 from .release_updates import INBOX_UPDATE_NOTICES
+from .cosmetic_releases import period_reward
 from .player_profile import (
     PlayerProfileError,
     PlayerProfileService,
@@ -3454,8 +3455,8 @@ def get_leaderboards(player_id: str | None = None) -> dict:
             )
     return {
         "season": season_descriptor(),
-        "top_five_rewards": [dict(item) for item in LEADERBOARD_PRIZES[:5]],
-        "top_ten_rewards": [dict(item) for item in LEADERBOARD_PRIZES],
+        "top_five_rewards": [period_reward("season_leaderboard", season_descriptor()["id"], item["position"], item) for item in LEADERBOARD_PRIZES[:5]],
+        "top_ten_rewards": [period_reward("season_leaderboard", season_descriptor()["id"], item["position"], item) for item in LEADERBOARD_PRIZES],
         "trophies": _ranked_player_rows(players, "rating"),
         "trophy_groups": ordered_groups,
         "viewer_trophy_group": viewer_group,
@@ -3477,6 +3478,7 @@ def _queue_competition_reward(profile, *, source: str, period_id: str, position:
     message_id = f"{source}:{period_id}:{profile.player_id}"
     if any(item.get("message_id") == message_id for item in profile.reward_inbox):
         return False
+    prize = period_reward(source, period_id, position, prize)
     source_names = {
         "season_leaderboard": "Sezon Lider Panosu",
         "weekly_tournament": "Haftalık Devre Turnuvası",

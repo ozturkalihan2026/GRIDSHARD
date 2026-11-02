@@ -3,6 +3,24 @@
 
   // New screen copy belongs here; the legacy dictionary remains in i18n.js.
   const translations = Object.freeze({
+    "Sandık ve Dönem Kozmetiği":"Chest and Seasonal Cosmetic",
+    // liveops-cosmetics:begin
+    "Kutup Işığı Halkası":"Aurora Frame",
+    "Kutup Işığı Devresi":"Aurora Circuit",
+    "Kutup Işığı Arması":"Aurora Sigil",
+    "Kutup Işığı Takım Çerçevesi":"Aurora Team Frame",
+    "Kutup Işığı İsim Rengi":"Aurora Name Color",
+    "Güneş Ocağı Halkası":"Solar Forge Frame",
+    "Güneş Ocağı Devresi":"Solar Forge Circuit",
+    "Güneş Ocağı Arması":"Solar Forge Sigil",
+    "Güneş Ocağı Takım Çerçevesi":"Solar Forge Team Frame",
+    "Güneş Ocağı İsim Rengi":"Solar Forge Name Color",
+    "Derin Akım Halkası":"Deep Current Frame",
+    "Derin Akım Devresi":"Deep Current Circuit",
+    "Derin Akım Arması":"Deep Current Sigil",
+    "Derin Akım Takım Çerçevesi":"Deep Current Team Frame",
+    "Derin Akım İsim Rengi":"Deep Current Name Color",
+    // liveops-cosmetics:end
     "Her eşikte bir dal seç. Dokun: açıklama ve seçim.":"Choose one branch at each tier. Tap for details and selection.",
     "Kalabalık savunmaya karşı zincir ve alan hasarı sağlayan saldırıları dene.":"Try chain and area damage against dense defenses.",
     "Takviye Çekirdeği":"Reinforcement Core",

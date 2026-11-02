@@ -17,6 +17,7 @@ from threading import RLock
 from uuid import uuid4
 
 from .arena_canon import TROPHY_SCALE_VERSION, rating_on_current_scale
+from .cosmetic_releases import cosmetic_options
 from .safe_chat import (
     FREE_DESCRIPTION_CLOSED_MESSAGE,
     SafeChatError,
@@ -56,6 +57,9 @@ TEAM_APPEARANCE_DEFAULTS = {
     "frame_id": "steel",
     "name_color_id": "cyan",
 }
+LEGACY_TEAM_APPEARANCE_OPTIONS = dict(TEAM_APPEARANCE_OPTIONS)
+for _reward_field, _appearance_field in (("team_emblem_id", "emblem_id"), ("team_frame_id", "frame_id"), ("team_name_color_id", "name_color_id")):
+    TEAM_APPEARANCE_OPTIONS[_appearance_field] += cosmetic_options(_reward_field)
 # Turnuva ödülü zaten açık bir seçeneği gösteriyorsa sıradaki kilitli seçenek
 # bu sırayla açılır; böylece her ay kazanılan ödül yeni bir görünüm getirir.
 TEAM_APPEARANCE_UNLOCK_ORDER: dict[str, tuple[str, ...]] = {
@@ -96,7 +100,7 @@ def team_appearance_for_seed(seed: str) -> dict:
     digest = hashlib.sha256(seed.encode("utf-8")).digest()
     return {
         key: options[digest[index] % len(options)]
-        for index, (key, options) in enumerate(TEAM_APPEARANCE_OPTIONS.items())
+        for index, (key, options) in enumerate(LEGACY_TEAM_APPEARANCE_OPTIONS.items())
     }
 
 
@@ -747,7 +751,7 @@ class TeamService:
                 wanted = str(rewards.get(reward_key) or "").strip()
                 if not wanted:
                     continue
-                candidates = (wanted, *TEAM_APPEARANCE_UNLOCK_ORDER[key])
+                candidates = (wanted,) if rewards.get("cosmetic_release_id") else (wanted, *TEAM_APPEARANCE_UNLOCK_ORDER[key])
                 value = next(
                     (
                         option for option in candidates
@@ -763,7 +767,7 @@ class TeamService:
                 opened[key] = value
             if grant_id:
                 granted.append(grant_id)
-                cosmetics["granted_reward_ids"] = granted[-50:]
+                cosmetics["granted_reward_ids"] = granted
             self.repository.save(payload)
             return opened
 

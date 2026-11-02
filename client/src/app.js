@@ -541,6 +541,7 @@
     { id: "weekly_silver", nameTr: "Haftalık Gümüş" },
     { id: "frequency_cyan", nameTr: "Frekans Akımı" },
     { id: "gridshard_apex", nameTr: "Zirve Halkası" },
+    ...(globalThis.GRIDSHARD_LIVEOPS_COSMETICS?.avatarFrames || []),
   ]);
   // Approved physical emblems shared by own/public profiles, chat and rewards.
   // These are display assets only; existing server ownership IDs remain intact.
@@ -582,6 +583,7 @@
     { id:"rank_frequency", nameTr:"Frekans Hattı", colors:["#153b58", "#176b72"] },
     { id:"rank_relay", nameTr:"Röle Akımı", colors:["#1b3159", "#174d64"] },
     { id:"gridshard_apex", nameTr:"Zirve Devresi", colors:["#5a3a10", "#3b1f63"] },
+    ...(globalThis.GRIDSHARD_LIVEOPS_COSMETICS?.backgrounds || []),
   ]);
   const ACCOUNT_ONBOARDING_DISMISSED_KEY = `gridshard.account-onboarding.dismissed:${participantPlayerId}`;
 
@@ -7173,6 +7175,7 @@
     wing:{ nameTr:"Kanat", color:"#d9b8ff", path:'<path d="M12 3c.8 4.4 3.6 7.2 9 9-5.4 1.8-8.2 4.6-9 9-.8-4.4-3.6-7.2-9-9 5.4-1.8 8.2-4.6 9-9Z"/>' },
     circuit:{ nameTr:"Devre", color:"#7ff3ff", path:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9.5 9.5h5v5h-5ZM12 2.5V6M12 18v3.5M2.5 12H6M18 12h3.5"/>' },
     lens:{ nameTr:"Mercek", color:"#8fe8ff", path:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.6"/><path d="M12 3.5v2M12 18.5v2"/>' },
+    ...(globalThis.GRIDSHARD_LIVEOPS_COSMETICS?.teamEmblems || {}),
   });
   const TEAM_FRAMES = Object.freeze({
     steel:{ nameTr:"Çelik", color:"#8aa3b8" },
@@ -7181,6 +7184,7 @@
     crimson:{ nameTr:"Kızıl", color:"#ff6b82" },
     violet:{ nameTr:"Mor", color:"#b98cff" },
     royal:{ nameTr:"Kraliyet", color:"#6fa9ff" },
+    ...(globalThis.GRIDSHARD_LIVEOPS_COSMETICS?.teamFrames || {}),
   });
   const TEAM_NAME_COLORS = Object.freeze({
     cyan:{ nameTr:"Camgöbeği", color:"#5ff0da" },
@@ -7189,6 +7193,7 @@
     violet:{ nameTr:"Mor", color:"#c9a2ff" },
     green:{ nameTr:"Yeşil", color:"#7ff0a8" },
     sky:{ nameTr:"Gök", color:"#a6e3ff" },
+    ...(globalThis.GRIDSHARD_LIVEOPS_COSMETICS?.teamNameColors || {}),
   });
   const TEAM_APPEARANCE_DEFAULT = Object.freeze({ emblem_id:"shield", frame_id:"steel", name_color_id:"cyan" });
   let activeTeamManagementTab = "cosmetics";
@@ -7244,9 +7249,10 @@
         visual.innerHTML = teamEmblemSvg(id);
         return visual;
       }],
-      ["team-frame-options", "frame_id", TEAM_FRAMES, (item) => {
+      ["team-frame-options", "frame_id", TEAM_FRAMES, (item, id) => {
         const visual = document.createElement("span");
         visual.className = "team-option-frame";
+        visual.dataset.teamFrame = id;
         visual.style.setProperty("--team-frame-color", item.color);
         return visual;
       }],
@@ -18074,6 +18080,7 @@
         const button = document.createElement("button");
         button.type = "button";
         button.className = "profile-background-choice";
+        button.dataset.backgroundId = background.id;
         button.style.setProperty("--profile-bg-a", background.colors[0]);
         button.style.setProperty("--profile-bg-b", background.colors[1]);
         button.dataset.state = !unlocked.has(background.id) ? "locked" : background.id === backgroundId ? "selected" : "available";

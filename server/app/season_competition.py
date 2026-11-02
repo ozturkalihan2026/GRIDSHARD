@@ -9,6 +9,8 @@ store.
 """
 from __future__ import annotations
 
+from .cosmetic_releases import period_reward
+
 from datetime import datetime, timedelta, timezone
 import hashlib
 
@@ -225,7 +227,7 @@ def build_events_view(
         ai_teams={},
         legs=state.get("legs") or {},
     )
-    team_view["prizes"] = [dict(item) for item in TEAM_PRIZES]
+    team_view["prizes"] = [period_reward("team_tournament", period_id_for(current), item["position"], item) for item in TEAM_PRIZES]
     launch = launch_status(current)
     enough = len(weekly_rows) >= minimum_participants()
 
@@ -239,7 +241,7 @@ def build_events_view(
             "period": week,
             "rules_tr": "100 Devre Kredisi ile katıl. Katıldıktan sonra normal Arena savaşlarında kazandığın kupalar haftalık sıralamaya eklenir; sıralama pazartesi yenilenir.",
             "entry_fee": WEEKLY_ENTRY_FEE,
-            "prizes": [dict(item) for item in WEEKLY_PRIZES],
+            "prizes": [period_reward("weekly_tournament", week, item["position"], item) for item in WEEKLY_PRIZES],
             "standings": weekly_rows,
         },
         "team_tournament": team_view,

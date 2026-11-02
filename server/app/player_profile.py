@@ -21,6 +21,7 @@ from .arena_canon import (
 )
 from .text_safety import public_name_rejection
 from .competition_cycle import CYCLE_EPOCH, CYCLE_LENGTH, competition_cycle, cycle_for_id
+from .cosmetic_releases import period_reward
 from .competition_control import launch_status, configured_start, owner_account
 from .season_competition import LEADERBOARD_PRIZES, TEAM_PRIZES, WEEKLY_PRIZES
 from .game.battle_pool import default_battle_pool, validate_battle_pool
@@ -707,6 +708,8 @@ class PlayerProfile:
             login_period_bounds = {}
 
         def reward_view(reward: dict, kind: str, identity: int) -> dict:
+            if kind == "tiers":
+                reward = period_reward("season_road", self.active_meta_season_id, identity, reward)
             seed = (
                 f"login:{self.login_period_id}:{self.player_id}:{identity}"
                 if kind == "login"
@@ -731,7 +734,7 @@ class PlayerProfile:
             )
             if previous:
                 # Alınmış ödül, alındığı andaki kartı ve miktarı gösterir.
-                for key in ("module_definition_id", "core_type_id", "module_shards"):
+                for key in ("module_definition_id", "core_type_id", "module_shards", "avatar_id", "avatar_frame_id", "profile_background_id", "emoji_id", "cosmetic_release_id", "cosmetic_release_hash"):
                     if previous.get(key):
                         result[key] = previous[key]
             return result
@@ -1309,6 +1312,7 @@ class PlayerProfileService:
             raise PlayerProfileError("Bu kademe ödülü daha önce alındı.")
         if profile.season_xp < base_reward["required_xp"]:
             raise PlayerProfileError("Bu sezon kademesi henüz açılmadı.")
+        base_reward = period_reward("season_road", profile.active_meta_season_id, tier, base_reward)
         reward = _profile_reward_identity(
             profile,
             base_reward,
@@ -1347,6 +1351,11 @@ class PlayerProfileService:
         if avatar_frame_id:
             profile.unlocked_avatar_frame_ids = tuple(
                 dict.fromkeys((*profile.unlocked_avatar_frame_ids, avatar_frame_id))
+            )
+        background_id = reward.get("profile_background_id")
+        if background_id:
+            profile.unlocked_profile_background_ids = tuple(
+                dict.fromkeys((*profile.unlocked_profile_background_ids, background_id))
             )
         emoji_id = reward.get("emoji_id")
         if emoji_id:
