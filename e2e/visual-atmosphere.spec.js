@@ -48,7 +48,9 @@ test("devre atmosferi, ortak dock ve kazanılmış profil koleksiyonu", async ({
         x:dockBox.x,y:top,width:dockBox.width,height:dockBox.height+dockBox.y-top}});
     }
   }
-  await expect(page.locator('#events-screen [data-event-emblem="wheel"] > svg')).toHaveCount(1);
+  const metaWheel = page.locator('#events-screen [data-event-emblem="wheel"] > img.event-painted-wheel');
+  await expect(metaWheel).toBeVisible();
+  await expect.poll(() => metaWheel.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   const eventTrophy=page.locator('#events-screen [data-event-emblem="trophy"] > img');
   await expect.poll(()=>eventTrophy.evaluate(icon=>icon.complete && icon.naturalWidth>0)).toBe(true);
   await expect(page.locator('#events-screen [data-event-emblem="banner"] > [data-ui-art="team-tournament"]')).toHaveCount(1);
