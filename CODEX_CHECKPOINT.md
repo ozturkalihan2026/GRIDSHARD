@@ -1,3 +1,39 @@
+# SON DURUM — 3 Kasım 2026: Play Console App Links uyarısının sunucu düzeltmesi tamamlandı
+
+Kullanıcı 2.2.1 AAB'yi Play Console'a kendisi yüklerken sunucu tarafındaki alan
+doğrulamasını düzeltmemizi açıkça istedi. Canlı assetlinks.json yalnız test
+paketini içeriyordu; com.gridshardgame.app eksikti.
+
+- Mevcut 2.2.1 / kaynak 4866e58 / aynı API imajı korunarak yalnız public
+  GRIDSHARD_ANDROID_AUTH_CERT_SHA256 ortam değişkenine kayıtlı üç Play
+  uygulama imzalama sertifikası eklendi. Upload sertifikası kullanılmadı.
+- Mevcut test paketi/sertifikası korunur. HTTPS assetlinks.json yönlendirmesiz
+  200/application-json; iki paket ve üç mağaza sertifikası yerel kayıtla eşit.
+- Google Digital Asset Links API ana deployment sertifikasında linked:true.
+  İki hybrid sorgusunda pozitif linked dönmedi; yayımlanmış olmaları Google
+  doğrulandı veya fiziksel OAuth giriş testi tamamlandı diye sunulmaz.
+- Play Console tarafında kullanıcı alan doğrulamasını yeniden kontrol edecek.
+  Gerekirse Play'den kurulu cihazda pm verify-app-links --re-verify testi.
+- 52 mevcut profil ve korunan kimlik/ödeme/savaş/takım kayıtlarının içerik
+  özetleri değişmedi. Secret/volume bağları aynı; PG/Redis/Caddy yeniden
+  oluşturulmadı; API restart_count 0 ve sağlıklı 2.2.1.
+- Ortam dosyası yedeği ve private kanıtlar
+  /opt/gridshard/operations/app-links-20261103-r2 içinde korunur.
+  Önceki hazırlıklardaki env hash'i tarihsel kanıttır; yeni public sertifika
+  değişikliği nedeniyle gelecekteki işlemler güncel env'i yeniden doğrulamalıdır.
+- İlk yalnız-okuma ön kontrol image varsayılanı GRIDSHARD_CLIENT_DIR'i Compose
+  ile birleştirmediği için durdu; API/env değişmedi. Düzeltildi; r2 başarılı.
+- Yerel kanıtlar artifacts/app-links-20261103/: server-result.json,
+  public-assetlinks.json, https-proof.json, public-verification.json ve apply.py.
+  Python istemcisi public endpoint'te 403 gördü; PowerShell HTTPS kontrolü 200,
+  ana sertifika için Google'ın bağımsız DAL kontrolü başarılı. WAF ayarı değişmedi.
+- 2.2.1 AAB yeniden üretilmedi; kullanıcı yüklemesi ayrıca doğrulanmadı.
+  Play Console, 8891, sağlayıcı sırları veya diğer rollout ayarları değiştirilmedi.
+- Canlıda sonraki minor kozmetik özellikleri YOK; mevcut çalışma dalı
+  codex/liveops-foundations. Bu tur yalnız operasyon ve hafıza belgeleri değişti.
+
+---
+
 # SON DURUM — 2 Kasım 2026: AWS 2.2.1 / Android code12 tamamlandı; sonraki minor temeli ayrı dalda
 
 Kullanıcı bu turda açıkça sunucu geçişi ve imzalı AAB üretimi istedi. Ayrıca

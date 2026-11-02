@@ -1,5 +1,29 @@
 # GRIDSHARD — Google/Apple hesabı ve Android uygulamaya dönüş
 
+## 3 Kasım 2026 — mağaza App Links alan doğrulaması canlıda düzeltildi
+
+Kullanıcının açık talimatıyla mevcut 2.2.1 imajı korunarak yalnız
+`GRIDSHARD_ANDROID_AUTH_CERT_SHA256` değişkenine
+`config/android-play-certificates.json` içindeki üç Play sertifikası eklendi.
+`com.gridshardgame.app` ve mevcut `com.gridshard.remotedebug` birliktelikleri
+HTTPS `/.well-known/assetlinks.json` üzerinde 200/application-json olarak,
+yönlendirmesiz yayımlanıyor. Upload sertifikası eklenmedi.
+
+Google Digital Asset Links `assetlinks:check` ana **deployment** sertifikası için
+`linked: true` döndürdü. İki hybrid sertifikası dosyada doğru yayımlansa da aynı
+API çağrılarında pozitif sonuç dönmedi; bunlar Google tarafından doğrulandı diye
+raporlanmaz. Play Console alanında yeniden doğrulama ve Play'den kurulu cihazda
+bağlantı testi ayrı son kontrollerdir. Sağlayıcı hesabıyla gerçek OAuth giriş
+testinin tamamlandığı anlamına gelmez.
+
+Yalnız API aynı imajla yeniden oluşturuldu; 52 mevcut profil ve korunan
+kimlik/ödeme/savaş/takım kayıtlarının içerikleri eşit kaldı. PostgreSQL, Redis,
+Caddy, volume'lar ve sır bağları değişmedi. Özgün ortam dosyası yedeklendi;
+canlı yedek ve kanıt dizini `/opt/gridshard/operations/app-links-20261103-r2`.
+Yerel kanıtlar `artifacts/app-links-20261103/`. 2.2.1 AAB yeniden üretilmedi.
+
+---
+
 Durum: 3 Ekim 2026. Android/web giriş köprüsü kodlandı; **sağlayıcı kurulumu, uzak dağıtım ve fiziksel giriş testi henüz tamamlanmadı**. Yalnız yeni APK kurmak eski sunucudaki eksik yapılandırmayı gidermez. Bu tur ücretli üyelik/plan, DNS, Elastic IP veya canlı sunucu değişikliği yapılmadı.
 
 ## Kod tarafındaki akış
