@@ -1,3 +1,84 @@
+# SON DURUM — 2 Kasım 2026: AWS 2.2.1 / Android code12 tamamlandı; sonraki minor temeli ayrı dalda
+
+Kullanıcı bu turda açıkça sunucu geçişi ve imzalı AAB üretimi istedi. Ayrıca
+kilitli yeni oyuncu/takım kozmetikleri, tekrarlanmayan dönem ödülleri ve canlı
+operasyon/yeni mod araştırma planı istedi. Yayın ve sonraki minor hazırlığı ayrıldı.
+
+CANLI YAYIN TAMAMLANDI:
+- https://play.gridshardgame.com: release 2.2.1, PvP protokol 2, sağlıklı.
+- Kaynak 4866e58a179d320b9b997d77798faabe4c4f99cf, CI 41516788378 tamamen yeşil
+  (sunucu, istemci, PostgreSQL/Redis/üretim imajı, Chromium-Android ve Safari-WebKit).
+- Sistem mesajlarında en üstte 2.2.1, altında 2.2.0 gerçek HTTPS/normal konuk
+  oturumuyla doğrulandı; kararlı notice_id ve okundu/silindi geçmişi korunur.
+- Profil güncel deste çizimleri, Android /team-profiles/ yönlendirme/kimlik
+  doğrulaması, altın GERİ/BACK düğmeleri ve boyalı günlük meta çarkı bu yayında.
+- Yalnız API imajı yenilendi: gridshard-production:2.2.1-v12-4866e58.
+  Caddy/PostgreSQL/Redis, ortam/sırlar ve kalıcı volume bağları korunur.
+- 51 mevcut profilin ilerlemesi, bakiyeler, ödeme/kimlik/savaş/takım kayıtları
+  korundu. DB ve runtime yedeği alındı; ayrı izole PostgreSQL'e geri yüklenip
+  tüm tabloların içerik özetleri ve 51 profil karşılaştırıldı; eşit.
+- Başarılı yedek: /var/backups/gridshard-production/20261102-before-221-4866e58.
+  Geçici restore container/network/volume kaldırıldı; yedekler korunur.
+- Son normal konuk HTTPS smoke testi yeni bir test konuğu oluşturur; mevcut
+  hesap kullanılmaz, satın alma veya savaş başlatılmaz. Test hook'ları kapalı.
+- Kanıtlar artifacts/server-221-20261102/final-r3/: deployment-success.json,
+  restore-proof.json, deployment-final-check.json, public-smoke.json,
+  ci-status.json, FINAL_STATUS.json ve telefon ekran görüntüleri.
+
+ANDROID TESLİM:
+- deliverables/GRIDSHARD_2.2.1_12/GRIDSHARD-2.2.1-v12.aab (42.836.076 bayt)
+  SHA256 3b6c1876c6eded2df684dab7f1c3d5aed4e374aed6859209208accd30720689b.
+- Aynı klasörde imzalı APK, TR/EN mağaza notları, TESLIM_NOTU.md, manifest,
+  release-audit.json, r8-audit.json, frozen-source-proof.json.
+- Mevcut sertifika/imza, sürüm 2.2.1/code12, R8 ve 538 gömülü web dosyası
+  doğrulandı. APK/AAB 2554524 istemci kaynağından; son kaynak 4866e58'in bütün
+  client Git ağacı aynıdır. Sonraki farklar testler ve tarihsel SQL baytlarıdır.
+- Play Console yüklemesi ve telefona kurulum YAPILMADI. 8891'e dokunulmadı.
+
+MIGRATION BAYTLARI — TEKRAR BOZMA:
+- Üretimde uygulanmış 14 SQL migration özeti, eski 2.2.0 imajının karışık LF/CRLF
+  baytlarıyla eşleşir. Bütün dosyaları LF'ye dönüştürmek doğru değildir.
+- 4866e58: 13 SQL dosyasında özgün yayımlanmış baytlar geri alındı; SQL mantığı
+  değişmedi. .gitattributes /server/migrations/*.sql -text whitespace=cr-at-eol.
+  DB schema_migrations geçmişi/özetleri hiçbir şekilde değiştirilmedi.
+- İlk a58510e denemesinde yedek kontrolü checksum farkını yakaladı; eski API
+  otomatik yeniden başladı, canlı DB'ye restore yapılmadı. Eski kısmi yedek
+  20261102-before-221-a58510e saklandı. LF-only r2 paketi API durmadan reddedildi.
+- Son hazırlık 14/14 checksum eşitliğini API durmadan doğruladı. Kaynak paketleme
+  için ek Git index bayt kontrolü sonraki minor dalında testli hazırdır.
+- Disk için yalnız bu turun kullanılmayan üç 2.2.1 kaynak klasörü ve upload ZIP'i
+  temizlendi; canlı 2.2.0, eski imajlar, volume'lar ve yedekler korunur.
+- tools/production_cutover.py eski reset aracıdır, KULLANMA. Veri koruyan
+  operatörler artifacts/server-221-20261102/final-r3/ altındadır.
+
+SONRAKİ MINOR HAZIRLIĞI — codex/liveops-foundations, origin'e gönderildi:
+- Kutup Işığı/Güneş Ocağı/Derin Akım: toplam 15 oyuncu/takım kozmetiği.
+  Kilitli ve tahsis edilmemiş; 2.2.1 AAB veya canlı sunucuda YOK.
+- server/data/cosmetic_releases_v1.json tek kaynak; 0 yayın/0 tahsis.
+  cosmetic_releases.py: gerçek dönem kimliği, dönemler arası tekil rezervasyon,
+  aynı/yeniden renklendirilmiş motif reddi, stok tükenince durma, yayın hash'i,
+  başlamış dönemi değiştirme reddi, ilk yayından sonra yeni içerik zorunluluğu.
+- tools/prepare_liveops_rewards.py validate/sync/reserve/publish/coverage.
+  Dönem ödülleri gerçek sezon önizleme/talep ve turnuva mesaj sandığına bağlı;
+  eski makbuzlar ödül anlık görüntüsünü korur. Takımda rastgele ikame yok,
+  50 geçmiş kayıttan sonra tekrar koruması unutulmaz. AI yeni kozmetik almaz.
+- İçerik stok kontrolü sanat üretim görevleri çıkarır; sonsuz otomatik çizim
+  iddiası yok. Yeni dönem için yeni tasarım üretip incelemek gerekir. İki tam
+  döngü hedefinde 18 ek oyuncu kozmetiği gerekir. Yarışmalar açılmadı.
+- Araştırma ve uygulanabilir mod/retention/ölçüm/üretim planı:
+  docs/GRIDSHARD_CANLI_OPERASYON_VE_GELISIM_PLANI_20261102.md.
+  İşletim: docs/KOZMETIK_DONEM_ODULLERI_ISLETIM_REHBERI.md.
+- Öncelikler: ölçüm/ilk deneyim → benzersiz ödüller → Devre Deneyi → PvE Seferi
+  → takım ortak hedefi → eşitlenmiş draft. Modlar henüz uygulanmadı.
+- Yerel doğrulama: 1929 server PASS / 44 SKIP, 764 client PASS, 10 build PASS,
+  32 operator tools PASS, import 458 dosya/0 sorun, 2 telefon E2E PASS;
+  kilitler, özgün görseller, gerçek ödül yolu ve makbuz/tekrar kontrolleri.
+- Sonraki yayın yeni MINOR numarası ve kendi güncelleme mesajını gerektirir.
+  Kullanıcının kalıcı SemVer kararı: hata PATCH, küçük özellik MINOR, büyük
+  değişim MAJOR; sağdaki sayılar sıfırlanır. Yeni kozmetikleri 2.2.1 diye yayımlama.
+
+---
+
 # SON DURUM — 2 Kasım 2026: 2.2.1 profil/takım düzeltmeleri ve sürümlü mesajlar hazır (YEREL)
 
 Kullanıcı: kendi/ziyaret edilen profilde eksik deste çizimleri, profil ve takım
