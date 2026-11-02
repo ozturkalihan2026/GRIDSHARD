@@ -48,6 +48,7 @@
 /* 4B / Approved common surfaces applied to weekly/team competition only.
    Daily meta, registration rules, standings and contribution data are intact. */
 .event-hub-emblem > .event-approved-trophy { display:block; width:100%; height:100%; object-fit:contain; }
+.event-hub-emblem > .event-painted-wheel { display:block; width:100%; height:100%; object-fit:contain; }
 #weekly-event-screen .event-detail-tabs { grid-template-columns:repeat(2,minmax(0,1fr)); }
 :root body[data-app-screen] :is(#weekly-event-screen,#team-event-screen) [hidden] { display:none !important; }
 :root body[data-app-screen] :is(#weekly-event-screen,#team-event-screen) .event-detail-header {

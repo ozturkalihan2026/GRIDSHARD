@@ -43,6 +43,7 @@
   <!-- Inert asset allowlist for dynamically rendered art in both web/native
        builds. Templates do not preload or display these images. -->
   <template id="module-device-assets">
+    <img src="./assets/ui/events-v2/daily-meta-wheel.webp" alt="">
     <audio src="./assets/audio/core_resonance_activate.wav"></audio>
     <audio src="./assets/audio/core_resonance_shot.wav"></audio>
     <audio src="./assets/audio/core_guardian_activate.wav"></audio>
@@ -230,7 +231,7 @@
       </div>
     </div>
     <div class="boot-screen-meta">
-      <span id="boot-version" class="boot-version" data-version="2.2.0">Sürüm: 2.2.0</span>
+      <span id="boot-version" class="boot-version" data-version="2.2.1">Sürüm: 2.2.1</span>
     </div>
     <div class="boot-brand">
       <h1 id="startup-title" class="boot-title">GRIDSHARD</h1>
@@ -429,7 +430,7 @@
 
     <dialog id="public-profile-dialog" class="public-profile-dialog" aria-labelledby="public-profile-title">
       <header class="public-profile-header">
-        <button id="public-profile-close" type="button" aria-label="Profili kapat">←</button>
+        <button id="public-profile-close" class="profile-navigation-back" type="button" aria-label="Geri"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg><small>GERİ</small></button>
         <div id="public-profile-identity" class="public-profile-identity-bar">
           <span id="public-profile-avatar" class="profile-avatar" aria-hidden="true"></span>
           <div class="public-profile-identity-copy">
@@ -452,7 +453,7 @@
 
     <dialog id="team-profile-dialog" class="public-profile-dialog team-profile-dialog" aria-labelledby="team-profile-title">
       <header class="public-profile-header">
-        <button id="team-profile-close" type="button" aria-label="Takım profilini kapat">←</button>
+        <button id="team-profile-close" class="profile-navigation-back" type="button" aria-label="Geri"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg><small>GERİ</small></button>
         <div>
           <span class="screen-kicker">HERKESE AÇIK TAKIM PROFİLİ</span>
           <h2 id="team-profile-title">Takım Profili</h2>
@@ -1162,7 +1163,7 @@
           <p>Kalabalık savunmaya karşı zincir ve alan hasarı sağlayan saldırıları dene.</p>
           <p>Çekirdeğin aldığı veya verdiği hasar bu iki sayacı doldurmaz. Akım veren çekirdek yetenekleri kendi açıklamalarındaki gibi çalışır.</p>
         </details>
-        <dl><div><dt>Sürüm</dt><dd id="ui-build-version">2.2.0</dd></div></dl>
+        <dl><div><dt>Sürüm</dt><dd id="ui-build-version">2.2.1</dd></div></dl>
       </section>
       </section>
       <section id="settings-panel-audio" role="tabpanel" aria-labelledby="settings-tab-audio" data-settings-panel="audio" hidden>

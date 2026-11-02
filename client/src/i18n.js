@@ -427,6 +427,7 @@
     "Atla":"Skip",
     "Devreni kur":"Build your circuit",
     "Geri":"Back",
+    "GERİ":"BACK",
     "Uygula":"Apply",
     "İleri":"Next",
     "Olay Günlüğü":"Event Log",

@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 ROOT=Path(__file__).resolve().parents[1]
-EXPECTED_VERSION="2.2.0"
+EXPECTED_VERSION="2.2.1"
 
 
 def fail(message:str)->None:
@@ -27,6 +27,8 @@ def main()->None:
     )
 
     from app.version import VERSION
+    # Import validates unique version IDs and requires notes for this release.
+    from app.release_updates import INBOX_UPDATE_NOTICES
 
     if VERSION != EXPECTED_VERSION:
         fail(

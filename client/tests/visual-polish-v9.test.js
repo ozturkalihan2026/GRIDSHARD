@@ -47,6 +47,15 @@ test('inbox expansion retains only present messages for the current account, wit
   f.context.participantPlayerId='other'; f.context.pruneInboxExpansionState();
   assert.equal(f.context.inboxExpanded.size,0);
 });
+test("system update messages use the selected language and preserve bullet lines",()=>{
+  const f=fixture(),details=[];
+  f.context.document.documentElement={lang:"en"};
+  f.context.createInboxCardMeta=(notice,text)=>{details.push(text);return new Element("div");};
+  const card=f.context.notice({notice_id:"update-2-2-1",title_tr:"Güncelleme",title_en:"Update",body_tr:"Düzeltmeler",body_en:"• Profiles\n• Teams",seen:false});
+  assert.equal(card.children[1].children[0].textContent,"Update");
+  assert.deepEqual(details,["• Profiles\n• Teams"]);
+});
+
 test("system/purchase messages start closed, title and envelope toggle content without read-state copy",()=>{
   const f=fixture();
   const card=f.context.notice({notice_id:"notice",title_tr:"Bakım",body_tr:"Açıklama",seen:false});

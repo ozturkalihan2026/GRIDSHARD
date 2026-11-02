@@ -1,3 +1,55 @@
+# SON DURUM — 2 Kasım 2026: 2.2.1 profil/takım düzeltmeleri ve sürümlü mesajlar hazır (YEREL)
+
+Kullanıcı: kendi/ziyaret edilen profilde eksik deste çizimleri, profil ve takım
+profilinin eski geri düğmeleri, Android'de takım profiline girilememe, Etkinlikler
+meta çarkı simgesinin yenilenmesi; ardından eksik 2.2.0 ve yeni 2.2.1 sistem
+mesajları. Sürüm kararı kalıcı: hata PATCH, küçük değişiklik MINOR, büyük MAJOR;
+orta/ilk sayı artınca sağdaki sayılar sıfırlanır. docs/SURUM_VE_GUNCELLEME_MESAJLARI.md.
+
+TAMAMLANDI:
+- Eksik çizimler aslında eski maç destelerinde kalmış emekli kartlardı. Meta
+  istatistik görünümü artık yalnız geçerli güncel altılı destelerdeki gerçek
+  maçları seçer. Yoksa profil aktif desteyi doğru etiketle gösterir. Geçmiş
+  sayaçlar ve oyuncu verileri değiştirilmez. Kendi/ziyaret/istatistik aynı kaynak.
+- Android API_PREFIXES/PROTECTED_PREFIXES içinde /team-profiles/ eksikti:
+  localhost WebView'e gidiyordu. Canlı API'ye izleyici belirteciyle yönlenir;
+  sunucuda da diğer profil yollarıyla aynı kimlik doğrulamasına alındı.
+- İki profil geri düğmesi altın fiziksel yüzey/ok/GERİ-BACK metni, >=44px hedef.
+- Yeni şeffaf boyalı çark image_gen ile mevcut takvim ikonunun tarzında üretildi;
+  client/assets/ui/events-v2/daily-meta-wheel.webp 256px/21078 bayt. Çark oyunu,
+  olasılıklar ve günlük sıfırlama aynı. Üretim kaynak PNG'si varsayılan generated_images.
+- server/data/game_updates.json içinde 2.1.1 kimliği korunur, 2.2.0 ve 2.2.1
+  TR/EN maddeli notları eklendi. release_updates.py sürümden kararlı tekil notice_id
+  üretir; okuma/silme kayıtları korunur; gelecekteki sürümler gösterilmez. Her
+  yeni sürüm için not şartı release_guard ve sunucu başlangıcında doğrulanır.
+  Kaynak/Docker izin listeleri güncellendi. Toplu oyuncu yazımı gerekmez.
+- Etiketler 2.2.1 / Android code12. APK/AAB ÜRETİLMEDİ, commit/push ve canlı
+  dağıtım YAPILMADI. Mesajlar yeni sunucu dağıtılınca görünür. Önceki 2.2.0/code11
+  teslimleri ve mağaza paketleri tarihsel hâliyle korundu. 8891 telefonsunucusu
+  ve Play Console'a dokunulmadı; mevcut AWS canlı son doğrulanan 2.2.0'dır.
+
+KANIT artifacts/release-221-20261102/:
+- server-tests.log: 1922 PASS / 44 SKIP (yerel gerçek PG/Redis yok).
+- client-tests-final.log: 764 PASS. Son tarih/ilk-sekme iyileştirmesi sonrası
+  final-focused-client.log: 18 PASS. build-tests.log: 10 PASS.
+- browser-final.log: 320x568 ve 393x852 gerçek Chrome, 4 PASS; güncel 6 yeni
+  çizim, gerçek API'den takım profili, iki geri dönüş, yeni çark, iki sürüm notu
+  ve reload sonrası seen kalıcılığı. UI sunum fixture'ları izole test hesabında;
+  geçmiş filtreleri gerçek profil/meta hizmetleriyle ayrıca test edildi.
+- web build bd4c67f5bfa86d82; native web build abbe3be423d140dd; release_guard PASS.
+- release-boundary-tests.log: 4 PASS. Yeni statik JSON henüz untracked olduğundan
+  test için artifacts altında ayrı geçici Git index/objects kullanıldı; gerçek
+  .git index'i/staging değişmedi. Yeni dosyalar commit'e mutlaka alınmalı.
+- İlk browser.log: boş yeni sıralamada tıklanacak satır olmayan TEST fixture'ı
+  nedeniyle iki hata; canonical bot satırı sunum fixture'ıyla düzeldi, final4PASS.
+- Sandbox'ta geniş pytest/tarayıcı loopback takıldı; yalnız bu turun süreçleri
+  durdurulup normal yerel izinle doğrulandı. Yeni QA 8907 sunucusu tur sonunda kapandı.
+
+SONRAKİ: kullanıcı yeni talimatına göre commit/push/CI ve gerekirse veri koruyan
+AWS güncellemesi + imzalı 2.2.1/code12 APK/AAB. Bu tur yayın yetkisi varsayılmadı.
+
+---
+
 # SON DURUM — 1 Kasım 2026: AWS 2.2.0 geçişi tamamlandı
 
 Kullanıcı mevcut AWS güncellemesini açıkça onayladı; SSH kuralını kendisi açtı.

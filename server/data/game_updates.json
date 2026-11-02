@@ -1,0 +1,19 @@
+[
+  {
+    "version": "2.1.1",
+    "body_tr": "Yeni fiziksel modül ve sandık görselleri, savaş efektleri ve müzikleri yenilendi. Savaş akıcılığı ve mesaj kutusu iyileştirildi.",
+    "body_en": "Module and chest artwork, battle effects and music were refreshed. Battle performance and the inbox were improved."
+  },
+  {
+    "version": "2.2.0",
+    "release_date": "2026-11-01",
+    "body_tr": "• Modül koleksiyonu 24 kart ve üç sınıfla yenilendi: Saldırı, Savunma ve Taktik. Yeni kartlar ve yetenekler eklendi.\n• Savaş ekonomisi artık Akım üzerine kurulu: 7 başlangıç Akımı, 12 depolama sınırı ve her 3 saniyede +1 Akım. 100 Saldırı hasarı ve 50 Savunma CAN hasarı koşulları birlikte tamamlandığında +1 Akım kazanılır.\n• Yedi çekirdeğin güçleri ve savaş sunumları yenilendi; otomatik hedefleme ile doğrudan saldırı, koruma ve takviye rolleri güçlendirildi.\n• Devre Yolu, sandıklar ve diğer yeni parça ödülleri güncel modül havuzuna uyarlandı. Kaldırılan modüllerin birikmiş parçaları 1:1 evrensel parçaya dönüştürüldü; eski seviyeler arşivlendi.\n• Açılış görseli, kart çizimleri ve savaş efektleri güncellendi; performans ve kararlılık iyileştirildi. Hesaplar ve ilerlemeler korundu.",
+    "body_en": "• The module collection now has 24 cards in three classes: Attack, Defense and Tactics, with new cards and talents.\n• Battles now use Current: start with 7, store up to 12 and gain +1 every 3 seconds. Completing both 100 Attack damage and 50 Defense HP damage also grants +1 Current.\n• All seven core powers and their battle presentation were refreshed, with automatic targeting and direct attack, protection and reinforcement roles.\n• Circuit Road, chests and other new shard rewards now use the current module pool. Saved shards for retired modules were converted 1:1 into universal shards; old levels were archived.\n• Startup artwork, card illustrations and battle effects were refreshed. Performance and stability were improved. Accounts and progress were preserved."
+  },
+  {
+    "version": "2.2.1",
+    "release_date": "2026-11-02",
+    "body_tr": "• Kendi profilinizde ve ziyaret ettiğiniz oyuncuların profillerinde deste görselleri düzeltildi. En çok kullanılan desteler artık yalnız güncel kartlarla oynanmış maçlardan seçilir; böyle bir maç yoksa aktif deste gösterilir.\n• Android'de herkese açık takım profillerinin açılmasını engelleyen bağlantı sorunu giderildi.\n• Oyuncu ve takım profillerinin geri düğmeleri daha görünür, güncel tasarımla yenilendi.\n• Etkinlikler ekranındaki günlük meta çarkı simgesi oyunun boyalı görsel tarzına uyarlandı.\n• Güncelleme notları artık sürüm numarasına göre Sistem mesajlarında yer alır. Eksik 2.2.0 notları da eklendi; okunmuş mesajlar yeniden okunmamış sayılmaz.",
+    "body_en": "• Fixed deck artwork on your profile and visited player profiles. Most-used decks now come from matches played with current cards; your active deck is shown when no such match exists.\n• Fixed the Android connection issue preventing public team profiles from opening.\n• Player and team profiles now have clearer back buttons matching the current design.\n• The daily meta wheel icon in Events now matches the game's painted artwork.\n• Update notes now appear in System messages by version. The missing 2.2.0 notes were added; read messages stay read."
+  }
+]

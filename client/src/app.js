@@ -8635,7 +8635,7 @@
       healthState:
         serverHealthState,
       expectedVersion:
-        "2.2.0",
+        "2.2.1",
       expectedProtocolVersion: 2,
     });
   const playReadinessGate =
@@ -8677,7 +8677,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.2.0",
+    build: "2.2.1",
   });
 
   const postMatchSync =
@@ -18793,13 +18793,15 @@
     detail.textContent = detailText;
     const stamp = document.createElement("time");
     stamp.className = "inbox-card-date";
-    const raw = item.created_at || item.awarded_at || "";
+    const raw = item.created_at || item.awarded_at || item.release_date || "";
     const date = raw ? new Date(raw) : null;
     if (date && Number.isFinite(date.getTime())) {
       stamp.dateTime = date.toISOString();
-      stamp.textContent = date.toLocaleString(uiLocale(), {
-        year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit",
-      });
+      stamp.textContent = item.release_date && !item.created_at && !item.awarded_at
+        ? date.toLocaleDateString(uiLocale(), {year:"numeric", month:"2-digit", day:"2-digit", timeZone:"UTC"})
+        : date.toLocaleString(uiLocale(), {
+          year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit",
+        });
       stamp.title = localizedUiText("Mesaj tarihi");
     } else {
       // Eski kayıtta tarih yoksa bugünü mesaj tarihi diye göstermeyiz.
@@ -18857,13 +18859,16 @@
     card.dataset.seen = String(Boolean(notice.seen));
     const copy = document.createElement("div");
     const title = document.createElement("strong");
-    title.textContent = notice.category === "purchase" ? "Satın alım tamamlandı" : notice.title_tr || "Bildirim";
+    const english = document.documentElement?.lang === "en";
+    const noticeTitle = (english && notice.title_en) || notice.title_tr || "Bildirim";
+    const noticeBody = (english && notice.body_en) || notice.body_tr || "";
+    title.textContent = notice.category === "purchase" ? "Satın alım tamamlandı" : noticeTitle;
     const schedule = notice.scheduled_at ? new Date(notice.scheduled_at) : null;
     const scheduleLabel = schedule && !Number.isNaN(schedule.getTime())
       ? ` · ${schedule.toLocaleString(uiLocale(), { weekday:"short", hour:"2-digit", minute:"2-digit" })}`
       : "";
     const purchaseDetail = notice.product_name_tr || String(notice.title_tr || "").split(" · ").slice(1).join(" · ");
-    copy.append(title, createInboxCardMeta(notice, `${purchaseDetail ? purchaseDetail + " · " : ""}${notice.body_tr || ""}${scheduleLabel}`));
+    copy.append(title, createInboxCardMeta(notice, `${purchaseDetail ? purchaseDetail + " · " : ""}${noticeBody}${scheduleLabel}`));
     if (notice.category === "purchase") {
     const remove = document.createElement("button");
     remove.type = "button";
@@ -19215,7 +19220,7 @@
 
   function preferredRewardInboxTab() {
     const candidates=[];
-    const add=(tab,item)=>candidates.push({tab,at:Date.parse(item.created_at || item.created_at_utc || "") || 0});
+    const add=(tab,item)=>candidates.push({tab,at:Date.parse(item.created_at || item.created_at_utc || item.release_date || "") || 0});
     for(const item of rewardInboxState?.invitations || [])if(item.incoming && item.status === "pending")add("battle",item);
     for(const item of rewardInboxState?.messages || [])if(item.status === "unclaimed")add(item.category === "battle" ? "battle" : "reward",item);
     for(const [tab,items] of [["purchase",rewardInboxState?.purchases],["system",rewardInboxState?.notices]])
@@ -21646,17 +21651,7 @@
   // Mounted once; no animation loop, measured layout or player text in HTML.
   const EVENT_HUB_EMBLEMS = Object.freeze({
     trophy:`<img class="event-approved-trophy" src="${COMPETITION_TROPHY_ASSET}" width="64" height="64" alt="" decoding="async">`,
-    wheel:'<svg viewBox="0 0 80 80" focusable="false" aria-hidden="true">'
-      + '<path class="eb-shadow" d="M19 69h42l5 5H14Z"/>'
-      + '<path class="eb-steel eb-outline" d="M34 57h12v11H34Z M26 67h28l5 7H21Z"/>'
-      + '<circle class="eb-steel eb-outline" cx="40" cy="34" r="29"/>'
-      + '<circle class="eb-dark eb-outline" cx="40" cy="34" r="23"/>'
-      + '<path class="eb-cyan eb-outline" d="M40 13 52 16 40 34 28 16Z M61 34 58 46 40 34 58 22Z M40 55 28 52 40 34 52 52Z M19 34 22 22 40 34 22 46Z"/>'
-      + '<path class="eb-gold eb-outline" d="M52 16 58 22 40 34Z M58 46 52 52 40 34Z M28 52 22 46 40 34Z M22 22 28 16 40 34Z"/>'
-      + '<path class="eb-light" d="M12 29A29 29 0 0 1 40 5v4a25 25 0 0 0-24 21Z"/>'
-      + '<circle class="eb-steel eb-outline" cx="40" cy="34" r="8"/>'
-      + '<path class="eb-gold eb-outline" d="M40 1 46 9 40 16 34 9Z"/>'
-      + '<circle class="eb-light" cx="40" cy="34" r="3"/></svg>',
+    wheel:'<img class="event-painted-wheel" src="./assets/ui/events-v2/daily-meta-wheel.webp" width="64" height="64" alt="" decoding="async">',
     banner:'<svg viewBox="0 0 80 80" focusable="false" aria-hidden="true">'
       + '<path class="eb-shadow" d="M10 71h60l5 4H5Z"/>'
       + '<path class="eb-steel eb-outline" d="M13 8h5v64h-5Z M62 8h5v64h-5Z"/>'

@@ -8,6 +8,7 @@ from uuid import uuid4
 
 from .catalog_migration import award_module_shards
 from .game.catalog import BASIC_MODULE_DEFINITIONS
+from .game.battle_pool import BattlePoolValidationError, validate_battle_pool
 from .game.catalog_view import build_module_catalog_view
 from .game.core_balance import core_signature
 from .game.core_stats import core_max_hp
@@ -21,6 +22,22 @@ from .reward_delivery import (
 
 class MetaProgressionError(ValueError):
     pass
+
+
+def current_most_used_decks(profile) -> list[dict]:
+    """Show real matches with current decks; leave historical counters intact."""
+    decks = []
+    for key, count in sorted(profile.lifetime_stats.get("decks", {}).items(), key=lambda p: -p[1]):
+        ids = key.split("|")
+        try:
+            validate_battle_pool(ids)
+        except BattlePoolValidationError:
+            continue
+        if count > 0:
+            decks.append({"module_ids": ids, "matches": count})
+        if len(decks) == 3:
+            break
+    return decks
 
 
 from .arena_canon import (
@@ -619,7 +636,7 @@ class MetaProgressionService:
                 "highest_module_level": 1 + max(profile.module_upgrade_levels.values(), default=0),
                 "unlocked_cores": sum(profile.highest_rating >= core_unlock_rating(c) for c in CORE_TYPES),
                 "opened_chests": len(profile.chest_receipts) + len(profile.shop_receipts),
-                "most_used_decks": [{"module_ids": key.split("|"), "matches": count} for key, count in sorted(profile.lifetime_stats.get("decks", {}).items(), key=lambda p: -p[1])[:3]],
+                "most_used_decks": current_most_used_decks(profile),
             },
             "season_id": profile.active_meta_season_id,
             "rank": current_rank,

@@ -70,14 +70,15 @@ def test_system_delete_survives_reload_and_undo_does_not_reset_seen(inbox):
     profile, profiles, _ = inbox
     profile.seen_inbox_notice_ids = (UPDATE_NOTICE_ID,)
     result = dismiss(profile, "system", notice_ids=[UPDATE_NOTICE_ID])
-    assert result["notices"] == [] and result["purchases"]
+    assert UPDATE_NOTICE_ID not in {item["notice_id"] for item in result["notices"]}
+    assert result["purchases"]
     profiles._profiles.clear()
     gateway.player_data_store_service.load_player(profile.player_id)
     restored = profiles.get(profile.player_id)
     assert restored.dismissed_inbox_notice_ids == (UPDATE_NOTICE_ID,)
-    assert gateway._inbox_notices(restored) == []
+    assert UPDATE_NOTICE_ID not in {item["notice_id"] for item in gateway._inbox_notices(restored)}
     result = dismiss(restored, "system", notice_ids=[UPDATE_NOTICE_ID], restore=True)
-    assert result["notices"][0]["seen"] is True
+    assert next(item for item in result["notices"] if item["notice_id"] == UPDATE_NOTICE_ID)["seen"] is True
 
 
 def test_bulk_undo_does_not_restore_an_earlier_single_deletion(inbox):

@@ -9,6 +9,13 @@ from tools.package_release import ROOT, STATIC_SERVER_DATA_FILES, release_files,
 
 
 class ReleaseDataBoundaryTests(unittest.TestCase):
+    def test_versioned_system_updates_ship_in_source_and_production_image(self) -> None:
+        relative = "server/data/game_updates.json"
+        self.assertIn(relative, STATIC_SERVER_DATA_FILES)
+        self.assertTrue(is_release_input(relative))
+        self.assertIn("COPY " + relative + " /app/server/data/", (ROOT / "Dockerfile").read_text())
+        self.assertIn("!" + relative, (ROOT / ".dockerignore").read_text())
+
     def test_secrets_and_generated_test_outputs_are_excluded_even_if_tracked(self) -> None:
         for path in ("qa_reports/startup-phone.png", "artifacts/app-debug.apk", "deliverables/GRIDSHARD_MAGAZA_2026-11-01.zip",
                      ".mobile-debug/old-identities.json", "deploy/.env.production",

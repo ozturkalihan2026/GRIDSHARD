@@ -7,6 +7,7 @@ function choose(state,read=[]){const start=source.indexOf("  function preferredR
 test("inbox opens the category holding the newest actionable or unread message",()=>{
   assert.equal(choose({purchases:[{notice_id:"p",created_at:"2026-10-22T01:00:00Z"}]}),"purchase");
   assert.equal(choose({notices:[{notice_id:"s",created_at:"2026-10-22T02:00:00Z"}],purchases:[{notice_id:"p",created_at:"2026-10-22T01:00:00Z"}]}),"system");
+  assert.equal(choose({notices:[{notice_id:"update-2-2-1",release_date:"2026-11-02"}],purchases:[{notice_id:"p",created_at:"2026-11-01T18:00:00Z"}]}),"system");
   assert.equal(choose({messages:[{status:"unclaimed",category:"battle"}]}),"battle");
   assert.equal(choose({messages:[{status:"unclaimed",category:"season"}]}),"reward");
   assert.equal(choose({invitations:[{status:"pending",incoming:true}]}),"battle");

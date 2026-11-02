@@ -11,6 +11,7 @@
     "/statistics/",
     "/profile/",
     "/public-profiles/",
+    "/team-profiles/",
     "/teams",
     "/social/",
     "/accounts/",

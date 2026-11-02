@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "2.2.0"
+VERSION = "2.2.1"
 PACKAGE_LABEL = "signatures-social"
 ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}"
 
@@ -29,6 +29,7 @@ EXCLUDED_RUNTIME_PATTERNS = (
 )
 EXCLUDED_NAMES = {"RELEASE_MANIFEST.json"}
 STATIC_SERVER_DATA_FILES = {
+    "server/data/game_updates.json",
     "server/data/arena_bot_profiles_v1.json",
     "server/data/arena_progression_v1.json",
     "server/data/module_roster_v2.json",

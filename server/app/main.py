@@ -97,6 +97,7 @@ from .game.tutorial import (
 from .safe_chat import team_description_text, visible_message
 from .match_accounting import TUTORIAL_TRAINING_MATCH_TYPE
 from .version import VERSION, LEGACY_HEALTH_VERSION
+from .release_updates import INBOX_UPDATE_NOTICES
 from .player_profile import (
     PlayerProfileError,
     PlayerProfileService,
@@ -530,6 +531,7 @@ PROTECTED_PLAYER_PREFIXES = (
     "/statistics/",
     "/profile/",
     "/public-profiles/",
+    "/team-profiles/",
     "/teams",
     "/social/",
     "/accounts/",
@@ -3589,18 +3591,6 @@ def _settle_competition_rewards(player_id: str) -> None:
             persist_player_data(player_id)
 
 
-# Mesaj kutusu duyuruları: oyun güncellemeleri. Oyun bildirimleri (ör. takım
-# turnuvası maç saati) okuma anında oyuncunun durumundan üretilir.
-INBOX_UPDATE_NOTICES: tuple[dict, ...] = (
-    {
-        "notice_id": "update-2-1-1",
-        "kind": "update",
-        "title_tr": "GRIDSHARD 2.1.1 güncellemesi",
-        "body_tr": "Yeni fiziksel modül ve sandık görselleri, savaş efektleri ve müzikleri yenilendi. Savaş akıcılığı ve mesaj kutusu iyileştirildi.",
-    },
-)
-
-
 def _inbox_invitations(profile) -> list[dict]:
     """Bekleyen ve kabul edilip henüz bitmemiş kupasız savaş davetleri."""
     player_id = profile.player_id
@@ -3699,6 +3689,8 @@ def _inbox_notices(profile, *, include_dismissed: bool = False) -> list[dict]:
     if not include_dismissed:
         dismissed = set(profile.dismissed_inbox_notice_ids)
         notices = [item for item in notices if item["notice_id"] not in dismissed][-MAILBOX_AREA_LIMIT:]
+    # Keep the newest retained message at the top (2.2.1, then 2.2.0).
+    notices.reverse()
     for notice in notices:
         notice["seen"] = notice["notice_id"] in seen
     return notices
