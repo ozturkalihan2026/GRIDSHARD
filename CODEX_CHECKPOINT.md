@@ -1,3 +1,95 @@
+# SON DURUM — 1 Kasım 2026: AWS 2.2.0 geçişi tamamlandı
+
+Kullanıcı mevcut AWS güncellemesini açıkça onayladı; SSH kuralını kendisi açtı.
+Güvenlik grubuna bizim tarafımızdan değişiklik yapılmadı. Geçici SSH kuralını
+kullanıcı iş bitince kaldırabilir; AWS ağ ayarlarını kendisi yapmayı tercih ediyor.
+
+CANLI: https://play.gridshardgame.com — release 2.2.0, PvP protokol 2,
+combat_ruleset modules_v7, PostgreSQL/Redis sağlıklı. CI başarılı kaynak
+9938efdf9b045733ef3618ca2d40edbc60fef04a dağıtıldı.
+API imajı gridshard-production:2.2.0-v11-9938efd,
+sha256:74ba148a801a5028a4af53d58636438fcd7cef36457c3da5f1a7ea86ef3c2542.
+Yalnız API yeniden oluşturuldu; Caddy, PostgreSQL ve Redis değiştirilmedi.
+Eski .env, bütün GRIDSHARD ayarları, WIF/ödeme sırları ve runtime volume aynı.
+
+YEDEK + GERİ YÜKLEME PROVASI BAŞARILI:
+/var/backups/gridshard-production/20261101-before-220-9938efd
+Veri tabanı dump ve runtime.tar.gz var. Ayrı, internete kapalı yeni PostgreSQL
+hedefine geri yüklenip TÜM tabloların satır sayıları/içerik özetleri eşleşti.
+Canlı veri tabanına geri yükleme/sıfırlama yapılmadı. Geçici prova container,
+network ve volume kaldırıldı. Eski imaj ve bütün yedekler korundu.
+
+Mevcut 50 profil için geçiş öncesi, prova ve yeni sürüm açılışı sonrası aynı
+ilerleme özeti: cüzdan, kart parçaları, seviyeler, yetenekler ve ödeme makbuzları.
+Eski parçalar 1:1 evrensel, seviyeler arşiv; ikinci migration değişiklik üretmez.
+Kimlik, platform hesabı, ödeme, ekonomi işlem, savaş, takım ve arkadaş kayıtları
+korundu. artifacts/server-220-20261101/deployment-success.json, restore-proof.json
+ve public-smoke.json kanıttır. Uzak özel Docker/env/hata kayıtlarını ekrana dökme.
+Sunucu operatör kayıtları /opt/gridshard/releases/production-2.2.0-v11-9938efd.
+
+GERÇEK CANLI AÇILIŞ: HTTPS katalog 24 modül / Saldırı-Savunma-Taktik,
+7 başlangıç / 12 depo / 3 sn pasif / 100 Saldırı VE 50 Savunma CAN birlikte +1,
+11 AI arketipinde yalnız aktif kartlar doğrulandı. Yeni normal misafir ile
+kimlik doğrulama ve oyuncu açılışı başarılı; 0 tarayıcı hatası / 0 eksik asset.
+Test API kancası üretimde yok. Mevcut hesaplara veya savaşa dokunulmadı.
+Bu doğrulama için bir yeni normal misafir oluştu; mevcut 50 profil korundu.
+
+APK/AAB 2.2.0/code11 önceki başarılı CI kaynağıyla hazır, yeniden üretilmedi.
+deliverables/GRIDSHARD_2.2.0_11 README, manifest ve FINAL_STATUS güncellendi.
+Telefona kurulum veya Play yüklemesi/yayını bizim tarafımızdan yapılmadı.
+Kullanıcı Play Console sürüm taslağını düzenliyor olabilir; izinsiz müdahale etme.
+Sunucu artık protokol 2; eski 2.1.1/protokol 1 istemcisi güncellenmeli.
+Telefon 8891 test sunucusuna dokunulmadı.
+Sunucu geçişi tamamlandığından checkpoint-i-oku otomatik devam görevi silindi.
+Son denetim: API sağlıklı, restart 0; geçici prova kaynakları yok, iki yedek var.
+
+---
+
+# ÖNCEKİ DURUM — 1 Kasım 2026: 9938efd push / CI tümü yeşil / APK+AAB hazır
+
+Kullanıcının son ek talebi: bütün ödül kaynaklarından eski modül parçalarını
+çıkar, yeni kartları kullan. TAMAMLANDI. Aktif24havuz, Arena2–12yenikart
+hedefleri, bütün ödül yolları, ortak parça verme koruması; eski sabit sandık
+hakkı açılışta1:1evrensel ve makbuzda eski kart yok. Tarihsel alınmış makbuzlar,
+seviyearşivi/ücretliseçimler/iadeborçları korunur. GünlükemirlerXP/Akı verir.
+Eski Enerji/Isı/36kart/coreV1 runtimeyolları temiz. Rastgele yerleşim ve hedef
+önceliği aynı. Tekekonomi7/12/3sn; Saldırı100 VE Savunma50gerçekCAN birlikte+1.
+
+COMMIT/PUSH: main9938efdf9b045733ef3618ca2d40edbc60fef04a.
+CI41332831168 TAM SUCCESS: Server,Client, gerçekPG/Redis/productionimage,
+ChromiumAndroid, macOSSafariWebKit ve kaynakpaketi.
+https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/41332831168
+Yerel1918serverPASS44SKIP(gerçekservislerCIdedoğrulandı),762clientPASS,30tool,
+10build,453import0sorun,70deterministikmaçaynı. 24browser+3ikigerçekistemci.
+YerelWindowsWebKit9,8FPSbaşarısız; gerçekmacOSCIbaşarılı. Eşiklerdüşürülmedi.
+
+İMZALI2.2.0/code11 üretildi ve artifactauditPASS:
+deliverables/GRIDSHARD_2.2.0_11/GRIDSHARD-2.2.0-v11.aab (42.814.424bayt)
+aynıklasörde.apk(40.110.268bayt),release-audit.json,r8-audit.json,manifest.json,
+README+TR/ENnotlar. Mevcutsigningcert eşleşti;537webasset/12font/R8/9plugin.
+Nativewebbuildafcb20593f944663;normalwebd55414e2c408d7ec.
+SDKbuilddeexplicitJDK21AndroidStudiojbr ve gerçekSDKkullanıldı; sandbox
+LOCALAPPDATAredirecti/varsayılanJAVA_HOME17nedeniyleotomatikbulmadüşer.
+Anahtariçeriği/parolayazılmadı. TelefonaKURULMADI,Play'eYÜKLENMEDİ.
+MağazaZIPyeni2.2.0/11manifest+ödülnotlarıylayenilendi:
+deliverables/GRIDSHARD_MAGAZA_2026-11-01.zip (23.393.028bayt).
+
+KALAN BLOKER: mevcutAWSsaltokunurSSH8snzaman aşımı, üretimHTTPShealth200ok
+release2.1.1/protokol1. Sunucuçalışıyor;yalnızyönetimerişimiyok. AWSyenigiriş
+sekmesiEdgebrowser3tab1378269626markHandoff;signin/IAMboş. Öncekiasyncgiriş
+sorusucevapsız,tekrarsorulmadı. KullanıcıAWSgirişinilokalyapıncagüncelEC2IP/
+mevcutSSHizinikontrol→yedek/ayrıboşhedefegeri yüklemedrill→verikoruyarakAWS
+2.2.0/protocol2update→aynıAPKgerçekaçılışkontrolü→PlayAAB11yayını.
+Eski production_cutover.py SIFIRLAMA aracınıçalıştırma;OVHistenmiyor.
+Üretimsırları,WIF,billing,mevcutenv,volumeler,oyuncuDBkorunacak.
+
+Kaynakdosyalarcommitileaynı; yalnız bucheckpoint son yürütme kaydı olarak
+commitSONRASIyerelgünceldir. YeniJSONdurumartifacts/release-v8-20261101/FINAL_STATUS.json.
+BucheckpointbelgegüncellemesiDocker/releasepaketinegirmez; ürünCI9938efdyeşil.
+Sonraki turAWSerişiminden başla. Telefon8891testsunucusunadokunulmadı.
+
+---
+
 # Güncel kısa ek
 
 browser-cleanup2.log24PASS; two-client-final2.log3PASS; server-final-focused2.log
