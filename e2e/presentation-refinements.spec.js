@@ -95,7 +95,9 @@ test("kupa seçimi, günlük meta ve tüm modül çizimleri mevcut arayüze bağ
   await picker.click(); await page.keyboard.press("Escape");
   await expect(page.locator("#team-create-min-trophies")).toHaveValue("300");
   await page.locator('[data-shell-screen="events"]').click();
-  await expect(page.locator('#daily-meta-card [data-event-emblem="wheel"] > svg')).toHaveCount(1);
+  const metaWheel = page.locator('#daily-meta-card [data-event-emblem="wheel"] > img.event-painted-wheel');
+  await expect(metaWheel).toBeVisible();
+  await expect.poll(() => metaWheel.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   const eventCards = await page.locator(".event-directory > button").evaluateAll(cards => cards.map(card => {
     const c=card.getBoundingClientRect(), icon=card.querySelector(".event-hub-emblem").getBoundingClientRect();
     const title=card.querySelector("strong").getBoundingClientRect(), subtitle=card.querySelector("small").getBoundingClientRect();
