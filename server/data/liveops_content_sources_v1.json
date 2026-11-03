@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {"id":"season_road","state":"supported","schedule":"season","stock_pool":"competition","cosmetics_per_period":{"avatar_frame_id":1,"profile_background_id":1}},
+    {"id":"season_leaderboard","state":"supported","schedule":"season","stock_pool":"competition","cosmetics_per_period":{"avatar_frame_id":1,"profile_background_id":1}},
+    {"id":"weekly_tournament","state":"supported","schedule":"iso_week","stock_pool":"competition","cosmetics_per_period":{"avatar_frame_id":1,"profile_background_id":1}},
+    {"id":"team_tournament","state":"supported","schedule":"team_cycle","stock_pool":"competition","cosmetics_per_period":{"team_emblem_id":1,"team_frame_id":1,"team_name_color_id":1}},
+    {"id":"shop_collection","state":"planned","schedule":"manual","stock_pool":"shop","cosmetics_per_period":{"avatar_frame_id":1,"profile_background_id":1}},
+    {"id":"daily_trial","state":"planned","schedule":"manual","stock_pool":"daily_trial","cosmetics_per_period":{"avatar_frame_id":1,"profile_background_id":1}}
+  ]
+}

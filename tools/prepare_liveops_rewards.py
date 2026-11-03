@@ -7,6 +7,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
 from app.cosmetic_releases import CATALOG_PATH, CosmeticReleaseRegistry
+from app.liveops_content import ContentPlanError, content_coverage, load_sources
 
 
 def frontend_catalog(registry):
@@ -67,22 +68,38 @@ def main():
     parser.add_argument("--source")
     parser.add_argument("--period-id")
     parser.add_argument("--release-id")
+    parser.add_argument("--starts-at", help="Planning season anchor with UTC offset; never changes production")
+    parser.add_argument("--team-starts-at", help="Independent planning team anchor; omit to leave team events closed")
+    parser.add_argument("--extra-periods", action="append", default=[], metavar="SOURCE=COUNT")
+    parser.add_argument("--check-stock", action="store_true", help="Exit 2 when reviewed stock or a source adapter is missing")
     args = parser.parse_args()
     registry = CosmeticReleaseRegistry(json.loads(CATALOG_PATH.read_text(encoding="utf-8")))
     if args.command == "coverage":
-        if not 1 <= args.cycles <= 12:
-            parser.error("cycles must be between 1 and 12")
-        per_cycle = {"avatar_frame_id":6,"profile_background_id":6,"team_emblem_id":1,"team_frame_id":1,"team_name_color_id":1}
-        report = []
-        for field, count in per_cycle.items():
-            available = sum(item["field"] == field and item["status"] == "approved" and item["id"] not in registry.used for item in registry.items.values())
-            required = count * args.cycles
-            report.append({"field":field,"ready_unassigned":available,"required":required,"create_and_review":max(0,required-available)})
-        print(json.dumps({"cycles":args.cycles,"production_changed":False,"content_tasks":report},ensure_ascii=False,indent=2))
+        try:
+            extras = {}
+            for value in args.extra_periods:
+                source, count = value.split("=", 1)
+                if source in extras:
+                    raise ValueError("Duplicate extra source")
+                extras[source] = int(count)
+            report = content_coverage(registry, cycles=args.cycles, starts_at=args.starts_at,
+                                      team_starts_at=args.team_starts_at, extra_periods=extras)
+        except (ValueError, ContentPlanError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(report,ensure_ascii=False,indent=2))
+        if args.check_stock and not report["stock_ready"]:
+            raise SystemExit(2)
         return
+    if args.starts_at or args.team_starts_at or args.extra_periods or args.check_stock:
+        parser.error("Calendar and stock options belong to coverage only")
+    load_sources()
     if args.command == "reserve":
         if not all((args.source, args.period_id, args.release_id)):
             parser.error("reserve requires --source, --period-id, --release-id")
+        try:
+            load_sources().require_supported(args.source)
+        except ContentPlanError as exc:
+            parser.error(str(exc))
         registry = registry.reserve(args.source, args.period_id, args.release_id)
     elif args.command == "publish":
         if not args.release_id:

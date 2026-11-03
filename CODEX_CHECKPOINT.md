@@ -1,4 +1,97 @@
-# SON DURUM — 3 Kasım 2026: 2.3.0 / code14 sunucu geçişi ve AAB teslimi tamam
+# GÜNCEL KARAR — 3 Kasım 2026: mevcut içerikle ilk sezon ve tarihli takvim
+
+Kullanıcı kozmetik dışı yaratıcı ödüller ve neyi/ne zaman yapacağımızı belirleyen
+yayın takvimi istedi. Açık tercihi: **2.4.0 mevcut 24 modülle ilk sezon açılışı**;
+yeni modül ve geniş kozmetik üretimi sonraki paketlere bölünsün. Önceki
+2.4.0 “iki yeni kart + 18 yeni öğe” koşulu bu kararla değişti.
+
+- Canlı **2.3.0/code14**; dal codex/release-2-4-0. Bu tur plan/veri/generator
+  değişikliği yapıldı; AWS, canlı sezon/env, AAB, telefon/8891 değişmedi.
+- Ana yeni belge docs/GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md:
+  kaynaklı ödül portföyü, ilk sezon tahsis önerisi, haftalık iş ve tarih tablosu.
+- Çalışma hedefi **2.4.0 23 Kasım 2026**, **S1 30 Kasım 03.00 TR**.
+  12–15 aktif geliştirici günü tahmini; haftada5gün/günde4–6saat ve ~%20
+  hata/test/gözlem payı varsayımıdır, ölçülmüş hız veya mağaza onay sözü değildir.
+- Sonraki hedef2.5/21Aralık; tahmin2.6/18Ocak,2.7/15Şubat,2.8/15Mart;
+  koşullu2.9/12Nisan2027. Sezonlar bunlardan1hafta sonra 28günlük hedeflerdir.
+  Distant efor4Ocak, draftkararı1Mart gözden geçirilir; takvim kendiliğinden iş çalıştırmaz.
+- Canonical docs/planning/release_calendar_v1.json; tools/release_calendar.py
+  tarih/sıra/28gün/sezon boşluksuzluğu ve backlog tarihlerini doğrular; ana
+  plan ve yeni ödül belgesinin tablolarını aynı kaynaktan üretir.
+- S1 istisnası ve kaynak-ödülü haftası HENÜZ KODLANMADI. Mevcut stok kodu
+  her-hafta-kozmetik profiliyle18/20eksik raporlamaya devam eder. Sayıları
+  sessizce0yapma/fallbackileeskikozmetikverme. Yalnızilksezon24mevcutmodül;
+  S2+ enaz1yeni hazır modül ve özgün ödül koşulu devam eder.
+- S1 önerisi: aurora oyuncu seti sezon yolu; solar sıralama; abyss sonhafta.
+  Diğer3hafta sabit kaynak/modül parçası. Takımturnuvası bağımsız ve gerçek
+  katılım şartlı, en erken7Aralık hedefi; kişisel sezon bunu beklemez.
+- COS-02 18öğe üç gruba bölündü: 2.5/S2 altı,2.6/S3 altı,2.7/S4 altı.
+  CARD-01 YankıRölesi2.5/S2, CARD-02 KorFırlatıcı2.6/S3. Mağazaya ayrı4öğe.
+  İlk3takımseti tüketilince yeni takımstoğu ayrıca üretilir. Sanat yönü aynı.
+- Yeni plan görevleri SEASON-00 (bütçe/ilkprofil/kapanış/kalıcılık/mobil),
+  COMPAT-01 (kurulu2.3/2.2.1), REWARD-05 (isteğe bağlı AI lisansı/kupon).
+  Toplam54iş:43todo,2in_progress,2done,7later. RELEASE-01 yalnız daraltılmış
+  ilksezon akışını bekler; 2.5kapısına ertelenen kart/mağaza/kalıcılık testleri eklendi.
+- Kozmetik dışı fikirler: hedefli Devre Projesi, seçim kasası, deste ikmali,
+  çekirdek bakım paketi, tek kullanımlık yeniden kurulum kuponu, AI laboratuvar
+  lisansı, keşif günlüğü, PvE yan rota, takım ikmali, küçük ustalık hattı.
+  Kupon/lisans/seçim yeniözelliktir; mevcut diye sunulmaz. Eski ücretsiz hak
+  kuponla ücretlendirilmez, kiralık kart dereceli savaşa taşınmaz.
+- Sonraki somut iş **BASE-01 mevcut40kademe/kaynak bütçesi**, sonra SEASON-00
+  ve COMPAT-01. Genel yeni mağaza ekonomisi ECON-01 sonraki2.5kapsamıdır.
+- Bu tur doğrulama: checklist ve takvim check, Python sözdizimi, plan
+  bağımlılıkları ve runtime dosyalarının değişmediği kontrol. Önceki1987/44
+  sonucu önceki işlevselstok commit'ine aittir, bu yeni planın CI sonucu değildir.
+
+---
+
+# TARİHSEL BAŞLANGIÇ — 3 Kasım 2026: 2.4.0 başlangıcı / kaynak ve stok katmanı
+
+Kullanıcı 2.3.0 sunucu geçişini ve AAB'nin kullanıcılara sunulduğunu teyit
+etti; sonraki sürüme başlama talimatı verdi. Yayın teyidi kullanıcı beyanıdır,
+Play Console API veya fiziksel cihaz testi diye gösterilmez. RELEASE-00 bu
+teyitle kapandı. Önceki teslim manifestleri teslim anının tarihsel kaydıdır;
+o eski finalizer'ları yeniden çalıştırıp güncel yayın teyidinin üstüne yazmayın.
+
+- Dal **codex/release-2-4-0**; canlı hâlâ **2.3.0 / code14**. Bu tur AWS,
+  canlı DB, dönem başlangıçları, AAB ve telefon/8891 değiştirilmedi.
+- Plan: docs/RELEASE_2_4_0_GELISTIRME_PLANI_20261103.md. A kaynak/stok →
+  B ekonomi+özgün sanat+iki kart → C sürümlü hak/takvim → D sunum → E yayın.
+  Ara kademeler ayrı sürüm değildir; hedef ürün yayını2.4.0. 2.5 mağaza,
+  2.6 günlük deney kapsamları değişmedi. Ortak sanat yönü korunur.
+- Yeni server/app/liveops_content.py ve data/liveops_content_sources_v1.json:
+  dört mevcut adapter + iki planlı kaynak; JSON ile planlı kanal açılamaz.
+  Sezon ve takım başlangıçları bağımsız; haftalar gerçek ISO takviminden,
+  başlangıç dahil/bitiş hariç ve ortak hafta bir kez sayılır.
+- coverage --starts-at/--team-starts-at/--extra-periods/--check-stock eklendi.
+  Tarihsiz rapor tahmin; tarihli raporda team anchor yoksa takım dönemi0.
+  Stok kapısı eksikte exit2; rapor yayın hazır demek değildir (publication_ready=false).
+- inventory_pool varsayılan competition. Dönem reserve/registry shop veya
+  daily_trial havuzunu kullanamaz. Eski/draft rezervasyon serbest stok değildir;
+  kendi tarihli takvimindeki rezervasyon yalnız bir kez karşılanmış sayılır.
+- Paket/Docker/static JSON izinleri ve veri sınırı testleri eşlendi; özel
+  runtime dosyaları dışarıda, uygulanmış SQL baytları aynı.
+- Yerel **1987 PASS / 44 dış servis SKIP**, odaklı38 PASS, import461/0,
+  catalog validate ve mevcut2.3 release_guard PASS; checklist --check PASS.
+  CI/gerçek PG/Redis/native ve yeni görsel kabul bu ara kademe için çalıştırılmadı.
+- Kanıt: artifacts/release-240-20261103/STATUS.json, coverage-aligned.json,
+  coverage-midweek.json, coverage-shop-separation.json;
+  artifacts/release-240-foundations-tests.log ve release-240-regression.log.
+- İki dönem pazartesi00UTC başlarsa8hafta, 30öğe, mevcutstoksonrası18yeni
+  oyuncu öğesi; haftaortası9hafta →32öğe/20yeni. Gerçek tarihte tekrar hesapla.
+- docs/planning/two-cycle-art-manifest.md: dokuz özgün çift/18öğe BRIEF'i,
+  üç inceleme grubu, her biri6öğe. Çizilmiş/onaylanmış/tahsis edilmiş değiller.
+  COS-02 ve COS-04 in_progress. Birleşik yayın kapısına bağlantı tamamlanmadı.
+- Sonraki somut iş BASE-01 ekonomi baz çizgisi, ardından ECON-01; bunlar CARD-01
+  Yankı Rölesi / CARD-02 Kor Fırlatıcı çalışmasını besler. Sanat renderer'ı
+  şu an hâlâ üç motif kabul eder; yeni18öğe için özgün geometri desteği gerekir.
+- 2.3 kurulu client actual health sürümünü birebir eşleştirir. Yalnız sürümü
+  2.4'e yükseltmek eski clientboot'u kırar; E kademesinde uyum sözleşmesi ve
+  DEĞİŞTİRİLMEMİŞ2.3/2.2.1 istemci kanıtı zorunludur. Etiketler şimdilik2.3.
+
+---
+
+# TARİHSEL KAYIT — 3 Kasım 2026: 2.3.0 / code14 sunucu geçişi ve AAB teslimi tamam
 
 Kullanıcı ortak yalnız-ok geri düğmeleri, kozmetiklerin tamamlanması, sunucu
 geçişi ve AAB teslimini açıkça istedi. Play Console yüklemesi önceki iş bölümüne
