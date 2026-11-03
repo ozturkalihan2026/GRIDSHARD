@@ -1,5 +1,26 @@
 # GRIDSHARD — canlı operasyon, yeni ödüller ve oyun modları planı
 
+## 3 Kasım 2026 — uygulama projesine geçiş
+
+Bu planın ürün yönü korunarak mağaza/sandık/ödül araştırması genişletildi.
+Yeni uygulama başlangıç noktası:
+**[Gelişim kontrol listesi](GRIDSHARD_GELISIM_CHECKLIST_20261103.md)**.
+50 işin kararlı kimliği, bağımlılığı, rolü, mevcut kaynak bağı, önerilen yeni
+teslimi ve kabul ölçütleri vardır. Bir temel dalda hazır, 42 iş yapılacak,
+yedi iş ölçüme bağlı ileri aşamadır. Yeni mağaza ve modlar uygulanmış sayılmaz.
+
+- [Mağaza ve ödül araştırması](GRIDSHARD_MAGAZA_ODUL_ARASTIRMASI_20261103.md): resmî kaynaklar, tarihsel örnekler ve GRIDSHARD kararları.
+- [Teknik proje tasarımı](GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md): veri/API, hak/işlem, içerik kapasitesi ve ekran sözleşmeleri.
+- [İşlerin tek kaynağı](planning/gridshard_development_backlog_v1.json): güncellenebilir proje verisi.
+- `python tools/development_checklist.py --check`: bağımlılık/kapsam/kaynak ve üretilmiş checklist tutarlılığı.
+
+2.2.1 sunucu/AAB teslimi tamamlandı. 15 kozmetik ve dönem altyapısı hâlâ
+sonraki minor dalındadır. İlk yeni minor adayı 2.3.0; bu belgeler canlı fiyat,
+ödül miktarı, ürün veya etkinlik açılışı değiştirmez. Aşağıdaki 2 Kasım planı
+ürün gerekçesi olarak korunur; güncel iş durumu yeni checklist'ten izlenir.
+
+---
+
 Araştırma tarihi: 2 Kasım 2026. Durum: geliştirme planı. Aşağıdaki yeni oyun
 modları henüz uygulanmadı. Kozmetik ve dönem ödülü temeli bu planla birlikte
 `codex/liveops-foundations` dalında hazırlanmıştır; 2.2.1 yayın paketi ayrı tutulur.

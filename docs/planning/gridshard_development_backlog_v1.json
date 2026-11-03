@@ -1,0 +1,1778 @@
+{
+  "schema_version": 1,
+  "project_id": "gridshard-growth-20261103",
+  "research_date": "2026-11-03",
+  "runtime_changes_authorized_by_this_file": false,
+  "baseline_release": "2.2.1",
+  "proposed_first_minor": "2.3.0",
+  "working_branch": "codex/liveops-foundations",
+  "goals": [
+    "shop",
+    "chests",
+    "rewards",
+    "content",
+    "presentation",
+    "modes",
+    "analytics",
+    "operations"
+  ],
+  "stages": {
+    "R0": "Baz çizgi ve tasarım",
+    "R1": "Dönem ödülü/içerik temeli — ilk minor adayı",
+    "R2": "Mağaza ve seçim kasası — sonraki minor",
+    "R3": "Günlük deney ve öğrenme döngüsü",
+    "R4": "Ölçüme bağlı büyüme"
+  },
+  "planning_docs": [
+    "docs/GRIDSHARD_CANLI_OPERASYON_VE_GELISIM_PLANI_20261102.md",
+    "docs/GRIDSHARD_MAGAZA_ODUL_ARASTIRMASI_20261103.md",
+    "docs/GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md"
+  ],
+  "tasks": [
+    {
+      "id": "BASE-01",
+      "title": "Mevcut ekonomi ve ürünlerin baz çizgisini çıkar",
+      "stage": "R0",
+      "owner": "Oyun tasarımı / backend",
+      "effort": "M",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [],
+      "existing_paths": [
+        "server/app/meta_progression.py",
+        "server/app/player_progression.py",
+        "server/app/store_catalog.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/economy-baseline.md"
+      ],
+      "acceptance": [
+        "Dört sandığın garanti/olasılık, fiyat, limit ve hediye kaynağı tek tabloda doğrulanır.",
+        "Ücretsiz/premium/AI-insan ayrımı ve kaynak giriş-çıkış varsayımları kaydedilir; mevcut fiyatlar değiştirilmez."
+      ],
+      "goals": [
+        "shop",
+        "chests",
+        "rewards",
+        "analytics"
+      ],
+      "old_plan_sections": [
+        3,
+        8
+      ],
+      "evidence": []
+    },
+    {
+      "id": "BASE-02",
+      "title": "Analitik ve ilk deneyim ölçüm planını hazırla",
+      "stage": "R0",
+      "owner": "Ürün / analiz",
+      "effort": "S",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [],
+      "existing_paths": [
+        "server/app/product_analytics.py",
+        "tools/product_analytics_report.py",
+        "docs/LOCALIZATION_AND_PRODUCT_ANALYTICS.md"
+      ],
+      "proposed_paths": [
+        "docs/planning/measurement-baseline.md"
+      ],
+      "acceptance": [
+        "Onay/yaş/30 gün saklama/hesap silme ve düşük örneklem bastırması kaynakta doğrulanır.",
+        "D1-D7-D28 için uygun kohort ve ilk maç/deste değişimi hunisi tanımlanır; onaysız oyuncu takip edilmez."
+      ],
+      "goals": [
+        "analytics",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        7,
+        8
+      ],
+      "evidence": []
+    },
+    {
+      "id": "BASE-03",
+      "title": "İlk deneyim ve geri dönen oyuncu akışını tasarla",
+      "stage": "R0",
+      "owner": "Ürün / istemci",
+      "effort": "M",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "BASE-02"
+      ],
+      "existing_paths": [
+        "client/src/app.js",
+        "client/index.html",
+        "e2e/onboarding-visibility.spec.js"
+      ],
+      "proposed_paths": [
+        "docs/planning/onboarding-return-flow.md"
+      ],
+      "acceptance": [
+        "İlk strateji kararı, ilk deste değişimi ve bugünün hedefi için ekran akışı hazırlanır.",
+        "Eski oyuncu sürüm özeti ve isteğe bağlı öğrenme akışı görür; ilerlemesi veya kazanılmış hakkı sıfırlanmaz."
+      ],
+      "goals": [
+        "presentation",
+        "analytics",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        5,
+        7
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ECON-01",
+      "title": "Deterministik ekonomi simülasyonu kur",
+      "stage": "R0",
+      "owner": "Backend / oyun tasarımı",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "BASE-01"
+      ],
+      "existing_paths": [
+        "server/app/meta_progression.py",
+        "server/app/player_progression.py",
+        "server/app/store_catalog.py"
+      ],
+      "proposed_paths": [
+        "tools/simulate_liveops_economy.py"
+      ],
+      "acceptance": [
+        "Yeni/ücretsiz/premium oyuncu senaryolarında 1 ve 28 günlük kaynak giriş-çıkışı mevcut tanımlardan hesaplanır.",
+        "Yeni kartın ücretsiz edinimi, hedef deste gelişimi ve biriken para raporlanır; miktar/fiyat kararı rapora bağlanır."
+      ],
+      "goals": [
+        "shop",
+        "chests",
+        "rewards",
+        "content"
+      ],
+      "old_plan_sections": [
+        4,
+        8
+      ],
+      "evidence": []
+    },
+    {
+      "id": "COS-01",
+      "title": "Dalda hazır 15 kilitli kozmetik temelini koru",
+      "stage": "R1",
+      "owner": "Backend / istemci",
+      "effort": "S",
+      "priority": "P0",
+      "status": "branch_ready",
+      "depends_on": [],
+      "existing_paths": [
+        "server/app/cosmetic_releases.py",
+        "server/data/cosmetic_releases_v1.json",
+        "tools/prepare_liveops_rewards.py",
+        "server/tests/test_cosmetic_releases.py",
+        "e2e/liveops-cosmetics.spec.js"
+      ],
+      "proposed_paths": [],
+      "acceptance": [
+        "15 öğe kilitli, tahsis sayısı sıfır ve sahiplik sunucuda doğrulanır.",
+        "Hazır temel canlı 2.2.1 ile karıştırılmaz; yeni yayında kendi minor sürümü ve mesajı olur."
+      ],
+      "goals": [
+        "content",
+        "rewards",
+        "presentation"
+      ],
+      "old_plan_sections": [
+        4
+      ],
+      "evidence": [
+        "artifacts/liveops-foundations-20261102/server-tests.log",
+        "artifacts/liveops-foundations-20261102/browser-results.json"
+      ]
+    },
+    {
+      "id": "COS-02",
+      "title": "İki dönem için 18 yeni oyuncu tasarımı üret",
+      "stage": "R1",
+      "owner": "Sanat / istemci",
+      "effort": "XL",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "COS-01"
+      ],
+      "existing_paths": [
+        "server/data/cosmetic_releases_v1.json",
+        "tools/prepare_liveops_rewards.py",
+        "client/src/liveops-cosmetics-v1.css",
+        "docs/GORSEL_DONUSUM_PLANI_20261015.md"
+      ],
+      "proposed_paths": [
+        "docs/planning/two-cycle-art-manifest.md"
+      ],
+      "acceptance": [
+        "Dokuz yeni çerçeve ve dokuz yeni zemin; özgün motif, TR/EN, tasarım kimliği ve önizleme hazırlanır; gerekirse renderer şeması genişletilir.",
+        "En fazla 10 parçalık görsel incelemeler ve 320/393 px kabulü kaydedilir; yeniden renklendirme yeni tasarım sayılmaz."
+      ],
+      "goals": [
+        "content",
+        "rewards",
+        "presentation"
+      ],
+      "old_plan_sections": [
+        4
+      ],
+      "evidence": []
+    },
+    {
+      "id": "COS-03",
+      "title": "Mağazaya özel dört ayrı kozmetik hazırla",
+      "stage": "R2",
+      "owner": "Sanat / ürün",
+      "effort": "L",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "COS-01",
+        "ECON-01"
+      ],
+      "existing_paths": [
+        "server/data/cosmetic_releases_v1.json",
+        "client/src/liveops-cosmetic-catalog.js"
+      ],
+      "proposed_paths": [
+        "docs/planning/shop-art-manifest.md"
+      ],
+      "acceptance": [
+        "İki mağaza çerçevesi ve iki zemin dönem ödül stoğundan farklı ID/tasarımla hazırlanır.",
+        "Sahip olunan veya dönem ödülü olmuş öğe yeni mağaza ürünü gibi satılmaz; görünürlük ve kuşanma önizlemesi doğrulanır."
+      ],
+      "goals": [
+        "shop",
+        "content",
+        "presentation"
+      ],
+      "old_plan_sections": [
+        4
+      ],
+      "evidence": []
+    },
+    {
+      "id": "COS-04",
+      "title": "Kaynak kayıtlarını ve stok denetimini genişlet",
+      "stage": "R1",
+      "owner": "Backend / içerik araçları",
+      "effort": "M",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "COS-01"
+      ],
+      "existing_paths": [
+        "server/app/cosmetic_releases.py",
+        "tools/prepare_liveops_rewards.py",
+        "server/tests/test_cosmetic_releases.py"
+      ],
+      "proposed_paths": [
+        "server/data/liveops_content_sources_v1.json"
+      ],
+      "acceptance": [
+        "Mağaza ve yeni etkinlik kaynakları doğrulanmış sözleşmeyle eklenir; yalnız JSON adı ekleyerek yayın yapılamaz.",
+        "Coverage aktif kaynak/takvimden ihtiyaç hesaplar; 30 dönem öğesi ve ayrı mağaza stoğu karıştırılmaz, yetersiz stokta yayın durur."
+      ],
+      "goals": [
+        "content",
+        "rewards",
+        "operations"
+      ],
+      "old_plan_sections": [
+        4,
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "CARD-01",
+      "title": "Yankı Rölesi sezon modülünü uçtan uca geliştir",
+      "stage": "R1",
+      "owner": "Oyun motoru / sanat / denge",
+      "effort": "XL",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "ECON-01"
+      ],
+      "existing_paths": [
+        "server/app/season_module_releases.py",
+        "server/data/season_module_releases_v2.json",
+        "server/app/module_roster.py",
+        "server/app/game/engine.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/echo-relay-release.md"
+      ],
+      "acceptance": [
+        "Planlı echo_relay için mekanik, karşı oyun, çalışma görseli, aktif katalog ve arena kapısı tamamlanır.",
+        "Ücretsiz kazanım yolu ve otomatik yerleşim/hedefleme sözleşmeleri test edilir; planlı kart hazır diye ödül havuzuna girmez."
+      ],
+      "goals": [
+        "content",
+        "modes",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        3,
+        4,
+        7
+      ],
+      "evidence": []
+    },
+    {
+      "id": "CARD-02",
+      "title": "Kor Fırlatıcı ile ikinci dönem kart stoğunu hazırla",
+      "stage": "R1",
+      "owner": "Oyun motoru / sanat / denge",
+      "effort": "XL",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "CARD-01"
+      ],
+      "existing_paths": [
+        "server/data/season_module_releases_v2.json",
+        "server/app/season_module_releases.py",
+        "server/app/game/engine.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/ember-launcher-release.md"
+      ],
+      "acceptance": [
+        "Planlı ember_launcher için yanma, arındırma/karşı oyun ve okunabilir süre/hasar göstergesi hazırlanır.",
+        "İki dönem için en az birer yeni kartın yayın kontrolleri tamamlanır; yetişmeyen kart için takvim yeniden planlanır."
+      ],
+      "goals": [
+        "content",
+        "modes"
+      ],
+      "old_plan_sections": [
+        4,
+        7
+      ],
+      "evidence": []
+    },
+    {
+      "id": "CARD-03",
+      "title": "Yeni içerik kategorileri ve ileri kart stoğunu tasarla",
+      "stage": "R4",
+      "owner": "Oyun tasarımı / sanat",
+      "effort": "M",
+      "priority": "P2",
+      "status": "later",
+      "depends_on": [
+        "CARD-02"
+      ],
+      "existing_paths": [
+        "server/data/season_module_releases_v2.json",
+        "server/app/game/core_balance.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/content-expansion-catalog.md"
+      ],
+      "acceptance": [
+        "Darbe Muhafızı/Toparlanma Feneri için ayrı mekanik brief; çekirdek görünümü, unvan ve takım vitrini için fizibilite çıkarılır.",
+        "Yeni kozmetik tipleri sahiplik/renderer/perf maliyetiyle sıralanır; yeni savaş gücü ve para birimi otomatik açılmaz."
+      ],
+      "goals": [
+        "content",
+        "presentation"
+      ],
+      "old_plan_sections": [
+        4,
+        7
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REWARD-01",
+      "title": "Sürüm sabitlemeli ödül tanımlarını kur",
+      "stage": "R1",
+      "owner": "Backend",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "BASE-01"
+      ],
+      "existing_paths": [
+        "server/app/reward_delivery.py",
+        "server/app/meta_progression.py",
+        "server/app/postgres_economic_operations.py",
+        "server/tests/test_reward_integrity.py"
+      ],
+      "proposed_paths": [
+        "server/app/reward_definitions.py",
+        "server/data/reward_definitions_v1.json"
+      ],
+      "acceptance": [
+        "Fixed/choice/random tanımları sürüm ve içerik hash taşır; mevcut rastgele sandık ile fixed_reward farkı belgelenir.",
+        "Yeni hak eski tanıma bağlı kalır; eski sandık stoğu ve makbuzları sessizce yeni oranlara taşınmaz."
+      ],
+      "goals": [
+        "chests",
+        "rewards",
+        "operations"
+      ],
+      "old_plan_sections": [
+        4,
+        8
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REWARD-02",
+      "title": "Kalıcı seçim hakkı ve tek teslim işlemini geliştir",
+      "stage": "R2",
+      "owner": "Backend",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "REWARD-01",
+        "ECON-01",
+        "DATA-01"
+      ],
+      "existing_paths": [
+        "server/app/postgres_economic_operations.py",
+        "server/app/reward_delivery.py",
+        "server/app/player_profile.py"
+      ],
+      "proposed_paths": [
+        "server/app/reward_choices.py",
+        "server/tests/test_reward_choices.py"
+      ],
+      "acceptance": [
+        "Uygun üç seçenek hak doğarken sabitlenir; ödül miktarı istemciden kabul edilmez.",
+        "Eşzamanlı/farklı request_id/tekrar bağlantı aynı hakkı ikinci kez vermez; başka hesap ve seçenek değiştirme reddedilir."
+      ],
+      "goals": [
+        "chests",
+        "rewards",
+        "content"
+      ],
+      "old_plan_sections": [
+        4,
+        5
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REWARD-03",
+      "title": "Kapanışta kazanılmış ama alınmamış hakları koru",
+      "stage": "R2",
+      "owner": "Backend / ürün",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "REWARD-01",
+        "DATA-01"
+      ],
+      "existing_paths": [
+        "server/app/player_profile.py",
+        "server/app/reward_delivery.py",
+        "server/app/premium_reward_recovery.py"
+      ],
+      "proposed_paths": [
+        "server/app/period_reward_closeout.py",
+        "server/tests/test_period_reward_closeout.py"
+      ],
+      "acceptance": [
+        "Sezon kapanışı, geç dönen oyuncu ve dolu Mesaj Kutusu için kazanılmış hak kaybolmadan tekil aktarım tasarlanır.",
+        "Premium iade, önceden alınmış ödül ve birden çok kapanış denemesi aynı teslimi tekrar üretmez."
+      ],
+      "goals": [
+        "rewards",
+        "operations"
+      ],
+      "old_plan_sections": [
+        4,
+        5
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REWARD-04",
+      "title": "Katkı ve ustalık ödül bütçelerini tanımla",
+      "stage": "R3",
+      "owner": "Oyun tasarımı / backend",
+      "effort": "M",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "ECON-01"
+      ],
+      "existing_paths": [
+        "server/app/season_competition.py",
+        "server/app/team_tournament.py",
+        "server/app/player_progression.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/participation-reward-budget.md"
+      ],
+      "acceptance": [
+        "Sıralama prestiji ile sınırlı katkı kaynak ödülü ayrılır; yalnız ilk üç dışında erişilebilir hedef tanımlanır.",
+        "AI, eğitim, teslim olma ve tekrar maç istismarı için uygunluk/tavan açıkça yazılır."
+      ],
+      "goals": [
+        "rewards",
+        "modes"
+      ],
+      "old_plan_sections": [
+        5,
+        6
+      ],
+      "evidence": []
+    },
+    {
+      "id": "SHOP-01",
+      "title": "Sürümlü ve incelenebilir teklif kataloğu kur",
+      "stage": "R2",
+      "owner": "Backend",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "REWARD-01",
+        "ECON-01",
+        "COS-04"
+      ],
+      "existing_paths": [
+        "server/app/store_catalog.py",
+        "server/app/meta_progression.py",
+        "server/app/cosmetic_releases.py"
+      ],
+      "proposed_paths": [
+        "server/app/shop_offers.py",
+        "server/data/shop_offers_v1.json"
+      ],
+      "acceptance": [
+        "UTC başlangıç/bitiş, arena, fiyat türü, garanti içerik, limit, görsel ve TR/EN doğrulanır.",
+        "Yayınlanan teklif değişmez; süre bitmiş/eski revision ve eksik ürün önizlemesi doğru hata verir."
+      ],
+      "goals": [
+        "shop",
+        "rewards",
+        "operations"
+      ],
+      "old_plan_sections": [
+        3,
+        4
+      ],
+      "evidence": []
+    },
+    {
+      "id": "SHOP-02",
+      "title": "Limit ve cüzdan işlemlerini atomik bağla",
+      "stage": "R2",
+      "owner": "Backend",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "SHOP-01",
+        "DATA-01"
+      ],
+      "existing_paths": [
+        "server/app/postgres_economic_operations.py",
+        "server/app/main.py",
+        "server/app/store_refund_policy.py",
+        "client/src/auth-session.js"
+      ],
+      "proposed_paths": [
+        "server/app/shop_transactions.py",
+        "server/tests/test_shop_offers.py"
+      ],
+      "acceptance": [
+        "Önizlemedeki teklif ID/sürümüyle alım yapılır; istemci ödül veya fiyat belirlemez.",
+        "İki eşzamanlı alım limit aşamaz; yanıt kaybı tekrar ücret düşürmez; bakiyeler/eski makbuzlar korunur.",
+        "Yeni API yolları Bearer kimliği/hesap sahipliği ve native API prefix yönlendirmesiyle doğrulanır."
+      ],
+      "goals": [
+        "shop",
+        "rewards",
+        "operations"
+      ],
+      "old_plan_sections": [
+        3,
+        8
+      ],
+      "evidence": []
+    },
+    {
+      "id": "SHOP-03",
+      "title": "İlk garantili teklif ve kozmetik pilotunu hazırla",
+      "stage": "R2",
+      "owner": "Ürün / backend / istemci",
+      "effort": "M",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "SHOP-02",
+        "COS-03"
+      ],
+      "existing_paths": [
+        "server/app/module_roster.py",
+        "server/app/cosmetic_releases.py",
+        "client/src/app.js"
+      ],
+      "proposed_paths": [
+        "docs/planning/first-shop-release.md"
+      ],
+      "acceptance": [
+        "Bir hedefli güncel modül-parçası teklifi ve iki ayrı kozmetik seti ekonomik bütçeyle tanımlanır.",
+        "Arena uygunluğu, sahip olunan ürün reddi, açık fiyat/miktar ve satın alma limitleri gerçek API ile doğrulanır."
+      ],
+      "goals": [
+        "shop",
+        "content",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        4,
+        5
+      ],
+      "evidence": []
+    },
+    {
+      "id": "SHOP-04",
+      "title": "Yeni gerçek para paketlerini ayrı kapıdan geçir",
+      "stage": "R4",
+      "owner": "Ödeme / ürün",
+      "effort": "L",
+      "priority": "P2",
+      "status": "later",
+      "depends_on": [
+        "SHOP-02",
+        "RELEASE-02"
+      ],
+      "existing_paths": [
+        "server/app/store_catalog.py",
+        "server/app/store_verification.py",
+        "server/app/premium_reward_recovery.py",
+        "docs/STORE_PURCHASES.md",
+        "client/tests/native-store-prices.test.js"
+      ],
+      "proposed_paths": [
+        "docs/planning/new-iap-product-release.md"
+      ],
+      "acceptance": [
+        "Gerekli olursa product_id, yerel Billing fiyatı, hesap bağı ve iade kökeni uçtan uca tasarlanır.",
+        "Makbuz doğrulanmadan hak verilmez; mevcut ürünler/abonelikler değişmez, web ödeme mağazası kendiliğinden açılmaz."
+      ],
+      "goals": [
+        "shop",
+        "rewards",
+        "operations"
+      ],
+      "old_plan_sections": [
+        3,
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "UI-01",
+      "title": "Ekran hiyerarşileri ve ortak bileşen prototipini hazırla",
+      "stage": "R0",
+      "owner": "Arayüz / ürün",
+      "effort": "M",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "BASE-03"
+      ],
+      "existing_paths": [
+        "client/index.html",
+        "client/src/app.js",
+        "client/src/shop-rewards-v6.css",
+        "client/src/visual-polish-v9.css",
+        "docs/GORSEL_DONUSUM_PLANI_20261015.md"
+      ],
+      "proposed_paths": [
+        "docs/planning/screen-and-component-spec.md"
+      ],
+      "acceptance": [
+        "Ana ekran, mağaza, ürün, seçim kasası, sezon, profil ve maç sonrası için hiyerarşi/durumlar hazırlanır.",
+        "Mevcut onaylı boyalı dil/dock korunur; prototip ile oyuna bağlanmış ekran açıkça ayrılır."
+      ],
+      "goals": [
+        "presentation",
+        "shop",
+        "chests"
+      ],
+      "old_plan_sections": [
+        5,
+        7
+      ],
+      "evidence": []
+    },
+    {
+      "id": "UI-02",
+      "title": "Mağaza gezinmesini ve ürün detayını uygula",
+      "stage": "R2",
+      "owner": "İstemci",
+      "effort": "L",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "UI-01",
+        "SHOP-01"
+      ],
+      "existing_paths": [
+        "client/index.html",
+        "client/src/app.js",
+        "client/src/shop-rewards-v6.css",
+        "e2e/painted-shop-chests.spec.js"
+      ],
+      "proposed_paths": [
+        "client/src/shop/offer-view.js"
+      ],
+      "acceptance": [
+        "Dört mağaza bölümü, mevcut Bronz hediye ve garanti/olasılık ayrımı görünür; yeni hediye kaynağı eklenmez.",
+        "Yetersiz bakiye, limit dolu, sahip olunan, süresi bitmiş, fiyat yüklenmedi ve çevrimdışı durumları doğru çalışır."
+      ],
+      "goals": [
+        "presentation",
+        "shop",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        5,
+        7
+      ],
+      "evidence": []
+    },
+    {
+      "id": "UI-03",
+      "title": "Seçim kasası ve sandık sonucunu geliştir",
+      "stage": "R2",
+      "owner": "İstemci / sanat",
+      "effort": "L",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "UI-01",
+        "REWARD-02"
+      ],
+      "existing_paths": [
+        "client/src/app.js",
+        "client/src/reward-chest-art-v5.css",
+        "e2e/casual-chest-opening.spec.js"
+      ],
+      "proposed_paths": [
+        "client/src/rewards/choice-view.js"
+      ],
+      "acceptance": [
+        "Üç seçenekli önizleme/seç/onay/teslim akışı; çıkışta ve bağlantı kopmasında hak korunur.",
+        "Sandık sonucu makbuzla aynı; kaynak/garanti/olasılık etiketi, atla ve toplu açma özeti test edilir."
+      ],
+      "goals": [
+        "presentation",
+        "chests",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        4,
+        5,
+        7
+      ],
+      "evidence": []
+    },
+    {
+      "id": "UI-04",
+      "title": "Tema, sezon ve takım vitrini oluştur",
+      "stage": "R1",
+      "owner": "İstemci / sanat",
+      "effort": "L",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "UI-01",
+        "COS-01"
+      ],
+      "existing_paths": [
+        "client/src/social-profile-v5.css",
+        "client/src/liveops-cosmetics-v1.css",
+        "client/src/app.js",
+        "e2e/liveops-cosmetics.spec.js"
+      ],
+      "proposed_paths": [
+        "client/src/liveops/collection-view.js"
+      ],
+      "acceptance": [
+        "Gerçek oyuncu/takım üzerinde önizleme, kazanım kaynağı ve kilit nedeni görünür.",
+        "Ücretsiz/premium/katkı/prestij ayrımı, dönem arşivi ve sahiplik kuşanma akışı tutarlı olur."
+      ],
+      "goals": [
+        "presentation",
+        "content",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        4,
+        5,
+        7
+      ],
+      "evidence": []
+    },
+    {
+      "id": "UI-05",
+      "title": "Savaş bilgisinin okunabilirliğini iyileştir",
+      "stage": "R3",
+      "owner": "İstemci / oyun tasarımı",
+      "effort": "M",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "UI-01"
+      ],
+      "existing_paths": [
+        "client/src/battle",
+        "e2e/battle-render-budget.spec.js",
+        "e2e/battle-density.spec.js"
+      ],
+      "proposed_paths": [
+        "docs/planning/battle-readability-review.md"
+      ],
+      "acceptance": [
+        "Hasar, iyileştirme, koruma ve çekirdek yeteneği birbirinden ayırt edilir; hedef/yerleşim kuralı değişmez.",
+        "Yeni süs efekti kapalıyken bilgi kaybolmaz; mevcut platform kare bütçesi eşikleri korunur."
+      ],
+      "goals": [
+        "presentation",
+        "modes"
+      ],
+      "old_plan_sections": [
+        7
+      ],
+      "evidence": []
+    },
+    {
+      "id": "UI-06",
+      "title": "Maç sonrası öğrenme ve deste kaydetme akışını tasarla",
+      "stage": "R3",
+      "owner": "Ürün / istemci / backend",
+      "effort": "L",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "BASE-03",
+        "UI-05"
+      ],
+      "existing_paths": [
+        "server/app/game/engine.py",
+        "client/src/app.js",
+        "server/app/player_profile.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/post-battle-learning.md"
+      ],
+      "acceptance": [
+        "Kesinleşmiş maçtan doğrulanabilir kısa neden özeti ve tek sonraki eylem sunulur.",
+        "Gizli rakip bilgisi ifşa edilmez; deste kaydetme/tekrar giriş gerçek hesap ve eski maç sürümleriyle ele alınır."
+      ],
+      "goals": [
+        "presentation",
+        "modes",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        7
+      ],
+      "evidence": []
+    },
+    {
+      "id": "QA-01",
+      "title": "Ortak mobil, dil ve erişilebilirlik kapısını kur",
+      "stage": "R1",
+      "owner": "QA / istemci",
+      "effort": "M",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "UI-01"
+      ],
+      "existing_paths": [
+        "client/src/i18n-catalog.js",
+        "playwright.config.js",
+        "e2e/presentation-refinements.spec.js",
+        "e2e/battle-render-budget.spec.js"
+      ],
+      "proposed_paths": [
+        "docs/planning/ui-acceptance-matrix.md"
+      ],
+      "acceptance": [
+        "320x568 ve 393x852, TR/EN, uzun ad, hata/boş/yükleme/yeniden deneme ve en az 44px hedef doğrulanır.",
+        "Azaltılmış hareket, ses tercihi ve odak sırası korunur; Chromium/WebKit performans eşikleri gevşetilmez."
+      ],
+      "goals": [
+        "presentation",
+        "operations"
+      ],
+      "old_plan_sections": [
+        7,
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "DATA-01",
+      "title": "Yeni hakların kalıcılık ve kurtarma tasarımını tamamla",
+      "stage": "R1",
+      "owner": "Backend / QA",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "REWARD-01"
+      ],
+      "existing_paths": [
+        "server/app/json_schema_migrations.py",
+        "server/app/postgres_economic_operations.py",
+        "server/migrations",
+        "tools/server_backup.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/reward-persistence-migration.md"
+      ],
+      "acceptance": [
+        "Yeni hak/teklif tabloları ve eşsiz indeksler uygulama şemasıyla kesinleştirilir; eski SQL dosyaları değiştirilmez.",
+        "Yeni/legacy profil ve makbuzlarla restart, backup/boş hedef restore, eşzamanlı işlem ve rollback uyumluluğu doğrulanır."
+      ],
+      "goals": [
+        "rewards",
+        "operations"
+      ],
+      "old_plan_sections": [
+        3,
+        4,
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ANALYT-01",
+      "title": "Mağaza/ödül/etkinlik olay şemasını genişlet",
+      "stage": "R1",
+      "owner": "Analiz / backend / istemci",
+      "effort": "M",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "BASE-02",
+        "UI-01"
+      ],
+      "existing_paths": [
+        "server/app/product_analytics.py",
+        "tools/product_analytics_report.py",
+        "server/tests/test_product_analytics.py",
+        "server/tests/test_analytics_age_gate.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/liveops-analytics-schema.md"
+      ],
+      "acceptance": [
+        "Offer/event/choice/equip olayları sınırlı enum alanlarıyla; istemci olayı ile sunucu teslimi ayrı tanımlanır.",
+        "Yaş/onay/silme/retention korunur; olay kaybı oyunu veya ödül teslimini bozmaz, kimlik/serbest metin eklenmez."
+      ],
+      "goals": [
+        "analytics",
+        "shop",
+        "rewards",
+        "modes"
+      ],
+      "old_plan_sections": [
+        8
+      ],
+      "evidence": []
+    },
+    {
+      "id": "ANALYT-02",
+      "title": "Baz rapor ve deney karar dosyasını hazırla",
+      "stage": "R3",
+      "owner": "Ürün / analiz",
+      "effort": "M",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "ANALYT-01",
+        "RELEASE-01"
+      ],
+      "existing_paths": [
+        "tools/product_analytics_report.py",
+        "server/app/product_analytics.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/liveops-experiment-decisions.md"
+      ],
+      "acceptance": [
+        "İlk iki haftalık baz çizgi, kohort uygunluğu, onaylı örneklem yanlılığı ve ana/koruyucu metrikler yazılır.",
+        "Beş kişilik rapor eşiği yeterli deney örneklemi sayılmaz; sonuçta devam/düzelt/durdur kararı kayıt altına alınır."
+      ],
+      "goals": [
+        "analytics",
+        "operations"
+      ],
+      "old_plan_sections": [
+        8,
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-01",
+      "title": "Birleşik içerik ve etkinlik yayın kapısını kur",
+      "stage": "R1",
+      "owner": "Backend / içerik araçları",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "COS-04",
+        "REWARD-01"
+      ],
+      "existing_paths": [
+        "server/app/competition_control.py",
+        "server/app/competition_cycle.py",
+        "server/app/cosmetic_releases.py",
+        "server/app/season_module_releases.py"
+      ],
+      "proposed_paths": [
+        "server/app/liveops_calendar.py",
+        "server/data/liveops_calendar_v1.json"
+      ],
+      "acceptance": [
+        "Takvim, modül hazırlığı, yeni kozmetik stoğu, ödül bütçesi ve uygunluk birlikte doğrulanır; eksikse açılış reddedilir.",
+        "Taslak yayın operatör başlangıcını açmaz; UTC sınırı, başlamış maç ve kazanılmış haklar sürümünü korur."
+      ],
+      "goals": [
+        "content",
+        "rewards",
+        "modes",
+        "operations"
+      ],
+      "old_plan_sections": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-02",
+      "title": "Günlük Devre Deneyi sunucu prototipini geliştir",
+      "stage": "R3",
+      "owner": "Oyun motoru / backend",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "LIVE-01",
+        "REWARD-04",
+        "DATA-01"
+      ],
+      "existing_paths": [
+        "server/app/game/engine.py",
+        "server/app/game/pvp_runner.py",
+        "server/app/reward_delivery.py"
+      ],
+      "proposed_paths": [
+        "server/app/challenge_rules.py",
+        "server/tests/test_daily_challenge.py"
+      ],
+      "acceptance": [
+        "Gün/tohum/altılı deste/kural/başarı sunucuya aittir; tekrar oynanabilir tek kısa görev hazırlanır.",
+        "İlk başarı ödülü kalıcı tekildir; tarih değişimi, iptal, AI sonuç doğrulaması ve tekrar istismarı test edilir."
+      ],
+      "goals": [
+        "modes",
+        "rewards",
+        "content"
+      ],
+      "old_plan_sections": [
+        5,
+        6
+      ],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-03",
+      "title": "Etkinlik girişini ve Bugünün Deneyi akışını bağla",
+      "stage": "R3",
+      "owner": "İstemci / içerik",
+      "effort": "M",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "LIVE-02",
+        "UI-04"
+      ],
+      "existing_paths": [
+        "client/index.html",
+        "client/src/app.js",
+        "client/assets/ui/events-v2"
+      ],
+      "proposed_paths": [
+        "client/src/liveops/event-view.js"
+      ],
+      "acceptance": [
+        "Başlamadan hedef, kural, süre ve ödül; tamamlandıktan sonra sonuç ve tekrar seçeneği görünür.",
+        "Günlük meta ile deney ayrılır; aynı anda tek özel vitrin ve alternatif ana savaş erişimi korunur."
+      ],
+      "goals": [
+        "modes",
+        "presentation",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        5,
+        6
+      ],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-04",
+      "title": "Üç duraklı PvE Seferi geliştir",
+      "stage": "R4",
+      "owner": "Oyun motoru / backend / istemci",
+      "effort": "XL",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "RELEASE-03"
+      ],
+      "existing_paths": [
+        "server/app/game/engine.py",
+        "server/app/reward_delivery.py",
+        "server/app/player_profile.py"
+      ],
+      "proposed_paths": [
+        "server/app/pve_expedition.py",
+        "server/tests/test_pve_expedition.py"
+      ],
+      "acceptance": [
+        "Üç farklı rakip dizisi ve durak arası kayıt; koşu/kural/ödül sürümü sabitlenir.",
+        "İlk tamamlama ve tekrar ödülü ayrılır; cihaz değişimi/çökme/aynı durak tekrarı kaynak çoğaltmaz."
+      ],
+      "goals": [
+        "modes",
+        "content",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        6
+      ],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-05",
+      "title": "Asenkron takım ortak hedefi geliştir",
+      "stage": "R4",
+      "owner": "Backend / oyun tasarımı",
+      "effort": "XL",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "RELEASE-03",
+        "REWARD-04"
+      ],
+      "existing_paths": [
+        "server/app/team_service.py",
+        "server/app/team_tournament.py",
+        "server/app/reward_delivery.py"
+      ],
+      "proposed_paths": [
+        "server/app/team_shared_goal.py",
+        "server/tests/test_team_shared_goal.py"
+      ],
+      "acceptance": [
+        "Üyeler farklı zamanlarda doğrulanmış PvE katkısı yapar; küçük takımlar için erişilebilir hedef belirlenir.",
+        "Katkı tavanı, üyelik anı, takım değiştirme ve ödülü kimin alacağı sabit hak olarak test edilir."
+      ],
+      "goals": [
+        "modes",
+        "rewards",
+        "content"
+      ],
+      "old_plan_sections": [
+        5,
+        6,
+        7
+      ],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-06",
+      "title": "Eşit seviyeli Draft Arenası pilotu hazırla",
+      "stage": "R4",
+      "owner": "Oyun motoru / ürün",
+      "effort": "XL",
+      "priority": "P2",
+      "status": "later",
+      "depends_on": [
+        "RELEASE-03",
+        "ANALYT-02"
+      ],
+      "existing_paths": [
+        "server/app/module_roster.py",
+        "server/app/game/engine.py",
+        "server/app/matchmaking.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/draft-arena-pilot.md"
+      ],
+      "acceptance": [
+        "Güncel katalogdan seçme sırası, havuz ve seviye eşitleme kuralları prototiplenir.",
+        "Aktif rakip/kuvvet farkı/bekleme ölçülmeden yeni kalıcı kuyruk açılmaz; ödül budget kapısından geçer."
+      ],
+      "goals": [
+        "modes",
+        "content"
+      ],
+      "old_plan_sections": [
+        6
+      ],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-07",
+      "title": "Modül/çekirdek ustalığı ve kalıcı hedefleri geliştir",
+      "stage": "R3",
+      "owner": "Oyun tasarımı / backend",
+      "effort": "L",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "REWARD-04",
+        "UI-05"
+      ],
+      "existing_paths": [
+        "server/app/player_profile.py",
+        "server/app/player_progression.py",
+        "server/app/game/engine.py"
+      ],
+      "proposed_paths": [
+        "server/app/mastery_progress.py",
+        "server/tests/test_mastery_progress.py"
+      ],
+      "acceptance": [
+        "Sadece kullanım sayısı yerine doğrulanabilir başarı, öğrenme hedefi ve kalıcı vitrin tasarlanır.",
+        "Eğitim/AI/tekrar maç uygunluğu ve sezon ödülünden ayrı kalıcı kimlikler test edilir."
+      ],
+      "goals": [
+        "modes",
+        "rewards",
+        "content"
+      ],
+      "old_plan_sections": [
+        5,
+        6
+      ],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-08",
+      "title": "Asenkron arkadaş meydan okumasını tasarla",
+      "stage": "R4",
+      "owner": "Backend / ürün",
+      "effort": "L",
+      "priority": "P2",
+      "status": "later",
+      "depends_on": [
+        "LIVE-04"
+      ],
+      "existing_paths": [
+        "server/app/game/engine.py",
+        "server/app/player_profile.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/async-challenge-design.md"
+      ],
+      "acceptance": [
+        "Paylaşılabilir tohum/kurulum sürümü ve sunucuda doğrulanan hedef belirlenir.",
+        "Canlı rakip gerekmez; paylaşım kişisel veri/erişim belirteci taşımaz; süresi ve ödül tavanı tanımlanır."
+      ],
+      "goals": [
+        "modes",
+        "content"
+      ],
+      "old_plan_sections": [
+        6
+      ],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-09",
+      "title": "BO3 ve deste yasağı fizibilitesini hazırla",
+      "stage": "R4",
+      "owner": "Oyun tasarımı / backend",
+      "effort": "L",
+      "priority": "P2",
+      "status": "later",
+      "depends_on": [
+        "LIVE-06",
+        "ANALYT-02"
+      ],
+      "existing_paths": [
+        "server/app/game/pvp_runner.py",
+        "server/app/team_tournament.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/bo3-ban-design.md"
+      ],
+      "acceptance": [
+        "Seri durumu, yasak/seçim, kopma/yeniden bağlanma ve süre aşımı sözleşmesi çıkarılır.",
+        "Yeterli eşleşme hacmi ve turnuva ihtiyacı ölçülmeden üretim kuyruğu açılmaz."
+      ],
+      "goals": [
+        "modes",
+        "operations"
+      ],
+      "old_plan_sections": [
+        6
+      ],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-10",
+      "title": "2v2 için protokol ve performans araştırması yap",
+      "stage": "R4",
+      "owner": "Ağ / oyun motoru",
+      "effort": "XL",
+      "priority": "P2",
+      "status": "later",
+      "depends_on": [
+        "LIVE-05",
+        "ANALYT-02"
+      ],
+      "existing_paths": [
+        "server/app/game/engine.py",
+        "server/app/game/pvp_runner.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/2v2-protocol-spike.md"
+      ],
+      "acceptance": [
+        "Dört katılımcı sahipliği, komut sırası, eşleşme, kopma ve hile modeli tasarlanır.",
+        "Düşük cihaz yükü ve ağ prototipi olumlu olmadan tam 2v2 uygulama taahhüdü verilmez."
+      ],
+      "goals": [
+        "modes",
+        "operations"
+      ],
+      "old_plan_sections": [
+        6
+      ],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-11",
+      "title": "Boss ve özel arena davranışı prototiple",
+      "stage": "R4",
+      "owner": "Oyun motoru / sanat",
+      "effort": "XL",
+      "priority": "P2",
+      "status": "later",
+      "depends_on": [
+        "LIVE-04"
+      ],
+      "existing_paths": [
+        "server/app/game/engine.py",
+        "server/app/game/core_balance.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/boss-arena-prototype.md"
+      ],
+      "acceptance": [
+        "Bir boss için aşama/telegraph/karşı oyun ve sürümlü kural paketi tasarlanır.",
+        "Ödül bütçesi ve düşük cihaz okunabilirliğiyle dene; normal arenanın ortak kuralları değişmez."
+      ],
+      "goals": [
+        "modes",
+        "content",
+        "presentation"
+      ],
+      "old_plan_sections": [
+        6
+      ],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-12",
+      "title": "Haftanın Kuralı için sınırlı etkinlik şablonu hazırla",
+      "stage": "R3",
+      "owner": "Oyun tasarımı / backend",
+      "effort": "M",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "LIVE-02"
+      ],
+      "existing_paths": [
+        "server/app/module_roster.py",
+        "server/app/game/engine.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/weekly-rule-template.md"
+      ],
+      "acceptance": [
+        "Tek anlaşılır kural farkı ve farklı deste problemi için en az dört içerik briefi hazırlanır.",
+        "Normal arena etkilenmez; farklı tohum tek başına yeni içerik sayılmaz, ödül kaynağı için ek stok hesaplanır."
+      ],
+      "goals": [
+        "modes",
+        "content"
+      ],
+      "old_plan_sections": [
+        5,
+        6
+      ],
+      "evidence": []
+    },
+    {
+      "id": "PLAY-01",
+      "title": "Ödülsüz deste deneme alanını geliştir",
+      "stage": "R3",
+      "owner": "Oyun motoru / istemci",
+      "effort": "L",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "BASE-03"
+      ],
+      "existing_paths": [
+        "server/app/game/engine.py",
+        "server/app/player_profile.py",
+        "client/src/app.js"
+      ],
+      "proposed_paths": [
+        "docs/planning/deck-lab-flow.md"
+      ],
+      "acceptance": [
+        "Dengeli AI ile hızlı tekrar, deste kaydetme ve sınırlı etkinlik kartı denemesi tasarlanır.",
+        "Sahip olunmayan kart gerçek koleksiyona eklenmez; normal savaş/mağaza ödülü üretmez."
+      ],
+      "goals": [
+        "modes",
+        "presentation"
+      ],
+      "old_plan_sections": [
+        7
+      ],
+      "evidence": []
+    },
+    {
+      "id": "BALANCE-01",
+      "title": "Katalog büyümesi için denge ve karşı oyun raporu kur",
+      "stage": "R1",
+      "owner": "Oyun tasarımı / QA",
+      "effort": "L",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "BASE-01",
+        "CARD-01"
+      ],
+      "existing_paths": [
+        "server/app/module_roster.py",
+        "server/app/game/engine.py",
+        "server/tests/test_catalog_migration_v2.py"
+      ],
+      "proposed_paths": [
+        "tools/report_module_balance.py"
+      ],
+      "acceptance": [
+        "Kart seçilme/kazanma yanında arena, seviye farkı ve AI/insan ayrımlı yorum yapılır.",
+        "Yeni kartlar için karşı oyun senaryosu ve eski altılı destelerle regresyon seti oluşturulur; düşük örneklemde kesin güç iddiası kurulmaz."
+      ],
+      "goals": [
+        "content",
+        "analytics",
+        "modes"
+      ],
+      "old_plan_sections": [
+        7,
+        8
+      ],
+      "evidence": []
+    },
+    {
+      "id": "POLICY-01",
+      "title": "Yeni ürünler için fiyat/olasılık ve yaş kapısını denetle",
+      "stage": "R2",
+      "owner": "Ürün / ödeme / QA",
+      "effort": "M",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "SHOP-01",
+        "REWARD-02"
+      ],
+      "existing_paths": [
+        "server/tests/test_chest_odds_disclosure.py",
+        "server/tests/test_analytics_age_gate.py",
+        "docs/CHILD_AUDIENCE_AUDIT.md",
+        "docs/STORE_PURCHASES.md"
+      ],
+      "proposed_paths": [
+        "docs/planning/new-products-store-review.md"
+      ],
+      "acceptance": [
+        "Satın alma öncesinde garanti, olasılık, uygun havuz ve yerel Billing fiyatı doğru görünür; sahte indirim etiketi yoktur.",
+        "O gün geçerli Play/varsa iOS ve hedef bölge politikası kontrol edilir; reklam/IAP/analitik rolloutları kendiliğinden açılmaz."
+      ],
+      "goals": [
+        "shop",
+        "chests",
+        "operations"
+      ],
+      "old_plan_sections": [
+        8,
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "OPS-01",
+      "title": "İki dönemlik içerik üretim takvimini işlet",
+      "stage": "R1",
+      "owner": "Ürün / sanat / backend",
+      "effort": "M",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "COS-02",
+        "COS-04",
+        "CARD-02",
+        "ECON-01"
+      ],
+      "existing_paths": [
+        "tools/prepare_liveops_rewards.py",
+        "server/app/competition_cycle.py",
+        "server/app/competition_control.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/two-cycle-production-calendar.md"
+      ],
+      "acceptance": [
+        "Yedi dönem paketi/döngü, kart, brief, sahip, sanat/test yükü ve kapanış raporu için iki döngü kayıtlanır.",
+        "Haftalık/aylık yeni stok yetersizse tarih revize edilir; eski kozmetik geri dönmez, açılışlar operatör kontrolündedir."
+      ],
+      "goals": [
+        "content",
+        "rewards",
+        "operations"
+      ],
+      "old_plan_sections": [
+        4,
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "OPS-02",
+      "title": "Yayın durdurma ve hak koruyan rollback akışını kur",
+      "stage": "R1",
+      "owner": "Backend / operasyon",
+      "effort": "M",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "LIVE-01",
+        "DATA-01"
+      ],
+      "existing_paths": [
+        "server/app/release_updates.py",
+        "tools/release_guard.py",
+        "tools/package_release.py",
+        "docs/SURUM_VE_GUNCELLEME_MESAJLARI.md",
+        "Dockerfile",
+        ".dockerignore",
+        ".gitignore"
+      ],
+      "proposed_paths": [
+        "docs/planning/liveops-release-and-rollback.md"
+      ],
+      "acceptance": [
+        "Yeni satış/etkinliği durdurma ile kazanılmış hakkı teslim alma ayrılır; içerik hash ve sürüm notu korunur.",
+        "Uygulanmış SQL baytları sabit; veri sıfırlama/otomatik live restore yok, eski sürümün yeni hakkı okuyamadığı durum açıkça ele alınır.",
+        "Yeni statik JSON kaynak/Docker paket izin listeleri ve eşlenik release-boundary kontrollerine eklenir; özel runtime veri pakete girmez."
+      ],
+      "goals": [
+        "operations",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "RELEASE-01",
+      "title": "İlk minor: yeni dönem ödülü ve içerik temelini yayıma hazırla",
+      "stage": "R1",
+      "owner": "Ürün / QA / operasyon",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "QA-01",
+        "DATA-01",
+        "ANALYT-01",
+        "OPS-01",
+        "OPS-02",
+        "UI-04",
+        "BALANCE-01"
+      ],
+      "existing_paths": [
+        ".github/workflows/quality.yml",
+        "tools/release_guard.py",
+        "tools/package_release.py",
+        "server/data/game_updates.json"
+      ],
+      "proposed_paths": [
+        "docs/planning/release-r1-evidence.md"
+      ],
+      "acceptance": [
+        "Ödül kilidi, iki dönem stok/kart hazırlığı, gerçek teslim, restart/restore ve TR/EN mobil kanıtları tamamlanır.",
+        "Aday 2.3.0 için sürüm notu/CI/imzalı AAB ve veri koruyan dağıtım hazırlanır; bu checklist tek başına yayın izni veya canlı değişim değildir."
+      ],
+      "goals": [
+        "operations",
+        "content",
+        "rewards",
+        "presentation"
+      ],
+      "old_plan_sections": [
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "RELEASE-02",
+      "title": "İkinci minor: mağaza ve seçim kasası pilotunu yayıma hazırla",
+      "stage": "R2",
+      "owner": "Ürün / QA / operasyon",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "RELEASE-01",
+        "SHOP-03",
+        "UI-02",
+        "UI-03",
+        "REWARD-03",
+        "POLICY-01"
+      ],
+      "existing_paths": [
+        "e2e/reward-navigation.spec.js",
+        "server/tests/test_reward_delivery.py",
+        ".github/workflows/quality.yml"
+      ],
+      "proposed_paths": [
+        "docs/planning/release-r2-evidence.md"
+      ],
+      "acceptance": [
+        "Gerçek API ile limit/ödeme/tekrar/çevrimdışı/yanlış seçenek/sahiplik ve eski stok senaryoları geçer.",
+        "Kazanılmış haklar korunarak pilot kapatılabilir; fiyat/miktar kararı ve sonraki minor numarası kayıtlanır."
+      ],
+      "goals": [
+        "operations",
+        "shop",
+        "chests",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "RELEASE-03",
+      "title": "Üçüncü minor: günlük deney pilotunu değerlendirmeye aç",
+      "stage": "R3",
+      "owner": "Ürün / QA / operasyon",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "RELEASE-02",
+        "LIVE-03",
+        "ANALYT-02",
+        "REWARD-04"
+      ],
+      "existing_paths": [
+        ".github/workflows/quality.yml",
+        "e2e/battle-render-budget.spec.js"
+      ],
+      "proposed_paths": [
+        "docs/planning/release-r3-evidence.md"
+      ],
+      "acceptance": [
+        "Devre Deneyi, ilk başarı/tekrar, gün değişimi ve gerçek ödül makbuzu uçtan uca doğrulanır.",
+        "Tek etkinlik vitrini, yeterli yeni ödül stoğu, koruyucu kalite ölçüleri ve devam/düzelt/durdur kararı tanımlanır."
+      ],
+      "goals": [
+        "operations",
+        "modes",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "RET-01",
+      "title": "Geri dönüş ve bildirim tercihlerini uygula",
+      "stage": "R3",
+      "owner": "Ürün / istemci",
+      "effort": "M",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "BASE-03",
+        "RELEASE-01"
+      ],
+      "existing_paths": [
+        "server/app/release_updates.py",
+        "client/src/app.js",
+        "server/app/player_profile.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/returning-player-summary.md"
+      ],
+      "acceptance": [
+        "Dönen oyuncu kısa sürüm özeti, korunmuş ilerleme ve tek uygun hedef görür.",
+        "Bildirim açık tercih/sessiz saat kuralına bağlıdır; bu iş e-posta/push/mesaj gönderimini kendiliğinden açmaz."
+      ],
+      "goals": [
+        "presentation",
+        "rewards",
+        "analytics"
+      ],
+      "old_plan_sections": [
+        5,
+        7
+      ],
+      "evidence": []
+    }
+  ]
+}
