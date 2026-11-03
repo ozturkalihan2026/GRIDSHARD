@@ -12,10 +12,10 @@ const seasonPanel = html.match(
 )?.[0] || "";
 
 assert.ok(seasonPanel.includes('id="season-reward-track"'));
-assert.ok(seasonPanel.includes('class="reward-back-link"'));
+assert.ok(seasonPanel.includes('class="reward-back-link navigation-back"'));
 assert.ok(
   seasonPanel.indexOf('id="season-reward-track"')
-    < seasonPanel.indexOf('class="reward-back-link"')
+    < seasonPanel.indexOf('class="reward-back-link navigation-back"')
 );
 assert.match(
   css,

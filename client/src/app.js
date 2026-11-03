@@ -21768,9 +21768,6 @@
       mountCoreEmblem(glyph, 'core_resonance');
       coreTab.classList.add('has-ui-icon');
     }
-    for (const button of document.querySelectorAll("#arena-detail-close,#leaderboard-back,.event-detail-header > button")) {
-      button.innerHTML = uiIconMarkup("back"); button.classList.add("refresh-back-button");
-    }
     const leaderboardButton = document.getElementById("arena-leaderboard-button");
     if (leaderboardButton) {
       leaderboardButton.textContent = "LİDER PANOSU";

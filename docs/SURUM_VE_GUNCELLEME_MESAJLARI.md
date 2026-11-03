@@ -5,7 +5,7 @@
 - Hata düzeltmesi: son sayı artar (`2.2.0 → 2.2.1`).
 - Küçük özellik/değişiklik: orta sayı artar, son sayı sıfırlanır (`2.2.1 → 2.3.0`).
 - Büyük değişiklik: ilk sayı artar, diğerleri sıfırlanır (`2.3.0 → 3.0.0`).
-- Android `versionCode`, her yeni yükleme paketinde ayrıca artar: 2.2.1 için 12, 2.3.0 için 13.
+- Android `versionCode`, her yeni yükleme paketinde ayrıca artar: 2.2.1 için 12; ilk 2.3.0 adayı 13, geri düğmeleri tamamlanmış yayın paketi 14.
 
 Her sürümde `server/data/game_updates.json` dosyasına sürüm, sürüm tarihi,
 Türkçe ve İngilizce oyuncu notları eklenir. Önceki kayıtlar silinmez veya yeni

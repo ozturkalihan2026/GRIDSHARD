@@ -36,6 +36,7 @@
   <link rel="stylesheet" href="./src/liveops-cosmetics-v1.css" />
   <link rel="stylesheet" href="./src/cosmetic-collection-v1.css" />
   <link rel="stylesheet" href="./src/battle-platform-v17.css" />
+  <link rel="stylesheet" href="./src/navigation-back-v1.css" />
   <link rel="stylesheet" href="./src/startup-loading.css" />
   <!-- /build:styles -->
 </head>
@@ -404,7 +405,7 @@
       <p id="arena-reward-status" role="status" aria-live="polite"></p>
       <div id="arena-path" class="arena-path"></div>
       <footer class="arena-path-footer">
-        <button id="arena-detail-close" class="arena-detail-back-button" type="button" aria-label="Savaş ekranına dön">←</button>
+        <button id="arena-detail-close" class="arena-detail-back-button navigation-back" type="button" aria-label="Savaş ekranına dön"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg></button>
         <button id="arena-leaderboard-button" class="arena-leaderboard-button" type="button">♛ LİDER PANOSU</button>
       </footer>
     </dialog>
@@ -423,7 +424,7 @@
       </nav>
       <ol id="leaderboard-list" class="leaderboard-list" aria-label="Oyuncu sıralaması"></ol>
       <nav class="leaderboard-tabs" aria-label="Lider panosu bölümleri">
-        <button id="leaderboard-back" type="button" aria-label="Devre Yoluna dön" title="Geri">←</button>
+        <button class="navigation-back" id="leaderboard-back" type="button" aria-label="Devre Yoluna dön" title="Geri"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg></button>
         <button type="button" data-leaderboard-tab="trophies" class="is-active" aria-label="Kupa sıralaması" title="Kupa sıralaması"><span><img class="trophy-value-icon" src="./assets/ui/rating-trophy-v1/rating-trophy.webp" width="128" height="128" alt="" aria-hidden="true" draggable="false" decoding="async" /></span><small>KUPA</small></button>
         <button type="button" data-leaderboard-tab="core_damage"><span>◈</span><small>ÇEKİRDEK</small></button>
         <button type="button" data-leaderboard-tab="teams"><span class="ui-art" data-ui-art="friends" aria-hidden="true"></span><small>TAKIM</small></button>
@@ -432,7 +433,7 @@
 
     <dialog id="public-profile-dialog" class="public-profile-dialog" aria-labelledby="public-profile-title">
       <header class="public-profile-header">
-        <button id="public-profile-close" class="profile-navigation-back" type="button" aria-label="Geri"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg><small>GERİ</small></button>
+        <button id="public-profile-close" class="profile-navigation-back navigation-back" type="button" aria-label="Geri"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg></button>
         <div id="public-profile-identity" class="public-profile-identity-bar">
           <span id="public-profile-avatar" class="profile-avatar" aria-hidden="true"></span>
           <div class="public-profile-identity-copy">
@@ -455,7 +456,7 @@
 
     <dialog id="team-profile-dialog" class="public-profile-dialog team-profile-dialog" aria-labelledby="team-profile-title">
       <header class="public-profile-header">
-        <button id="team-profile-close" class="profile-navigation-back" type="button" aria-label="Geri"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg><small>GERİ</small></button>
+        <button id="team-profile-close" class="profile-navigation-back navigation-back" type="button" aria-label="Geri"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg></button>
         <div>
           <span class="screen-kicker">HERKESE AÇIK TAKIM PROFİLİ</span>
           <h2 id="team-profile-title">Takım Profili</h2>
@@ -771,7 +772,7 @@
             <div id="team-training-list" class="team-training-list"></div>
           </section>
           <section data-team-panel="management" class="team-panel team-management-panel" hidden>
-            <header class="team-management-heading"><button id="team-management-back" type="button" aria-label="Takım profiline dön">←</button><div><h3 data-ui-icon="gear:steel">Takım Yönetimi</h3></div></header>
+            <header class="team-management-heading"><button class="navigation-back" id="team-management-back" type="button" aria-label="Takım profiline dön"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg></button><div><h3 data-ui-icon="gear:steel">Takım Yönetimi</h3></div></header>
             <section data-team-management-panel="cosmetics" class="team-management-subpanel team-appearance-editor">
               <div class="team-appearance-heading"><h4>Lider Görünümü</h4><small>Kilitli seçenekler kazanılmadan kullanılamaz.</small></div>
               <button type="button" class="cosmetic-collection-open" data-open-cosmetic-collection>YENİ KOLEKSİYONLARI ÖNİZLE</button>
@@ -822,7 +823,7 @@
 
     <section id="weekly-event-screen" class="mobile-hub-screen events-screen event-detail-screen" data-screen-panel="weekly-event" hidden>
       <header class="event-detail-header">
-        <button type="button" data-open-screen="events" aria-label="Etkinlik listesine dön">←</button>
+        <button class="navigation-back" type="button" data-open-screen="events" aria-label="Etkinlik listesine dön"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg></button>
         <div><h2 id="weekly-tournament-name">Haftalık Devre Turnuvası</h2><small id="weekly-tournament-reset"></small></div>
       </header>
       <div class="event-detail-content">
@@ -842,7 +843,7 @@
 
     <section id="team-event-screen" class="mobile-hub-screen events-screen event-detail-screen" data-screen-panel="team-event" hidden>
       <header class="event-detail-header">
-        <button type="button" data-open-screen="events" aria-label="Etkinlik listesine dön">←</button>
+        <button class="navigation-back" type="button" data-open-screen="events" aria-label="Etkinlik listesine dön"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg></button>
         <div><h2 id="team-tournament-name">Takımlar Arası Turnuva</h2><small id="team-tournament-week"></small></div>
       </header>
       <div class="event-detail-content">
@@ -999,7 +1000,7 @@
         <p class="daily-refresh-copy"><span id="monthly-login-period">BU DÖNEM</span> · Her gün UTC 00:00'da yenilenir · <strong id="daily-load-status" data-status="idle">Yerel önizleme</strong></p>
         <div id="monthly-login-track" class="monthly-login-track"></div>
       </section>
-      <button type="button" class="reward-back-link" data-open-screen="daily">← ÖDÜL BÖLÜMLERİ</button>
+      <button aria-label="Ödül bölümlerine dön" type="button" class="reward-back-link navigation-back" data-open-screen="daily"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg></button>
     </section>
 
     <section class="engagement-summary-panel daily-missions-screen" id="daily-missions-screen" data-screen-panel="daily-missions" hidden>
@@ -1016,7 +1017,7 @@
         <div id="daily-mission-list" class="daily-mission-list"></div>
       </section>
       <p id="daily-action-status" class="season-action-status" role="status"></p>
-      <button type="button" class="reward-back-link" data-open-screen="daily">← ÖDÜL BÖLÜMLERİ</button>
+      <button aria-label="Ödül bölümlerine dön" type="button" class="reward-back-link navigation-back" data-open-screen="daily"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg></button>
     </section>
 
     <section class="engagement-summary-panel season-rewards-screen" id="season-rewards-screen" data-screen-panel="rewards" aria-label="Sezon Ödülleri" hidden>
@@ -1033,7 +1034,7 @@
         </div>
         <p id="season-action-status" class="season-action-status" role="status"></p>
         <div id="season-reward-track" class="season-reward-track"></div>
-        <button type="button" class="reward-back-link" data-open-screen="daily">← ÖDÜL BÖLÜMLERİ</button>
+        <button aria-label="Ödül bölümlerine dön" type="button" class="reward-back-link navigation-back" data-open-screen="daily"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg></button>
       </section>
     </section>
 
@@ -1110,7 +1111,7 @@
         </div>
         <section id="direct-message-thread" class="direct-message-thread" aria-labelledby="direct-message-peer-name" hidden>
           <header class="direct-message-thread-header">
-            <button id="direct-message-back" type="button" aria-label="Sohbetlere dön">←</button>
+            <button class="navigation-back" id="direct-message-back" type="button" aria-label="Sohbetlere dön"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg></button>
             <span id="direct-message-peer-avatar" class="profile-avatar" aria-hidden="true">◇</span>
             <div><strong id="direct-message-peer-name">Oyuncu</strong><small id="direct-message-peer-meta"></small></div>
           </header>

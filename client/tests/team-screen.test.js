@@ -139,7 +139,7 @@ this.loadTeamView = loadTeamView;`, sandbox);
   // Yönetim bölümünde alt sekme yoktur; iki sayfa ve geri düğmesi durur.
   const management = hub.slice(hub.indexOf('<section data-team-panel="management"'), hub.indexOf('<nav class="team-tabs"'));
   assert.equal((management.match(/data-team-management-tab=/g) || []).length, 0);
-  assert.ok(management.includes('<button id="team-management-back" type="button" aria-label="Takım profiline dön">'));
+  assert.match(management, /<button[^>]*id="team-management-back"[^>]*aria-label="Takım profiline dön"[^>]*><svg/);
   assert.ok(management.includes('<section data-team-management-panel="cosmetics"'));
   assert.ok(management.includes('<section data-team-management-panel="members"'));
 

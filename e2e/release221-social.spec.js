@@ -44,7 +44,9 @@ test('current deck paintings, public team navigation, visible back buttons and p
   await loadedArt(page.locator('#public-profile-content .profile-deck-module img'));
   const back = page.locator('#public-profile-close');
   await expect(back).toBeVisible();
-  await expect(back.locator('small')).toHaveText(/GERİ|BACK/);
+  await expect(back).toHaveText('');
+  await expect(back.locator('svg')).toHaveCount(1);
+  expect((await back.boundingBox()).width).toBe(44);
   expect((await back.boundingBox()).height).toBeGreaterThanOrEqual(44);
   await expect(back).not.toHaveCSS('background-image','none');
   await page.screenshot({path:info.outputPath('visited-profile.png')});

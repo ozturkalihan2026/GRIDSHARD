@@ -3,6 +3,7 @@
 
   // New screen copy belongs here; the legacy dictionary remains in i18n.js.
   const translations = Object.freeze({
+    "Ödül bölümlerine dön":"Return to reward sections",
     "YENİ KOLEKSİYONLARI ÖNİZLE":"PREVIEW NEW COLLECTIONS",
     "Yeni Dönem Koleksiyonları":"Upcoming Collections",
     "Bu koleksiyonlar henüz ödül olarak açılmadı. Önizleme sahiplik vermez; kazanılmadan kuşanılamaz.":"These collections are not available as rewards yet. Previewing does not grant ownership; items must be earned before equipping.",

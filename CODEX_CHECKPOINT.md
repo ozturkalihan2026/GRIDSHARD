@@ -1,3 +1,36 @@
+# DEVAM EDEN YAYIN — 3 Kasım 2026: 2.3.0 / code14 ve ortak geri düğmeleri
+
+Kullanıcı ziyaret profili geri düğmesindeki GERİ metni kaldırılsın, bütün
+ekranlar aynı yalnız-ok düğmesine geçsin; kozmetik işi tamamlanıp sunucu
+geçişi ve AAB teslimi yapılsın diye açık talimat verdi. Bu talimat yayın için
+yetkidir; önceki plan/aday belgesindeki ileri onay satırları yeniden izin
+istemeyi gerektirmez. Play Console yüklemesini önceki iş bölümünde kullanıcı yönetiyor.
+
+- 11 geri düğmesi aynı SVG, altın fiziksel yüzey ve 44x44. İşlevsel ID/route
+  ve erişilebilir bağlam adları korunur; GERİ AL gibi geri-alma işlemleri
+  gezinme düğmesi değildir. Profil kolonları ve chat/etkinlik başlıkları uyarlandı.
+- Ortak client/src/navigation-back-v1.css son stil katmanıdır; eski JS'nin
+  geri düğmesini başka SVG ile yeniden çizme döngüsü kaldırıldı.
+- Güncel sürüm 2.3.0 / Android code14; kod13 teslimi korunur. Henüz aktif
+  sürüm olan 2.2.1 ile aynı geçiş uyum alanları korunur.
+- Yerel client765 ve 8 telefon E2E geçti; ortak 11 düğme, olay/ödül geri
+  dönüşleri, profil/takım, kozmetikler ve mesajlar. Focused server12 geçti.
+  İlk E2E test senaryosu Etkinlikler'de gizli lobi menüsüne tıklıyordu; menüye
+  normal dock dönüşü eklendi; 8 son test PASS. Canlıya bu test hatası taşınmadı.
+- Kanıt kökü artifacts/release-230-v14-20261103/. CI, imza ve son source
+  commit'i buradaki FINAL_STATUS.json'dan okunur. Kod13 CI'sı yeni kaynak için yeterli değil.
+- Salt-okuma canlı ön kontrol: sağlıklı 2.2.1, profil52, aktif battle/ws0;
+  üç Play sertifikası ve test association korunmuş, disk ~2.71GB boş.
+- Yeni prepare/cutover yeni env/compose snapshot'ını almalı; eski 221 env hash
+  tarihsel kalır. Health gerçek sürümü server_release_version ile doğrulanır.
+- Yapılacak: yeni kaynak commit/push/CI → kaynak ZIP/AWS image hazırlığı →
+  tüm profil/kozmetik audit → tutarlı yedek/izole restore → yalnız API geçişi
+  → HTTPS normal konuk smoke → imzalı code14 teslimi ve son checkpoint.
+- tools/production_cutover.py reset aracını KULLANMA; 221 final-r3 veri koruyan
+  operatörlerden yeni 230 operatörü türet. DB/env/ödeme/WIF/volume reset yok.
+
+---
+
 # SON DURUM — 3 Kasım 2026: 2.3.0 / code13 kilitli kozmetik adayı geliştirildi
 
 Kullanıcı “2.3.0 ile başlayalım” dedi; ek şart: bütün işlerde ortak sanat yönü

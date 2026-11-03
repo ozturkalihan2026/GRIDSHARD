@@ -1,0 +1,17 @@
+/* Shared arrow-only back control; retain existing destinations and contextual labels. */
+:root body[data-app-screen] button.navigation-back,
+:root body[data-app-screen] button.navigation-back:is(#arena-detail-close,#leaderboard-back,#public-profile-close,#team-profile-close,#team-management-back,#direct-message-back,.event-detail-header > button,.reward-back-link) {
+  box-sizing:border-box; display:inline-grid !important; place-items:center;
+  width:44px !important; min-width:44px !important; max-width:44px !important;
+  height:44px !important; min-height:44px !important; max-height:44px !important;
+  flex:0 0 44px; padding:8px !important; gap:0 !important;
+  border:2px solid #623f23 !important; border-radius:10px !important;
+  background:linear-gradient(#ffe99c 0 13%,#f8ca62 14% 76%,#d7963d 77% 90%,#a3692b 91%) !important;
+  color:#5b351b !important; box-shadow:inset 0 1px #fff3bd,0 3px #07172b !important;
+  font-size:0 !important; text-shadow:none !important; cursor:pointer;
+}
+:root body[data-app-screen] button.navigation-back > svg { display:block; width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+:root body[data-app-screen] button.navigation-back:active { transform:translateY(2px); }
+:root body[data-app-screen] button.navigation-back:focus-visible { outline:3px solid #8bf3e6; outline-offset:3px; }
+:root body[data-app-screen] .event-detail-header { grid-template-columns:44px minmax(0,1fr); }
+:root body[data-app-screen] .direct-message-thread-header { grid-template-columns:44px 36px minmax(0,1fr); }

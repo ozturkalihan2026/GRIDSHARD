@@ -13,12 +13,12 @@ test('2.2.1 boot gate uses actual release while v8 health alias remains compatib
   assert.equal((await make({pvp_protocol_version:1}).check()).ok,false);
   assert.equal((await make({status:'degraded'}).check()).ok,false);
 });
-test('active web/native/package versions agree on 2.3.0 and Android code 13',()=>{
+test('active web/native/package versions agree on 2.3.0 and Android code 14',()=>{
   const root=path.resolve(__dirname,'../..');const read=p=>fs.readFileSync(path.join(root,p),'utf8');
   assert.equal(JSON.parse(read('package.json')).version,'2.3.0');
   const native=JSON.parse(read('config/android-production.json'));
-  assert.equal(native.versionName,'2.3.0');assert.equal(native.versionCode,13);
-  assert.match(read('android/app/build.gradle'),/versionCode 13\s+versionName "2\.3\.0"/);
+  assert.equal(native.versionName,'2.3.0');assert.equal(native.versionCode,14);
+  assert.match(read('android/app/build.gradle'),/versionCode 14\s+versionName "2\.3\.0"/);
   assert.match(read('client/index.html'),/id="boot-version"[^>]+data-version="2\.3\.0"/);
   assert.match(read('client/index.html'),/id="ui-build-version">2\.3\.0</);
   assert.match(read('server/app/version.py'),/^VERSION = "2\.3\.0"/);
