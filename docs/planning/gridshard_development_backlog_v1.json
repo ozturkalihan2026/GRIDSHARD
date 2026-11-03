@@ -5,7 +5,7 @@
   "runtime_changes_authorized_by_this_file": false,
   "baseline_release": "2.2.1",
   "proposed_first_minor": "2.3.0",
-  "working_branch": "codex/liveops-foundations",
+  "working_branch": "codex/release-2-4-0",
   "goals": [
     "shop",
     "chests",
@@ -208,7 +208,7 @@
       "owner": "Sanat / istemci",
       "effort": "XL",
       "priority": "P0",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [
         "COS-01"
       ],
@@ -233,7 +233,9 @@
       "old_plan_sections": [
         4
       ],
-      "evidence": []
+      "evidence": [
+        "docs/planning/two-cycle-art-manifest.md"
+      ]
     },
     {
       "id": "COS-03",
@@ -275,14 +277,17 @@
       "owner": "Backend / içerik araçları",
       "effort": "M",
       "priority": "P0",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [
         "COS-01"
       ],
       "existing_paths": [
         "server/app/cosmetic_releases.py",
         "tools/prepare_liveops_rewards.py",
-        "server/tests/test_cosmetic_releases.py"
+        "server/tests/test_cosmetic_releases.py",
+        "server/app/liveops_content.py",
+        "server/data/liveops_content_sources_v1.json",
+        "server/tests/test_liveops_content.py"
       ],
       "proposed_paths": [
         "server/data/liveops_content_sources_v1.json"
@@ -300,7 +305,11 @@
         4,
         9
       ],
-      "evidence": []
+      "evidence": [
+        "artifacts/release-240-foundations-tests.log",
+        "artifacts/release-240-20261103/coverage-aligned.json",
+        "artifacts/release-240-20261103/coverage-midweek.json"
+      ]
     },
     {
       "id": "CARD-01",
@@ -1789,7 +1798,7 @@
       "owner": "İstemci / backend / QA / operasyon",
       "effort": "M",
       "priority": "P0",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "COS-01"
       ],
@@ -1828,7 +1837,8 @@
         "artifacts/release-230-v14-20261103/FINAL_STATUS.json",
         "artifacts/release-230-v14-20261103/server/deployment-success.json",
         "artifacts/release-230-v14-20261103/public-smoke.json",
-        "deliverables/GRIDSHARD_2.3.0_14/manifest.json"
+        "deliverables/GRIDSHARD_2.3.0_14/manifest.json",
+        "docs/planning/release-230-user-confirmation-20261103.md"
       ]
     }
   ],
@@ -1929,8 +1939,18 @@
     "server_release": "2.3.0",
     "android_code": 14,
     "aab_delivered": true,
-    "play_uploaded": false,
+    "play_uploaded": true,
     "device_update_verified": false,
-    "evidence": "artifacts/release-230-v14-20261103/FINAL_STATUS.json"
+    "evidence": "artifacts/release-230-v14-20261103/FINAL_STATUS.json",
+    "play_rollout_confirmed_by_user": true,
+    "confirmation_source": "user_report",
+    "confirmation_evidence": "docs/planning/release-230-user-confirmation-20261103.md"
+  },
+  "active_development": {
+    "target_version": "2.4.0",
+    "branch": "codex/release-2-4-0",
+    "plan": "docs/RELEASE_2_4_0_GELISTIRME_PLANI_20261103.md",
+    "milestone": "source_contracts_and_calendar_stock",
+    "status": "in_progress"
   }
 }

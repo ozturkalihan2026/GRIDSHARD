@@ -31,6 +31,7 @@ EXCLUDED_NAMES = {"RELEASE_MANIFEST.json"}
 STATIC_SERVER_DATA_FILES = {
     "server/data/game_updates.json",
     "server/data/cosmetic_releases_v1.json",
+    "server/data/liveops_content_sources_v1.json",
     "server/data/arena_bot_profiles_v1.json",
     "server/data/arena_progression_v1.json",
     "server/data/module_roster_v2.json",

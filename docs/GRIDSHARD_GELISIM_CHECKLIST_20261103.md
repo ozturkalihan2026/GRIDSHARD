@@ -2,7 +2,7 @@
 
 **Tarih: 3 Kasım 2026 · Proje: mağaza, ödül, içerik ve yaşayan oyun**
 
-Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **51 iş** vardır: **42 yapılacak**, **1 çalışılıyor**, **1 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
+Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **51 iş** vardır: **40 yapılacak**, **2 çalışılıyor**, **2 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
 
 ## 1. Proje dosyaları ve kullanım
 
@@ -10,6 +10,7 @@ Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **51 iş** vardır:
 - [Yeni rakip/ödül araştırması](GRIDSHARD_MAGAZA_ODUL_ARASTIRMASI_20261103.md): kaynaklar, tarih ve çıkarımlar.
 - [Teknik tasarım](GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md): mevcut/yeni altyapı, veri/API ve ekran sözleşmeleri.
 - [Ortak sanat yönü](SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md): bütün paketler için referans aile ve yön değişikliği koşulları.
+- [2.4.0 geliştirme kademeleri](RELEASE_2_4_0_GELISTIRME_PLANI_20261103.md): güncel kapsam, ilk stok uygulaması ve sonraki üretim işleri.
 - [Makine tarafından okunabilir iş listesi](planning/gridshard_development_backlog_v1.json): görevlerin tek kaynağı.
 
 Görevi güncellemek için JSON içindeki `status`, `evidence` ve gerekiyorsa kabul ölçütlerini düzenle. Sonra repo kökünde çalıştır:
@@ -44,7 +45,7 @@ Bütün sürümlerde mevcut onaylı sanat yönü korunur. Yön değişecekse ön
 | Bu turda hazırlanan | Kaynaklı araştırma, teknik tasarım, 51 görev, sürümlü yayın kademeleri ve yerel plan doğrulama aracı. |
 | Uygulanacak | Yeni teklifler, seçim hakları, kapanış kurtarması, genel takvim kapısı, yeni ekranlar ve modlar. |
 
-2.3.0 sunucu geçişi ve imzalı AAB code14 teslimi tamamlandı. Play yükleme/yayını ve fiziksel cihaz güncellemesi bekliyor; RELEASE-00 bu nedenle açık. Sonraki geliştirme kademesi 2.4.0 dönem içeriği ve ödül takvimidir.
+2.3.0 sunucu ve AAB yayını kullanıcı tarafından teyit edildi; RELEASE-00 tamam. Fiziksel cihaz testinin ayrıca raporlanmadığı kayıtta korunur. Aktif geliştirme 2.4.0 dönem içeriği ve ödül takvimidir.
 
 ## 4. Teslim dilimleri ve çıkış kapıları
 
@@ -58,7 +59,7 @@ Bütün sürümlerde mevcut onaylı sanat yönü korunur. Yön değişecekse ön
 
 R1/R2/R3 bir takvim günü veya kesin sürüm sözü değildir. Tek geliştirici için aynı anda bir büyük backend/motor işi ve bir küçük görsel paket önerilir. S≈1–2, M≈3–5, L≈6–10 geliştirici günü taslak efor bandıdır; sanat, cihaz QA ve beklemeler ayrıca tahmin edilir. XL işe başlamadan daha küçük alt işler ayrılır. Efor bantlarının toplamı teslim tarihi olarak kullanılmaz.
 
-**RELEASE-00 / 2.3.0:** sunucu ve AAB tamam; Play/cihaz doğrulamasını kapat. **Sonraki paket RELEASE-01 / 2.4.0:** COS-02/CARD-01/02 ile iki döneme özgün içerik hazırla; dönem ödülü ve takvimi kendi yayın kapısıyla aç.
+**RELEASE-00 / 2.3.0:** kullanıcı yayın teyidiyle tamam. **Sonraki paket RELEASE-01 / 2.4.0:** COS-02/CARD-01/02 ile iki döneme özgün içerik hazırla; dönem ödülü ve takvimi kendi yayın kapısıyla aç.
 
 ### 4.1. Sürümlere göre açık yayın planı
 
@@ -79,6 +80,7 @@ Her yayın: geliştirme → yerel/cihaz kabulü → iç test → kapalı test �
 ## 5. İçerik kapasitesi ve karar kayıtları
 
 - İki dönem: 24 oyuncu + 6 takım ödül öğesi gerekir. Hazır stok 6 oyuncu + 9 takım: **18 ek oyuncu öğesi** gerekir.
+- Bu asgari bütçe pazartesi 00.00 UTC başlangıcına göre sekiz ISO haftası içindir. Hafta ortası 56 günlük takvim dokuz haftaya dokunabilir: **20 yeni oyuncu öğesi** gerekir; tarihler kesinleşince coverage yeniden çalıştırılır.
 - İlk kozmetik mağazası ayrıca dört özgün öğe ister: ilk sanat hazırlığı **22 yeni öğe**. Bu öğeler henüz üretilmedi.
 - Yeni etkinlik ayrı koleksiyon ödülü verecekse ek stok ayrıca hesaplanır; mevcut iki dönem hesabı her yeni modu kapsamaz.
 - Mevcut sezon politikası en az bir yeni modül ister. İki dönem için iki modül çalışma/çizim/karşı oyun/denge/ücretsiz kazanım kapısından geçmelidir.
@@ -154,20 +156,22 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Geçmiş hazırlık kanıtı: `artifacts/liveops-foundations-20261102/server-tests.log`, `artifacts/liveops-foundations-20261102/browser-results.json`, `artifacts/release-230-v14-20261103/FINAL_STATUS.json`, `artifacts/release-230-v14-20261103/server/deployment-success.json`, `artifacts/release-230-v14-20261103/public-smoke.json`, `deliverables/GRIDSHARD_2.3.0_14/manifest.json`.
 
 - [ ] **COS-02 — İki dönem için 18 yeni oyuncu tasarımı üret**
-  - Durum: Yapılacak. Öncelik: P0; rol: Sanat / istemci; efor: XL.
+  - Durum: Çalışılıyor. Öncelik: P0; rol: Sanat / istemci; efor: XL.
   - Önkoşullar: COS-01.
   - Mevcut bağlar: `server/data/cosmetic_releases_v1.json`, `tools/prepare_liveops_rewards.py`, `client/src/liveops-cosmetics-v1.css`, `docs/GORSEL_DONUSUM_PLANI_20261015.md`.
   - Yeni teslim önerisi: `docs/planning/two-cycle-art-manifest.md`.
   - Kabul 1: Dokuz yeni çerçeve ve dokuz yeni zemin; özgün motif, TR/EN, tasarım kimliği ve önizleme hazırlanır; gerekirse renderer şeması genişletilir.
   - Kabul 2: En fazla 10 parçalık görsel incelemeler ve 320/393 px kabulü kaydedilir; yeniden renklendirme yeni tasarım sayılmaz.
+  - Geçmiş hazırlık kanıtı: `docs/planning/two-cycle-art-manifest.md`.
 
 - [ ] **COS-04 — Kaynak kayıtlarını ve stok denetimini genişlet**
-  - Durum: Yapılacak. Öncelik: P0; rol: Backend / içerik araçları; efor: M.
+  - Durum: Çalışılıyor. Öncelik: P0; rol: Backend / içerik araçları; efor: M.
   - Önkoşullar: COS-01.
-  - Mevcut bağlar: `server/app/cosmetic_releases.py`, `tools/prepare_liveops_rewards.py`, `server/tests/test_cosmetic_releases.py`.
+  - Mevcut bağlar: `server/app/cosmetic_releases.py`, `tools/prepare_liveops_rewards.py`, `server/tests/test_cosmetic_releases.py`, `server/app/liveops_content.py`, `server/data/liveops_content_sources_v1.json`, `server/tests/test_liveops_content.py`.
   - Yeni teslim önerisi: `server/data/liveops_content_sources_v1.json`.
   - Kabul 1: Mağaza ve yeni etkinlik kaynakları doğrulanmış sözleşmeyle eklenir; yalnız JSON adı ekleyerek yayın yapılamaz.
   - Kabul 2: Coverage aktif kaynak/takvimden ihtiyaç hesaplar; 30 dönem öğesi ve ayrı mağaza stoğu karıştırılmaz, yetersiz stokta yayın durur.
+  - Geçmiş hazırlık kanıtı: `artifacts/release-240-foundations-tests.log`, `artifacts/release-240-20261103/coverage-aligned.json`, `artifacts/release-240-20261103/coverage-midweek.json`.
 
 - [ ] **CARD-01 — Yankı Rölesi sezon modülünü uçtan uca geliştir**
   - Durum: Yapılacak. Öncelik: P0; rol: Oyun motoru / sanat / denge; efor: XL.
@@ -267,8 +271,8 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 1: Ödül kilidi, iki dönem stok/kart hazırlığı, gerçek teslim, restart/restore ve TR/EN mobil kanıtları tamamlanır.
   - Kabul 2: 2.4.0 için sürüm notu/CI/imzalı AAB ve veri koruyan dağıtım hazırlanır; takvim ancak içerik kapısı geçildiğinde operatörce açılır.
 
-- [ ] **RELEASE-00 — 2.3.0 kilitli kozmetik ve önizleme paketini yayıma hazırla**
-  - Durum: Çalışılıyor. Öncelik: P0; rol: İstemci / backend / QA / operasyon; efor: M.
+- [x] **RELEASE-00 — 2.3.0 kilitli kozmetik ve önizleme paketini yayıma hazırla**
+  - Durum: Kanıtla tamamlandı. Öncelik: P0; rol: İstemci / backend / QA / operasyon; efor: M.
   - Önkoşullar: COS-01.
   - Mevcut bağlar: `server/data/cosmetic_releases_v1.json`, `server/app/cosmetic_releases.py`, `client/src/liveops-cosmetic-catalog.js`, `e2e/liveops-cosmetics.spec.js`, `server/tests/test_cosmetic_releases.py`, `tools/release_guard.py`, `server/data/game_updates.json`.
   - Yeni teslim önerisi: `docs/planning/release-230-evidence.md`.
@@ -277,7 +281,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 3: 320/393 px, native API erişimi, sahip olunmayanı kuşanma reddi, mevcut regresyon/performans ve gerçek ödül yolu uyumluluğu doğrulanır.
   - Kabul 4: 2.3.0 sürüm/notları, başarılı CI, veri koruyan sunucu geçişi ve yeni imzalı AAB tamamlanır; 2.2.1 AAB yeniden adlandırılarak kullanılmaz.
   - Kabul 5: Mevcut boyalı/hacimli sanat ailesi korunur; yan yana mobil önizleme ve görsel kabul kaydı tamamlanır. Yön değişikliği ayrı brief ve geçiş planı gerektirir.
-  - Geçmiş hazırlık kanıtı: `artifacts/release-230-20261103/browser-results.json`, `artifacts/release-230-20261103/client-tests-final.log`, `artifacts/release-230-v14-20261103/FINAL_STATUS.json`, `artifacts/release-230-v14-20261103/server/deployment-success.json`, `artifacts/release-230-v14-20261103/public-smoke.json`, `deliverables/GRIDSHARD_2.3.0_14/manifest.json`.
+  - Geçmiş hazırlık kanıtı: `artifacts/release-230-20261103/browser-results.json`, `artifacts/release-230-20261103/client-tests-final.log`, `artifacts/release-230-v14-20261103/FINAL_STATUS.json`, `artifacts/release-230-v14-20261103/server/deployment-success.json`, `artifacts/release-230-v14-20261103/public-smoke.json`, `deliverables/GRIDSHARD_2.3.0_14/manifest.json`, `docs/planning/release-230-user-confirmation-20261103.md`.
 
 ### R2 — Mağaza ve seçim kasası — sonraki minor
 

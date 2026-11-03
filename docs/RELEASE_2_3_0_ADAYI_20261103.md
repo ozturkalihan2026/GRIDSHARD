@@ -55,7 +55,7 @@ Kod13 ve önceki 2.2.1 dosyaları korunur.
 - [x] HTTPS normal konuk auth/bootstrap, kilitli önizleme, sürüm notları ve ok düğmeleri geçti.
 - [x] Sunucu sağlıklı, restart0; drill kaynakları yok; yedekler korunuyor.
 - [ ] Fiziksel cihazda Play üzerinden güncelleme/hesap/ödeme/ödül regresyonu doğrulandı.
-- [ ] Kullanıcının yönettiği Play yükleme, test ve mağaza yayını tamamlandı.
+- [x] Kullanıcı sunucu geçişini ve AAB'nin kullanıcılara sunulduğunu teyit etti; Play Console API denetimi yapılmadı.
 
 Kaynak: `cef09390d01480d0152dabd22bbc60c53a14f9a2`.
 [CI](https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/41678519606).
@@ -63,3 +63,5 @@ Kanıtlar `artifacts/release-230-v14-20261103/server/`, `public-smoke.json`
 ve `FINAL_STATUS.json`. Play/cihaz adımları sunucu geçişinden ayrı izlenir.
 Yeni konuk smoke hesabı dışında mevcut hesaplarda işlem yapılmadı.
 2.4.0 ödül/takvim açılışı bu yayınla yapılmış sayılmaz.
+
+3 Kasım kullanıcı [yayın teyidi](planning/release-230-user-confirmation-20261103.md) ile RELEASE-00 kapandı; fiziksel cihaz sonucu ayrıca bildirilmedi. Aktif geliştirme 2.4.0'dır.

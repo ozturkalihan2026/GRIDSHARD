@@ -16,6 +16,7 @@ PLAYER_FIELDS = {"avatar_frame_id", "profile_background_id"}
 TEAM_FIELDS = {"team_emblem_id", "team_frame_id", "team_name_color_id"}
 COSMETIC_FIELDS = PLAYER_FIELDS | TEAM_FIELDS | {"avatar_id", "emoji_id"}
 SOURCES = {"season_road", "season_leaderboard", "weekly_tournament", "team_tournament"}
+INVENTORY_POOLS = {"competition", "shop", "daily_trial"}
 
 
 class CosmeticReleaseError(ValueError):
@@ -61,6 +62,8 @@ class CosmeticReleaseRegistry:
         structures = set()
         for item in document.get("items", []):
             identity = item["id"]
+            if item.get("inventory_pool", "competition") not in INVENTORY_POOLS:
+                raise CosmeticReleaseError("Unknown cosmetic inventory pool")
             if item.get("theme") not in theme_ids:
                 raise CosmeticReleaseError("Unknown cosmetic theme")
             if identity in self.items or item["field"] not in PLAYER_FIELDS | TEAM_FIELDS:
@@ -110,6 +113,8 @@ class CosmeticReleaseRegistry:
                     item = self.items.get(identity)
                     if not item or item["field"] != field:
                         raise CosmeticReleaseError("Unknown cosmetic or reward field mismatch")
+                    if item.get("inventory_pool", "competition") != "competition":
+                        raise CosmeticReleaseError("Cosmetic reserved for another channel pool")
                     if field in TEAM_FIELDS and release["source"] != "team_tournament":
                         raise CosmeticReleaseError("Team cosmetic assigned to a player-only source")
                     if identity in used and used[identity] != release["id"]:
@@ -161,6 +166,7 @@ class CosmeticReleaseRegistry:
         fresh = {}
         for field in fields:
             candidates = [item for item in self.items.values() if item["field"] == field
+                          and item.get("inventory_pool", "competition") == "competition"
                           and item.get("status") == "approved" and item["id"] not in self.used]
             if not candidates:
                 raise CosmeticReleaseError(f"Fresh content exhausted for {field}; create/review new art, never recycle")

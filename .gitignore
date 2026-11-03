@@ -36,6 +36,7 @@ server/data/*
 !server/data/season_module_releases_v2.json
 !server/data/game_updates.json
 !server/data/cosmetic_releases_v1.json
+!server/data/liveops_content_sources_v1.json
 !server/data/current_only_design_v2.json
 server/data/.auth_signing_key
 server/data/platform_state.json*
