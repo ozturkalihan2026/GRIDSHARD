@@ -1,5 +1,13 @@
 # GRIDSHARD — canlı operasyon, yeni ödüller ve oyun modları planı
 
+> 3 Kasım 2026 yayın durumu: 2.3.0 sunucuya geçirildi; 15 kozmetik kilitli
+> önizlemeli, 11 geri düğmesi ortak yalnız-ok tasarımında. İmzalı AAB code14
+> teslim edildi. 52 mevcut profil ve kozmetik sahipliği yedek/izole restore
+> ile korundu; tüm CI işleri geçti. Play yükleme/yayını ve fiziksel cihaz
+> güncellemesi ayrıca tamamlanacak. Sonraki geliştirme kademesi 2.4.0'dır.
+> Ayrıntı: [yayın kanıtı](RELEASE_2_3_0_ADAYI_20261103.md).
+
+
 ## 3 Kasım 2026 — uygulama projesine geçiş
 
 Bu planın ürün yönü korunarak mağaza/sandık/ödül araştırması genişletildi.
@@ -222,7 +230,7 @@ Hazır önizlemeyi, iki dönemlik yeni kart ve sanat üretimi bekletmeyecek.
 | Sürüm | Oyuncuya gelecek içerik | Yayın için tamamlanacak kademe |
 | --- | --- | --- |
 | **2.2.1 — mevcut** | Profil/takım düzeltmeleri, yeni çark ve sıralı güncelleme mesajları. | Sunucu ve imzalı AAB teslimi tamamlandı; Play yayını kullanıcı tarafından yönetiliyor. |
-| **2.3.0 — bir sonraki yayın** | Üç temada 15 kilitli oyuncu/takım kozmetiği; adlar, önizlemeler ve açık kilit açıklaması. | `COS-01` + `RELEASE-00`: sahiplik/kuşanma reddi, TR/EN, iki mobil boyut, native API, regresyon/CI, yeni sürüm mesajı, veri koruyan sunucu ve yeni imzalı AAB. |
+| **2.3.0 — sunucu canlı / AAB teslim** | Üç temada 15 kilitli oyuncu/takım kozmetiği; adlar, önizlemeler ve açık kilit açıklaması. | `COS-01` + `RELEASE-00`: sahiplik/kuşanma reddi, TR/EN, iki mobil boyut, native API, regresyon/CI, yeni sürüm mesajı, veri koruyan sunucu ve yeni imzalı AAB. |
 | **2.4.0 — dönem ödülü ve içerik açılışı** | Tekil dönem ödülleri, tema vitrini, sürümlü ödül tanımları ve birleşik takvim/yayın kapısı. | `RELEASE-01`: ekonomi baz çizgisi, en az 18 yeni oyuncu kozmetiği, iki döneme birer hazır modül, doğru teslim/kayıt/restore ve operatör açılışı. |
 | **2.5.0 — mağaza ve seçim kasası** | Garantili hedefli parça teklifi, dört ayrı mağaza kozmetiği, seçim kasası ve daha anlaşılır mağaza; kapanışta kazanılmış hakkın korunması. | `RELEASE-02`: fiyat/miktar/limit kararı, tek hak/tek teslim, atomik harcama, bağlantı kopması/yanlış seçim/iade ve mağaza politikası kontrolleri. |
 | **2.6.0 — günlük Devre Deneyi** | Sunucuda doğrulanan günlük strateji problemi, ilk başarı ödülü, tekrar deneme ve tek etkinlik vitrini. | `RELEASE-03`: kural/tohum/dönem sabitliği, tek ödül, gün değişimi, yeni etkinlik için yeterli özgün stok ve baz ölçüm değerlendirmesi. |

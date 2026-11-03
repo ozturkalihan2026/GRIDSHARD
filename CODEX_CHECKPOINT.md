@@ -1,33 +1,45 @@
-# DEVAM EDEN YAYIN — 3 Kasım 2026: 2.3.0 / code14 ve ortak geri düğmeleri
+# SON DURUM — 3 Kasım 2026: 2.3.0 / code14 sunucu geçişi ve AAB teslimi tamam
 
-Kullanıcı ziyaret profili geri düğmesindeki GERİ metni kaldırılsın, bütün
-ekranlar aynı yalnız-ok düğmesine geçsin; kozmetik işi tamamlanıp sunucu
-geçişi ve AAB teslimi yapılsın diye açık talimat verdi. Bu talimat yayın için
-yetkidir; önceki plan/aday belgesindeki ileri onay satırları yeniden izin
-istemeyi gerektirmez. Play Console yüklemesini önceki iş bölümünde kullanıcı yönetiyor.
+Kullanıcı ortak yalnız-ok geri düğmeleri, kozmetiklerin tamamlanması, sunucu
+geçişi ve AAB teslimini açıkça istedi. Play Console yüklemesi önceki iş bölümüne
+göre kullanıcıda; agent Play'e yüklemedi, telefona kurmadı. 8891'e dokunulmadı.
 
-- 11 geri düğmesi aynı SVG, altın fiziksel yüzey ve 44x44. İşlevsel ID/route
-  ve erişilebilir bağlam adları korunur; GERİ AL gibi geri-alma işlemleri
-  gezinme düğmesi değildir. Profil kolonları ve chat/etkinlik başlıkları uyarlandı.
-- Ortak client/src/navigation-back-v1.css son stil katmanıdır; eski JS'nin
-  geri düğmesini başka SVG ile yeniden çizme döngüsü kaldırıldı.
-- Güncel sürüm 2.3.0 / Android code14; kod13 teslimi korunur. Henüz aktif
-  sürüm olan 2.2.1 ile aynı geçiş uyum alanları korunur.
-- Yerel client765 ve 8 telefon E2E geçti; ortak 11 düğme, olay/ödül geri
-  dönüşleri, profil/takım, kozmetikler ve mesajlar. Focused server12 geçti.
-  İlk E2E test senaryosu Etkinlikler'de gizli lobi menüsüne tıklıyordu; menüye
-  normal dock dönüşü eklendi; 8 son test PASS. Canlıya bu test hatası taşınmadı.
-- Kanıt kökü artifacts/release-230-v14-20261103/. CI, imza ve son source
-  commit'i buradaki FINAL_STATUS.json'dan okunur. Kod13 CI'sı yeni kaynak için yeterli değil.
-- Salt-okuma canlı ön kontrol: sağlıklı 2.2.1, profil52, aktif battle/ws0;
-  üç Play sertifikası ve test association korunmuş, disk ~2.71GB boş.
-- Yeni prepare/cutover yeni env/compose snapshot'ını almalı; eski 221 env hash
-  tarihsel kalır. Health gerçek sürümü server_release_version ile doğrulanır.
-- Yapılacak: yeni kaynak commit/push/CI → kaynak ZIP/AWS image hazırlığı →
-  tüm profil/kozmetik audit → tutarlı yedek/izole restore → yalnız API geçişi
-  → HTTPS normal konuk smoke → imzalı code14 teslimi ve son checkpoint.
-- tools/production_cutover.py reset aracını KULLANMA; 221 final-r3 veri koruyan
-  operatörlerden yeni 230 operatörü türet. DB/env/ödeme/WIF/volume reset yok.
+- Üretim API artık **2.3.0**, kaynak **cef09390d01480d0152dabd22bbc60c53a14f9a2**.
+  Gerçek sürüm `health.server_release_version`; `release_version=2.2.1` ve
+  beta72 alias'ı eski kurulu istemciler için korunur. Protokol2.
+- 11 gezinme düğmesi yazısız ortak altın SVG ok/44×44; ziyaret profilinin
+  kolon genişliği daraltıldı. Undo ve normal X kapatma ayrı işlevlerdir.
+- 15 yeni kozmetik üç temada TR/EN oyuncu/takım önizlemeli ve kilitli.
+  Sahiplik verilmedi, tahsis/yayın listeleri boş. Ortak boyalı/hacimli sanat
+  yönü korundu; yeni mod/mağaza/sezon/turnuva açılmadı.
+- 52 mevcut profilin ilerlemesi/bakiye/kozmetik sahipliği ve satın alma,
+  kimlik, savaş, takım kayıtları korundu. API durdurularak tutarlı DB/runtime
+  yedeği alındı; izole restore ile BÜTÜN tablo içerikleri eşleşti.
+  Yalnız API değişti; Postgres/Redis/Caddy/env/secret/volümler korunur.
+- Backup: /var/backups/gridshard-production/20261103-before-230-v14-cef0939.
+  Release root: /opt/gridshard/releases/production-2.3.0-v14-cef0939.
+  Drill kaynakları temizlendi; sağlıklı API, restart0. Canlı DB restore yok.
+- CI41678519606 kaynak cef0939 için bütün işler PASS; server/client/tools,
+  gerçek PG/Redis/üretim imajı, Chromium/Android ve Safari/WebKit dahil.
+  Yerel client765/build10/focusedserver12 ve iki telefonda 8 E2E PASS.
+- HTTPS normal konuk auth/bootstrap; 2.3.0→2.2.1 notları, 15 kilitli önizleme,
+  11 yazısız ok, public takım API doğrulandı. Tarayıcı/eksik varlık hatası0.
+  Mevcut oyuncu hesaplarıyla işlem/satın alma/maç yapılmadı; smoke yeni konuk açar.
+- Teslim **deliverables/GRIDSHARD_2.3.0_14/GRIDSHARD-2.3.0-v14.aab**.
+  APK, Play TR/EN notları, manifest ve imza/R8 audit aynı klasörde. Eski
+  code13 teslimleri korunur. İki paketin 538 web dosyası bağımsız kaynak
+  ZIP'inden yeniden derlenerek birebir eşleştirildi; upload sertifikası aynı.
+- Kanıt/manifest: artifacts/release-230-v14-20261103/FINAL_STATUS.json,
+  server/deployment-success.json, restore-proof.json, deployment-final-check.json,
+  public-smoke.json. Kaynak ZIP SHA256 fd3c01dbca52fd0dbd5e5481e9de69de55f823af852abedc449bf789104535c0.
+- Play yükleme/yayın ve fiziksel cihaz güncellemesi DOĞRULANMADI; kalan iş bu.
+  AAB Play test kanalından güncellenir. Upload APK imzası Play kurulumundan
+  farklıysa mevcut uygulamayı kaldırarak test önermeyin.
+- Sonraki planlı minor2.4.0: iki döneme özgün içerik ve dönem ödülü/takvim.
+  RELEASE-00 Play/cihaz adımları nedeniyle in_progress; COS-01 canlıda tamam.
+- Üretimreset aracı tools/production_cutover.py KULLANILMAZ. Canlıenv/ödeme/WIF
+  korunur. Yeni yayın için taze snapshot/ayrı yedek gerekir; eski env hash'i
+  güncel sanılmaz. Aktif otomasyon yok; yeni heartbeat kurulmadı.
 
 ---
 

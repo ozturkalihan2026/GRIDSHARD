@@ -2,7 +2,7 @@
 
 **Tarih: 3 Kasım 2026 · Proje: mağaza, ödül, içerik ve yaşayan oyun**
 
-Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **51 iş** vardır: **42 yapılacak**, **1 dalda hazır; canlıda yok**, **1 çalışılıyor**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
+Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **51 iş** vardır: **42 yapılacak**, **1 çalışılıyor**, **1 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
 
 ## 1. Proje dosyaları ve kullanım
 
@@ -39,12 +39,12 @@ Bütün sürümlerde mevcut onaylı sanat yönü korunur. Yön değişecekse ön
 
 | Durum | İçerik |
 | --- | --- |
-| Canlı 2.2.1 | Profil/takım düzeltmeleri, yeni mesaj sırası, mevcut mağaza/sandık/ödül sistemi. |
-| Dalda hazır | 15 kilitli kozmetik, dönem tekil tahsisi, özgünlük/hash kontrolü, örnek coverage; `COS-01`. |
+| Canlı sunucu 2.3.0 | Profil/takım düzeltmeleri, ortak yalnız-ok geri düğmeleri ve sürüm mesajları; mevcut mağaza/sandık/ödül sistemi korunur. |
+| Canlıda kilitli | 15 kozmetik ve üç tema önizlemesi; tahsis/yayın sıfır, mevcut sahiplik korundu; `COS-01` tamam. |
 | Bu turda hazırlanan | Kaynaklı araştırma, teknik tasarım, 51 görev, sürümlü yayın kademeleri ve yerel plan doğrulama aracı. |
 | Uygulanacak | Yeni teklifler, seçim hakları, kapanış kurtarması, genel takvim kapısı, yeni ekranlar ve modlar. |
 
-Bu plan üretim yapılandırmasını, Play Console ürünlerini veya canlı bakiyeleri değiştirmez. İlk yeni yayın **minor** olmalıdır; aday 2.3.0. Sürüm numarası yayın anında kesinleştirilir, 2.2.1 üzerine yeni özellik paketi diye tekrar yayımlanmaz.
+2.3.0 sunucu geçişi ve imzalı AAB code14 teslimi tamamlandı. Play yükleme/yayını ve fiziksel cihaz güncellemesi bekliyor; RELEASE-00 bu nedenle açık. Sonraki geliştirme kademesi 2.4.0 dönem içeriği ve ödül takvimidir.
 
 ## 4. Teslim dilimleri ve çıkış kapıları
 
@@ -58,7 +58,7 @@ Bu plan üretim yapılandırmasını, Play Console ürünlerini veya canlı baki
 
 R1/R2/R3 bir takvim günü veya kesin sürüm sözü değildir. Tek geliştirici için aynı anda bir büyük backend/motor işi ve bir küçük görsel paket önerilir. S≈1–2, M≈3–5, L≈6–10 geliştirici günü taslak efor bandıdır; sanat, cihaz QA ve beklemeler ayrıca tahmin edilir. XL işe başlamadan daha küçük alt işler ayrılır. Efor bantlarının toplamı teslim tarihi olarak kullanılmaz.
 
-**İlk yayın paketi RELEASE-00 / 2.3.0:** dalda hazır kilitli kozmetiği görsel/sahiplik/native kontrollerinden geçirip yeni AAB ve sunucu paketi hazırla. BASE-01/02 ve COS-04 paralel ilerleyebilir; COS-02/CARD-01/02 ve iki dönem üretim stoğu 2.4.0 açılışının önkoşuludur, 2.3.0 önizlemesini bekletmez.
+**RELEASE-00 / 2.3.0:** sunucu ve AAB tamam; Play/cihaz doğrulamasını kapat. **Sonraki paket RELEASE-01 / 2.4.0:** COS-02/CARD-01/02 ile iki döneme özgün içerik hazırla; dönem ödülü ve takvimi kendi yayın kapısıyla aç.
 
 ### 4.1. Sürümlere göre açık yayın planı
 
@@ -144,14 +144,14 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 ### R1 — Kilitli kozmetik önizlemesi → dönem ödülü/içerik açılışı
 
-- [x] **COS-01 — Dalda hazır 15 kilitli kozmetik temelini koru**
-  - Durum: Dalda hazır; canlıda yok. Öncelik: P0; rol: Backend / istemci; efor: S.
+- [x] **COS-01 — 15 kilitli kozmetik temelini canlıda koru**
+  - Durum: Kanıtla tamamlandı. Öncelik: P0; rol: Backend / istemci; efor: S.
   - Önkoşullar: yok.
   - Mevcut bağlar: `server/app/cosmetic_releases.py`, `server/data/cosmetic_releases_v1.json`, `tools/prepare_liveops_rewards.py`, `server/tests/test_cosmetic_releases.py`, `e2e/liveops-cosmetics.spec.js`.
   - Yeni teslim önerisi: mevcut temel korunur.
   - Kabul 1: 15 öğe kilitli, tahsis sayısı sıfır ve sahiplik sunucuda doğrulanır.
-  - Kabul 2: Hazır temel canlı 2.2.1 ile karıştırılmaz; yeni yayında kendi minor sürümü ve mesajı olur.
-  - Geçmiş hazırlık kanıtı: `artifacts/liveops-foundations-20261102/server-tests.log`, `artifacts/liveops-foundations-20261102/browser-results.json`.
+  - Kabul 2: 2.3.0 kendi minor sürümü ve sistem mesajıyla canlıdır; 2.2.1 kurulu istemci köprüsü korunur.
+  - Geçmiş hazırlık kanıtı: `artifacts/liveops-foundations-20261102/server-tests.log`, `artifacts/liveops-foundations-20261102/browser-results.json`, `artifacts/release-230-v14-20261103/FINAL_STATUS.json`, `artifacts/release-230-v14-20261103/server/deployment-success.json`, `artifacts/release-230-v14-20261103/public-smoke.json`, `deliverables/GRIDSHARD_2.3.0_14/manifest.json`.
 
 - [ ] **COS-02 — İki dönem için 18 yeni oyuncu tasarımı üret**
   - Durum: Yapılacak. Öncelik: P0; rol: Sanat / istemci; efor: XL.
@@ -277,7 +277,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 3: 320/393 px, native API erişimi, sahip olunmayanı kuşanma reddi, mevcut regresyon/performans ve gerçek ödül yolu uyumluluğu doğrulanır.
   - Kabul 4: 2.3.0 sürüm/notları, başarılı CI, veri koruyan sunucu geçişi ve yeni imzalı AAB tamamlanır; 2.2.1 AAB yeniden adlandırılarak kullanılmaz.
   - Kabul 5: Mevcut boyalı/hacimli sanat ailesi korunur; yan yana mobil önizleme ve görsel kabul kaydı tamamlanır. Yön değişikliği ayrı brief ve geçiş planı gerektirir.
-  - Geçmiş hazırlık kanıtı: `artifacts/release-230-20261103/browser-results.json`, `artifacts/release-230-20261103/client-tests-final.log`.
+  - Geçmiş hazırlık kanıtı: `artifacts/release-230-20261103/browser-results.json`, `artifacts/release-230-20261103/client-tests-final.log`, `artifacts/release-230-v14-20261103/FINAL_STATUS.json`, `artifacts/release-230-v14-20261103/server/deployment-success.json`, `artifacts/release-230-v14-20261103/public-smoke.json`, `deliverables/GRIDSHARD_2.3.0_14/manifest.json`.
 
 ### R2 — Mağaza ve seçim kasası — sonraki minor
 

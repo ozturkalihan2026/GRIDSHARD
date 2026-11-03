@@ -165,12 +165,12 @@
     },
     {
       "id": "COS-01",
-      "title": "Dalda hazır 15 kilitli kozmetik temelini koru",
+      "title": "15 kilitli kozmetik temelini canlıda koru",
       "stage": "R1",
       "owner": "Backend / istemci",
       "effort": "S",
       "priority": "P0",
-      "status": "branch_ready",
+      "status": "done",
       "depends_on": [],
       "existing_paths": [
         "server/app/cosmetic_releases.py",
@@ -182,7 +182,7 @@
       "proposed_paths": [],
       "acceptance": [
         "15 öğe kilitli, tahsis sayısı sıfır ve sahiplik sunucuda doğrulanır.",
-        "Hazır temel canlı 2.2.1 ile karıştırılmaz; yeni yayında kendi minor sürümü ve mesajı olur."
+        "2.3.0 kendi minor sürümü ve sistem mesajıyla canlıdır; 2.2.1 kurulu istemci köprüsü korunur."
       ],
       "goals": [
         "content",
@@ -194,7 +194,11 @@
       ],
       "evidence": [
         "artifacts/liveops-foundations-20261102/server-tests.log",
-        "artifacts/liveops-foundations-20261102/browser-results.json"
+        "artifacts/liveops-foundations-20261102/browser-results.json",
+        "artifacts/release-230-v14-20261103/FINAL_STATUS.json",
+        "artifacts/release-230-v14-20261103/server/deployment-success.json",
+        "artifacts/release-230-v14-20261103/public-smoke.json",
+        "deliverables/GRIDSHARD_2.3.0_14/manifest.json"
       ]
     },
     {
@@ -1820,7 +1824,11 @@
       ],
       "evidence": [
         "artifacts/release-230-20261103/browser-results.json",
-        "artifacts/release-230-20261103/client-tests-final.log"
+        "artifacts/release-230-20261103/client-tests-final.log",
+        "artifacts/release-230-v14-20261103/FINAL_STATUS.json",
+        "artifacts/release-230-v14-20261103/server/deployment-success.json",
+        "artifacts/release-230-v14-20261103/public-smoke.json",
+        "deliverables/GRIDSHARD_2.3.0_14/manifest.json"
       ]
     }
   ],
@@ -1916,5 +1924,13 @@
       "performance_budget",
       "visual_acceptance"
     ]
+  },
+  "deployment_status": {
+    "server_release": "2.3.0",
+    "android_code": 14,
+    "aab_delivered": true,
+    "play_uploaded": false,
+    "device_update_verified": false,
+    "evidence": "artifacts/release-230-v14-20261103/FINAL_STATUS.json"
   }
 }

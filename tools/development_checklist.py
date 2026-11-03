@@ -108,6 +108,7 @@ def validate(document):
 
 def render(document, order):
     tasks = document['tasks']
+    deployed = document.get('deployment_status', {}).get('server_release') == '2.3.0'
     counts = Counter(t['status'] for t in tasks)
     summary = ', '.join(f'**{counts[status]} {label.lower()}**'
                         for status, label in STATUSES.items() if counts[status])
@@ -146,13 +147,18 @@ def render(document, order):
              'tek ekranın farklı stile kayması tamamlanmış geçiş sayılmaz.', '',
              '## 3. Hazır olan ile yapılacak olanın sınırı', '',
              '| Durum | İçerik |', '| --- | --- |',
-             '| Canlı 2.2.1 | Profil/takım düzeltmeleri, yeni mesaj sırası, mevcut mağaza/sandık/ödül sistemi. |',
-             '| Dalda hazır | 15 kilitli kozmetik, dönem tekil tahsisi, özgünlük/hash kontrolü, örnek coverage; `COS-01`. |',
+             ('| Canlı sunucu 2.3.0 | Profil/takım düzeltmeleri, ortak yalnız-ok geri düğmeleri ve sürüm mesajları; mevcut mağaza/sandık/ödül sistemi korunur. |' if deployed else
+              '| Canlı 2.2.1 | Profil/takım düzeltmeleri, yeni mesaj sırası, mevcut mağaza/sandık/ödül sistemi. |'),
+             ('| Canlıda kilitli | 15 kozmetik ve üç tema önizlemesi; tahsis/yayın sıfır, mevcut sahiplik korundu; `COS-01` tamam. |' if deployed else
+              '| Dalda hazır | 15 kilitli kozmetik, dönem tekil tahsisi, özgünlük/hash kontrolü, örnek coverage; `COS-01`. |'),
              f'| Bu turda hazırlanan | Kaynaklı araştırma, teknik tasarım, {len(tasks)} görev, sürümlü yayın kademeleri ve yerel plan doğrulama aracı. |',
              '| Uygulanacak | Yeni teklifler, seçim hakları, kapanış kurtarması, genel takvim kapısı, yeni ekranlar ve modlar. |', '',
-             'Bu plan üretim yapılandırmasını, Play Console ürünlerini veya canlı bakiyeleri değiştirmez. '
-             'İlk yeni yayın **minor** olmalıdır; aday 2.3.0. Sürüm numarası yayın anında '
-             'kesinleştirilir, 2.2.1 üzerine yeni özellik paketi diye tekrar yayımlanmaz.', '',
+             ('2.3.0 sunucu geçişi ve imzalı AAB code14 teslimi tamamlandı. Play yükleme/yayını '
+              've fiziksel cihaz güncellemesi bekliyor; RELEASE-00 bu nedenle açık. Sonraki geliştirme '
+              'kademesi 2.4.0 dönem içeriği ve ödül takvimidir.' if deployed else
+              'Bu plan üretim yapılandırmasını, Play Console ürünlerini veya canlı bakiyeleri değiştirmez. '
+              'İlk yeni yayın **minor** olmalıdır; aday 2.3.0. Sürüm numarası yayın anında '
+              'kesinleştirilir, 2.2.1 üzerine yeni özellik paketi diye tekrar yayımlanmaz.'), '',
              '## 4. Teslim dilimleri ve çıkış kapıları', '',
              '| Dilim | Somut teslim | Kapı / sonraki adım |', '| --- | --- | --- |',
              '| R0 | Ekonomi baz çizgisi, ekran prototipi, ilk deneyim ve ölçüm tanımı | BASE-01/02/03, ECON-01, UI-01 |',
@@ -165,10 +171,13 @@ def render(document, order):
              'S≈1–2, M≈3–5, L≈6–10 geliştirici günü taslak efor bandıdır; sanat, cihaz QA ve '
              'beklemeler ayrıca tahmin edilir. XL işe başlamadan daha küçük alt işler ayrılır. '
              'Efor bantlarının toplamı teslim tarihi olarak kullanılmaz.', '',
-             '**İlk yayın paketi RELEASE-00 / 2.3.0:** dalda hazır kilitli kozmetiği '
-             'görsel/sahiplik/native kontrollerinden geçirip yeni AAB ve sunucu paketi hazırla. '
-             'BASE-01/02 ve COS-04 paralel ilerleyebilir; COS-02/CARD-01/02 ve iki dönem '
-             'üretim stoğu 2.4.0 açılışının önkoşuludur, 2.3.0 önizlemesini bekletmez.', '',
+             ('**RELEASE-00 / 2.3.0:** sunucu ve AAB tamam; Play/cihaz doğrulamasını kapat. '
+              '**Sonraki paket RELEASE-01 / 2.4.0:** COS-02/CARD-01/02 ile iki döneme özgün içerik '
+              'hazırla; dönem ödülü ve takvimi kendi yayın kapısıyla aç.' if deployed else
+              '**İlk yayın paketi RELEASE-00 / 2.3.0:** dalda hazır kilitli kozmetiği '
+              'görsel/sahiplik/native kontrollerinden geçirip yeni AAB ve sunucu paketi hazırla. '
+              'BASE-01/02 ve COS-04 paralel ilerleyebilir; COS-02/CARD-01/02 ve iki dönem '
+              'üretim stoğu 2.4.0 açılışının önkoşuludur, 2.3.0 önizlemesini bekletmez.'), '',
              '## 5. İçerik kapasitesi ve karar kayıtları', '',
              '- İki dönem: 24 oyuncu + 6 takım ödül öğesi gerekir. Hazır stok 6 oyuncu + 9 takım: **18 ek oyuncu öğesi** gerekir.',
              '- İlk kozmetik mağazası ayrıca dört özgün öğe ister: ilk sanat hazırlığı **22 yeni öğe**. Bu öğeler henüz üretilmedi.',
