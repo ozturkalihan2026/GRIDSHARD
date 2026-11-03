@@ -31,6 +31,7 @@ sandık fiyat/olasılıkları, satın alma/reklam ayarları ve yeni modlar açı
 | İçe aktarma | 459 dosya, sıfır sorun |
 | Chrome telefon 320×568 / 393×852 | 6 geçti; tema/EN, önizleme sonrası sahiplik, takım ve sürüm mesajları |
 | Değiştirilmemiş 2.2.1 kaynak istemcisi | Yeni health köprüsünü kabul etti; yanlış protokolü reddetti |
+| Yeni istemci + eski gerçek API | İzole ortamda 2.3.0 arayüzü, değişmemiş 2.2.1 API'siyle gerçek bootstrap/ready/önizleme; sıfır tarayıcı hatası |
 | İmzalı Android derleme | APK ve AAB üretildi; aynı upload sertifikası, 538 gömülü web dosyası doğrulandı |
 
 Yerel kanıtlar `artifacts/release-230-20261103/`; CI ve teslimin son durumu
@@ -42,7 +43,7 @@ yerel testleri yerine CI'ın gerçek servis/imaj işinin sonucu ayrıca gerekir.
 Dosyalar `deliverables/GRIDSHARD_2.3.0_13/` altında; önceki 2.2.1 teslimi korunur.
 İmzalı AAB üretildi diye bütün yayın kapıları geçmiş sayılmaz.
 
-- [ ] Kaynak commit'i için bütün CI işleri başarılı.
+- [x] Kaynak `24a7d4388b4c6da984acc11616127d14ca01b603` için [bütün CI işleri başarılı](https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/41673144077): sunucu, istemci, gerçek PostgreSQL/Redis/üretim imajı, Chromium-Android, Safari-WebKit ve kaynak paketi.
 - [ ] Cihaz üzerinde görsel/hesap/ödeme/ödül regresyonu ve sanat kabulü kaydedildi.
 - [ ] Play iç/kapalı test güncellemesi doğrulandı; yükleme ürün sahibi tarafından yönetilir.
 - [ ] Güncel üretim ortamı, yedek/restore ve istemci uyumu doğrulanarak sunucu geçişi yapıldı.

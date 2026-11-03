@@ -24,11 +24,23 @@ korunsun, değişecekse ayrı planlansın. Çalışma codex/release-2-3-0 dalın
 - Android imzalı APK/AAB üretildi, aynı sertifika ve 538 gömülü web dosyası
   denetlendi. deliverables/GRIDSHARD_2.3.0_13/; code13. Önceki teslim silinmedi.
 - Aday durumu/CI/commit/teslim özeti artifacts/release-230-20261103/FINAL_STATUS.json.
-  Detay docs/RELEASE_2_3_0_ADAYI_20261103.md. CI gerçek PG/Redis/imaj ve iki
-  platform browser sonuçları kaynak commit'iyle ayrıca eşleştirilmelidir.
+  Detay docs/RELEASE_2_3_0_ADAYI_20261103.md. Uygulama kaynağı
+  24a7d4388b4c6da984acc11616127d14ca01b603 için CI 41673144077 TÜMÜ BAŞARILI:
+  server/client, gerçek PG/Redis/üretim imajı, Chromium-Android, Safari-WebKit,
+  tekrarlanabilir kaynak paketi. Sonraki belge commit'i uygulama kodunu değiştirmez.
+- Kaynak ZIP'i ayrı klasörde yeniden derlendi; AAB/APK'nin 538 gömülü web dosyası
+  birebir eşit. frozen-source-proof.json teslim klasöründe. Kaynak ZIP SHA256
+  ed48e08ff176b0de7b37cafa1336eb5e20ad50f84681a994d178ea3927892482.
+- old-api-new-client-proof.json: gerçek, değişmemiş 2.2.1 API'si + 2.3.0 arayüzü
+  izole 8893 testinde bootstrap/ready/önizleme geçti; prod erişimi/satın alma/maç yok.
+- GitHub bağlayıcısı PR oluşturmayı 403 ile reddetti; PR OLUŞMADI. Mevcut Git
+  erişimiyle quality.yml branch workflow_dispatch başarıyla başlatıldı ve bitti.
 - RELEASE-00 in_progress; fiziksel cihaz/görsel kabul, Play iç/kapalı test,
   üretim geçişi tamamlandı diye işaretlenmedi. Bu tur canlıya/Play'e/telefona
   dağıtım yapılmadı; 8891'e dokunulmadı. Üretim son doğrulanan 2.2.1'dir.
+- Play imzalı uygulama üstüne cihaz güncelleme testi AAB'nin Play test kanalından
+  yapılır. Upload sertifikalı APK farklı Play imzası üzerine güncelleme değildir;
+  test için mevcut kurulumun kaldırılması önerilmez.
 - Plan/checklist sanat yönüyle eşlendi: 51 iş; 42 todo, 1 in_progress,
   1 branch_ready, 7 later. Yeni mod/mağaza/sezon/ödül dağıtımı açılmadı.
 - İlk geniş server koşusunda eski health alanını actual sanan bir test,
