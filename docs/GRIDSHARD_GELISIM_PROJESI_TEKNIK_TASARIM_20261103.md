@@ -6,6 +6,12 @@ mevcut, dalda hazır veya yapılacak olduğunu izler.
 Bu dosyadaki yeni servis/rotalar/tablo isimleri **öneridir**; kodda mevcut
 oldukları veya canlıda çalıştıkları anlamına gelmez.
 
+**Yayın ayrımı:** 2.3.0 mevcut 15 kozmetiğin kilitli katalog/önizleme paketidir;
+dönem tahsisi ve başlangıcı açılmaz. Bu belgedeki tam stok, yeni modül,
+birleşik takvim ve ödül açılışı 2.4.0; yeni mağaza/seçim kasası 2.5.0;
+günlük deney 2.6.0 kapsamıdır. İki dönemlik üretim stoğu 2.3.0 önizlemesinin
+önkoşulu değildir. Sonraki yayınlar gelişim planı §9 ve checklist'te tanımlıdır.
+
 ## 1. Mevcut sistemin sınırları
 
 | Alan | Doğrulanmış kaynak | Kullanılacak temel / eksik |
@@ -145,6 +151,9 @@ her döngüde. Toplam **24 oyuncu + 6 takım = 30 öğe** gerekir. Eldeki 15 ö�
 öğesi artar. Dört bağımsız mağaza kozmetiği açılacaksa bunlar ayrıca üretilir:
 ilk hazırlık hedefi **18 + 4 = 22 yeni öğe**. Bu bir kapasite planıdır, sipariş
 verilmiş veya çizilmiş sanat sayısı değildir.
+
+Bu hesabın 18 öğelik kısmı 2.4.0 dönem açılışı, ayrı dört mağaza tasarımı
+2.5.0 içindir. İlk kilitli önizleme yayını 2.3.0 hazır 15 öğeyi kullanır.
 
 İlk mod takvimi mevcut ödül kaynaklarına ek yeni ödül isteyecekse bu 30 öğe
 hesabı yeterli değildir. Her yeni kaynak için `coverage` girdisi ve stok

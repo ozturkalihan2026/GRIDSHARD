@@ -82,6 +82,19 @@ def validate(document):
 
     for identity in ids:
         visit(identity)
+    releases = document.get('release_plan', [])
+    versions = [r['version'] for r in releases]
+    if not releases or len(versions) != len(set(versions)) or versions[0] != document['proposed_first_minor']:
+        raise ValueError('Release plan must start with the proposed first minor and use unique versions')
+    if any(not re.fullmatch(r'\d+\.\d+\.0', version) for version in versions):
+        raise ValueError('Feature releases must have a full minor version')
+    if versions != sorted(versions, key=lambda v: tuple(map(int, v.split('.')))):
+        raise ValueError('Release versions must be in publication order')
+    for release in releases:
+        if (release['stage'] not in document['stages'] or not release['gate_tasks']
+                or set(release['gate_tasks']) - set(ids)
+                or any(not release.get(k) for k in ('name', 'scope', 'keep_closed', 'exit'))):
+            raise ValueError(f'Invalid release gate: {release["version"]}')
     for t in tasks:
         if t['status'] in {'done', 'branch_ready'}:
             if any(by_id[d]['status'] not in {'done', 'branch_ready'} for d in t['depends_on']):
@@ -127,7 +140,7 @@ def render(document, order):
              '| Durum | İçerik |', '| --- | --- |',
              '| Canlı 2.2.1 | Profil/takım düzeltmeleri, yeni mesaj sırası, mevcut mağaza/sandık/ödül sistemi. |',
              '| Dalda hazır | 15 kilitli kozmetik, dönem tekil tahsisi, özgünlük/hash kontrolü, örnek coverage; `COS-01`. |',
-             '| Bu turda hazırlanan | Kaynaklı araştırma, teknik tasarım, 50 görev, bağımlılık/kabul ölçütleri ve yerel plan doğrulama aracı. |',
+             f'| Bu turda hazırlanan | Kaynaklı araştırma, teknik tasarım, {len(tasks)} görev, sürümlü yayın kademeleri ve yerel plan doğrulama aracı. |',
              '| Uygulanacak | Yeni teklifler, seçim hakları, kapanış kurtarması, genel takvim kapısı, yeni ekranlar ve modlar. |', '',
              'Bu plan üretim yapılandırmasını, Play Console ürünlerini veya canlı bakiyeleri değiştirmez. '
              'İlk yeni yayın **minor** olmalıdır; aday 2.3.0. Sürüm numarası yayın anında '
@@ -135,7 +148,7 @@ def render(document, order):
              '## 4. Teslim dilimleri ve çıkış kapıları', '',
              '| Dilim | Somut teslim | Kapı / sonraki adım |', '| --- | --- | --- |',
              '| R0 | Ekonomi baz çizgisi, ekran prototipi, ilk deneyim ve ölçüm tanımı | BASE-01/02/03, ECON-01, UI-01 |',
-             '| R1 — ilk minor adayı | İki dönemlik özgün stok/kart hazırlığı, güvenli ödül tanımı, tema vitrini, birleşik yayın kapısı | RELEASE-01; stok veya kart eksikse takvim açılmaz |',
+             '| R1 | Önce 2.3.0 kilitli kozmetik; sonra 2.4.0 dönem ödülü/içerik açılışı | RELEASE-00 → RELEASE-01; 2.3.0 için yeni sezon/kart stoğu beklenmez |',
              '| R2 — sonraki minor | Bir garantili parça teklifi, ayrı dört mağaza kozmetiği, seçim kasası ve kapanış hakları | RELEASE-02; mevcut ürün/ödeme hakları korunur |',
              '| R3 | Günlük Devre Deneyi ve tek etkinlik vitrini; öğrenme/ustalık işleri ayrı tamamlanır | RELEASE-03; ölçüm ve koruyucu kalite kararı |',
              '| R4 | PvE Seferi ve takım ortak hedefi; daha sonra draft/asenkron/BO3/boss/2v2 araştırmaları | Her mod ayrı kapsam/ölçüm/yayın kapısı alır |', '',
@@ -144,11 +157,10 @@ def render(document, order):
              'S≈1–2, M≈3–5, L≈6–10 geliştirici günü taslak efor bandıdır; sanat, cihaz QA ve '
              'beklemeler ayrıca tahmin edilir. XL işe başlamadan daha küçük alt işler ayrılır. '
              'Efor bantlarının toplamı teslim tarihi olarak kullanılmaz.', '',
-             '**İlk çalışma paketi:** BASE-01 ve BASE-02 ile ekonomi/ölçüm bazını çıkar; '
-             'COS-04 ile kaynak/stok sözleşmesini genişlet. COS-02 için sanat briefleri '
-             'bu sırada hazırlanabilir. BASE-03 → UI-01 ve ECON-01 bunların ardından '
-             'ürün/ekran kararlarını somutlaştırır. Bu başlangıç yeni ürün fiyatı veya '
-             'canlı sezon açılışı gerektirmez.', '',
+             '**İlk yayın paketi RELEASE-00 / 2.3.0:** dalda hazır kilitli kozmetiği '
+             'görsel/sahiplik/native kontrollerinden geçirip yeni AAB ve sunucu paketi hazırla. '
+             'BASE-01/02 ve COS-04 paralel ilerleyebilir; COS-02/CARD-01/02 ve iki dönem '
+             'üretim stoğu 2.4.0 açılışının önkoşuludur, 2.3.0 önizlemesini bekletmez.', '',
              '## 5. İçerik kapasitesi ve karar kayıtları', '',
              '- İki dönem: 24 oyuncu + 6 takım ödül öğesi gerekir. Hazır stok 6 oyuncu + 9 takım: **18 ek oyuncu öğesi** gerekir.',
              '- İlk kozmetik mağazası ayrıca dört özgün öğe ister: ilk sanat hazırlığı **22 yeni öğe**. Bu öğeler henüz üretilmedi.',
@@ -167,8 +179,24 @@ def render(document, order):
              '| §6 On mod önerisi | LIVE-02/04/05/06/07/08/09/10/11/12; giriş LIVE-03 |',
              '| §7 Kalıcı gelişim | BASE-03, UI-04/05/06, PLAY-01, BALANCE-01, QA-01 |',
              '| §8 Ölçüm | BASE-02, ANALYT-01/02, ECON-01 |',
-             '| §9 Aşamalar | OPS-01/02 ve RELEASE-01/02/03 |', '',
+             '| §9 Aşamalar | OPS-01/02 ve RELEASE-00/01/02/03; sürüm planı |', '',
              '## 7. İş kontrol listesi', '']
+    publication = ['### 4.1. Sürümlere göre açık yayın planı', '',
+                   '| Sürüm | Oyuncuya gelen kapsam | Kapalı kalan | Çıkış kapısı |',
+                   '| --- | --- | --- | --- |']
+    for release in document['release_plan']:
+        publication.append(f'| **{release["version"]} — {release["name"]}** | {release["scope"]} | '
+                           f'{release["keep_closed"]} | {", ".join(release["gate_tasks"])}: {release["exit"]} |')
+    publication += ['', 'Sürüm numaraları planlanan sıra içindir; takvim tarihi veya kendiliğinden '
+                    'yayın kararı değildir. Her pakette ortak tamamlanma kapısı uygulanır. '
+                    'Hazır olmayan özellik kapalı kalır; eski ödülü tekrar vererek takvim doldurulmaz.', '',
+                    'Her yayın: geliştirme → yerel/cihaz kabulü → iç test → kapalı test → '
+                    'kontrollü üretim → gözlem. Sunucu yeni ve önceki desteklenen istemciyle '
+                    'uyumlu hazırlanır; oyuncu mağazadan güncelleyene kadar güvenli davranır. '
+                    'Hata düzeltmesi mevcut minor üstünde PATCH, yeni özellik sonraki MINOR; '
+                    'büyük dönüşüm için MAJOR ayrıca planlanır. Yeni bir 3.0.0 sözü verilmez.', '']
+    position = lines.index('## 5. İçerik kapasitesi ve karar kayıtları')
+    lines[position:position] = publication
     for stage, label in document['stages'].items():
         lines += [f'### {stage} — {label}', '']
         for t in (t for t in tasks if t['stage'] == stage):

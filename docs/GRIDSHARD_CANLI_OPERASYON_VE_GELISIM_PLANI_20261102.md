@@ -5,8 +5,8 @@
 Bu planın ürün yönü korunarak mağaza/sandık/ödül araştırması genişletildi.
 Yeni uygulama başlangıç noktası:
 **[Gelişim kontrol listesi](GRIDSHARD_GELISIM_CHECKLIST_20261103.md)**.
-50 işin kararlı kimliği, bağımlılığı, rolü, mevcut kaynak bağı, önerilen yeni
-teslimi ve kabul ölçütleri vardır. Bir temel dalda hazır, 42 iş yapılacak,
+51 işin kararlı kimliği, bağımlılığı, rolü, mevcut kaynak bağı, önerilen yeni
+teslimi ve kabul ölçütleri vardır. Bir temel dalda hazır, 43 iş yapılacak,
 yedi iş ölçüme bağlı ileri aşamadır. Yeni mağaza ve modlar uygulanmış sayılmaz.
 
 - [Mağaza ve ödül araştırması](GRIDSHARD_MAGAZA_ODUL_ARASTIRMASI_20261103.md): resmî kaynaklar, tarihsel örnekler ve GRIDSHARD kararları.
@@ -32,8 +32,9 @@ strateji problemi, hafta boyunca katkıda bulunacağı takım hedefi ve her dön
 gerçekten yeni bir koleksiyon ödülü. Mevcut savaşın okunabilirliği, bağlantı
 güvenilirliği ve adil karşılaşmalar bu yapının temelidir.
 
-İlk uygulama sırası: ölçüm ve ilk deneyim → benzersiz dönem ödülleri → günlük
-Devre Deneyi → kısa PvE Seferi → takım ortak hedefi → eşit seviyeli Draft Arenası.
+Güncel yayın sırası: kilitli kozmetik önizlemesi → ölçüm/üretim hazırlığıyla
+benzersiz dönem ödülleri → mağaza ve seçim kasası → günlük Devre Deneyi →
+kısa PvE Seferi → takım ortak hedefi/ustalık → koşullu eşit seviyeli Draft Arenası.
 Bu sıra GRIDSHARD'ın mevcut sunucu, AI ve 24 modüllük katalog yapısına göre
 yaptığımız teknik değerlendirmedir; dış kaynakların GRIDSHARD için ölçtüğü bir
 başarı sonucu değildir.
@@ -202,19 +203,69 @@ Yeni olaylar mümkün olduğunca mevcut analiz altyapısına eklenmeli: `event_v
 sürümü ve kural/dönem kimliği taşır; oyuncu metinleri, erişim belirteçleri ve
 gereksiz kişisel bilgiler olay alanlarına girmez.
 
-## 9. Önerilen uygulama takvimi
+## 9. Sürümlere göre açık yayın planı — 3 Kasım 2026
 
-| Aşama | Teslim | Çıkış ölçütü |
+**Bir sonraki hedef sürüm 2.3.0'dır: kilitli kozmetik ve önizleme paketi.**
+Kozmetiklerin oyunda görünmesi ile sezon/etkinlikte kazanılmaya başlaması
+ayrı yayın adımlarıdır. Önceki geniş ilk-minor paketi bu iki kapıya ayrıldı:
+2.3.0 görünürlük/kilitli katalog; 2.4.0 yeterli yeni içerikle ödül ve dönem açılışı.
+Hazır önizlemeyi, iki dönemlik yeni kart ve sanat üretimi bekletmeyecek.
+
+| Sürüm | Oyuncuya gelecek içerik | Yayın için tamamlanacak kademe |
 | --- | --- | --- |
-| **2.2.1** | Profil/takım erişimi, görseller, yeni sırada sürümlü sistem mesajları. | CI yeşil, veri korumalı AWS geçişi, imzalı AAB denetimi. |
-| **Sonraki minor hazırlığı** | Kilitli 15 kozmetik, tekil dönem tahsisi, içerik özeti ve stok tükenme koruması. | Kilit/sahiplik, yayın taslağı, gerçek ödül yolu ve tekrar testleri; mobil önizleme. |
-| **İlk iki haftalık çalışma** | Baz ölçümler, üretim takvimi ve Devre Deneyi prototipi. | Teknik kalite, anlaşılabilir hedef, tek seferlik ödül. |
-| **Sonraki iki haftalık çalışma** | Yeni kozmetik stoğu, ilk deney etkinliği ve rapor. | Kaynak bütçesi, katılım, kullanım ve geri dönüş analizi. |
-| **Sonraki dört haftalık çalışma** | PvE Seferi ve takım ortak hedefi prototipi. | Duraklar arası kayıt, tekrar istismarı koruması ve cihaz testi. |
-| **Ölçümlere bağlı aşama** | Eşitlenmiş draft, ustalık, asenkron meydan okuma. | Yeterli içerik stoğu, uygun oyuncu hacmi ve açık başarı ölçütleri. |
+| **2.2.1 — mevcut** | Profil/takım düzeltmeleri, yeni çark ve sıralı güncelleme mesajları. | Sunucu ve imzalı AAB teslimi tamamlandı; Play yayını kullanıcı tarafından yönetiliyor. |
+| **2.3.0 — bir sonraki yayın** | Üç temada 15 kilitli oyuncu/takım kozmetiği; adlar, önizlemeler ve açık kilit açıklaması. | `COS-01` + `RELEASE-00`: sahiplik/kuşanma reddi, TR/EN, iki mobil boyut, native API, regresyon/CI, yeni sürüm mesajı, veri koruyan sunucu ve yeni imzalı AAB. |
+| **2.4.0 — dönem ödülü ve içerik açılışı** | Tekil dönem ödülleri, tema vitrini, sürümlü ödül tanımları ve birleşik takvim/yayın kapısı. | `RELEASE-01`: ekonomi baz çizgisi, en az 18 yeni oyuncu kozmetiği, iki döneme birer hazır modül, doğru teslim/kayıt/restore ve operatör açılışı. |
+| **2.5.0 — mağaza ve seçim kasası** | Garantili hedefli parça teklifi, dört ayrı mağaza kozmetiği, seçim kasası ve daha anlaşılır mağaza; kapanışta kazanılmış hakkın korunması. | `RELEASE-02`: fiyat/miktar/limit kararı, tek hak/tek teslim, atomik harcama, bağlantı kopması/yanlış seçim/iade ve mağaza politikası kontrolleri. |
+| **2.6.0 — günlük Devre Deneyi** | Sunucuda doğrulanan günlük strateji problemi, ilk başarı ödülü, tekrar deneme ve tek etkinlik vitrini. | `RELEASE-03`: kural/tohum/dönem sabitliği, tek ödül, gün değişimi, yeni etkinlik için yeterli özgün stok ve baz ölçüm değerlendirmesi. |
+| **2.7.0 — PvE Seferi** | Üç duraklı sefer, duraklar arasında kayıt ve farklı rakip dizileri. | `LIVE-04`: 2.6.0 teknik/ekonomi değerlendirmesi olumlu; koşu kurtarma, ilk/tekrar ödülü, yeni içerik ve ortak yayın kontrolleri. |
+| **2.8.0 — takım ortak hedefi ve ustalık** | Farklı zamanlarda takım katkısı, kişisel hak/ödül ve kalıcı modül/çekirdek ustalık vitrini. | `LIVE-05/07`: üyelik/takım değiştirme, katkı tavanı, küçük takım erişimi, ustalık doğrulaması ve yeni takım ödülü. |
+| **2.9.0 — koşullu draft pilotu** | Sınırlı etkinlik penceresinde eşit seviyeli kart seçimi. | `LIVE-06` + `ANALYT-02`: yeterli aktif rakip/bekleme ve adalet verisi, seçim/kopma testi ve ayrı ödül bütçesi; uygun değilse ertelenir. |
 
-Süreler tek geliştirici için kesin teslim sözü değildir; sanat üretimi, test
-sonuçları ve aktif oyuncu verisiyle yeniden tahminlenecek çalışma bloklarıdır.
-Her aşama daha küçük bir prototiple doğrulanır. Yeni modların tamamını aynı
-anda canlıya almak yerine bir sonraki yatırımın kararını önceki aşamanın
-oyuncu ve kalite sonuçları belirler.
+### 9.1. 2.3.0'a tam olarak ne giriyor?
+
+- **Kutup Işığı, Güneş Ocağı, Derin Akım** temalarının her birinde oyuncu
+  çerçevesi, profil zemini, takım arması, takım çerçevesi ve takım isim rengi:
+  toplam 15 öğe. Mevcut dal hazırlığı bu paketin temelidir.
+- Oyuncu ve takım ekranlarında doğru önizleme, TR/EN ad ve kilit nedeni.
+  Henüz açılmayan ödül için gerçek kazanılmış sahiplik veya kesin tarih gösterilmez.
+- Sunucu sahiplik kontrolü: öğe görünür olsa da kazanılmadan kuşanılamaz.
+  Mevcut oyuncu/takım görünümü ve sahip oldukları öğeler korunur.
+- Dönem ödülü kayıt/doğrulama kodu pakete girer; yeni tahsis/yayın listesi
+  boş kalır. Sezon ve turnuva başlangıç ayarları değişmez.
+- Güncelleme mesajı 2.3.0 olarak eklenir, mevcut mesajlar korunur. İstemci,
+  sunucu ve yeni AAB aynı sürümü taşır; 2.2.1 AAB yeniden adlandırılıp kullanılmaz.
+
+**2.3.0 kapsamında açılmayacaklar:** yeni sezon/turnuva, otomatik kozmetik
+dağıtımı, yeni mağaza ürünü, seçim kasası, yeni kart ve yeni oyun modu.
+Mevcut sandık fiyat/olasılıkları ve premium koşulları değişmez.
+`COS-02`, `CARD-01/02`, iki dönemlik stok ve yeni ekonomi ayarı bu önizleme
+yayınının önkoşulu değildir; 2.4.0 açılışının önkoşuludur.
+
+### 9.2. Hangi geliştirme noktasında yayın çıkarıyoruz?
+
+1. **Kapsam ve geliştirme:** ilgili sürümün görevleri/kabul ölçütleri tamamlanır;
+   bir sonraki sürümün yarım özelliği açık biçimde pakete karışmaz.
+2. **Yerel ve cihaz kabulü:** gerçek API, sahiplik/ödül tekrar koruması,
+   eski hesaplar, TR/EN, 320×568/393×852 ve native dönüş/erişim kontrol edilir.
+3. **İç test:** CI, imzalı yeni AAB, sürüm mesajı ve veri koruyan sunucu
+   paketi hazırlanır. Yeni/önceki desteklenen istemci uyumluluğu doğrulanır.
+4. **Kapalı test:** uygulama Play'den güncellenerek hesap/ödeme/ödül
+   senaryoları cihazda doğrulanır. Kalıcı veriye reset uygulanmaz.
+5. **Kontrollü üretim:** sunucu ve istemci uyumlu sırayla yayımlanır.
+   Yeni etkinlik/ödül ancak ilgili içerik kapısı geçilmişse açılır.
+6. **Yayın sonrası gözlem:** çökme/bağlantı, bekleyen teslimler, tekrar ödül,
+   ekonomi ve oyuncu dönüşü incelenir. Sorunda yeni dağıtım/satış kapatılır;
+   oyuncunun kazanılmış hakkı silinmez.
+
+Her küçük düzeltme için bir sonraki büyük paketi beklemeyiz: örneğin 2.3.0
+sonrası hata düzeltmeleri **2.3.1, 2.3.2**; yeni özellik paketi **2.4.0** olur.
+Büyük kapsam/oyun veya protokol dönüşümünde MAJOR ayrıca değerlendirilir.
+2v2, BO3, asenkron meydan okuma ve özel boss işleri için bugün 3.0.0 veya
+kesin tarih sözü verilmez; prototip ve ölçüm sonucunda ayrı yayın planı yapılır.
+
+Sürüm numaraları hedef sıra, tarihler ise hazır olma durumuna bağlıdır.
+Özellikle 2.7.0 sonrası kapsamlar önceki pilot verisiyle yeniden değerlendirilir.
+Sadece takvim dolsun diye aynı ödül tekrar verilmez veya hazır olmayan sezon açılmaz.
+Kaynak görev/sürüm eşlemesi checklist'in tek JSON kaynağında da tutulur;
+bu bölümün değişmesi ilgili yayın kaydına ve görev kapısına birlikte işlenir.

@@ -18,7 +18,7 @@
   ],
   "stages": {
     "R0": "Baz çizgi ve tasarım",
-    "R1": "Dönem ödülü/içerik temeli — ilk minor adayı",
+    "R1": "Kilitli kozmetik önizlemesi → dönem ödülü/içerik açılışı",
     "R2": "Mağaza ve seçim kasası — sonraki minor",
     "R3": "Günlük deney ve öğrenme döngüsü",
     "R4": "Ölçüme bağlı büyüme"
@@ -1626,7 +1626,7 @@
     },
     {
       "id": "RELEASE-01",
-      "title": "İlk minor: yeni dönem ödülü ve içerik temelini yayıma hazırla",
+      "title": "2.4.0 yeni dönem ödülü ve içerik açılışını yayıma hazırla",
       "stage": "R1",
       "owner": "Ürün / QA / operasyon",
       "effort": "L",
@@ -1639,7 +1639,8 @@
         "OPS-01",
         "OPS-02",
         "UI-04",
-        "BALANCE-01"
+        "BALANCE-01",
+        "RELEASE-00"
       ],
       "existing_paths": [
         ".github/workflows/quality.yml",
@@ -1652,7 +1653,7 @@
       ],
       "acceptance": [
         "Ödül kilidi, iki dönem stok/kart hazırlığı, gerçek teslim, restart/restore ve TR/EN mobil kanıtları tamamlanır.",
-        "Aday 2.3.0 için sürüm notu/CI/imzalı AAB ve veri koruyan dağıtım hazırlanır; bu checklist tek başına yayın izni veya canlı değişim değildir."
+        "2.4.0 için sürüm notu/CI/imzalı AAB ve veri koruyan dağıtım hazırlanır; takvim ancak içerik kapısı geçildiğinde operatörce açılır."
       ],
       "goals": [
         "operations",
@@ -1667,7 +1668,7 @@
     },
     {
       "id": "RELEASE-02",
-      "title": "İkinci minor: mağaza ve seçim kasası pilotunu yayıma hazırla",
+      "title": "2.5.0 mağaza ve seçim kasası pilotunu yayıma hazırla",
       "stage": "R2",
       "owner": "Ürün / QA / operasyon",
       "effort": "L",
@@ -1706,7 +1707,7 @@
     },
     {
       "id": "RELEASE-03",
-      "title": "Üçüncü minor: günlük deney pilotunu değerlendirmeye aç",
+      "title": "2.6.0 günlük deney pilotunu değerlendirmeye aç",
       "stage": "R3",
       "owner": "Ürün / QA / operasyon",
       "effort": "L",
@@ -1773,6 +1774,128 @@
         7
       ],
       "evidence": []
+    },
+    {
+      "id": "RELEASE-00",
+      "title": "2.3.0 kilitli kozmetik ve önizleme paketini yayıma hazırla",
+      "stage": "R1",
+      "owner": "İstemci / backend / QA / operasyon",
+      "effort": "M",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "COS-01"
+      ],
+      "existing_paths": [
+        "server/data/cosmetic_releases_v1.json",
+        "server/app/cosmetic_releases.py",
+        "client/src/liveops-cosmetic-catalog.js",
+        "e2e/liveops-cosmetics.spec.js",
+        "server/tests/test_cosmetic_releases.py",
+        "tools/release_guard.py",
+        "server/data/game_updates.json"
+      ],
+      "proposed_paths": [
+        "docs/planning/release-230-evidence.md"
+      ],
+      "acceptance": [
+        "Üç temadaki 15 kozmetik oyuncu/takım ekranında TR/EN önizlenir; kilit nedeni açık, henüz açılmadı bilgisi doğrudur; yeni sahiplik verilmez.",
+        "Tahsis/yayın listeleri boş ve yarışma başlangıçları kapalı kalır; mevcut oyuncu/takım sahipliği, fiyatlar ve sandık oranları korunur.",
+        "320/393 px, native API erişimi, sahip olunmayanı kuşanma reddi, mevcut regresyon/performans ve gerçek ödül yolu uyumluluğu doğrulanır.",
+        "2.3.0 sürüm/notları, başarılı CI, veri koruyan sunucu geçişi ve yeni imzalı AAB tamamlanır; 2.2.1 AAB yeniden adlandırılarak kullanılmaz."
+      ],
+      "goals": [
+        "content",
+        "presentation",
+        "rewards",
+        "operations"
+      ],
+      "old_plan_sections": [
+        4,
+        9
+      ],
+      "evidence": []
+    }
+  ],
+  "release_plan": [
+    {
+      "version": "2.3.0",
+      "name": "Kilitli kozmetik ve önizleme",
+      "stage": "R1",
+      "gate_tasks": [
+        "RELEASE-00"
+      ],
+      "scope": "Kutup Işığı, Güneş Ocağı ve Derin Akım: 15 kilitli oyuncu/takım öğesi, adlar, önizleme ve açık kilit açıklaması.",
+      "keep_closed": "Sezon/turnuva başlangıcı, yeni ödül tahsisi, yeni mağaza ürünü ve yeni modlar.",
+      "exit": "Kilit/kuşanma, eski sahiplik, TR/EN ve iki mobil boyut; sürüm mesajı, yeşil CI, veri koruyan sunucu ve yeni imzalı AAB."
+    },
+    {
+      "version": "2.4.0",
+      "name": "Yeni dönem ödülleri ve içerik takvimi",
+      "stage": "R1",
+      "gate_tasks": [
+        "RELEASE-01"
+      ],
+      "scope": "Birleşik yayın kapısı, iki dönemlik özgün ödül/kart stoğu, tema vitrini ve sürümlü ödül tanımları.",
+      "keep_closed": "Hazırlanmamış dönemler, hedefli mağaza/seçim kasası ve yeni oyun modları.",
+      "exit": "En az 18 yeni oyuncu kozmetiği, iki döneme birer hazır modül, ekonomi/kayıt/restore kanıtı; operatör başlangıç kararı."
+    },
+    {
+      "version": "2.5.0",
+      "name": "Mağaza ve seçim kasası",
+      "stage": "R2",
+      "gate_tasks": [
+        "RELEASE-02"
+      ],
+      "scope": "Garantili hedefli parça teklifi, dört ayrı mağaza kozmetiği, seçim kasası, mağaza ekranı ve kapanışta hak koruma.",
+      "keep_closed": "Yeni gerçek para paketleri, web ödeme, ücretli yeniden çekiliş ve yeni para birimi.",
+      "exit": "Fiyat/miktar kararı, atomik limit/harcama, tek teslim, yanlış seçenek/bağlantı kopması/iade ve platform kontrolleri."
+    },
+    {
+      "version": "2.6.0",
+      "name": "Günlük Devre Deneyi",
+      "stage": "R3",
+      "gate_tasks": [
+        "RELEASE-03"
+      ],
+      "scope": "Sunucuda doğrulanan günlük problem, ilk başarı ödülü, tekrar deneme ve tek etkinlik vitrini.",
+      "keep_closed": "PvE seferi, takım ortak hedefi ve ek kalıcı PvP kuyrukları.",
+      "exit": "Tohum/kural/dönem sabitliği, tek ödül, gün değişimi, yeni kaynak için yeterli ödül stoğu ve baz ölçüm kararı."
+    },
+    {
+      "version": "2.7.0",
+      "name": "PvE Seferi",
+      "stage": "R4",
+      "gate_tasks": [
+        "LIVE-04"
+      ],
+      "scope": "Üç duraklı sefer, duraklar arası kayıt ve farklı rakip dizileri; günlük deneyden ayrı içerik.",
+      "keep_closed": "Takım ortak hedefi, draft ve 2v2.",
+      "exit": "2.6.0 teknik/ekonomi değerlendirmesi olumlu; kayıt/kurtarma, ilk/tekrar ödülü ve yeni sefer içeriği hazır; ortak yayın kapısı geçildi."
+    },
+    {
+      "version": "2.8.0",
+      "name": "Takım ortak hedefi ve ustalık",
+      "stage": "R4",
+      "gate_tasks": [
+        "LIVE-05",
+        "LIVE-07"
+      ],
+      "scope": "Asenkron takım katkısı, kişisel uygunluk/ödül hakkı ve kalıcı modül/çekirdek ustalık vitrini.",
+      "keep_closed": "Draft, BO3 ve dört oyunculu gerçek zamanlı mod.",
+      "exit": "Üyelik/takım değiştirme/katkı tavanı, küçük takım erişimi, ustalık doğrulaması ve yeni özgün takım ödülü hazır."
+    },
+    {
+      "version": "2.9.0",
+      "name": "Eşit seviyeli Draft Arenası — koşullu pilot",
+      "stage": "R4",
+      "gate_tasks": [
+        "LIVE-06",
+        "ANALYT-02"
+      ],
+      "scope": "Sınırlı etkinlik penceresinde güncel kartlarla seçim ve seviye eşitleme.",
+      "keep_closed": "Kalıcı ayrı kuyruk, BO3 ve 2v2.",
+      "exit": "Yeterli aktif rakip/bekleme ve adalet verisi, seçim/kopma testi ve bağımsız ödül bütçesi; uygun değilse sürüm ertelenir."
     }
   ]
 }

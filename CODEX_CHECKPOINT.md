@@ -1,3 +1,30 @@
+# SON DURUM — 3 Kasım 2026: sürümlü yayın kademeleri açıkça tanımlandı
+
+Kullanıcı kilitli kozmetik dahil bir sonraki sürümü ve hangi geliştirme
+kademelerinde yayın yapılacağını gelişim planına açıkça eklememizi istedi.
+
+- docs/GRIDSHARD_CANLI_OPERASYON_VE_GELISIM_PLANI_20261102.md §9 yeniden yazıldı.
+- İlk geniş paket ikiye ayrıldı: **2.3.0 kilitli 15 kozmetik/önizleme**, ardından
+  **2.4.0 iki dönemlik özgün içerikle dönem ödülü ve takvim açılışı**.
+  18 yeni oyuncu kozmetiği ve iki dönemlik yeni modül stoğu 2.4.0 kapısıdır;
+  2.3.0 önizlemesini bekletmez. 2.3.0 yeni ödül dağıtmaz, sezon/turnuva açmaz.
+- 2.5.0 garantili mağaza/seçim kasası + dört ayrı mağaza kozmetiği;
+  2.6.0 günlük Devre Deneyi; 2.7.0 PvE Seferi; 2.8.0 takım ortak hedefi/ustalık;
+  2.9.0 yeterli rakip/veri varsa eşit seviyeli draft pilotu. Tarih sözü yok.
+- Her yayında geliştirme → yerel/cihaz kabulü → iç test → kapalı test →
+  kontrollü üretim → gözlem. Yeni sürüm mesajı, CI, yeni imzalı AAB ve veri
+  koruyan sunucu geçişi gerekir. Bu tur belge/plan işi; canlıya yayın yapılmadı.
+- Hata düzeltmesi PATCH (2.3.1...), yeni özellik MINOR. 2v2/BO3/asenkron/boss
+  ileri işlerdir; bugün 3.0.0 veya kesin tarih atanmadı.
+- JSON'a yedi `release_plan` kaydı ve `RELEASE-00` eklendi; RELEASE-01/02/03
+  sırasıyla 2.4.0/2.5.0/2.6.0 kapıları oldu. Şimdi **51 iş: 1 dalda hazır,
+  43 yapılacak, 7 ileri aşama**. Checklist aynı kaynaktan yeniden üretildi.
+- tools/development_checklist.py sürüm sırası, tekillik, ilk minor ve geçerli
+  görev kapılarını da doğrular. Teknik tasarım ve kozmetik rehberi yeni yayın
+  ayrımıyla eşlendi. Görevlerde tamamlandı işareti ilerletilmedi.
+
+---
+
 # SON DURUM — 3 Kasım 2026: araştırma, proje ve uygulanabilir gelişim checklist'i hazır
 
 Kullanıcı önceki gelişim planını; benzer oyunların mağaza/sandık/ödülleri,

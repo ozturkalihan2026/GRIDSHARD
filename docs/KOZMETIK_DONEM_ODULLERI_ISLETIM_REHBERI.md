@@ -4,6 +4,12 @@ Durum: sonraki minor sürüm hazırlığı, `codex/liveops-foundations`. Bu dal
 2.2.1 AAB/sunucu paketine dahil değildir. İlk 15 öğe görünür katalog seçenekleri
 olarak hazırlanır; yeni hesap veya takımda hiçbiri açılmaz. Mevcut haklar korunur.
 
+Yayın hedefleri: **2.3.0 kilitli katalog ve önizleme**, **2.4.0 yeterli özgün
+stokla dönem ödülü/başlangıç açılışı**, **2.5.0 ayrı kozmetik mağazası ve seçim
+kasası**. 2.3.0 için aşağıdaki `reserve`/`publish` örnekleri çalıştırılmaz;
+tahsis/yayın listesi boş ve başlangıç ayarları kapalı kalır. İki dönemlik yeni
+kart/kozmetik hazırlığı 2.4.0'ın kapısıdır, önizleme paketini bekletmez.
+
 ## Kaynak ve üretilen dosyalar
 
 `server/data/cosmetic_releases_v1.json` tek kaynaktır. Öğeler `items`, dönem
