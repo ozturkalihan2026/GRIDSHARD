@@ -6,8 +6,9 @@ Bu planın ürün yönü korunarak mağaza/sandık/ödül araştırması genişl
 Yeni uygulama başlangıç noktası:
 **[Gelişim kontrol listesi](GRIDSHARD_GELISIM_CHECKLIST_20261103.md)**.
 51 işin kararlı kimliği, bağımlılığı, rolü, mevcut kaynak bağı, önerilen yeni
-teslimi ve kabul ölçütleri vardır. Bir temel dalda hazır, 43 iş yapılacak,
-yedi iş ölçüme bağlı ileri aşamadır. Yeni mağaza ve modlar uygulanmış sayılmaz.
+teslimi ve kabul ölçütleri vardır. Bir temel dalda hazır, 42 iş yapılacak,
+bir iş (2.3.0 yayın paketi) çalışılıyor, yedi iş ölçüme bağlı ileri aşamadır.
+Yeni mağaza ve modlar uygulanmış sayılmaz.
 
 - [Mağaza ve ödül araştırması](GRIDSHARD_MAGAZA_ODUL_ARASTIRMASI_20261103.md): resmî kaynaklar, tarihsel örnekler ve GRIDSHARD kararları.
 - [Teknik proje tasarımı](GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md): veri/API, hak/işlem, içerik kapasitesi ve ekran sözleşmeleri.
@@ -26,6 +27,13 @@ modları henüz uygulanmadı. Kozmetik ve dönem ödülü temeli bu planla birli
 `codex/liveops-foundations` dalında hazırlanmıştır; 2.2.1 yayın paketi ayrı tutulur.
 
 ## 1. Önerilen yön
+
+**Bütün sürümler için sanat kararı:** mevcut onaylı boyalı/hacimli aile,
+belirgin siluet, koyu lacivert yüzey ve fiziksel altın/turkuaz bileşenler
+korunur. 2.3.0 bu yönü değiştirmez. Yön değişecekse önce brief, yan yana
+örnekler, varlık/ekran envanteri, performans ve aşamalı geçiş işleri hazırlanır.
+Kabul koşulları [ortak sanat yönü belgesinde](SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md)
+ve checklist'in ortak tamamlanma tanımındadır.
 
 Oyuncunun tekrar gelmesi için üç somut neden sunalım: bugün çözeceği kısa bir
 strateji problemi, hafta boyunca katkıda bulunacağı takım hedefi ve her dönemde

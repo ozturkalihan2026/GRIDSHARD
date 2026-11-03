@@ -13,13 +13,26 @@ test('2.2.1 boot gate uses actual release while v8 health alias remains compatib
   assert.equal((await make({pvp_protocol_version:1}).check()).ok,false);
   assert.equal((await make({status:'degraded'}).check()).ok,false);
 });
-test('active web/native/package versions agree on 2.2.1 and Android code 12',()=>{
+test('active web/native/package versions agree on 2.3.0 and Android code 13',()=>{
   const root=path.resolve(__dirname,'../..');const read=p=>fs.readFileSync(path.join(root,p),'utf8');
-  assert.equal(JSON.parse(read('package.json')).version,'2.2.1');
+  assert.equal(JSON.parse(read('package.json')).version,'2.3.0');
   const native=JSON.parse(read('config/android-production.json'));
-  assert.equal(native.versionName,'2.2.1');assert.equal(native.versionCode,12);
-  assert.match(read('android/app/build.gradle'),/versionCode 12\s+versionName "2\.2\.1"/);
-  assert.match(read('client/index.html'),/id="boot-version"[^>]+data-version="2\.2\.1"/);
-  assert.match(read('client/index.html'),/id="ui-build-version">2\.2\.1</);
-  assert.match(read('server/app/version.py'),/^VERSION = "2\.2\.1"/);
+  assert.equal(native.versionName,'2.3.0');assert.equal(native.versionCode,13);
+  assert.match(read('android/app/build.gradle'),/versionCode 13\s+versionName "2\.3\.0"/);
+  assert.match(read('client/index.html'),/id="boot-version"[^>]+data-version="2\.3\.0"/);
+  assert.match(read('client/index.html'),/id="ui-build-version">2\.3\.0</);
+  assert.match(read('server/app/version.py'),/^VERSION = "2\.3\.0"/);
+});
+test('2.3 client accepts only the reviewed 2.2.1 bridge and never a wrong protocol',async()=>{
+  const current={status:'ok',version:'2.1.0-beta.72',release_version:'2.2.1',server_release_version:'2.3.0',pvp_protocol_version:2};
+  const gate=body=>new RelayServerBootGate({healthState:new RelayServerHealthState(),expectedVersion:'2.3.0',compatibleServerVersions:['2.2.1'],requestJson:async()=>body});
+  assert.equal((await gate(current).check()).ok,true);
+  assert.equal(current.release_version,'2.2.1'); // literal check in installed 2.2.1 clients
+  assert.equal(current.version,'2.1.0-beta.72'); // literal check in v8 clients
+  const older={...current};delete older.server_release_version;
+  assert.equal((await gate(older).check()).ok,true);
+  assert.equal((await gate({...older,release_version:'2.2.0'}).check()).ok,false);
+  assert.equal((await gate({...current,server_release_version:'2.4.0'}).check()).ok,false);
+  assert.equal((await gate({...current,pvp_protocol_version:3}).check()).ok,false);
+  assert.equal((await gate({...current,status:'degraded'}).check()).ok,false);
 });

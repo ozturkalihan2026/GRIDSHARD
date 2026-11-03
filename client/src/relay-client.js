@@ -1665,7 +1665,7 @@
         };
       }
 
-      this.version = health.release_version || health.version || null;
+      this.version = health.server_release_version || health.release_version || health.version || null;
       this.protocolVersion =
         health.pvp_protocol_version ?? null;
       this.ready = health.status === "ok";
@@ -3007,12 +3007,14 @@
     constructor({
       healthState,
       expectedVersion = null,
+      compatibleServerVersions = [],
       expectedProtocolVersion = 2,
       requestJson = null,
     }) {
       this.healthState = healthState;
       this.expectedVersion =
         expectedVersion;
+      this.compatibleServerVersions = [...compatibleServerVersions];
       this.expectedProtocolVersion =
         expectedProtocolVersion;
       this.requestJson =
@@ -3056,8 +3058,8 @@
 
         const versionMatches =
           !this.expectedVersion
-          || (health.release_version || health.version)
-          === this.expectedVersion;
+          || (health.server_release_version || health.release_version || health.version) === this.expectedVersion
+          || this.compatibleServerVersions.includes(health.server_release_version || health.release_version || health.version);
 
         const protocolMatches =
           Number(
@@ -3075,7 +3077,7 @@
 
         if (!versionMatches) {
           this.lastError =
-            `Sürüm uyuşmazlığı: istemci ${this.expectedVersion}, sunucu ${health.release_version || health.version}`;
+            `Sürüm uyuşmazlığı: istemci ${this.expectedVersion}, sunucu ${health.server_release_version || health.release_version || health.version}`;
         } else if (
           !protocolMatches
         ) {

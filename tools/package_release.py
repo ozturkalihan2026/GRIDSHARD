@@ -11,8 +11,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "2.2.1"
-PACKAGE_LABEL = "signatures-social"
+VERSION = "2.3.0"
+PACKAGE_LABEL = "cosmetic-preview"
 ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}"
 
 EXCLUDED_RUNTIME_PATTERNS = (

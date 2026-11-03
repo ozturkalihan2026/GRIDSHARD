@@ -1,5 +1,10 @@
 {
   "schema_version": 1,
+  "themes": [
+    {"id":"aurora","name_tr":"Kutup Işığı","name_en":"Aurora"},
+    {"id":"solar","name_tr":"Güneş Ocağı","name_en":"Solar Forge"},
+    {"id":"abyss","name_tr":"Derin Akım","name_en":"Deep Current"}
+  ],
   "require_fresh_from": {},
   "items": [
     {

@@ -627,16 +627,15 @@
     return available.find((emoji) => emoji.id === cosmetics?.selected_battle_emoji_id) || available[0] || null;
   }
 
-  // Kilitli kozmetiğin altında nereden kazanıldığı yazmaz: ödüller dönemden
-  // döneme değişeceği için yalnız kilitli olduğu gösterilir.
-  function cosmeticStateLabel({ unlocked, selected }) {
+  // Unscheduled collection items have no invented reward source or date.
+  function cosmeticStateLabel({ unlocked, selected, upcoming = false }) {
     const state = document.createElement("small");
     if (unlocked) {
       state.textContent = selected ? "SEÇİLİ" : "SEÇ";
       return state;
     }
     state.className = "cosmetic-locked-label";
-    state.textContent = "KİLİTLİ";
+    state.textContent = upcoming ? "HENÜZ AÇILMADI" : "KİLİTLİ";
     return state;
   }
 
@@ -7287,7 +7286,7 @@
         const label = document.createElement("strong");
         label.textContent = item.nameTr;
         const state = document.createElement("small");
-        state.textContent = locked ? "KİLİTLİ" : selected ? "SEÇİLİ" : "SEÇ";
+        state.textContent = locked ? (item.upcoming ? "HENÜZ AÇILMADI" : "KİLİTLİ") : selected ? "SEÇİLİ" : "SEÇ";
         option.append(visualFor(item, id), label, state);
         if (locked) {
           const lock = document.createElement("i");
@@ -8641,7 +8640,8 @@
       healthState:
         serverHealthState,
       expectedVersion:
-        "2.2.1",
+        "2.3.0",
+      compatibleServerVersions: ["2.2.1"],
       expectedProtocolVersion: 2,
     });
   const playReadinessGate =
@@ -8683,7 +8683,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.2.1",
+    build: "2.3.0",
   });
 
   const postMatchSync =
@@ -17928,6 +17928,55 @@
     }
   }
 
+  function renderCosmeticCollection(themeId) {
+    const catalog = globalThis.GRIDSHARD_LIVEOPS_COSMETICS;
+    const theme = catalog?.themes?.find(item => item.id === themeId) || catalog?.themes?.[0];
+    if (!theme) return;
+    const values = [...catalog.avatarFrames, ...catalog.backgrounds, ...Object.values(catalog.teamEmblems),
+      ...Object.values(catalog.teamFrames), ...Object.values(catalog.teamNameColors)].filter(item => item.theme === theme.id);
+    const find = group => Object.values(group).find(item => item.theme === theme.id);
+    const frame = find(catalog.avatarFrames), background = find(catalog.backgrounds);
+    const emblem = find(catalog.teamEmblems), teamFrame = find(catalog.teamFrames), color = find(catalog.teamNameColors);
+    if (!frame || !background || !emblem || !teamFrame || !color) return;
+    const nav = document.getElementById("cosmetic-collection-themes");
+    nav.replaceChildren();
+    for (const item of catalog.themes) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.collectionTheme = item.id;
+      button.setAttribute("aria-pressed", String(item.id === theme.id));
+      button.textContent = item.nameTr;
+      button.addEventListener("click", () => {
+        renderCosmeticCollection(item.id);
+        nav.querySelector(`[data-collection-theme="${item.id}"]`)?.focus();
+      });
+      nav.append(button);
+    }
+    const player = document.getElementById("cosmetic-collection-player");
+    player.dataset.profileBackground = background.id;
+    applyAvatarVisual(player.querySelector(".profile-avatar"), profileState.viewModel()?.cosmetics?.selected_avatar_id || "default", frame.id);
+    player.querySelector("strong").textContent = "Profil Önizlemesi";
+    const team = document.getElementById("cosmetic-collection-team");
+    applyTeamAppearance(team, {emblem_id:emblem.id,frame_id:teamFrame.id,name_color_id:color.id},
+      {emblemHost:team.querySelector(".team-appearance-badge"),nameHost:team.querySelector("strong")});
+    team.querySelector("strong").textContent = teamState?.name || "Takım Önizlemesi";
+    const items = document.getElementById("cosmetic-collection-items");
+    items.replaceChildren();
+    for (const item of values) {
+      const li = document.createElement("li");
+      li.dataset.collectionItem = item.id;
+      li.textContent = item.nameTr;
+      items.append(li);
+    }
+    document.getElementById("cosmetic-collection-dialog").dataset.collectionTheme = theme.id;
+  }
+  document.querySelectorAll("[data-open-cosmetic-collection]").forEach(button => button.addEventListener("click", () => {
+    renderCosmeticCollection();
+    const dialog = document.getElementById("cosmetic-collection-dialog");
+    if (!dialog.open) dialog.showModal();
+  }));
+  document.getElementById("cosmetic-collection-close")?.addEventListener("click", () => document.getElementById("cosmetic-collection-dialog").close());
+
   const renderedAvatarArt = new WeakMap();
   function applyAvatarVisual(element, avatarId, frameId) {
     if (!element) return;
@@ -18043,7 +18092,7 @@
         const name = document.createElement("strong");
         name.textContent = frame.nameTr;
         button.append(glyph, name);
-        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(frame.id), selected:frame.id === frameId }));
+        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(frame.id), selected:frame.id === frameId, upcoming:frame.upcoming }));
         button.addEventListener("click", () => selectProfileCosmetic("frame", frame.id));
         frameHost.appendChild(button);
       }
@@ -18091,7 +18140,7 @@
         const name = document.createElement("strong");
         name.textContent = background.nameTr;
         button.append(glyph, name);
-        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(background.id), selected:background.id === backgroundId }));
+        button.appendChild(cosmeticStateLabel({ unlocked:unlocked.has(background.id), selected:background.id === backgroundId, upcoming:background.upcoming }));
         button.addEventListener("click", () => selectProfileCosmetic("background", background.id));
         backgroundHost.appendChild(button);
       }

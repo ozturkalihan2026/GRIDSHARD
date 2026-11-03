@@ -32,6 +32,18 @@ def test_new_cosmetics_start_locked_and_cannot_be_equipped_or_granted_by_legacy_
     assert profile.unlocked_profile_background_ids == ("default",)
 
 
+def test_all_nine_locked_team_cosmetics_are_rejected_without_changing_existing_appearance():
+    teams = TeamService(InMemoryTeamRepository())
+    team_id = teams.create_team(player_id="preview-owner", name="Önizleme Takımı", request_id="create-preview")["team_id"]
+    before = deepcopy(teams.get_team(team_id)["cosmetics"])
+    fields = {"team_emblem_id":"emblem_id", "team_frame_id":"frame_id", "team_name_color_id":"name_color_id"}
+    for item in registry().items.values():
+        if item["field"] in fields:
+            with pytest.raises(TeamServiceError):
+                teams.set_cosmetics(team_id=team_id, owner_id="preview-owner", selections={fields[item["field"]]:item["id"]}, request_id="reject-"+item["id"])
+            assert teams.get_team(team_id)["cosmetics"] == before
+
+
 def test_drafts_do_not_award_and_two_periods_receive_different_real_designs():
     r = registry().reserve("weekly_tournament", "2027-W01", "weekly-2027-01")
     base = {"flux_shards": 10, "avatar_id": "weekly_champion"}

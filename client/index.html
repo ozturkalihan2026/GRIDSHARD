@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="./src/module-layers-v15.css" />
   <link rel="stylesheet" href="./src/presentation-refinements-v16.css" />
   <link rel="stylesheet" href="./src/liveops-cosmetics-v1.css" />
+  <link rel="stylesheet" href="./src/cosmetic-collection-v1.css" />
   <link rel="stylesheet" href="./src/battle-platform-v17.css" />
   <link rel="stylesheet" href="./src/startup-loading.css" />
   <!-- /build:styles -->
@@ -232,7 +233,7 @@
       </div>
     </div>
     <div class="boot-screen-meta">
-      <span id="boot-version" class="boot-version" data-version="2.2.1">Sürüm: 2.2.1</span>
+      <span id="boot-version" class="boot-version" data-version="2.3.0">Sürüm: 2.3.0</span>
     </div>
     <div class="boot-brand">
       <h1 id="startup-title" class="boot-title">GRIDSHARD</h1>
@@ -772,7 +773,8 @@
           <section data-team-panel="management" class="team-panel team-management-panel" hidden>
             <header class="team-management-heading"><button id="team-management-back" type="button" aria-label="Takım profiline dön">←</button><div><h3 data-ui-icon="gear:steel">Takım Yönetimi</h3></div></header>
             <section data-team-management-panel="cosmetics" class="team-management-subpanel team-appearance-editor">
-              <div class="team-appearance-heading"><h4>Lider Görünümü</h4><small>Kilitli seçenekler takım turnuvasında kazanılır.</small></div>
+              <div class="team-appearance-heading"><h4>Lider Görünümü</h4><small>Kilitli seçenekler kazanılmadan kullanılamaz.</small></div>
+              <button type="button" class="cosmetic-collection-open" data-open-cosmetic-collection>YENİ KOLEKSİYONLARI ÖNİZLE</button>
               <div id="team-appearance-preview" class="team-appearance-preview" aria-live="polite"></div>
               <h5>Amblem</h5><div id="team-emblem-options" class="team-appearance-grid" role="radiogroup" aria-label="Amblem"></div>
               <h5>Çerçeve</h5><div id="team-frame-options" class="team-appearance-grid" role="radiogroup" aria-label="Çerçeve"></div>
@@ -958,6 +960,7 @@
     </section>
 
     <section class="profile-summary-panel avatar-customization-screen" id="avatar-customization-screen" data-screen-panel="avatar" hidden>
+      <button type="button" class="cosmetic-collection-open" data-open-cosmetic-collection>YENİ KOLEKSİYONLARI ÖNİZLE</button>
       <nav class="friends-tabs cosmetic-tabs" aria-label="Kozmetik bölümleri">
         <button type="button" data-cosmetic-tab="avatar" class="is-active" aria-pressed="true">AVATAR</button>
         <button type="button" data-cosmetic-tab="frame" aria-pressed="false">ÇERÇEVE</button>
@@ -970,6 +973,16 @@
       <section class="avatar-picker-section" data-cosmetic-panel="background" aria-label="Profil arka planları" hidden><div id="profile-background-choice-list" class="avatar-choice-list"></div></section>
       <p id="avatar-action-status" class="season-action-status" role="status"></p>
     </section>
+
+    <dialog id="cosmetic-collection-dialog" class="cosmetic-collection-dialog" aria-labelledby="cosmetic-collection-title" aria-describedby="cosmetic-collection-note">
+      <header><h2 id="cosmetic-collection-title">Yeni Dönem Koleksiyonları</h2><button type="button" id="cosmetic-collection-close" aria-label="Kapat">×</button></header>
+      <p id="cosmetic-collection-note">Bu koleksiyonlar henüz ödül olarak açılmadı. Önizleme sahiplik vermez; kazanılmadan kuşanılamaz.</p>
+      <nav id="cosmetic-collection-themes" aria-label="Koleksiyon temaları"></nav>
+      <div id="cosmetic-collection-player" class="cosmetic-collection-identity"><span class="profile-avatar"></span><strong></strong></div>
+      <div id="cosmetic-collection-team" class="cosmetic-collection-identity team-public-identity"><span class="team-appearance-badge"></span><strong></strong></div>
+      <ul id="cosmetic-collection-items"></ul>
+      <p class="cosmetic-collection-lock">ÖNİZLEME · HENÜZ AÇILMADI</p>
+    </dialog>
 
     <section class="engagement-summary-panel rewards-hub-screen" id="rewards-hub-screen" data-screen-panel="daily" hidden>
       <div class="rewards-hub-links" aria-label="Ödül bölümleri">
@@ -1164,7 +1177,7 @@
           <p>Kalabalık savunmaya karşı zincir ve alan hasarı sağlayan saldırıları dene.</p>
           <p>Çekirdeğin aldığı veya verdiği hasar bu iki sayacı doldurmaz. Akım veren çekirdek yetenekleri kendi açıklamalarındaki gibi çalışır.</p>
         </details>
-        <dl><div><dt>Sürüm</dt><dd id="ui-build-version">2.2.1</dd></div></dl>
+        <dl><div><dt>Sürüm</dt><dd id="ui-build-version">2.3.0</dd></div></dl>
       </section>
       </section>
       <section id="settings-panel-audio" role="tabpanel" aria-labelledby="settings-tab-audio" data-settings-panel="audio" hidden>

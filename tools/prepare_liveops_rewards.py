@@ -10,10 +10,12 @@ from app.cosmetic_releases import CATALOG_PATH, CosmeticReleaseRegistry
 
 
 def frontend_catalog(registry):
-    result = {"avatarFrames": [], "backgrounds": [], "teamEmblems": {}, "teamFrames": {}, "teamNameColors": {}}
+    result = {"themes": [{"id":t["id"],"nameTr":t["name_tr"],"nameEn":t["name_en"]} for t in registry.document["themes"]],
+              "avatarFrames": [], "backgrounds": [], "teamEmblems": {}, "teamFrames": {}, "teamNameColors": {}}
     for item in registry.items.values():
         look = item["look"]
-        view = {"id": item["id"], "nameTr": item["name_tr"], "nameEn": item["name_en"], **look}
+        published = any(r["status"] in {"published","retired"} and any(item["id"] in p["cosmetics"].values() for p in r["placements"]) for r in registry.releases.values())
+        view = {"id": item["id"], "theme":item["theme"], "upcoming":not published, "nameTr": item["name_tr"], "nameEn": item["name_en"], **look}
         field = item["field"]
         if field == "avatar_frame_id":
             result["avatarFrames"].append(view)
@@ -33,14 +35,14 @@ def render_frontend(registry):
 
 def render_styles(registry):
     lines = ["/* Generated authored motifs; static CSS/SVG, no battle or ownership effects. */"]
-    borders = {"arcs": ("double", "50%"), "rays": ("ridge", "7px"), "tides": ("dashed", "16px")}
+    borders = {"arcs": ("double", "50%"), "rays": ("ridge", "7px"), "tides": ("solid", "16px")}
     for item in registry.items.values():
         identity, look, field = item["id"], item["look"], item["field"]
         color, accent, pattern = look["color"], look["accent"], look["pattern"]
         style, radius = borders[pattern]
         if field == "avatar_frame_id":
             selector = ':root body[data-app-screen] .profile-avatar[data-frame="' + identity + '"]:not([data-frame="none"])'
-            lines.append(selector + ' { --g5-rim:' + color + '; --g5-rim-dark:' + accent + '; border:4px ' + style + ' ' + color + ' !important; border-radius:' + radius + ' !important; }')
+            lines.append(selector + ' { --g5-rim:' + color + '; --g5-rim-dark:' + accent + '; border:4px ' + style + ' ' + color + ' !important; border-radius:' + radius + ' !important; box-shadow:inset 0 2px 2px #ffffff55,inset 0 -3px 2px ' + accent + ',0 2px 0 #041322,0 0 0 1px ' + accent + ' !important; }')
         elif field == "profile_background_id":
             decoration = {
                 "arcs": 'radial-gradient(ellipse at 15% 110%,transparent 38%,' + color + '40 39% 44%,transparent 45%)',
@@ -48,13 +50,13 @@ def render_styles(registry):
                 "tides": 'repeating-radial-gradient(ellipse at 50% 110%,transparent 0px 12px,' + color + '30 13px 16px,transparent 17px 28px)',
             }[pattern]
             background = decoration + ',linear-gradient(130deg,' + accent + ',#102841)'
-            selector = ':root body[data-app-screen] :is(#app-progress-ribbon,#profile-summary-panel .profile-identity-card,#public-profile-dialog #public-profile-identity)[data-profile-background="' + identity + '"]'
+            selector = ':root body[data-app-screen] :is(#app-progress-ribbon,#profile-summary-panel .profile-identity-card,#public-profile-dialog #public-profile-identity,#cosmetic-collection-player)[data-profile-background="' + identity + '"]'
             swatch = ':root body[data-app-screen] #avatar-customization-screen .profile-background-choice[data-background-id="' + identity + '"] .profile-background-swatch'
             lines.append(selector + ', ' + swatch + ' { background:' + background + ' !important; }')
         elif field == "team_frame_id":
-            selector = ':root body[data-app-screen] :is(#team-screen,#team-profile-dialog) :is(#team-identity-card,#team-appearance-preview,.team-public-identity)[data-team-frame="' + identity + '"]'
+            selector = ':root body[data-app-screen] :is(#team-screen,#team-profile-dialog,#cosmetic-collection-dialog) :is(#team-identity-card,#team-appearance-preview,.team-public-identity)[data-team-frame="' + identity + '"]'
             swatch = ':root body[data-app-screen] #team-screen .team-option-frame[data-team-frame="' + identity + '"]'
-            lines.append(selector + ', ' + swatch + ' { border:3px ' + style + ' ' + color + ' !important; border-radius:' + ("12px" if radius == "50%" else radius) + ' !important; box-shadow:inset 0 0 0 2px ' + accent + ' !important; }')
+            lines.append(selector + ', ' + swatch + ' { border:3px ' + style + ' ' + color + ' !important; border-radius:' + ("12px" if radius == "50%" else radius) + ' !important; box-shadow:inset 0 2px 2px #ffffff55,inset 0 -3px 2px ' + accent + ',0 2px 0 #041322 !important; }')
     return '\n'.join(lines) + '\n'
 
 
@@ -96,7 +98,7 @@ def main():
     i18n_source = i18n_output.read_text(encoding="utf-8")
     start_marker = "    // liveops-cosmetics:begin\n"
     end_marker = "    // liveops-cosmetics:end\n"
-    translations = start_marker + ''.join('    ' + json.dumps(item["name_tr"],ensure_ascii=False) + ':' + json.dumps(item["name_en"],ensure_ascii=False) + ',\n' for item in registry.items.values()) + end_marker
+    translations = start_marker + ''.join('    ' + json.dumps(item["name_tr"],ensure_ascii=False) + ':' + json.dumps(item["name_en"],ensure_ascii=False) + ',\n' for item in [*registry.document["themes"],*registry.items.values()]) + end_marker
     if args.command == "sync":
         output.write_text(expected, encoding="utf-8")
         css_output.write_text(expected_css, encoding="utf-8")

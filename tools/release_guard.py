@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 ROOT=Path(__file__).resolve().parents[1]
-EXPECTED_VERSION="2.2.1"
+EXPECTED_VERSION="2.3.0"
 
 
 def fail(message:str)->None:
@@ -29,6 +29,10 @@ def main()->None:
     from app.version import VERSION
     # Import validates unique version IDs and requires notes for this release.
     from app.release_updates import INBOX_UPDATE_NOTICES
+    if VERSION == "2.3.0":
+        from app.cosmetic_releases import REGISTRY
+        if len(REGISTRY.items) != 15 or REGISTRY.releases or REGISTRY.used or REGISTRY.document.get("require_fresh_from"):
+            fail("2.3.0 yalnız 15 kilitli kozmetiği önizler; dönem tahsisi/yayını boş kalmalı.")
 
     if VERSION != EXPECTED_VERSION:
         fail(

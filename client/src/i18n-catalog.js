@@ -3,8 +3,20 @@
 
   // New screen copy belongs here; the legacy dictionary remains in i18n.js.
   const translations = Object.freeze({
+    "YENİ KOLEKSİYONLARI ÖNİZLE":"PREVIEW NEW COLLECTIONS",
+    "Yeni Dönem Koleksiyonları":"Upcoming Collections",
+    "Bu koleksiyonlar henüz ödül olarak açılmadı. Önizleme sahiplik vermez; kazanılmadan kuşanılamaz.":"These collections are not available as rewards yet. Previewing does not grant ownership; items must be earned before equipping.",
+    "ÖNİZLEME · HENÜZ AÇILMADI":"PREVIEW · NOT AVAILABLE YET",
+    "HENÜZ AÇILMADI":"NOT AVAILABLE YET",
+    "Profil Önizlemesi":"Profile Preview",
+    "Takım Önizlemesi":"Team Preview",
+    "Kilitli seçenekler kazanılmadan kullanılamaz.":"Locked items must be earned before use.",
+    "Koleksiyon temaları":"Collection themes",
     "Sandık ve Dönem Kozmetiği":"Chest and Seasonal Cosmetic",
     // liveops-cosmetics:begin
+    "Kutup Işığı":"Aurora",
+    "Güneş Ocağı":"Solar Forge",
+    "Derin Akım":"Deep Current",
     "Kutup Işığı Halkası":"Aurora Frame",
     "Kutup Işığı Devresi":"Aurora Circuit",
     "Kutup Işığı Arması":"Aurora Sigil",

@@ -15,5 +15,11 @@
     "release_date": "2026-11-02",
     "body_tr": "• Kendi profilinizde ve ziyaret ettiğiniz oyuncuların profillerinde deste görselleri düzeltildi. En çok kullanılan desteler artık yalnız güncel kartlarla oynanmış maçlardan seçilir; böyle bir maç yoksa aktif deste gösterilir.\n• Android'de herkese açık takım profillerinin açılmasını engelleyen bağlantı sorunu giderildi.\n• Oyuncu ve takım profillerinin geri düğmeleri daha görünür, güncel tasarımla yenilendi.\n• Etkinlikler ekranındaki günlük meta çarkı simgesi oyunun boyalı görsel tarzına uyarlandı.\n• Güncelleme notları artık sürüm numarasına göre Sistem mesajlarında yer alır. Eksik 2.2.0 notları da eklendi; okunmuş mesajlar yeniden okunmamış sayılmaz.",
     "body_en": "• Fixed deck artwork on your profile and visited player profiles. Most-used decks now come from matches played with current cards; your active deck is shown when no such match exists.\n• Fixed the Android connection issue preventing public team profiles from opening.\n• Player and team profiles now have clearer back buttons matching the current design.\n• The daily meta wheel icon in Events now matches the game's painted artwork.\n• Update notes now appear in System messages by version. The missing 2.2.0 notes were added; read messages stay read."
+  },
+  {
+    "version": "2.3.0",
+    "release_date": "2026-11-03",
+    "body_tr": "• Kutup Işığı, Güneş Ocağı ve Derin Akım temalarında 15 yeni oyuncu ve takım kozmetiği koleksiyona eklendi.\n• Yeni koleksiyonları profil ve takım görünümü üzerinde önizleyebilirsiniz. Önizleme sahiplik vermez.\n• Bu kozmetikler henüz ödül olarak açılmadı; kazanılmadan kuşanılamaz. Mevcut görünümleriniz ve ilerlemeniz korunur.\n• Yeni öğelerin yüzeyleri oyunun ortak sanat yönüne uyarlandı; Türkçe ve İngilizce kilit açıklamaları eklendi.",
+    "body_en": "• Added 15 player and team cosmetics in the Aurora, Solar Forge and Deep Current collections.\n• Preview the new collections on a profile and team appearance. Previewing does not grant ownership.\n• These cosmetics are not available as rewards yet and must be earned before equipping. Existing appearances and progress are preserved.\n• New surfaces follow the game’s shared art direction, with Turkish and English availability explanations."
   }
 ]

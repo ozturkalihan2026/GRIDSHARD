@@ -41,5 +41,6 @@ def test_manifest_endpoint():
     body=client.get("/health").json()
     from app.version import VERSION, LEGACY_HEALTH_VERSION
     assert body["version"]==LEGACY_HEALTH_VERSION
-    assert body["release_version"]==VERSION
+    assert body["release_version"]=="2.2.1"
+    assert body["server_release_version"]==VERSION
     assert body["pvp_protocol_version"]==PVP_PROTOCOL_VERSION

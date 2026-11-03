@@ -96,7 +96,7 @@ from .game.tutorial import (
 )
 from .safe_chat import team_description_text, visible_message
 from .match_accounting import TUTORIAL_TRAINING_MATCH_TYPE
-from .version import VERSION, LEGACY_HEALTH_VERSION
+from .version import VERSION, LEGACY_HEALTH_VERSION, LEGACY_RELEASE_VERSION
 from .release_updates import INBOX_UPDATE_NOTICES
 from .cosmetic_releases import period_reward
 from .player_profile import (
@@ -6637,7 +6637,9 @@ async def health() -> dict:
     payload = {
         "status": "ok" if ready else "degraded",
         "version": LEGACY_HEALTH_VERSION,
-        "release_version": VERSION,
+        "release_version": LEGACY_RELEASE_VERSION,
+        "server_release_version": VERSION,
+        "compatible_client_releases": [LEGACY_RELEASE_VERSION, VERSION],
         "pvp_protocol_version": PVP_PROTOCOL_VERSION,
         "combat_ruleset": "modules_v7",
         # Explicit rollout signal: a client must never silently downgrade a

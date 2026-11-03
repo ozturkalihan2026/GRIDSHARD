@@ -30,6 +30,10 @@ def validate(document):
     if set(document['goals']) != GOALS:
         raise ValueError('All eight project goals must remain covered')
     tasks = document['tasks']
+    art = document.get('art_direction', {})
+    if (art.get('policy') != 'preserve_approved_direction' or not art.get('change_requires')
+            or not repository_path(art.get('document', '')).is_file()):
+        raise ValueError('Shared art direction and a transition gate are required')
     ids = [t['id'] for t in tasks]
     if len(ids) != len(set(ids)) or not ids:
         raise ValueError('Empty or duplicate task IDs')
@@ -116,6 +120,7 @@ def render(document, order):
              '- [Önceki gelişim planı](GRIDSHARD_CANLI_OPERASYON_VE_GELISIM_PLANI_20261102.md): ürün yönü ve ilk araştırma.',
              '- [Yeni rakip/ödül araştırması](GRIDSHARD_MAGAZA_ODUL_ARASTIRMASI_20261103.md): kaynaklar, tarih ve çıkarımlar.',
              '- [Teknik tasarım](GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md): mevcut/yeni altyapı, veri/API ve ekran sözleşmeleri.',
+             '- [Ortak sanat yönü](SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md): bütün paketler için referans aile ve yön değişikliği koşulları.',
              '- [Makine tarafından okunabilir iş listesi](planning/gridshard_development_backlog_v1.json): görevlerin tek kaynağı.', '',
              'Görevi güncellemek için JSON içindeki `status`, `evidence` ve gerekiyorsa kabul '
              'ölçütlerini düzenle. Sonra repo kökünde çalıştır:', '',
@@ -136,6 +141,9 @@ def render(document, order):
              '5. Yeni modlar tek etkinlik penceresiyle başlar; her mod için sürekli PvP kuyruğu açılmaz.',
              '6. Kozmetik savaş gücü vermez; mevcut premium ilerleme avantajları yokmuş gibi pazarlanmaz.',
              '7. Yeni para birimi, ücretli yeniden çekiliş, oyuncular arası ticaret ve web ödeme mağazası ilk kapsamda değildir.', '',
+             'Bütün sürümlerde mevcut onaylı sanat yönü korunur. Yön değişecekse önce '
+             'brief, yan yana örnekler, varlık/ekran envanteri ve geçiş işleri hazırlanır; '
+             'tek ekranın farklı stile kayması tamamlanmış geçiş sayılmaz.', '',
              '## 3. Hazır olan ile yapılacak olanın sınırı', '',
              '| Durum | İçerik |', '| --- | --- |',
              '| Canlı 2.2.1 | Profil/takım düzeltmeleri, yeni mesaj sırası, mevcut mağaza/sandık/ödül sistemi. |',
@@ -215,6 +223,7 @@ def render(document, order):
               '- [ ] Hesap sahipliği, tekrar talep, eşzamanlı talep, yanlış revision, süre sınırı ve çevrimdışı dönüş senaryoları ilgili işte doğrulandı.',
               '- [ ] Eski oyuncu/maç/sandık/makbuz, premium iade ve varsa eski istemci uyumluluğu korundu.',
               '- [ ] UI değişiminde TR/EN, iki dar ekran, kilit/boş/hata/yükleme ve performans kanıtı var.',
+              '- [ ] Ortak sanat yönüyle yan yana karşılaştırma var; yön değişiyorsa ayrı brief ve aşamalı geçiş kabul edildi.',
               '- [ ] Yeni kaynak JSON/uç/varlık varsa paketleme ve native API prefix bağları güncellendi.',
               '- [ ] İçerik/ödül artışının ekonomi raporu, sanat kabulü ve kaynak stoğu yeterli.',
               '- [ ] Yeni minor sürüm notu, gerekli CI/AAB ve veri koruyan yayın/geri dönüş planı hazır.',

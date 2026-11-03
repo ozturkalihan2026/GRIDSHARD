@@ -49,12 +49,20 @@ class CosmeticReleaseRegistry:
         self.document = deepcopy(document)
         if document.get("schema_version") != 1:
             raise CosmeticReleaseError("Unsupported cosmetic registry schema")
+        themes = document.get("themes", [])
+        theme_ids = {t.get("id") for t in themes}
+        if (not themes or len(theme_ids) != len(themes)
+            or any(not re.fullmatch(r"[a-z][a-z0-9_]{1,31}",str(t.get("id", "")))
+                   or not t.get("name_tr") or not t.get("name_en") for t in themes)):
+            raise CosmeticReleaseError("Invalid cosmetic theme metadata")
         self.items = {}
         designs = set()
         visuals = set()
         structures = set()
         for item in document.get("items", []):
             identity = item["id"]
+            if item.get("theme") not in theme_ids:
+                raise CosmeticReleaseError("Unknown cosmetic theme")
             if identity in self.items or item["field"] not in PLAYER_FIELDS | TEAM_FIELDS:
                 raise CosmeticReleaseError("Duplicate or unsupported cosmetic")
             # A renamed/recolored copy of the same authored motif is not new art.

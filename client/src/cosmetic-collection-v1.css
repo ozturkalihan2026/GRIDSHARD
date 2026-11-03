@@ -1,0 +1,20 @@
+/* 2.3: the approved physical P2/P5 surfaces; collection preview changes no ownership. */
+.cosmetic-collection-open { min-height:44px; width:100%; margin:0 0 12px; }
+.cosmetic-collection-dialog { box-sizing:border-box; width:min(94vw,430px); max-height:calc(100dvh - 24px); padding:16px; overflow:auto; color:#eef8ff; border:2px solid #527e9b; border-radius:18px; background:var(--gs2-surface,linear-gradient(140deg,#214c6b,#102841)); box-shadow:var(--gs2-surface-shadow,0 6px 0 #041322); }
+.cosmetic-collection-dialog::backdrop { background:#03101dd9; }
+.cosmetic-collection-dialog > header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.cosmetic-collection-dialog h2 { margin:0; font-size:20px; line-height:1.15; }
+#cosmetic-collection-close { flex:0 0 44px; min-width:44px; min-height:44px; font-size:28px; }
+#cosmetic-collection-note { color:#d5e5f2; font-size:14px; line-height:1.4; }
+#cosmetic-collection-themes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin:14px 0; }
+#cosmetic-collection-themes button { min-width:0; min-height:48px; padding:8px 4px; line-height:1.15; overflow-wrap:anywhere; }
+#cosmetic-collection-themes button[aria-pressed="true"] { border-color:#ffe39c; background:linear-gradient(#ffe6a0,#e9ad45); box-shadow:inset 0 2px #fff4ce,0 3px #7d4e21; color:#382411; }
+.cosmetic-collection-identity { display:flex; align-items:center; gap:14px; min-height:88px; box-sizing:border-box; padding:14px; margin:12px 0; border:2px solid #4d7188; border-radius:12px; background:#102841; box-shadow:inset 0 2px #ffffff20,0 3px #061627; }
+.cosmetic-collection-identity strong { min-width:0; font-size:18px; line-height:1.15; overflow-wrap:anywhere; }
+#cosmetic-collection-player .profile-avatar { flex:0 0 56px; width:56px; height:56px; display:grid; place-items:center; background:#102841; }
+#cosmetic-collection-player .ui-art { display:block; width:44px; height:44px; background-position:center; background-repeat:no-repeat; background-size:contain; }
+#cosmetic-collection-team .team-appearance-badge { flex:0 0 56px; width:56px; height:56px; display:grid; place-items:center; border-radius:12px; background:linear-gradient(#244b66,#0b2136); box-shadow:inset 0 2px #ffffff35,0 3px #041322; }
+#cosmetic-collection-team svg { width:42px; height:46px; }
+#cosmetic-collection-items { margin:16px 0; padding-left:20px; color:#e2edf5; font-size:14px; line-height:1.5; }
+.cosmetic-collection-lock { margin:10px 0 0; padding:10px; border-radius:8px; background:#091e31; color:#ffe39c; font-size:12px; text-align:center; }
+@media(prefers-reduced-motion:reduce) { .cosmetic-collection-dialog * { transition:none !important; animation:none !important; } }

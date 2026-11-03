@@ -93,7 +93,8 @@ def test_health_is_the_current_readiness_contract_not_a_legacy_release_stamp():
     body = response.json()
     from app.version import LEGACY_HEALTH_VERSION
     assert body["version"] == LEGACY_HEALTH_VERSION
-    assert body["release_version"] == VERSION
+    assert body["release_version"] == "2.2.1"
+    assert body["server_release_version"] == VERSION
     from app.game.pvp_protocol import PVP_PROTOCOL_VERSION
     assert body["pvp_protocol_version"] == PVP_PROTOCOL_VERSION
     assert {"player_data", "telemetry"} <= body["persistence"].keys()

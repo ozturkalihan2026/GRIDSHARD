@@ -2,13 +2,14 @@
 
 **Tarih: 3 Kasım 2026 · Proje: mağaza, ödül, içerik ve yaşayan oyun**
 
-Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **51 iş** vardır: **43 yapılacak**, **1 dalda hazır; canlıda yok**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
+Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **51 iş** vardır: **42 yapılacak**, **1 dalda hazır; canlıda yok**, **1 çalışılıyor**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
 
 ## 1. Proje dosyaları ve kullanım
 
 - [Önceki gelişim planı](GRIDSHARD_CANLI_OPERASYON_VE_GELISIM_PLANI_20261102.md): ürün yönü ve ilk araştırma.
 - [Yeni rakip/ödül araştırması](GRIDSHARD_MAGAZA_ODUL_ARASTIRMASI_20261103.md): kaynaklar, tarih ve çıkarımlar.
 - [Teknik tasarım](GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md): mevcut/yeni altyapı, veri/API ve ekran sözleşmeleri.
+- [Ortak sanat yönü](SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md): bütün paketler için referans aile ve yön değişikliği koşulları.
 - [Makine tarafından okunabilir iş listesi](planning/gridshard_development_backlog_v1.json): görevlerin tek kaynağı.
 
 Görevi güncellemek için JSON içindeki `status`, `evidence` ve gerekiyorsa kabul ölçütlerini düzenle. Sonra repo kökünde çalıştır:
@@ -31,6 +32,8 @@ Durumlar: `todo`, `in_progress`, `branch_ready`, `done`, `later`. `[x]` ile işa
 5. Yeni modlar tek etkinlik penceresiyle başlar; her mod için sürekli PvP kuyruğu açılmaz.
 6. Kozmetik savaş gücü vermez; mevcut premium ilerleme avantajları yokmuş gibi pazarlanmaz.
 7. Yeni para birimi, ücretli yeniden çekiliş, oyuncular arası ticaret ve web ödeme mağazası ilk kapsamda değildir.
+
+Bütün sürümlerde mevcut onaylı sanat yönü korunur. Yön değişecekse önce brief, yan yana örnekler, varlık/ekran envanteri ve geçiş işleri hazırlanır; tek ekranın farklı stile kayması tamamlanmış geçiş sayılmaz.
 
 ## 3. Hazır olan ile yapılacak olanın sınırı
 
@@ -201,10 +204,11 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 - [ ] **QA-01 — Ortak mobil, dil ve erişilebilirlik kapısını kur**
   - Durum: Yapılacak. Öncelik: P0; rol: QA / istemci; efor: M.
   - Önkoşullar: UI-01.
-  - Mevcut bağlar: `client/src/i18n-catalog.js`, `playwright.config.js`, `e2e/presentation-refinements.spec.js`, `e2e/battle-render-budget.spec.js`.
+  - Mevcut bağlar: `client/src/i18n-catalog.js`, `playwright.config.js`, `e2e/presentation-refinements.spec.js`, `e2e/battle-render-budget.spec.js`, `docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md`.
   - Yeni teslim önerisi: `docs/planning/ui-acceptance-matrix.md`.
   - Kabul 1: 320x568 ve 393x852, TR/EN, uzun ad, hata/boş/yükleme/yeniden deneme ve en az 44px hedef doğrulanır.
   - Kabul 2: Azaltılmış hareket, ses tercihi ve odak sırası korunur; Chromium/WebKit performans eşikleri gevşetilmez.
+  - Kabul 3: Mevcut boyalı/hacimli sanat ailesi korunur; yan yana mobil önizleme ve görsel kabul kaydı tamamlanır. Yön değişikliği ayrı brief ve geçiş planı gerektirir.
 
 - [ ] **DATA-01 — Yeni hakların kalıcılık ve kurtarma tasarımını tamamla**
   - Durum: Yapılacak. Öncelik: P0; rol: Backend / QA; efor: L.
@@ -264,7 +268,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 2: 2.4.0 için sürüm notu/CI/imzalı AAB ve veri koruyan dağıtım hazırlanır; takvim ancak içerik kapısı geçildiğinde operatörce açılır.
 
 - [ ] **RELEASE-00 — 2.3.0 kilitli kozmetik ve önizleme paketini yayıma hazırla**
-  - Durum: Yapılacak. Öncelik: P0; rol: İstemci / backend / QA / operasyon; efor: M.
+  - Durum: Çalışılıyor. Öncelik: P0; rol: İstemci / backend / QA / operasyon; efor: M.
   - Önkoşullar: COS-01.
   - Mevcut bağlar: `server/data/cosmetic_releases_v1.json`, `server/app/cosmetic_releases.py`, `client/src/liveops-cosmetic-catalog.js`, `e2e/liveops-cosmetics.spec.js`, `server/tests/test_cosmetic_releases.py`, `tools/release_guard.py`, `server/data/game_updates.json`.
   - Yeni teslim önerisi: `docs/planning/release-230-evidence.md`.
@@ -272,6 +276,8 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 2: Tahsis/yayın listeleri boş ve yarışma başlangıçları kapalı kalır; mevcut oyuncu/takım sahipliği, fiyatlar ve sandık oranları korunur.
   - Kabul 3: 320/393 px, native API erişimi, sahip olunmayanı kuşanma reddi, mevcut regresyon/performans ve gerçek ödül yolu uyumluluğu doğrulanır.
   - Kabul 4: 2.3.0 sürüm/notları, başarılı CI, veri koruyan sunucu geçişi ve yeni imzalı AAB tamamlanır; 2.2.1 AAB yeniden adlandırılarak kullanılmaz.
+  - Kabul 5: Mevcut boyalı/hacimli sanat ailesi korunur; yan yana mobil önizleme ve görsel kabul kaydı tamamlanır. Yön değişikliği ayrı brief ve geçiş planı gerektirir.
+  - Geçmiş hazırlık kanıtı: `artifacts/release-230-20261103/browser-results.json`, `artifacts/release-230-20261103/client-tests-final.log`.
 
 ### R2 — Mağaza ve seçim kasası — sonraki minor
 
@@ -526,6 +532,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 - [ ] Hesap sahipliği, tekrar talep, eşzamanlı talep, yanlış revision, süre sınırı ve çevrimdışı dönüş senaryoları ilgili işte doğrulandı.
 - [ ] Eski oyuncu/maç/sandık/makbuz, premium iade ve varsa eski istemci uyumluluğu korundu.
 - [ ] UI değişiminde TR/EN, iki dar ekran, kilit/boş/hata/yükleme ve performans kanıtı var.
+- [ ] Ortak sanat yönüyle yan yana karşılaştırma var; yön değişiyorsa ayrı brief ve aşamalı geçiş kabul edildi.
 - [ ] Yeni kaynak JSON/uç/varlık varsa paketleme ve native API prefix bağları güncellendi.
 - [ ] İçerik/ödül artışının ekonomi raporu, sanat kabulü ve kaynak stoğu yeterli.
 - [ ] Yeni minor sürüm notu, gerekli CI/AAB ve veri koruyan yayın/geri dönüş planı hazır.

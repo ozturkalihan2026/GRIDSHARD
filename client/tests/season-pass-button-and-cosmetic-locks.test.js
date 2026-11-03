@@ -60,13 +60,15 @@ const label = (state) => {
 assert.deepEqual(label({ unlocked:true, selected:true }), ["SEÇİLİ", ""]);
 assert.deepEqual(label({ unlocked:true, selected:false }), ["SEÇ", ""]);
 assert.deepEqual(label({ unlocked:false, selected:false }), ["KİLİTLİ", "cosmetic-locked-label"]);
+assert.deepEqual(label({ unlocked:false, selected:false, upcoming:true }), ["HENÜZ AÇILMADI", "cosmetic-locked-label"]);
+assert.deepEqual(label({ unlocked:true, selected:true, upcoming:true }), ["SEÇİLİ", ""]);
 // Kaynak notu üreten kod ve stili kalmadı (oyuncu ve takım kozmetikleri).
 for (const gone of ["cosmeticUnlockLabels", "cosmetic-lock-source", "SEZON YOLU ${", "LİDER PANOSU ${", "HAFTALIK TURNUVA ${", "TAKIM TURNUVASI ${", "TURNUVA ${", '"TURNUVA ÖDÜLÜ"', '"REKABET ÖDÜLÜ"', "appearance_unlock_sources"]) {
   assert.ok(!app.includes(gone), `${gone} kalmamalı`);
 }
 assert.ok(!css.includes("cosmetic-lock-source"));
 assert.match(css, /\.cosmetic-locked-label::before \{ content:"🔒 ";font-size:\.9em; \}/);
-assert.ok(app.includes('state.textContent = locked ? "KİLİTLİ" : selected ? "SEÇİLİ" : "SEÇ";'));
+assert.ok(app.includes('state.textContent = locked ? (item.upcoming ? "HENÜZ AÇILMADI" : "KİLİTLİ") : selected ? "SEÇİLİ" : "SEÇ";'));
 assert.equal(i18n.translateText("KİLİTLİ", "en"), "LOCKED");
 
 console.log("season pass button and cosmetic lock contract passed");

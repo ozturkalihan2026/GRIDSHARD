@@ -1,3 +1,43 @@
+# SON DURUM — 3 Kasım 2026: 2.3.0 / code13 kilitli kozmetik adayı geliştirildi
+
+Kullanıcı “2.3.0 ile başlayalım” dedi; ek şart: bütün işlerde ortak sanat yönü
+korunsun, değişecekse ayrı planlansın. Çalışma codex/release-2-3-0 dalındadır.
+
+- 15 kozmetik için TR/EN üç temalı önizleme penceresi; profil/takım görünümü,
+  adlar, henüz açılmadı açıklaması. Önizleme hiçbir kuşanma/ödül yazımı yapmaz.
+- Mevcut CSS/SVG tasarımlarına fiziksel kabartma/gölge ve ortak yüzey ailesi
+  uygulandı; onaylı profil/dock ikonları korundu. Yeni yön veya raster paket yok.
+  docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md bütün sonraki sürümlerin koşuludur.
+- 2.3.0 etiketleri / Android code13 ve yeni TR/EN Sistem mesajı. Eski notlar
+  ve okundu/silindi kimlikleri korunur. Yeni tahsis/yayın listeleri boş;
+  release_guard 2.3.0'da 15 öğe/sıfır tahsis koşulunu zorunlu tutar.
+- Eski 2.2.1 boot gate'i release_version'ı birebir eşleştirdiğinden /health
+  release_version=2.2.1 uyumluluk alanı korundu. GERÇEK SÜRÜM artık
+  server_release_version=2.3.0. version=2.1.0-beta.72 eski v8 alias'ı da korunur.
+  Yeni istemci actual alanı önceler, yalnız 2.2.1 köprüsünü kabul eder;
+  protokol2/hazır kalıcılık şartı değişmez. Operatör gerçek sürümü yeni alandan okumalı.
+- artifacts/release-230-20261103/installed-client-proof.json eski 4866e58
+  relay-client.js'nin DEĞİŞTİRİLMEDEN yeni health köprüsünü kabul ettiğini kanıtlar.
+- Son yerel server 1930 PASS / 44 SKIP; client765, build10, tools32 PASS.
+  Import459/0 sorun. İki Chrome telefon boyutunda 6 E2E PASS; TR/EN tema,
+  Escape/kapat, değişmeyen seçili görünüm, sıfır kozmetik yazımı ve 2.3.0 notu.
+- Android imzalı APK/AAB üretildi, aynı sertifika ve 538 gömülü web dosyası
+  denetlendi. deliverables/GRIDSHARD_2.3.0_13/; code13. Önceki teslim silinmedi.
+- Aday durumu/CI/commit/teslim özeti artifacts/release-230-20261103/FINAL_STATUS.json.
+  Detay docs/RELEASE_2_3_0_ADAYI_20261103.md. CI gerçek PG/Redis/imaj ve iki
+  platform browser sonuçları kaynak commit'iyle ayrıca eşleştirilmelidir.
+- RELEASE-00 in_progress; fiziksel cihaz/görsel kabul, Play iç/kapalı test,
+  üretim geçişi tamamlandı diye işaretlenmedi. Bu tur canlıya/Play'e/telefona
+  dağıtım yapılmadı; 8891'e dokunulmadı. Üretim son doğrulanan 2.2.1'dir.
+- Plan/checklist sanat yönüyle eşlendi: 51 iş; 42 todo, 1 in_progress,
+  1 branch_ready, 7 later. Yeni mod/mağaza/sezon/ödül dağıtımı açılmadı.
+- İlk geniş server koşusunda eski health alanını actual sanan bir test,
+  client koşusunda eski takım kilit metni beklentisi düzeltildi; son setler yukarıda.
+- Canlı ortamda Play sertifikası 3 Kasımda ayrıca eklenmişti; ESKİ 221 prepared
+  env hash'ini güncel ortam diye kullanma. Üretim imaj/ortamı yeniden oku.
+
+---
+
 # SON DURUM — 3 Kasım 2026: sürümlü yayın kademeleri açıkça tanımlandı
 
 Kullanıcı kilitli kozmetik dahil bir sonraki sürümü ve hangi geliştirme

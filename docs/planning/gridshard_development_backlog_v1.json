@@ -26,7 +26,8 @@
   "planning_docs": [
     "docs/GRIDSHARD_CANLI_OPERASYON_VE_GELISIM_PLANI_20261102.md",
     "docs/GRIDSHARD_MAGAZA_ODUL_ARASTIRMASI_20261103.md",
-    "docs/GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md"
+    "docs/GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md",
+    "docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md"
   ],
   "tasks": [
     {
@@ -912,14 +913,16 @@
         "client/src/i18n-catalog.js",
         "playwright.config.js",
         "e2e/presentation-refinements.spec.js",
-        "e2e/battle-render-budget.spec.js"
+        "e2e/battle-render-budget.spec.js",
+        "docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md"
       ],
       "proposed_paths": [
         "docs/planning/ui-acceptance-matrix.md"
       ],
       "acceptance": [
         "320x568 ve 393x852, TR/EN, uzun ad, hata/boş/yükleme/yeniden deneme ve en az 44px hedef doğrulanır.",
-        "Azaltılmış hareket, ses tercihi ve odak sırası korunur; Chromium/WebKit performans eşikleri gevşetilmez."
+        "Azaltılmış hareket, ses tercihi ve odak sırası korunur; Chromium/WebKit performans eşikleri gevşetilmez.",
+        "Mevcut boyalı/hacimli sanat ailesi korunur; yan yana mobil önizleme ve görsel kabul kaydı tamamlanır. Yön değişikliği ayrı brief ve geçiş planı gerektirir."
       ],
       "goals": [
         "presentation",
@@ -1782,7 +1785,7 @@
       "owner": "İstemci / backend / QA / operasyon",
       "effort": "M",
       "priority": "P0",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [
         "COS-01"
       ],
@@ -1802,7 +1805,8 @@
         "Üç temadaki 15 kozmetik oyuncu/takım ekranında TR/EN önizlenir; kilit nedeni açık, henüz açılmadı bilgisi doğrudur; yeni sahiplik verilmez.",
         "Tahsis/yayın listeleri boş ve yarışma başlangıçları kapalı kalır; mevcut oyuncu/takım sahipliği, fiyatlar ve sandık oranları korunur.",
         "320/393 px, native API erişimi, sahip olunmayanı kuşanma reddi, mevcut regresyon/performans ve gerçek ödül yolu uyumluluğu doğrulanır.",
-        "2.3.0 sürüm/notları, başarılı CI, veri koruyan sunucu geçişi ve yeni imzalı AAB tamamlanır; 2.2.1 AAB yeniden adlandırılarak kullanılmaz."
+        "2.3.0 sürüm/notları, başarılı CI, veri koruyan sunucu geçişi ve yeni imzalı AAB tamamlanır; 2.2.1 AAB yeniden adlandırılarak kullanılmaz.",
+        "Mevcut boyalı/hacimli sanat ailesi korunur; yan yana mobil önizleme ve görsel kabul kaydı tamamlanır. Yön değişikliği ayrı brief ve geçiş planı gerektirir."
       ],
       "goals": [
         "content",
@@ -1814,7 +1818,10 @@
         4,
         9
       ],
-      "evidence": []
+      "evidence": [
+        "artifacts/release-230-20261103/browser-results.json",
+        "artifacts/release-230-20261103/client-tests-final.log"
+      ]
     }
   ],
   "release_plan": [
@@ -1897,5 +1904,17 @@
       "keep_closed": "Kalıcı ayrı kuyruk, BO3 ve 2v2.",
       "exit": "Yeterli aktif rakip/bekleme ve adalet verisi, seçim/kopma testi ve bağımsız ödül bütçesi; uygun değilse sürüm ertelenir."
     }
-  ]
+  ],
+  "art_direction": {
+    "document": "docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md",
+    "policy": "preserve_approved_direction",
+    "change_requires": [
+      "new_brief",
+      "side_by_side_preview",
+      "asset_and_screen_inventory",
+      "migration_scope",
+      "performance_budget",
+      "visual_acceptance"
+    ]
+  }
 }

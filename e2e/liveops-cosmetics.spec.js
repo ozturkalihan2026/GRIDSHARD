@@ -5,7 +5,7 @@ const catalog = require('../server/data/cosmetic_releases_v1.json');
 test('new player and team cosmetics have distinct previews and remain locked', async ({page}, info) => {
   const errors = [], mutations = [];
   page.on('pageerror', e => errors.push(String(e)));
-  page.on('request', r => {if(r.method()==='POST' && /\/(cosmetics|avatar)(\?|$)/.test(r.url()))mutations.push(r.url());});
+  page.on('request', r => {if(['POST','PUT','PATCH'].includes(r.method()) && /\/(cosmetics|avatar)(\?|$)/.test(r.url()))mutations.push(r.url());});
   // Presentation only: an owner fixture exposes the existing team editor.
   // Ownership, publication and actual grants are covered by server tests.
   await page.route('**/teams/player/*', async route => {
@@ -38,6 +38,30 @@ test('new player and team cosmetics have distinct previews and remain locked', a
   }
   await page.locator('[data-background-id="aurora_banner"]').scrollIntoViewIfNeeded();
   await page.screenshot({path:info.outputPath('locked-player-backgrounds.png')});
+  const selectedBefore = await page.locator('#profile-hero-avatar').getAttribute('data-frame');
+  await page.locator('#avatar-customization-screen [data-open-cosmetic-collection]').click();
+  const preview=page.locator('#cosmetic-collection-dialog');
+  await expect(preview).toBeVisible();
+  await expect(preview).toContainText('henüz ödül olarak açılmadı');
+  for(const theme of ['aurora','solar','abyss']) {
+    await preview.locator(`[data-collection-theme="${theme}"]`).click();
+    await expect(preview).toHaveAttribute('data-collection-theme',theme);
+    await expect(preview.locator('[data-collection-item]')).toHaveCount(5);
+    await expect(preview.locator('#cosmetic-collection-player .profile-avatar')).toHaveAttribute('data-frame',theme+'_frame');
+    await page.screenshot({path:info.outputPath('collection-'+theme+'.png')});
+  }
+  await page.keyboard.press('Escape');
+  await expect(preview).toBeHidden();
+  await expect(page.locator('#profile-hero-avatar')).toHaveAttribute('data-frame',selectedBefore);
+  await page.evaluate(()=>window.GridshardI18n.apply('en'));
+  await page.locator('#avatar-customization-screen [data-open-cosmetic-collection]').click();
+  await expect(preview.locator('h2')).toHaveText('Upcoming Collections');
+  await expect(preview).toContainText('Previewing does not grant ownership');
+  await preview.locator('[data-collection-theme="solar"]').click();
+  await expect(preview.locator('[data-collection-item="solar_frame"]')).toHaveText('Solar Forge Frame');
+  await page.screenshot({path:info.outputPath('collection-english.png')});
+  await preview.locator('#cosmetic-collection-close').click();
+  await page.evaluate(()=>window.GridshardI18n.apply('tr'));
   await page.locator('[data-shell-screen="team"]').click();
   await page.locator('#team-menu-button').click();
   await page.locator('[data-team-management-tab="cosmetics"]').click();
@@ -46,6 +70,10 @@ test('new player and team cosmetics have distinct previews and remain locked', a
   await expect(page.locator('#team-name-color-options .team-appearance-option[data-locked="true"]')).toHaveCount(3);
   await page.locator('#team-emblem-options').scrollIntoViewIfNeeded();
   await page.screenshot({path:info.outputPath('locked-team-emblems.png')});
+  await page.locator('#team-screen [data-open-cosmetic-collection]').click();
+  await expect(preview).toBeVisible();
+  await expect(preview.locator('#cosmetic-collection-team strong')).toHaveText('Yeni Dönem Takımı');
+  await page.keyboard.press('Escape');
   expect(errors).toEqual([]);
   expect(mutations).toEqual([]);
 });
