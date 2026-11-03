@@ -1,4 +1,51 @@
-# AKTİF ÇALIŞMA — 3 Kasım 2026: 2.4.0 başlangıcı / kaynak ve stok katmanı
+# GÜNCEL KARAR — 3 Kasım 2026: mevcut içerikle ilk sezon ve tarihli takvim
+
+Kullanıcı kozmetik dışı yaratıcı ödüller ve neyi/ne zaman yapacağımızı belirleyen
+yayın takvimi istedi. Açık tercihi: **2.4.0 mevcut 24 modülle ilk sezon açılışı**;
+yeni modül ve geniş kozmetik üretimi sonraki paketlere bölünsün. Önceki
+2.4.0 “iki yeni kart + 18 yeni öğe” koşulu bu kararla değişti.
+
+- Canlı **2.3.0/code14**; dal codex/release-2-4-0. Bu tur plan/veri/generator
+  değişikliği yapıldı; AWS, canlı sezon/env, AAB, telefon/8891 değişmedi.
+- Ana yeni belge docs/GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md:
+  kaynaklı ödül portföyü, ilk sezon tahsis önerisi, haftalık iş ve tarih tablosu.
+- Çalışma hedefi **2.4.0 23 Kasım 2026**, **S1 30 Kasım 03.00 TR**.
+  12–15 aktif geliştirici günü tahmini; haftada5gün/günde4–6saat ve ~%20
+  hata/test/gözlem payı varsayımıdır, ölçülmüş hız veya mağaza onay sözü değildir.
+- Sonraki hedef2.5/21Aralık; tahmin2.6/18Ocak,2.7/15Şubat,2.8/15Mart;
+  koşullu2.9/12Nisan2027. Sezonlar bunlardan1hafta sonra 28günlük hedeflerdir.
+  Distant efor4Ocak, draftkararı1Mart gözden geçirilir; takvim kendiliğinden iş çalıştırmaz.
+- Canonical docs/planning/release_calendar_v1.json; tools/release_calendar.py
+  tarih/sıra/28gün/sezon boşluksuzluğu ve backlog tarihlerini doğrular; ana
+  plan ve yeni ödül belgesinin tablolarını aynı kaynaktan üretir.
+- S1 istisnası ve kaynak-ödülü haftası HENÜZ KODLANMADI. Mevcut stok kodu
+  her-hafta-kozmetik profiliyle18/20eksik raporlamaya devam eder. Sayıları
+  sessizce0yapma/fallbackileeskikozmetikverme. Yalnızilksezon24mevcutmodül;
+  S2+ enaz1yeni hazır modül ve özgün ödül koşulu devam eder.
+- S1 önerisi: aurora oyuncu seti sezon yolu; solar sıralama; abyss sonhafta.
+  Diğer3hafta sabit kaynak/modül parçası. Takımturnuvası bağımsız ve gerçek
+  katılım şartlı, en erken7Aralık hedefi; kişisel sezon bunu beklemez.
+- COS-02 18öğe üç gruba bölündü: 2.5/S2 altı,2.6/S3 altı,2.7/S4 altı.
+  CARD-01 YankıRölesi2.5/S2, CARD-02 KorFırlatıcı2.6/S3. Mağazaya ayrı4öğe.
+  İlk3takımseti tüketilince yeni takımstoğu ayrıca üretilir. Sanat yönü aynı.
+- Yeni plan görevleri SEASON-00 (bütçe/ilkprofil/kapanış/kalıcılık/mobil),
+  COMPAT-01 (kurulu2.3/2.2.1), REWARD-05 (isteğe bağlı AI lisansı/kupon).
+  Toplam54iş:43todo,2in_progress,2done,7later. RELEASE-01 yalnız daraltılmış
+  ilksezon akışını bekler; 2.5kapısına ertelenen kart/mağaza/kalıcılık testleri eklendi.
+- Kozmetik dışı fikirler: hedefli Devre Projesi, seçim kasası, deste ikmali,
+  çekirdek bakım paketi, tek kullanımlık yeniden kurulum kuponu, AI laboratuvar
+  lisansı, keşif günlüğü, PvE yan rota, takım ikmali, küçük ustalık hattı.
+  Kupon/lisans/seçim yeniözelliktir; mevcut diye sunulmaz. Eski ücretsiz hak
+  kuponla ücretlendirilmez, kiralık kart dereceli savaşa taşınmaz.
+- Sonraki somut iş **BASE-01 mevcut40kademe/kaynak bütçesi**, sonra SEASON-00
+  ve COMPAT-01. Genel yeni mağaza ekonomisi ECON-01 sonraki2.5kapsamıdır.
+- Bu tur doğrulama: checklist ve takvim check, Python sözdizimi, plan
+  bağımlılıkları ve runtime dosyalarının değişmediği kontrol. Önceki1987/44
+  sonucu önceki işlevselstok commit'ine aittir, bu yeni planın CI sonucu değildir.
+
+---
+
+# TARİHSEL BAŞLANGIÇ — 3 Kasım 2026: 2.4.0 başlangıcı / kaynak ve stok katmanı
 
 Kullanıcı 2.3.0 sunucu geçişini ve AAB'nin kullanıcılara sunulduğunu teyit
 etti; sonraki sürüme başlama talimatı verdi. Yayın teyidi kullanıcı beyanıdır,

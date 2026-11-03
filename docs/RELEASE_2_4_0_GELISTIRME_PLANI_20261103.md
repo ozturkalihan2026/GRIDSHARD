@@ -1,82 +1,45 @@
-# GRIDSHARD 2.4.0 — dönem içeriği ve ödül takvimi
+# GRIDSHARD 2.4.0 — mevcut içerikle ilk sezon
 
-Durum: **geliştirme başladı**, dal `codex/release-2-4-0`.
-2.3.0 / code14 kullanıcı tarafından yayımlandı olarak teyit edildi.
-Bu sürümün geliştirme çıktıları henüz canlıya veya Android'e dağıtılmadı.
+3 Kasım 2026 kullanıcı kararı: mevcut 24 modülle ilk sezonun açılması önceliklidir.
+Yeni modüller ve geniş kozmetik üretimi sonraki paketlere bölündü. Dal
+`codex/release-2-4-0`; canlı 2.3.0. Bu belge sezonu veya ödül dağıtımını açmaz.
 
-Hedef: iki dönem boyunca özgün ödül ve yeni modül sağlayan, içerik yetersizse
-açılmayan dönem sistemi. Mağaza/seçim kasası 2.5.0, Günlük Devre Deneyi 2.6.0
-olarak kalır. Ortak boyalı/hacimli lacivert–altın–turkuaz sanat yönü sürer.
+**Çalışma hedefi: 23 Kasım 2026 sürüm yayını; 30 Kasım 2026 03.00 TR sezon
+başlangıcı.** Tahmin 12–15 aktif geliştirici günü; kapasite ve test/Play
+koşulları [tarihli planda](GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md).
+Bu belge önceki “iki yeni modül + 18 yeni öğe önce tamamlansın” kapsamını değiştirir.
 
 ## Kademeler
 
-| Kademe | Somut teslim | Çıkış koşulu / durum |
+| Kademe | İçerik | Çıkış koşulu |
 | --- | --- | --- |
-| A — kaynak ve stok | Kodla eşleşen kaynak sözleşmeleri; gerçek tarihlerden dönem ihtiyacı; ayrı mağaza stoğu; stok denetim komutu | İlk uygulama bu dalda hazır. Yerel test kanıtı kaydedilir; birleşik yayın kapısına bağlama sonraki kademede. |
-| B — özgün üretim | Ekonomi baz çizgisi/simülasyonu; 9 çerçeve + 9 zemin; Yankı Rölesi ve Kor Fırlatıcı | Sanat ve mekanikler gerçek çıktıyla kabul edilir; yalnız taslak ad veya yeniden renklendirme tamamlanmış içerik sayılmaz. |
-| C — haklar ve takvim | Sürümü/hash'i sabit ödül tanımları; iki dönemlik tahsis; birleşik açılış ve hak koruyan kapanış | Tekrar/eşzamanlı talep, eski haklar ve restart/restore kanıtı; stok veya kart eksikse açılış reddedilir. |
-| D — oyuncuya sunum | Etkinlik/tema vitrini, kazanım ve kilit açıklamaları, TR/EN; dönem sonrası sonuç | 320/393 px, mevcut sanat ailesi ve performans; kaynakta görünen ile gerçekten kazanılan aynı. |
-| E — 2.4.0 yayını | Sürüm mesajı, yeşil CI, imzalı yeni AAB ve veri koruyan sunucu geçişi | Gerçek PostgreSQL/Redis, Android/Safari, cihaz ve güncelleme uyumu; ardından kontrollü dağıtım/gözlem. |
+| A — mevcut temel | Kaynak/stok katmanı ve gerçek ISO takvimi | Önceki 1.987 yerel test geçti. Eski tam-koleksiyon raporu yeni kaynak haftası profili değildir. |
+| B — ilk sezon | BASE-01 bütçesi; SEASON-00: 40 kademe, üç ana kozmetik seti, diğer haftalarda sabit kaynak paketleri | Yalnız S1'e 24 modül istisnası; kaynak/kozmetik dönem türleri açık. Bunlar henüz kodlanmadı. |
+| C — güvenli teslim | Tek teslim, kayıt, dönem kapanışı, premium kökeni ve kazanılmış hak koruma | Tekrar/eşzamanlı talep, geç dönüş, restart/restore; kaynak yokluğu eski kozmetiğe düşmez. |
+| D — istemci ve sunum | COMPAT-01: değiştirilmemiş 2.3/2.2.1 istemci; TR/EN mobil önizleme, tarih ve gerçek ödül | Sağlık sürümü artırılarak eski kurulum bozulmaz. Ortak sanat yönü ve performans korunur. |
+| E — yayın ve açılış | Sürüm mesajı, CI, imzalı AAB, Play cihaz testi, veri koruyan geçiş | 23 Kasım sürüm; bir hafta gözlem; 30 Kasım başlangıç ancak bütün kapılar geçildiyse. |
 
-Bunlar geliştirme kademeleridir; A/B/C tamamlandı diye ara sürüm dağıtılmaz.
-Planlanan ürün yayını **2.4.0**'dır. Canlıya yönelik bağımsız acil hata
-düzeltmesi gerekirse 2.3.x olarak ayrıca ele alınır. Android sürüm kodu yeni
-paket üretirken Play'deki en yüksek koddan büyük seçilir; şimdi paket üretilmez.
+## Stok ve modül ayrımı
 
-## İlk kademenin uygulaması
+- Mevcut altı oyuncu öğesi: Kutup Işığı sezon yolu, Güneş Ocağı sıralama,
+  Derin Akım son hafta önerisi. Başka haftaya/döneme tekrar tahsis edilmez.
+- Mevcut dokuz takım öğesi üç takım dönemine yeter; takım başlangıcı bağımsız
+  ve gerçek katılım koşulludur. Kişisel sezon takım açılışını beklemez.
+- S1'in diğer üç haftası açık kaynak ödülü türüdür; sadece eksik kozmetiği
+  görmezden gelmek için gerekli adet düşürülmez. Mevcut kod bunu henüz desteklemiyor.
+- 18 öğelik sanat brief'i altışar grupta 2.5/S2, 2.6/S3, 2.7/S4'e dağıtıldı.
+- Yankı Rölesi 2.5/S2; Kor Fırlatıcı 2.6/S3. S2'den itibaren yeni hazır
+  modül koşulu korunur; S1 istisnası genel kuralı sıfırlamaz.
+- Mağaza/seçim kasası 2.5; günlük deney 2.6; PvE 2.7. Lisans/kupon gibi
+  yeni ödüller zorunlu kapsam ile ikincil kapsam ayrımıyla tarihlendi.
 
-- `server/data/liveops_content_sources_v1.json`: dört mevcut dönem kaynağı ve
-  iki planlı kanal. JSON, yeni bir çalışma adaptörü oluşturamaz.
-- `server/app/liveops_content.py`: yalnız çevrimdışı hesap; tarihli rapor
-  gerçek ISO haftalarını sayar. Tarihsiz rapor açıkça kapasite tahminidir.
-- `inventory_pool`: mevcut öğelerde varsayılan `competition`; mağaza stoğu
-  `shop`, gelecekteki deney stoğu `daily_trial`. Mevcut dönem rezervasyonu
-  başka kanalın öğesini seçemez; bilinmeyen havuz reddedilir.
-- Eski/draft rezervasyon serbest stok sayılmaz. Takvimdeki kendi rezervasyonu
-  bir kez karşılanmış sayılır; takvim dışındaki rezervasyon yeniden kullanılamaz.
-- `--check-stock` eksik stokta veya uygulanmamış kanal talebinde hata kodu 2
-  üretir. Bu **stok kapısıdır**; tüm sürümün yayıma hazır olduğunu söylemez.
-  Raporda `publication_ready=false` kalır.
-- Yeni statik JSON kaynak/Docker izin listelerine eklendi. Oyuncu/runtime
-  dosyaları yine paket dışında kalır. Uygulanmış SQL değişmedi.
+Bugünkü `coverage --cycles 2` eski her-hafta-kozmetik varsayımıyla 18/20 ek
+oyuncu öğesi isteyebilir. Yeni profil uygulanmadan bu rapor açılışa hazır
+diye yorumlanmaz. Üretimde tarih ayarı veya yeni AAB bu planlama turunda yapılmadı.
 
-## Takvim ve üretim miktarı
+## Sonraki somut iş
 
-Tarihler aşağıda yalnız tekrar üretilebilir test girdisidir; yayın tarihi değildir.
-
-| İki dönemlik örnek | Haftalık turnuva | Oyuncu çerçevesi/zemin ihtiyacı | Mevcut stok sonrası yeni üretim |
-| --- | --- | --- | --- |
-| Pazartesi 00.00 UTC, 56 gün | 8 ayrı ISO haftası | 12 çerçeve + 12 zemin | 9 + 9 = **18** |
-| Çarşamba 12.00 UTC, 56 gün | 9 ayrı ISO haftası | 13 çerçeve + 13 zemin | 10 + 10 = **20** |
-
-Sezon yolu ve sezon sıralaması her döngüde ayrı oyuncu seti tüketir.
-Takım turnuvası ayrı başlangıçla hesaplanır; iki takım dönemi için altı öğe
-gerekir, mevcut stok dokuzdur. Başlangıç verilmezse tarihli raporda takım
-turnuvası açılmış varsayılmaz. Ortak sınır haftası iki defa sayılmaz;
-başlangıç dahil, bitiş hariçtir. ISO yıl değişimi doğru yıl/haftayı kullanır.
-
-18 öğelik sanat kapsamı en az bütçedir. Gerçek açılış tarihleri seçildiğinde
-stok tekrar hesaplanır; 20 gerekiyorsa iki özgün öğe daha üretilir veya takvim
-revize edilir. Mağazanın ayrı dört öğesi bu dönem stoğunu tüketmez.
-
-```powershell
-python tools/prepare_liveops_rewards.py validate
-python tools/prepare_liveops_rewards.py coverage --cycles 2
-python tools/prepare_liveops_rewards.py coverage --cycles 2 --starts-at 2027-01-04T00:00:00Z --team-starts-at 2027-01-04T00:00:00Z --check-stock
-python tools/prepare_liveops_rewards.py coverage --cycles 2 --extra-periods shop_collection=2
-```
-
-Son iki örnek mevcut stok/uygulama ile hazır sonucu vermez. Komutlar sezon
-başlangıç ortamını, canlı veritabanını, ödül sahipliğini veya tahsisleri değiştirmez.
-Sonraki somut iş B kademesinin ekonomi baz çizgisidir; sanat brief'i
-[iki dönem manifestinde](planning/two-cycle-art-manifest.md) bulunur.
-
-## İstemci geçişi için yayın koşulu
-
-Kurulu 2.3.0 istemcisi sağlık yanıtındaki sürümü kendi sürümü veya açıkça
-desteklediği 2.2.1 ile eşleştirir. Sunucunun sürüm metnini doğrudan 2.4.0
-yapmak bu istemcinin başlangıcını engelleyebilir. E kademesinde değiştirilmemiş
-2.3.0 istemci kaynağıyla gerçek başlangıç kanıtı gerekir; 2.2.1 köprüsü de
-korunur. Sürüm/capability geçiş sözleşmesi çözülmeden etiketler değiştirilmez
-ve sunucu geçişi yapılmış sayılmaz. Yeni modüllerin eski istemcide görünümü
-ve güvenli güncelleme akışı ayrıca doğrulanır.
+BASE-01 kaynak/40 kademe bütçesi ve SEASON-00 ilk sezon sözleşmesi;
+ardından sabit kaynak haftaları, kapanışta hak koruma ve COMPAT-01.
+Günlük iş takvimi ve daha sonraki sürümler
+[ödül portföyü ve sürüm takviminde](GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md).

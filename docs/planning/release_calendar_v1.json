@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "planning_only": true,
+  "as_of": "2026-11-03",
+  "timezone": "Europe/Istanbul",
+  "capacity_assumption": "Tek ana geliştirme akışı; haftada 5 gün, günde 4–6 saat odaklı çalışma; kapasitenin yaklaşık yüzde 20'si hata/test/gözlem payı. Bu çalışma kapasitesi teyit edilmiş zaman çizelgesi değildir.",
+  "scope_decision": "Kullanıcı 2.4.0'da mevcut 24 modülle ilk sezonun açılmasını önceliklendirdi. Yeni kart ve geniş kozmetik üretimi sonraki paketlere bölündü.",
+  "season_policy": "Yalnız ilk açılış sezonunda mevcut 24 modül kullanılır. İkinci sezondan itibaren en az bir yeni hazır modül; yeni modül hazırlığı yoksa yeni sezon otomatik açılmaz. Bu istisna ve kapı henüz çalışma koduna uygulanmadı.",
+  "releases": [
+    {
+      "version": "2.4.0",
+      "confidence": "hedef",
+      "work_starts_on": "2026-11-04",
+      "scope_freezes_on": "2026-11-16",
+      "tests_start_on": "2026-11-19",
+      "target_release_on": "2026-11-23",
+      "content": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi.",
+      "required": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi.",
+      "optional": "Takım turnuvası için ayrı hazırlık; yeterli gerçek takım yoksa beklemede kalır.",
+      "excluded": "Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu.",
+      "work_items": [
+        "BASE-01",
+        "COS-04",
+        "SEASON-00",
+        "COMPAT-01",
+        "RELEASE-01"
+      ],
+      "season": {
+        "number": 1,
+        "starts_on": "2026-11-30",
+        "ends_on": "2026-12-28",
+        "starts_at_utc": "00:00",
+        "module": "Mevcut 24 modül; yalnız ilk sezon istisnası"
+      }
+    },
+    {
+      "version": "2.5.0",
+      "confidence": "hedef",
+      "work_starts_on": "2026-11-24",
+      "scope_freezes_on": "2026-12-14",
+      "tests_start_on": "2026-12-17",
+      "target_release_on": "2026-12-21",
+      "content": "Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe.",
+      "required": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı.",
+      "optional": "Ek mağaza teklifleri yalnız ana pilot tamamlanırsa değerlendirilir.",
+      "excluded": "Yeni gerçek para ürünü, yeni para birimi, ücretli yeniden çekiliş ve PvP deneme gücü artışı.",
+      "work_items": [
+        "ECON-01",
+        "REWARD-01",
+        "DATA-01",
+        "REWARD-02",
+        "REWARD-03",
+        "SHOP-01",
+        "SHOP-02",
+        "SHOP-03",
+        "COS-02",
+        "COS-03",
+        "CARD-01",
+        "BALANCE-01",
+        "RELEASE-02"
+      ],
+      "season": {
+        "number": 2,
+        "starts_on": "2026-12-28",
+        "ends_on": "2027-01-25",
+        "starts_at_utc": "00:00",
+        "module": "Yankı Rölesi"
+      }
+    },
+    {
+      "version": "2.6.0",
+      "confidence": "tahmin",
+      "work_starts_on": "2026-12-22",
+      "scope_freezes_on": "2027-01-11",
+      "tests_start_on": "2027-01-14",
+      "target_release_on": "2027-01-18",
+      "content": "Günlük Devre Deneyi: önce 7 özgün problem, ilk başarı ödülü ve keşif günlüğü; Kor Fırlatıcı; üçüncü sezon için 6 yeni oyuncu kozmetiği.",
+      "required": "Sunucu doğrulaması, ilk/tekrar ödülü ayrımı, gün değişimi, kaynak bütçesi, yeni problem stoğu ve modül karşı oyunu.",
+      "optional": "Laboratuvar lisansı: sahip olunmayan modülü eşit seviyeli AI denemesinde kullanma; yetişmezse pilotun önkoşulu değildir.",
+      "excluded": "Dereceli maçta kiralık güç, PvE seferi ve ayrı kalıcı PvP kuyruğu.",
+      "work_items": [
+        "CARD-02",
+        "COS-02",
+        "LIVE-03",
+        "ANALYT-02",
+        "REWARD-04",
+        "REWARD-05",
+        "RELEASE-03"
+      ],
+      "season": {
+        "number": 3,
+        "starts_on": "2027-01-25",
+        "ends_on": "2027-02-22",
+        "starts_at_utc": "00:00",
+        "module": "Kor Fırlatıcı"
+      }
+    },
+    {
+      "version": "2.7.0",
+      "confidence": "tahmin",
+      "work_starts_on": "2027-01-19",
+      "scope_freezes_on": "2027-02-08",
+      "tests_start_on": "2027-02-11",
+      "target_release_on": "2027-02-15",
+      "content": "Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi.",
+      "required": "Koşu kurtarma, ilk/tekrar ödülü, yan rota tek teslimi; yeni modül için çalışma kodu/görsel/denge/ücretsiz edinim. CARD-03 taslak brief'i hazır modül sayılmaz. İlk üç takım seti tüketildiyse yeni takım seti de üretilir; oyuncu stoğu buna yetmiş sayılmaz.",
+      "optional": "İkinci sefer rotası ilk pilotun kalite ve katılım verisi uygunsa.",
+      "excluded": "Takım boss'u ve gerçek zamanlı 2v2.",
+      "work_items": [
+        "LIVE-04",
+        "CARD-03",
+        "COS-02"
+      ],
+      "season": {
+        "number": 4,
+        "starts_on": "2027-02-22",
+        "ends_on": "2027-03-22",
+        "starts_at_utc": "00:00",
+        "module": "Darbe Muhafızı — ayrıntılı üretim eforu 4 Ocak kontrolünde yeniden tahmin edilecek"
+      }
+    },
+    {
+      "version": "2.8.0",
+      "confidence": "tahmin",
+      "work_starts_on": "2027-02-16",
+      "scope_freezes_on": "2027-03-08",
+      "tests_start_on": "2027-03-11",
+      "target_release_on": "2027-03-15",
+      "content": "Takım ortak hedefi ve kişisel ikmal hakkı; ilk küçük ustalık hattı; beşinci sezon için yeni ödül setleri ve Toparlanma Feneri hedefi.",
+      "required": "Üyelik/katkı tavanı/tek teslim, küçük takım erişimi, yeni sezon modülü ve özgün stok.",
+      "optional": "Yeniden kurulum kuponu: var olan ücretli yetenek sıfırlama işleminin bedelini tek kez kaldırma; geniş ustalık kataloğu sonraya kalır.",
+      "excluded": "Oyuncular arası ticaret, hediye zinciri ve parayla oy hakkı.",
+      "work_items": [
+        "LIVE-05",
+        "LIVE-07",
+        "REWARD-04",
+        "REWARD-05",
+        "CARD-03"
+      ],
+      "season": {
+        "number": 5,
+        "starts_on": "2027-03-22",
+        "ends_on": "2027-04-19",
+        "starts_at_utc": "00:00",
+        "module": "Toparlanma Feneri — ayrıntılı üretim eforu 4 Ocak kontrolünde yeniden tahmin edilecek"
+      }
+    },
+    {
+      "version": "2.9.0",
+      "confidence": "koşullu",
+      "work_starts_on": "2027-03-16",
+      "scope_freezes_on": "2027-04-05",
+      "tests_start_on": "2027-04-08",
+      "target_release_on": "2027-04-12",
+      "content": "Yeterli gerçek rakip varsa eşit seviyeli Draft Arenası için sınırlı pilot; altıncı sezon ödül/modül hazırlığı.",
+      "required": "Aktif rakip ve bekleme verisi, adalet/bağlantı testi, altıncı sezon için yeni modül ve yeni stok. Modül brief'i 1 Mart kontrolüne kadar kesinleşir.",
+      "optional": "Pilot uygun değilse kapsam tasarım kontrolünde yeniden planlanır; başka bir mod aynı tarihe kendiliğinden taşınmaz.",
+      "excluded": "Kalıcı draft kuyruğu, BO3 ve 2v2.",
+      "work_items": [
+        "LIVE-06",
+        "ANALYT-02",
+        "CARD-03"
+      ],
+      "season": {
+        "number": 6,
+        "starts_on": "2027-04-19",
+        "ends_on": "2027-05-17",
+        "starts_at_utc": "00:00",
+        "module": "Yeni modül konsepti 1 Mart tasarım kontrolünde belirlenecek; hazır olmadan sezon açılmaz"
+      }
+    }
+  ]
+}

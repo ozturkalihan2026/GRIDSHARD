@@ -1,6 +1,6 @@
-# İki dönemlik oyuncu kozmetiği — üretim brief'i
+# Üç yayın grubunda oyuncu kozmetiği — üretim brief'i
 
-Hedef: 2.4.0 için **9 yeni çerçeve + 9 yeni zemin**. Durum: taslak brief;
+Güncel hedef: **9 yeni çerçeve + 9 yeni zemin**, altışar öğelik 2.5/S2, 2.6/S3 ve 2.7/S4 grupları. 2.4.0 ilk sezonu bu yeni öğeleri beklemez. Durum: taslak brief;
 bu tabloda adının bulunması öğeyi çizilmiş, onaylanmış veya kazanılabilir yapmaz.
 Yeni öğeler henüz `cosmetic_releases_v1.json`'a eklenmez.
 
@@ -38,5 +38,4 @@ yan yana karşılaştırma; ardından TR/EN ve kilit/seçili durumlar. Sanat kab
 olmadan durum `approved` yapılmaz. Dönem/kaynak tahsisi stok ve kart kapısından
 sonra yapılır; bu brief herhangi bir ödül sözü veya yayın başlangıcı değildir.
 
-Hafta ortası takvim 20 yeni öğe isterse ilave bir özgün çift için ayrı brief
-hazırlanır. İki mağaza çifti 2.5.0'a aittir ve bu listedeki 18 öğeden seçilmez.
+Her hafta kozmetik isteyen eski profil 18/20 ek öğe ister; güncel ilk-sezon kaynak haftası profili farklıdır. Gerçek dönem ihtiyacı yeni ödül türlerine göre hesaplanır. İki mağaza çifti 2.5.0'a aittir ve bu listedeki 18 öğeden seçilmez.

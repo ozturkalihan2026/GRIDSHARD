@@ -6,11 +6,13 @@ mevcut, dalda hazır veya yapılacak olduğunu izler.
 Bu dosyadaki yeni servis/rotalar/tablo isimleri **öneridir**; kodda mevcut
 oldukları veya canlıda çalıştıkları anlamına gelmez.
 
-**Yayın ayrımı:** 2.3.0 mevcut 15 kozmetiğin kilitli katalog/önizleme paketidir;
-dönem tahsisi ve başlangıcı açılmaz. Bu belgedeki tam stok, yeni modül,
-birleşik takvim ve ödül açılışı 2.4.0; yeni mağaza/seçim kasası 2.5.0;
-günlük deney 2.6.0 kapsamıdır. İki dönemlik üretim stoğu 2.3.0 önizlemesinin
-önkoşulu değildir. Sonraki yayınlar gelişim planı §9 ve checklist'te tanımlıdır.
+**Güncel yayın ayrımı:** 2.3.0 yayımlandı. Kullanıcı kararıyla 2.4.0 mevcut
+24 modülle yalnız ilk sezonu açmaya odaklanır. Kaynak haftası türü, ilk-sezon
+istisnası, kapanışta hak koruma ve eski istemci uyumu henüz uygulanacaktır.
+Yeni seçimli hak/mağaza/Yankı Rölesi 2.5.0; günlük deney/Kor Fırlatıcı 2.6.0.
+18 oyuncu öğesi S2/S3/S4 için altışar gruptur. Aşağıdaki tam-koleksiyon
+kapasitesi önceki her-hafta-kozmetik profilinin hesabıdır; ilk sezon kapısı
+olarak kullanılmaz. [Tarihli plan](GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md).
 
 ## 1. Mevcut sistemin sınırları
 
@@ -154,16 +156,13 @@ verilmiş veya çizilmiş sanat sayısı değildir.
 
 Hafta ortası başlangıcında aynı 56 gün dokuz ISO haftasına dokunur; ihtiyaç 20 yeni oyuncu öğesine çıkar. Gerçek takvim stok aracıyla doğrulanır.
 
-Bu hesabın en az 18 öğelik kısmı 2.4.0 dönem açılışı, ayrı dört mağaza tasarımı
-2.5.0 içindir. İlk kilitli önizleme yayını 2.3.0 hazır 15 öğeyi kullanır.
+Bu eski tam-koleksiyon hesabındaki 18 öğe artık üç üretim grubuna bölündü: 2.5/S2, 2.6/S3, 2.7/S4. Ayrı dört mağaza tasarımı 2.5.0'dadır. 2.4.0 mevcut üç oyuncu seti ve açık kaynak haftaları kullanacaktır.
 
 İlk mod takvimi mevcut ödül kaynaklarına ek yeni ödül isteyecekse bu 30 öğe
 hesabı yeterli değildir. Her yeni kaynak için `coverage` girdisi ve stok
 talebi genişletilir. Mevcut araç henüz genel bir etkinlik stok planlayıcısı değil.
 
-Sezon başına en az bir yeni modül politikası ayrıca vardır. İlk iki dönem için
-iki modülün çalışma kodu, çizimi, karşı oyunu, arena açılışı ve ücretsiz kazanımı
-hazır olmalıdır. `echo_relay` ve `ember_launcher` mevcut manifestte yalnız
+Sezon başına en az bir yeni modül politikası ayrıca vardır. Yalnız ilk sezon mevcut 24 modülle başlayacak; bu istisna açıkça kodlanıp test edilecektir. S2 ve sonrasında yeni modülün çalışma kodu, çizimi, karşı oyunu, arena açılışı ve ücretsiz kazanımı hazır olmalıdır. `echo_relay` ve `ember_launcher` mevcut manifestte yalnız
 planlıdır. Kalite yetişmezse sezon başlangıcı yeniden planlanır; kart hazırmış
 gibi gösterilmez veya mevcut politika sessizce kaldırılmaz.
 

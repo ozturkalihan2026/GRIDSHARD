@@ -2,7 +2,7 @@
 
 **Tarih: 3 Kasım 2026 · Proje: mağaza, ödül, içerik ve yaşayan oyun**
 
-Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **51 iş** vardır: **40 yapılacak**, **2 çalışılıyor**, **2 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
+Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **54 iş** vardır: **43 yapılacak**, **2 çalışılıyor**, **2 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
 
 ## 1. Proje dosyaları ve kullanım
 
@@ -11,6 +11,7 @@ Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **51 iş** vardır:
 - [Teknik tasarım](GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md): mevcut/yeni altyapı, veri/API ve ekran sözleşmeleri.
 - [Ortak sanat yönü](SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md): bütün paketler için referans aile ve yön değişikliği koşulları.
 - [2.4.0 geliştirme kademeleri](RELEASE_2_4_0_GELISTIRME_PLANI_20261103.md): güncel kapsam, ilk stok uygulaması ve sonraki üretim işleri.
+- [Ödül portföyü ve tarihli yayın takvimi](GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md): ödül çeşitleri, haftalık iş, kapsam kapanışı, sürüm ve sezon tarihleri.
 - [Makine tarafından okunabilir iş listesi](planning/gridshard_development_backlog_v1.json): görevlerin tek kaynağı.
 
 Görevi güncellemek için JSON içindeki `status`, `evidence` ve gerekiyorsa kabul ölçütlerini düzenle. Sonra repo kökünde çalıştır:
@@ -42,10 +43,10 @@ Bütün sürümlerde mevcut onaylı sanat yönü korunur. Yön değişecekse ön
 | --- | --- |
 | Canlı sunucu 2.3.0 | Profil/takım düzeltmeleri, ortak yalnız-ok geri düğmeleri ve sürüm mesajları; mevcut mağaza/sandık/ödül sistemi korunur. |
 | Canlıda kilitli | 15 kozmetik ve üç tema önizlemesi; tahsis/yayın sıfır, mevcut sahiplik korundu; `COS-01` tamam. |
-| Bu turda hazırlanan | Kaynaklı araştırma, teknik tasarım, 51 görev, sürümlü yayın kademeleri ve yerel plan doğrulama aracı. |
+| Bu turda hazırlanan | Kaynaklı araştırma, teknik tasarım, 54 görev, sürümlü yayın kademeleri ve yerel plan doğrulama aracı. |
 | Uygulanacak | Yeni teklifler, seçim hakları, kapanış kurtarması, genel takvim kapısı, yeni ekranlar ve modlar. |
 
-2.3.0 sunucu ve AAB yayını kullanıcı tarafından teyit edildi; RELEASE-00 tamam. Fiziksel cihaz testinin ayrıca raporlanmadığı kayıtta korunur. Aktif geliştirme 2.4.0 dönem içeriği ve ödül takvimidir.
+2.3.0 sunucu ve AAB yayını kullanıcı tarafından teyit edildi; RELEASE-00 tamam. Fiziksel cihaz testinin ayrıca raporlanmadığı kayıtta korunur. Aktif geliştirme 2.4.0 mevcut 24 modülle ilk sezon açılışıdır; geniş üretim sonraki paketlere bölündü.
 
 ## 4. Teslim dilimleri ve çıkış kapıları
 
@@ -59,31 +60,31 @@ Bütün sürümlerde mevcut onaylı sanat yönü korunur. Yön değişecekse ön
 
 R1/R2/R3 bir takvim günü veya kesin sürüm sözü değildir. Tek geliştirici için aynı anda bir büyük backend/motor işi ve bir küçük görsel paket önerilir. S≈1–2, M≈3–5, L≈6–10 geliştirici günü taslak efor bandıdır; sanat, cihaz QA ve beklemeler ayrıca tahmin edilir. XL işe başlamadan daha küçük alt işler ayrılır. Efor bantlarının toplamı teslim tarihi olarak kullanılmaz.
 
-**RELEASE-00 / 2.3.0:** kullanıcı yayın teyidiyle tamam. **Sonraki paket RELEASE-01 / 2.4.0:** COS-02/CARD-01/02 ile iki döneme özgün içerik hazırla; dönem ödülü ve takvimi kendi yayın kapısıyla aç.
+**RELEASE-00 / 2.3.0:** kullanıcı yayın teyidiyle tamam. **Sonraki paket RELEASE-01 / 2.4.0:** mevcut 24 modülle S1; BASE-01, SEASON-00 ve COMPAT-01 ile ödül/kapanış/uyum kapılarını tamamla. Yeni kart ve geniş sanat stoğu 2.5.0 ve sonrasına bölündü.
 
 ### 4.1. Sürümlere göre açık yayın planı
 
-| Sürüm | Oyuncuya gelen kapsam | Kapalı kalan | Çıkış kapısı |
-| --- | --- | --- | --- |
-| **2.3.0 — Kilitli kozmetik ve önizleme** | Kutup Işığı, Güneş Ocağı ve Derin Akım: 15 kilitli oyuncu/takım öğesi, adlar, önizleme ve açık kilit açıklaması. | Sezon/turnuva başlangıcı, yeni ödül tahsisi, yeni mağaza ürünü ve yeni modlar. | RELEASE-00: Kilit/kuşanma, eski sahiplik, TR/EN ve iki mobil boyut; sürüm mesajı, yeşil CI, veri koruyan sunucu ve yeni imzalı AAB. |
-| **2.4.0 — Yeni dönem ödülleri ve içerik takvimi** | Birleşik yayın kapısı, iki dönemlik özgün ödül/kart stoğu, tema vitrini ve sürümlü ödül tanımları. | Hazırlanmamış dönemler, hedefli mağaza/seçim kasası ve yeni oyun modları. | RELEASE-01: En az 18 yeni oyuncu kozmetiği, iki döneme birer hazır modül, ekonomi/kayıt/restore kanıtı; operatör başlangıç kararı. |
-| **2.5.0 — Mağaza ve seçim kasası** | Garantili hedefli parça teklifi, dört ayrı mağaza kozmetiği, seçim kasası, mağaza ekranı ve kapanışta hak koruma. | Yeni gerçek para paketleri, web ödeme, ücretli yeniden çekiliş ve yeni para birimi. | RELEASE-02: Fiyat/miktar kararı, atomik limit/harcama, tek teslim, yanlış seçenek/bağlantı kopması/iade ve platform kontrolleri. |
-| **2.6.0 — Günlük Devre Deneyi** | Sunucuda doğrulanan günlük problem, ilk başarı ödülü, tekrar deneme ve tek etkinlik vitrini. | PvE seferi, takım ortak hedefi ve ek kalıcı PvP kuyrukları. | RELEASE-03: Tohum/kural/dönem sabitliği, tek ödül, gün değişimi, yeni kaynak için yeterli ödül stoğu ve baz ölçüm kararı. |
-| **2.7.0 — PvE Seferi** | Üç duraklı sefer, duraklar arası kayıt ve farklı rakip dizileri; günlük deneyden ayrı içerik. | Takım ortak hedefi, draft ve 2v2. | LIVE-04: 2.6.0 teknik/ekonomi değerlendirmesi olumlu; kayıt/kurtarma, ilk/tekrar ödülü ve yeni sefer içeriği hazır; ortak yayın kapısı geçildi. |
-| **2.8.0 — Takım ortak hedefi ve ustalık** | Asenkron takım katkısı, kişisel uygunluk/ödül hakkı ve kalıcı modül/çekirdek ustalık vitrini. | Draft, BO3 ve dört oyunculu gerçek zamanlı mod. | LIVE-05, LIVE-07: Üyelik/takım değiştirme/katkı tavanı, küçük takım erişimi, ustalık doğrulaması ve yeni özgün takım ödülü hazır. |
-| **2.9.0 — Eşit seviyeli Draft Arenası — koşullu pilot** | Sınırlı etkinlik penceresinde güncel kartlarla seçim ve seviye eşitleme. | Kalıcı ayrı kuyruk, BO3 ve 2v2. | LIVE-06, ANALYT-02: Yeterli aktif rakip/bekleme ve adalet verisi, seçim/kopma testi ve bağımsız ödül bütçesi; uygun değilse sürüm ertelenir. |
+| Sürüm | Hedef yayın | Oyuncuya gelen kapsam | Kapalı kalan | Çıkış kapısı |
+| --- | --- | --- | --- | --- |
+| **2.3.0 — Kilitli kozmetik ve önizleme** | Yayımlandı | Kutup Işığı, Güneş Ocağı ve Derin Akım: 15 kilitli oyuncu/takım öğesi, adlar, önizleme ve açık kilit açıklaması. | Sezon/turnuva başlangıcı, yeni ödül tahsisi, yeni mağaza ürünü ve yeni modlar. | RELEASE-00: Kilit/kuşanma, eski sahiplik, TR/EN ve iki mobil boyut; sürüm mesajı, yeşil CI, veri koruyan sunucu ve yeni imzalı AAB. |
+| **2.4.0 — Mevcut içerikle ilk sezon** | 2026-11-23 | Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. | Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu. | RELEASE-01: İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. |
+| **2.5.0 — Seçim kasası, mağaza ve ilk yeni modül** | 2026-12-21 | Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. | Yeni gerçek para ürünü, yeni para birimi, ücretli yeniden çekiliş ve PvP deneme gücü artışı. | RELEASE-02: Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. |
+| **2.6.0 — Günlük deney ve ikinci yeni modül** | 2027-01-18 | Günlük Devre Deneyi: önce 7 özgün problem, ilk başarı ödülü ve keşif günlüğü; Kor Fırlatıcı; üçüncü sezon için 6 yeni oyuncu kozmetiği. | Dereceli maçta kiralık güç, PvE seferi ve ayrı kalıcı PvP kuyruğu. | RELEASE-03: Sunucu doğrulaması, ilk/tekrar ödülü ayrımı, gün değişimi, kaynak bütçesi, yeni problem stoğu ve modül karşı oyunu. |
+| **2.7.0 — PvE Seferi** | 2027-02-15 | Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi. | Takım boss'u ve gerçek zamanlı 2v2. | LIVE-04: Koşu kurtarma, ilk/tekrar ödülü, yan rota tek teslimi; yeni modül için çalışma kodu/görsel/denge/ücretsiz edinim. CARD-03 taslak brief'i hazır modül sayılmaz. İlk üç takım seti tüketildiyse yeni takım seti de üretilir; oyuncu stoğu buna yetmiş sayılmaz. |
+| **2.8.0 — Takım ortak hedefi ve ustalık** | 2027-03-15 | Takım ortak hedefi ve kişisel ikmal hakkı; ilk küçük ustalık hattı; beşinci sezon için yeni ödül setleri ve Toparlanma Feneri hedefi. | Oyuncular arası ticaret, hediye zinciri ve parayla oy hakkı. | LIVE-05, LIVE-07: Üyelik/katkı tavanı/tek teslim, küçük takım erişimi, yeni sezon modülü ve özgün stok. |
+| **2.9.0 — Eşit seviyeli Draft Arenası — koşullu pilot** | 2027-04-12 | Yeterli gerçek rakip varsa eşit seviyeli Draft Arenası için sınırlı pilot; altıncı sezon ödül/modül hazırlığı. | Kalıcı draft kuyruğu, BO3 ve 2v2. | LIVE-06, ANALYT-02: Aktif rakip ve bekleme verisi, adalet/bağlantı testi, altıncı sezon için yeni modül ve yeni stok. Modül brief'i 1 Mart kontrolüne kadar kesinleşir. |
 
-Sürüm numaraları planlanan sıra içindir; takvim tarihi veya kendiliğinden yayın kararı değildir. Her pakette ortak tamamlanma kapısı uygulanır. Hazır olmayan özellik kapalı kalır; eski ödülü tekrar vererek takvim doldurulmaz.
+Tarihlerin hedef/tahmin/koşullu ayrımı ödül portföyü ve sürüm takviminde tanımlıdır. Tarih gelmesi kendiliğinden yayın kararı değildir. Her pakette ortak tamamlanma kapısı uygulanır. Hazır olmayan özellik kapalı kalır; eski ödülü tekrar vererek takvim doldurulmaz.
 
 Her yayın: geliştirme → yerel/cihaz kabulü → iç test → kapalı test → kontrollü üretim → gözlem. Sunucu yeni ve önceki desteklenen istemciyle uyumlu hazırlanır; oyuncu mağazadan güncelleyene kadar güvenli davranır. Hata düzeltmesi mevcut minor üstünde PATCH, yeni özellik sonraki MINOR; büyük dönüşüm için MAJOR ayrıca planlanır. Yeni bir 3.0.0 sözü verilmez.
 
 ## 5. İçerik kapasitesi ve karar kayıtları
 
-- İki dönem: 24 oyuncu + 6 takım ödül öğesi gerekir. Hazır stok 6 oyuncu + 9 takım: **18 ek oyuncu öğesi** gerekir.
-- Bu asgari bütçe pazartesi 00.00 UTC başlangıcına göre sekiz ISO haftası içindir. Hafta ortası 56 günlük takvim dokuz haftaya dokunabilir: **20 yeni oyuncu öğesi** gerekir; tarihler kesinleşince coverage yeniden çalıştırılır.
-- İlk kozmetik mağazası ayrıca dört özgün öğe ister: ilk sanat hazırlığı **22 yeni öğe**. Bu öğeler henüz üretilmedi.
+- Güncel S1 planı: mevcut üç oyuncu seti sezon yolu, sıralama ve son haftaya; diğer haftalar açık kaynak ödülü türüne ayrılır. Yeni profil henüz uygulanmadı; kaynak yokluğu eski kozmetiğe düşmez.
+- Eski her-hafta-kozmetik profili iki dönemde 18/20 ek oyuncu öğesi ister. Mevcut coverage hâlâ bu profili hesaplar; bu miktar yeni S1 açılışının sanat koşulu değildir.
+- 18 öğelik oyuncu brief'i S2/S3/S4 için altışar öğeye bölündü. Mağazanın ayrı dört öğesi 2.5.0'dadır. İlk üç takım seti tüketilince yeni takım stoğu ayrıca gerekir.
 - Yeni etkinlik ayrı koleksiyon ödülü verecekse ek stok ayrıca hesaplanır; mevcut iki dönem hesabı her yeni modu kapsamaz.
-- Mevcut sezon politikası en az bir yeni modül ister. İki dönem için iki modül çalışma/çizim/karşı oyun/denge/ücretsiz kazanım kapısından geçmelidir.
+- Yalnız S1 için mevcut 24 modül istisnası kullanıcı tarafından seçildi; kodda uygulanacak. S2 ve sonrasında en az bir yeni hazır modül, ücretsiz edinim ve karşı oyun koşulu korunur.
 - Yeni unvan, avatar, çekirdek görünümü, takım vitrini ve arena kozmetiği ayrı renderer/sahiplik maliyetiyle CARD-03 kapsamında sıralanır.
 
 Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı ve limit; seçim kasası kazanım yolu; katılım tavanları; toplanmamış hakların kapanış davranışı; ilk etkinlik penceresi; sanat/cihaz kabulü. Bunlar bu tur için kullanıcıdan yanıt bekleyen engeller değildir; uygulama/yayın görevlerinin ölçülebilir teslimleridir.
@@ -155,13 +156,13 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 2: 2.3.0 kendi minor sürümü ve sistem mesajıyla canlıdır; 2.2.1 kurulu istemci köprüsü korunur.
   - Geçmiş hazırlık kanıtı: `artifacts/liveops-foundations-20261102/server-tests.log`, `artifacts/liveops-foundations-20261102/browser-results.json`, `artifacts/release-230-v14-20261103/FINAL_STATUS.json`, `artifacts/release-230-v14-20261103/server/deployment-success.json`, `artifacts/release-230-v14-20261103/public-smoke.json`, `deliverables/GRIDSHARD_2.3.0_14/manifest.json`.
 
-- [ ] **COS-02 — İki dönem için 18 yeni oyuncu tasarımı üret**
+- [ ] **COS-02 — Üç yayın grubunda 18 yeni oyuncu tasarımı üret**
   - Durum: Çalışılıyor. Öncelik: P0; rol: Sanat / istemci; efor: XL.
   - Önkoşullar: COS-01.
   - Mevcut bağlar: `server/data/cosmetic_releases_v1.json`, `tools/prepare_liveops_rewards.py`, `client/src/liveops-cosmetics-v1.css`, `docs/GORSEL_DONUSUM_PLANI_20261015.md`.
   - Yeni teslim önerisi: `docs/planning/two-cycle-art-manifest.md`.
-  - Kabul 1: Dokuz yeni çerçeve ve dokuz yeni zemin; özgün motif, TR/EN, tasarım kimliği ve önizleme hazırlanır; gerekirse renderer şeması genişletilir.
-  - Kabul 2: En fazla 10 parçalık görsel incelemeler ve 320/393 px kabulü kaydedilir; yeniden renklendirme yeni tasarım sayılmaz.
+  - Kabul 1: Dokuz çerçeve ve dokuz zemin üç altışar grupta üretilir: 2.5/S2, 2.6/S3, 2.7/S4. Özgün geometri, TR/EN ve tasarım kimliği gerekir; ilk sezonu bekletmez.
+  - Kabul 2: Her alt grubun görsel/320/393 px kabulü ayrı kaydedilir. Yeniden renklendirme yeni tasarım sayılmaz; tüm 18 tamamlanmadan üst görev done olmaz.
   - Geçmiş hazırlık kanıtı: `docs/planning/two-cycle-art-manifest.md`.
 
 - [ ] **COS-04 — Kaynak kayıtlarını ve stok denetimini genişlet**
@@ -171,23 +172,8 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Yeni teslim önerisi: `server/data/liveops_content_sources_v1.json`.
   - Kabul 1: Mağaza ve yeni etkinlik kaynakları doğrulanmış sözleşmeyle eklenir; yalnız JSON adı ekleyerek yayın yapılamaz.
   - Kabul 2: Coverage aktif kaynak/takvimden ihtiyaç hesaplar; 30 dönem öğesi ve ayrı mağaza stoğu karıştırılmaz, yetersiz stokta yayın durur.
+  - Kabul 3: Yeni ilk-sezon profilinde fixed_resources/cosmetic_set türleri ayrı sayılır; kaynak haftası eksik kozmetik fallback'i değildir. Eski tam-koleksiyon coverage raporu ayrı profil olarak korunur.
   - Geçmiş hazırlık kanıtı: `artifacts/release-240-foundations-tests.log`, `artifacts/release-240-20261103/coverage-aligned.json`, `artifacts/release-240-20261103/coverage-midweek.json`.
-
-- [ ] **CARD-01 — Yankı Rölesi sezon modülünü uçtan uca geliştir**
-  - Durum: Yapılacak. Öncelik: P0; rol: Oyun motoru / sanat / denge; efor: XL.
-  - Önkoşullar: ECON-01.
-  - Mevcut bağlar: `server/app/season_module_releases.py`, `server/data/season_module_releases_v2.json`, `server/app/module_roster.py`, `server/app/game/engine.py`.
-  - Yeni teslim önerisi: `docs/planning/echo-relay-release.md`.
-  - Kabul 1: Planlı echo_relay için mekanik, karşı oyun, çalışma görseli, aktif katalog ve arena kapısı tamamlanır.
-  - Kabul 2: Ücretsiz kazanım yolu ve otomatik yerleşim/hedefleme sözleşmeleri test edilir; planlı kart hazır diye ödül havuzuna girmez.
-
-- [ ] **CARD-02 — Kor Fırlatıcı ile ikinci dönem kart stoğunu hazırla**
-  - Durum: Yapılacak. Öncelik: P1; rol: Oyun motoru / sanat / denge; efor: XL.
-  - Önkoşullar: CARD-01.
-  - Mevcut bağlar: `server/data/season_module_releases_v2.json`, `server/app/season_module_releases.py`, `server/app/game/engine.py`.
-  - Yeni teslim önerisi: `docs/planning/ember-launcher-release.md`.
-  - Kabul 1: Planlı ember_launcher için yanma, arındırma/karşı oyun ve okunabilir süre/hasar göstergesi hazırlanır.
-  - Kabul 2: İki dönem için en az birer yeni kartın yayın kontrolleri tamamlanır; yetişmeyen kart için takvim yeniden planlanır.
 
 - [ ] **REWARD-01 — Sürüm sabitlemeli ödül tanımlarını kur**
   - Durum: Yapılacak. Öncelik: P0; rol: Backend; efor: L.
@@ -235,7 +221,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Önkoşullar: COS-04, REWARD-01.
   - Mevcut bağlar: `server/app/competition_control.py`, `server/app/competition_cycle.py`, `server/app/cosmetic_releases.py`, `server/app/season_module_releases.py`.
   - Yeni teslim önerisi: `server/app/liveops_calendar.py`, `server/data/liveops_calendar_v1.json`.
-  - Kabul 1: Takvim, modül hazırlığı, yeni kozmetik stoğu, ödül bütçesi ve uygunluk birlikte doğrulanır; eksikse açılış reddedilir.
+  - Kabul 1: Kaynak türü, dönem profili, modül hazırlığı, gerçek kozmetik ihtiyacı ve bütçe birlikte doğrulanır. Yalnız S1 için kodlanmış başlangıç istisnası vardır; eksikte sonraki dönem açılmaz.
   - Kabul 2: Taslak yayın operatör başlangıcını açmaz; UTC sınırı, başlamış maç ve kazanılmış haklar sürümünü korur.
 
 - [ ] **BALANCE-01 — Katalog büyümesi için denge ve karşı oyun raporu kur**
@@ -246,12 +232,12 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 1: Kart seçilme/kazanma yanında arena, seviye farkı ve AI/insan ayrımlı yorum yapılır.
   - Kabul 2: Yeni kartlar için karşı oyun senaryosu ve eski altılı destelerle regresyon seti oluşturulur; düşük örneklemde kesin güç iddiası kurulmaz.
 
-- [ ] **OPS-01 — İki dönemlik içerik üretim takvimini işlet**
+- [ ] **OPS-01 — Dönem bazlı içerik üretim takvimini işlet**
   - Durum: Yapılacak. Öncelik: P0; rol: Ürün / sanat / backend; efor: M.
   - Önkoşullar: COS-02, COS-04, CARD-02, ECON-01.
   - Mevcut bağlar: `tools/prepare_liveops_rewards.py`, `server/app/competition_cycle.py`, `server/app/competition_control.py`.
   - Yeni teslim önerisi: `docs/planning/two-cycle-production-calendar.md`.
-  - Kabul 1: Yedi dönem paketi/döngü, kart, brief, sahip, sanat/test yükü ve kapanış raporu için iki döngü kayıtlanır.
+  - Kabul 1: S1 mevcut içerik; S2/S3/S4 altışar yeni oyuncu öğesi ve S2'den itibaren yeni modül; kaynak haftaları ve ayrı takım/mağaza stoğu dönem bazında kaydedilir.
   - Kabul 2: Haftalık/aylık yeni stok yetersizse tarih revize edilir; eski kozmetik geri dönmez, açılışlar operatör kontrolündedir.
 
 - [ ] **OPS-02 — Yayın durdurma ve hak koruyan rollback akışını kur**
@@ -263,13 +249,13 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 2: Uygulanmış SQL baytları sabit; veri sıfırlama/otomatik live restore yok, eski sürümün yeni hakkı okuyamadığı durum açıkça ele alınır.
   - Kabul 3: Yeni statik JSON kaynak/Docker paket izin listeleri ve eşlenik release-boundary kontrollerine eklenir; özel runtime veri pakete girmez.
 
-- [ ] **RELEASE-01 — 2.4.0 yeni dönem ödülü ve içerik açılışını yayıma hazırla**
+- [ ] **RELEASE-01 — 2.4.0 mevcut içerikle ilk sezonu yayıma hazırla**
   - Durum: Yapılacak. Öncelik: P0; rol: Ürün / QA / operasyon; efor: L.
-  - Önkoşullar: QA-01, DATA-01, ANALYT-01, OPS-01, OPS-02, UI-04, BALANCE-01, RELEASE-00.
+  - Önkoşullar: SEASON-00, COMPAT-01, RELEASE-00.
   - Mevcut bağlar: `.github/workflows/quality.yml`, `tools/release_guard.py`, `tools/package_release.py`, `server/data/game_updates.json`.
   - Yeni teslim önerisi: `docs/planning/release-r1-evidence.md`.
-  - Kabul 1: Ödül kilidi, iki dönem stok/kart hazırlığı, gerçek teslim, restart/restore ve TR/EN mobil kanıtları tamamlanır.
-  - Kabul 2: 2.4.0 için sürüm notu/CI/imzalı AAB ve veri koruyan dağıtım hazırlanır; takvim ancak içerik kapısı geçildiğinde operatörce açılır.
+  - Kabul 1: Mevcut 24 modül ve 15 kozmetikle S1 profili, sabit kaynak haftaları, tekil teslim, kapanış hakları ve gerçek restore kanıtı tamamlanır.
+  - Kabul 2: 23 Kasım hedefli sürüm notu/CI/AAB ve 30 Kasım hedefli başlangıç ayrı kapılardır; eski istemci, TR/EN mobil ve Play cihaz testi geçmeden açılmaz. Yeni kart veya 18 yeni kozmetik bu sürümün koşulu değildir.
 
 - [x] **RELEASE-00 — 2.3.0 kilitli kozmetik ve önizleme paketini yayıma hazırla**
   - Durum: Kanıtla tamamlandı. Öncelik: P0; rol: İstemci / backend / QA / operasyon; efor: M.
@@ -283,6 +269,25 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 5: Mevcut boyalı/hacimli sanat ailesi korunur; yan yana mobil önizleme ve görsel kabul kaydı tamamlanır. Yön değişikliği ayrı brief ve geçiş planı gerektirir.
   - Geçmiş hazırlık kanıtı: `artifacts/release-230-20261103/browser-results.json`, `artifacts/release-230-20261103/client-tests-final.log`, `artifacts/release-230-v14-20261103/FINAL_STATUS.json`, `artifacts/release-230-v14-20261103/server/deployment-success.json`, `artifacts/release-230-v14-20261103/public-smoke.json`, `deliverables/GRIDSHARD_2.3.0_14/manifest.json`, `docs/planning/release-230-user-confirmation-20261103.md`.
 
+- [ ] **SEASON-00 — Mevcut içerikle ilk sezon ve kaynak ödülü profilini geliştir**
+  - Durum: Yapılacak. Öncelik: P0; rol: Backend / QA / ürün; efor: L.
+  - Önkoşullar: BASE-01, COS-01.
+  - Mevcut bağlar: `server/app/season_module_releases.py`, `server/app/cosmetic_releases.py`, `server/app/liveops_content.py`, `server/app/competition_control.py`, `server/app/reward_delivery.py`, `server/tests/test_production_launch.py`.
+  - Yeni teslim önerisi: `docs/planning/first-season-launch-profile.md`.
+  - Kabul 1: Yalnız ilk açılış sezonu mevcut 24 modülle başlayabilir; açık profil/tek sezon sınırı test edilir. S2 ve sonrasında yeni hazır modül koşulu korunur.
+  - Kabul 2: Kaynak ödüllü dönem açık türdür; eksik kozmetiği saklamak veya eski kozmetiğe düşmek için adet sıfırlanmaz. Kaynak/kozmetik önizlemesi gerçek sabit teslimle eşleşir.
+  - Kabul 3: Kutup Işığı sezon yolu, Güneş Ocağı sıralama ve Derin Akım son hafta önerisi tekil stok/tahsis ile doğrulanır; üç oyuncu seti başka döneme dönmez.
+  - Kabul 4: Kazanılmış/toplanmamış ve premium kökenli haklar sezon kapanışı, geç dönüş, tekrar/eşzamanlı talep ve restart/restore sırasında korunur. Profil/ekonomi sıfırlanmaz.
+  - Kabul 5: 40 kademe/haftalık bütçe, gerçek katılım eşiği, owner/AI hariçliği, TR/EN 320/393 px, bağımsız takım başlangıcı ve yayın durdurma kanıtı gerekir.
+
+- [ ] **COMPAT-01 — 2.4 geçişinde kurulu 2.3 ve 2.2.1 başlangıcını koru**
+  - Durum: Yapılacak. Öncelik: P0; rol: İstemci / backend / QA; efor: M.
+  - Önkoşullar: RELEASE-00.
+  - Mevcut bağlar: `client/src/relay-client.js`, `server/app/main.py`, `tools/release_guard.py`, `server/tests/test_release_221_profiles_updates.py`.
+  - Yeni teslim önerisi: `docs/planning/release-240-client-compatibility.md`.
+  - Kabul 1: Değiştirilmemiş 2.3 ve 2.2.1 istemci kaynaklarıyla yeni sağlık/başlangıç/protokol sözleşmesi doğrulanır; sadece sürüm metni artırılarak eski istemci engellenmez.
+  - Kabul 2: Gerçek sürüm raporu, minimum/capability uyumu, geçişte eski API/istemci, native yönlendirme ve güvenli güncelleme açıklaması test edilir. Yeni modül açılışı sonraki sürümde eski render/match güvenliğiyle değerlendirilir.
+
 ### R2 — Mağaza ve seçim kasası — sonraki minor
 
 - [ ] **COS-03 — Mağazaya özel dört ayrı kozmetik hazırla**
@@ -292,6 +297,14 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Yeni teslim önerisi: `docs/planning/shop-art-manifest.md`.
   - Kabul 1: İki mağaza çerçevesi ve iki zemin dönem ödül stoğundan farklı ID/tasarımla hazırlanır.
   - Kabul 2: Sahip olunan veya dönem ödülü olmuş öğe yeni mağaza ürünü gibi satılmaz; görünürlük ve kuşanma önizlemesi doğrulanır.
+
+- [ ] **CARD-01 — Yankı Rölesi sezon modülünü uçtan uca geliştir**
+  - Durum: Yapılacak. Öncelik: P0; rol: Oyun motoru / sanat / denge; efor: XL.
+  - Önkoşullar: ECON-01.
+  - Mevcut bağlar: `server/app/season_module_releases.py`, `server/data/season_module_releases_v2.json`, `server/app/module_roster.py`, `server/app/game/engine.py`.
+  - Yeni teslim önerisi: `docs/planning/echo-relay-release.md`.
+  - Kabul 1: Planlı echo_relay için mekanik, karşı oyun, çalışma görseli, aktif katalog ve arena kapısı tamamlanır.
+  - Kabul 2: Ücretsiz kazanım yolu ve otomatik yerleşim/hedefleme sözleşmeleri test edilir; planlı kart hazır diye ödül havuzuna girmez.
 
 - [ ] **REWARD-02 — Kalıcı seçim hakkı ve tek teslim işlemini geliştir**
   - Durum: Yapılacak. Öncelik: P0; rol: Backend; efor: L.
@@ -360,13 +373,22 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 - [ ] **RELEASE-02 — 2.5.0 mağaza ve seçim kasası pilotunu yayıma hazırla**
   - Durum: Yapılacak. Öncelik: P0; rol: Ürün / QA / operasyon; efor: L.
-  - Önkoşullar: RELEASE-01, SHOP-03, UI-02, UI-03, REWARD-03, POLICY-01.
+  - Önkoşullar: RELEASE-01, SHOP-03, UI-02, UI-03, REWARD-03, POLICY-01, CARD-01, BALANCE-01, COS-03, DATA-01, OPS-02, QA-01.
   - Mevcut bağlar: `e2e/reward-navigation.spec.js`, `server/tests/test_reward_delivery.py`, `.github/workflows/quality.yml`.
   - Yeni teslim önerisi: `docs/planning/release-r2-evidence.md`.
   - Kabul 1: Gerçek API ile limit/ödeme/tekrar/çevrimdışı/yanlış seçenek/sahiplik ve eski stok senaryoları geçer.
   - Kabul 2: Kazanılmış haklar korunarak pilot kapatılabilir; fiyat/miktar kararı ve sonraki minor numarası kayıtlanır.
+  - Kabul 3: S2 için COS-02 ilk altı öğelik kilometre taşı ve Yankı Rölesi hazırdır; üst 18 öğelik görevin tamamı veya Kor Fırlatıcı beklenmez.
 
 ### R3 — Günlük deney ve öğrenme döngüsü
+
+- [ ] **CARD-02 — Kor Fırlatıcı ile ikinci dönem kart stoğunu hazırla**
+  - Durum: Yapılacak. Öncelik: P1; rol: Oyun motoru / sanat / denge; efor: XL.
+  - Önkoşullar: CARD-01.
+  - Mevcut bağlar: `server/data/season_module_releases_v2.json`, `server/app/season_module_releases.py`, `server/app/game/engine.py`.
+  - Yeni teslim önerisi: `docs/planning/ember-launcher-release.md`.
+  - Kabul 1: Planlı ember_launcher için yanma, arındırma/karşı oyun ve okunabilir süre/hasar göstergesi hazırlanır.
+  - Kabul 2: S2 Yankı Rölesi, S3 Kor Fırlatıcı ile en az birer yeni hazır modül alır; yalnız S1 mevcut 24 modülle başlar. Planlı kart hazır sayılmaz.
 
 - [ ] **REWARD-04 — Katkı ve ustalık ödül bütçelerini tanımla**
   - Durum: Yapılacak. Öncelik: P1; rol: Oyun tasarımı / backend; efor: M.
@@ -442,11 +464,12 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 - [ ] **RELEASE-03 — 2.6.0 günlük deney pilotunu değerlendirmeye aç**
   - Durum: Yapılacak. Öncelik: P0; rol: Ürün / QA / operasyon; efor: L.
-  - Önkoşullar: RELEASE-02, LIVE-03, ANALYT-02, REWARD-04.
+  - Önkoşullar: RELEASE-02, LIVE-03, ANALYT-02, REWARD-04, CARD-02.
   - Mevcut bağlar: `.github/workflows/quality.yml`, `e2e/battle-render-budget.spec.js`.
   - Yeni teslim önerisi: `docs/planning/release-r3-evidence.md`.
   - Kabul 1: Devre Deneyi, ilk başarı/tekrar, gün değişimi ve gerçek ödül makbuzu uçtan uca doğrulanır.
   - Kabul 2: Tek etkinlik vitrini, yeterli yeni ödül stoğu, koruyucu kalite ölçüleri ve devam/düzelt/durdur kararı tanımlanır.
+  - Kabul 3: S3 için COS-02 ikinci altı öğelik kilometre taşı ve Kor Fırlatıcı hazırdır; lisans ikincil, Devre Deneyi ana kapsamdır.
 
 - [ ] **RET-01 — Geri dönüş ve bildirim tercihlerini uygula**
   - Durum: Yapılacak. Öncelik: P1; rol: Ürün / istemci; efor: M.
@@ -455,6 +478,14 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Yeni teslim önerisi: `docs/planning/returning-player-summary.md`.
   - Kabul 1: Dönen oyuncu kısa sürüm özeti, korunmuş ilerleme ve tek uygun hedef görür.
   - Kabul 2: Bildirim açık tercih/sessiz saat kuralına bağlıdır; bu iş e-posta/push/mesaj gönderimini kendiliğinden açmaz.
+
+- [ ] **REWARD-05 — Deneme ve yeniden kurulum haklarını tasarla ve pilotla**
+  - Durum: Yapılacak. Öncelik: P1; rol: Ürün / backend / istemci; efor: L.
+  - Önkoşullar: REWARD-02, ECON-01.
+  - Mevcut bağlar: `server/app/meta_progression.py`, `server/app/player_profile.py`, `server/app/postgres_economic_operations.py`.
+  - Yeni teslim önerisi: `docs/planning/utility-reward-entitlements.md`.
+  - Kabul 1: Laboratuvar lisansı yalnız eşit seviyeli AI denemesinde işler; sahiplik veya dereceli güç vermez. Süre/oturum hakkı sunucuda tekil tüketilir; 2.6 pilotuna yetişmesi ana sürümün önkoşulu değildir.
+  - Kabul 2: Yeniden kurulum kuponu mevcut yetenek sıfırlama bedelini tek kez kaldırır; mevcut ücretsiz hak varsa tüketilmez. Para/upgrade iadesi veya premium kökeni iki kez üretilmez. 2.8 için ikincil kapsamdır.
 
 ### R4 — Ölçüme bağlı büyüme
 
@@ -546,4 +577,4 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 Bu sıra tek olası plan değildir; önkoşulları önceleyen doğrulanmış bir sıralamadır. `later` işlerin burada bulunması başlayacakları anlamına gelmez.
 
-BASE-01 → BASE-02 → BASE-03 → ECON-01 → COS-01 → COS-02 → COS-03 → COS-04 → CARD-01 → CARD-02 → CARD-03 → REWARD-01 → DATA-01 → REWARD-02 → REWARD-03 → REWARD-04 → SHOP-01 → SHOP-02 → SHOP-03 → UI-01 → QA-01 → ANALYT-01 → OPS-01 → LIVE-01 → OPS-02 → UI-04 → BALANCE-01 → RELEASE-00 → RELEASE-01 → UI-02 → UI-03 → POLICY-01 → RELEASE-02 → SHOP-04 → UI-05 → UI-06 → ANALYT-02 → LIVE-02 → LIVE-03 → RELEASE-03 → LIVE-04 → LIVE-05 → LIVE-06 → LIVE-07 → LIVE-08 → LIVE-09 → LIVE-10 → LIVE-11 → LIVE-12 → PLAY-01 → RET-01
+BASE-01 → BASE-02 → BASE-03 → ECON-01 → COS-01 → COS-02 → COS-03 → COS-04 → CARD-01 → CARD-02 → CARD-03 → REWARD-01 → DATA-01 → REWARD-02 → REWARD-03 → REWARD-04 → SHOP-01 → SHOP-02 → SHOP-03 → SEASON-00 → RELEASE-00 → COMPAT-01 → RELEASE-01 → UI-01 → UI-02 → UI-03 → POLICY-01 → BALANCE-01 → LIVE-01 → OPS-02 → QA-01 → RELEASE-02 → SHOP-04 → UI-04 → UI-05 → UI-06 → ANALYT-01 → ANALYT-02 → LIVE-02 → LIVE-03 → RELEASE-03 → LIVE-04 → LIVE-05 → LIVE-06 → LIVE-07 → LIVE-08 → LIVE-09 → LIVE-10 → LIVE-11 → LIVE-12 → PLAY-01 → OPS-01 → RET-01 → REWARD-05

@@ -112,7 +112,7 @@ def render(document, order):
     published = document.get('deployment_status', {}).get('play_rollout_confirmed_by_user') is True
     release_status = ('2.3.0 sunucu ve AAB yayını kullanıcı tarafından teyit edildi; RELEASE-00 tamam. '
                       'Fiziksel cihaz testinin ayrıca raporlanmadığı kayıtta korunur. '
-                      'Aktif geliştirme 2.4.0 dönem içeriği ve ödül takvimidir.' if published else
+                      'Aktif geliştirme 2.4.0 mevcut 24 modülle ilk sezon açılışıdır; geniş üretim sonraki paketlere bölündü.' if published else
                       '2.3.0 sunucu geçişi ve imzalı AAB code14 teslimi tamamlandı. Play yükleme/yayını '
                       've fiziksel cihaz güncellemesi bekliyor; RELEASE-00 bu nedenle açık. Sonraki geliştirme '
                       'kademesi 2.4.0 dönem içeriği ve ödül takvimidir.')
@@ -130,6 +130,7 @@ def render(document, order):
              '- [Teknik tasarım](GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md): mevcut/yeni altyapı, veri/API ve ekran sözleşmeleri.',
              '- [Ortak sanat yönü](SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md): bütün paketler için referans aile ve yön değişikliği koşulları.',
              '- [2.4.0 geliştirme kademeleri](RELEASE_2_4_0_GELISTIRME_PLANI_20261103.md): güncel kapsam, ilk stok uygulaması ve sonraki üretim işleri.',
+             '- [Ödül portföyü ve tarihli yayın takvimi](GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md): ödül çeşitleri, haftalık iş, kapsam kapanışı, sürüm ve sezon tarihleri.',
              '- [Makine tarafından okunabilir iş listesi](planning/gridshard_development_backlog_v1.json): görevlerin tek kaynağı.', '',
              'Görevi güncellemek için JSON içindeki `status`, `evidence` ve gerekiyorsa kabul '
              'ölçütlerini düzenle. Sonra repo kökünde çalıştır:', '',
@@ -179,18 +180,19 @@ def render(document, order):
              'Efor bantlarının toplamı teslim tarihi olarak kullanılmaz.', '',
              (('**RELEASE-00 / 2.3.0:** kullanıcı yayın teyidiyle tamam. ' if published else
                '**RELEASE-00 / 2.3.0:** sunucu ve AAB tamam; Play/cihaz doğrulamasını kapat. ') +
-              '**Sonraki paket RELEASE-01 / 2.4.0:** COS-02/CARD-01/02 ile iki döneme özgün içerik '
-              'hazırla; dönem ödülü ve takvimi kendi yayın kapısıyla aç.' if deployed else
+              '**Sonraki paket RELEASE-01 / 2.4.0:** mevcut 24 modülle S1; BASE-01, SEASON-00 '
+              've COMPAT-01 ile ödül/kapanış/uyum kapılarını tamamla. Yeni kart ve geniş sanat stoğu '
+              '2.5.0 ve sonrasına bölündü.' if deployed else
               '**İlk yayın paketi RELEASE-00 / 2.3.0:** dalda hazır kilitli kozmetiği '
               'görsel/sahiplik/native kontrollerinden geçirip yeni AAB ve sunucu paketi hazırla. '
               'BASE-01/02 ve COS-04 paralel ilerleyebilir; COS-02/CARD-01/02 ve iki dönem '
               'üretim stoğu 2.4.0 açılışının önkoşuludur, 2.3.0 önizlemesini bekletmez.'), '',
              '## 5. İçerik kapasitesi ve karar kayıtları', '',
-             '- İki dönem: 24 oyuncu + 6 takım ödül öğesi gerekir. Hazır stok 6 oyuncu + 9 takım: **18 ek oyuncu öğesi** gerekir.',
-             '- Bu asgari bütçe pazartesi 00.00 UTC başlangıcına göre sekiz ISO haftası içindir. Hafta ortası 56 günlük takvim dokuz haftaya dokunabilir: **20 yeni oyuncu öğesi** gerekir; tarihler kesinleşince coverage yeniden çalıştırılır.',
-             '- İlk kozmetik mağazası ayrıca dört özgün öğe ister: ilk sanat hazırlığı **22 yeni öğe**. Bu öğeler henüz üretilmedi.',
+             '- Güncel S1 planı: mevcut üç oyuncu seti sezon yolu, sıralama ve son haftaya; diğer haftalar açık kaynak ödülü türüne ayrılır. Yeni profil henüz uygulanmadı; kaynak yokluğu eski kozmetiğe düşmez.',
+             '- Eski her-hafta-kozmetik profili iki dönemde 18/20 ek oyuncu öğesi ister. Mevcut coverage hâlâ bu profili hesaplar; bu miktar yeni S1 açılışının sanat koşulu değildir.',
+             '- 18 öğelik oyuncu brief\'i S2/S3/S4 için altışar öğeye bölündü. Mağazanın ayrı dört öğesi 2.5.0\'dadır. İlk üç takım seti tüketilince yeni takım stoğu ayrıca gerekir.',
              '- Yeni etkinlik ayrı koleksiyon ödülü verecekse ek stok ayrıca hesaplanır; mevcut iki dönem hesabı her yeni modu kapsamaz.',
-             '- Mevcut sezon politikası en az bir yeni modül ister. İki dönem için iki modül çalışma/çizim/karşı oyun/denge/ücretsiz kazanım kapısından geçmelidir.',
+             '- Yalnız S1 için mevcut 24 modül istisnası kullanıcı tarafından seçildi; kodda uygulanacak. S2 ve sonrasında en az bir yeni hazır modül, ücretsiz edinim ve karşı oyun koşulu korunur.',
              '- Yeni unvan, avatar, çekirdek görünümü, takım vitrini ve arena kozmetiği ayrı renderer/sahiplik maliyetiyle CARD-03 kapsamında sıralanır.', '',
              'Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı ve limit; '
              'seçim kasası kazanım yolu; katılım tavanları; toplanmamış hakların kapanış davranışı; '
@@ -207,13 +209,13 @@ def render(document, order):
              '| §9 Aşamalar | OPS-01/02 ve RELEASE-00/01/02/03; sürüm planı |', '',
              '## 7. İş kontrol listesi', '']
     publication = ['### 4.1. Sürümlere göre açık yayın planı', '',
-                   '| Sürüm | Oyuncuya gelen kapsam | Kapalı kalan | Çıkış kapısı |',
-                   '| --- | --- | --- | --- |']
+                   '| Sürüm | Hedef yayın | Oyuncuya gelen kapsam | Kapalı kalan | Çıkış kapısı |',
+                   '| --- | --- | --- | --- | --- |']
     for release in document['release_plan']:
-        publication.append(f'| **{release["version"]} — {release["name"]}** | {release["scope"]} | '
+        publication.append(f'| **{release["version"]} — {release["name"]}** | {release.get("target_release_on", "Yayımlandı")} | {release["scope"]} | '
                            f'{release["keep_closed"]} | {", ".join(release["gate_tasks"])}: {release["exit"]} |')
-    publication += ['', 'Sürüm numaraları planlanan sıra içindir; takvim tarihi veya kendiliğinden '
-                    'yayın kararı değildir. Her pakette ortak tamamlanma kapısı uygulanır. '
+    publication += ['', 'Tarihlerin hedef/tahmin/koşullu ayrımı ödül portföyü ve sürüm takviminde tanımlıdır. '
+                    'Tarih gelmesi kendiliğinden yayın kararı değildir. Her pakette ortak tamamlanma kapısı uygulanır. '
                     'Hazır olmayan özellik kapalı kalır; eski ödülü tekrar vererek takvim doldurulmaz.', '',
                     'Her yayın: geliştirme → yerel/cihaz kabulü → iç test → kapalı test → '
                     'kontrollü üretim → gözlem. Sunucu yeni ve önceki desteklenen istemciyle '

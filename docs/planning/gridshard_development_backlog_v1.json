@@ -27,7 +27,8 @@
     "docs/GRIDSHARD_CANLI_OPERASYON_VE_GELISIM_PLANI_20261102.md",
     "docs/GRIDSHARD_MAGAZA_ODUL_ARASTIRMASI_20261103.md",
     "docs/GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md",
-    "docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md"
+    "docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md",
+    "docs/GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md"
   ],
   "tasks": [
     {
@@ -203,7 +204,7 @@
     },
     {
       "id": "COS-02",
-      "title": "İki dönem için 18 yeni oyuncu tasarımı üret",
+      "title": "Üç yayın grubunda 18 yeni oyuncu tasarımı üret",
       "stage": "R1",
       "owner": "Sanat / istemci",
       "effort": "XL",
@@ -222,8 +223,8 @@
         "docs/planning/two-cycle-art-manifest.md"
       ],
       "acceptance": [
-        "Dokuz yeni çerçeve ve dokuz yeni zemin; özgün motif, TR/EN, tasarım kimliği ve önizleme hazırlanır; gerekirse renderer şeması genişletilir.",
-        "En fazla 10 parçalık görsel incelemeler ve 320/393 px kabulü kaydedilir; yeniden renklendirme yeni tasarım sayılmaz."
+        "Dokuz çerçeve ve dokuz zemin üç altışar grupta üretilir: 2.5/S2, 2.6/S3, 2.7/S4. Özgün geometri, TR/EN ve tasarım kimliği gerekir; ilk sezonu bekletmez.",
+        "Her alt grubun görsel/320/393 px kabulü ayrı kaydedilir. Yeniden renklendirme yeni tasarım sayılmaz; tüm 18 tamamlanmadan üst görev done olmaz."
       ],
       "goals": [
         "content",
@@ -235,6 +236,26 @@
       ],
       "evidence": [
         "docs/planning/two-cycle-art-manifest.md"
+      ],
+      "delivery_milestones": [
+        {
+          "release": "2.5.0",
+          "season": 2,
+          "player_items": 6,
+          "status": "todo"
+        },
+        {
+          "release": "2.6.0",
+          "season": 3,
+          "player_items": 6,
+          "status": "todo"
+        },
+        {
+          "release": "2.7.0",
+          "season": 4,
+          "player_items": 6,
+          "status": "todo"
+        }
       ]
     },
     {
@@ -294,7 +315,8 @@
       ],
       "acceptance": [
         "Mağaza ve yeni etkinlik kaynakları doğrulanmış sözleşmeyle eklenir; yalnız JSON adı ekleyerek yayın yapılamaz.",
-        "Coverage aktif kaynak/takvimden ihtiyaç hesaplar; 30 dönem öğesi ve ayrı mağaza stoğu karıştırılmaz, yetersiz stokta yayın durur."
+        "Coverage aktif kaynak/takvimden ihtiyaç hesaplar; 30 dönem öğesi ve ayrı mağaza stoğu karıştırılmaz, yetersiz stokta yayın durur.",
+        "Yeni ilk-sezon profilinde fixed_resources/cosmetic_set türleri ayrı sayılır; kaynak haftası eksik kozmetik fallback'i değildir. Eski tam-koleksiyon coverage raporu ayrı profil olarak korunur."
       ],
       "goals": [
         "content",
@@ -314,7 +336,7 @@
     {
       "id": "CARD-01",
       "title": "Yankı Rölesi sezon modülünü uçtan uca geliştir",
-      "stage": "R1",
+      "stage": "R2",
       "owner": "Oyun motoru / sanat / denge",
       "effort": "XL",
       "priority": "P0",
@@ -345,12 +367,13 @@
         4,
         7
       ],
-      "evidence": []
+      "evidence": [],
+      "target_release": "2.5.0"
     },
     {
       "id": "CARD-02",
       "title": "Kor Fırlatıcı ile ikinci dönem kart stoğunu hazırla",
-      "stage": "R1",
+      "stage": "R3",
       "owner": "Oyun motoru / sanat / denge",
       "effort": "XL",
       "priority": "P1",
@@ -368,7 +391,7 @@
       ],
       "acceptance": [
         "Planlı ember_launcher için yanma, arındırma/karşı oyun ve okunabilir süre/hasar göstergesi hazırlanır.",
-        "İki dönem için en az birer yeni kartın yayın kontrolleri tamamlanır; yetişmeyen kart için takvim yeniden planlanır."
+        "S2 Yankı Rölesi, S3 Kor Fırlatıcı ile en az birer yeni hazır modül alır; yalnız S1 mevcut 24 modülle başlar. Planlı kart hazır sayılmaz."
       ],
       "goals": [
         "content",
@@ -378,7 +401,8 @@
         4,
         7
       ],
-      "evidence": []
+      "evidence": [],
+      "target_release": "2.6.0"
     },
     {
       "id": "CARD-03",
@@ -1074,7 +1098,7 @@
         "server/data/liveops_calendar_v1.json"
       ],
       "acceptance": [
-        "Takvim, modül hazırlığı, yeni kozmetik stoğu, ödül bütçesi ve uygunluk birlikte doğrulanır; eksikse açılış reddedilir.",
+        "Kaynak türü, dönem profili, modül hazırlığı, gerçek kozmetik ihtiyacı ve bütçe birlikte doğrulanır. Yalnız S1 için kodlanmış başlangıç istisnası vardır; eksikte sonraki dönem açılmaz.",
         "Taslak yayın operatör başlangıcını açmaz; UTC sınırı, başlamış maç ve kazanılmış haklar sürümünü korur."
       ],
       "goals": [
@@ -1567,7 +1591,7 @@
     },
     {
       "id": "OPS-01",
-      "title": "İki dönemlik içerik üretim takvimini işlet",
+      "title": "Dönem bazlı içerik üretim takvimini işlet",
       "stage": "R1",
       "owner": "Ürün / sanat / backend",
       "effort": "M",
@@ -1588,7 +1612,7 @@
         "docs/planning/two-cycle-production-calendar.md"
       ],
       "acceptance": [
-        "Yedi dönem paketi/döngü, kart, brief, sahip, sanat/test yükü ve kapanış raporu için iki döngü kayıtlanır.",
+        "S1 mevcut içerik; S2/S3/S4 altışar yeni oyuncu öğesi ve S2'den itibaren yeni modül; kaynak haftaları ve ayrı takım/mağaza stoğu dönem bazında kaydedilir.",
         "Haftalık/aylık yeni stok yetersizse tarih revize edilir; eski kozmetik geri dönmez, açılışlar operatör kontrolündedir."
       ],
       "goals": [
@@ -1642,20 +1666,15 @@
     },
     {
       "id": "RELEASE-01",
-      "title": "2.4.0 yeni dönem ödülü ve içerik açılışını yayıma hazırla",
+      "title": "2.4.0 mevcut içerikle ilk sezonu yayıma hazırla",
       "stage": "R1",
       "owner": "Ürün / QA / operasyon",
       "effort": "L",
       "priority": "P0",
       "status": "todo",
       "depends_on": [
-        "QA-01",
-        "DATA-01",
-        "ANALYT-01",
-        "OPS-01",
-        "OPS-02",
-        "UI-04",
-        "BALANCE-01",
+        "SEASON-00",
+        "COMPAT-01",
         "RELEASE-00"
       ],
       "existing_paths": [
@@ -1668,8 +1687,8 @@
         "docs/planning/release-r1-evidence.md"
       ],
       "acceptance": [
-        "Ödül kilidi, iki dönem stok/kart hazırlığı, gerçek teslim, restart/restore ve TR/EN mobil kanıtları tamamlanır.",
-        "2.4.0 için sürüm notu/CI/imzalı AAB ve veri koruyan dağıtım hazırlanır; takvim ancak içerik kapısı geçildiğinde operatörce açılır."
+        "Mevcut 24 modül ve 15 kozmetikle S1 profili, sabit kaynak haftaları, tekil teslim, kapanış hakları ve gerçek restore kanıtı tamamlanır.",
+        "23 Kasım hedefli sürüm notu/CI/AAB ve 30 Kasım hedefli başlangıç ayrı kapılardır; eski istemci, TR/EN mobil ve Play cihaz testi geçmeden açılmaz. Yeni kart veya 18 yeni kozmetik bu sürümün koşulu değildir."
       ],
       "goals": [
         "operations",
@@ -1696,7 +1715,13 @@
         "UI-02",
         "UI-03",
         "REWARD-03",
-        "POLICY-01"
+        "POLICY-01",
+        "CARD-01",
+        "BALANCE-01",
+        "COS-03",
+        "DATA-01",
+        "OPS-02",
+        "QA-01"
       ],
       "existing_paths": [
         "e2e/reward-navigation.spec.js",
@@ -1708,7 +1733,8 @@
       ],
       "acceptance": [
         "Gerçek API ile limit/ödeme/tekrar/çevrimdışı/yanlış seçenek/sahiplik ve eski stok senaryoları geçer.",
-        "Kazanılmış haklar korunarak pilot kapatılabilir; fiyat/miktar kararı ve sonraki minor numarası kayıtlanır."
+        "Kazanılmış haklar korunarak pilot kapatılabilir; fiyat/miktar kararı ve sonraki minor numarası kayıtlanır.",
+        "S2 için COS-02 ilk altı öğelik kilometre taşı ve Yankı Rölesi hazırdır; üst 18 öğelik görevin tamamı veya Kor Fırlatıcı beklenmez."
       ],
       "goals": [
         "operations",
@@ -1733,7 +1759,8 @@
         "RELEASE-02",
         "LIVE-03",
         "ANALYT-02",
-        "REWARD-04"
+        "REWARD-04",
+        "CARD-02"
       ],
       "existing_paths": [
         ".github/workflows/quality.yml",
@@ -1744,7 +1771,8 @@
       ],
       "acceptance": [
         "Devre Deneyi, ilk başarı/tekrar, gün değişimi ve gerçek ödül makbuzu uçtan uca doğrulanır.",
-        "Tek etkinlik vitrini, yeterli yeni ödül stoğu, koruyucu kalite ölçüleri ve devam/düzelt/durdur kararı tanımlanır."
+        "Tek etkinlik vitrini, yeterli yeni ödül stoğu, koruyucu kalite ölçüleri ve devam/düzelt/durdur kararı tanımlanır.",
+        "S3 için COS-02 ikinci altı öğelik kilometre taşı ve Kor Fırlatıcı hazırdır; lisans ikincil, Devre Deneyi ana kapsamdır."
       ],
       "goals": [
         "operations",
@@ -1840,6 +1868,117 @@
         "deliverables/GRIDSHARD_2.3.0_14/manifest.json",
         "docs/planning/release-230-user-confirmation-20261103.md"
       ]
+    },
+    {
+      "id": "SEASON-00",
+      "title": "Mevcut içerikle ilk sezon ve kaynak ödülü profilini geliştir",
+      "stage": "R1",
+      "owner": "Backend / QA / ürün",
+      "effort": "L",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "BASE-01",
+        "COS-01"
+      ],
+      "existing_paths": [
+        "server/app/season_module_releases.py",
+        "server/app/cosmetic_releases.py",
+        "server/app/liveops_content.py",
+        "server/app/competition_control.py",
+        "server/app/reward_delivery.py",
+        "server/tests/test_production_launch.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/first-season-launch-profile.md"
+      ],
+      "acceptance": [
+        "Yalnız ilk açılış sezonu mevcut 24 modülle başlayabilir; açık profil/tek sezon sınırı test edilir. S2 ve sonrasında yeni hazır modül koşulu korunur.",
+        "Kaynak ödüllü dönem açık türdür; eksik kozmetiği saklamak veya eski kozmetiğe düşmek için adet sıfırlanmaz. Kaynak/kozmetik önizlemesi gerçek sabit teslimle eşleşir.",
+        "Kutup Işığı sezon yolu, Güneş Ocağı sıralama ve Derin Akım son hafta önerisi tekil stok/tahsis ile doğrulanır; üç oyuncu seti başka döneme dönmez.",
+        "Kazanılmış/toplanmamış ve premium kökenli haklar sezon kapanışı, geç dönüş, tekrar/eşzamanlı talep ve restart/restore sırasında korunur. Profil/ekonomi sıfırlanmaz.",
+        "40 kademe/haftalık bütçe, gerçek katılım eşiği, owner/AI hariçliği, TR/EN 320/393 px, bağımsız takım başlangıcı ve yayın durdurma kanıtı gerekir."
+      ],
+      "goals": [
+        "content",
+        "rewards",
+        "operations",
+        "presentation"
+      ],
+      "old_plan_sections": [
+        4,
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "COMPAT-01",
+      "title": "2.4 geçişinde kurulu 2.3 ve 2.2.1 başlangıcını koru",
+      "stage": "R1",
+      "owner": "İstemci / backend / QA",
+      "effort": "M",
+      "priority": "P0",
+      "status": "todo",
+      "depends_on": [
+        "RELEASE-00"
+      ],
+      "existing_paths": [
+        "client/src/relay-client.js",
+        "server/app/main.py",
+        "tools/release_guard.py",
+        "server/tests/test_release_221_profiles_updates.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/release-240-client-compatibility.md"
+      ],
+      "acceptance": [
+        "Değiştirilmemiş 2.3 ve 2.2.1 istemci kaynaklarıyla yeni sağlık/başlangıç/protokol sözleşmesi doğrulanır; sadece sürüm metni artırılarak eski istemci engellenmez.",
+        "Gerçek sürüm raporu, minimum/capability uyumu, geçişte eski API/istemci, native yönlendirme ve güvenli güncelleme açıklaması test edilir. Yeni modül açılışı sonraki sürümde eski render/match güvenliğiyle değerlendirilir."
+      ],
+      "goals": [
+        "operations",
+        "presentation"
+      ],
+      "old_plan_sections": [
+        4,
+        9
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REWARD-05",
+      "title": "Deneme ve yeniden kurulum haklarını tasarla ve pilotla",
+      "stage": "R3",
+      "owner": "Ürün / backend / istemci",
+      "effort": "L",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "REWARD-02",
+        "ECON-01"
+      ],
+      "existing_paths": [
+        "server/app/meta_progression.py",
+        "server/app/player_profile.py",
+        "server/app/postgres_economic_operations.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/utility-reward-entitlements.md"
+      ],
+      "acceptance": [
+        "Laboratuvar lisansı yalnız eşit seviyeli AI denemesinde işler; sahiplik veya dereceli güç vermez. Süre/oturum hakkı sunucuda tekil tüketilir; 2.6 pilotuna yetişmesi ana sürümün önkoşulu değildir.",
+        "Yeniden kurulum kuponu mevcut yetenek sıfırlama bedelini tek kez kaldırır; mevcut ücretsiz hak varsa tüketilmez. Para/upgrade iadesi veya premium kökeni iki kez üretilmez. 2.8 için ikincil kapsamdır."
+      ],
+      "goals": [
+        "rewards",
+        "content",
+        "modes"
+      ],
+      "old_plan_sections": [
+        4,
+        9
+      ],
+      "evidence": []
     }
   ],
   "release_plan": [
@@ -1856,36 +1995,48 @@
     },
     {
       "version": "2.4.0",
-      "name": "Yeni dönem ödülleri ve içerik takvimi",
+      "name": "Mevcut içerikle ilk sezon",
       "stage": "R1",
       "gate_tasks": [
         "RELEASE-01"
       ],
-      "scope": "Birleşik yayın kapısı, iki dönemlik özgün ödül/kart stoğu, tema vitrini ve sürümlü ödül tanımları.",
-      "keep_closed": "Hazırlanmamış dönemler, hedefli mağaza/seçim kasası ve yeni oyun modları.",
-      "exit": "En az 18 yeni oyuncu kozmetiği, iki döneme birer hazır modül, ekonomi/kayıt/restore kanıtı; operatör başlangıç kararı."
+      "scope": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi.",
+      "keep_closed": "Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu.",
+      "exit": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi.",
+      "target_release_on": "2026-11-23",
+      "scope_freezes_on": "2026-11-16",
+      "season_starts_on": "2026-11-30",
+      "date_confidence": "hedef"
     },
     {
       "version": "2.5.0",
-      "name": "Mağaza ve seçim kasası",
+      "name": "Seçim kasası, mağaza ve ilk yeni modül",
       "stage": "R2",
       "gate_tasks": [
         "RELEASE-02"
       ],
-      "scope": "Garantili hedefli parça teklifi, dört ayrı mağaza kozmetiği, seçim kasası, mağaza ekranı ve kapanışta hak koruma.",
-      "keep_closed": "Yeni gerçek para paketleri, web ödeme, ücretli yeniden çekiliş ve yeni para birimi.",
-      "exit": "Fiyat/miktar kararı, atomik limit/harcama, tek teslim, yanlış seçenek/bağlantı kopması/iade ve platform kontrolleri."
+      "scope": "Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe.",
+      "keep_closed": "Yeni gerçek para ürünü, yeni para birimi, ücretli yeniden çekiliş ve PvP deneme gücü artışı.",
+      "exit": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı.",
+      "target_release_on": "2026-12-21",
+      "scope_freezes_on": "2026-12-14",
+      "season_starts_on": "2026-12-28",
+      "date_confidence": "hedef"
     },
     {
       "version": "2.6.0",
-      "name": "Günlük Devre Deneyi",
+      "name": "Günlük deney ve ikinci yeni modül",
       "stage": "R3",
       "gate_tasks": [
         "RELEASE-03"
       ],
-      "scope": "Sunucuda doğrulanan günlük problem, ilk başarı ödülü, tekrar deneme ve tek etkinlik vitrini.",
-      "keep_closed": "PvE seferi, takım ortak hedefi ve ek kalıcı PvP kuyrukları.",
-      "exit": "Tohum/kural/dönem sabitliği, tek ödül, gün değişimi, yeni kaynak için yeterli ödül stoğu ve baz ölçüm kararı."
+      "scope": "Günlük Devre Deneyi: önce 7 özgün problem, ilk başarı ödülü ve keşif günlüğü; Kor Fırlatıcı; üçüncü sezon için 6 yeni oyuncu kozmetiği.",
+      "keep_closed": "Dereceli maçta kiralık güç, PvE seferi ve ayrı kalıcı PvP kuyruğu.",
+      "exit": "Sunucu doğrulaması, ilk/tekrar ödülü ayrımı, gün değişimi, kaynak bütçesi, yeni problem stoğu ve modül karşı oyunu.",
+      "target_release_on": "2027-01-18",
+      "scope_freezes_on": "2027-01-11",
+      "season_starts_on": "2027-01-25",
+      "date_confidence": "tahmin"
     },
     {
       "version": "2.7.0",
@@ -1894,9 +2045,13 @@
       "gate_tasks": [
         "LIVE-04"
       ],
-      "scope": "Üç duraklı sefer, duraklar arası kayıt ve farklı rakip dizileri; günlük deneyden ayrı içerik.",
-      "keep_closed": "Takım ortak hedefi, draft ve 2v2.",
-      "exit": "2.6.0 teknik/ekonomi değerlendirmesi olumlu; kayıt/kurtarma, ilk/tekrar ödülü ve yeni sefer içeriği hazır; ortak yayın kapısı geçildi."
+      "scope": "Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi.",
+      "keep_closed": "Takım boss'u ve gerçek zamanlı 2v2.",
+      "exit": "Koşu kurtarma, ilk/tekrar ödülü, yan rota tek teslimi; yeni modül için çalışma kodu/görsel/denge/ücretsiz edinim. CARD-03 taslak brief'i hazır modül sayılmaz. İlk üç takım seti tüketildiyse yeni takım seti de üretilir; oyuncu stoğu buna yetmiş sayılmaz.",
+      "target_release_on": "2027-02-15",
+      "scope_freezes_on": "2027-02-08",
+      "season_starts_on": "2027-02-22",
+      "date_confidence": "tahmin"
     },
     {
       "version": "2.8.0",
@@ -1906,9 +2061,13 @@
         "LIVE-05",
         "LIVE-07"
       ],
-      "scope": "Asenkron takım katkısı, kişisel uygunluk/ödül hakkı ve kalıcı modül/çekirdek ustalık vitrini.",
-      "keep_closed": "Draft, BO3 ve dört oyunculu gerçek zamanlı mod.",
-      "exit": "Üyelik/takım değiştirme/katkı tavanı, küçük takım erişimi, ustalık doğrulaması ve yeni özgün takım ödülü hazır."
+      "scope": "Takım ortak hedefi ve kişisel ikmal hakkı; ilk küçük ustalık hattı; beşinci sezon için yeni ödül setleri ve Toparlanma Feneri hedefi.",
+      "keep_closed": "Oyuncular arası ticaret, hediye zinciri ve parayla oy hakkı.",
+      "exit": "Üyelik/katkı tavanı/tek teslim, küçük takım erişimi, yeni sezon modülü ve özgün stok.",
+      "target_release_on": "2027-03-15",
+      "scope_freezes_on": "2027-03-08",
+      "season_starts_on": "2027-03-22",
+      "date_confidence": "tahmin"
     },
     {
       "version": "2.9.0",
@@ -1918,9 +2077,13 @@
         "LIVE-06",
         "ANALYT-02"
       ],
-      "scope": "Sınırlı etkinlik penceresinde güncel kartlarla seçim ve seviye eşitleme.",
-      "keep_closed": "Kalıcı ayrı kuyruk, BO3 ve 2v2.",
-      "exit": "Yeterli aktif rakip/bekleme ve adalet verisi, seçim/kopma testi ve bağımsız ödül bütçesi; uygun değilse sürüm ertelenir."
+      "scope": "Yeterli gerçek rakip varsa eşit seviyeli Draft Arenası için sınırlı pilot; altıncı sezon ödül/modül hazırlığı.",
+      "keep_closed": "Kalıcı draft kuyruğu, BO3 ve 2v2.",
+      "exit": "Aktif rakip ve bekleme verisi, adalet/bağlantı testi, altıncı sezon için yeni modül ve yeni stok. Modül brief'i 1 Mart kontrolüne kadar kesinleşir.",
+      "target_release_on": "2027-04-12",
+      "scope_freezes_on": "2027-04-05",
+      "season_starts_on": "2027-04-19",
+      "date_confidence": "koşullu"
     }
   ],
   "art_direction": {
@@ -1950,7 +2113,11 @@
     "target_version": "2.4.0",
     "branch": "codex/release-2-4-0",
     "plan": "docs/RELEASE_2_4_0_GELISTIRME_PLANI_20261103.md",
-    "milestone": "source_contracts_and_calendar_stock",
-    "status": "in_progress"
+    "milestone": "existing_content_first_season",
+    "status": "in_progress",
+    "scope_decision": "user_approved",
+    "target_release_on": "2026-11-23",
+    "season_starts_on": "2026-11-30",
+    "calendar": "docs/planning/release_calendar_v1.json"
   }
 }
