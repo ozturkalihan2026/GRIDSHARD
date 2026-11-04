@@ -99,3 +99,18 @@ bestesi; önceki melodinin yalnız yeniden enstrümantasyonu yeni parça sayılm
 
 Bu çalışma müzik üretimi/lisans alımı yapmaz. Bestelerin üretimi ve öznel
 karşılaştırma kabulü AUDIO-03/AUDIO-04 görevlerinin kendi sürüm kapısıdır.
+
+## Mevcut seslerin tarayıcı kabulü — 5 Kasım 2026
+
+Safari CI izinde OGG yedeği kasıtlı olarak kesildiğinde AAC dosyası HTTP 200
+ve doğru hash ile geldiği halde decode reddedildi. Dosyalar `M4A /isom/iso2`
+markaları taşıyordu; bu, [WebKit'in MP4 tanıma regresyonuyla](https://github.com/WebKit/WebKit/commit/c3244cf76da410fe534f880686d375e1390bbbfd)
+eşleşir. 105 AAC kapsayıcısının yalnız dört baytlık ana markası `mp42` olarak
+düzeltildi; kodlanmış ses, zamanlama kutuları, süreler, dosya boyutu ve miks
+aynı kaldı. Gelecek üretimlerde encoder `-brand mp42` kullanır. Bütün sevk
+edilen AAC dosyaları için marka kabulü ve kaynak hash denetimi çalışır.
+
+Bu bir yeni beste veya fiziksel dinleme kabulü değildir. Gerçek AAC yedeği,
+ses sınırları ve sayısal miks kontrolü tarayıcı testinde doğrulanır. Savaş
+kare bütçesi başarısız olsa da işlevsel testler kanıt toplamak için çalışır;
+kare testi işi başarısız bırakır ve kaynak paketini engeller. Eşikler düşmez.

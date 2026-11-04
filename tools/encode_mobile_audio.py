@@ -48,6 +48,10 @@ def encoder_args(extension: str, channels: int, music: bool) -> list[str]:
             "-c:a", "aac",
             "-b:a", f"{per_channel * max(1, channels)}k",
             "-movflags", "+faststart",
+            # WebKit's MP4 sniffer requires an mp4-prefixed ISO-BMFF brand.
+            # M4A/isom/iso2 alone can fail decodeAudioData despite valid AAC.
+            # https://github.com/WebKit/WebKit/commit/c3244cf76da410fe534f880686d375e1390bbbfd
+            "-brand", "mp42",
         ]
     raise ValueError(extension)
 

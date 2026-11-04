@@ -241,6 +241,9 @@ jobs:
           GRIDSHARD_E2E_HUMAN_MATCHMAKING: '0'
         run: pnpm exec playwright test e2e/battle-render-budget.spec.js ${{ matrix.projects }}
       - name: Startup, current UI and mobile layouts (AI-only fixture)
+        # Retain functional evidence even when the independent frame gate fails;
+        # a failed frame gate still fails this job and blocks source packaging.
+        if: success() || failure()
         env:
           GRIDSHARD_E2E_HUMAN_MATCHMAKING: '0'
         run: >-
