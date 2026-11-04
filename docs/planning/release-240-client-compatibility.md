@@ -119,6 +119,10 @@ Temiz üretim imajında eksik olan salt okunur `first_season_launch_v1.json`
 de açık Docker izin listesine eklendi. Profilin `draft` durumu korunur;
 bu dosyanın imaja dahil edilmesi sezonu açmaz. Yerel test raporları sürüm
 planını makineye göre değiştiremez; temiz checkout ile aynı metin üretilir.
+GitHub ARM Mac kapasitesi işi başlatamadan iptal ettiği için Safari CI havuzu
+`macos-15-intel` olarak sabitlendi. macOS 15/WebKit, senaryolar ve performans
+eşikleri korunur; Windows WebKit ile değiştirilmez. Etiket GitHub'ın
+[desteklenen imaj listesinde](https://github.com/actions/runner-images) yer alır.
 
 Gerçek PostgreSQL/Redis ve macOS WebKit CI sonuçları; imzalı 2.4.0 AAB ile
 Play'den fiziksel cihaz güncellemesi, hesap/ödeme/ödül ve hoparlör/kulaklık
