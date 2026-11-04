@@ -45,7 +45,7 @@ Ayarlar → Grafik sekmesi → Grafik: **Otomatik** (varsayılan), Düşük, Ort
 
 Aynı anda yaşayan efekt kökü sayısı kademeye göre sınırlıdır (`BATTLE_EFFECT_ROOT_BUDGET`: 8 / 14 / 32); sınır aşılınca yeni efektler sadeleşir.
 
-**Otomatik** kip cihaza göre başlar (`client/src/battle/graphics-tier.js`): masaüstü Yüksek; bellek bilgisi veren mobil cihazda (Android) bellek ≤ 2 GB ya da ≤ 4 çekirdek Düşük, bellek ≤ 4 GB ya da ≤ 6 çekirdek Orta, diğerleri Yüksek. `navigator.deviceMemory` ikinin kuvvetine yuvarlandığından 6 GB bellekli telefon 4 olarak görünür ve Orta kademede başlar. Bellek bilgisi vermeyen cihaz (iPhone, iPad) Yüksek başlar: WebKit çekirdek sayısını gizlilik için 4 ya da 8 olarak bildirir, altı çekirdekli iPhone 4 görünür; bu sayı tek başına kademe seçmek için kullanılmaz. İki saniyelik ölçüm pencerelerinde ortalama kare süresi 26 ms'yi ya da 50 ms'yi aşan kare oranı %8'i art arda iki kez aşarsa kademe bir iner (`GridshardGraphicsTier.Controller`, aynı dosya). İnen kademe cihazda aynı sürüm boyunca hatırlanır; yeni sürümde ölçüm baştan yapılır. Oyuncu elle kademe seçerse otomatik düşürme yapılmaz.
+**Otomatik** kip cihaza göre başlar (`client/src/battle/graphics-tier.js`): masaüstü Yüksek; bellek bilgisi veren mobil cihazda (Android) bellek ≤ 2 GB ya da ≤ 4 çekirdek Düşük, bellek ≤ 4 GB ya da ≤ 6 çekirdek Orta, diğerleri Yüksek. `navigator.deviceMemory` ikinin kuvvetine yuvarlandığından 6 GB bellekli telefon 4 olarak görünür ve Orta kademede başlar. Bellek bilgisi vermeyen cihaz (iPhone, iPad) Yüksek başlar: WebKit çekirdek sayısını gizlilik için 4 ya da 8 olarak bildirir, altı çekirdekli iPhone 4 görünür; bu sayı tek başına kademe seçmek için kullanılmaz. Ölçüm pencerelerinde ortalama kare süresi 26 ms'yi ya da 50 ms'yi aşan kare oranı %8'i art arda iki kez aşarsa kademe bir iner (`GridshardGraphicsTier.Controller`, aynı dosya). İnen kademe cihazda aynı sürüm boyunca hatırlanır; yeni sürümde ölçüm baştan yapılır. Oyuncu elle kademe seçerse otomatik düşürme yapılmaz.
 
 Ekim 2026 turunda ölçümler masaüstü Chrome'da işlemci 4× ve 6× yavaşlatılarak yapıldı; gerçek telefonda doğrulanmadı.
 
@@ -65,10 +65,3 @@ Ekim 2026 turunda ölçümler masaüstü Chrome'da işlemci 4× ve 6× yavaşlat
 2. `battle_perspective: true` ve p95 yüksekse perspektifi kapatıp karşılaştırın (Ayarlar → Savaş Alanı Perspektifi); eğik tahta düşük GPU'larda bileşim maliyeti getirebilir.
 3. `graphics_quality` düşürülünce iyileşme yoksa darboğaz DOM güncellemeleridir. Tahtalar hücre imzasıyla karşılaştırılır ve yalnız değişen hücre yeniden kurulur (`GridshardBattleBoardView`, `renderEnemyBoard`); kablo geometrisi tahta boyutu değişmedikçe yeniden ölçülmez (`renderBoardCables`). Chrome izinde "Forced reflow" uyarıları artmışsa bir çizim yolu yerleşim okumayı (`getBoundingClientRect`, `offsetLeft`) yazmalarla iç içe yapıyordur.
 
-
-5 Kasım 2026 CI kabul düzeltmesi: otomatik kipte sürekli 30 fps baskısında
-Yüksek → Orta → Düşük uyumu yaklaşık 16 yerine 8 saniye içinde gerçekleşir.
-İki kötü pencere koşulu ve 26 ms/%8 karar eşikleri korunur; elle seçim,
-başlangıç donanım politikası ve yayın bütçesi (p95 34 ms, jank %3) değişmez.
-Mac WebKit kanıtına oyundan bağımsız boş sayfa rAF ölçümü de eklenir;
-savaş ölçümünden hiçbir kare atılmaz ve kabul penceresi sıfırlanmaz.

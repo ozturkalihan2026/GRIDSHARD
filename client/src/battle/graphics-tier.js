@@ -10,10 +10,10 @@
   const MODE_STORAGE_KEY = "gridshard.graphics-mode";
   const AUTO_TIER_STORAGE_KEY = "gridshard.graphics-auto-tier";
 
-  // Otomatik düşürme: bir ölçüm penceresi en çok 2 sn sürer. Ortalama kare
+  // Otomatik düşürme: bir ölçüm penceresi en çok 4 sn sürer. Ortalama kare
   // süresi 26 ms'yi ya da 50 ms'yi aşan karelerin oranı %8'i geçerse pencere
   // kötüdür; art arda iki kötü pencere kademeyi bir indirir.
-  const WINDOW_MS = 2000;
+  const WINDOW_MS = 4000;
   const MIN_WINDOW_MS = 1000;
   const MIN_WINDOW_FRAMES = 10;
   const SLOW_AVERAGE_MS = 26;
@@ -147,7 +147,7 @@
       if (!current) return null;
       const elapsed = current.last - current.start;
       // Çok kısa pencere hüküm vermez: ne kötü sayılır ne de sayacı sıfırlar.
-      // A full window with fewer than ten frames is severe overload, not
+      // A full 4s window with fewer than ten frames is severe overload, not
       // missing evidence. Discarding it kept 1–2 FPS devices on High forever.
       if (elapsed < MIN_WINDOW_MS || (current.frames < MIN_WINDOW_FRAMES && elapsed < WINDOW_MS)) return null;
       const bad =

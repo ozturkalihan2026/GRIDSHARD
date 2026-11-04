@@ -180,9 +180,9 @@ jobs:
             browsers: chromium
             projects: --project=desktop-chromium --project=android-chrome-emulated
           - platform: Safari-WebKit
-            # macos-15 is ARM64; hosted capacity can cancel before startup.
-            # Keep macOS 15/WebKit and all thresholds on its supported Intel pool.
-            os: macos-15-intel
+            # Keep the same macOS 15/WebKit gate on Apple Silicon. The Intel
+            # hosted pool exceeded the frame budget even on an empty page.
+            os: macos-15
             browsers: webkit
             projects: --project=iphone-safari-emulated
     steps:
