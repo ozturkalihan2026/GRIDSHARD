@@ -15,4 +15,4 @@ This preparation runs offline; no raster assembly runs in the game.
 
 Built-in imagegen produced the revised source images. Final prompt directions,
 source provenance and validation are recorded in
-`docs/SAVAS_TEK_ZEMIN_ESIT_HUCRELER_20261025.md`.
+`docs/OYUN_KANONU.md`.

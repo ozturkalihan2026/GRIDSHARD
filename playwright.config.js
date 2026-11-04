@@ -56,12 +56,12 @@ module.exports = defineConfig({
   projects: [
     {
       name: "desktop-chromium",
-      testMatch: /(navigation-back|liveops-cosmetics|release221-social|balance-rollout|battle-platform|battle-polish|battle-emoji-memory|startup-loading|talent-costs|reward-navigation|core-level-costs|two-client-pvp|menu-navigation|persistent-render|visual-atmosphere|presentation-refinements|battle-render-budget|onboarding-visibility|typography-pilot|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|battle-density|beta33-season|beta381-battle-events)\.spec\.js/,
+      testMatch: /(navigation-back|liveops-cosmetics|release221-social|balance-rollout|battle-platform|battle-polish|battle-emoji-memory|startup-loading|talent-costs|reward-navigation|core-level-costs|two-client-pvp|menu-navigation|persistent-render|visual-atmosphere|presentation-refinements|battle-render-budget|onboarding-visibility|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|battle-density|beta33-season|beta381-battle-events)\.spec\.js/,
       use: { ...devices["Desktop Chrome"], ...localChrome }
     },
     {
       name: "android-chrome-emulated",
-      testMatch: /(navigation-back|liveops-cosmetics|release221-social|balance-rollout|battle-platform|battle-polish|battle-emoji-memory|startup-loading|talent-costs|reward-navigation|core-level-costs|two-client-pvp|visual-atmosphere|presentation-refinements|battle-render-budget|onboarding-visibility|typography-pilot|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|mobile-battle|settings-layout|onboarding)\.spec\.js/,
+      testMatch: /(navigation-back|liveops-cosmetics|release221-social|balance-rollout|battle-platform|battle-polish|battle-emoji-memory|startup-loading|talent-costs|reward-navigation|core-level-costs|two-client-pvp|visual-atmosphere|presentation-refinements|battle-render-budget|onboarding-visibility|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|mobile-battle|settings-layout|onboarding)\.spec\.js/,
       use: { ...devices["Pixel 7"], ...localChrome }
     },
     {

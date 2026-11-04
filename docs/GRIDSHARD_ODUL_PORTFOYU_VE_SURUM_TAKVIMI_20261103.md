@@ -1,5 +1,11 @@
 # GRIDSHARD — ödül portföyü ve tarihli sürüm takvimi
 
+**4 Kasım güncellemesi:** [Sürüm uygulama rehberi](GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md)
+2.4–2.9 için ayrıntılı brief, haftalık iş sırası, uygulama yöntemi, dosya ve checklist
+bağlantılarını içerir. Takvim satırındaki sürüm bağlantısı ilgili briefi açar.
+2.4.0'a sarı geri/ileri kontrolleri ve saldırı/çekirdek ses kalitesi zorunlu işleri
+eklendi; tarihler korunurken ek yükün 6 Kasım kontrolünde ölçülmesi kaydedildi.
+
 Karar tarihi: **3 Kasım 2026**. Kullanıcı önceliği: **2.4.0'da mevcut
 24 modülle ilk sezon açılsın; yeni modül ve geniş kozmetik üretimi sonraki
 paketlere bölünsün.** Ortak sanat yönü sürer. Bu belge planlama kaydıdır;
@@ -100,12 +106,12 @@ backlog ile eşleşmek zorundadır.
 <!-- release-calendar:begin -->
 | Sürüm | Çalışma dönemi | Kapsam kapanışı | Hedef yayın | Sezon başlangıcı | Oyuncuya gelen ana içerik | Kesinlik |
 | --- | --- | --- | --- | --- | --- | --- |
-| **2.4.0** | 04.11.2026–16.11.2026 | 16.11.2026 | **23.11.2026** | 30.11.2026, 03.00 TR | Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. | hedef |
-| **2.5.0** | 24.11.2026–14.12.2026 | 14.12.2026 | **21.12.2026** | 28.12.2026, 03.00 TR | Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. | hedef |
-| **2.6.0** | 22.12.2026–11.01.2027 | 11.01.2027 | **18.01.2027** | 25.01.2027, 03.00 TR | Günlük Devre Deneyi: önce 7 özgün problem, ilk başarı ödülü ve keşif günlüğü; Kor Fırlatıcı; üçüncü sezon için 6 yeni oyuncu kozmetiği. | tahmin |
-| **2.7.0** | 19.01.2027–08.02.2027 | 08.02.2027 | **15.02.2027** | 22.02.2027, 03.00 TR | Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi. | tahmin |
-| **2.8.0** | 16.02.2027–08.03.2027 | 08.03.2027 | **15.03.2027** | 22.03.2027, 03.00 TR | Takım ortak hedefi ve kişisel ikmal hakkı; ilk küçük ustalık hattı; beşinci sezon için yeni ödül setleri ve Toparlanma Feneri hedefi. | tahmin |
-| **2.9.0** | 16.03.2027–05.04.2027 | 05.04.2027 | **12.04.2027** | 19.04.2027, 03.00 TR | Yeterli gerçek rakip varsa eşit seviyeli Draft Arenası için sınırlı pilot; altıncı sezon ödül/modül hazırlığı. | koşullu |
+| **[2.4.0](planning/releases/2.4.0.md)** | 04.11.2026–16.11.2026 | 16.11.2026 | **23.11.2026** | 30.11.2026, 03.00 TR | Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. | hedef |
+| **[2.5.0](planning/releases/2.5.0.md)** | 24.11.2026–14.12.2026 | 14.12.2026 | **21.12.2026** | 28.12.2026, 03.00 TR | Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. | hedef |
+| **[2.6.0](planning/releases/2.6.0.md)** | 22.12.2026–11.01.2027 | 11.01.2027 | **18.01.2027** | 25.01.2027, 03.00 TR | Günlük Devre Deneyi: önce 7 özgün problem, ilk başarı ödülü ve keşif günlüğü; Kor Fırlatıcı; üçüncü sezon için 6 yeni oyuncu kozmetiği. | tahmin |
+| **[2.7.0](planning/releases/2.7.0.md)** | 19.01.2027–08.02.2027 | 08.02.2027 | **15.02.2027** | 22.02.2027, 03.00 TR | Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi. | tahmin |
+| **[2.8.0](planning/releases/2.8.0.md)** | 16.02.2027–08.03.2027 | 08.03.2027 | **15.03.2027** | 22.03.2027, 03.00 TR | Takım ortak hedefi ve kişisel ikmal hakkı; ilk küçük ustalık hattı; beşinci sezon için yeni ödül setleri ve Toparlanma Feneri hedefi. | tahmin |
+| **[2.9.0](planning/releases/2.9.0.md)** | 16.03.2027–05.04.2027 | 05.04.2027 | **12.04.2027** | 19.04.2027, 03.00 TR | Yeterli gerçek rakip varsa eşit seviyeli Draft Arenası için sınırlı pilot; altıncı sezon ödül/modül hazırlığı. | koşullu |
 
 | Sezon | Başlangıç — bitiş (bitiş hariç) | Modül planı |
 | --- | --- | --- |
@@ -128,15 +134,18 @@ kapsamı kendi geliştirmesi başlamadan önce yeniden teyit edilir.
 
 | Tarih | Çalışma | Somut bitiş kanıtı |
 | --- | --- | --- |
-| **4–6 Kasım** | Mevcut ödül/kaynak bütçesi; ilk sezon istisnası; kaynak/kozmetik haftalarının tasarımı | BASE-01 raporu, 40 kademelik bütçe, SEASON-00 sözleşmesi; canlı değişmez. |
-| **9–13 Kasım** | Sabit kaynak paketleri, tekil kozmetik tahsisi ve yeni sezon profili; kapanışta kazanılmış hakların korunması | Kozmetik gerekmeyen dönem, eski ödüle düşmeme, tekrar/eşzamanlı talep ve dönem sınırı testleri. |
-| **16–18 Kasım** | Kapsam kapanışı, kurulu 2.3/2.2.1 istemci uyumu, mobil TR/EN ve tam CI | Gerçek servis, aynı kaynak, veri koruma ve değiştirilmemiş eski istemci kanıtı. |
+| **4–6 Kasım** | BASE-01 bütçesi, sarı geri/ileri düğme envanteri, saldırı ses matrisi ve S1 sözleşmesi | 40 kademe taslağı, UI-07/AUDIO-01 envanteri; 6 Kasım ek yük/kapasite kontrolü. |
+| **9–13 Kasım** | Sabit kaynak, tekil tahsis, kapanış hakları; sarı düğmeler ve saldırı/çekirdek ses uygulaması | COS-04/SEASON-00, UI-07/AUDIO-01/02; tek teslim ve önce/sonra sunum kanıtı. |
+| **16–18 Kasım** | 16 Kasım kapsam kapanışı; eski istemci, mobil TR/EN, ses/miks ve tam CI regresyonu | Gerçek servis, veri koruma, değiştirilmemiş eski istemci ve yoğun savaş kanıtı. |
 | **19–20 Kasım** | İmzalı AAB, Play test kanalında güncelleme, hesap/ödeme/ödül doğrulaması | Cihaz kabulü, yayın notu, yedek/restore ve geri dönüş hazırlığı. |
 | **23 Kasım** | 2.4.0 için kontrollü sunucu/mağaza yayını hedefi | Uyumlu dağıtım ve ilk sağlık/teslim gözlemi; sezon henüz açılmaz. |
 | **23–29 Kasım** | Güncelleme ve gözlem aralığı; oyuncuya sezon/ödül önizlemesi | Doğru tarih, doğru ödül, sıfır çift teslim; başlangıç kapısının son kontrolü. |
 | **30 Kasım, 03.00 TR** | S1 kişisel sezon başlangıç hedefi | Operator başlangıcı ve gerçek saat sınırı doğrulaması. |
 
-Tahmin: **12–15 aktif geliştirici günü**, yaklaşık üç takvim haftası.
+Önceki ana kapsam tahmini **12–15 aktif geliştirici günü** idi. 4 Kasımda eklenen
+buton ve ses işleriyle ön tahmin **14–17 aktif gün**; 6 Kasım kontrolünde ölçülecek.
+Takvim hedefi korunmuştur; bu ek yük kapanış tarihini riske atarsa takvim kararı
+yenilenir. Kalite işleri sessizce kapsamdan çıkarılmaz.
 Varsayım: tek ana geliştirme akışı, haftada beş gün, günde 4–6 saat odaklı
 çalışma ve yaklaşık %20 hata/test/gözlem payı. Bu kapasite ölçülmüş geçmiş
 hız değildir. Daha az aktif çalışma zamanı veya dış test gecikmesi tarihleri

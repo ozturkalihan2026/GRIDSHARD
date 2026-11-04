@@ -42,7 +42,7 @@ Takım menüsü bu profil barı zemin değişikliğinin kapsamında değildir.
 PNG asılları, 24/32/40px önizleme ve teknik export aracı Git dışı
 `artifacts/visual-refresh-pack01-20261015/` klasöründedir; başka bilgisayara
 ayrıca taşınır. Kalıcı prompt seti:
-`docs/GORSEL_DONUSUM_PAKET01_PROMPTLARI_20261015.json`.
+`docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md`.
 Paket sırası/onay kaydı: `docs/GORSEL_DONUSUM_PLANI_20261015.md`.
 
 Yerel/görsel oyun testleri kullanıcıdadır. Yeni tarayıcı/test sunucusu veya

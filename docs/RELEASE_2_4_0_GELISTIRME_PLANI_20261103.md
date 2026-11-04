@@ -1,8 +1,27 @@
 # GRIDSHARD 2.4.0 — mevcut içerikle ilk sezon
 
+**4 Kasım ayrıntılandırması:** Güncel [2.4.0 uygulama briefi](planning/releases/2.4.0.md)
+haftalık sıra, uygulama adımları, dosya bağlantıları ve checklist görevlerini birlikte
+gösterir. Bütün sürümler için [bağlı rehber](GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md).
+Önceki yayın/sezon hedefleri korunur; aşağıdaki üç kalite işi zorunlu kapsama eklenmiştir.
+
+- **UI-07:** Ödüllerdeki bütün alt sayfalar dahil sistemdeki geri ve ileri gezinme
+  düğmeleri son sarı geri düğmesiyle aynı yüzey, kenar, gölge ve boyutu kullanır.
+  İleri düğmesinde yalnız ok yönü değişir. Mavi/sarı CSS çakışmaları temizlenir;
+  tüm ekranlar ve durumlar envanterden kontrol edilir.
+- **AUDIO-01:** Saldırı modülü → olay → VFX → cue → dosya/mobil türev matrisi;
+  eksik tetikleme/duyulurluk ve cızırtının nedenini bulma, düzeltme ve miks kabulü.
+- **AUDIO-02:** Bütün aktif çekirdeklerde aktivasyon ve uygun atış/etki sesleri;
+  saldırı sesleriyle birlikte miks, yoğun savaş ve gerçek Android dinleme kabulü.
+
+Bu işler henüz uygulanmadı. RELEASE-01 bu üç işin kabulünü bekler. İlk kapsamın
+12–15 aktif gün tahminine ek iş yükü geldi; yeni ön tahmin 14–17 gündür. 6 Kasım
+kontrolünde gerçek efor ölçülür; 16 Kasım kapsam kapanışı ile 23 Kasım hedefini
+riske atıyorsa tarih yeniden karara bağlanır. Bu metin tarih kaydırma kararı değildir.
+
 3 Kasım 2026 kullanıcı kararı: mevcut 24 modülle ilk sezonun açılması önceliklidir.
 Yeni modüller ve geniş kozmetik üretimi sonraki paketlere bölündü. Dal
-`codex/release-2-4-0`; canlı 2.3.0. Bu belge sezonu veya ödül dağıtımını açmaz.
+`main`; canlı 2.3.0. Bu belge sezonu veya ödül dağıtımını açmaz.
 
 **Çalışma hedefi: 23 Kasım 2026 sürüm yayını; 30 Kasım 2026 03.00 TR sezon
 başlangıcı.** Tahmin 12–15 aktif geliştirici günü; kapasite ve test/Play

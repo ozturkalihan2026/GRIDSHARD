@@ -51,7 +51,8 @@ def render(document, releases):
     rows = [START, '| Sürüm | Çalışma dönemi | Kapsam kapanışı | Hedef yayın | Sezon başlangıcı | Oyuncuya gelen ana içerik | Kesinlik |',
             '| --- | --- | --- | --- | --- | --- | --- |']
     for r in releases:
-        rows.append(f"| **{r['version']}** | {display(r['work_starts_on'])}–{display(r['scope_freezes_on'])} | {display(r['scope_freezes_on'])} | **{display(r['target_release_on'])}** | {display(r['season']['starts_on'])}, 03.00 TR | {r['content']} | {r['confidence']} |")
+        label = f"[{r['version']}](planning/releases/{r['version']}.md)" if r.get('delivery_document') else r['version']
+        rows.append(f"| **{label}** | {display(r['work_starts_on'])}–{display(r['scope_freezes_on'])} | {display(r['scope_freezes_on'])} | **{display(r['target_release_on'])}** | {display(r['season']['starts_on'])}, 03.00 TR | {r['content']} | {r['confidence']} |")
     rows += ['', '| Sezon | Başlangıç — bitiş (bitiş hariç) | Modül planı |', '| --- | --- | --- |']
     for r in releases:
         s = r['season']

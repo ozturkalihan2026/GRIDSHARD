@@ -41,11 +41,8 @@ def test_rechecking_a_modified_module_does_not_use_stale_ast(tmp_path, monkeypat
     assert len(checker.check_imports([caller])[1]) == 1
 
 
-def test_retired_balance_sources_are_preserved_outside_active_package():
-    archive = ROOT / "docs/archive/retired-balance-tools-20261014"
+def test_retired_balance_sources_are_absent_from_active_package():
     retired = ["server/app/balance_change_drafts.py", "server/app/balance_regression.py", "server/app/balance_simulation.py",
                "tools/beta23_balance_report.py", "tools/beta24_energy_port_report.py", "tools/beta32_fix_acceptance_report.py", "tools/beta37_ai_archetype_report.py"]
     for path in retired:
         assert not (ROOT / path).exists()
-        assert (archive / Path(path).name).is_file()
-    assert (archive / "README.md").is_file()

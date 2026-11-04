@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "planning_only": true,
-  "as_of": "2026-11-03",
+  "as_of": "2026-11-04",
   "timezone": "Europe/Istanbul",
   "capacity_assumption": "Tek ana geliştirme akışı; haftada 5 gün, günde 4–6 saat odaklı çalışma; kapasitenin yaklaşık yüzde 20'si hata/test/gözlem payı. Bu çalışma kapasitesi teyit edilmiş zaman çizelgesi değildir.",
-  "scope_decision": "Kullanıcı 2.4.0'da mevcut 24 modülle ilk sezonun açılmasını önceliklendirdi. Yeni kart ve geniş kozmetik üretimi sonraki paketlere bölündü.",
+  "scope_decision": "Kullanıcı 2.4.0'da mevcut 24 modülle ilk sezonun açılmasını önceliklendirdi. Yeni kart ve geniş kozmetik üretimi sonraki paketlere bölündü. 4 Kasım: aynı takvim korunarak sürüm içerikleri ayrıntılandırıldı; 2.4.0 sarı geri/ileri gezinme ve saldırı/çekirdek ses kalitesi zorunlu kapsamına alındı.",
   "season_policy": "Yalnız ilk açılış sezonunda mevcut 24 modül kullanılır. İkinci sezondan itibaren en az bir yeni hazır modül; yeni modül hazırlığı yoksa yeni sezon otomatik açılmaz. Bu istisna ve kapı henüz çalışma koduna uygulanmadı.",
   "releases": [
     {
@@ -14,14 +14,17 @@
       "scope_freezes_on": "2026-11-16",
       "tests_start_on": "2026-11-19",
       "target_release_on": "2026-11-23",
-      "content": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi.",
-      "required": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi.",
+      "content": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi.",
+      "required": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur.",
       "optional": "Takım turnuvası için ayrı hazırlık; yeterli gerçek takım yoksa beklemede kalır.",
       "excluded": "Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu.",
       "work_items": [
         "BASE-01",
         "COS-04",
         "SEASON-00",
+        "UI-07",
+        "AUDIO-01",
+        "AUDIO-02",
         "COMPAT-01",
         "RELEASE-01"
       ],
@@ -31,7 +34,144 @@
         "ends_on": "2026-12-28",
         "starts_at_utc": "00:00",
         "module": "Mevcut 24 modül; yalnız ilk sezon istisnası"
-      }
+      },
+      "delivery_document": "docs/planning/releases/2.4.0.md",
+      "delivery_packages": [
+        {
+          "id": "S1-BUTCE",
+          "title": "40 kademe ve haftalık kaynak planı",
+          "tasks": [
+            "BASE-01"
+          ],
+          "steps": [
+            "Mevcut günlük görev, maç, sandık, sezon ve premium kaynaklarını yeni/düzenli ücretsiz/premium oyuncu için tabloya çıkar; AI/insan uygunluğunu ayır.",
+            "40 kademeyi ücretsiz/premium kaynak, mevcut modül parçası ve sabit kasa kimliğiyle satır satır tanımla. Devre Projesi bu sürümde sabit mevcut modül paketidir; seçim ekranı ekleme.",
+            "30 Kasım, 7 ve 14 Aralık haftalarını resource_only; 21 Aralık haftasını Derin Akım + kaynak olarak bütçele. Tüm 28 gün giriş/harcama ve toplama varsayımlarını economy-baseline.md içine kaydet."
+          ],
+          "acceptance": [
+            "40 kademe + dört hafta + sıralama teslimi aynı bütçede; miktarlar mevcut tanımlardan ve rapordan türetilmiş.",
+            "Ücretsiz/premium ayrımı, çekirdek parçalarının mevcut teslim sınırı ve katılım istisnaları görünür."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S1-SOZLESME",
+          "title": "İlk sezon profili, tekil stok ve kazanılmış hak",
+          "tasks": [
+            "COS-04",
+            "SEASON-00"
+          ],
+          "steps": [
+            "İlk açılışa özel mevcut 24 modül istisnasını açık profil/season kimliğiyle uygula; ikinci sezona taşınamadığını test et.",
+            "resource_only ve cosmetic dönemlerini şema/önizleme/teslim/coverage boyunca ayır. Kutup Işığı sezon yolu, Güneş Ocağı sıralama, Derin Akım son hafta için yalnız birer tahsis yap; eksik kaynağı eski kozmetiğe düşürme.",
+            "Hak doğduğu anda ödül içeriği ve premium kökenini sabitle; kalıcı oyuncu+dönem+düğüm eşsizliğiyle teslim et. Aynı/başka request_id, eşzamanlı istek ve sezon bitişi yarışını doğrula.",
+            "Toplanmamış kazanılmış hakları kapanıştan sonra kullanılabilir tut; restart ve boş hedefe restore ile kanıtla. Takım başlangıcı bağımsız kalır; gerçek katılım yoksa takım turnuvası bekler."
+          ],
+          "acceptance": [
+            "Yeni coverage profili kaynak haftalarını gerçekten destekliyor; eski tam-kozmetik raporunun adetleri gizlenmiyor.",
+            "Kapanış/geri dönüş/restore sonrasında sıfır çift teslim, sıfır kayıp hak; S2 yeni modül kapısı korunuyor."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S1-GEZINME",
+          "title": "Bütün geri ve ileri düğmelerinde son sarı tasarım",
+          "tasks": [
+            "UI-07"
+          ],
+          "steps": [
+            "Ödüllerin her alt sayfasından başlayarak bütün geri/ileri kontrollerini selector, ekran, yön ve hedefleriyle envantere al; yalnız mevcut 11 geri düğmesini sayan test kapsamını genişlet.",
+            "navigation-back-v1.css içindeki son sarı tasarımı ortak geri/ileri stile taşı; ileri oku aynı yüzey üzerinde sağa çevir. canon/ui-components/visual-polish/reward stillerinin normal ve pseudo-element çakışmalarını temizle.",
+            "Sarı yüzey, kenar, gölge ve dokunma alanını normal/basılı/odaklı/devre dışı durumlarda karşılaştır; ekran hedefleri, erişilebilir adlar ve native geri davranışını kontrol et."
+          ],
+          "acceptance": [
+            "Ödül sayfalarında mavi/sarı karışımı kalmıyor; sistem envanterindeki bütün gezinme okları aynı tasarım ailesinde.",
+            "TR/EN ve iki mobil boyutta geri/ileri gidiş dönüşü ile ekran görüntüsü kanıtı var."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S1-SES",
+          "title": "Saldırı modülleri ve çekirdekler için tamamlanmış ses sunumu",
+          "tasks": [
+            "AUDIO-01",
+            "AUDIO-02"
+          ],
+          "steps": [
+            "Aktif katalog × event × VFX × cue × dosya × mobil türev matrisi çıkar; kullanıcı bildirimi henüz doğrulanmamış hata kaydıdır. Önce izole saldırı, sonra yoğun savaş kaydı al.",
+            "Eksik event bağlantısı, olmayan dosya, decode/autoplay hatası, çok düşük gain ve voice-limit tarafından bastırılmayı ayrı işaretle. Snapshot tekrarının aynı olayı iki kez çalmadığını doğrula.",
+            "Ham dosyadaki bozulma ile miks taşmasını ayır; DC, clip/tepe, başlangıç/bitiş click, örnekleme/decode ve eşzamanlı ses yükünü ölç. Sorunlu sesleri uygun fade/filtre/yeniden üretimle düzelt; müziği bastırarak duyulurluk sağlama.",
+            "Çekirdeklerin aktivasyon ve mevcut etki/atış imzalarını aynı miks içinde ayarla; WAV ve mobil kodlamaları paketle. WebAudio ve HTML fallback, mute, ses seviyesi, pause/resume ve Android hoparlör/kulaklık dinleme kayıtlarını matrislere bağla."
+          ],
+          "acceptance": [
+            "İzolasyonda her gerekli saldırı/çekirdek olayı duyuluyor; yoğun savaşta bilinçli ses bütçesi bastırmaları raporda.",
+            "Önce/sonra örnekleri, tepe/clip raporu ve gerçek cihaz dinleme kabulü var; cızırtı giderildiği yalnız dosyanın varlığıyla iddia edilmiyor."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S1-YAYIN",
+          "title": "Eski istemci uyumu ve iki aşamalı açılış",
+          "tasks": [
+            "COMPAT-01",
+            "RELEASE-01"
+          ],
+          "steps": [
+            "Değiştirilmemiş 2.3/2.2.1 kurulumlarıyla health/protokol/ödül akışını doğrula; yalnız yeni sürüm numarası yazmanın boot uyumunu bozmasına izin verme.",
+            "Mobil TR/EN, kaynak/kozmetik önizleme, yayın mesajı, yeşil CI, yedek/restore ve imzalı AAB kanıtlarını tek release-r1-evidence kaydında topla.",
+            "23 Kasım paket hedefi sonrası bir hafta gözlem yap; gerçek teslim/hata ve katılımı kontrol et. 30 Kasım 03.00 TR için ayrıca operatör açılış kararı ver; yeterli takım varsa en erken 7 Aralık takım başlangıcı ayrı değerlendirilir."
+          ],
+          "acceptance": [
+            "Paket yayını sezonu kendiliğinden açmıyor; kazanılmış hakları koruyan durdurma denenmiş.",
+            "Sarı kontroller, saldırı/çekirdek sesleri ve eski istemci kabulü RELEASE-01 bağımlılıklarında."
+          ],
+          "kind": "required"
+        }
+      ],
+      "work_schedule": [
+        {
+          "starts_on": "2026-11-04",
+          "ends_on": "2026-11-06",
+          "tasks": [
+            "BASE-01",
+            "UI-07",
+            "AUDIO-01"
+          ],
+          "output": "Bütçe ve buton/ses envanteri; 6 Kasım kapasite kontrolü."
+        },
+        {
+          "starts_on": "2026-11-09",
+          "ends_on": "2026-11-13",
+          "tasks": [
+            "COS-04",
+            "SEASON-00",
+            "UI-07",
+            "AUDIO-01",
+            "AUDIO-02"
+          ],
+          "output": "S1 kaynak profili ve hak koruma; sarı kontroller ile saldırı/çekirdek sesleri uygulaması."
+        },
+        {
+          "starts_on": "2026-11-16",
+          "ends_on": "2026-11-18",
+          "tasks": [
+            "COMPAT-01",
+            "UI-07",
+            "AUDIO-01",
+            "AUDIO-02",
+            "SEASON-00"
+          ],
+          "output": "16 Kasım kapsam kapanışı; eski istemci, TR/EN, ses ve yoğun savaş regresyonu."
+        },
+        {
+          "starts_on": "2026-11-19",
+          "ends_on": "2026-11-23",
+          "tasks": [
+            "RELEASE-01"
+          ],
+          "output": "Gerçek cihaz/CI/AAB; 23 Kasım kontrollü paket yayın hedefi."
+        }
+      ]
     },
     {
       "version": "2.5.0",
@@ -53,10 +193,20 @@
         "SHOP-01",
         "SHOP-02",
         "SHOP-03",
-        "COS-02",
         "COS-03",
+        "POLICY-01",
+        "BASE-02",
+        "BASE-03",
+        "UI-01",
+        "UI-02",
+        "UI-03",
+        "UI-04",
+        "QA-01",
+        "ANALYT-01",
         "CARD-01",
         "BALANCE-01",
+        "COS-05",
+        "OPS-02",
         "RELEASE-02"
       ],
       "season": {
@@ -65,7 +215,168 @@
         "ends_on": "2027-01-25",
         "starts_at_utc": "00:00",
         "module": "Yankı Rölesi"
-      }
+      },
+      "delivery_document": "docs/planning/releases/2.5.0.md",
+      "delivery_packages": [
+        {
+          "id": "S2-HAK",
+          "title": "Sabit seçenekli Mühendis Kasası ve kalıcı teslim",
+          "tasks": [
+            "ECON-01",
+            "REWARD-01",
+            "DATA-01",
+            "REWARD-02",
+            "REWARD-03"
+          ],
+          "steps": [
+            "Baz ekonomi raporundan deterministik 1/28 günlük senaryolar üret; seçim kasasının kazanım kaynağı, parça miktarı ve uygun arena havuzunu first-shop-release kararında sabitle.",
+            "Hak doğarken saldırı/savunma/taktik için üç uygun parça paketini ve revision/hash bilgisini kaydet. Oyuncu yalnız option_id seçer; çıkış veya cihaz değiştirme seçenekleri yenilemez.",
+            "reward_entitlements ve ekonomik işlemi aynı transaction içinde işle; başka request_id ile tekrar, başka seçimle ikinci talep, eşzamanlı seçim ve kapanış kurtarmasını doğrula.",
+            "Yeni hak şeması için uygulanmış SQL dosyalarını değiştirmeden migration/restore tasarla; eski sandık ve premium iade kökenini koru."
+          ],
+          "acceptance": [
+            "Üç seçenek sabit; yeniden bağlanınca sonuç aynı; bir hak yalnız bir kez teslim ediliyor.",
+            "Kapanan ürün kazanılmış hakkı silmiyor; eski sandık oranı ve eski oyuncu stoğu sessizce değişmiyor."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S2-MAGAZA",
+          "title": "Tek garantili parça teklifi ve dört ayrı mağaza kozmetiği",
+          "tasks": [
+            "SHOP-01",
+            "SHOP-02",
+            "SHOP-03",
+            "COS-03",
+            "POLICY-01"
+          ],
+          "steps": [
+            "Bir garantili mevcut-modül parça teklifi için fiyat, miktar, limit ve UTC pencereyi ekonomi raporundan seç; teklif revision/hash ve uygunluk kurallarını katalogda sabitle.",
+            "Oyun parasıyla alımda limit+cüzdan+envanter işlemini atomik bağla. OFFER_CHANGED/EXPIRED, yetersiz bakiye, tekrar/eşzamanlı alım ve yanıt kaybını test et.",
+            "Mağazaya sezon tasarımlarından ayrı iki çerçeve/zemin çifti üret; shop_collection adaptörü ve sahip olunan öğenin yeniden satış engelini uygula.",
+            "TR/EN garanti, fiyat/para türü, limit, süre ve gerçek teslimi eşleştir; yeni gerçek para ürünü ve yeni para birimi ekleme."
+          ],
+          "acceptance": [
+            "Bir ana teklif + dört özgün mağaza öğesi; sezon stoğu tüketilmiyor.",
+            "Native auth/API yönlendirmesi, para/limit eşzamanlılığı ve fiyat açıklaması gerçek servisle doğrulanmış."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S2-ISTEMCI",
+          "title": "Mağaza, seçim ve ölçüm akışları",
+          "tasks": [
+            "BASE-02",
+            "BASE-03",
+            "UI-01",
+            "UI-02",
+            "UI-03",
+            "UI-04",
+            "QA-01",
+            "ANALYT-01"
+          ],
+          "steps": [
+            "Mevcut ekranlarda ana eylem/ödül kaynağını netleştir; mağaza dört bölümünü dar ekranda prototiple. Yeni alt dock ikonu eklemeden ürün detayına ilerle.",
+            "Ürün → önizleme → onay → makbuz ve kasa → üç seçenek → seçim → teslim akışlarını ayrı view modüllerine bağla; yükleme/boş/hata/çevrimdışı/sahip olunan durumlarını tamamla.",
+            "Tema/sezon/takım vitrini, yaş/onaylı analitik olayları ve baz ölçümü bağla; olay kaybı ekonomik teslimi engellemesin. Mobil, dil ve ortak sanat kabulünü raporla."
+          ],
+          "acceptance": [
+            "Seçimden çıkışta hak korunuyor; görsel garanti ve sunucu makbuzu aynı.",
+            "320/393 px, TR/EN ve onay vermeyen oyuncu için analitik sınırı geçerli."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S2-ICERIK",
+          "title": "Yankı Rölesi ve altı S2 oyuncu öğesi",
+          "tasks": [
+            "CARD-01",
+            "BALANCE-01",
+            "COS-05"
+          ],
+          "steps": [
+            "Yankı Rölesi: bir silahın sonraki atışına düşük güçlü tek ek vuruş. Yük atama/tüketme, kaynak yok oluşu, hedef kaybı ve kalkan etkileşimini motor sözleşmesine yaz; yankı kendini tekrar tetiklemesin.",
+            "Otomatik yerleşim ve mevcut hedef önceliğini koru; arena 3 uygunluğu, ücretsiz edinim, aktif katalog ve sayısal dengeyi raporla. Tek yankı yükü ve ayrı ikinci mermi VFX/sesini tamamla.",
+            "Manyetik Köprü, Bakır Örgü ve Kırık Halka çiftlerini altı özgün öğe olarak üret. S2 sezon yolu/sıralama/son hafta tahsisini ve diğer kaynak haftalarını gerçek takvimle hesapla."
+          ],
+          "acceptance": [
+            "Yeni modülün kod/sanat/ses/denge/karşı oyun/ücretsiz edinim kapısı tamam; planned kaydı hazır sayılmıyor.",
+            "S2 altı öğesi kabul edilmiş; COS-02 toplam 18 öğenin bitmesi S2 için beklenmiyor."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S2-YAYIN",
+          "title": "Hak koruyan operasyon ve S2 açılışı",
+          "tasks": [
+            "OPS-02",
+            "RELEASE-02"
+          ],
+          "steps": [
+            "Teklif/seçim kapatma ile kazanılmış hakların korunmasını, boş hedefe restore ve önceki desteklenen istemci uyumunu doğrula.",
+            "21 Aralık paketini CI/cihaz/AAB kanıtlarıyla kontrollü yayıma hazırla; S1 son haftası ve Derin Akım teslimine regresyon uygula.",
+            "28 Aralık 03.00 TR sınırında S1 kapanışı ile S2 yeni modül/özgün stok kontrolünü ayrı yürüt. Modül hazır değilse yeni sezon bekler; eski ödül dönmez."
+          ],
+          "acceptance": [
+            "S1 kapanışı kazanılmış hakları koruyor; S2 gerçek hazır modül denetiminden geçiyor.",
+            "Yeni satış durdurma bakiyeleri/teslim edilmiş hakları geri almıyor."
+          ],
+          "kind": "required"
+        }
+      ],
+      "work_schedule": [
+        {
+          "starts_on": "2026-11-24",
+          "ends_on": "2026-11-30",
+          "tasks": [
+            "ECON-01",
+            "REWARD-01",
+            "DATA-01",
+            "BASE-02",
+            "BASE-03",
+            "UI-01"
+          ],
+          "output": "Ekonomi ve hak tasarımı; 30 Kasım kapasite kararı, S1 gözlemi payı."
+        },
+        {
+          "starts_on": "2026-12-01",
+          "ends_on": "2026-12-07",
+          "tasks": [
+            "REWARD-02",
+            "REWARD-03",
+            "SHOP-01",
+            "SHOP-02",
+            "CARD-01",
+            "COS-03",
+            "COS-05"
+          ],
+          "output": "Seçim/atomik alım; modül prototipi ve iki ayrı sanat grubu."
+        },
+        {
+          "starts_on": "2026-12-08",
+          "ends_on": "2026-12-14",
+          "tasks": [
+            "SHOP-03",
+            "UI-02",
+            "UI-03",
+            "UI-04",
+            "QA-01",
+            "ANALYT-01",
+            "BALANCE-01",
+            "POLICY-01",
+            "OPS-02"
+          ],
+          "output": "Ana teklif/arayüz, denge ve sanat entegrasyonu; 14 Aralık kapsam kapanışı."
+        },
+        {
+          "starts_on": "2026-12-15",
+          "ends_on": "2026-12-21",
+          "tasks": [
+            "RELEASE-02"
+          ],
+          "output": "Regresyon; 17 Aralık cihaz kabulü, 21 Aralık yayın hedefi."
+        }
+      ]
     },
     {
       "version": "2.6.0",
@@ -79,13 +390,17 @@
       "optional": "Laboratuvar lisansı: sahip olunmayan modülü eşit seviyeli AI denemesinde kullanma; yetişmezse pilotun önkoşulu değildir.",
       "excluded": "Dereceli maçta kiralık güç, PvE seferi ve ayrı kalıcı PvP kuyruğu.",
       "work_items": [
-        "CARD-02",
-        "COS-02",
-        "LIVE-03",
-        "ANALYT-02",
+        "LIVE-01",
         "REWARD-04",
-        "REWARD-05",
-        "RELEASE-03"
+        "LIVE-02",
+        "LIVE-03",
+        "LIVE-12",
+        "CARD-02",
+        "COS-06",
+        "PLAY-01",
+        "ANALYT-02",
+        "RELEASE-03",
+        "REWARD-05"
       ],
       "season": {
         "number": 3,
@@ -93,7 +408,128 @@
         "ends_on": "2027-02-22",
         "starts_at_utc": "00:00",
         "module": "Kor Fırlatıcı"
-      }
+      },
+      "delivery_document": "docs/planning/releases/2.6.0.md",
+      "delivery_packages": [
+        {
+          "id": "S3-DENEY",
+          "title": "Yedi özgün Devre Deneyi ve Keşif Günlüğü",
+          "tasks": [
+            "LIVE-01",
+            "REWARD-04",
+            "LIVE-02",
+            "LIVE-03",
+            "LIVE-12"
+          ],
+          "steps": [
+            "Tek etkinlik vitrini için yedi problem yaz: kalkanı kırma, onarım zamanlaması, arındırma, enerji düzeni, hedef önceliği, zincir/alan etkileşimi, karma karşı oyun. Bunlar tasarım temalarıdır; gerçek katalog/motor uygunluğu tasarımda doğrulanır.",
+            "Her probleme sabit gün/tohum/deste/kural sürümü, başarı koşulu, mühendis notu ve bir ilk başarı paketi ata. Aynı problemin farklı seed veya adını yeni içerik sayma; yedi gün sonrası yeni problem stok kontrolü olmadan sessiz döngü açma.",
+            "Sonucu mevcut motor sunucuda doğrulasın; ilk başarı kaynak verir, tekrar öğrenme/skor verir. Başlamış maç gün değişiminde kendi sürümünü tamamlar; aynı problem/dönem hakkı bir kez verilir.",
+            "Keşif Günlüğünü sunucuda ilerleme + sürümlü küçük not/sonraki problem olarak bağla. Haftanın Kuralı bu yedi problemden desteklenen bir varyant şablonudur; ayrı kalıcı kuyruk değildir."
+          ],
+          "acceptance": [
+            "Yedi farklı çözüm hedefi, ilk/tekrar ayrımı, gün sınırı ve çevrimdışı dönüş gerçek servis testleriyle doğrulanmış.",
+            "Yeni problem stoku, açma/kapatma ve kaynak bütçesi yayın kapısına bağlı."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S3-MODUL",
+          "title": "Kor Fırlatıcı ve S3 kozmetik grubu",
+          "tasks": [
+            "CARD-02",
+            "COS-06"
+          ],
+          "steps": [
+            "Kor Fırlatıcı: doğrudan vuruş + kısa yanma; yanma süre/tik/yenileme/yığılma/ölüm kurallarını karar tablosuna yaz. Arındırıcı siler, Onarım kaybı telafi eder; aynı tik iki kez işlenmesin.",
+            "Arena 5 ve ücretsiz edinim; ayrı tik göstergesi, kalan süre, 16 yön görsel/VFX/ses ve kalkan/ölüm/yeniden bağlanma denge testlerini tamamla.",
+            "Reaktör Kepengi, Prizma Yuvası ve Türbin Dişlisi çiftlerini üret; S3 üç ana oyuncu ödülüne ayır, ek günlük deney koleksiyon ödülü vaat edilirse ayrı stok iste."
+          ],
+          "acceptance": [
+            "Arındırma/yeniden yanma ve kaynak ölümü davranışı deterministik; ses yoğun savaş bütçesine uyuyor.",
+            "Altı özgün oyuncu öğesi ve gerçek S3 coverage kanıtı mevcut."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S3-OGRENME",
+          "title": "Ödülsüz deneme, ölçüm ve pilot kararı",
+          "tasks": [
+            "PLAY-01",
+            "ANALYT-02",
+            "RELEASE-03"
+          ],
+          "steps": [
+            "Mevcut sahip olunan deste için ödülsüz AI deneme akışını hazırla; normal oyunun temel deneme imkanı lisansla kapatılmaz.",
+            "Başlama/bitirme/ilk başarı/tekrar, problem bazlı başarısızlık ve süreyi yalnız onaylı örneklemde ölç; D1/D7 ve örneklem yanlılığını raporla. Yayın öncesi devam/düzelt/durdur karar ölçütlerini dosyaya yaz.",
+            "18 Ocak paket hedefi, bir hafta gözlem ve 25 Ocak S3 açılışını ayrı kapılardan geçir; başarısız günlük deney pilotu için yeni hak üretimini durdurma yolunu test et."
+          ],
+          "acceptance": [
+            "Ölçüm kaybı ödülü etkilemiyor; karar eşikleri gözlem sonrasında geriye dönük seçilmiyor.",
+            "Yeni modül/stoğun yanında gün sınırı, hak ve cihaz kabulü tamam."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S3-LISANS",
+          "title": "İsteğe bağlı AI Laboratuvar Lisansı",
+          "tasks": [
+            "REWARD-05"
+          ],
+          "steps": [
+            "Sahip olunmayan bir modül için süre/oturum bazlı deneme yetkisini sunucuda tanımla; seçim/üyelik hak altyapısını kullan.",
+            "Yalnız eşit seviyeli AI oturumunda kullan; sahiplik, dereceli deste veya kaynak ödülü verme. Süre bitişi ve yeniden bağlantıda yetki kontrolünü doğrula.",
+            "Ana pilot tamamlandıktan sonra değerlendir; yetişmiyorsa lisansı kapalı bırak ve REWARD-05 ortak işini tamamlandı işaretleme."
+          ],
+          "acceptance": [
+            "Lisans normal PvP sahiplik kontrolünü aşamıyor.",
+            "Kapsam dışı kalması 2.6 ana sürümünü engellemiyor."
+          ],
+          "kind": "optional"
+        }
+      ],
+      "work_schedule": [
+        {
+          "starts_on": "2026-12-22",
+          "ends_on": "2026-12-28",
+          "tasks": [
+            "LIVE-01",
+            "REWARD-04",
+            "LIVE-02"
+          ],
+          "output": "Yedi problem sözleşmesi, günlük hak ve S2 geçiş gözlemi payı."
+        },
+        {
+          "starts_on": "2026-12-29",
+          "ends_on": "2027-01-04",
+          "tasks": [
+            "CARD-02",
+            "COS-06",
+            "LIVE-02",
+            "PLAY-01"
+          ],
+          "output": "Kor prototipi, sanat ve ödülsüz AI; 4 Ocak ileri efor kontrolü."
+        },
+        {
+          "starts_on": "2027-01-05",
+          "ends_on": "2027-01-11",
+          "tasks": [
+            "LIVE-03",
+            "LIVE-12",
+            "ANALYT-02",
+            "REWARD-05"
+          ],
+          "output": "Günlük/günlük notları, ölçüm; lisans yalnız kapasite varsa; kapsam kapanışı."
+        },
+        {
+          "starts_on": "2027-01-12",
+          "ends_on": "2027-01-18",
+          "tasks": [
+            "RELEASE-03"
+          ],
+          "output": "Gün sınırı/regresyon; 14 Ocak cihaz kabulü, 18 Ocak yayın hedefi."
+        }
+      ]
     },
     {
       "version": "2.7.0",
@@ -108,8 +544,9 @@
       "excluded": "Takım boss'u ve gerçek zamanlı 2v2.",
       "work_items": [
         "LIVE-04",
-        "CARD-03",
-        "COS-02"
+        "CARD-04",
+        "COS-07",
+        "RELEASE-04"
       ],
       "season": {
         "number": 4,
@@ -117,7 +554,101 @@
         "ends_on": "2027-03-22",
         "starts_at_utc": "00:00",
         "module": "Darbe Muhafızı — ayrıntılı üretim eforu 4 Ocak kontrolünde yeniden tahmin edilecek"
-      }
+      },
+      "delivery_document": "docs/planning/releases/2.7.0.md",
+      "delivery_packages": [
+        {
+          "id": "S4-SEFER",
+          "title": "Üç durak ve bir bonus yan rota",
+          "tasks": [
+            "LIVE-04"
+          ],
+          "steps": [
+            "Bir sefer temasında üç ayrı rakip/koşul tasarla: açılışta savunmayı çözme, ortada kaynak/onarım baskısı, finalde karma karşı oyun. Her durak için sabit deste/kural/başarı/öğrenme notu üret.",
+            "Koşu kimliği, içerik sürümü, durak sonucu ve ödül durumunu sunucuda kaydet; bir durak bitmeden sonraki açılmaz. Cihaz değişimi/çökme/yanıt kaybında son onaylı durağa dön.",
+            "Ana bitirişten sonra tek bonus yan rota aç; farklı rakip ve koşul sun. İlk sefer/tekrar/yan rota ödüllerini ayrı node kimliğiyle bütçele; normal oyun bilet beklemesin.",
+            "Client tarafında rota, devam et, durak sonucu ve bonus keşfini event-view temeline bağla. Aynı koşu/durak isteğinin paralel tekrarı ödül veya ilerleme çoğaltmasın."
+          ],
+          "acceptance": [
+            "Üç durak + bonus oynanabilir; yalnız metin veya farklı seed değil farklı çözüm gerektiriyor.",
+            "Restore/cihaz değişimi/koşu tekrarında ilerleme ve tek teslim korunuyor."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S4-ICERIK",
+          "title": "Darbe Muhafızı ve altı S4 öğesi",
+          "tasks": [
+            "CARD-04",
+            "COS-07"
+          ],
+          "steps": [
+            "Manifestteki Darbe Muhafızı briefini uygula: alınan vuruşlarla yük, eşikte tek kullanımlık koruma. Yük artışı, tek vuruş sayımı, koruma tüketimi ve üst sınırı tanımla; hasar almadan yük oluşmasın.",
+            "Seyrek ağır vuruş karşı oyununu denge raporunda doğrula; arena 7, ücretsiz edinim, yük halkası, koruma parlaması ve ses olaylarını tamamla.",
+            "Seramik Siper, Kablo Kemeri ve Kristal Kıskaç çiftlerini S4 için üret; ilk üç takım seti tüketilmişse aktif takım takvimine ek özgün set hazırlığını ayrıca kaydet."
+          ],
+          "acceptance": [
+            "CARD-03 briefi yerine gerçek runtime/görsel/ses/denge testleri var.",
+            "Altı oyuncu öğesi takım stok açığını kapatmış sayılmıyor."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S4-YAYIN",
+          "title": "Sefer pilotu ve dördüncü sezon",
+          "tasks": [
+            "RELEASE-04"
+          ],
+          "steps": [
+            "4 Ocak efor kontrolündeki sefer/modül/stok tahminini başlangıçta güncelle; ikinci rota yalnız ilk pilot kalitesi/katılımı uygunsa sonraya adaydır.",
+            "Kurtarma, ödül bütçesi, ücretsiz erişim, eski istemci ve gerçek cihaz performans kanıtlarını 15 Şubat paket kapısında topla.",
+            "22 Şubat S4 açılışına yeni modül ve stokla ilerle; sefer kapatılsa da tamamlanan koşu hakları silinmesin."
+          ],
+          "acceptance": [
+            "Üç duraklı pilot bağımsız kapatılabiliyor, kazanılmış haklar korunuyor.",
+            "RELEASE-04 gerçek modül ve sanat alt işlerini bekliyor."
+          ],
+          "kind": "required"
+        }
+      ],
+      "work_schedule": [
+        {
+          "starts_on": "2027-01-19",
+          "ends_on": "2027-01-25",
+          "tasks": [
+            "LIVE-04"
+          ],
+          "output": "Üç durak + bonus brief ve koşu kayıt sözleşmesi; S3 gözlemi."
+        },
+        {
+          "starts_on": "2027-01-26",
+          "ends_on": "2027-02-01",
+          "tasks": [
+            "LIVE-04",
+            "CARD-04",
+            "COS-07"
+          ],
+          "output": "Koşu/ödül ve Darbe Muhafızı prototipi; altı öğe üretimi."
+        },
+        {
+          "starts_on": "2027-02-02",
+          "ends_on": "2027-02-08",
+          "tasks": [
+            "LIVE-04",
+            "CARD-04",
+            "COS-07"
+          ],
+          "output": "Rota/yan rota ve gerçek içerik entegrasyonu; kapsam kapanışı."
+        },
+        {
+          "starts_on": "2027-02-09",
+          "ends_on": "2027-02-15",
+          "tasks": [
+            "RELEASE-04"
+          ],
+          "output": "Kurtarma/regresyon; 11 Şubat cihaz kabulü, 15 Şubat yayın hedefi."
+        }
+      ]
     },
     {
       "version": "2.8.0",
@@ -132,10 +663,12 @@
       "excluded": "Oyuncular arası ticaret, hediye zinciri ve parayla oy hakkı.",
       "work_items": [
         "LIVE-05",
+        "UI-05",
         "LIVE-07",
-        "REWARD-04",
-        "REWARD-05",
-        "CARD-03"
+        "CARD-05",
+        "COS-08",
+        "RELEASE-05",
+        "REWARD-05"
       ],
       "season": {
         "number": 5,
@@ -143,7 +676,136 @@
         "ends_on": "2027-04-19",
         "starts_at_utc": "00:00",
         "module": "Toparlanma Feneri — ayrıntılı üretim eforu 4 Ocak kontrolünde yeniden tahmin edilecek"
-      }
+      },
+      "delivery_document": "docs/planning/releases/2.8.0.md",
+      "delivery_packages": [
+        {
+          "id": "S5-TAKIM",
+          "title": "Asenkron ortak hedef ve kişisel ikmal hakkı",
+          "tasks": [
+            "LIVE-05"
+          ],
+          "steps": [
+            "Üyelerin farklı saatlerde onaylanmış PvE sonucu ile ilerlettiği tek ortak hedef tanımla. Hedefin küçük takım erişimi, kişi başı katkı tavanı ve hak eşiğini ekonomi/katılım senaryolarından sayısallaştır.",
+            "Katkı kaynak olayını tekil kaydet; hak anındaki üyelik, takım değiştirme, atılma, kapanış ve geç katılma politikasını sabitle. İstemci katkı sayısı kabul etme.",
+            "Ortak ilerleme → kişisel uygunluk → ikmal sandığı → makbuz akışını kur. Toplam takım başarısı herkesin sınırsız kişisel hak alması anlamına gelmesin; aynı kaynak olay iki takıma yazılmasın."
+          ],
+          "acceptance": [
+            "Küçük takım simülasyonu ve üyelik yarışları doğrulanmış; bireysel hak açık.",
+            "İki cihaz/iki takım/eşzamanlı katkı kaynak veya ödül çoğaltmıyor."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S5-USTALIK",
+          "title": "Tek modüllük küçük ustalık hattı",
+          "tasks": [
+            "UI-05",
+            "LIVE-07"
+          ],
+          "steps": [
+            "İlk hattı mevcut bir modülle sınırla; yalnız maç sayısı yerine üç doğrulanabilir hedef seç: uygun özel etkiyi uygulama, karşı oyunu başarma, farklı deste düzeninde taktik hedefi tamamlama. Kesin hedefler motor olaylarıyla desteklenmelidir.",
+            "Kalıcı hedef kimliği, olay kaynağı, AI/eğitim uygunluğu ve tekrar karşılaşma politikasını yaz; profil sayaçlarını sunucudan güncelle. Kaynak paketi ve kalıcı başarı kaydı ver; geniş unvan kataloğu bu pilotun önkoşulu değildir.",
+            "Hedef ipucu/ilerleme/tamamlanma göstergelerini savaş okunabilirliğini bozmadan bağla; koleksiyon veya sezon sıfırlaması ustalığı silmesin."
+          ],
+          "acceptance": [
+            "Üç farklı hedef tek hat halinde oynanabilir; yalnız kullanım sayacı değil.",
+            "Kural sürümü/restore/tekrar event kalıcı ilerlemeyi veya ödülü çoğaltmıyor."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S5-ICERIK",
+          "title": "Toparlanma Feneri ve yeni sezon stoğu",
+          "tasks": [
+            "CARD-05",
+            "COS-08"
+          ],
+          "steps": [
+            "Dost modül yok olduğunda tek yaralı dosta onarım darbesi üret; uygun hedef seçimi, eşzamanlı ölümler, tam canlı dost yokluğu ve kendi ölüm davranışını tanımla. Onarım zinciri kendi kendini üretmesin.",
+            "Dost kaybı olmayan devrelere karşı zayıflığını ölç; arena 9, ücretsiz edinim, yıkılan modülden yaralıya tek darbe VFX/ses ve denge testlerini tamamla.",
+            "S5 için önceki dokuz çiftin dışında üç yeni çerçeve/zemin çifti briefle/üret. Aktif takım dönemleri için yeni takım setini ayrı üret ve gerçek tarihli coverage al."
+          ],
+          "acceptance": [
+            "Fener gerçek runtime ve görünür karşı oyunla hazır.",
+            "Altı S5 oyuncu öğesi ve gereken takım stoğu özgün/tahsisli."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S5-YAYIN",
+          "title": "Takım/ustalık pilotunu ve S5 açılışını doğrula",
+          "tasks": [
+            "RELEASE-05"
+          ],
+          "steps": [
+            "Takım katkı bütçesi, kişisel teslim ve tek ustalık hattını gerçek servis/cihaz üzerinde birlikte doğrula; toplu hak verme ve yoğun event performansını ölç.",
+            "15 Mart paket hedefi öncesi onaylı ölçüm kararlarını ve küçük takım erişimini kontrol et. Hazır olmayan geniş ustalık kataloğunu bu pakete ekleme.",
+            "22 Mart S5 başlangıcında modül/oyuncu/takım stoğunu yeniden denetle; ortak hedef kapatılsa da hak sahiplerinin teslimi açık kalsın."
+          ],
+          "acceptance": [
+            "RELEASE-05 takım/ustalık/modül/stok kapılarını birlikte doğruluyor.",
+            "Yeni dönem sırf takvim günü geldi diye açılmıyor."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S5-KUPON",
+          "title": "İsteğe bağlı Yeniden Kurulum Kuponu",
+          "tasks": [
+            "REWARD-05"
+          ],
+          "steps": [
+            "Mevcut ücretli yetenek sıfırlama bedelini bir kez kaldıran sunucu hakkı tanımla; yeni para birimi veya upgrade iadesi oluşturma.",
+            "Mevcut ücretsiz sıfırlama hakkı varsa önce onu kullan ve kupon tüketme; eşzamanlı sıfırlama/tekrar talep tek kupon harcasın.",
+            "Kaynak bütçesi ve onay akışı uygunsa tek pilot kaynağı ekle; yetişmiyorsa özellik kapalı kalır, takım/ustalık teslimi beklemez."
+          ],
+          "acceptance": [
+            "Ücretsiz mevcut haklar kaybolmuyor; para/parça iki kez iade edilmiyor.",
+            "REWARD-05 iki ayrı pilotu kapsar; yalnız lisans bitince üst görev kapanmaz."
+          ],
+          "kind": "optional"
+        }
+      ],
+      "work_schedule": [
+        {
+          "starts_on": "2027-02-16",
+          "ends_on": "2027-02-22",
+          "tasks": [
+            "LIVE-05",
+            "LIVE-07"
+          ],
+          "output": "Katkı/üyelik/üç ustalık hedefi sözleşmesi; S4 gözlem payı."
+        },
+        {
+          "starts_on": "2027-02-23",
+          "ends_on": "2027-03-01",
+          "tasks": [
+            "LIVE-05",
+            "CARD-05",
+            "COS-08"
+          ],
+          "output": "Takım hakları, Fener ve S5 sanat; 1 Mart Draft/S6 ön karar kontrolü."
+        },
+        {
+          "starts_on": "2027-03-02",
+          "ends_on": "2027-03-08",
+          "tasks": [
+            "LIVE-07",
+            "UI-05",
+            "REWARD-05"
+          ],
+          "output": "Tek ustalık hattı entegrasyonu; kupon yalnız kapasite varsa; kapsam kapanışı."
+        },
+        {
+          "starts_on": "2027-03-09",
+          "ends_on": "2027-03-15",
+          "tasks": [
+            "RELEASE-05"
+          ],
+          "output": "Üyelik/katkı regresyonu; 11 Mart cihaz kabulü, 15 Mart yayın hedefi."
+        }
+      ]
     },
     {
       "version": "2.9.0",
@@ -157,9 +819,11 @@
       "optional": "Pilot uygun değilse kapsam tasarım kontrolünde yeniden planlanır; başka bir mod aynı tarihe kendiliğinden taşınmaz.",
       "excluded": "Kalıcı draft kuyruğu, BO3 ve 2v2.",
       "work_items": [
-        "LIVE-06",
         "ANALYT-02",
-        "CARD-03"
+        "LIVE-06",
+        "CARD-06",
+        "COS-09",
+        "RELEASE-06"
       ],
       "season": {
         "number": 6,
@@ -167,7 +831,119 @@
         "ends_on": "2027-05-17",
         "starts_at_utc": "00:00",
         "module": "Yeni modül konsepti 1 Mart tasarım kontrolünde belirlenecek; hazır olmadan sezon açılmaz"
-      }
+      },
+      "delivery_document": "docs/planning/releases/2.9.0.md",
+      "delivery_packages": [
+        {
+          "id": "S6-KARAR",
+          "title": "Draft için ölçüm ve ön karar",
+          "tasks": [
+            "ANALYT-02"
+          ],
+          "steps": [
+            "1 Mart kontrolünde gerçek insan rakip sayısı, saatlik eşleşme kapasitesi, bekleme p50/p95, kopma ve arena dağılımını değerlendir; rızalı ürün analitiğiyle operasyon ölçümlerini karıştırma.",
+            "Pilot pencere/katılım/minimum havuz/bekleme/kopma kabul eşiklerini tasarım kararına sayısal yaz. Yeterli veri yoksa pilot uygun diye işaretleme; örneklem sınırı açık kalsın.",
+            "Karar geçmezse LIVE-06 çalışmasını kapalı prototipte tut ve sürüm kapsamı/tarihi yeniden planla; başka modu aynı güne kendiliğinden taşıma."
+          ],
+          "acceptance": [
+            "Ön karar ve sayısal eşikler pilot öncesinde kaydedilmiş.",
+            "Veri yetersizliği koşulsuz yayın kararına dönüşmüyor."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S6-DRAFT",
+          "title": "Eşit seviyeli sınırlı Draft Arenası",
+          "tasks": [
+            "LIVE-06"
+          ],
+          "steps": [
+            "Güncel aktif katalogdan iki oyuncu için sabit sunucu havuzu, çekirdek/altı modül seçme sırası ve eşit seviye kuralları prototiple. Yasaklı/uyumsuz kombinasyonlar ve ücretsiz yeni modül uygunluğu açık olsun.",
+            "Seçim zaman aşımı, kopma/dönüş, iki kez seçim, havuz sızıntısı ve maçtan kaçış için sunucu durum makinesi kur; normal dereceli desteyi değiştirme.",
+            "Tek zaman penceresinde sınırlı pilotu aç; adalet/kuvvet farkı, bekleme ve kopmayı ölç. Ödülü normal ekonomiye göre tavanla; kalıcı kuyruk veya BO3 ekleme."
+          ],
+          "acceptance": [
+            "Eşit seviye gerçek sunucu kuralı; istemci göstergesiyle sınırlı değil.",
+            "Kopma/timeout ve havuz adaleti testleri ile ölçümden devam/düzelt/kapat kararı var."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S6-ICERIK",
+          "title": "Altıncı sezon için yeni modül ve özgün stok",
+          "tasks": [
+            "CARD-06",
+            "COS-09"
+          ],
+          "steps": [
+            "S6 modül adını/mekaniğini mevcut takvime uygun olarak 1 Mart tasarım kontrolünde seç: katalogdaki boş rol, anlaşılır karşı oyun, motor maliyeti ve ücretsiz erişim üzerinden aday brieflerini karşılaştır. Önceki dört modülün yalnız ad/renk değişimi olmasın.",
+            "Seçilen brief için tetik/hedef/tavan/süre/arena, runtime, 16 yön/görsel/VFX/ses ve denge/ücretsiz edinimi tamamla; adı belirlenmemiş konsepti hazır modül diye kaydetme.",
+            "S6 için yeni üç oyuncu çerçeve/zemin çifti ve aktif takım takvimine gereken setleri üret; S5 veya mağaza tasarımını tekrar tahsis etme."
+          ],
+          "acceptance": [
+            "1 Mart konsept kararı + 2.9 geliştirmesinde gerçek çalışma modülü ayrı kanıtlar.",
+            "S6 yeni modül ve stok yoksa draft hazır olsa da sezon açılmıyor."
+          ],
+          "kind": "required"
+        },
+        {
+          "id": "S6-YAYIN",
+          "title": "Koşullu pilot ve sezon için ayrı yayın kararı",
+          "tasks": [
+            "RELEASE-06"
+          ],
+          "steps": [
+            "5 Nisan kapsam kapanışında Draft ön koşulları ve S6 içerik kapısını ayrı raporla; pilot uygun değilse kapsam revizyonunu yazılı karara bağla.",
+            "12 Nisan paket hedefini gerçek servis, eski istemci, CI/cihaz/AAB ve hak koruyan kapatmayla doğrula; 19 Nisan S6 açılışı için bir hafta gözlem yap.",
+            "Pilot sonrası karar dosyasına ölçülen katılım/bekleme/kopma ve ödül maliyetini yaz; kalıcı mod ya da sonraki major sürüm sözü verme."
+          ],
+          "acceptance": [
+            "Koşullu kapsamın kabul/erteleme kararı görünür; takvim otomatik yayın değil.",
+            "Paket, draft penceresi ve sezon açılışı ayrı ayrı doğrulanmış."
+          ],
+          "kind": "required"
+        }
+      ],
+      "work_schedule": [
+        {
+          "starts_on": "2027-03-16",
+          "ends_on": "2027-03-22",
+          "tasks": [
+            "ANALYT-02",
+            "LIVE-06"
+          ],
+          "output": "1 Mart kararını güncel veriyle doğrula; eşit seviye/timeout prototipi; S5 gözlemi."
+        },
+        {
+          "starts_on": "2027-03-23",
+          "ends_on": "2027-03-29",
+          "tasks": [
+            "LIVE-06",
+            "CARD-06",
+            "COS-09"
+          ],
+          "output": "Pilot sunucusu, seçilen S6 modülü ve yeni sanat üretimi."
+        },
+        {
+          "starts_on": "2027-03-30",
+          "ends_on": "2027-04-05",
+          "tasks": [
+            "LIVE-06",
+            "CARD-06",
+            "COS-09",
+            "ANALYT-02"
+          ],
+          "output": "Entegrasyon ve katılım/adillik kararı; 5 Nisan kapsam kapanışı."
+        },
+        {
+          "starts_on": "2027-04-06",
+          "ends_on": "2027-04-12",
+          "tasks": [
+            "RELEASE-06"
+          ],
+          "output": "Kopma/hak regresyonu; 8 Nisan cihaz kabulü; koşullu 12 Nisan yayın hedefi."
+        }
+      ]
     }
   ]
 }

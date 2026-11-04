@@ -2,6 +2,10 @@
 
 GRIDSHARD, oyuncuların kart tabanlı modüllerle güçlendirdiği bir çekirdek etrafında devre kurup, gerçek zamanlı PvP savaşlarda rakibine karşı strateji kurduğu, dikey oynanışlı bir mobil savaş oyunudur.
 
+Geliştirmeye [güncel belge dizininden](docs/README.md) başlayın.
+[Sürüm uygulama rehberi](docs/GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md)
+takvimi, sürüm içeriklerini, dosyaları ve checklisti birbirine bağlar.
+
 ## Temel Oyun Döngüsü
 
 - **Savaş Destesi:** Her oyuncu 1 **Çekirdek** ve 6 **Modül**ten oluşan bir savaş destesi kurar.

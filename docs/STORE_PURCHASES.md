@@ -35,7 +35,7 @@ işleri başarılıdır. Bunlar gerçek Google Play alım/iade cihaz kanıtı de
 Mevcut canlı r13'te billing ayarları boş, test alımı0; ürünler etkinleştirilmedi.
 Ücretli Cloud Billing/RTDN/Pub/Sub açılmaz; mevcut AWS WIF + periyodik denetim
 yolu korunur. Yeni APK/AAB ve açık yayın kapıları:
-[V5 hazırlık kaydı](ANDROID_V5_BILLING_RELEASE_20261010.md).
+[V5 hazırlık kaydı](OYUN_KANONU.md).
 
 ## 9 Ekim 2026 — seçilen Android satın alma yolu: ücretli Cloud olmadan
 

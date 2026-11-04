@@ -6,7 +6,7 @@ from pathlib import Path
 from fontTools.ttLib import TTFont
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "qa_reports/typography-pilot-20261014/Rowdies-Bold.ttf"
+SOURCE = ROOT / "native-assets/fonts/Rowdies-Bold.ttf"
 TARGET = ROOT / "client/assets/fonts/rowdies-700-full.woff2"
 font = TTFont(SOURCE, recalcTimestamp=False)
 original_cmap = font.getBestCmap()

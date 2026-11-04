@@ -47,7 +47,7 @@ Geliştirme modu `client/` kaynaklarını ve mevcut no-cache davranışını kor
 
 Docker önce ayrı Node katmanında paketi derler, Python çalışma imajına yalnız `dist/` çıktısını kopyalar; Node bağımlılıkları son imaja girmez. `GRIDSHARD_CLIENT_DIR=/app/client` hazırdır; üretim kimlik ve güvenlik ortam ayarları ayrıca verilmelidir.
 
-`.github/workflows/quality.yml` sunucu testlerini, istemci testlerini, `pnpm test:build` ve `pnpm build:web` adımlarını çalıştırır; paketi commit SHA'lı `gridshard-web-*` artifact'i olarak saklar. Proje şimdilik yerelde tutulduğu için `.github/` `.gitignore` ile dışarıda bırakılır; kendi deposuna taşınınca bu satırlar kaldırılmalıdır.
+`.github/workflows/quality.yml` sunucu testlerini, istemci testlerini, `pnpm test:build` ve `pnpm build:web` adımlarını çalıştırır; paketi commit SHA'lı `gridshard-web-*` artifact'i olarak saklar. CI iş akışları depoda sürümlenir; `.gitignore` içindeki açık izinler `.github/workflows/*.yml` dosyalarını korur.
 
 Derleme ve statik servis sözleşmeleri `tools/tests/client-build.test.js` ve `server/tests/test_client_build_static.py` içindedir. Bu turda kullanıcı kararı gereği test, derleme veya Docker çalıştırılmadı.
 

@@ -1,4 +1,0 @@
-test("battery production uses its quiet battle alias, not the full-scale UI energy cue",()=>{
-  const f=fixture();f.fx.receive([f.event('module_cycle_pulse',{player_id:'own',module_id:'battery'})],f.snapshot);
-  assert.deepEqual(f.sounds,[]);assert.ok(!require('../src/battle/module-presentation-profiles.js').battery);
-});

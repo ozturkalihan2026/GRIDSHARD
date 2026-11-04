@@ -8,4 +8,4 @@ kullanıcılara sunulduğunu bildirdi; sonraki sürümün geliştirilmesini iste
 - Kaynak: kullanıcının doğrudan beyanı; Play Console API denetimi yapılmadı.
 - Fiziksel cihaz güncelleme/ödeme test sonucu ayrıca bildirilmedi; bu alan
   doğrulanmış gibi işaretlenmez. Mevcut teknik test kanıtları korunur.
-- Yeni çalışma dalı: `codex/release-2-4-0`. Canlı ortam bu başlangıç işiyle değişmez.
+- Yeni çalışma dalı: `main`. Canlı ortam bu başlangıç işiyle değişmez.

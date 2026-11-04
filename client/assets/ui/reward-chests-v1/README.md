@@ -11,5 +11,5 @@ HTML inert template'i bütün dosyaları ortak web/native pakete dahil eder.
 
 Masterlar Git dışı `artifacts/visual-refresh-pack05-20261015/` altındadır,
 açık masterlar `open/masters/`; arşivi diğer bilgisayara ayrıca taşı.
-Promptlar `docs/GORSEL_DONUSUM_PAKET05_ACIK_SANDIK_PROMPTLAR_20261015.json`.
-Ayrıntı ve sınırlar `docs/GORSEL_DONUSUM_PAKET04B_05C_BAGLANTI_20261016.md`.
+Promptlar `docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md`.
+Ayrıntı ve sınırlar `docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md`.

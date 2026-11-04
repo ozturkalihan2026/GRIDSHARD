@@ -85,5 +85,5 @@ Sunucu başlatıcı PID21388 / gerçek PID11936, port8891. USB reverse8891 açı
 inceleme forward9224 kapalı. Test sırasında USB ve bilgisayar açık kalmalı.
 
 Modül enderlikleri için ayrı araştırma ve 24 kartlık öneri:
-`docs/MODUL_ENDERLIK_INCELEMESI_V6_20261031.md`. Bu öneri sayıları bu sunum
+`docs/OYUN_KANONU.md`. Bu öneri sayıları bu sunum
 güncellemesinde ana savaş motoruna uygulanmadı.

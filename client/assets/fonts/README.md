@@ -42,7 +42,7 @@ https://raw.githubusercontent.com/google/fonts/main/ofl/rowdies/Rowdies-Bold.ttf
 TTF SHA-256: `e56ac3fe30e56243483083a6ba271387e332f77920e850ce7dc1baead4fbede2`.
 Resmî dosya yeniden indirilip önizleme kaynağıyla birebir eşleştiği doğrulandı.
 `tools/export-rowdies-font.py` (FontTools 4.60.1 + Brotli) tam fontu kayıpsız
-dönüştürür; çıktı 31.744 bayttır. TTF ve WOFF2 Unicode cmap tabloları birebir
+dönüştürür; çıktı 31.744 bayttır. TTF aslı `native-assets/fonts/Rowdies-Bold.ttf` altında korunur. TTF ve WOFF2 Unicode cmap tabloları birebir
 aynıdır; altküme yapılmaz. Lisans metni değiştirilmeden hem burada hem oyun
 içindeki açık kaynak lisanslarında bulunur.
 

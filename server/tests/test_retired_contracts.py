@@ -1,29 +1,65 @@
 """Negative replacements for explicitly retired game and admin contracts.
 
-Historical assertions remain in docs/archive, not hidden behind skip/xfail.
-Positive energy/signature/economy/restore behavior has its own active suites.
+Retired implementations live in Git history; these assertions protect the current runtime.
+Positive current/signature/economy/restore behavior has its own active suites.
 """
-import json
-from pathlib import Path
-
 import pytest
 from fastapi.testclient import TestClient
 
 from app import main
 from app.game.board import BoardCellType, get_default_board
 from app.game.catalog import get_module_definition
-from app.game.core_balance import CORE_SIGNATURES
 from app.game.engine import BattleEngine
 from app.game.models import BattleCommand, BattleState, ModuleStatus
 from app.telemetry import InMemoryTelemetryService, TelemetryError, TelemetryEvent
 from app.version import VERSION
 
-ROOT = Path(__file__).resolve().parents[2]
-ARCHIVE = ROOT / "docs/archive/server-test-contracts-20261001"
-MANIFEST = json.loads((ARCHIVE / "manifest.json").read_text(encoding="utf-8"))
-RETIRED_PATHS = [*MANIFEST["retired_api_paths"], "/web-test", "/web-test/manifest",
-                 "/web-test/release-check", "/laboratory/retired-case",
-                 "/laboratory/retired-case/upgrade", "/laboratory/retired-case/reset"]
+RETIRED_PATHS = [
+    "/telemetry/balance-change-draft",
+    "/telemetry/balance-change-regression",
+    "/telemetry/balance-change-simulate",
+    "/telemetry/kpis",
+    "/telemetry/manual-battle-report",
+    "/web-test/audit/checklist-snapshot",
+    "/web-test/audit/launch-attempt",
+    "/web-test/audit/operation-snapshot",
+    "/web-test/audit/preflight-snapshot",
+    "/web-test/audit/session-bind",
+    "/web-test/audit/session-finish",
+    "/web-test/audit/session-start",
+    "/web-test/audit/stability-snapshot",
+    "/web-test/data-health",
+    "/web-test/feedback",
+    "/web-test/feedback/summary",
+    "/web-test/findings",
+    "/web-test/first-run-checklist",
+    "/web-test/go-no-go",
+    "/web-test/launch-readiness",
+    "/web-test/monitoring",
+    "/web-test/operation-readiness",
+    "/web-test/persistence/restore-backup",
+    "/web-test/preflight",
+    "/web-test/rc-candidate",
+    "/web-test/rc-report",
+    "/web-test/review-candidates",
+    "/web-test/status",
+    "/web-test/telemetry/restore-backup",
+    "/web-test/test-run",
+    "/web-test/test-run/finish",
+    "/web-test/test-run/report",
+    "/web-test/test-run/start",
+    "/web-test/test-run/status",
+    "/web-test/test-runs",
+    "/web-test/test-runs/compare",
+    "/web-test/test-runs/old-run/go-no-go",
+    "/web-test/test-runs/web-test-beta.13/summary",
+    "/web-test",
+    "/web-test/manifest",
+    "/web-test/release-check",
+    "/laboratory/retired-case",
+    "/laboratory/retired-case/upgrade",
+    "/laboratory/retired-case/reset"
+]
 
 
 @pytest.mark.parametrize("path", RETIRED_PATHS)
@@ -75,16 +111,6 @@ def test_retired_audit_events_are_rejected_without_persistence(kind):
     with pytest.raises(TelemetryError):
         service.record(TelemetryEvent("retired", kind, 1, player_id="a"))
     assert service.events() == []
-
-
-def test_archive_keeps_original_test_bodies_and_documents_replacements():
-    assert MANIFEST["format"] == 1 and len(MANIFEST["files"]) == 67
-    for item in MANIFEST["files"]:
-        assert not (ROOT / item["path"]).exists()
-        source = (ROOT / item["archived"]).read_text(encoding="utf-8")
-        names = item["tests"] if isinstance(item["tests"], list) else [item["tests"]]
-        assert all(f"def {name}(" in source for name in names)
-        assert item["reason"] and item["replacement"]
 
 
 def test_health_is_the_current_readiness_contract_not_a_legacy_release_stamp():

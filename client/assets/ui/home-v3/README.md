@@ -11,7 +11,7 @@ Mağaza/native launcher ikonları ve eski amblem değiştirilmedi.
 Mevcut profil çizimi mint renk filtresiyle kullanılır; seçili diğer avatarlar ve
 çerçeveler korunur. Menü buz mavisi, zarflar sıcak altın.
 
-Promptlar `docs/GORSEL_DONUSUM_PAKET03_REV3_PROMPTLAR_20261015.json` ve logo
+Promptlar `docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md` ve logo
 prompt belgesinde. Büyük masterlar Git dışı
 `artifacts/visual-refresh-pack03-20261015/` içinde; ayrıca taşınmalıdır.
 CSS eşlemesi `client/src/home-interface-v3.css`, ortak stil bloğunda son sırada.

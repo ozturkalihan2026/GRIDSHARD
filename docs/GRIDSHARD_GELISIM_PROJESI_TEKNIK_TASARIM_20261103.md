@@ -1,5 +1,12 @@
 # GRIDSHARD — gelişim projesi teknik tasarımı
 
+4 Kasım ayrıntıları: [sürüm uygulama rehberi](GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md)
+ve [2.4.0 briefi](planning/releases/2.4.0.md). Teknik sözleşmeler bu belgeyle;
+takvim/alt paketler takvim JSON'u, durum ve kanıtlar backlog/checklist ile izlenir.
+2.4.0'da UI-07 bütün geri/ileri kontrollerini son sarı tasarıma eşitler;
+AUDIO-01/02 saldırı ve çekirdek seslerini olay/VFX/dosya/miks/gerçek cihaz matrisiyle
+tamamlar. Var olan cue tanımları tek başına duyulabilirlik veya cızırtı çözüm kanıtı değildir.
+
 Tarih: **3 Kasım 2026**. Durum: uygulamaya hazırlık tasarımı.
 [Kontrol listesi](GRIDSHARD_GELISIM_CHECKLIST_20261103.md) hangi parçanın
 mevcut, dalda hazır veya yapılacak olduğunu izler.

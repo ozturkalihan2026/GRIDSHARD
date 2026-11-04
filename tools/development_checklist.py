@@ -124,6 +124,8 @@ def render(document, order):
              'Bu dosya araştırmayı uygulanabilir işlere böler. Toplam '
              f'**{len(tasks)} iş** vardır: {summary}. '
              'Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.', '',
+             '**Son ayrıntılandırma: 4 Kasım 2026.** Takvim → sürüm briefi → görev → dosya/kanıt bağlantıları kuruldu; '
+             '2.4.0 sarı geri/ileri kontrolleri ve saldırı/çekirdek sesleri zorunlu kapsamdadır.', '',
              '## 1. Proje dosyaları ve kullanım', '',
              '- [Önceki gelişim planı](GRIDSHARD_CANLI_OPERASYON_VE_GELISIM_PLANI_20261102.md): ürün yönü ve ilk araştırma.',
              '- [Yeni rakip/ödül araştırması](GRIDSHARD_MAGAZA_ODUL_ARASTIRMASI_20261103.md): kaynaklar, tarih ve çıkarımlar.',
@@ -132,10 +134,13 @@ def render(document, order):
              '- [2.4.0 geliştirme kademeleri](RELEASE_2_4_0_GELISTIRME_PLANI_20261103.md): güncel kapsam, ilk stok uygulaması ve sonraki üretim işleri.',
              '- [Ödül portföyü ve tarihli yayın takvimi](GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md): ödül çeşitleri, haftalık iş, kapsam kapanışı, sürüm ve sezon tarihleri.',
              '- [Makine tarafından okunabilir iş listesi](planning/gridshard_development_backlog_v1.json): görevlerin tek kaynağı.', '',
+             '- [Sürüm uygulama rehberi](GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md): her sürümün alt paketleri, çalışma aralıkları, dosyaları ve kabulü.', '',
              'Görevi güncellemek için JSON içindeki `status`, `evidence` ve gerekiyorsa kabul '
              'ölçütlerini düzenle. Sonra repo kökünde çalıştır:', '',
              '```powershell', 'python tools/development_checklist.py --write',
              'python tools/development_checklist.py --check', '```', '',
+             'Bağlı brief ve takvim için ayrıca `python tools/release_calendar.py --write` ve '
+             '`python tools/release_delivery_plan.py --write` çalıştır; ardından ikisinin `--check` komutunu kullan.', '',
              'Araç yalnız planı okur/yazar; oyun, sunucu, veritabanı veya mağazayı başlatmaz. '
              'Bağımlılık döngüsü, geçersiz kimlik, eksik kaynak yolu, kapsam kaybı ve işaretlenen '
              'işin kanıt eksikliğini denetler. Oyun testlerinin yerine geçmez. '
@@ -198,21 +203,23 @@ def render(document, order):
              'seçim kasası kazanım yolu; katılım tavanları; toplanmamış hakların kapanış davranışı; '
              'ilk etkinlik penceresi; sanat/cihaz kabulü. Bunlar bu tur için kullanıcıdan yanıt '
              'bekleyen engeller değildir; uygulama/yayın görevlerinin ölçülebilir teslimleridir.', '',
-             '## 6. Önceki planın kapsama haritası', '',
-             '| Önceki bölüm | Bu projedeki işler |', '| --- | --- |',
-             '| §3 Mevcut altyapı | BASE-01, DATA-01, teknik tasarım §1 |',
-             '| §4 Kozmetik ve özgün dönem ödülü | COS-01/02/03/04, CARD-01/02/03, REWARD-01, OPS-01 |',
-             '| §5 Geri dönüş döngüleri | BASE-03, REWARD-03/04, LIVE-02/03/05/07/12, RET-01 |',
-             '| §6 On mod önerisi | LIVE-02/04/05/06/07/08/09/10/11/12; giriş LIVE-03 |',
-             '| §7 Kalıcı gelişim | BASE-03, UI-04/05/06, PLAY-01, BALANCE-01, QA-01 |',
-             '| §8 Ölçüm | BASE-02, ANALYT-01/02, ECON-01 |',
-             '| §9 Aşamalar | OPS-01/02 ve RELEASE-00/01/02/03; sürüm planı |', '',
+             '## 6. Ürün hedeflerinin kapsama haritası', '',
+             '| Ürün hedefi | Bu projedeki işler |', '| --- | --- |',
+             '| Mevcut altyapı | BASE-01, DATA-01, teknik tasarım §1 |',
+             '| Kozmetik ve özgün dönem ödülü | COS-01/02/03/04/05/06/07/08/09, CARD-01/02/04/05/06, REWARD-01 |',
+             '| Geri dönüş döngüleri | BASE-03, REWARD-03/04, LIVE-02/03/05/07/12, RET-01 |',
+             '| Modlar ve ileri araştırma | LIVE-02/04/05/06/07/08/09/10/11/12; giriş LIVE-03 |',
+             '| Kalıcı gelişim ve sunum | BASE-03, UI-04/05/06/07, AUDIO-01/02, PLAY-01, BALANCE-01, QA-01 |',
+             '| Ölçüm | BASE-02, ANALYT-01/02, ECON-01 |',
+             '| Yayın aşamaları | OPS-01/02 ve RELEASE-00/01/02/03/04/05/06; sürüm planı |', '',
              '## 7. İş kontrol listesi', '']
     publication = ['### 4.1. Sürümlere göre açık yayın planı', '',
                    '| Sürüm | Hedef yayın | Oyuncuya gelen kapsam | Kapalı kalan | Çıkış kapısı |',
                    '| --- | --- | --- | --- | --- |']
     for release in document['release_plan']:
-        publication.append(f'| **{release["version"]} — {release["name"]}** | {release.get("target_release_on", "Yayımlandı")} | {release["scope"]} | '
+        version_label = (f'[{release["version"]}](planning/releases/{release["version"]}.md)'
+                         if release.get('delivery_document') else release['version'])
+        publication.append(f'| **{version_label} — {release["name"]}** | {release.get("target_release_on", "Yayımlandı")} | {release["scope"]} | '
                            f'{release["keep_closed"]} | {", ".join(release["gate_tasks"])}: {release["exit"]} |')
     publication += ['', 'Tarihlerin hedef/tahmin/koşullu ayrımı ödül portföyü ve sürüm takviminde tanımlıdır. '
                     'Tarih gelmesi kendiliğinden yayın kararı değildir. Her pakette ortak tamamlanma kapısı uygulanır. '
@@ -228,11 +235,15 @@ def render(document, order):
         lines += [f'### {stage} — {label}', '']
         for t in (t for t in tasks if t['stage'] == stage):
             checked = 'x' if t['status'] in {'done', 'branch_ready'} else ' '
-            lines += [f'- [{checked}] **{t["id"]} — {t["title"]}**',
+            lines += [f'<a id="{t["id"].lower()}"></a>', '',
+                      f'- [{checked}] **{t["id"]} — {t["title"]}**',
                       f'  - Durum: {STATUSES[t["status"]]}. Öncelik: {t["priority"]}; rol: {t["owner"]}; efor: {t["effort"]}.',
                       '  - Önkoşullar: ' + (', '.join(t['depends_on']) or 'yok') + '.',
                       '  - Mevcut bağlar: ' + ', '.join(f'`{p}`' for p in t['existing_paths']) + '.',
                       '  - Yeni teslim önerisi: ' + (', '.join(f'`{p}`' for p in t['proposed_paths']) or 'mevcut temel korunur') + '.']
+            if t.get('planned_releases'):
+                lines.append('  - Sürüm briefleri: ' + ', '.join(
+                    f'[{v}](planning/releases/{v}.md)' for v in t['planned_releases']) + '.')
             lines += [f'  - Kabul {i}: {criterion}' for i, criterion in enumerate(t['acceptance'], 1)]
             if t['evidence']:
                 lines.append('  - Geçmiş hazırlık kanıtı: ' + ', '.join(f'`{p}`' for p in t['evidence']) + '.')
@@ -273,7 +284,10 @@ def main():
                  and all(by_id[d]['status'] in completed for d in t['depends_on'])]
     print(json.dumps({'tasks': len(order), 'status_counts': dict(Counter(t['status'] for t in document['tasks'])),
                       'acyclic': True, 'goals_covered': sorted(GOALS),
-                      'startable_now': startable, 'runtime_changed': False}, ensure_ascii=False))
+                      'startable_now': startable,
+                      'startable_in_active_release': [identity for identity in startable
+                          if document['active_development']['target_version'] in by_id[identity].get('planned_releases', [])],
+                      'runtime_changed': False}, ensure_ascii=False))
 
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ Hacimli Devre Yolu ve açık/kapalı altın zarflar `home-v3/` altında;
 açılış logosu `assets/branding/gridshard-emblem-v2.webp`. Orijinaller korunur.
 Varsayılan profil mevcut kişi çiziminin mint filtresidir; diğer seçili avatar,
 çerçeve ve profil arka planı korunur. Yeni launcher/mağaza ikonu üretilmedi.
-Detay: `home-v3/README.md`, `docs/GORSEL_DONUSUM_PAKET03_20261015.md`.
+Detay: `home-v3/README.md`, `docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md`.
 
 ## Ortak yüzeyler — Paket 2
 
@@ -18,7 +18,7 @@ yok. Bağımsız ikon düğmelerine yeni kullanım eklerken merkezi eşlemeyi ge
 veya `.gs-icon-action` kullanın; levha/gölge eklemeyin. `.gs-action-button`
 metinli eylem, `data-tone="primary|success|danger"` anlam varyantı sağlar.
 Bildirim rozetlerinin `::after` alanını kullanmaya devam edin; yüzey `::before`
-ile çizilir. Doküman: `docs/GORSEL_DONUSUM_PAKET02_20261015.md`.
+ile çizilir. Doküman: `docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md`.
 
 ## Onaylı ortak ikonlar — Paket 1
 
@@ -35,7 +35,7 @@ mesaj/menü düğmeleri kullanıcı isteğiyle zeminsizdir. Detay ve kapsam:
 Kullanılmayan önceki tasarımlar, büyük PNG ustaları ve eski QA ekran çıktıları
 SHA-256 doğrulamasıyla `artifacts/asset-archive-20261015/` altına alındı.
 Bu klasör Git tarafından yok sayılır; orijinaller değiştirilmeden saklanır.
-Tam dosya listesi: `qa_reports/asset-cleanup-20261015.json`.
+Tam dosya listesi: `docs/README.md`.
 
 ## Tek merkezden para birimi görseli değiştirme
 

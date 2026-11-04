@@ -20,8 +20,8 @@ CSS katmanıdır; gövde/zemin oynamaz. Görsel değiştirilmedi veya yeniden ü
 açılış HTML'inde/paketinde kullanılmaz.
 İki kaynak görsel yerleşik imagegen ile, onaylı grafik/ikon referansından üretildi;
 `tools/prepare-startup-art.py` yalnız teknik WebP dışa aktarımı yapar.
-İstemler: `docs/ACILIS_DEVRE_YETENEK_VIDEO_20261023.md`; son revizyon/testler:
-`docs/CANLI_CEKIRDEK_ACILIS_20261023.md`.
+İstemler: `docs/OYUN_KANONU.md`; son revizyon/testler:
+`docs/OYUN_KANONU.md`.
 Önceki SVG odası ve eski logo açılışta kullanılmaz; geçmiş varlıklar değişmedi.
 Tek stil sahibi `client/src/startup-loading.css`; eski canon/home boot stilleri
 kaldırıldı. İlerleme, hata/yeniden deneme ve sunucu doğrulaması değişmedi.

@@ -187,7 +187,7 @@ süreli ekranlar daha çabuk eskidiği için ilk üç görselde kullanılmamalı
 
 Eski belgedeki 13 Ekim görsellerinin üretim/etiketleme değerlendirmesi sonraki
 varlıklar için otomatik olarak kullanılamaz. Sonraki 22 Ekim ikon/afiş üretim
-kaydı `docs/MAGAZA_GORSELLERI_2_1_1.md` içindedir. Bu çalışma bir beyan
+kaydı `docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md` içindedir. Bu çalışma bir beyan
 kutusunu değiştirmedi ve hukuki/Veri güvenliği alanlarına işlem yapmadı.
 # Nihai teslim — 1 Kasım 2026
 

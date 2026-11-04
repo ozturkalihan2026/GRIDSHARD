@@ -1,56 +1,31 @@
-# Geliştirme Ortamı — Beta.6
+# GRIDSHARD — geliştirme ve doğrulama
 
-## Önerilen günlük akış
+Güncel başlangıç [belge dizini](README.md), iş sırası [sürüm rehberidir](GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md).
 
-1. `TEST_ET.bat` ile tam QA zincirini çalıştır.
-2. QA başarılıysa `BASLAT_WEB_TEST.bat` ile sunucuyu başlat.
-3. `http://127.0.0.1:8000/` adresinden manuel oynanış testi yap.
-4. Hata varsa `qa_reports/latest.json` ve tarayıcı geliştirici konsolunu birlikte incele.
+## Yerel çalışma
 
-## QA zinciri
+`BASLAT_WEB_TEST.bat` veya `BASLAT_WEB_TEST.sh` yerel sunucuyu başlatır.
+Varsayılan adres `http://127.0.0.1:8000/`; scriptin yazdığı adresi esas al.
+Eski `/web-test` yönetim ekranları ve laboratuvar test koşuları kaldırılmıştır.
 
-`tools/qa.py` şu kontrolleri tek komutta çalıştırır:
-
-- tüm Python/pytest sunucu testleri,
-- `app.js` ve `relay-client.js` sözdizimi kontrolü,
-- istemci birim/regresyon testleri,
-- gerçek `app.js` başlangıç yürütmesi ve dört ana menünün click-handler bağlama testi,
-- gerçek Uvicorn süreci üzerinden HTTP smoke testi.
-
-Bu zincir Beta.5'te gözden kaçan `PORT_COUNT_BY_NAME` başlangıç sırası hatasını tekrar oluşmadan yakalamak için özellikle eklendi.
-
-## Docker
-
-Docker zorunlu değildir. Windows yerel geliştirme için `.venv` daha hızlıdır. Ortam farklarını azaltmak veya temiz bir kurulum doğrulamak için:
-
-`docker compose up --build`
-
-kullanılabilir.
-
-## VS Code
-
-`.vscode/tasks.json` içinde Tam QA, sunucu başlatma, pytest ve client test görevleri hazırdır.
-
-## PostgreSQL şema migration akışı
-
-`server/migrations/` altındaki numaralı ileri ve geri SQL dosyaları checksum ile `schema_migrations` tablosunda izlenir. Sunucu açılışta advisory lock alıp yalnız bekleyen ileri migration'ları sırasıyla uygular; daha önce uygulanmış bir dosya sonradan değiştirilmişse açılış güvenli biçimde durur.
-
-Dağıtım öncesi durum kontrolü:
+## Kontroller
 
 ```powershell
-python tools/schema_migrate.py status
-python tools/schema_migrate.py check
+python tools/check_imports.py
+python -m pytest server/tests tools/tests
+pnpm test:client
+pnpm test:build
+pnpm build:web
 ```
 
-Bekleyen migration'ı bakım penceresinde açıkça uygulamak için `up` kullanılır. Geri alma veri değiştiren bir işlem olduğu için yalnız operatör kararıyla `python tools/schema_migrate.py down --allow-destructive` biçiminde çalışır; uygulama sürümü de aynı anda uyumlu önceki sürüme döndürülmelidir.
+Python için sunucu test bağımlılıklarının kurulu olduğu `.venv` kullanılır;
+testlerin import yolu `server/pytest.ini` ile sağlanır. PostgreSQL/Redis gibi gerçek
+servis senaryoları ilgili test ortam değişkenleri ve CI servisleriyle çalışır.
+Tam kapılar `.github/workflows/quality.yml` içindedir. Tarayıcı testleri
+`pnpm test:e2e`; gerçek cihaz kabulü otomatik testten ayrıca kaydedilir.
 
-## Tarayıcı E2E
-
-Playwright gerçek tarayıcı E2E testi sonraki QA adımıdır. ChatGPT çalışma ortamındaki Chromium yerel adresleri yönetici politikasıyla engellediğinden burada zorunlu CI testi haline getirilmedi. Yerel makinede Playwright kurulursa Oyna/Profil/İstatistikler/Ayarlar gezinmesi ayrıca gerçek Chromium üzerinde otomatikleştirilebilir.
-
-
-## Beta.7 Windows telemetri doğrulaması
-
-`TEST_ET.bat` artık çalışan Uvicorn sunucusuna eşzamanlı operation/stability snapshot istekleri gönderir. Bu adım Windows'ta daha önce görülen `.tmp` / `.bak.tmp` dosya kilidi yarışını doğrudan yakalamak içindir.
-
-QA raporunda `concurrent_audit_snapshots` satırı `ok: true` olmalıdır.
+Plan dosyaları için üç plan aracının `--write` ve `--check` adımları rehberdedir.
+`qa_reports/`, `test-results/`, `playwright-report/`, `dist/` ve `build/` yerel üretilen
+çıktılardır; yeni test kanıtı eski rapordan devralınmaz. Oyuncu verisi/sırlar bu
+çıktılardan ayrıdır. Yayın için [mobil rehber](MOBILE_RELEASE_RUNBOOK.md) ve
+[üretim sunucusu rehberi](SERVER_PRODUCTION_RUNBOOK.md) kullanılır.

@@ -51,9 +51,11 @@ kanıtıdır, yeni mağazaya yüklenecek dosyalar değildir.
 
 Özellikle karşılaştırılabilir kanıtlar:
 
-- [Yayındaki eski modül ekranı](../artifacts/play-store-audit-20261101/published/02-modules.webp)
-- [Yayındaki son sıradaki savaş](../artifacts/play-store-audit-20261101/published/08-battle.webp)
-- [Güncel arayüzün gerçek yerel savaş kontrolü](../artifacts/current-v8-browser/battle-393.png)
+- Yayındaki eski modül ekranı: `artifacts/play-store-audit-20261101/published/02-modules.webp`.
+- Yayındaki son sıradaki savaş: `artifacts/play-store-audit-20261101/published/08-battle.webp`.
+- Yerel savaş kontrolü: `artifacts/current-v8-browser/battle-393.png`.
+
+Bu tarihsel görsel kanıtlar bu yerel kopyada bulunmuyor; yeni kabul kanıtı olarak kullanılmaz.
 
 Son bağlantı bir **QA görüntüsüdür**, nihai mağaza çözünürlüğünde yeni teslim
 değildir. Eski Google CDN kopyaları 810×1440 WebP; bu, Play Console’a yüklenen

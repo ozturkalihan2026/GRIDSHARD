@@ -35,6 +35,11 @@ jobs:
         run: python tools/check_imports.py
       - name: Validate reviewed cosmetic catalog and generated previews
         run: python tools/prepare_liveops_rewards.py validate
+      - name: Check connected release plans
+        run: |
+          python tools/development_checklist.py --check
+          python tools/release_calendar.py --check
+          python tools/release_delivery_plan.py --check
       - name: Run server regression tests
         working-directory: server
         run: python -m pytest

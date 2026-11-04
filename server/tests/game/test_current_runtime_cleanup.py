@@ -1,6 +1,5 @@
 """Current-only behavior replaces retired supply/heat and 36-card contracts."""
-from pathlib import Path
-import importlib.util,json,hashlib
+import importlib.util
 import pytest
 from app.module_roster import MODULE_SPECS,RETIRED_MODULE_IDS
 from app.game.engine import BattleEngine
@@ -68,12 +67,3 @@ def test_retired_cards_and_engines_cannot_be_imported_back_into_battles():
         assert importlib.util.find_spec('app.game.'+name) is None
     for key in RETIRED_MODULE_IDS:
         with pytest.raises(ValueError):get_module_definition(key)
-
-def test_original_retired_contracts_and_their_positive_replacements_remain_reviewable():
-    root=Path(__file__).resolve().parents[3];folder=root/'docs/archive/current-only-contracts-20261101'
-    manifest=json.loads((folder/'manifest.json').read_text(encoding='utf8'))
-    for item in manifest['files']:
-        data=(root/item['archived']).read_bytes()
-        assert hashlib.sha256(data).hexdigest()==item['sha256']
-        assert item['reason'] and all((root/name).is_file() for name in item['replacements'])
-        assert all(f'def {name}(' in data.decode('utf8') for name in item['tests'])
