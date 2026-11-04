@@ -361,7 +361,7 @@
   async function bootstrapParticipant() {
     if (startupFlight) return startupFlight;
     startupFlight = performParticipantBootstrap().catch((error) => {
-      startupLoading?.fail();
+      startupLoading?.fail(error?.bootMessageKey || "boot.failed");
       if (globalThis.GridshardAuth?.session?.requiresReauthentication) {
         void accountSessionControls?.openRecovery();
       }
@@ -373,7 +373,12 @@
   async function performParticipantBootstrap() {
     startupLoading?.begin();
     const readiness = await checkServerReadiness();
-    if (!readiness.ok) throw new Error(readiness.reason || "Sunucu bağlantısı hazır değil.");
+    if (!readiness.ok) {
+      const error = new Error(readiness.reason || "Sunucu bağlantısı hazır değil.");
+      error.bootMessageKey = readiness.updateRequired ? "boot.update_required"
+        : readiness.compatibilityError ? "boot.incompatible" : "boot.failed";
+      throw error;
+    }
     startupLoading?.complete("server");
     startupLoading?.stage("boot.stage.profile");
     const result =
@@ -8641,7 +8646,7 @@
         serverHealthState,
       expectedVersion:
         "2.3.0",
-      compatibleServerVersions: ["2.2.1"],
+      compatibleServerVersions: ["2.2.1", "2.3.0"],
       expectedProtocolVersion: 2,
     });
   const playReadinessGate =

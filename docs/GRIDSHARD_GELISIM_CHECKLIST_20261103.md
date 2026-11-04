@@ -2,7 +2,7 @@
 
 **Tarih: 3 Kasım 2026 · Proje: mağaza, ödül, içerik ve yaşayan oyun**
 
-Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **71 iş** vardır: **52 yapılacak**, **3 dalda hazır; canlıda yok**, **6 çalışılıyor**, **3 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
+Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **71 iş** vardır: **51 yapılacak**, **4 dalda hazır; canlıda yok**, **6 çalışılıyor**, **3 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
 
 **Son ayrıntılandırma: 4 Kasım 2026.** Takvim → sürüm briefi → görev → dosya/kanıt bağlantıları kuruldu; 2.4.0 sarı geri/ileri kontrolleri ve saldırı/çekirdek sesleri zorunlu kapsamdadır.
 
@@ -349,14 +349,15 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 <a id="compat-01"></a>
 
-- [ ] **COMPAT-01 — 2.4 geçişinde kurulu 2.3 ve 2.2.1 başlangıcını koru**
-  - Durum: Yapılacak. Öncelik: P0; rol: İstemci / backend / QA; efor: M.
+- [x] **COMPAT-01 — 2.4 geçişinde kurulu 2.3 ve 2.2.1 başlangıcını koru**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P0; rol: İstemci / backend / QA; efor: M.
   - Önkoşullar: RELEASE-00.
-  - Mevcut bağlar: `client/src/relay-client.js`, `server/app/main.py`, `tools/release_guard.py`, `server/tests/test_release_221_profiles_updates.py`.
+  - Mevcut bağlar: `client/src/relay-client.js`, `server/app/main.py`, `tools/release_guard.py`, `server/tests/test_release_221_profiles_updates.py`, `server/app/client_compatibility.py`, `client/tests/client-compatibility.test.js`, `client/tests/fixtures/installed/manifest.json`, `server/tests/test_client_compatibility.py`, `tools/verify_client_compatibility.py`, `tools/verify-client-compatibility.cjs`, `e2e/client-compatibility.spec.js`.
   - Yeni teslim önerisi: `docs/planning/release-240-client-compatibility.md`.
   - Sürüm briefleri: [2.4.0](planning/releases/2.4.0.md).
   - Kabul 1: Değiştirilmemiş 2.3 ve 2.2.1 istemci kaynaklarıyla yeni sağlık/başlangıç/protokol sözleşmesi doğrulanır; sadece sürüm metni artırılarak eski istemci engellenmez.
   - Kabul 2: Gerçek sürüm raporu, minimum/capability uyumu, geçişte eski API/istemci, native yönlendirme ve güvenli güncelleme açıklaması test edilir. Yeni modül açılışı sonraki sürümde eski render/match güvenliğiyle değerlendirilir.
+  - Geçmiş hazırlık kanıtı: `docs/planning/release-240-client-compatibility.md`, `artifacts/compat-240-20261104/http-proof-r3/proof.json`, `artifacts/compat-240-20261104/mobile-results.json`, `artifacts/compat-240-20261104/client-tests-final.log`, `artifacts/compat-240-20261104/server-tests-final.log`.
 
 <a id="ui-07"></a>
 

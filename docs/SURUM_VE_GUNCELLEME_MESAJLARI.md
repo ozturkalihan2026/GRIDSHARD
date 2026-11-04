@@ -33,16 +33,29 @@ kartlarla oynanmış en çok kullanılan deste seçilir; yoksa aktif deste
 "Aktif savaş destesi" olarak gösterilir. Hiç oynanmamış bir desteye geçmiş
 maç sayısı atanmaz. Tarihsel maç sayaçları ve diğer ilerleme kayıtları korunur.
 
-## 2.3.0 sağlık yanıtı ve istemci geçiş uyumu
+## COMPAT-01 sağlık yanıtı ve istemci geçiş uyumu
 
 2.2.1 kurulu istemci `/health.release_version` alanını birebir eşleştirir.
-Bu yüzden 2.3.0 kaynağında bu alan `2.2.1` uyumluluk değeri olarak korunur;
-gerçek sunucu sürümü **`server_release_version`** alanıdır. Çok eski v8
-istemciler için `version=2.1.0-beta.72` de korunur. Operatör ve yeni istemci
-gerçek sürümü önce `server_release_version`, yoksa `release_version` alanından okur.
+Bu alan `2.2.1` uyumluluk değeri olarak korunur. Kurulu 2.3 istemcisi ise
+`server_release_version` alanını karşılaştırır; o alan da artık `2.3.0`
+uyumluluk değeridir. Çok eski v8 istemciler için `version=2.1.0-beta.72` korunur.
+**Gerçek sunucu derlemesi `runtime_release_version` alanıdır.** Operatör/new
+istemci önce bu alanı; eski sunucuda yoksa `server_release_version`, ardından
+`release_version` alanını okur. 2.3 yayını ilk çıktığında gerçek sürüm ikinci
+alandaydı; yeni alan bu nedenle ayrıca eklenmiştir.
 
-Yeni 2.3.0 istemcisi yalnız açıkça incelenen 2.2.1 sunucu köprüsünü kabul eder;
-PvP protokolü 2 ve kalıcılık hazır olma koşulları yine zorunludur. Bilinmeyen
-ileri sürüm veya farklı protokol otomatik uyumlu sayılmaz. Bu, mağaza yayılımı
-sırasında eski uygulamayı kesmeden sunucu/istemci sırasını yönetmek içindir.
-Uyumluluk alanı gerçek sürümü gizlemek için kullanılmaz; ikisi yan yana döner.
+Yeni istemci `client_compatibility` şemasını, API sözleşmesini, minimum/izinli
+istemci sürümünü ve gerekli yetenekleri doğrular. Yeni sözleşme eksikse eski
+sürüm alanına düşmez. Yeni alanları olmayan eski API yalnız incelenmiş
+2.2.1/2.3.0 köprüsüyle kabul edilir. PvP protokolü 2 ve kalıcılık hazır olma
+koşulları ayrıca zorunludur. Sağlık yanıtı `Cache-Control: no-store` taşır.
+Yetenek desteği, sezonun veya ödül dağıtımının açıldığı anlamına gelmez.
+
+Minimumun altında kalan yeni istemci Google Play üzerinden güncelleme ve
+ilerlemenin korunması açıklamasını görür; uygulama kendi web/native paketini
+indirmez ve kullanıcıdan eski kurulumu silmesini istemez. Kurulu eski
+istemciler bu yeni minimum alanını tanımadığı için minimumu artırmak tek
+başına onları engelleyen bir güvenlik kapısı değildir; eski API desteğini
+kaldırmak ayrı yayın/migration kararı gerektirir.
+
+Kabul ve tekrar üretim: [2.4 istemci uyumluluğu](planning/release-240-client-compatibility.md).

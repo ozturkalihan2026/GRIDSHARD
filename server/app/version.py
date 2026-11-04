@@ -1,5 +1,6 @@
 VERSION = "2.3.0"
-# Installed clients compare these two health fields literally. Preserve their
-# wire aliases; server_release_version reports the actual build from 2.3 onward.
+# Installed clients compare these fields literally. They are wire aliases;
+# runtime_release_version is the authoritative server build from COMPAT-01 on.
 LEGACY_HEALTH_VERSION = "2.1.0-beta.72"
 LEGACY_RELEASE_VERSION = "2.2.1"
+LEGACY_SERVER_RELEASE_VERSION = "2.3.0"

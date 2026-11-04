@@ -5,7 +5,7 @@
   "runtime_changes_authorized_by_this_file": false,
   "baseline_release": "2.2.1",
   "proposed_first_minor": "2.3.0",
-  "working_branch": "main",
+  "working_branch": "codex/release-2-4-0",
   "goals": [
     "shop",
     "chests",
@@ -2085,7 +2085,7 @@
       "owner": "İstemci / backend / QA",
       "effort": "M",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "RELEASE-00"
       ],
@@ -2093,7 +2093,14 @@
         "client/src/relay-client.js",
         "server/app/main.py",
         "tools/release_guard.py",
-        "server/tests/test_release_221_profiles_updates.py"
+        "server/tests/test_release_221_profiles_updates.py",
+        "server/app/client_compatibility.py",
+        "client/tests/client-compatibility.test.js",
+        "client/tests/fixtures/installed/manifest.json",
+        "server/tests/test_client_compatibility.py",
+        "tools/verify_client_compatibility.py",
+        "tools/verify-client-compatibility.cjs",
+        "e2e/client-compatibility.spec.js"
       ],
       "proposed_paths": [
         "docs/planning/release-240-client-compatibility.md"
@@ -2110,7 +2117,13 @@
         4,
         9
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/release-240-client-compatibility.md",
+        "artifacts/compat-240-20261104/http-proof-r3/proof.json",
+        "artifacts/compat-240-20261104/mobile-results.json",
+        "artifacts/compat-240-20261104/client-tests-final.log",
+        "artifacts/compat-240-20261104/server-tests-final.log"
+      ],
       "planned_releases": [
         "2.4.0"
       ]
@@ -3044,9 +3057,9 @@
   },
   "active_development": {
     "target_version": "2.4.0",
-    "branch": "main",
+    "branch": "codex/release-2-4-0",
     "plan": "docs/RELEASE_2_4_0_GELISTIRME_PLANI_20261103.md",
-    "milestone": "fixed_crate_delivery_first_slice",
+    "milestone": "client_compatibility_acceptance",
     "status": "in_progress",
     "scope_decision": "user_approved",
     "target_release_on": "2026-11-23",

@@ -22,6 +22,8 @@ gerçekten uygulanıp kanıtlanana kadar oyunda mevcut sayılmaz.
   sunucu sayaçları, tekil XP, UTC devir, TR/EN sekmeler ve kalan yayın kontrolleri.
 - [S1 yayın profili ve kazanılmış haklar](planning/first-season-launch-profile.md):
   tekil setler, üç kaynak haftası, sabit kademe kayıtları ve güvenli kapanış.
+- [2.4.0 istemci/API uyumluluğu](planning/release-240-client-compatibility.md):
+  özgün eski istemciler, gerçek eski API, minimum/yetenek sözleşmesi ve güncelleme kabulü.
 - [Sarı geri/ileri envanteri](planning/release-240-navigation-matrix.md),
   [modül sesleri](planning/release-240-module-audio-matrix.md) ve
   [çekirdek sesleri](planning/release-240-core-audio-matrix.md): yerel uygulama,

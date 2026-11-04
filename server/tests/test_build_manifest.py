@@ -42,5 +42,6 @@ def test_manifest_endpoint():
     from app.version import VERSION, LEGACY_HEALTH_VERSION
     assert body["version"]==LEGACY_HEALTH_VERSION
     assert body["release_version"]=="2.2.1"
-    assert body["server_release_version"]==VERSION
+    assert body["runtime_release_version"]==VERSION
+    assert body["server_release_version"]=="2.3.0"
     assert body["pvp_protocol_version"]==PVP_PROTOCOL_VERSION

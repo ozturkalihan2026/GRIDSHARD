@@ -3439,7 +3439,7 @@ function createClient() {
     Promise.all([mismatch.check(), degraded.check(), unreachable.check()]).then(
       ([versionResult, degradedResult, unreachableResult]) => {
         assert.strictEqual(versionResult.ok, false);
-        assert.match(versionResult.reason, /Sürüm uyuşmazlığı/);
+        assert.match(versionResult.reason, /uyumlu değil/);
         assert.strictEqual(degradedResult.ok, false);
         assert.strictEqual(degraded.status, SERVER_BOOT_STATUS.BLOCKED);
         assert.strictEqual(unreachableResult.ok, false);

@@ -1666,7 +1666,7 @@
         };
       }
 
-      this.version = health.server_release_version || health.release_version || health.version || null;
+      this.version = health.runtime_release_version || health.server_release_version || health.release_version || health.version || null;
       this.protocolVersion =
         health.pvp_protocol_version ?? null;
       this.ready = health.status === "ok";
@@ -2578,7 +2578,7 @@
         const incompatibleDelivery = ["tiers", "premium-tiers"].includes(kind)
           && /(?:bilinmeyen|unknown).*(?:teslim|delivery)/i.test(reason);
         this.errors.profile = incompatibleDelivery
-          ? "Sezon ödülü için sunucu güncellemesi gerekli. Yerel Python sunucusunu güncel kodla yeniden başlatıp tekrar dene. Ödül alınmadı."
+          ? "Sezon ödülleri için sunucu güncelleniyor. Biraz sonra yeniden deneyebilirsin."
           : reason;
         return {
           ok: false,
@@ -3010,11 +3010,41 @@
     ERROR: "error",
   });
 
+  function clientCompatibility(health, expectedVersion, legacyVersions, requiredCapabilities) {
+    const actual = health.runtime_release_version || health.server_release_version || health.release_version || health.version;
+    // An advertised new contract cannot fall back to a legacy alias when it is
+    // incomplete. Otherwise an incompatible server could appear to be 2.3.
+    const modern = Object.prototype.hasOwnProperty.call(health, "runtime_release_version")
+      || Object.prototype.hasOwnProperty.call(health, "client_compatibility");
+    if (!modern) return {ok:!expectedVersion || actual === expectedVersion || legacyVersions.includes(actual), actual, legacy:true};
+    const policy = health.client_compatibility;
+    const semver = value => typeof value === "string" && /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(value);
+    const lines = policy?.supported_client_release_lines ?? [];
+    if (!semver(health.runtime_release_version) || !policy || policy.schema_version !== 1 || policy.api_contract_version !== 1
+        || !semver(policy.minimum_client_version) || !Array.isArray(policy.supported_client_versions)
+        || !policy.supported_client_versions.every(semver) || !Array.isArray(lines)
+        || !lines.every(value => typeof value === "string" && /^(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(value))
+        || !Array.isArray(policy.capabilities)
+        || !policy.capabilities.every(item => typeof item === "string")) return {ok:false,actual,code:"invalid_contract"};
+    if (expectedVersion) {
+      if (!semver(expectedVersion)) return {ok:false,actual,code:"invalid_client_version"};
+      const client = expectedVersion.split(".").map(Number), minimum = policy.minimum_client_version.split(".").map(Number);
+      let comparison = 0;
+      for (let i=0;i<3 && !comparison;i++) comparison = Math.sign(client[i]-minimum[i]);
+      if (comparison < 0) return {ok:false,actual,code:"update_required",updateRequired:true};
+      if (!policy.supported_client_versions.includes(expectedVersion)
+          && !lines.includes(expectedVersion.split('.').slice(0,2).join('.'))) return {ok:false,actual,code:"unsupported_client"};
+    }
+    if (!requiredCapabilities.every(capability => policy.capabilities.includes(capability))) return {ok:false,actual,code:"missing_capability"};
+    return {ok:true,actual,legacy:false};
+  }
+
   class RelayServerBootGate {
     constructor({
       healthState,
       expectedVersion = null,
       compatibleServerVersions = [],
+      requiredCapabilities = ["game.v1", "profile.v1"],
       expectedProtocolVersion = 2,
       requestJson = null,
     }) {
@@ -3022,6 +3052,7 @@
       this.expectedVersion =
         expectedVersion;
       this.compatibleServerVersions = [...compatibleServerVersions];
+      this.requiredCapabilities = [...requiredCapabilities];
       this.expectedProtocolVersion =
         expectedProtocolVersion;
       this.requestJson =
@@ -3063,10 +3094,9 @@
               health
             );
 
-        const versionMatches =
-          !this.expectedVersion
-          || (health.server_release_version || health.release_version || health.version) === this.expectedVersion
-          || this.compatibleServerVersions.includes(health.server_release_version || health.release_version || health.version);
+        const compatibility = clientCompatibility(health, this.expectedVersion,
+          this.compatibleServerVersions, this.requiredCapabilities);
+        const versionMatches = compatibility.ok;
 
         const protocolMatches =
           Number(
@@ -3084,7 +3114,9 @@
 
         if (!versionMatches) {
           this.lastError =
-            `Sürüm uyuşmazlığı: istemci ${this.expectedVersion}, sunucu ${health.server_release_version || health.release_version || health.version}`;
+            compatibility.updateRequired
+              ? "Oyunun güncel sürümünü Google Play’den yükleyip yeniden dene. İlerlemen korunur."
+              : "Oyun ve sunucu şu anda uyumlu değil. Lütfen biraz sonra yeniden dene.";
         } else if (
           !protocolMatches
         ) {
@@ -3104,6 +3136,8 @@
           ready,
           health,
           versionMatches,
+          updateRequired: Boolean(compatibility.updateRequired),
+          compatibilityError: compatibility.code || null,
           protocolMatches,
           reason: this.lastError,
         };
@@ -3598,6 +3632,7 @@
     RelayTelemetryHttpTransport,
     RelayPlayRecoveryState,
     RelayServerBootGate,
+    clientCompatibility,
     RelayTestParticipantIdentity,
     RelayParticipantBootstrap,
     RelayPlayReadinessGate,

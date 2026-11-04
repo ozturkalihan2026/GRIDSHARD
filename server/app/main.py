@@ -19,11 +19,12 @@ from pathlib import Path
 from threading import Lock, RLock
 from urllib.parse import parse_qs, urlencode, urlsplit
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, WebSocket
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, Response, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .production_config import environment_secret, production_endpoints
 from .competition_control import competition_eligible, launch_status, minimum_participants, configured_start
+from .client_compatibility import health_release_fields
 from .season_entitlements import additional_chest_count, origin_for as season_premium_origin, reward_for as earned_season_reward
 from .postgres_economic_operations import PostgresEconomicOperations, EconomicOperationConflict
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -6702,7 +6703,9 @@ def gridshard_identity() -> dict:
 
 
 @app.get("/health")
-async def health() -> dict:
+async def health(response: Response = None) -> dict:
+    if response is not None:
+        response.headers["Cache-Control"] = "no-store"
     player_persistence, telemetry_persistence = await asyncio.gather(
         asyncio.to_thread(player_data_persistence_health),
         asyncio.to_thread(telemetry_persistence_health),
@@ -6720,10 +6723,7 @@ async def health() -> dict:
 
     payload = {
         "status": "ok" if ready else "degraded",
-        "version": LEGACY_HEALTH_VERSION,
-        "release_version": LEGACY_RELEASE_VERSION,
-        "server_release_version": VERSION,
-        "compatible_client_releases": [LEGACY_RELEASE_VERSION, VERSION],
+        **health_release_fields(VERSION),
         "pvp_protocol_version": PVP_PROTOCOL_VERSION,
         "combat_ruleset": "modules_v7",
         # Explicit rollout signal: a client must never silently downgrade a
@@ -6766,7 +6766,7 @@ async def health() -> dict:
         },
     }
     if RUNTIME_STRICT and not ready:
-        return JSONResponse(status_code=503, content=payload)
+        return JSONResponse(status_code=503, content=payload, headers={"Cache-Control": "no-store"})
     return payload
 
 

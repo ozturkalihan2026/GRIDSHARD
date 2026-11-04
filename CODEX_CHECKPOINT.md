@@ -1,3 +1,34 @@
+# COMPAT-01 — 4 Kasım 2026 ev bilgisayarındaki uygulama
+
+- Dal codex/release-2-4-0. Kurulu2.3/2.2.1 ve yeni istemci yazılım uyumu
+  uygulandı. Kabul docs/planning/release-240-client-compatibility.md; en son
+  durum artifacts/compat-240-20261104/FINAL_STATUS.json'dan okunur.
+- Gerçek sağlık derlemesi **runtime_release_version**. server_release_version
+  artık2.3.0 alias; release_version2.2.1, versionbeta72 sabit. Operatör gerçek
+  sürümü yeni alandan okumalı. API/minimum/incelenmiş minor hatları/yetenekler
+  ayrıca denetlenir. Yeni eksik sözleşme eski alana düşmez; proto/kalıcılık geçmez.
+- client/tests/fixtures/installed altında iki TAM değiştirilmemiş eski relay
+  executable ve Git/SHA-256 kökeni; bunlar aktif test girdisidir, eski PASS
+  raporu değildir. .gitattributes baytları korur, üretim bundle'a girmezler.
+- Gerçek loopback HTTP: eski2.2.1/2.3→yeniAPI ve yeni→yeni/iki eskiAPI;
+  web+native-origin emülasyonuyla10senaryo PASS. Auth/bootstrap/yüklemede
+  aynı kimlik/korunan takım rotası gerçekHTTP; SecureStorage bellekte emüle.
+- Yeni UI üç API'de Chrome'da açıldı, JS/varlık hatası0. İki telefonda6E2E
+  PASS: geleceksürüm/minimumTR-EN/protokol hazır olma/503retry. Fiziksel
+  Android/Keystore/TLS/Play yükseltmesi kanıtı değildir; bu kabul kullanıcı
+  isteğiyle ertelenmiş genel RELEASE-01 kapısında kalır.
+- Gelecek2.4 karşılaştırması için yalnız izole sağlık kimliği ve test
+  expectedVersion parametresi2.4 simüle edildi. Gerçek handler'lar çalıştı;
+  paket etiketleri hâlâ2.3/code14. AWS/env/S1 başlangıcı/AAB/8891 değişmedi.
+- Tam yerel Python/istemci son sayıları ve CI kaydı FINAL_STATUS.json'dadır.
+  CI'a aynı gerçekHTTP kaynağı ve yeni browser testleri eklendi. Branch_ready
+  yerel kabulü anlatır; yeni commit CI sonucu ayrıca kaydedilecektir.
+- Sonraki iş: SEASON-00/REWARD-06/SEASON-01 gerçek PG/Redis rollback/reload,
+  genel CI/yayın kabulleri ve ertelenen cihaz doğrulamaları. BASE-01 done;
+  sıradaki iş tekrar ekonomi baz çizgisi veya yeni sanat üretimi değildir.
+
+---
+
 # GRIDSHARD — güncel çalışma durumu
 
 4 Kasım 2026. Başlangıç: [belge dizini](docs/README.md).

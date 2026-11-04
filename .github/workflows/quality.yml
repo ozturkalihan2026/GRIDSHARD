@@ -47,6 +47,18 @@ jobs:
       - name: Run server regression tests
         working-directory: server
         run: python -m pytest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Installed clients and old APIs over isolated real HTTP
+        run: python tools/verify_client_compatibility.py --fetch-missing
+      - name: Preserve client compatibility proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridshard-client-compatibility-${{ github.sha }}
+          path: qa_reports/client-compatibility/proof.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Run release and operator tool contracts
         run: python -m pytest tools/tests
 
@@ -229,7 +241,7 @@ jobs:
         env:
           GRIDSHARD_E2E_HUMAN_MATCHMAKING: '0'
         run: >-
-          pnpm exec playwright test e2e/startup-loading.spec.js
+          pnpm exec playwright test e2e/client-compatibility.spec.js e2e/startup-loading.spec.js
           e2e/menu-navigation.spec.js e2e/beta33-season.spec.js
           e2e/persistent-render.spec.js
           e2e/visual-atmosphere.spec.js

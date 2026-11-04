@@ -2,3 +2,5 @@
 /docs/archive/current-only-contracts-20261101/** -text whitespace=cr-at-eol
 # Applied PostgreSQL migration checksums use the originally released bytes.
 /server/migrations/*.sql -text whitespace=cr-at-eol
+# Actual installed-client executables are active compatibility test inputs.
+/client/tests/fixtures/installed/*/relay-client.js -text
