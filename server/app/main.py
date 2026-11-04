@@ -3862,7 +3862,10 @@ def claim_reward_inbox_item(player_id: str, message_id: str, request: MetaOperat
                 except MetaProgressionError as exc:
                     raise HTTPException(status_code=422, detail=str(exc)) from exc
             _complete_chest_team_rewards(opened)
-        profile.reward_inbox_receipts[request.request_id] = dict(receipt)
+        # A retry with a new request ID still replays the original collect.
+        # Do not grow the player's economic state with aliases of that receipt.
+        if not replayed:
+            profile.reward_inbox_receipts[request.request_id] = dict(receipt)
         if profile is not stored:
             for name in stored.__dataclass_fields__:
                 setattr(stored, name, getattr(profile, name))

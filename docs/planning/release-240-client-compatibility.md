@@ -107,6 +107,15 @@ Tam Python/istemci/derleme sayıları ve CI sonucu son doğrulama kaydındadır;
 
 ## 2.4.0 yayınına kalan ayrı kabuller
 
+CI sırasında bulunan ek düzeltmeler: ödül kutusundaki farklı istek kimliğiyle
+tekrar toplama, asıl makbuzu yeniden kullanır ve oyuncuya makbuz kopyası eklemez.
+Geçmiş savaş/sezon testinin sentetik profil kurulumu, bugünün boş kazanılmış
+hak kaydını da eski dönemle eşleştirir; gerçek kapanmamış sezonu reddeden
+koruma sürer. Ayrı yerel PostgreSQL 16 kümesinde kalıcılık kapsamı 77 PASS /
+1 Redis SKIP; CI ayrıca PostgreSQL 17 ve gerçek Redis ile doğrular.
+Ekonomi baz çizgisinin değişen handler kaynak özeti yeniden üretildi;
+ödül miktarları, XP eşikleri ve sezon tarihi değişmedi.
+
 Gerçek PostgreSQL/Redis ve macOS WebKit CI sonuçları; imzalı 2.4.0 AAB ile
 Play'den fiziksel cihaz güncellemesi, hesap/ödeme/ödül ve hoparlör/kulaklık
 kabulü RELEASE-01'de izlenir. Yeni modülün eski istemcide render/match

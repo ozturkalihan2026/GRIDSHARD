@@ -209,6 +209,11 @@ def test_pending_result_precedes_rollover_after_a_multi_period_outage(battle_db,
         profile = service.get(owner)
         profile.season_archives.clear()
         profile.active_meta_season_id = season_descriptor(completed)["id"]
+        # The fixture was created at today's clock. Replace its empty earned
+        # snapshot too when constructing this synthetic historical period;
+        # runtime must continue rejecting mismatched, unclosed season rights.
+        assert not profile.season_reward_state.get("earned")
+        profile.season_reward_state = {}
         profile.rating = profile.highest_rating = 4000
         profile.season_xp = 100
         week = completed.isocalendar()
