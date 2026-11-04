@@ -7,6 +7,7 @@ import subprocess
 import wave
 import argparse
 from pathlib import Path
+from combat_sfx_synth import ATTACKS, attack
 
 ROOT = Path(__file__).resolve().parents[1]
 RATE = 22050
@@ -42,6 +43,8 @@ for index, (name, p) in enumerate(profiles.items()):
         else:
             value = body * .6 + smooth * .12
         samples.append(max(-.22, min(.22, value * env)))
+    if name in ATTACKS:
+        samples = attack(name, duration)
     with wave.open(str(out / (name + ".wav")), "wb") as audio:
         audio.setnchannels(1)
         audio.setsampwidth(2)

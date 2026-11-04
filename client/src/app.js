@@ -18950,7 +18950,7 @@
       visualId:reward.chest_visual_id || "",
       reward:{ ...reward, chest_is_container:true },
       title:reward.chest_name_tr || "Ödül Kasası",
-      note:"Topla ile mağazadaki sandık stoğuna ekle; içeriği açtığında verilir.",
+      note:"Topla ile sandığı aç ve ödüllerini al.",
       className:"inbox-reward-chest",
     });
     const copy = document.createElement("div");
@@ -19048,6 +19048,18 @@
     if (button) button.disabled = true;
     renderRewardInbox();
     let collected = 0;
+    const openedReceipts = [];
+    let lastCollectedReceipt = null, openingStartedAt = null;
+    const reveal = async (partial = false) => {
+      if (!openedReceipts.length || participantPlayerId !== playerId) return;
+      const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const remaining = reduced ? 0 : Math.max(0, 420 - (Date.now() - openingStartedAt));
+      if (remaining) await new Promise(resolve => setTimeout(resolve, remaining));
+      if (participantPlayerId !== playerId) return;
+      if (openedReceipts.length === 1) showChestReveal(openedReceipts[0]);
+      else showBulkChestReveal({receipts:openedReceipts, definition_id:openedReceipts[0].definition_id, partial});
+      triggerGridshardCue("tier_up");
+    };
     try {
       // Serial, deterministic per-message request IDs. Each response supplies
       // the next mailbox page; retries never grant a chest a second time.
@@ -19056,17 +19068,36 @@
           && !visited.has(item.message_id) && (wanted ? wanted.has(item.message_id)
             : tab === "battle" ? item.category === "battle" : tab === "reward" && item.category !== "battle"));
         if (!message) break;
+        if (openingStartedAt === null) {
+          openingStartedAt = Date.now();
+          const sourceTier = message.chest?.chest_tier || "bronze";
+          const tier = ({weekly_first:"diamond",weekly_second:"gold",weekly_third:"silver",
+            team_first:"diamond",team_second:"gold",team_third:"silver"})[sourceTier] || sourceTier;
+          showChestOpening({tier,
+            title:message.chest?.chest_name_tr || "Ödül Kasası", visualId:message.chest?.chest_visual_id || ""});
+        }
         visited.add(message.message_id);
         const payload = await requestJsonWithDeadline(
-          `/profile/${encodeURIComponent(playerId)}/reward-inbox/${encodeURIComponent(message.message_id)}/claim`,
-          {method:"POST", body:JSON.stringify({request_id:`inbox:${message.message_id}`})}, 30000);
+          `/profile/${encodeURIComponent(playerId)}/reward-inbox/${encodeURIComponent(message.message_id)}/claim?chest_delivery=open`,
+          {method:"POST", body:JSON.stringify({request_id:`inbox-open:${message.message_id}`})}, 30000);
         if (participantPlayerId !== playerId) return;
         rewardInboxState = payload;
         if (payload.profile) profileState.applyProfile(payload.profile);
+        lastCollectedReceipt = payload.receipt;
+        if (payload.opened_receipt) openedReceipts.push(payload.opened_receipt);
         collected += 1;
       }
-      if (status) status.textContent = collected ? `${collected} sandık mağazadaki stoğuna eklendi.` : "";
+      await reveal();
+      // A supported older server may ignore the new query flag. Its existing
+      // unopened inventory remains valid; never invent a local reward result.
+      if (!openedReceipts.length && lastCollectedReceipt) showClaimedChest(lastCollectedReceipt);
+      if (status) status.textContent = openedReceipts.length ? localizedUiText("Ödüller alındı.")
+        : collected ? `${collected} sandık mağazadaki stoğuna eklendi.` : "";
     } catch (error) {
+      if (participantPlayerId === playerId && openingStartedAt !== null) {
+        if (openedReceipts.length) await reveal(true);
+        else showChestFailure(error);
+      }
       if (participantPlayerId === playerId && status) status.textContent = `${collected ? collected + " sandık toplandı. " : ""}${error instanceof Error ? error.message : String(error)}`;
     } finally {
       inboxClaimBusy = false; inboxMutationVersion += 1;
@@ -19074,6 +19105,8 @@
         if (collected) await loadMetaProgression();
         if (participantPlayerId === playerId) await loadRewardInbox({quiet:true});
         if (participantPlayerId === playerId) { renderRewardInbox(); renderProfileSummary(); }
+      } else if (openingStartedAt !== null) {
+        document.getElementById("chest-reveal-dialog")?.close?.();
       }
     }
   }
@@ -19371,6 +19404,7 @@
   // Günlük devre emirleri: her emir tek satırdır. Solda emrin simgesi,
   // ortada ilerleme çubuğu, sağda ödül rozetleri ve durum düğmesi durur.
   const DAILY_MISSION_STATE_ORDER = Object.freeze({ claimable:0, active:1, claimed:2 });
+  let activeMissionTab = "daily";
 
   function dailyMissionState(mission) {
     return mission.claimed ? "claimed" : mission.completed ? "claimable" : "active";
@@ -19387,10 +19421,10 @@
     const icon = document.createElement("span");
     icon.className = "daily-mission-icon";
     icon.setAttribute("aria-hidden", "true");
-    if (mission.id === "win_battles") icon.appendChild(createRatingTrophyIcon());
-    else if (["complete_battles", "deal_damage"].includes(mission.id)) icon.appendChild(createUiIcon("battle"));
+    if (mission.id === "win_battles" || mission.metric === "wins") icon.appendChild(createRatingTrophyIcon());
+    else if (["complete_battles", "deal_damage"].includes(mission.id) || mission.metric === "completed_battles" || mission.id?.startsWith("daily_battles_")) icon.appendChild(createUiIcon("battle"));
     else if (["circuit_actions", "destroy_modules"].includes(mission.id)) icon.appendChild(createUiIcon("deck"));
-    else icon.innerHTML = uiIconMarkup(mission.id === "core_power" ? "core" : "info");
+    else icon.innerHTML = uiIconMarkup(mission.id === "core_power" || mission.metric === "core_uses" ? "core" : mission.metric === "active_days" ? "calendar" : "info");
     const copy = document.createElement("div");
     copy.className = "daily-mission-copy";
     const name = document.createElement("strong");
@@ -19403,7 +19437,7 @@
     meter.setAttribute("aria-valuemin", "0");
     meter.setAttribute("aria-valuemax", String(target));
     meter.setAttribute("aria-valuenow", String(progress));
-    meter.setAttribute("aria-label", `${mission.name_tr} · ${progress} / ${target}`);
+    meter.setAttribute("aria-label", `${name.textContent} · ${progress} / ${target}`);
     meter.style.setProperty("--mission-progress", `${Math.round((progress / target) * 100)}%`);
     const count = document.createElement("small");
     count.className = "daily-mission-count";
@@ -19429,7 +19463,12 @@
     action.type = "button";
     action.className = "daily-mission-action";
     action.dataset.missionClaim = String(mission.id || "");
-    action.disabled = state !== "claimable";
+    if (mission.mission_protocol === "season-v1") {
+      action.dataset.missionProtocol = mission.mission_protocol;
+      action.dataset.missionSeason = mission.season_id;
+      action.dataset.missionDay = mission.day_key;
+    }
+    action.disabled = state !== "claimable" || mission.claimable === false;
     action.textContent = state === "claimed" ? "Alındı" : state === "claimable" ? "Ödülü Al" : "Devam Ediyor";
     side.append(rewards, action);
     card.append(icon, copy, side);
@@ -19440,6 +19479,14 @@
   function updateDailyMissionReset() {
     const target = document.getElementById("daily-mission-reset");
     if (!target) return;
+    if (activeMissionTab === "seasonal") {
+      const engagement = profileState.viewModel()?.engagement || {};
+      const label = document.createElement("span");
+      label.textContent = engagement.season_ends_at ? "Sezon sonu" : "Sezon başlangıcı bekleniyor";
+      target.replaceChildren(label);
+      if (engagement.season_ends_at) target.appendChild(document.createTextNode(` · ${new Date(engagement.season_ends_at).toLocaleDateString(uiLocale())}`));
+      return;
+    }
     const now = new Date();
     const nextReset = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
     const minutes = Math.max(1, Math.ceil((nextReset - now.getTime()) / 60000));
@@ -19484,7 +19531,15 @@
     setText("lobby-season-progress-copy", nextReward ? `${Math.max(0, Number(nextReward.required_xp || 0) - seasonXp)} Deneyim kaldı` : "Sezon yolu tamamlandı");
     setText("lobby-flux-shards", engagement.flux_shards || 0);
 
-    const missionList = engagement.dailyMissions || [];
+    const dailyMissionList = engagement.dailyMissions || [];
+    const seasonalMissionList = engagement.seasonal_missions || [];
+    const missionList = activeMissionTab === "seasonal" ? seasonalMissionList : dailyMissionList;
+    for (const tab of document.querySelectorAll("[data-mission-tab]")) {
+      const selected = tab.dataset.missionTab === activeMissionTab;
+      tab.setAttribute("aria-selected", String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+    }
+    document.getElementById("daily-mission-list")?.setAttribute("aria-labelledby", `mission-tab-${activeMissionTab}`);
     const loginRewards = engagement.daily_login?.rewards || [];
     const claimableLoginRewards = loginRewards.filter((reward) => reward.claimable).length;
     const claimableMissions = missionList.filter(
@@ -19494,7 +19549,7 @@
     const loginHasNotification = notifications.daily_login
       ?? (claimableLoginRewards > 0);
     const missionHasNotification = notifications.daily_missions
-      ?? (claimableMissions > 0);
+      ?? ([...dailyMissionList, ...seasonalMissionList].some((mission) => mission.completed && !mission.claimed));
     const dailyHasNotification = notifications.daily
       ?? (loginHasNotification || missionHasNotification);
     const activeMissions = missionList.filter((mission) => !mission.claimed).length;
@@ -19525,7 +19580,7 @@
       if (!(target in notificationByScreen)) continue;
       button.classList.toggle(
         "has-persistent-notification",
-        Boolean(notificationByScreen[target])
+        !button.classList.contains("navigation-back") && Boolean(notificationByScreen[target])
       );
     }
     // Işık, bu sayfalara götüren üç çizgi düğmesinde yanar.
@@ -19547,7 +19602,7 @@
     const loginTrack = document.getElementById("monthly-login-track");
     const missions = document.getElementById("daily-mission-list");
     const rewards = document.getElementById("season-reward-track");
-    const listsSignature = `${document.documentElement.lang || "tr"}|${JSON.stringify(engagement)}`;
+    const listsSignature = `${activeMissionTab}|${document.documentElement.lang || "tr"}|${JSON.stringify(engagement)}`;
     // Liste başka bir yerden boşaltıldıysa imza aynı olsa da yeniden kurulur.
     const rebuildLists = listsSignature !== renderedEngagementListsSignature
       || (loginTrack && loginTrack.childElementCount !== loginRewards.length)
@@ -19683,13 +19738,19 @@
     // there is no nested inventory chest in its contents.
     if (isSeasonTrack) showChestOpening({tier:selectedReward?.chest_tier || "bronze", title:`Kademe ${id} Ödülü`});
     const engagement = profileState.viewModel()?.engagement || {};
-    const claimScope = kind === "missions"
+    const missionContext = kind === "season-missions" ? {
+      season_id: button?.dataset.missionSeason || "",
+      day_key: button?.dataset.missionDay || "",
+    } : null;
+    const claimScope = kind === "season-missions"
+      ? `${missionContext.season_id}:${missionContext.day_key}`
+      : kind === "missions"
       ? (engagement.daily_mission_day || new Date().toISOString().slice(0, 10))
       : kind === "login"
         ? (engagement.daily_login?.period || new Date().toISOString().slice(0, 10))
         : (engagement.season_id || "current");
     const requestId = `engagement:${participantPlayerId}:${claimScope}:${kind}:${id}`;
-    const result = await accountDataLoader.claimEngagementReward(kind, id, requestId);
+    const result = await accountDataLoader.claimEngagementReward(kind, id, requestId, missionContext);
     // A failed request must remain retryable.  The deterministic request id
     // makes a retry safe even when the server committed the reward before a
     // network response was lost.
@@ -20940,10 +21001,27 @@
   });
 
   const dailyMissionList = document.getElementById("daily-mission-list");
+  const missionTabs = [...document.querySelectorAll("[data-mission-tab]")];
+  function selectMissionTab(tab, focus = false) {
+    activeMissionTab = tab.dataset.missionTab;
+    renderEngagementSummary(profileState.viewModel()?.engagement);
+    if (focus) tab.focus();
+  }
+  missionTabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => selectMissionTab(tab));
+    tab.addEventListener("keydown", event => {
+      const offset = {ArrowRight:1, ArrowLeft:-1}[event.key];
+      const target = event.key === "Home" ? 0 : event.key === "End" ? missionTabs.length - 1
+        : offset ? (index + offset + missionTabs.length) % missionTabs.length : null;
+      if (target === null) return;
+      event.preventDefault();
+      selectMissionTab(missionTabs[target], true);
+    });
+  });
   dailyMissionList?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-mission-claim]");
     if (!button || button.disabled) return;
-    claimEngagementReward("missions", button.dataset.missionClaim, button);
+    claimEngagementReward(button.dataset.missionProtocol === "season-v1" ? "season-missions" : "missions", button.dataset.missionClaim, button);
   });
   // Açık günlük emir ekranında yenilenme sayacı dakikada bir güncellenir.
   window.setInterval(() => {

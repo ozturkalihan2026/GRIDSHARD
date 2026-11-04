@@ -22,7 +22,8 @@ from .arena_canon import (
 from .text_safety import public_name_rejection
 from .competition_cycle import CYCLE_EPOCH, CYCLE_LENGTH, competition_cycle, cycle_for_id
 from .cosmetic_releases import period_reward
-from .competition_control import launch_status, configured_start, owner_account
+from .competition_control import launch_status, configured_start, owner_account, competition_eligible
+from . import season_missions
 from .season_competition import LEADERBOARD_PRIZES, TEAM_PRIZES, WEEKLY_PRIZES
 from .game.battle_pool import default_battle_pool, validate_battle_pool
 from .store_catalog import BATTLE_PREMIUM_BONUS_PERCENT, PRODUCTS_BY_ID, price_label_tr
@@ -57,7 +58,7 @@ def season_descriptor(moment: datetime | None = None) -> dict:
     current = (moment or datetime.now(timezone.utc)).astimezone(timezone.utc)
     launch = launch_status(current)
     if not launch["active"]:
-        return {"id": "gridshard_waiting", "name_tr": "Sezon başlangıcı bekleniyor",
+        return {"id": "gridshard_waiting", "name_tr": "Yeni sezon hazırlanıyor" if launch['status'] == 'waiting_for_content' else "Sezon başlangıcı bekleniyor",
                 "starts_at": launch["starts_at"], "ends_at": "", **launch}
     cycle = competition_cycle(current)
     return {
@@ -442,6 +443,7 @@ class PlayerProfile:
     daily_mission_day: str = ""
     daily_mission_progress: dict[str, int] = field(default_factory=dict)
     claimed_daily_missions: tuple[str, ...] = ()
+    season_mission_state: dict = field(default_factory=dict)
     login_period_id: str = ""
     login_period_day: int = 1
     login_period_day_count: int = CYCLE_LENGTH.days
@@ -475,6 +477,7 @@ class PlayerProfile:
     reward_inbox_receipts: dict[str, dict] = field(default_factory=dict)
     active_meta_season_id: str = CURRENT_SEASON_ID
     season_archives: list[dict] = field(default_factory=list)
+    season_reward_state: dict = field(default_factory=dict)
     coins: int = 0  # Legacy wallet; migrated into circuit_credits on restore.
     circuit_credits: int = 350
     core_shards: int = 0
@@ -501,6 +504,7 @@ class PlayerProfile:
     weekly_tournament_matches: int = 0
     weekly_tournament_wins: int = 0
     weekly_tournament_registered_period: str = ""
+    weekly_reward_closures: dict = field(default_factory=dict)
     weekly_tournament_trophies_earned: int = 0
     team_tournament_period: str = ""
     team_tournament_matches: int = 0
@@ -565,7 +569,10 @@ class PlayerProfile:
             self.operator_title_claims,
         )
         current_title = title_progression["current"]["title_tr"]
-        archives = [dict(item) for item in self.season_archives]
+        # Detailed mission ledgers are persisted privately, not sent with the
+        # public previous/best season summary on every profile refresh.
+        archives = [{key: value for key, value in item.items() if key not in {'mission_state', 'reward_state'}}
+                    for item in self.season_archives]
         previous_season = archives[-1] if archives else None
         best_season = max(
             archives,
@@ -717,7 +724,13 @@ class PlayerProfile:
                 if kind == "premium-tiers"
                 else f"season:{self.active_meta_season_id}:{self.player_id}:{identity}"
             )
-            result = _profile_reward_identity(self, reward, seed)
+            from .season_entitlements import earned
+            snapshot = earned(self, identity, kind == 'premium-tiers') if kind in {'tiers', 'premium-tiers'} else None
+            result = dict(snapshot['reward']) if snapshot else _profile_reward_identity(self, reward, seed)
+            if snapshot:
+                result['reward_revision'] = snapshot['revision']
+                result['reward_content_hash'] = snapshot['content_hash']
+                result['additional_chest_count'] = snapshot['additional_chest_count']
             previous = next(
                 (
                     receipt
@@ -766,6 +779,7 @@ class PlayerProfile:
             )["current"]["title_tr"],
             "unlocked_titles": list(self.unlocked_titles),
             "daily_mission_day": self.daily_mission_day,
+            **season_missions.view(self, moment=datetime.now(timezone.utc), active=season["active"]),
             "daily_missions": [
                 {
                     **mission,
@@ -876,6 +890,12 @@ class PlayerProfile:
             and int(self.daily_mission_progress.get(mission["id"], 0))
             >= int(mission["target"])
         ]
+        mission_view = season_missions.view(self, moment=datetime.now(timezone.utc), active=launch_status()["active"])
+        daily_mission_keys.extend(
+            f"season-mission:{row['season_id']}:{row['day_key']}:{row['id']}"
+            for row in (*mission_view['extra_daily_missions'], *mission_view['seasonal_missions'])
+            if row['claimable']
+        )
         daily_keys = [*daily_login_keys, *daily_mission_keys]
         claimed_premium_tiers = set(self.claimed_premium_season_tiers)
         premium_active = self.premium_pass_active()
@@ -976,6 +996,7 @@ class PlayerProfileService:
             self._sync_season(profile)
             self._sync_daily_missions(profile, day_key)
             self._sync_login_period(profile)
+            self._freeze_season_rewards(profile)
             return profile
 
         profile = PlayerProfile(
@@ -995,11 +1016,27 @@ class PlayerProfileService:
         self._sync_season(profile)
         self._sync_daily_missions(profile, day_key)
         self._sync_login_period(profile)
+        self._freeze_season_rewards(profile)
         return profile
+
+    def _freeze_season_rewards(self, profile):
+        if launch_status(self.now())["active"]:
+            from .season_entitlements import freeze_earned
+            freeze_earned(profile)
 
     def _sync_season(self, profile: PlayerProfile) -> bool:
         season = season_descriptor(self.now())
         if not season["active"]:
+            if (season['status'] == 'waiting_for_content' and profile.active_meta_season_id != 'gridshard_waiting'
+                    and not owner_account(profile.player_id)):
+                from .meta_progression import archive_and_soft_reset_season
+                period = profile.active_meta_season_id.removeprefix('gridshard_').replace('_', '-')
+                try:
+                    closed_at = _iso_utc(cycle_for_id(period)['ends_at'])
+                except ValueError:
+                    closed_at = _iso_utc(self.now())  # Legacy non-calendar ID; preserve its rights too.
+                archive_and_soft_reset_season(profile, 'gridshard_waiting', archived_at=closed_at)
+                return True
             return False
         if owner_account(profile.player_id):
             profile.active_meta_season_id = season["id"]
@@ -1160,6 +1197,7 @@ class PlayerProfileService:
         day_key: str | None = None,
     ) -> None:
         current_day = day_key or utc_day_key(self.now())
+        season_missions.settle_earned(profile, before_day=current_day)
         if profile.daily_mission_day == current_day:
             return
         profile.daily_mission_day = current_day
@@ -1233,9 +1271,18 @@ class PlayerProfileService:
         modules_destroyed: int = 0,
         core_power_uses: int = 0,
         day_key: str | None = None,
+        battle_id: str | None = None,
+        match_type: str = "",
     ) -> PlayerProfile:
         profile = self.get_or_create(player_id, day_key=day_key)
         self._sync_daily_missions(profile, day_key)
+        if battle_id and not season_missions.record(profile, battle_id=battle_id):
+            return profile
+        if battle_id and launch_status(self.now())["active"]:
+            season_missions.progress_battle(
+                profile, match_type=match_type, moment=self.now().astimezone(timezone.utc),
+                won=won, core_uses=core_power_uses, eligible=competition_eligible(player_id),
+            )
         if launch_status(self.now())["active"]:
             profile.season_xp += max(0, int(season_xp_awarded))
         increments = {
@@ -1254,6 +1301,19 @@ class PlayerProfileService:
                 + increments[mission_id],
             )
         return profile
+
+    def claim_season_mission(self, player_id, mission_id, *, season_id, day_key, request_id):
+        with self.name_lock:
+            profile = self.get_or_create(player_id)
+            if not launch_status(self.now())["active"]:
+                raise PlayerProfileError("Sezon henüz başlamadı.")
+            try:
+                return season_missions.claim(
+                    profile, mission_id=mission_id, season_id=season_id, day_key=day_key,
+                    request_id=request_id, moment=self.now().astimezone(timezone.utc),
+                )
+            except season_missions.MissionError as exc:
+                raise PlayerProfileError(str(exc)) from exc
 
     def claim_daily_mission(
         self,
@@ -1312,12 +1372,8 @@ class PlayerProfileService:
             raise PlayerProfileError("Bu kademe ödülü daha önce alındı.")
         if profile.season_xp < base_reward["required_xp"]:
             raise PlayerProfileError("Bu sezon kademesi henüz açılmadı.")
-        base_reward = period_reward("season_road", profile.active_meta_season_id, tier, base_reward)
-        reward = _profile_reward_identity(
-            profile,
-            base_reward,
-            f"season:{profile.active_meta_season_id}:{profile.player_id}:{tier}",
-        )
+        from .season_entitlements import reward_for
+        reward = reward_for(profile, tier)
         profile.circuit_credits += int(reward.get("circuit_credits", 0))
         profile.flux_shards += int(reward["flux_shards"])
         core_shards = int(reward.get("core_shards", 0))
@@ -1394,11 +1450,8 @@ class PlayerProfileService:
             raise PlayerProfileError("Bu ücretli kademe ödülü daha önce alındı.")
         if profile.season_xp < base_reward["required_xp"]:
             raise PlayerProfileError("Bu sezon kademesi henüz açılmadı.")
-        reward = _profile_reward_identity(
-            profile,
-            base_reward,
-            f"season-premium:{profile.active_meta_season_id}:{profile.player_id}:{tier}",
-        )
+        from .season_entitlements import reward_for
+        reward = reward_for(profile, tier, premium=True)
         premium_before = active_reward_snapshot(profile)
         profile.circuit_credits += int(reward.get("circuit_credits", 0))
         profile.flux_shards += int(reward.get("flux_shards", 0))

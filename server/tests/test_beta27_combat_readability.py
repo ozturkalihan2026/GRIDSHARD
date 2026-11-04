@@ -60,15 +60,17 @@ def test_six_weapon_cues_are_original_distinct_and_mix_safe():
 
         with wave.open(str(path), "rb") as reader:
             assert reader.getnchannels() == 1
-            assert reader.getframerate() == 44_100
+            # 2.4 replaces the active pulse cue with a shorter, softer master.
+            # Other files here are retained legacy weapon assets.
+            assert reader.getframerate() == (22_050 if filename == 'pulse_cannon_fire.wav' else 44_100)
             duration = reader.getnframes() / reader.getframerate()
             raw = reader.readframes(reader.getnframes())
 
-        assert 0.45 <= duration <= 0.85
+        assert (0.26 <= duration <= 0.28) if filename == 'pulse_cannon_fire.wav' else (0.45 <= duration <= 0.85)
         values = struct.unpack("<" + "h" * (len(raw) // 2), raw)
         peak = max(abs(value) for value in values)
         peak_dbfs = 20 * math.log10(peak / 32_767)
-        assert -3.2 <= peak_dbfs <= -2.8
+        assert (-12 <= peak_dbfs <= -8) if filename == 'pulse_cannon_fire.wav' else (-3.2 <= peak_dbfs <= -2.8)
 
     assert len(hashes) == len(WEAPON_FILES)
     for cue in (

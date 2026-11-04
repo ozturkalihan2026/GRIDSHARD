@@ -15,6 +15,7 @@ CATALOG_PATH = Path(__file__).resolve().parents[1] / "data/cosmetic_releases_v1.
 PLAYER_FIELDS = {"avatar_frame_id", "profile_background_id"}
 TEAM_FIELDS = {"team_emblem_id", "team_frame_id", "team_name_color_id"}
 COSMETIC_FIELDS = PLAYER_FIELDS | TEAM_FIELDS | {"avatar_id", "emoji_id"}
+RESOURCE_FIELDS = {'circuit_credits', 'flux_shards', 'module_definition_id', 'module_shards'}
 SOURCES = {"season_road", "season_leaderboard", "weekly_tournament", "team_tournament"}
 INVENTORY_POOLS = {"competition", "shop", "daily_trial"}
 
@@ -101,12 +102,25 @@ class CosmeticReleaseRegistry:
             if release["status"] not in {"draft", "published", "retired"} or not release.get("placements"):
                 raise CosmeticReleaseError("Invalid or empty cosmetic release")
             release_ids.add(release["id"])
+            kind = release.get('reward_kind', 'cosmetic_set')
+            if kind not in {'cosmetic_set', 'resource_only'} or (kind == 'resource_only' and release['source'] != 'weekly_tournament'):
+                raise CosmeticReleaseError('Unsupported period reward kind')
             slots = set()
             for placement in release["placements"]:
-                if not placement.get("cosmetics"):
+                if not placement.get("cosmetics") and kind != 'resource_only':
                     raise CosmeticReleaseError("Empty cosmetic placement")
+                if kind == 'resource_only':
+                    from .module_roster import MODULE_SPECS
+                    resources = placement.get('resources', {})
+                    if (placement.get('cosmetics') != {} or set(resources) != RESOURCE_FIELDS
+                            or resources.get('module_definition_id') not in MODULE_SPECS
+                            or any(type(resources.get(k)) is not int or resources[k] <= 0
+                                   for k in ('circuit_credits', 'flux_shards', 'module_shards'))):
+                        raise CosmeticReleaseError('Resource-only period requires explicit positive resources and no cosmetics')
+                elif placement.get('resources'):
+                    raise CosmeticReleaseError('Cosmetic allocation cannot silently add unbudgeted resources')
                 slot = placement["slot"]
-                if not isinstance(slot, int) or not 1 <= slot <= (40 if release["source"] == "season_road" else 100) or slot in slots:
+                if type(slot) is not int or not 1 <= slot <= (40 if release["source"] == "season_road" else 100) or slot in slots:
                     raise CosmeticReleaseError("Invalid or duplicate reward slot")
                 slots.add(slot)
                 for field, identity in placement["cosmetics"].items():
@@ -132,7 +146,8 @@ class CosmeticReleaseRegistry:
     def release_hash(self, release):
         identities = {identity for p in release["placements"] for identity in p["cosmetics"].values()}
         return fingerprint({"id": release["id"], "source": release["source"], "period_id": release["period_id"],
-                            "placements": release["placements"], "items": {i: self.items[i] for i in sorted(identities)}})
+                            "placements": release["placements"], "items": {i: self.items[i] for i in sorted(identities)},
+                            **({'reward_kind':release['reward_kind']} if 'reward_kind' in release else {})})
 
     def reward(self, source, period_id, slot, base):
         result = deepcopy(base)
@@ -147,14 +162,31 @@ class CosmeticReleaseRegistry:
         # Strip the old recurring cosmetics from the whole published period.
         for field in COSMETIC_FIELDS:
             result.pop(field, None)
+        if 'cosmetics' in result:
+            result['cosmetics'] = []
         for placement in release["placements"]:
             if placement["slot"] == slot:
                 result.update(placement["cosmetics"])
+                result.update(placement.get('resources', {}))
+                if 'cosmetics' in result:
+                    result['cosmetics'] = [self.items[identity]['name_tr'] for identity in placement['cosmetics'].values()]
         if source == "season_road":
             fresh = any(result.get(field) for field in PLAYER_FIELDS)
             result["reward_label_tr"] = ("Sandık ve Dönem Kozmetiği" if fresh else "Anında Sandık Ödülü") if result.get("chest_tier") else ("Modül Parçası ve Akı" if result.get("module_shards") else "Devre Kredisi ve Akı")
         result.update(cosmetic_release_id=release["id"], cosmetic_release_hash=release["content_hash"])
+        if 'reward_kind' in release:
+            result['reward_kind'] = release['reward_kind']
         return result
+
+    def reserve_resources(self, period_id, release_id, placements):
+        source = 'weekly_tournament'
+        validate_period(source, period_id)
+        if not re.fullmatch(r'[a-z][a-z0-9_-]{1,95}', release_id) or (source, period_id) in self.releases:
+            raise CosmeticReleaseError('Invalid or already reserved resource period')
+        candidate = deepcopy(self.document)
+        candidate.setdefault('releases', []).append(dict(id=release_id, source=source, period_id=period_id,
+            status='draft', reward_kind='resource_only', placements=deepcopy(placements)))
+        return CosmeticReleaseRegistry(candidate)
 
     def reserve(self, source, period_id, release_id):
         validate_period(source, period_id)

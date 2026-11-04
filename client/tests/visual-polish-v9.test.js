@@ -14,22 +14,26 @@ class Element {
   click(){if(!this.disabled)for(const fn of this.listeners.click||[])fn({currentTarget:this});}
 }
 const find=(node,name)=>node.className===name?node:node.children.map(c=>find(c,name)).find(Boolean);
-function fixture(messages=[]){
-  const read=new Set(),marks=[],requests=[],applied=[],status=new Element("p");let failId=null;
+function fixture(messages=[],{open=false}={}){
+  const read=new Set(),marks=[],requests=[],applied=[],reveals=[],status=new Element("p");let failId=null;
   const context=vm.createContext({document:{createElement:t=>new Element(t),getElementById:id=>id==="reward-inbox-status"?status:null},
     participantPlayerId:"own",activeInboxTab:"battle",inboxExpanded:new Set(),inboxReadStore:{has:k=>read.has(k),mark:k=>read.add(k)},
     inboxClaimBusy:false,inboxDismissBusy:false,inboxMutationVersion:0,rewardInboxState:{messages},
     localizedUiText:s=>s,uiLocale:()=>"tr-TR",markInboxNoticesSeen:ids=>marks.push(ids),dismissInboxMessages:()=>{},
     createInboxCardMeta:()=>new Element("div"),createRewardChestButton:()=>new Element("button"),
     profileState:{applyProfile:p=>applied.push(p)},renderRewardInbox:()=>{},renderProfileSummary:()=>{},loadMetaProgression:async()=>{},loadRewardInbox:async()=>{},
+    showChestOpening:args=>reveals.push({kind:"opening",args}),showChestReveal:args=>reveals.push({kind:"single",args}),
+    showBulkChestReveal:args=>reveals.push({kind:"bulk",args}),showChestFailure:args=>reveals.push({kind:"failure",args}),
+    showClaimedChest:()=>{},triggerGridshardCue:()=>{},matchMedia:()=>({matches:true}),
     requestJsonWithDeadline:async(url,options)=>{
       const id=decodeURIComponent(url.split("/").at(-2));requests.push({id,body:JSON.parse(options.body),url});
       if(id===failId)throw new Error("bağlantı kesildi");
-      return{messages:context.rewardInboxState.messages.filter(m=>m.message_id!==id),profile:{owner:"own"}};
+      return{messages:context.rewardInboxState.messages.filter(m=>m.message_id!==id),profile:{owner:"own"},
+        ...(open?{opened_receipt:{chest_id:id,definition_id:"core_24h",rewards:{circuit_credits:100,core_type_id:"core_resonance",core_shards:2}}}:{})};
     }});
   vm.runInContext(between("  function inboxReadKey(","  function renderInboxDismissControls(")+"\n"+
     between("  function createInboxNoticeCard(","  let activeInboxTab = ")+"\nthis.notice=createInboxNoticeCard;this.reward=createInboxRewardCard;",context);
-  return{context,marks,requests,applied,status,setFail:id=>{failId=id;}};
+  return{context,marks,requests,applied,reveals,status,setFail:id=>{failId=id;}};
 }
 const message=(id,category="battle")=>({message_id:id,category,status:"unclaimed",chest:{chest_name_tr:"Gümüş Sandık"}});
 
@@ -80,7 +84,7 @@ test("collect all is serial, category scoped, deterministic and includes subsequ
   const f=fixture([message("a"),message("b"),message("other","reward")]);
   await f.context.collectInboxRewards();
   assert.deepEqual(f.requests.map(r=>r.id),["a","b"]);
-  assert.deepEqual(f.requests.map(r=>r.body.request_id),["inbox:a","inbox:b"]);
+  assert.deepEqual(f.requests.map(r=>r.body.request_id),["inbox-open:a","inbox-open:b"]);
   assert.equal(f.context.rewardInboxState.messages.length,1);assert.equal(f.context.inboxClaimBusy,false);
 });
 test("partial collect failures preserve previous grants and retry only remaining IDs",async()=>{
@@ -90,6 +94,24 @@ test("partial collect failures preserve previous grants and retry only remaining
   f.setFail(null);await f.context.collectInboxRewards();
   assert.deepEqual(f.requests.map(r=>r.id),["a","b","b","c"]);
   assert.equal(f.context.rewardInboxState.messages.length,0);
+});
+
+test("Topla opens exactly the returned crate and reveals only server-authored contents",async()=>{
+  const f=fixture([message("rank","reward")],{open:true});
+  await f.context.collectInboxRewards(["rank"]);
+  assert.match(f.requests[0].url,/chest_delivery=open$/);
+  assert.deepEqual(f.reveals.map(r=>r.kind),["opening","single"]);
+  assert.equal(f.reveals[1].args.chest_id,"rank");
+  assert.equal(f.reveals[1].args.rewards.core_shards,2);
+});
+
+test("a partial bulk opening shows granted receipts while leaving failed mail retryable",async()=>{
+  const f=fixture([message("a"),message("b"),message("c")],{open:true});f.setFail("c");
+  await f.context.collectInboxRewards();
+  const result=f.reveals.find(r=>r.kind==="bulk");
+  assert.deepEqual(Array.from(result.args.receipts,r=>r.chest_id),["a","b"]);
+  assert.equal(result.args.partial,true);
+  assert.equal(f.context.rewardInboxState.messages[0].message_id,"c");
 });
 test("single collect and account switches cannot collect another message or apply a stale profile",async()=>{
   const f=fixture([message("a"),message("b")]);await f.context.collectInboxRewards(["b"]);

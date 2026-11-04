@@ -23,3 +23,10 @@ def test_report_reads_current_core_rarities_without_retired_curves(capsys):
     assert "tek başına Akı" in output
     for core in model.meta.CORE_TYPES:
         assert core["name_tr"] in output
+
+
+def test_season_income_does_not_count_presentation_chest_tags_as_extra_rewards():
+    income = model.daily_income(0, 10, .55)
+    rows = model.profile.SEASON_REWARD_TRACK[:income['tiers']]
+    expected = [sum(r[k] for r in rows) / model.DAYS for k in ('circuit_credits', 'flux_shards')]
+    assert income['sources']['Sezon yolu'] == expected

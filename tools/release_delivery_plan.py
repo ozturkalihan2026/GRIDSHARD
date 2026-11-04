@@ -143,7 +143,8 @@ def render_brief(release, backlog):
 def render_index(releases, backlog):
     lines = ['# GRIDSHARD — sürümlere göre bağlı uygulama rehberi', '',
              '**4 Kasım 2026.** 3 Kasım takvimi ve ürün yönü korunur. İlk çalışma 2.4.0; '
-             'sarı geri/ileri kontrolleri, saldırı VFX sesleri ve çekirdek sesleri bu paketin zorunlu kapsamına eklendi.', '',
+             'sarı geri/ileri kontrolleri, saldırı/çekirdek sesleri, Topla kasa açılışı ve XP emirleri bu paketin zorunlu kapsamına eklendi. '
+             + link('docs/planning/season-1-rewards-and-xp.md', INDEX, 'S1 ödül ve XP sözleşmesi') + '.', '',
              '## Kullanım ve tek kaynak düzeni', '',
              '1. Takvimden sürümü aç; aşağıdaki ayrıntılı brief içinden iş sırasını, uygulama adımlarını ve dosyaları takip et.',
              '2. Görev durumu, önkoşullar, kabul ve kanıtlar ' + link(BACKLOG.relative_to(ROOT).as_posix(), INDEX, 'backlog') + ' içinde tutulur.',
@@ -160,7 +161,8 @@ def render_index(releases, backlog):
         lines.append(f"| {link(r['delivery_document'], INDEX, r['version'])} | {r['content']} | {r['work_starts_on']} | {r['scope_freezes_on']} | {r['tests_start_on']} | {r['target_release_on']} ({r['confidence']}) | S{r['season']['number']}: {r['season']['starts_on']}, 03.00 TR |")
     lines += ['', '## Kapasite ve karar sınırları', '',
               '- Tek ana akış, haftada 5 gün/günde 4–6 saat ve yaklaşık %20 hata/test/gözlem payı önceki varsayımdır. '
-              'Yeni buton/ses işi için 2.4.0 tahmini 14–17 aktif güne çıktı; bu süre ölçülmüş hız değildir. '
+              'Önceki buton/ses kapsamı için 2.4.0 ön tahmini 14–17 aktif gündü; kasa açılışı, çekirdek teslimi ve '
+              'XP emirleri bu tahmine ek iştir ve efor yeniden ölçülmelidir. '
               '6 Kasım kontrolünde eski 12–15 gün bandına ek yük ölçülür. 16 Kasım kapanışına sığmıyorsa takvim yeniden karara bağlanır; zorunlu kalite işi sessizce çıkarılmaz.',
               '- 2.5.0 kapsamı yoğun: seçim/mağaza, 1 modül ve 10 oyuncu öğesi. 30 Kasım kontrolünde darboğaz ölçülür; '
               'ikincil teklifler önce çıkarılır, ana teslimler yetişmiyorsa tarih yeniden planlanır.',

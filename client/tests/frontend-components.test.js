@@ -151,7 +151,8 @@ test("module card view bilinmeyen modüle güvenli simge verir", () => {
 test("tutorial controller oyuncu eylemini bağlamdan izleyip ilerler", () => {
   const fields = new Map();
   const field = key => {
-    if (!fields.has(key)) fields.set(key, { hidden: false, disabled: false, textContent: "", addEventListener() {} });
+    if (!fields.has(key)) fields.set(key, { hidden: false, disabled: false, textContent: "", addEventListener() {},
+      setAttribute(name, value) { this[name] = value; }, classList:{toggle(){}} });
     return fields.get(key);
   };
   const root = {

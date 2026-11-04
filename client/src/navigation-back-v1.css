@@ -1,6 +1,7 @@
 /* Shared arrow-only back control; retain existing destinations and contextual labels. */
-:root body[data-app-screen] button.navigation-back,
-:root body[data-app-screen] button.navigation-back:is(#arena-detail-close,#leaderboard-back,#public-profile-close,#team-profile-close,#team-management-back,#direct-message-back,.event-detail-header > button,.reward-back-link) {
+/* Legacy :is() lists contain IDs even for class matches. Keep equal ID weight
+ * and an extra navigation class so their hover/focus faces cannot erase this one. */
+:root body[data-app-screen] button:is(.navigation-back,.navigation-forward,#arena-detail-close,#leaderboard-back):is(.navigation-back,.navigation-forward) {
   box-sizing:border-box; display:inline-grid !important; place-items:center;
   width:44px !important; min-width:44px !important; max-width:44px !important;
   height:44px !important; min-height:44px !important; max-height:44px !important;
@@ -9,9 +10,15 @@
   background:linear-gradient(#ffe99c 0 13%,#f8ca62 14% 76%,#d7963d 77% 90%,#a3692b 91%) !important;
   color:#5b351b !important; box-shadow:inset 0 1px #fff3bd,0 3px #07172b !important;
   font-size:0 !important; text-shadow:none !important; cursor:pointer;
+  isolation:isolate; clip-path:none !important; filter:none !important;
 }
-:root body[data-app-screen] button.navigation-back > svg { display:block; width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
-:root body[data-app-screen] button.navigation-back:active { transform:translateY(2px); }
-:root body[data-app-screen] button.navigation-back:focus-visible { outline:3px solid #8bf3e6; outline-offset:3px; }
+/* Old text-button faces and unread dots must not paint over the gold arrow. */
+:root body[data-app-screen] button:is(.navigation-back,.navigation-forward,#arena-detail-close,#leaderboard-back)::before,
+:root body[data-app-screen] button:is(.navigation-back,.navigation-forward,#arena-detail-close,#leaderboard-back)::after { content:none !important; display:none !important; background:none !important; box-shadow:none !important; }
+:root body[data-app-screen] button:is(.navigation-back,.navigation-forward,#arena-detail-close,#leaderboard-back) > svg { display:block; width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+:root body[data-app-screen] button.navigation-forward > svg { transform:scaleX(-1); }
+:root body[data-app-screen] button:is(.navigation-back,.navigation-forward,#arena-detail-close,#leaderboard-back):active:not(:disabled):not([aria-disabled="true"]) { transform:translateY(2px) !important; box-shadow:inset 0 1px #fff3bd,0 1px #07172b !important; }
+:root body[data-app-screen] button:is(.navigation-back,.navigation-forward,#arena-detail-close,#leaderboard-back):focus-visible { outline:3px solid #fff0a5 !important; outline-offset:3px; }
+:root body[data-app-screen] button:is(.navigation-back,.navigation-forward,#arena-detail-close,#leaderboard-back):is(:disabled,[aria-disabled="true"]) { opacity:.55 !important; cursor:default; transform:none !important; }
 :root body[data-app-screen] .event-detail-header { grid-template-columns:44px minmax(0,1fr); }
 :root body[data-app-screen] .direct-message-thread-header { grid-template-columns:44px 36px minmax(0,1fr); }

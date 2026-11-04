@@ -54,7 +54,7 @@ test("mailbox has four tabs, system owns notifications and collected chests disa
   }
   assert.ok(dialog.indexOf('id="reward-inbox-notices"') > dialog.indexOf('id="inbox-panel-reward"'));
   assert.ok(app.includes('claim.textContent = message.status === "claimed" ? "ALINDI" : "TOPLA"'));
-  assert.ok(app.includes('request_id:`inbox:${message.message_id}`'));
+  assert.ok(app.includes('request_id:`inbox-open:${message.message_id}`'));
   assert.ok(app.includes('filter((item) => item.status === "unclaimed")'));
   assert.ok(app.includes('activeInboxTab === "purchase" ? rewardInboxState?.purchases || [] : []'));
 });

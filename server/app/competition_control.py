@@ -24,6 +24,10 @@ def launch_status(moment=None, *, team=False):
     start = configured_start(team=team)
     season = configured_start()
     active = bool(start and current >= start and (not team or (season and current >= season)))
+    if active and season:
+        from .first_season_profile import content_ready
+        if not content_ready(current, season):
+            return {"active": False, "status": "waiting_for_content", "starts_at": start.isoformat().replace("+00:00", "Z")}
     return {"active": active, "status": "active" if active else "scheduled" if start else "waiting_for_launch",
             "starts_at": start.isoformat().replace("+00:00", "Z") if start else ""}
 

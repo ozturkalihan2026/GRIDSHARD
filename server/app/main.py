@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from copy import deepcopy
 from uuid import uuid4
 import asyncio
 from contextlib import asynccontextmanager, contextmanager
@@ -22,7 +23,8 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, Web
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .production_config import environment_secret, production_endpoints
-from .competition_control import competition_eligible, launch_status, minimum_participants
+from .competition_control import competition_eligible, launch_status, minimum_participants, configured_start
+from .season_entitlements import additional_chest_count, origin_for as season_premium_origin, reward_for as earned_season_reward
 from .postgres_economic_operations import PostgresEconomicOperations, EconomicOperationConflict
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.websockets import WebSocketDisconnect
@@ -1029,7 +1031,7 @@ ECONOMIC_OPERATIONS = frozenset({
     "open_all_available_player_progression_chests", "buy_store_chest", "claim_battle_ad_reward",
     "unlock_player_core_skill", "upgrade_player_core", "choose_player_module_talent",
     "reset_player_module_talents", "claim_daily_mission_reward", "claim_login_period_reward",
-    "claim_season_tier_reward", "claim_premium_season_tier_reward",
+    "claim_season_tier_reward", "claim_premium_season_tier_reward", "claim_season_mission_reward",
 })
 
 
@@ -1333,6 +1335,13 @@ class ProfileCosmeticsRequest(BaseModel):
 class MetaOperationRequest(BaseModel):
     model_config = {"extra": "forbid"}
     request_id: str
+
+
+class SeasonMissionClaimRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    request_id: str = Field(min_length=1, max_length=200)
+    season_id: str = Field(min_length=1, max_length=100)
+    day_key: str = Field(default="", max_length=10)
 
 
 class PurchaseRequest(BaseModel):
@@ -3479,6 +3488,8 @@ def _queue_competition_reward(profile, *, source: str, period_id: str, position:
     if any(item.get("message_id") == message_id for item in profile.reward_inbox):
         return False
     prize = period_reward(source, period_id, position, prize)
+    from .season_entitlements import fingerprint
+    reward_hash = fingerprint(dict(source=source, period_id=period_id, position=int(position), team_id=team_id, chest=prize))
     source_names = {
         "season_leaderboard": "Sezon Lider Panosu",
         "weekly_tournament": "Haftalık Devre Turnuvası",
@@ -3494,13 +3505,16 @@ def _queue_competition_reward(profile, *, source: str, period_id: str, position:
         "status": "unclaimed",
         "team_id": team_id,
         "chest": dict(prize),
+        "reward_revision": 1,
+        "reward_content_hash": reward_hash,
     })
     return True
 
 
 def _settle_competition_rewards(player_id: str) -> None:
     """Lazily materialize ended season/week/team rewards exactly once."""
-    if not launch_status()["active"] or not competition_eligible(player_id):
+    start = configured_start()
+    if not start or datetime.now(timezone.utc) < start or not competition_eligible(player_id):
         return
     with REWARD_INBOX_LOCK:
         profiles = _real_competition_profiles()
@@ -3540,10 +3554,16 @@ def _settle_competition_rewards(player_id: str) -> None:
                     prize=dict(LEADERBOARD_PRIZES[position - 1]),
                 )
 
-        # Weekly standings retain the last closed period until the player
-        # registers or records progress in a newer week.
-        weekly_period = str(target.weekly_tournament_period or "")
-        if weekly_period and weekly_period != current_week:
+        # Freeze every winner before the first re-registration can discard a
+        # participant's old counters and accidentally promote another winner.
+        by_player = {profile.player_id: profile for profile in profiles}
+        closed_weeks = sorted({str(profile.weekly_tournament_period) for profile in profiles
+                               if profile.weekly_tournament_period and profile.weekly_tournament_period < current_week})
+        for weekly_period in closed_weeks:
+            if any(weekly_period in profile.weekly_reward_closures for profile in profiles) or any(
+                   message.get('source') == 'weekly_tournament' and message.get('period_id') == weekly_period
+                   for profile in profiles for message in profile.reward_inbox):
+                continue  # Durable witness: this ranking has already been closed.
             rows = sorted(
                 (
                     (profile.player_id, int(profile.weekly_tournament_trophies_earned), int(profile.weekly_tournament_wins))
@@ -3553,15 +3573,18 @@ def _settle_competition_rewards(player_id: str) -> None:
                 ),
                 key=lambda item: (-item[1], -item[2], item[0]),
             )
-            position = next((index for index, row in enumerate(rows, 1) if row[0] == player_id), 0)
-            if len(rows) >= minimum_participants() and target.weekly_tournament_matches > 0 and 1 <= position <= len(WEEKLY_PRIZES):
-                changed |= _queue_competition_reward(
-                    target,
-                    source="weekly_tournament",
-                    period_id=weekly_period,
-                    position=position,
-                    prize=dict(WEEKLY_PRIZES[position - 1]),
-                )
+            from .season_entitlements import fingerprint
+            closing_hash = fingerprint(dict(period_id=weekly_period, standings=rows))
+            enough = len(rows) >= minimum_participants()
+            for position, row in enumerate(rows, 1):
+                winner = by_player[row[0]]
+                winner.weekly_reward_closures[weekly_period] = dict(revision=1, standings_hash=closing_hash,
+                    position=position, participant_count=len(rows), minimum_met=enough)
+                if enough and position <= len(WEEKLY_PRIZES) and winner.weekly_tournament_matches > 0:
+                    _queue_competition_reward(
+                        winner, source='weekly_tournament', period_id=weekly_period, position=position,
+                        prize=dict(WEEKLY_PRIZES[position - 1]))
+                persist_player_data(winner.player_id)
 
         # Takım turnuvası dönemin 4. haftası bitince sona erer. Ödül ekrandaki
         # sıralamayla aynı hesaptan gelir: oyuncunun kayıtlı kadrosunda olduğu
@@ -3799,29 +3822,54 @@ def dismiss_reward_inbox_messages(player_id: str, request: InboxDismissRequest) 
 
 @app.post("/profile/{player_id}/reward-inbox/{message_id}/claim")
 @persistent_operation
-def claim_reward_inbox_item(player_id: str, message_id: str, request: MetaOperationRequest) -> dict:
+def claim_reward_inbox_item(player_id: str, message_id: str, request: MetaOperationRequest, chest_delivery: str = "") -> dict:
+    if chest_delivery not in {'', 'open'}:
+        raise HTTPException(status_code=422, detail="Geçersiz sandık teslim biçimi.")
     with _store_economy_transaction(player_id), REWARD_INBOX_LOCK:
-        profile = _team_member_profile(player_id)
+        stored = _team_member_profile(player_id)
+        # Stage the whole collect/open on an isolated profile, even in local
+        # file mode. Validation failure cannot consume mail or grant half a crate.
+        profile = deepcopy(stored) if chest_delivery == 'open' else stored
+        replayed = False
         if request.request_id in profile.reward_inbox_receipts:
-            previous = profile.reward_inbox_receipts[request.request_id]
-            if previous.get("message_id") != message_id:
+            receipt = dict(profile.reward_inbox_receipts[request.request_id])
+            if receipt.get("message_id") != message_id:
                 raise HTTPException(status_code=409, detail="Talep kimliği farklı bir ödüle ait.")
-            return {**_reward_inbox_view(profile), "receipt": dict(previous), "profile": profile.to_view(), "replayed": True}
-        message = next((item for item in profile.reward_inbox if item.get("message_id") == message_id), None)
-        if message is None:
-            raise HTTPException(status_code=404, detail="Ödül mesajı bulunamadı.")
-        if message.get("status") != "unclaimed":
-            previous = next((item for item in profile.reward_inbox_receipts.values() if item.get("message_id") == message_id), None)
-            if previous:
-                return {**_reward_inbox_view(profile), "receipt": dict(previous), "profile": profile.to_view(), "replayed": True}
-            raise HTTPException(status_code=422, detail="Bu ödül daha önce alındı.")
-        try:
-            receipt = collect_chest(profile, message, request.request_id, datetime.now(timezone.utc).isoformat())
-        except PremiumRecoveryError as exc:
-            raise HTTPException(status_code=422, detail=str(exc)) from exc
+            replayed = True
+        else:
+            message = next((item for item in profile.reward_inbox if item.get("message_id") == message_id), None)
+            if message is None:
+                raise HTTPException(status_code=404, detail="Ödül mesajı bulunamadı.")
+            if message.get("status") != "unclaimed":
+                previous = next((item for item in profile.reward_inbox_receipts.values() if item.get("message_id") == message_id), None)
+                if not previous:
+                    raise HTTPException(status_code=422, detail="Bu ödül daha önce alındı.")
+                receipt = dict(previous)
+                replayed = True
+            else:
+                try:
+                    receipt = collect_chest(profile, message, request.request_id, datetime.now(timezone.utc).isoformat())
+                except ValueError as exc:
+                    raise HTTPException(status_code=422, detail=str(exc)) from exc
+        opened = None
+        if chest_delivery == 'open':
+            chest_id = receipt['chest']['chest_id']
+            opened = next((dict(r) for r in profile.chest_receipts.values() if r.get('chest_id') == chest_id), None)
+            if opened is None:
+                try:
+                    opened = meta_progression_service.open_chest(profile, chest_id, 'inbox-open:' + hashlib.sha256(message_id.encode()).hexdigest())
+                except MetaProgressionError as exc:
+                    raise HTTPException(status_code=422, detail=str(exc)) from exc
+            _complete_chest_team_rewards(opened)
         profile.reward_inbox_receipts[request.request_id] = dict(receipt)
+        if profile is not stored:
+            for name in stored.__dataclass_fields__:
+                setattr(stored, name, getattr(profile, name))
         persist_player_data(player_id)
-        return {**_reward_inbox_view(profile), "receipt": receipt, "profile": profile.to_view(), "replayed": False}
+        result = {**_reward_inbox_view(stored), "receipt": receipt, "profile": stored.to_view(), "replayed": replayed}
+        if opened is not None:
+            result['opened_receipt'] = opened
+        return result
 
 
 def _team_member_profile(player_id: str):
@@ -5036,6 +5084,8 @@ def get_profile(
     profile = player_profile_service.get_or_create(
         player_id
     )
+    if not RUNTIME_STRICT:
+        persist_player_data(player_id)  # Production UOW already saves normalized read models.
     return profile.to_view()
 
 
@@ -6114,6 +6164,27 @@ def claim_daily_mission_reward(
     }
 
 
+@app.post("/profile/{player_id}/engagement/season-missions/{mission_id}/claim")
+@persistent_operation
+def claim_season_mission_reward(player_id: str, mission_id: str, request: SeasonMissionClaimRequest) -> dict:
+    with _store_economy_transaction(player_id):
+        before = player_profile_service.get_or_create(player_id)
+        tier_before = int(before.engagement_view()["current_tier"])
+        try:
+            receipt = player_profile_service.claim_season_mission(
+                player_id, mission_id, season_id=request.season_id,
+                day_key=request.day_key, request_id=request.request_id,
+            )
+        except PlayerProfileError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        profile = player_profile_service.get_or_create(player_id)
+        persist_player_data(player_id)
+        view = profile.to_view()
+        return {**view, "season_mission_receipt": receipt,
+                "tier_advanced": _tier_advanced_payload(player_id, f"season-mission:{mission_id}",
+                    tier_before, int(view["engagement"]["current_tier"]))}
+
+
 @app.post("/profile/{player_id}/engagement/login/{day}/claim")
 @persistent_operation
 def claim_login_period_reward(
@@ -6190,6 +6261,10 @@ def claim_season_tier_reward(
         (item for item in SEASON_REWARD_TRACK if int(item["tier"]) == tier),
         None,
     )
+    historical = before_profile.engagement_claim_receipts.get(engagement_request_id, {}) if replayed else {}
+    if historical:
+        reward = historical
+    reward_season = historical.get('season_id', profile.active_meta_season_id)
     chest_receipt = None
     chest_definition_ids = {
         "bronze": "field_3h",
@@ -6197,29 +6272,32 @@ def claim_season_tier_reward(
         "gold": "core_24h",
         "diamond": "diamond_24h",
     }
-    chest_request_id = f"season-tier:{profile.player_id}:{profile.active_meta_season_id}:{tier}"
+    chest_request_id = f"season-tier:{profile.player_id}:{reward_season}:{tier}"
     delivery = None
-    if reward and reward.get("chest_tier") and replayed:
+    nested_count = (historical.get('additional_chest_count', int(bool(reward and reward.get('chest_tier'))))
+                    if historical else additional_chest_count(profile, tier))
+    has_nested_chest = bool(reward and nested_count)
+    if has_nested_chest and replayed:
         chest_receipt = profile.chest_receipts.get(chest_request_id)
         if chest_delivery == "stock-v1" and not chest_receipt:
             delivery = meta_progression_service.stock_reward_chest(
                 profile, chest_definition_ids[str(reward["chest_tier"])],
-                f"season-tier:{profile.active_meta_season_id}:{tier}", chest_request_id)
-    elif reward and reward.get("chest_tier"):
+                f"season-tier:{reward_season}:{tier}", chest_request_id)
+    elif has_nested_chest:
         award = (meta_progression_service.stock_reward_chest if chest_delivery == "stock-v1"
                  else meta_progression_service.deliver_reward_chest if use_mailbox
                  else meta_progression_service.award_instant_chest)
         result = award(
             profile,
             chest_definition_ids[str(reward["chest_tier"])],
-            f"season-tier:{profile.active_meta_season_id}:{tier}",
+            f"season-tier:{reward_season}:{tier}",
             chest_request_id,
         )
         if use_mailbox:
             delivery = result
         else:
             chest_receipt = result
-    if reward and reward.get("chest_tier") and replayed and not chest_receipt and not delivery:
+    if has_nested_chest and replayed and not chest_receipt and not delivery:
         delivery = {"message_id": chest_request_id, "definition_id": chest_definition_ids[str(reward["chest_tier"])], "delivered": True}
     persist_player_data(player_id)
     view = profile.to_view()
@@ -6228,7 +6306,7 @@ def claim_season_tier_reward(
         dict(profile.engagement_claim_receipts[engagement_request_id])
         if engagement_request_id
         and engagement_request_id in profile.engagement_claim_receipts
-        else None
+        else {**earned_season_reward(profile, tier), 'kind': 'tiers', 'tier': tier, 'season_id': reward_season}
     )
     return {
         **view,
@@ -6285,6 +6363,10 @@ def _claim_premium_season_tier_reward(
         (item for item in SEASON_PREMIUM_REWARD_TRACK if int(item["tier"]) == tier),
         None,
     )
+    historical = before_profile.engagement_claim_receipts.get(engagement_request_id, {}) if replayed else {}
+    if historical:
+        reward = historical
+    reward_season = historical.get('season_id', profile.active_meta_season_id)
     chest_definition_ids = {
         "bronze": "field_3h",
         "silver": "circuit_8h",
@@ -6294,24 +6376,26 @@ def _claim_premium_season_tier_reward(
     chest_receipts = []
     chest_deliveries = []
     if reward and reward.get("chest_tier"):
-        for index in range(int(reward.get("chest_count", 0) or 0)):
-            chest_request_id = f"season-premium-tier:{profile.player_id}:{profile.active_meta_season_id}:{tier}:{index}"
+        nested_count = (historical.get('additional_chest_count', int(reward.get('chest_count', 0) or 0))
+                        if historical else additional_chest_count(profile, tier, premium=True))
+        for index in range(nested_count):
+            chest_request_id = f"season-premium-tier:{profile.player_id}:{reward_season}:{tier}:{index}"
             if replayed:
                 receipt = profile.chest_receipts.get(chest_request_id)
                 if chest_delivery == "stock-v1" and not receipt:
                     chest_deliveries.append(meta_progression_service.stock_reward_chest(
                         profile, chest_definition_ids[str(reward["chest_tier"])],
-                        f"season-premium-tier:{profile.active_meta_season_id}:{tier}:{index}",
-                        chest_request_id, origin=premium_origin(profile)))
+                        f"season-premium-tier:{reward_season}:{tier}:{index}",
+                        chest_request_id, origin=season_premium_origin(profile, tier, reward_season)))
             elif use_mailbox:
                 award = (meta_progression_service.stock_reward_chest if chest_delivery == "stock-v1"
                          else meta_progression_service.deliver_reward_chest)
                 chest_deliveries.append(award(
                     profile,
                     chest_definition_ids[str(reward["chest_tier"])],
-                    f"season-premium-tier:{profile.active_meta_season_id}:{tier}:{index}",
+                    f"season-premium-tier:{reward_season}:{tier}:{index}",
                     chest_request_id,
-                    origin=premium_origin(profile),
+                    origin=season_premium_origin(profile, tier, reward_season),
                 ))
                 receipt = None
             else:
@@ -6320,7 +6404,7 @@ def _claim_premium_season_tier_reward(
                 receipt = meta_progression_service.award_instant_chest(
                     profile,
                     chest_definition_ids[str(reward["chest_tier"])],
-                    f"season-premium-tier:{profile.active_meta_season_id}:{tier}:{index}",
+                    f"season-premium-tier:{reward_season}:{tier}:{index}",
                     chest_request_id,
                 )
                 record_reward_delta(profile, f"tier:{tier}:chest:{index}", premium_before)
@@ -6336,7 +6420,7 @@ def _claim_premium_season_tier_reward(
             dict(profile.engagement_claim_receipts[engagement_request_id])
             if engagement_request_id
             and engagement_request_id in profile.engagement_claim_receipts
-            else None
+            else {**earned_season_reward(profile, tier, premium=True), 'kind': 'premium-tiers', 'tier': tier, 'season_id': reward_season}
         ),
         "season_chest_receipts": chest_receipts,
         "season_chest_deliveries": chest_deliveries,

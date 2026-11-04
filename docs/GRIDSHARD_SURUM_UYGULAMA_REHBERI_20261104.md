@@ -1,6 +1,6 @@
 # GRIDSHARD — sürümlere göre bağlı uygulama rehberi
 
-**4 Kasım 2026.** 3 Kasım takvimi ve ürün yönü korunur. İlk çalışma 2.4.0; sarı geri/ileri kontrolleri, saldırı VFX sesleri ve çekirdek sesleri bu paketin zorunlu kapsamına eklendi.
+**4 Kasım 2026.** 3 Kasım takvimi ve ürün yönü korunur. İlk çalışma 2.4.0; sarı geri/ileri kontrolleri, saldırı/çekirdek sesleri, Topla kasa açılışı ve XP emirleri bu paketin zorunlu kapsamına eklendi. [S1 ödül ve XP sözleşmesi](planning/season-1-rewards-and-xp.md).
 
 ## Kullanım ve tek kaynak düzeni
 
@@ -22,7 +22,7 @@ python tools/release_delivery_plan.py --check
 
 | Sürüm / brief | Somut içerik | Çalışma başlangıcı | Kapsam kapanışı | Kabul testleri | Yayın hedefi | Sezon |
 | --- | --- | --- | --- | --- | --- | --- |
-| [2.4.0](planning/releases/2.4.0.md) | Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. | 2026-11-04 | 2026-11-16 | 2026-11-19 | 2026-11-23 (hedef) | S1: 2026-11-30, 03.00 TR |
+| [2.4.0](planning/releases/2.4.0.md) | Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. | 2026-11-04 | 2026-11-16 | 2026-11-19 | 2026-11-23 (hedef) | S1: 2026-11-30, 03.00 TR |
 | [2.5.0](planning/releases/2.5.0.md) | Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. | 2026-11-24 | 2026-12-14 | 2026-12-17 | 2026-12-21 (hedef) | S2: 2026-12-28, 03.00 TR |
 | [2.6.0](planning/releases/2.6.0.md) | Günlük Devre Deneyi: önce 7 özgün problem, ilk başarı ödülü ve keşif günlüğü; Kor Fırlatıcı; üçüncü sezon için 6 yeni oyuncu kozmetiği. | 2026-12-22 | 2027-01-11 | 2027-01-14 | 2027-01-18 (tahmin) | S3: 2027-01-25, 03.00 TR |
 | [2.7.0](planning/releases/2.7.0.md) | Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi. | 2027-01-19 | 2027-02-08 | 2027-02-11 | 2027-02-15 (tahmin) | S4: 2027-02-22, 03.00 TR |
@@ -31,7 +31,7 @@ python tools/release_delivery_plan.py --check
 
 ## Kapasite ve karar sınırları
 
-- Tek ana akış, haftada 5 gün/günde 4–6 saat ve yaklaşık %20 hata/test/gözlem payı önceki varsayımdır. Yeni buton/ses işi için 2.4.0 tahmini 14–17 aktif güne çıktı; bu süre ölçülmüş hız değildir. 6 Kasım kontrolünde eski 12–15 gün bandına ek yük ölçülür. 16 Kasım kapanışına sığmıyorsa takvim yeniden karara bağlanır; zorunlu kalite işi sessizce çıkarılmaz.
+- Tek ana akış, haftada 5 gün/günde 4–6 saat ve yaklaşık %20 hata/test/gözlem payı önceki varsayımdır. Önceki buton/ses kapsamı için 2.4.0 ön tahmini 14–17 aktif gündü; kasa açılışı, çekirdek teslimi ve XP emirleri bu tahmine ek iştir ve efor yeniden ölçülmelidir. 6 Kasım kontrolünde eski 12–15 gün bandına ek yük ölçülür. 16 Kasım kapanışına sığmıyorsa takvim yeniden karara bağlanır; zorunlu kalite işi sessizce çıkarılmaz.
 - 2.5.0 kapsamı yoğun: seçim/mağaza, 1 modül ve 10 oyuncu öğesi. 30 Kasım kontrolünde darboğaz ölçülür; ikincil teklifler önce çıkarılır, ana teslimler yetişmiyorsa tarih yeniden planlanır.
 - 2.6–2.8 eforları 4 Ocak 2027’de; Draft ve S6 modül brief’i 1 Mart 2027’de değerlendirilir. 1 Mart, 2.9.0 geliştirmesinden önce karar kontrolüdür; ayrı üretim başlangıcı değildir.
 - Kaynak miktarı, fiyat, hasar/süre, katkı eşiği ve draft katılım eşikleri ilgili rapor/prototipten sonra sayısal karar dosyasına yazılır. Bu değerler kesinleşmeden ilgili özellik yayınlanamaz; plan sayıları uydurmaz.

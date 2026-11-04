@@ -1,0 +1,3389 @@
+{
+  "schema_version": 1,
+  "planning_only": true,
+  "runtime_changed": false,
+  "as_of": "2026-11-04",
+  "limitations": [
+    "Fixed rating/roster and daily claims are assumptions, not telemetry.",
+    "Chest currency expectations are not guaranteed balances.",
+    "module_shards in template totals are common-base units, not per-card or universal shards.",
+    "Road/title/team transfers, purchases, spend and competition wins are separate.",
+    "No automatic publication or adjustment of prices/XP/rewards."
+  ],
+  "scenario_reward_policy": "s1_fixed_road_draft_excluding_legacy_api_extra_chests",
+  "current_legacy_api_has_additional_road_chests": true,
+  "source_hashes": {
+    "server/app/player_profile.py": "1825ad6994405d7000a78e0d9a1f8c0d9471b3aa74f31f1e62b28e81ca35a16b",
+    "server/app/player_progression.py": "248a4a001d3e3d8d94cf12bdef515c8e3bd0bf06e57ea3790868a06e72a91bde",
+    "server/app/meta_progression.py": "19775809df2b3358e41c56f04123b7024e20b852cc7af1e220e3c0022b7d45dd",
+    "server/app/season_competition.py": "fa8d11813d94f95cb92bbce33da5a9c9ec5eac4cdc9e842ae3ad6541c1347c9f",
+    "server/app/reward_delivery.py": "6ae4429137a5f432c43bdd39e4624be7de649fdd54cb04639e273bc5ba3e451f",
+    "server/app/store_catalog.py": "33a45c32c1bdcf3c1d96c396eaac2a34751a9c8fb6893f7d739fc7c90f88bcf4",
+    "server/app/arena_canon.py": "00fd413c9b041d32057987a5040548466176caf49f9d5bef180663890ee757dd",
+    "server/app/match_accounting.py": "833638d43b49293424def2663a9f64a9b1c5b096f2ce74f2455ac6c3a0e10721",
+    "server/app/competition_control.py": "d8ed47a254492aa5e8cad88b279183ee0a18c77f1eb06c8bc0101fb0d2972078",
+    "server/app/season_missions.py": "7f1142deb1d49650563ef393ebf8ec9fd947c6da5628161d144cc9500133ab87",
+    "docs/planning/season-1-engagement-v1.json": "9539be37219632246d6ba5ecefe250d30f3e3aa1df4e53910ebaecc9571bc9cb",
+    "server/app/season_entitlements.py": "0b61c2f73c2435e21309ef5a0c5c9d1fbfb465004fa145303ba18ebd09f4f241",
+    "server/app/first_season_profile.py": "111333dc5ec10b25f4a2cbb7151b3a0e48954079031c5aca3d7b0059dd5e2637",
+    "server/app/main.py": "d82c11d0fb87b2170e1ddd57ec01a623e2fbcf48ef00afd249d74774c5f0b096",
+    "server/app/cosmetic_releases.py": "12a8c1ec82a5e2567a62c5c28b145db1265ed87b369252950cdf022aa5a2aa83",
+    "server/data/first_season_launch_v1.json": "694615ab17bcb0589a2faf8473caab604a98670b05854af87d61b2e8ccb2b203",
+    "server/data/cosmetic_releases_v1.json": "80dd80285ea4c3a895927e41918604b2e905e311d2c13c7330dfb3fcf4a70f54",
+    "docs/planning/release_calendar_v1.json": "c0df21f6ea957db5060c517aa296b3ca64aca09356c5c31034c2d695beef0dbf"
+  },
+  "season": {
+    "number": 1,
+    "starts_on": "2026-11-30",
+    "ends_on": "2026-12-28",
+    "starts_at_utc": "00:00",
+    "module": "Mevcut 24 modül; yalnız ilk sezon istisnası"
+  },
+  "free_track": [
+    {
+      "tier": 1,
+      "required_xp": 150,
+      "season_xp_reward": 0,
+      "circuit_credits": 40,
+      "flux_shards": 0,
+      "module_shards": 6,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 2,
+      "required_xp": 308,
+      "season_xp_reward": 0,
+      "circuit_credits": 60,
+      "flux_shards": 4,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı"
+    },
+    {
+      "tier": 3,
+      "required_xp": 474,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 5,
+      "module_shards": 9,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 4,
+      "required_xp": 648,
+      "season_xp_reward": 0,
+      "circuit_credits": 70,
+      "flux_shards": 4,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı"
+    },
+    {
+      "tier": 5,
+      "required_xp": 830,
+      "season_xp_reward": 0,
+      "circuit_credits": 120,
+      "flux_shards": 15,
+      "module_shards": 18,
+      "core_shards": 0,
+      "chest_tier": "silver",
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": "fire",
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Anında Sandık + Savaş Emojisi"
+    },
+    {
+      "tier": 6,
+      "required_xp": 1020,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 5,
+      "module_shards": 12,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 7,
+      "required_xp": 1218,
+      "season_xp_reward": 0,
+      "circuit_credits": 70,
+      "flux_shards": 0,
+      "module_shards": 6,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 8,
+      "required_xp": 1424,
+      "season_xp_reward": 0,
+      "circuit_credits": 90,
+      "flux_shards": 4,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı"
+    },
+    {
+      "tier": 9,
+      "required_xp": 1638,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 5,
+      "module_shards": 12,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 10,
+      "required_xp": 1860,
+      "season_xp_reward": 0,
+      "circuit_credits": 350,
+      "flux_shards": 35,
+      "module_shards": 39,
+      "core_shards": 0,
+      "chest_tier": "gold",
+      "avatar_id": "circuit_scout",
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": true,
+      "reward_label_tr": "Büyük Gold Sandık + Kozmetik"
+    },
+    {
+      "tier": 11,
+      "required_xp": 2090,
+      "season_xp_reward": 0,
+      "circuit_credits": 90,
+      "flux_shards": 0,
+      "module_shards": 9,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 12,
+      "required_xp": 2328,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 5,
+      "module_shards": 15,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 13,
+      "required_xp": 2574,
+      "season_xp_reward": 0,
+      "circuit_credits": 100,
+      "flux_shards": 0,
+      "module_shards": 9,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 14,
+      "required_xp": 2828,
+      "season_xp_reward": 0,
+      "circuit_credits": 120,
+      "flux_shards": 4,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı"
+    },
+    {
+      "tier": 15,
+      "required_xp": 3090,
+      "season_xp_reward": 0,
+      "circuit_credits": 160,
+      "flux_shards": 25,
+      "module_shards": 24,
+      "core_shards": 0,
+      "chest_tier": "silver",
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": "cool",
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Anında Sandık + Savaş Emojisi"
+    },
+    {
+      "tier": 16,
+      "required_xp": 3360,
+      "season_xp_reward": 0,
+      "circuit_credits": 130,
+      "flux_shards": 4,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı"
+    },
+    {
+      "tier": 17,
+      "required_xp": 3638,
+      "season_xp_reward": 0,
+      "circuit_credits": 120,
+      "flux_shards": 0,
+      "module_shards": 12,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 18,
+      "required_xp": 3924,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 5,
+      "module_shards": 18,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 19,
+      "required_xp": 4218,
+      "season_xp_reward": 0,
+      "circuit_credits": 130,
+      "flux_shards": 0,
+      "module_shards": 12,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 20,
+      "required_xp": 4520,
+      "season_xp_reward": 0,
+      "circuit_credits": 450,
+      "flux_shards": 45,
+      "module_shards": 48,
+      "core_shards": 0,
+      "chest_tier": "gold",
+      "avatar_id": null,
+      "avatar_frame_id": "neon_cyan",
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": true,
+      "reward_label_tr": "Büyük Gold Sandık + Kozmetik"
+    },
+    {
+      "tier": 21,
+      "required_xp": 4830,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 5,
+      "module_shards": 18,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 22,
+      "required_xp": 5148,
+      "season_xp_reward": 0,
+      "circuit_credits": 160,
+      "flux_shards": 4,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı"
+    },
+    {
+      "tier": 23,
+      "required_xp": 5474,
+      "season_xp_reward": 0,
+      "circuit_credits": 150,
+      "flux_shards": 0,
+      "module_shards": 12,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 24,
+      "required_xp": 5808,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 5,
+      "module_shards": 21,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 25,
+      "required_xp": 6150,
+      "season_xp_reward": 0,
+      "circuit_credits": 200,
+      "flux_shards": 35,
+      "module_shards": 30,
+      "core_shards": 0,
+      "chest_tier": "silver",
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": "mind_blown",
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Anında Sandık + Savaş Emojisi"
+    },
+    {
+      "tier": 26,
+      "required_xp": 6500,
+      "season_xp_reward": 0,
+      "circuit_credits": 180,
+      "flux_shards": 4,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı"
+    },
+    {
+      "tier": 27,
+      "required_xp": 6858,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 5,
+      "module_shards": 21,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 28,
+      "required_xp": 7224,
+      "season_xp_reward": 0,
+      "circuit_credits": 190,
+      "flux_shards": 4,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı"
+    },
+    {
+      "tier": 29,
+      "required_xp": 7598,
+      "season_xp_reward": 0,
+      "circuit_credits": 180,
+      "flux_shards": 0,
+      "module_shards": 15,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 30,
+      "required_xp": 7980,
+      "season_xp_reward": 0,
+      "circuit_credits": 550,
+      "flux_shards": 55,
+      "module_shards": 57,
+      "core_shards": 0,
+      "chest_tier": "gold",
+      "avatar_id": "core_guardian",
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": true,
+      "reward_label_tr": "Büyük Gold Sandık + Kozmetik"
+    },
+    {
+      "tier": 31,
+      "required_xp": 8370,
+      "season_xp_reward": 0,
+      "circuit_credits": 190,
+      "flux_shards": 0,
+      "module_shards": 15,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 32,
+      "required_xp": 8768,
+      "season_xp_reward": 0,
+      "circuit_credits": 210,
+      "flux_shards": 4,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı"
+    },
+    {
+      "tier": 33,
+      "required_xp": 9174,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 5,
+      "module_shards": 24,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 34,
+      "required_xp": 9588,
+      "season_xp_reward": 0,
+      "circuit_credits": 220,
+      "flux_shards": 4,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı"
+    },
+    {
+      "tier": 35,
+      "required_xp": 10010,
+      "season_xp_reward": 0,
+      "circuit_credits": 240,
+      "flux_shards": 45,
+      "module_shards": 36,
+      "core_shards": 0,
+      "chest_tier": "silver",
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": "crown",
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Anında Sandık + Savaş Emojisi"
+    },
+    {
+      "tier": 36,
+      "required_xp": 10440,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 5,
+      "module_shards": 27,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 37,
+      "required_xp": 10878,
+      "season_xp_reward": 0,
+      "circuit_credits": 220,
+      "flux_shards": 0,
+      "module_shards": 18,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 38,
+      "required_xp": 11324,
+      "season_xp_reward": 0,
+      "circuit_credits": 240,
+      "flux_shards": 4,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı"
+    },
+    {
+      "tier": 39,
+      "required_xp": 11778,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 5,
+      "module_shards": 27,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı"
+    },
+    {
+      "tier": 40,
+      "required_xp": 12240,
+      "season_xp_reward": 0,
+      "circuit_credits": 650,
+      "flux_shards": 65,
+      "module_shards": 66,
+      "core_shards": 0,
+      "chest_tier": "diamond",
+      "avatar_id": null,
+      "avatar_frame_id": "season_gold",
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": true,
+      "reward_label_tr": "Büyük Diamond Sandık + Kozmetik"
+    }
+  ],
+  "premium_extra_track": [
+    {
+      "tier": 1,
+      "required_xp": 150,
+      "season_xp_reward": 0,
+      "circuit_credits": 80,
+      "flux_shards": 0,
+      "module_shards": 12,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 2,
+      "required_xp": 308,
+      "season_xp_reward": 0,
+      "circuit_credits": 120,
+      "flux_shards": 8,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 3,
+      "required_xp": 474,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 10,
+      "module_shards": 18,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 4,
+      "required_xp": 648,
+      "season_xp_reward": 0,
+      "circuit_credits": 140,
+      "flux_shards": 8,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 5,
+      "required_xp": 830,
+      "season_xp_reward": 0,
+      "circuit_credits": 240,
+      "flux_shards": 30,
+      "module_shards": 36,
+      "core_shards": 0,
+      "chest_tier": "silver",
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Anında Sandık + Savaş Emojisi",
+      "chest_count": 2,
+      "track": "premium"
+    },
+    {
+      "tier": 6,
+      "required_xp": 1020,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 10,
+      "module_shards": 24,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 7,
+      "required_xp": 1218,
+      "season_xp_reward": 0,
+      "circuit_credits": 140,
+      "flux_shards": 0,
+      "module_shards": 12,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 8,
+      "required_xp": 1424,
+      "season_xp_reward": 0,
+      "circuit_credits": 180,
+      "flux_shards": 8,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 9,
+      "required_xp": 1638,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 10,
+      "module_shards": 24,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 10,
+      "required_xp": 1860,
+      "season_xp_reward": 0,
+      "circuit_credits": 700,
+      "flux_shards": 70,
+      "module_shards": 78,
+      "core_shards": 0,
+      "chest_tier": "gold",
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": true,
+      "reward_label_tr": "Büyük Gold Sandık + Kozmetik",
+      "chest_count": 2,
+      "track": "premium"
+    },
+    {
+      "tier": 11,
+      "required_xp": 2090,
+      "season_xp_reward": 0,
+      "circuit_credits": 180,
+      "flux_shards": 0,
+      "module_shards": 18,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 12,
+      "required_xp": 2328,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 10,
+      "module_shards": 30,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 13,
+      "required_xp": 2574,
+      "season_xp_reward": 0,
+      "circuit_credits": 200,
+      "flux_shards": 0,
+      "module_shards": 18,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 14,
+      "required_xp": 2828,
+      "season_xp_reward": 0,
+      "circuit_credits": 240,
+      "flux_shards": 8,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 15,
+      "required_xp": 3090,
+      "season_xp_reward": 0,
+      "circuit_credits": 320,
+      "flux_shards": 50,
+      "module_shards": 48,
+      "core_shards": 0,
+      "chest_tier": "silver",
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Anında Sandık + Savaş Emojisi",
+      "chest_count": 2,
+      "track": "premium"
+    },
+    {
+      "tier": 16,
+      "required_xp": 3360,
+      "season_xp_reward": 0,
+      "circuit_credits": 260,
+      "flux_shards": 8,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 17,
+      "required_xp": 3638,
+      "season_xp_reward": 0,
+      "circuit_credits": 240,
+      "flux_shards": 0,
+      "module_shards": 24,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 18,
+      "required_xp": 3924,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 10,
+      "module_shards": 36,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 19,
+      "required_xp": 4218,
+      "season_xp_reward": 0,
+      "circuit_credits": 260,
+      "flux_shards": 0,
+      "module_shards": 24,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 20,
+      "required_xp": 4520,
+      "season_xp_reward": 0,
+      "circuit_credits": 900,
+      "flux_shards": 90,
+      "module_shards": 96,
+      "core_shards": 0,
+      "chest_tier": "gold",
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": true,
+      "reward_label_tr": "Büyük Gold Sandık + Kozmetik",
+      "chest_count": 2,
+      "track": "premium"
+    },
+    {
+      "tier": 21,
+      "required_xp": 4830,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 10,
+      "module_shards": 36,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 22,
+      "required_xp": 5148,
+      "season_xp_reward": 0,
+      "circuit_credits": 320,
+      "flux_shards": 8,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 23,
+      "required_xp": 5474,
+      "season_xp_reward": 0,
+      "circuit_credits": 300,
+      "flux_shards": 0,
+      "module_shards": 24,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 24,
+      "required_xp": 5808,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 10,
+      "module_shards": 42,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 25,
+      "required_xp": 6150,
+      "season_xp_reward": 0,
+      "circuit_credits": 400,
+      "flux_shards": 70,
+      "module_shards": 60,
+      "core_shards": 0,
+      "chest_tier": "silver",
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Anında Sandık + Savaş Emojisi",
+      "chest_count": 2,
+      "track": "premium"
+    },
+    {
+      "tier": 26,
+      "required_xp": 6500,
+      "season_xp_reward": 0,
+      "circuit_credits": 360,
+      "flux_shards": 8,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 27,
+      "required_xp": 6858,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 10,
+      "module_shards": 42,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 28,
+      "required_xp": 7224,
+      "season_xp_reward": 0,
+      "circuit_credits": 380,
+      "flux_shards": 8,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 29,
+      "required_xp": 7598,
+      "season_xp_reward": 0,
+      "circuit_credits": 360,
+      "flux_shards": 0,
+      "module_shards": 30,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 30,
+      "required_xp": 7980,
+      "season_xp_reward": 0,
+      "circuit_credits": 1100,
+      "flux_shards": 110,
+      "module_shards": 114,
+      "core_shards": 0,
+      "chest_tier": "gold",
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": true,
+      "reward_label_tr": "Büyük Gold Sandık + Kozmetik",
+      "chest_count": 2,
+      "track": "premium"
+    },
+    {
+      "tier": 31,
+      "required_xp": 8370,
+      "season_xp_reward": 0,
+      "circuit_credits": 380,
+      "flux_shards": 0,
+      "module_shards": 30,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 32,
+      "required_xp": 8768,
+      "season_xp_reward": 0,
+      "circuit_credits": 420,
+      "flux_shards": 8,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 33,
+      "required_xp": 9174,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 10,
+      "module_shards": 48,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 34,
+      "required_xp": 9588,
+      "season_xp_reward": 0,
+      "circuit_credits": 440,
+      "flux_shards": 8,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 35,
+      "required_xp": 10010,
+      "season_xp_reward": 0,
+      "circuit_credits": 480,
+      "flux_shards": 90,
+      "module_shards": 72,
+      "core_shards": 0,
+      "chest_tier": "silver",
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Anında Sandık + Savaş Emojisi",
+      "chest_count": 2,
+      "track": "premium"
+    },
+    {
+      "tier": 36,
+      "required_xp": 10440,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 10,
+      "module_shards": 54,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 37,
+      "required_xp": 10878,
+      "season_xp_reward": 0,
+      "circuit_credits": 440,
+      "flux_shards": 0,
+      "module_shards": 36,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 38,
+      "required_xp": 11324,
+      "season_xp_reward": 0,
+      "circuit_credits": 480,
+      "flux_shards": 8,
+      "module_shards": 0,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Devre Kredisi ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 39,
+      "required_xp": 11778,
+      "season_xp_reward": 0,
+      "circuit_credits": 0,
+      "flux_shards": 10,
+      "module_shards": 54,
+      "core_shards": 0,
+      "chest_tier": null,
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": false,
+      "reward_label_tr": "Modül Parçası ve Akı",
+      "chest_count": 0,
+      "track": "premium"
+    },
+    {
+      "tier": 40,
+      "required_xp": 12240,
+      "season_xp_reward": 0,
+      "circuit_credits": 1300,
+      "flux_shards": 130,
+      "module_shards": 132,
+      "core_shards": 0,
+      "chest_tier": "diamond",
+      "avatar_id": null,
+      "avatar_frame_id": null,
+      "emoji_id": null,
+      "title_tr": null,
+      "is_major": true,
+      "reward_label_tr": "Büyük Diamond Sandık + Kozmetik",
+      "chest_count": 2,
+      "track": "premium"
+    }
+  ],
+  "free_totals": {
+    "circuit_credits": 5680,
+    "flux_shards": 419,
+    "module_shards": 636,
+    "core_shards": 0,
+    "universal_module_shards": 0
+  },
+  "premium_extra_totals": {
+    "circuit_credits": 11360,
+    "flux_shards": 838,
+    "module_shards": 1272,
+    "core_shards": 0,
+    "universal_module_shards": 0
+  },
+  "login_days": [
+    {
+      "day": 1,
+      "circuit_credits": 38,
+      "flux_shards": 3,
+      "module_shards": 4,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 2,
+      "circuit_credits": 41,
+      "flux_shards": 4,
+      "module_shards": 5,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 3,
+      "circuit_credits": 44,
+      "flux_shards": 5,
+      "module_shards": 6,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 4,
+      "circuit_credits": 47,
+      "flux_shards": 2,
+      "module_shards": 7,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 5,
+      "circuit_credits": 50,
+      "flux_shards": 3,
+      "module_shards": 3,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 6,
+      "circuit_credits": 53,
+      "flux_shards": 4,
+      "module_shards": 4,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 7,
+      "circuit_credits": 155,
+      "flux_shards": 11,
+      "module_shards": 21,
+      "core_shards": 0,
+      "is_major": true
+    },
+    {
+      "day": 8,
+      "circuit_credits": 59,
+      "flux_shards": 2,
+      "module_shards": 6,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 9,
+      "circuit_credits": 62,
+      "flux_shards": 3,
+      "module_shards": 7,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 10,
+      "circuit_credits": 65,
+      "flux_shards": 4,
+      "module_shards": 3,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 11,
+      "circuit_credits": 68,
+      "flux_shards": 5,
+      "module_shards": 4,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 12,
+      "circuit_credits": 71,
+      "flux_shards": 2,
+      "module_shards": 5,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 13,
+      "circuit_credits": 74,
+      "flux_shards": 3,
+      "module_shards": 6,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 14,
+      "circuit_credits": 190,
+      "flux_shards": 12,
+      "module_shards": 28,
+      "core_shards": 10,
+      "is_major": true
+    },
+    {
+      "day": 15,
+      "circuit_credits": 80,
+      "flux_shards": 5,
+      "module_shards": 3,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 16,
+      "circuit_credits": 83,
+      "flux_shards": 2,
+      "module_shards": 4,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 17,
+      "circuit_credits": 86,
+      "flux_shards": 3,
+      "module_shards": 5,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 18,
+      "circuit_credits": 89,
+      "flux_shards": 4,
+      "module_shards": 6,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 19,
+      "circuit_credits": 92,
+      "flux_shards": 5,
+      "module_shards": 7,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 20,
+      "circuit_credits": 95,
+      "flux_shards": 2,
+      "module_shards": 3,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 21,
+      "circuit_credits": 225,
+      "flux_shards": 13,
+      "module_shards": 35,
+      "core_shards": 0,
+      "is_major": true
+    },
+    {
+      "day": 22,
+      "circuit_credits": 101,
+      "flux_shards": 4,
+      "module_shards": 5,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 23,
+      "circuit_credits": 104,
+      "flux_shards": 5,
+      "module_shards": 6,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 24,
+      "circuit_credits": 107,
+      "flux_shards": 2,
+      "module_shards": 7,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 25,
+      "circuit_credits": 110,
+      "flux_shards": 3,
+      "module_shards": 3,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 26,
+      "circuit_credits": 113,
+      "flux_shards": 4,
+      "module_shards": 4,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 27,
+      "circuit_credits": 116,
+      "flux_shards": 5,
+      "module_shards": 5,
+      "core_shards": 0,
+      "is_major": false
+    },
+    {
+      "day": 28,
+      "circuit_credits": 260,
+      "flux_shards": 14,
+      "module_shards": 42,
+      "core_shards": 15,
+      "is_major": true
+    }
+  ],
+  "login_totals": {
+    "circuit_credits": 2678,
+    "flux_shards": 134,
+    "module_shards": 244,
+    "core_shards": 25,
+    "universal_module_shards": 0
+  },
+  "daily_missions": [
+    {
+      "id": "complete_battles",
+      "name_tr": "Devreyi Ateşle",
+      "description_tr": "2 savaş tamamla.",
+      "target": 2,
+      "season_xp_reward": 20,
+      "flux_shard_reward": 10
+    },
+    {
+      "id": "deal_damage",
+      "name_tr": "Çekirdeğe Baskı",
+      "description_tr": "Rakip devrelere toplam 1000 hasar ver.",
+      "target": 1000,
+      "season_xp_reward": 25,
+      "flux_shard_reward": 15
+    },
+    {
+      "id": "circuit_actions",
+      "name_tr": "Canlı Strateji",
+      "description_tr": "Savaşta 3 modül yerleştir.",
+      "target": 3,
+      "season_xp_reward": 25,
+      "flux_shard_reward": 15
+    },
+    {
+      "id": "win_battles",
+      "name_tr": "Zafer Sinyali",
+      "description_tr": "1 savaş kazan.",
+      "target": 1,
+      "season_xp_reward": 25,
+      "flux_shard_reward": 15
+    },
+    {
+      "id": "destroy_modules",
+      "name_tr": "Devre Kesici",
+      "description_tr": "Rakibin 4 modülünü yok et.",
+      "target": 4,
+      "season_xp_reward": 20,
+      "flux_shard_reward": 10
+    },
+    {
+      "id": "core_power",
+      "name_tr": "Çekirdek Nabzı",
+      "description_tr": "Çekirdek gücünü 2 kez kullan.",
+      "target": 2,
+      "season_xp_reward": 20,
+      "flux_shard_reward": 10
+    }
+  ],
+  "chests": [
+    {
+      "id": "field_3h",
+      "name_tr": "Bronz Sandık",
+      "visual_tier": "bronze",
+      "unlock_hours": 0,
+      "claim_cooldown_hours": 8,
+      "open_seconds": 1,
+      "coins": [
+        45,
+        75
+      ],
+      "flux": [
+        2,
+        4
+      ],
+      "shards": [
+        1,
+        2
+      ],
+      "shards_by_rarity": {
+        "common": [
+          1,
+          2
+        ]
+      },
+      "module_drop_chance": 0.35,
+      "module_rarity_drop_odds": {
+        "common": 0.35
+      },
+      "core_drop_chance": 0.01,
+      "core_drop_shards": 1,
+      "reward_odds": {
+        "circuit_credits": 1.0,
+        "flux_shards": 1.0,
+        "module_shards": 0.35,
+        "core_shards": 0.01
+      },
+      "allowed_rarities": [
+        "common"
+      ],
+      "rarity_odds": {
+        "common": 1.0
+      },
+      "price": [
+        "circuit_credits",
+        1000
+      ],
+      "limit": 5
+    },
+    {
+      "id": "circuit_8h",
+      "name_tr": "Gümüş Sandık",
+      "visual_tier": "silver",
+      "unlock_hours": 0,
+      "claim_cooldown_hours": 8,
+      "open_seconds": 1,
+      "coins": [
+        90,
+        145
+      ],
+      "flux": [
+        3,
+        6
+      ],
+      "shards": [
+        1,
+        3
+      ],
+      "shards_by_rarity": {
+        "common": [
+          2,
+          3
+        ],
+        "rare": [
+          1,
+          2
+        ]
+      },
+      "module_drop_chance": 0.35,
+      "module_rarity_drop_odds": {
+        "common": 0.25,
+        "rare": 0.1
+      },
+      "core_drop_chance": 0.03,
+      "core_drop_shards": 2,
+      "reward_odds": {
+        "circuit_credits": 1.0,
+        "flux_shards": 1.0,
+        "module_shards": 0.35,
+        "core_shards": 0.03
+      },
+      "allowed_rarities": [
+        "common",
+        "rare"
+      ],
+      "rarity_odds": {
+        "common": 0.714285,
+        "rare": 0.285715
+      },
+      "price": [
+        "circuit_credits",
+        2000
+      ],
+      "limit": 3
+    },
+    {
+      "id": "core_24h",
+      "name_tr": "Altın Sandık",
+      "visual_tier": "gold",
+      "unlock_hours": 0,
+      "claim_cooldown_hours": 16,
+      "open_seconds": 1,
+      "coins": [
+        175,
+        280
+      ],
+      "flux": [
+        5,
+        9
+      ],
+      "shards": [
+        1,
+        4
+      ],
+      "shards_by_rarity": {
+        "common": [
+          3,
+          4
+        ],
+        "rare": [
+          2,
+          3
+        ],
+        "epic": [
+          1,
+          2
+        ]
+      },
+      "module_drop_chance": 0.5,
+      "module_rarity_drop_odds": {
+        "common": 0.3,
+        "rare": 0.15,
+        "epic": 0.05
+      },
+      "core_drop_chance": 0.05,
+      "core_drop_shards": 3,
+      "reward_odds": {
+        "circuit_credits": 1.0,
+        "flux_shards": 1.0,
+        "module_shards": 0.5,
+        "core_shards": 0.05
+      },
+      "allowed_rarities": [
+        "common",
+        "rare",
+        "epic"
+      ],
+      "rarity_odds": {
+        "common": 0.6,
+        "rare": 0.3,
+        "epic": 0.1
+      },
+      "price": [
+        "flux_shards",
+        500
+      ],
+      "limit": 2
+    },
+    {
+      "id": "diamond_24h",
+      "name_tr": "Elmas Sandık",
+      "visual_tier": "diamond",
+      "unlock_hours": 0,
+      "claim_cooldown_hours": 24,
+      "open_seconds": 1,
+      "coins": [
+        320,
+        480
+      ],
+      "flux": [
+        10,
+        15
+      ],
+      "shards": [
+        1,
+        5
+      ],
+      "shards_by_rarity": {
+        "common": [
+          4,
+          5
+        ],
+        "rare": [
+          3,
+          4
+        ],
+        "epic": [
+          2,
+          3
+        ],
+        "legendary": [
+          1,
+          1
+        ]
+      },
+      "module_drop_chance": 0.53,
+      "module_rarity_drop_odds": {
+        "common": 0.25,
+        "rare": 0.15,
+        "epic": 0.1,
+        "legendary": 0.03
+      },
+      "core_drop_chance": 0.1,
+      "core_drop_shards": 5,
+      "reward_odds": {
+        "circuit_credits": 1.0,
+        "flux_shards": 1.0,
+        "module_shards": 0.53,
+        "core_shards": 0.1
+      },
+      "allowed_rarities": [
+        "common",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "rarity_odds": {
+        "common": 0.471698,
+        "rare": 0.283019,
+        "epic": 0.188679,
+        "legendary": 0.056604
+      },
+      "price": [
+        "flux_shards",
+        1000
+      ],
+      "limit": 1
+    }
+  ],
+  "sale_discount_percent": 40,
+  "paid_products": [
+    {
+      "id": "season_pass_premium",
+      "kind": "season_pass",
+      "name_tr": "Ücretli Sezon Geçişi",
+      "description_tr": "Bu sezonun premium ödül hattını açar; premium ödüller iki kattır.",
+      "price_kurus": 19999
+    },
+    {
+      "id": "battle_rewards_premium",
+      "kind": "battle_premium",
+      "name_tr": "Savaş Premium",
+      "description_tr": "Bu sezon savaş sonu Devre Kredisi ve Deneyim ödülleri %50 artar (kupa hariç).",
+      "price_kurus": 19999
+    },
+    {
+      "id": "flux_120",
+      "kind": "currency",
+      "currency": "flux_shards",
+      "amount": 120,
+      "name_tr": "120 Akı",
+      "price_kurus": 2999,
+      "bonus_percent": 0
+    },
+    {
+      "id": "flux_260",
+      "kind": "currency",
+      "currency": "flux_shards",
+      "amount": 260,
+      "name_tr": "260 Akı",
+      "price_kurus": 5999,
+      "bonus_percent": 8
+    },
+    {
+      "id": "flux_480",
+      "kind": "currency",
+      "currency": "flux_shards",
+      "amount": 480,
+      "name_tr": "480 Akı",
+      "price_kurus": 9999,
+      "bonus_percent": 20
+    },
+    {
+      "id": "flux_1050",
+      "kind": "currency",
+      "currency": "flux_shards",
+      "amount": 1050,
+      "name_tr": "1.050 Akı",
+      "price_kurus": 19999,
+      "bonus_percent": 31
+    },
+    {
+      "id": "credits_1000",
+      "kind": "currency",
+      "currency": "circuit_credits",
+      "amount": 1000,
+      "name_tr": "1.000 Devre Kredisi",
+      "price_kurus": 2999,
+      "bonus_percent": 0
+    },
+    {
+      "id": "credits_2200",
+      "kind": "currency",
+      "currency": "circuit_credits",
+      "amount": 2200,
+      "name_tr": "2.200 Devre Kredisi",
+      "price_kurus": 5999,
+      "bonus_percent": 10
+    },
+    {
+      "id": "credits_4000",
+      "kind": "currency",
+      "currency": "circuit_credits",
+      "amount": 4000,
+      "name_tr": "4.000 Devre Kredisi",
+      "price_kurus": 9999,
+      "bonus_percent": 20
+    },
+    {
+      "id": "credits_9000",
+      "kind": "currency",
+      "currency": "circuit_credits",
+      "amount": 9000,
+      "name_tr": "9.000 Devre Kredisi",
+      "price_kurus": 19999,
+      "bonus_percent": 35
+    }
+  ],
+  "weekly_current": [
+    {
+      "position": 1,
+      "circuit_credits": 1200,
+      "flux_shards": 90,
+      "chest_tier": "weekly_first",
+      "chest_visual_id": "weekly_circuit_crown",
+      "chest_name_tr": "Haftalık Şampiyon Kasası",
+      "avatar_id": "weekly_champion",
+      "avatar_frame_id": "weekly_gold",
+      "emoji_id": "victory_pulse"
+    },
+    {
+      "position": 2,
+      "circuit_credits": 760,
+      "flux_shards": 55,
+      "chest_tier": "weekly_second",
+      "chest_visual_id": "weekly_prism",
+      "chest_name_tr": "Haftalık Finalist Kasası",
+      "avatar_id": "weekly_finalist",
+      "avatar_frame_id": "weekly_silver"
+    },
+    {
+      "position": 3,
+      "circuit_credits": 420,
+      "flux_shards": 30,
+      "chest_tier": "weekly_third",
+      "chest_visual_id": "weekly_pulse",
+      "chest_name_tr": "Haftalık Üçüncülük Kasası",
+      "avatar_id": "weekly_finalist"
+    }
+  ],
+  "leaderboard_current": [
+    {
+      "position": 1,
+      "chest_tier": "diamond",
+      "chest_name_tr": "Taç Kasası",
+      "chest_visual_id": "rank_crown",
+      "circuit_credits": 2400,
+      "flux_shards": 180,
+      "universal_module_shards": 12,
+      "rank_trophy_id": "season_first",
+      "badge_id": "season_champion",
+      "avatar_id": "season_champion",
+      "avatar_frame_id": "season_crown",
+      "emoji_id": "victory_pulse",
+      "profile_background_id": "rank_crown",
+      "cosmetics": [
+        "1.lik Kupası",
+        "Şampiyon Rozeti",
+        "Avatar",
+        "Avatar Çerçevesi",
+        "Profil Çubuğu",
+        "Savaş Emojisi"
+      ]
+    },
+    {
+      "position": 2,
+      "chest_tier": "gold",
+      "chest_name_tr": "Prizma Kasası",
+      "chest_visual_id": "rank_prism",
+      "circuit_credits": 1800,
+      "flux_shards": 130,
+      "universal_module_shards": 9,
+      "rank_trophy_id": "season_second",
+      "badge_id": "season_second",
+      "avatar_frame_id": "season_silver",
+      "emoji_id": "respect_signal",
+      "profile_background_id": "rank_prism",
+      "cosmetics": [
+        "2.lik Kupası",
+        "İkincilik Rozeti",
+        "Avatar Çerçevesi",
+        "Profil Çubuğu",
+        "Savaş Emojisi"
+      ]
+    },
+    {
+      "position": 3,
+      "chest_tier": "gold",
+      "chest_name_tr": "Reaktör Kasası",
+      "chest_visual_id": "rank_reactor",
+      "circuit_credits": 1400,
+      "flux_shards": 100,
+      "universal_module_shards": 7,
+      "rank_trophy_id": "season_third",
+      "badge_id": "season_third",
+      "avatar_id": "season_finalist",
+      "cosmetics": [
+        "3.lük Kupası",
+        "Üçüncülük Rozeti",
+        "Avatar"
+      ]
+    },
+    {
+      "position": 4,
+      "chest_tier": "silver",
+      "chest_name_tr": "Frekans Kasası",
+      "chest_visual_id": "rank_frequency",
+      "circuit_credits": 1000,
+      "flux_shards": 75,
+      "universal_module_shards": 5,
+      "badge_id": "season_top10",
+      "profile_background_id": "rank_frequency",
+      "cosmetics": [
+        "İlk 10 Rozeti",
+        "Frekans Profil Çubuğu"
+      ]
+    },
+    {
+      "position": 5,
+      "chest_tier": "silver",
+      "chest_name_tr": "Devre Kasası",
+      "chest_visual_id": "rank_circuit",
+      "circuit_credits": 750,
+      "flux_shards": 55,
+      "universal_module_shards": 4,
+      "badge_id": "season_top10",
+      "emoji_id": "core_burst",
+      "cosmetics": [
+        "İlk 10 Rozeti",
+        "Hareketli Çekirdek Patlaması Emojisi"
+      ]
+    },
+    {
+      "position": 6,
+      "chest_tier": "bronze",
+      "chest_name_tr": "Akım Kasası",
+      "chest_visual_id": "rank_current",
+      "circuit_credits": 620,
+      "flux_shards": 45,
+      "universal_module_shards": 4,
+      "emoji_id": "glitch_wave",
+      "cosmetics": [
+        "Hareketli Glitch Dalgası Emojisi"
+      ]
+    },
+    {
+      "position": 7,
+      "chest_tier": "bronze",
+      "chest_name_tr": "Nöron Kasası",
+      "chest_visual_id": "rank_neuron",
+      "circuit_credits": 520,
+      "flux_shards": 38,
+      "universal_module_shards": 3,
+      "avatar_frame_id": "frequency_cyan",
+      "cosmetics": [
+        "Frekans Akımı Avatar Çerçevesi"
+      ]
+    },
+    {
+      "position": 8,
+      "chest_tier": "bronze",
+      "chest_name_tr": "Röle Kasası",
+      "chest_visual_id": "rank_relay",
+      "circuit_credits": 430,
+      "flux_shards": 32,
+      "universal_module_shards": 3,
+      "profile_background_id": "rank_relay",
+      "cosmetics": [
+        "Röle Profil Çubuğu"
+      ]
+    },
+    {
+      "position": 9,
+      "chest_tier": "bronze",
+      "chest_name_tr": "İletken Kasası",
+      "chest_visual_id": "rank_conductor",
+      "circuit_credits": 350,
+      "flux_shards": 26,
+      "universal_module_shards": 2,
+      "emoji_id": "overload_flash",
+      "cosmetics": [
+        "Hareketli Aşırı Yük Emojisi"
+      ]
+    },
+    {
+      "position": 10,
+      "chest_tier": "bronze",
+      "chest_name_tr": "Kıvılcım Kasası",
+      "chest_visual_id": "rank_spark",
+      "circuit_credits": 280,
+      "flux_shards": 20,
+      "universal_module_shards": 2,
+      "avatar_id": "rank_spark",
+      "cosmetics": [
+        "Kıvılcım Operatörü Avatarı"
+      ]
+    }
+  ],
+  "team_current": [
+    {
+      "position": 1,
+      "circuit_credits": 1500,
+      "flux_shards": 110,
+      "chest_tier": "team_first",
+      "chest_visual_id": "team_reactor_crown",
+      "chest_name_tr": "Takım Şampiyonu Relik Kasası",
+      "team_emblem_id": "crown",
+      "team_frame_id": "gold",
+      "team_name_color_id": "gold",
+      "emoji_id": "team_beacon"
+    },
+    {
+      "position": 2,
+      "circuit_credits": 950,
+      "flux_shards": 70,
+      "chest_tier": "team_second",
+      "chest_visual_id": "team_prism_relay",
+      "chest_name_tr": "Takım Finalisti Relik Kasası",
+      "team_emblem_id": "star",
+      "team_frame_id": "royal",
+      "team_name_color_id": "violet"
+    },
+    {
+      "position": 3,
+      "circuit_credits": 620,
+      "flux_shards": 45,
+      "chest_tier": "team_third",
+      "chest_visual_id": "team_signal_cache",
+      "chest_name_tr": "Takım Üçüncüsü Relik Kasası",
+      "team_emblem_id": "bolt",
+      "team_name_color_id": "red"
+    }
+  ],
+  "scenarios": {
+    "new_free": {
+      "1": {
+        "days": 1,
+        "rating": 0,
+        "wins_per_day": 1,
+        "losses_per_day": 1,
+        "mission_ids": [
+          "complete_battles",
+          "circuit_actions",
+          "win_battles"
+        ],
+        "gift_claims_per_day": 1,
+        "mode": "ranked_pvp",
+        "season_premium": false,
+        "battle_premium": false,
+        "ad_wins_per_day": 0,
+        "season_xp": 135,
+        "reached_tier": 0,
+        "sources": {
+          "matches_and_ads": {
+            "circuit_credits": 47,
+            "flux_shards": 0
+          },
+          "missions": {
+            "circuit_credits": 0,
+            "flux_shards": 40
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3,
+            "module_shards": 4,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "free_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0,
+            "module_shards": 0,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "premium_road_extra": {
+            "circuit_credits": 0,
+            "flux_shards": 0,
+            "module_shards": 0,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 98.5,
+            "flux_shards": 3.99
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 60.0,
+            "flux_shards": 3.0
+          }
+        },
+        "credits_expected": 243.5,
+        "flux_expected": 49.99,
+        "eligible_modules": [
+          "laser",
+          "pulse_cannon",
+          "shield",
+          "armor",
+          "repair",
+          "amplifier"
+        ],
+        "weekly_eligible": true
+      },
+      "28": {
+        "days": 28,
+        "rating": 0,
+        "wins_per_day": 1,
+        "losses_per_day": 1,
+        "mission_ids": [
+          "complete_battles",
+          "circuit_actions",
+          "win_battles"
+        ],
+        "gift_claims_per_day": 1,
+        "mode": "ranked_pvp",
+        "season_premium": false,
+        "battle_premium": false,
+        "ad_wins_per_day": 0,
+        "season_xp": 3780,
+        "reached_tier": 17,
+        "sources": {
+          "matches_and_ads": {
+            "circuit_credits": 1316,
+            "flux_shards": 0
+          },
+          "missions": {
+            "circuit_credits": 0,
+            "flux_shards": 1120
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134,
+            "module_shards": 244,
+            "core_shards": 25,
+            "universal_module_shards": 0
+          },
+          "free_road": {
+            "circuit_credits": 1520,
+            "flux_shards": 115,
+            "module_shards": 171,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "premium_road_extra": {
+            "circuit_credits": 0,
+            "flux_shards": 0,
+            "module_shards": 0,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 2758.0,
+            "flux_shards": 111.72
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 1680.0,
+            "flux_shards": 84.0
+          }
+        },
+        "credits_expected": 9952.0,
+        "flux_expected": 1564.72,
+        "eligible_modules": [
+          "laser",
+          "pulse_cannon",
+          "shield",
+          "armor",
+          "repair",
+          "amplifier"
+        ],
+        "weekly_eligible": true
+      }
+    },
+    "regular_free": {
+      "1": {
+        "days": 1,
+        "rating": 0,
+        "wins_per_day": 2,
+        "losses_per_day": 2,
+        "mission_ids": [
+          "complete_battles",
+          "deal_damage",
+          "circuit_actions",
+          "win_battles",
+          "destroy_modules",
+          "core_power"
+        ],
+        "gift_claims_per_day": 2,
+        "mode": "ranked_pvp",
+        "season_premium": false,
+        "battle_premium": false,
+        "ad_wins_per_day": 0,
+        "season_xp": 265,
+        "reached_tier": 1,
+        "sources": {
+          "matches_and_ads": {
+            "circuit_credits": 94,
+            "flux_shards": 0
+          },
+          "missions": {
+            "circuit_credits": 0,
+            "flux_shards": 75
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3,
+            "module_shards": 4,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "free_road": {
+            "circuit_credits": 40,
+            "flux_shards": 0,
+            "module_shards": 6,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "premium_road_extra": {
+            "circuit_credits": 0,
+            "flux_shards": 0,
+            "module_shards": 0,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 197.0,
+            "flux_shards": 7.98
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          }
+        },
+        "credits_expected": 489.0,
+        "flux_expected": 91.98,
+        "eligible_modules": [
+          "laser",
+          "pulse_cannon",
+          "shield",
+          "armor",
+          "repair",
+          "amplifier"
+        ],
+        "weekly_eligible": true
+      },
+      "28": {
+        "days": 28,
+        "rating": 0,
+        "wins_per_day": 2,
+        "losses_per_day": 2,
+        "mission_ids": [
+          "complete_battles",
+          "deal_damage",
+          "circuit_actions",
+          "win_battles",
+          "destroy_modules",
+          "core_power"
+        ],
+        "gift_claims_per_day": 2,
+        "mode": "ranked_pvp",
+        "season_premium": false,
+        "battle_premium": false,
+        "ad_wins_per_day": 0,
+        "season_xp": 7420,
+        "reached_tier": 28,
+        "sources": {
+          "matches_and_ads": {
+            "circuit_credits": 2632,
+            "flux_shards": 0
+          },
+          "missions": {
+            "circuit_credits": 0,
+            "flux_shards": 2100
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134,
+            "module_shards": 244,
+            "core_shards": 25,
+            "universal_module_shards": 0
+          },
+          "free_road": {
+            "circuit_credits": 2980,
+            "flux_shards": 227,
+            "module_shards": 351,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "premium_road_extra": {
+            "circuit_credits": 0,
+            "flux_shards": 0,
+            "module_shards": 0,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 5516.0,
+            "flux_shards": 223.44
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          }
+        },
+        "credits_expected": 17166.0,
+        "flux_expected": 2852.44,
+        "eligible_modules": [
+          "laser",
+          "pulse_cannon",
+          "shield",
+          "armor",
+          "repair",
+          "amplifier"
+        ],
+        "weekly_eligible": true
+      }
+    },
+    "season_pass_only": {
+      "1": {
+        "days": 1,
+        "rating": 0,
+        "wins_per_day": 2,
+        "losses_per_day": 2,
+        "mission_ids": [
+          "complete_battles",
+          "deal_damage",
+          "circuit_actions",
+          "win_battles",
+          "destroy_modules",
+          "core_power"
+        ],
+        "gift_claims_per_day": 2,
+        "mode": "ranked_pvp",
+        "season_premium": true,
+        "battle_premium": false,
+        "ad_wins_per_day": 0,
+        "season_xp": 265,
+        "reached_tier": 1,
+        "sources": {
+          "matches_and_ads": {
+            "circuit_credits": 94,
+            "flux_shards": 0
+          },
+          "missions": {
+            "circuit_credits": 0,
+            "flux_shards": 75
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3,
+            "module_shards": 4,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "free_road": {
+            "circuit_credits": 40,
+            "flux_shards": 0,
+            "module_shards": 6,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "premium_road_extra": {
+            "circuit_credits": 80,
+            "flux_shards": 0,
+            "module_shards": 12,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 197.0,
+            "flux_shards": 7.98
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          }
+        },
+        "credits_expected": 569.0,
+        "flux_expected": 91.98,
+        "eligible_modules": [
+          "laser",
+          "pulse_cannon",
+          "shield",
+          "armor",
+          "repair",
+          "amplifier"
+        ],
+        "weekly_eligible": true
+      },
+      "28": {
+        "days": 28,
+        "rating": 0,
+        "wins_per_day": 2,
+        "losses_per_day": 2,
+        "mission_ids": [
+          "complete_battles",
+          "deal_damage",
+          "circuit_actions",
+          "win_battles",
+          "destroy_modules",
+          "core_power"
+        ],
+        "gift_claims_per_day": 2,
+        "mode": "ranked_pvp",
+        "season_premium": true,
+        "battle_premium": false,
+        "ad_wins_per_day": 0,
+        "season_xp": 7420,
+        "reached_tier": 28,
+        "sources": {
+          "matches_and_ads": {
+            "circuit_credits": 2632,
+            "flux_shards": 0
+          },
+          "missions": {
+            "circuit_credits": 0,
+            "flux_shards": 2100
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134,
+            "module_shards": 244,
+            "core_shards": 25,
+            "universal_module_shards": 0
+          },
+          "free_road": {
+            "circuit_credits": 2980,
+            "flux_shards": 227,
+            "module_shards": 351,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "premium_road_extra": {
+            "circuit_credits": 5960,
+            "flux_shards": 454,
+            "module_shards": 702,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 5516.0,
+            "flux_shards": 223.44
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          }
+        },
+        "credits_expected": 23126.0,
+        "flux_expected": 3306.44,
+        "eligible_modules": [
+          "laser",
+          "pulse_cannon",
+          "shield",
+          "armor",
+          "repair",
+          "amplifier"
+        ],
+        "weekly_eligible": true
+      }
+    },
+    "both_premiums": {
+      "1": {
+        "days": 1,
+        "rating": 0,
+        "wins_per_day": 2,
+        "losses_per_day": 2,
+        "mission_ids": [
+          "complete_battles",
+          "deal_damage",
+          "circuit_actions",
+          "win_battles",
+          "destroy_modules",
+          "core_power"
+        ],
+        "gift_claims_per_day": 2,
+        "mode": "ranked_pvp",
+        "season_premium": true,
+        "battle_premium": true,
+        "ad_wins_per_day": 0,
+        "season_xp": 331,
+        "reached_tier": 2,
+        "sources": {
+          "matches_and_ads": {
+            "circuit_credits": 140,
+            "flux_shards": 0
+          },
+          "missions": {
+            "circuit_credits": 0,
+            "flux_shards": 75
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3,
+            "module_shards": 4,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "free_road": {
+            "circuit_credits": 100,
+            "flux_shards": 4,
+            "module_shards": 6,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "premium_road_extra": {
+            "circuit_credits": 200,
+            "flux_shards": 8,
+            "module_shards": 12,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 197.0,
+            "flux_shards": 7.98
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          }
+        },
+        "credits_expected": 795.0,
+        "flux_expected": 103.98,
+        "eligible_modules": [
+          "laser",
+          "pulse_cannon",
+          "shield",
+          "armor",
+          "repair",
+          "amplifier"
+        ],
+        "weekly_eligible": true
+      },
+      "28": {
+        "days": 28,
+        "rating": 0,
+        "wins_per_day": 2,
+        "losses_per_day": 2,
+        "mission_ids": [
+          "complete_battles",
+          "deal_damage",
+          "circuit_actions",
+          "win_battles",
+          "destroy_modules",
+          "core_power"
+        ],
+        "gift_claims_per_day": 2,
+        "mode": "ranked_pvp",
+        "season_premium": true,
+        "battle_premium": true,
+        "ad_wins_per_day": 0,
+        "season_xp": 9268,
+        "reached_tier": 33,
+        "sources": {
+          "matches_and_ads": {
+            "circuit_credits": 3920,
+            "flux_shards": 0
+          },
+          "missions": {
+            "circuit_credits": 0,
+            "flux_shards": 2100
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134,
+            "module_shards": 244,
+            "core_shards": 25,
+            "universal_module_shards": 0
+          },
+          "free_road": {
+            "circuit_credits": 4110,
+            "flux_shards": 291,
+            "module_shards": 462,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "premium_road_extra": {
+            "circuit_credits": 8220,
+            "flux_shards": 582,
+            "module_shards": 924,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 5516.0,
+            "flux_shards": 223.44
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          }
+        },
+        "credits_expected": 27804.0,
+        "flux_expected": 3498.44,
+        "eligible_modules": [
+          "laser",
+          "pulse_cannon",
+          "shield",
+          "armor",
+          "repair",
+          "amplifier"
+        ],
+        "weekly_eligible": true
+      }
+    },
+    "unranked_ai": {
+      "1": {
+        "days": 1,
+        "rating": 0,
+        "wins_per_day": 2,
+        "losses_per_day": 2,
+        "mission_ids": [
+          "complete_battles",
+          "deal_damage",
+          "circuit_actions",
+          "win_battles",
+          "destroy_modules",
+          "core_power"
+        ],
+        "gift_claims_per_day": 2,
+        "mode": "unranked_ai",
+        "season_premium": false,
+        "battle_premium": false,
+        "ad_wins_per_day": 0,
+        "season_xp": 199,
+        "reached_tier": 1,
+        "sources": {
+          "matches_and_ads": {
+            "circuit_credits": 48,
+            "flux_shards": 0
+          },
+          "missions": {
+            "circuit_credits": 0,
+            "flux_shards": 75
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3,
+            "module_shards": 4,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "free_road": {
+            "circuit_credits": 40,
+            "flux_shards": 0,
+            "module_shards": 6,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "premium_road_extra": {
+            "circuit_credits": 0,
+            "flux_shards": 0,
+            "module_shards": 0,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          }
+        },
+        "credits_expected": 246.0,
+        "flux_expected": 84.0,
+        "eligible_modules": [
+          "laser",
+          "pulse_cannon",
+          "shield",
+          "armor",
+          "repair",
+          "amplifier"
+        ],
+        "weekly_eligible": false
+      },
+      "28": {
+        "days": 28,
+        "rating": 0,
+        "wins_per_day": 2,
+        "losses_per_day": 2,
+        "mission_ids": [
+          "complete_battles",
+          "deal_damage",
+          "circuit_actions",
+          "win_battles",
+          "destroy_modules",
+          "core_power"
+        ],
+        "gift_claims_per_day": 2,
+        "mode": "unranked_ai",
+        "season_premium": false,
+        "battle_premium": false,
+        "ad_wins_per_day": 0,
+        "season_xp": 5572,
+        "reached_tier": 23,
+        "sources": {
+          "matches_and_ads": {
+            "circuit_credits": 1344,
+            "flux_shards": 0
+          },
+          "missions": {
+            "circuit_credits": 0,
+            "flux_shards": 2100
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134,
+            "module_shards": 244,
+            "core_shards": 25,
+            "universal_module_shards": 0
+          },
+          "free_road": {
+            "circuit_credits": 2410,
+            "flux_shards": 174,
+            "module_shards": 279,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "premium_road_extra": {
+            "circuit_credits": 0,
+            "flux_shards": 0,
+            "module_shards": 0,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          }
+        },
+        "credits_expected": 9792.0,
+        "flux_expected": 2576.0,
+        "eligible_modules": [
+          "laser",
+          "pulse_cannon",
+          "shield",
+          "armor",
+          "repair",
+          "amplifier"
+        ],
+        "weekly_eligible": false
+      }
+    },
+    "regular_arena_6": {
+      "1": {
+        "days": 1,
+        "rating": 1700,
+        "wins_per_day": 2,
+        "losses_per_day": 2,
+        "mission_ids": [
+          "complete_battles",
+          "deal_damage",
+          "circuit_actions",
+          "win_battles",
+          "destroy_modules",
+          "core_power"
+        ],
+        "gift_claims_per_day": 2,
+        "mode": "ranked_pvp",
+        "season_premium": false,
+        "battle_premium": false,
+        "ad_wins_per_day": 0,
+        "season_xp": 265,
+        "reached_tier": 1,
+        "sources": {
+          "matches_and_ads": {
+            "circuit_credits": 156,
+            "flux_shards": 0
+          },
+          "missions": {
+            "circuit_credits": 0,
+            "flux_shards": 75
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3,
+            "module_shards": 4,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "free_road": {
+            "circuit_credits": 40,
+            "flux_shards": 0,
+            "module_shards": 6,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "premium_road_extra": {
+            "circuit_credits": 0,
+            "flux_shards": 0,
+            "module_shards": 0,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 197.0,
+            "flux_shards": 7.98
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          }
+        },
+        "credits_expected": 551.0,
+        "flux_expected": 91.98,
+        "eligible_modules": [
+          "laser",
+          "pulse_cannon",
+          "railgun",
+          "missile_launcher",
+          "drone_bay",
+          "burst_cannon",
+          "shield",
+          "armor",
+          "barrier",
+          "reflector",
+          "guardian_dome",
+          "repair",
+          "amplifier",
+          "emp",
+          "cleanser",
+          "speed_relay"
+        ],
+        "weekly_eligible": true
+      },
+      "28": {
+        "days": 28,
+        "rating": 1700,
+        "wins_per_day": 2,
+        "losses_per_day": 2,
+        "mission_ids": [
+          "complete_battles",
+          "deal_damage",
+          "circuit_actions",
+          "win_battles",
+          "destroy_modules",
+          "core_power"
+        ],
+        "gift_claims_per_day": 2,
+        "mode": "ranked_pvp",
+        "season_premium": false,
+        "battle_premium": false,
+        "ad_wins_per_day": 0,
+        "season_xp": 7420,
+        "reached_tier": 28,
+        "sources": {
+          "matches_and_ads": {
+            "circuit_credits": 4368,
+            "flux_shards": 0
+          },
+          "missions": {
+            "circuit_credits": 0,
+            "flux_shards": 2100
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134,
+            "module_shards": 244,
+            "core_shards": 25,
+            "universal_module_shards": 0
+          },
+          "free_road": {
+            "circuit_credits": 2980,
+            "flux_shards": 227,
+            "module_shards": 351,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "premium_road_extra": {
+            "circuit_credits": 0,
+            "flux_shards": 0,
+            "module_shards": 0,
+            "core_shards": 0,
+            "universal_module_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 5516.0,
+            "flux_shards": 223.44
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          }
+        },
+        "credits_expected": 18902.0,
+        "flux_expected": 2852.44,
+        "eligible_modules": [
+          "laser",
+          "pulse_cannon",
+          "railgun",
+          "missile_launcher",
+          "drone_bay",
+          "burst_cannon",
+          "shield",
+          "armor",
+          "barrier",
+          "reflector",
+          "guardian_dome",
+          "repair",
+          "amplifier",
+          "emp",
+          "cleanser",
+          "speed_relay"
+        ],
+        "weekly_eligible": true
+      }
+    }
+  },
+  "ad_sensitivity": {
+    "days": 28,
+    "rating": 0,
+    "wins_per_day": 2,
+    "losses_per_day": 2,
+    "mission_ids": [
+      "complete_battles",
+      "deal_damage",
+      "circuit_actions",
+      "win_battles",
+      "destroy_modules",
+      "core_power"
+    ],
+    "gift_claims_per_day": 2,
+    "mode": "ranked_pvp",
+    "season_premium": false,
+    "battle_premium": false,
+    "ad_wins_per_day": 1,
+    "season_xp": 8540,
+    "reached_tier": 31,
+    "sources": {
+      "matches_and_ads": {
+        "circuit_credits": 3612,
+        "flux_shards": 0
+      },
+      "missions": {
+        "circuit_credits": 0,
+        "flux_shards": 2100
+      },
+      "login": {
+        "circuit_credits": 2678,
+        "flux_shards": 134,
+        "module_shards": 244,
+        "core_shards": 25,
+        "universal_module_shards": 0
+      },
+      "free_road": {
+        "circuit_credits": 3900,
+        "flux_shards": 282,
+        "module_shards": 438,
+        "core_shards": 0,
+        "universal_module_shards": 0
+      },
+      "premium_road_extra": {
+        "circuit_credits": 0,
+        "flux_shards": 0,
+        "module_shards": 0,
+        "core_shards": 0,
+        "universal_module_shards": 0
+      },
+      "victory_chests_expected": {
+        "circuit_credits": 5516.0,
+        "flux_shards": 223.44
+      },
+      "gift_chests_expected": {
+        "circuit_credits": 3360.0,
+        "flux_shards": 168.0
+      }
+    },
+    "credits_expected": 19066.0,
+    "flux_expected": 2907.44,
+    "eligible_modules": [
+      "laser",
+      "pulse_cannon",
+      "shield",
+      "armor",
+      "repair",
+      "amplifier"
+    ],
+    "weekly_eligible": true
+  },
+  "s1_proposal": {
+    "status": "implementation_proposal_not_published",
+    "preserve_current_40_tier_resource_amounts": true,
+    "season_chest_tags_are_not_extra_chests": true,
+    "weekly": [
+      {
+        "starts_on": "2026-11-30",
+        "ends_on": "2026-12-07",
+        "period_id": "2026-W49",
+        "reward_kind": "resource_only",
+        "prizes": [
+          {
+            "position": 1,
+            "circuit_credits": 1200,
+            "flux_shards": 90,
+            "chest_tier": "weekly_first",
+            "module_definition_id": "laser",
+            "module_shards": 36
+          },
+          {
+            "position": 2,
+            "circuit_credits": 760,
+            "flux_shards": 55,
+            "chest_tier": "weekly_second",
+            "module_definition_id": "laser",
+            "module_shards": 24
+          },
+          {
+            "position": 3,
+            "circuit_credits": 420,
+            "flux_shards": 30,
+            "chest_tier": "weekly_third",
+            "module_definition_id": "laser",
+            "module_shards": 18
+          }
+        ]
+      },
+      {
+        "starts_on": "2026-12-07",
+        "ends_on": "2026-12-14",
+        "period_id": "2026-W50",
+        "reward_kind": "resource_only",
+        "prizes": [
+          {
+            "position": 1,
+            "circuit_credits": 1200,
+            "flux_shards": 90,
+            "chest_tier": "weekly_first",
+            "module_definition_id": "shield",
+            "module_shards": 36
+          },
+          {
+            "position": 2,
+            "circuit_credits": 760,
+            "flux_shards": 55,
+            "chest_tier": "weekly_second",
+            "module_definition_id": "shield",
+            "module_shards": 24
+          },
+          {
+            "position": 3,
+            "circuit_credits": 420,
+            "flux_shards": 30,
+            "chest_tier": "weekly_third",
+            "module_definition_id": "shield",
+            "module_shards": 18
+          }
+        ]
+      },
+      {
+        "starts_on": "2026-12-14",
+        "ends_on": "2026-12-21",
+        "period_id": "2026-W51",
+        "reward_kind": "resource_only",
+        "prizes": [
+          {
+            "position": 1,
+            "circuit_credits": 1200,
+            "flux_shards": 90,
+            "chest_tier": "weekly_first",
+            "module_definition_id": "pulse_cannon",
+            "module_shards": 36
+          },
+          {
+            "position": 2,
+            "circuit_credits": 760,
+            "flux_shards": 55,
+            "chest_tier": "weekly_second",
+            "module_definition_id": "pulse_cannon",
+            "module_shards": 24
+          },
+          {
+            "position": 3,
+            "circuit_credits": 420,
+            "flux_shards": 30,
+            "chest_tier": "weekly_third",
+            "module_definition_id": "pulse_cannon",
+            "module_shards": 18
+          }
+        ]
+      },
+      {
+        "starts_on": "2026-12-21",
+        "ends_on": "2026-12-28",
+        "period_id": "2026-W52",
+        "reward_kind": "cosmetic_set",
+        "prizes": [
+          {
+            "position": 1,
+            "circuit_credits": 1200,
+            "flux_shards": 90,
+            "chest_tier": "weekly_first",
+            "avatar_frame_id": "abyss_frame",
+            "profile_background_id": "abyss_banner"
+          },
+          {
+            "position": 2,
+            "circuit_credits": 760,
+            "flux_shards": 55,
+            "chest_tier": "weekly_second"
+          },
+          {
+            "position": 3,
+            "circuit_credits": 420,
+            "flux_shards": 30,
+            "chest_tier": "weekly_third"
+          }
+        ]
+      }
+    ],
+    "cosmetics": [
+      {
+        "source": "season_road",
+        "slot": 40,
+        "items": [
+          "aurora_frame",
+          "aurora_banner"
+        ]
+      },
+      {
+        "source": "season_leaderboard",
+        "slot": 1,
+        "items": [
+          "solar_frame",
+          "solar_banner"
+        ]
+      },
+      {
+        "source": "weekly_tournament",
+        "period_id": "2026-W52",
+        "slot": 1,
+        "items": [
+          "abyss_frame",
+          "abyss_banner"
+        ]
+      }
+    ],
+    "added_common_module_shards_across_all_weekly_winners": 234
+  },
+  "upgrade_totals": {
+    "common": {
+      "circuit_credits": 174800,
+      "flux_shards": 0,
+      "shards": 5436
+    },
+    "rare": {
+      "circuit_credits": 262300,
+      "flux_shards": 0,
+      "shards": 3626
+    },
+    "epic": {
+      "circuit_credits": 347700,
+      "flux_shards": 0,
+      "shards": 818
+    },
+    "legendary": {
+      "circuit_credits": 393400,
+      "flux_shards": 27500,
+      "shards": 478
+    }
+  }
+}

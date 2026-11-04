@@ -29,7 +29,9 @@
     "docs/GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md",
     "docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md",
     "docs/GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md",
-    "docs/GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md"
+    "docs/GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md",
+    "docs/planning/season-1-rewards-and-xp.md",
+    "docs/planning/season-1-engagement-v1.json"
   ],
   "tasks": [
     {
@@ -39,15 +41,21 @@
       "owner": "Oyun tasarımı / backend",
       "effort": "M",
       "priority": "P0",
-      "status": "todo",
+      "status": "done",
       "depends_on": [],
       "existing_paths": [
         "server/app/meta_progression.py",
         "server/app/player_progression.py",
-        "server/app/store_catalog.py"
+        "server/app/store_catalog.py",
+        "server/app/season_competition.py",
+        "server/app/player_profile.py",
+        "server/app/reward_delivery.py",
+        "server/app/match_accounting.py"
       ],
       "proposed_paths": [
-        "docs/planning/economy-baseline.md"
+        "docs/planning/economy-baseline.md",
+        "docs/planning/economy-baseline.json",
+        "tools/report_economy_baseline.py"
       ],
       "acceptance": [
         "Dört sandığın garanti/olasılık, fiyat, limit ve hediye kaynağı tek tabloda doğrulanır.",
@@ -63,7 +71,13 @@
         3,
         8
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/economy-baseline.md",
+        "docs/planning/economy-baseline.json",
+        "tools/report_economy_baseline.py",
+        "tools/tests/test_economy_baseline.py",
+        "tools/tests/test_economy_income_model.py"
+      ],
       "planned_releases": [
         "2.4.0"
       ]
@@ -1792,7 +1806,10 @@
         "UI-07",
         "AUDIO-01",
         "AUDIO-02",
-        "COS-04"
+        "COS-04",
+        "REWARD-06",
+        "UI-08",
+        "SEASON-01"
       ],
       "existing_paths": [
         ".github/workflows/quality.yml",
@@ -1806,7 +1823,8 @@
       "acceptance": [
         "Mevcut 24 modül ve 15 kozmetikle S1 profili, sabit kaynak haftaları, tekil teslim, kapanış hakları ve gerçek restore kanıtı tamamlanır.",
         "23 Kasım hedefli sürüm notu/CI/AAB ve 30 Kasım hedefli başlangıç ayrı kapılardır; eski istemci, TR/EN mobil ve Play cihaz testi geçmeden açılmaz. Yeni kart veya 18 yeni kozmetik bu sürümün koşulu değildir.",
-        "UI-07 sarı geri/ileri envanteri, AUDIO-01 saldırı ve AUDIO-02 çekirdek ses matrisleri ile Android dinleme kabulü kapanmadan 2.4.0 tamamlanmaz."
+        "UI-07 sarı geri/ileri envanteri, AUDIO-01 saldırı ve AUDIO-02 çekirdek ses matrisleri ile Android dinleme kabulü kapanmadan 2.4.0 tamamlanmaz.",
+        "Sabit kasa çekirdek teslimi, Topla açılış animasyonu ve 12.240 XP eşiğini koruyan günlük/sezonluk emirler kabul edilmeden S1 yayını tamamlanmaz."
       ],
       "goals": [
         "operations",
@@ -2011,7 +2029,7 @@
       "owner": "Backend / QA / ürün",
       "effort": "L",
       "priority": "P0",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [
         "BASE-01",
         "COS-01"
@@ -2022,17 +2040,20 @@
         "server/app/liveops_content.py",
         "server/app/competition_control.py",
         "server/app/reward_delivery.py",
-        "server/tests/test_production_launch.py"
+        "server/tests/test_production_launch.py",
+        "server/app/season_entitlements.py",
+        "server/app/first_season_profile.py",
+        "server/data/first_season_launch_v1.json",
+        "server/tests/test_season_entitlements.py"
       ],
-      "proposed_paths": [
-        "docs/planning/first-season-launch-profile.md"
-      ],
+      "proposed_paths": [],
       "acceptance": [
         "Yalnız ilk açılış sezonu mevcut 24 modülle başlayabilir; açık profil/tek sezon sınırı test edilir. S2 ve sonrasında yeni hazır modül koşulu korunur.",
         "Kaynak ödüllü dönem açık türdür; eksik kozmetiği saklamak veya eski kozmetiğe düşmek için adet sıfırlanmaz. Kaynak/kozmetik önizlemesi gerçek sabit teslimle eşleşir.",
         "Kutup Işığı sezon yolu, Güneş Ocağı sıralama ve Derin Akım son hafta önerisi tekil stok/tahsis ile doğrulanır; üç oyuncu seti başka döneme dönmez.",
         "Kazanılmış/toplanmamış ve premium kökenli haklar sezon kapanışı, geç dönüş, tekrar/eşzamanlı talep ve restart/restore sırasında korunur. Profil/ekonomi sıfırlanmaz.",
-        "40 kademe/haftalık bütçe, gerçek katılım eşiği, owner/AI hariçliği, TR/EN 320/393 px, bağımsız takım başlangıcı ve yayın durdurma kanıtı gerekir."
+        "40 kademe/haftalık bütçe, gerçek katılım eşiği, owner/AI hariçliği, TR/EN 320/393 px, bağımsız takım başlangıcı ve yayın durdurma kanıtı gerekir.",
+        "BASE-01 raporundaki 40 kademe ve haftalık paket bütçesi teslimle eşleşir; chest_tier/chest_count etiketi fazladan rastgele sandık üretmez. Kullanıcı kararıyla 12.240 XP tamamlama yükü korunur; SEASON-01 emirleri ve 234 ek sıradan parça önerisi uygulama kabulünde değerlendirilir; miktar/XP değişirse rapor yenilenir."
       ],
       "goals": [
         "content",
@@ -2044,7 +2065,15 @@
         4,
         9
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/first-season-launch-profile.md",
+        "server/app/season_entitlements.py",
+        "server/app/first_season_profile.py",
+        "server/data/first_season_launch_v1.json",
+        "server/tests/test_season_entitlements.py",
+        "tools/prepare_first_season.py",
+        "tools/tests/test_first_season_preparation.py"
+      ],
       "planned_releases": [
         "2.4.0"
       ]
@@ -2132,7 +2161,7 @@
       "owner": "Geliştirme / tasarım / QA",
       "effort": "S",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "RELEASE-00"
       ],
@@ -2144,7 +2173,9 @@
         "client/src/app.js",
         "client/index.html",
         "e2e/navigation-back.spec.js",
-        "e2e/reward-navigation.spec.js"
+        "e2e/reward-navigation.spec.js",
+        "client/src/tutorial/onboarding.js",
+        "client/src/tutorial/tutorial-controller.js"
       ],
       "proposed_paths": [
         "docs/planning/release-240-navigation-matrix.md"
@@ -2162,7 +2193,11 @@
         7,
         9
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/release-240-navigation-matrix.md",
+        "11 statik geri ve iki ileri kontrol sahibinin envanteri; tek sarı yüzey, eski mavi pseudo katmanlarının kaldırılması. Ödül/rehber TR/EN 320×568 ve 393×852 normal/basılı/odak/devre dışı kontrolü; Chromium, Android Chrome ve WebKit yerel gezinme akışları.",
+        "Takım yönetimi ve boş sohbet fixture’ı ile gerçek dönüş; mesaj gönderilmez. Fiziksel Android kabulü kullanıcı isteğiyle sonraya bırakıldı; her profil penceresinin dört dil/boyut birleşiminin ayrı görsel kabulü açık."
+      ],
       "planned_releases": [
         "2.4.0"
       ]
@@ -2174,7 +2209,7 @@
       "owner": "Geliştirme / tasarım / QA",
       "effort": "M",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "RELEASE-00"
       ],
@@ -2190,7 +2225,12 @@
         "tools/encode_mobile_audio.py",
         "client/tests/gridshard-audio.test.js",
         "client/tests/gridshard-audio-voice-limit.test.js",
-        "client/tests/gridshard-audio-mobile-formats.test.js"
+        "client/tests/gridshard-audio-mobile-formats.test.js",
+        "tools/combat_sfx_synth.py",
+        "tools/report_combat_audio.py",
+        "tools/tests/test_combat_audio_generation.py",
+        "e2e/battle-audio.spec.js",
+        "client/tests/battle-audio-240.test.js"
       ],
       "proposed_paths": [
         "docs/planning/release-240-module-audio-matrix.md"
@@ -2209,7 +2249,12 @@
         7,
         9
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/release-240-module-audio-matrix.md",
+        "docs/planning/release-240-audio-measurements.json",
+        "24 modül/10 saldırı envanteri; sekiz saldırı kaynağı sürekli faz/yumuşak uçlarla üretildi. Modül alt klasörü OGG/AAC üretimine ve içerik hash kontrolüne alındı; WAV olmayan pakette diğer codec fallback’i gerçek Chromium/Android öykünmesinde geçti.",
+        "24 cue izolasyonu ve 4 saniyelik yoğun miks: tepe 0.782059, kırpılan örnek 0; eski 3 rutin ses/420 ms bütçesi korundu. Fiziksel hoparlör/kulaklık dinlemesi kullanıcı isteğiyle ertelendi. Windows WebKit AudioContext sunmadığından yerel ses testi atlanır; macOS CI ses kapısı korunur."
+      ],
       "planned_releases": [
         "2.4.0"
       ]
@@ -2221,7 +2266,7 @@
       "owner": "Geliştirme / tasarım / QA",
       "effort": "S",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "AUDIO-01"
       ],
@@ -2233,7 +2278,11 @@
         "tools/generate-core-audio-v6.py",
         "client/tests/core-vfx-v6.test.js",
         "client/tests/gridshard-audio-resources.test.js",
-        "client/tests/gridshard-audio-browser-lifecycle.test.js"
+        "client/tests/gridshard-audio-browser-lifecycle.test.js",
+        "tools/combat_sfx_synth.py",
+        "tools/report_combat_audio.py",
+        "client/tests/battle-audio-240.test.js",
+        "e2e/battle-audio.spec.js"
       ],
       "proposed_paths": [
         "docs/planning/release-240-core-audio-matrix.md"
@@ -2252,7 +2301,11 @@
         7,
         9
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/release-240-core-audio-matrix.md",
+        "Yedi çekirdeğin 14 kaynak/türevi yenilendi; gerçek aktivasyon/atış sesleri görsel ankraj yokken de çalışır, yeniden snapshot çift ses üretmez. Takviye için yapay atış eklenmedi; shot kaynağı yalnız uyumluluktur.",
+        "Sürekli fazlı kısa imzalar, PCM/codec hash ölçümleri, gerçek tarayıcı decode/miks, mute/düşük ses/yaşam döngüsü ve olay tekilliği kontrol edildi. Fiziksel Android ses kabulü kullanıcı isteğiyle ertelendi; bu durum canlı yayın kabulü sayılmaz."
+      ],
       "planned_releases": [
         "2.4.0"
       ]
@@ -2709,6 +2762,152 @@
       "planned_releases": [
         "2.9.0"
       ]
+    },
+    {
+      "id": "REWARD-06",
+      "title": "Sabit ödül kasasında çekirdek parçası ve içerik sözleşmesini tamamla",
+      "stage": "R1",
+      "owner": "Backend / istemci / QA",
+      "effort": "M",
+      "priority": "P0",
+      "status": "in_progress",
+      "depends_on": [
+        "BASE-01"
+      ],
+      "existing_paths": [
+        "server/app/reward_delivery.py",
+        "server/app/meta_progression.py",
+        "server/app/player_profile.py",
+        "server/app/season_competition.py",
+        "server/tests/test_reward_delivery.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/release-240-fixed-crate-contract.md"
+      ],
+      "acceptance": [
+        "Haftalık, takım ve lider panosu ilk 10 ödülleri sabit kaynak/dönem/sıra/revision/hash içeriğiyle postalanır; rastgele mağaza sandığı ek teslim edilmez.",
+        "core_type_id/core_shards birlikte doğrulanıp tek işlemde teslim edilir; geçersiz/uygunsuz hedef ödülü sessizce düşürmez. Mevcut girişteki 25 çekirdek parçası korunur; yarışma kasasına ek tutar varsa ayrı baz bütçe toplamı yayın öncesi kaydedilir.",
+        "Kredi/Akı, modül/evrensel parça, kişisel kozmetik ve takım görünümü sahiplikleri ayrıdır; takım hakkı üyelerle çoğaltılmaz. Tekrar/eşzamanlı talep, restore ve premium kökeni korunur."
+      ],
+      "goals": [
+        "rewards",
+        "content",
+        "operations"
+      ],
+      "old_plan_sections": [
+        4,
+        5,
+        7,
+        9
+      ],
+      "evidence": [
+        "docs/planning/release-240-fixed-crate-contract.md",
+        "server/tests/test_inbox_open_delivery.py",
+        "e2e/casual-chest-opening.spec.js"
+      ],
+      "planned_releases": [
+        "2.4.0"
+      ]
+    },
+    {
+      "id": "UI-08",
+      "title": "Mesaj kutusu Topla işleminde ödül kasasının açılışını ve sonucunu göster",
+      "stage": "R1",
+      "owner": "Backend / istemci / QA",
+      "effort": "M",
+      "priority": "P0",
+      "status": "in_progress",
+      "depends_on": [
+        "REWARD-06",
+        "SEASON-00"
+      ],
+      "existing_paths": [
+        "client/src/app.js",
+        "client/index.html",
+        "client/src/reward-chest-art-v5.css",
+        "server/app/reward_delivery.py",
+        "e2e/casual-chest-opening.spec.js",
+        "e2e/reward-navigation.spec.js"
+      ],
+      "proposed_paths": [
+        "docs/planning/release-240-crate-opening-acceptance.md"
+      ],
+      "acceptance": [
+        "Topla → aynı kasa kimliğini teslim al/aç → kısa animasyon/ses → sunucu makbuzuyla ödül kartları akışı kurulur; oyuncu mağazada kasayı aramak zorunda kalmaz.",
+        "Kopma/yanıt kaybında envanter veya açılmış makbuz kurtarılır; çift tıklama/animasyonu tekrar oynatma ikinci ödül vermez. Topla Tümü seri kimliklerle açılır veya tek gerçek sonuç özetiyle atlanır.",
+        "Atla, azaltılmış hareket, mute, TR/EN 320/393 px ve Android kabulü; Kredi/Akı/modül/çekirdek/kozmetik sonucunun gerçek makbuzla eşliği doğrulanır. UI-03 seçim kasası 2.5 işidir; bu işi bekletmez."
+      ],
+      "goals": [
+        "presentation",
+        "rewards"
+      ],
+      "old_plan_sections": [
+        4,
+        5,
+        7,
+        9
+      ],
+      "evidence": [
+        "docs/planning/release-240-fixed-crate-contract.md",
+        "server/tests/test_inbox_open_delivery.py",
+        "e2e/casual-chest-opening.spec.js"
+      ],
+      "planned_releases": [
+        "2.4.0"
+      ]
+    },
+    {
+      "id": "SEASON-01",
+      "title": "Günlük ve sezonluk Devre Emirleri ile kontrollü XP ilerlemesini geliştir",
+      "stage": "R1",
+      "owner": "Backend / istemci / QA",
+      "effort": "L",
+      "priority": "P0",
+      "status": "in_progress",
+      "depends_on": [
+        "BASE-01",
+        "SEASON-00"
+      ],
+      "existing_paths": [
+        "server/app/player_profile.py",
+        "server/app/player_progression.py",
+        "server/app/match_accounting.py",
+        "client/src/app.js",
+        "client/index.html",
+        "server/tests/test_beta33_engagement.py",
+        "docs/planning/season-1-engagement-v1.json",
+        "server/app/season_missions.py",
+        "server/app/player_data_store.py",
+        "client/src/relay-client.js"
+      ],
+      "proposed_paths": [],
+      "acceptance": [
+        "40. kademe 12.240 XP olarak kalır. Mevcut altı günlük emrin 135 XP/75 Akı ödülü korunur; 4 ve 6 uygun savaş için ayrı 15 XP eklenir. Yeni emirler para/parça veya premium XP çarpanı vermez.",
+        "Sezonluk 12 emir toplam 1.800 XP tavanlıdır; savaş/zafer/aktif savaş günü/doğrulanmış çekirdek kullanımı sayaçları sezon kimliğiyle birikir. Günlük/Sezonluk sekmeleri, koşul ve bitiş zamanı görünür.",
+        "Mevcut maç sonrası doğrulanmış reklam bonusu korunur; maç başına bir hak. Altı maç/bir reklam senaryosu 27. gün; sekiz maç/reklamsız 25. gün bitirme beklentisidir, garanti oyuncu süresi değildir; düşük katılım otomatik tamamlamaz.",
+        "Oyuncu+sezon+maç/olay ve oyuncu+sezon+[UTC gün]+görev tekilliği; hesap değişimi, tekrar/eşzamanlı talep, gün/sezon sınırı, geç toplama ve restore test edilir. Kazanılmış görev XP kapanan sezonu doğru sırayla sonuçlandırır; yeni sezona XP taşmaz."
+      ],
+      "goals": [
+        "rewards",
+        "content",
+        "presentation"
+      ],
+      "old_plan_sections": [
+        4,
+        5,
+        7,
+        9
+      ],
+      "evidence": [
+        "docs/planning/release-240-mission-acceptance.md",
+        "server/app/season_missions.py",
+        "server/tests/test_season_missions.py",
+        "client/tests/season-missions.test.js",
+        "e2e/beta33-season.spec.js"
+      ],
+      "planned_releases": [
+        "2.4.0"
+      ]
     }
   ],
   "release_plan": [
@@ -2730,9 +2929,9 @@
       "gate_tasks": [
         "RELEASE-01"
       ],
-      "scope": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi.",
+      "scope": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri.",
       "keep_closed": "Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu.",
-      "exit": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur.",
+      "exit": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. REWARD-06, UI-08 ve SEASON-01; tekil makbuz, güvenli açılış ve 1.800 sezonluk XP tavanı kabulü.",
       "target_release_on": "2026-11-23",
       "scope_freezes_on": "2026-11-16",
       "season_starts_on": "2026-11-30",
@@ -2847,7 +3046,7 @@
     "target_version": "2.4.0",
     "branch": "main",
     "plan": "docs/RELEASE_2_4_0_GELISTIRME_PLANI_20261103.md",
-    "milestone": "existing_content_first_season",
+    "milestone": "fixed_crate_delivery_first_slice",
     "status": "in_progress",
     "scope_decision": "user_approved",
     "target_release_on": "2026-11-23",

@@ -95,6 +95,10 @@
         // Oyuncu işiyle ilerleyen adımda "İleri" yoktur.
         this.next.hidden = typeof step.until === "function";
         this.next.textContent = this.index === this.steps.length - 1 ? "Tamamla" : "İleri";
+        this.next.setAttribute("aria-label", this.next.textContent);
+        const arrow = !this.next.hidden && this.index < this.steps.length - 1;
+        this.next.classList.toggle("navigation-forward", arrow);
+        if (arrow) this.next.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg>';
       }
       if (step.target) {
         this.activeTarget = globalThis.document?.querySelector(step.target) || null;

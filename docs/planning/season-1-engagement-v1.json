@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "planning_only": false,
+  "runtime_implemented": true,
+  "release_acceptance_complete": false,
+  "mission_revision": 1,
+  "decision_date": "2026-11-04",
+  "release": "2.4.0",
+  "preserve_xp_thresholds": true,
+  "preserve_existing_six_daily_rewards": true,
+  "new_mission_rewards": "season_xp_only",
+  "eligible_modes": ["arena_ai", "ranked_pvp"],
+  "active_day_requires": "one_completed_eligible_battle_in_a_UTC_day",
+  "daily_extra": [
+    {"id": "daily_battles_4", "name_tr": "Devreye Devam", "metric": "completed_battles", "target": 4, "xp": 15},
+    {"id": "daily_battles_6", "name_tr": "Sonraki Hamle", "metric": "completed_battles", "target": 6, "xp": 15}
+  ],
+  "seasonal": [
+    {"id": "season_battles_20", "metric": "completed_battles", "target": 20, "xp": 150},
+    {"id": "season_battles_40", "metric": "completed_battles", "target": 40, "xp": 200},
+    {"id": "season_battles_80", "metric": "completed_battles", "target": 80, "xp": 250},
+    {"id": "season_battles_120", "metric": "completed_battles", "target": 120, "xp": 300},
+    {"id": "season_wins_10", "metric": "wins", "target": 10, "xp": 100},
+    {"id": "season_wins_25", "metric": "wins", "target": 25, "xp": 150},
+    {"id": "season_wins_40", "metric": "wins", "target": 40, "xp": 200},
+    {"id": "season_days_7", "metric": "active_days", "target": 7, "xp": 100},
+    {"id": "season_days_14", "metric": "active_days", "target": 14, "xp": 100},
+    {"id": "season_days_21", "metric": "active_days", "target": 21, "xp": 100},
+    {"id": "season_core_20", "metric": "core_uses", "target": 20, "xp": 50},
+    {"id": "season_core_50", "metric": "core_uses", "target": 50, "xp": 100}
+  ],
+  "projections": [
+    {"id": "login_only", "battles_per_day": 0, "wins_per_day": 0, "core_uses_per_day": 0, "existing_daily_xp": 0, "ads_per_day": 0},
+    {"id": "two_battles_three_missions", "battles_per_day": 2, "wins_per_day": 1, "core_uses_per_day": 2, "existing_daily_xp": 70, "ads_per_day": 0},
+    {"id": "four_battles_no_ads", "battles_per_day": 4, "wins_per_day": 2, "core_uses_per_day": 2, "existing_daily_xp": 135, "ads_per_day": 0},
+    {"id": "four_battles_two_ads", "battles_per_day": 4, "wins_per_day": 2, "core_uses_per_day": 2, "existing_daily_xp": 135, "ads_per_day": 2},
+    {"id": "six_battles_no_ads", "battles_per_day": 6, "wins_per_day": 3, "core_uses_per_day": 2, "existing_daily_xp": 135, "ads_per_day": 0},
+    {"id": "six_battles_one_ad", "battles_per_day": 6, "wins_per_day": 3, "core_uses_per_day": 2, "existing_daily_xp": 135, "ads_per_day": 1},
+    {"id": "eight_battles_no_ads", "battles_per_day": 8, "wins_per_day": 4, "core_uses_per_day": 2, "existing_daily_xp": 135, "ads_per_day": 0}
+  ]
+}

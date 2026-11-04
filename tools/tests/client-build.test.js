@@ -204,3 +204,24 @@ test("eski veya bozuk ses türevi paketi durdurur", async (t) => {
   await assert.rejects(buildClient({ root, environment: {} }), /hit\.m4a/);
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(destination, "client-build-manifest.json"))), manifest);
 });
+
+test("alt klasördeki modül sesleri paketlenir ve aynı boydaki türev bozulması reddedilir", async (t) => {
+  const { root, write } = fixture(t, { audio: true });
+  fs.mkdirSync(path.join(root,"client/assets/audio/modules"),{recursive:true});
+  fs.mkdirSync(path.join(root,"client/assets/audio/mobile/modules"),{recursive:true});
+  write("src/gridshard-audio.js",'globalThis.audioSources = ["./assets/audio/modules/railgun.wav"];');
+  write("src/gridshard-audio-formats.js",'globalThis.GRIDSHARD_AUDIO_ENCODINGS={version:1,formats:{ogg:["modules/railgun"],m4a:["modules/railgun"]}};');
+  write("assets/audio/modules/railgun.wav","RIFF-module");
+  write("assets/audio/mobile/modules/railgun.ogg","ogg-bytes");
+  write("assets/audio/mobile/modules/railgun.m4a","m4a-bytes!");
+  write("assets/audio/mobile/manifest.json",JSON.stringify({version:1,formats:["ogg","m4a"],sources:{"modules/railgun":{
+    sha256:sha256("RIFF-module"),wav_bytes:11,ogg_bytes:9,m4a_bytes:10,
+    ogg_sha256:sha256("ogg-bytes"),m4a_sha256:sha256("m4a-bytes!")
+  }}}));
+  const {destination,manifest}=await buildClient({root,environment:{}});
+  assert.deepEqual(manifest.audio.omitted_wav,["assets/audio/modules/railgun.wav"]);
+  assert.equal(fs.readFileSync(path.join(destination,"assets/audio/mobile/modules/railgun.m4a"),"utf8"),"m4a-bytes!");
+  write("assets/audio/mobile/modules/railgun.m4a","m4a-CORRUP");
+  await assert.rejects(buildClient({root,environment:{}}),/railgun\.m4a/);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(destination,"client-build-manifest.json"))),manifest);
+});

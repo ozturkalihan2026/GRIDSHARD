@@ -157,6 +157,7 @@ class ReviewAccessService:
         profile.battle_premium_season_id = profile.active_meta_season_id
         # All premium tiers are inspectable/claimable, without changing trophies.
         profile.season_xp = max(profile.season_xp, max(item["required_xp"] for item in SEASON_PREMIUM_REWARD_TRACK))
+        self.profiles._freeze_season_rewards(profile)
         if refill:
             # Demonstrate the content currency packs buy, NOT fabricated payment receipts.
             profile.flux_shards = max(profile.flux_shards, 1050)

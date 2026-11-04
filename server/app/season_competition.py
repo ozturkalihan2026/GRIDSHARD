@@ -227,8 +227,9 @@ def build_events_view(
         ai_teams={},
         legs=state.get("legs") or {},
     )
-    team_view["prizes"] = [period_reward("team_tournament", period_id_for(current), item["position"], item) for item in TEAM_PRIZES]
     launch = launch_status(current)
+    pending_content = launch['status'] == 'waiting_for_content'
+    team_view["prizes"] = [] if pending_content else [period_reward("team_tournament", period_id_for(current), item["position"], item) for item in TEAM_PRIZES]
     enough = len(weekly_rows) >= minimum_participants()
 
     return {
@@ -241,7 +242,7 @@ def build_events_view(
             "period": week,
             "rules_tr": "100 Devre Kredisi ile katıl. Katıldıktan sonra normal Arena savaşlarında kazandığın kupalar haftalık sıralamaya eklenir; sıralama pazartesi yenilenir.",
             "entry_fee": WEEKLY_ENTRY_FEE,
-            "prizes": [period_reward("weekly_tournament", week, item["position"], item) for item in WEEKLY_PRIZES],
+            "prizes": [] if pending_content else [period_reward("weekly_tournament", week['id'], item["position"], item) for item in WEEKLY_PRIZES],
             "standings": weekly_rows,
         },
         "team_tournament": team_view,

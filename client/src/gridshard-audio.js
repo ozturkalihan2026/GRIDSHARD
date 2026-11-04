@@ -177,10 +177,23 @@
   }
 
   function gridshardResolveAudioAsset(asset) {
-    const match = /^(.*\/assets\/audio\/)([\w.-]+)\.wav$/.exec(String(asset || ""));
+    const match = /^(.*\/assets\/audio\/)((?:modules\/)?[a-z0-9_]+)\.wav$/.exec(String(asset || ""));
     const encoding = match && gridshardPreferredEncoding();
     if (!encoding || !encoding.names.has(match[2])) return asset;
     return `${match[1]}mobile/${match[2]}.${encoding.extension}`;
+  }
+
+  function gridshardAudioCandidates(asset) {
+    const resolved = gridshardResolveAudioAsset(asset);
+    const result = [resolved];
+    const match = /^(.*\/assets\/audio\/)((?:modules\/)?[a-z0-9_]+)\.wav$/.exec(String(asset || ""));
+    if (match && resolved !== asset) {
+      for (const extension of ["ogg", "m4a"]) {
+        if (global.GRIDSHARD_AUDIO_ENCODINGS?.formats?.[extension]?.includes(match[2]))
+          result.push(`${match[1]}mobile/${match[2]}.${extension}`);
+      }
+    }
+    return [...new Set([...result, asset])];
   }
 
   function gridshardDecodeAudioAsset(context, asset) {
@@ -192,10 +205,14 @@
         return response.arrayBuffer();
       })
       .then((bytes) => context.decodeAudioData(bytes));
-    const resolved = gridshardResolveAudioAsset(asset);
-    if (resolved === asset) return load(asset);
-    // Mobil türev eksik veya çözülemiyorsa kanonik WAV'a düşülür.
-    return load(resolved).catch(() => load(asset));
+    // Production omits source WAVs: try the other shipped codec first.
+    return (async () => {
+      let failure;
+      for (const candidate of gridshardAudioCandidates(asset)) {
+        try { return await load(candidate); } catch (error) { failure = error; }
+      }
+      throw failure;
+    })();
   }
 
   function gridshardCachedAudioBuffer(context, cache, asset) {
@@ -303,6 +320,7 @@
     },
     pulse_cannon_fire:{
       asset:"./assets/audio/pulse_cannon_fire.wav",
+      gain:0.50,
       identity:"çift plazma basıncı → tok darbe",
     },
     railgun_fire:{
@@ -311,14 +329,17 @@
     },
     missile_fire:{
       asset:"./assets/audio/rocket_launch.wav",
+      gain:0.50,
       identity:"basınçlı roket motoru ve kısa hava yarılması",
     },
     missile_explosion:{
       asset:"./assets/audio/missile_explosion.wav",
+      gain:0.45,
       identity:"tok basınç patlaması ve kısa enkaz kuyruğu",
     },
     kinetic_hit:{
       asset:"./assets/audio/kinetic_hit.wav",
+      gain:0.45,
       identity:"kısa tok gövde darbesi, tonal çınlama yok",
     },
     electrical_hit:{
@@ -327,6 +348,7 @@
     },
     shield_absorb:{
       asset:"./assets/audio/shield_absorb.wav",
+      gain:0.40,
       identity:"plazma kalkanına emilen enerji, camsı zil sesi yok",
     },
     drone_fire:{
@@ -2289,16 +2311,18 @@
         && !this.soundMuted
         && this.sfxVolume>0;
       const played=audible && this._admitSfxVoice(name);
+      let playback=Promise.resolve(false);
       if (played) {
         const gain=this._cueGain(name);
         if (this._ensureAudioContext()) {
           const sfxGeneration=this._sfxPlaybackGeneration;
-          this._playAudioBuffer(cue.asset,{channel:"sfx",gain,sfxGeneration,pan})
+          playback=this._playAudioBuffer(cue.asset,{channel:"sfx",gain,sfxGeneration,pan})
             .then((played)=>{
-              if (!played && sfxGeneration===this._sfxPlaybackGeneration) this._playHtmlCue(cue,{gain});
+              if (!played && sfxGeneration===this._sfxPlaybackGeneration) return this._playHtmlCue(cue,{gain});
+              return played;
             });
         } else {
-          this._playHtmlCue(cue,{gain});
+          playback=this._playHtmlCue(cue,{gain});
         }
       }
 
@@ -2306,6 +2330,8 @@
         ok:true,
         name,
         played,
+        playback,
+        suppression:!audible ? "preferences_or_inactive" : !played ? "voice_limit" : null,
         normalizedPeakDbfs:
           GRIDSHARD_AUDIO_MIX
             .sfxPeakDbfs,

@@ -83,7 +83,7 @@ function compressedAudioReplacements(source, scripts, environment) {
   const listed = formats.map((extension) => new Set(runtime.formats[extension]));
   for (const name of new Set(listed.flatMap((names) => [...names]))) {
     const entry = manifest.sources[name];
-    if (!/^[a-z0-9_]+$/.test(name) || !entry) throw new Error(`Manifestte olmayan ses türevi: ${name}`);
+    if (!/^(?:modules\/)?[a-z0-9_]+$/.test(name) || !entry) throw new Error(`Manifestte olmayan ses türevi: ${name}`);
     const wav = path.join(audioRoot, `${name}.wav`);
     if (!fs.existsSync(wav)) throw new Error(`Türevi listelenen sesin kanonik WAV dosyası yok: ${name}.wav`);
     if (digest(fs.readFileSync(wav)) !== entry.sha256) {
@@ -94,6 +94,9 @@ function compressedAudioReplacements(source, scripts, environment) {
       const file = path.join(audioRoot, "mobile", `${name}.${extension}`);
       if (!fs.existsSync(file) || fs.statSync(file).size !== entry[`${extension}_bytes`]) {
         throw new Error(`Ses türevi eksik veya bozuk: ${name}.${extension}`);
+      }
+      if (entry[`${extension}_sha256`] && digest(fs.readFileSync(file)) !== entry[`${extension}_sha256`]) {
+        throw new Error(`Ses türevi içeriği bozuk: ${name}.${extension}`);
       }
     });
     if (listed.every((names) => names.has(name))) replaced.add(path.resolve(wav));
@@ -142,7 +145,8 @@ function runtimeAssets(source, html, scripts, omittedWav) {
   if (scripts.includes("./src/gridshard-audio.js")) {
     const audioScript = readText(sourceFile(source, "./src/gridshard-audio.js"));
     const audioNames = new Set();
-    for (const match of audioScript.matchAll(/["']\.\/assets\/audio\/([a-z0-9_]+)\.wav["']/g)) {
+    for (const match of html.matchAll(/\.\/assets\/audio\/((?:modules\/)?[a-z0-9_]+)\.wav/g)) audioNames.add(match[1]);
+    for (const match of audioScript.matchAll(/["']\.\/assets\/audio\/((?:modules\/)?[a-z0-9_]+)\.wav["']/g)) {
       audioNames.add(match[1]);
       add(`./assets/audio/${match[1]}.wav`);
     }

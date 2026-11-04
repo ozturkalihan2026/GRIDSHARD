@@ -93,11 +93,20 @@ def collect_chest(profile, message: dict, request_id: str, now_iso: str) -> dict
         # Competition crates have fixed contents and cosmetics, not a random
         # store roll. Preserve their payload until the actual opening.
         reward = deepcopy(message.get("chest") or {})
+        if message.get('reward_content_hash'):
+            from .season_entitlements import fingerprint
+            expected = fingerprint(dict(source=message.get('source'), period_id=message.get('period_id'),
+                position=int(message.get('position', 0)), team_id=message.get('team_id'), chest=reward))
+            if message['reward_content_hash'] != expected:
+                raise ValueError('Sezon ödül kaydı doğrulanamadı; kazanılmış hakkın korunuyor.')
         definition_id = TIER_DEFINITIONS.get(reward.get("chest_tier"), "field_3h")
         chest = {"chest_id": "mail-" + sha256(message["message_id"].encode()).hexdigest()[:32],
                  "definition_id": definition_id, "name_tr": reward.get("chest_name_tr", "Ödül Kasası"),
                  "source": message.get("source"), "source_battle_id": None,
                  "awarded_at": now_iso, "unlocks_at": now_iso, "fixed_reward": reward}
+        if message.get('reward_content_hash'):
+            chest.update(fixed_reward_hash=fingerprint(reward), reward_revision=message['reward_revision'],
+                         reward_content_hash=message['reward_content_hash'])
         if message.get("source") == "team_tournament" and message.get("team_id"):
             chest["team_reward"] = {"team_id": message["team_id"],
                                     "grant_id": f"team_tournament:{message.get('period_id')}:{message['team_id']}"}
@@ -167,12 +176,34 @@ def current_reward_contents(rewards: dict) -> dict:
 
 
 def apply_fixed_contents(profile, rewards: dict) -> None:
+    # Validate the complete payload before touching any wallet or ownership.
+    # A malformed fragment target must not leave a partially granted crate.
+    from .meta_progression import CORE_TYPES, unlocked_core_type_ids
+    from .arena_canon import unlocked_reward_module_ids
+    for field in ('circuit_credits', 'flux_shards', 'universal_module_shards', 'module_shards', 'core_shards'):
+        amount = rewards.get(field, 0)
+        if type(amount) is not int or amount < 0:
+            raise ValueError('Ödül kasasının içeriği doğrulanamadı; ödülün korunuyor.')
+    core_id = rewards.get('core_type_id')
+    if rewards.get('core_shards'):
+        known = {core['id'] for core in CORE_TYPES}
+        eligible = set(unlocked_core_type_ids(profile)) | set(profile.unlocked_core_types)
+        if not isinstance(core_id, str) or core_id not in known or core_id not in eligible:
+            raise ValueError('Ödül kasasındaki parça hedefi uygun değil; ödülün korunuyor.')
+    if rewards.get('module_shards'):
+        eligible = unlocked_reward_module_ids(profile.rating, profile.highest_rating, (), profile.legacy_module_unlocks)
+        if rewards.get('module_definition_id') not in eligible:
+            raise ValueError('Ödül kasasındaki parça hedefi uygun değil; ödülün korunuyor.')
     if rewards.get('module_definition_id') and rewards.get('module_shards'):
         from .catalog_migration import award_module_shards
         award_module_shards(profile, rewards['module_definition_id'], int(rewards['module_shards']))
     for field in ("circuit_credits", "flux_shards", "universal_module_shards"):
         setattr(profile, field, getattr(profile, field) + max(0, int(rewards.get(field, 0))))
+    if rewards.get('core_shards'):
+        profile.core_shards_by_type[core_id] = int(profile.core_shards_by_type.get(core_id, 0)) + rewards['core_shards']
     for key, attribute in PLAYER_UNLOCKS.items():
         value = str(rewards.get(key) or "").strip()
         if value:
             setattr(profile, attribute, tuple(dict.fromkeys((*getattr(profile, attribute), value))))
+    if rewards.get('title_tr'):
+        profile.unlocked_titles = tuple(dict.fromkeys((*profile.unlocked_titles, rewards['title_tr'])))

@@ -146,6 +146,11 @@
         }));
         this.next.hidden = view.mode !== "next";
         this.next.textContent = view.nextLabel || "İLERİ";
+        const nextLabel = view.nextLabel || "İLERİ";
+        const arrow = view.mode === "next" && !["BAŞLA", "TAMAM", "TAMAMLA"].includes(nextLabel);
+        this.next.classList.toggle("navigation-forward", arrow);
+        this.next.setAttribute("aria-label", nextLabel);
+        if (arrow) this.next.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg>';
         this.hint.textContent = view.mode === "tap" ? (view.hint || "Gösterilen yere dokun") : "";
         this.hint.hidden = view.mode !== "tap";
         this.progress.style.width = `${Math.round(Math.max(0, Math.min(1, Number(view.progress) || 0)) * 100)}%`;

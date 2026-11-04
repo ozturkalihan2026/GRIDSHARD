@@ -78,10 +78,12 @@
     }
     activation(d,s){
       if(!THEMES[d.power_id])return;
-      const a=this.core(s,d.player_id);if(!a)return;
+      const a=this.core(s,d.player_id);
+      this.cue(d.power_id,'activate',a?.center||{x:(this.layer()?.clientWidth||0)/2,y:0});
+      if(!a)return;
       const p=a.center,n=this.surface(d.power_id,[p]);n.dataset.coreEvent='activation';
       this.ring(n,p,47,'core-charge-ring');this.emblem(n,p,THEMES[d.power_id].shape);
-      this.put(`activation:${d.player_id}`,n,this.reduced()?350:1000);this.cue(d.power_id,'activate',p);
+      this.put(`activation:${d.player_id}`,n,this.reduced()?350:1000);
       for(const t of d.affected_targets||[]){
         const b=this.point(s,t.player_id,t.module_id);if(!b)continue;
         if(d.role==='reinforcement'){
@@ -102,6 +104,7 @@
     shot(d,s){
       if(!THEMES[d.power_id])return;
       const a=this.point(s,d.attacker_player_id,d.attacker_module_id),b=this.point(s,d.target_player_id,d.target_module_id,d.target_position);
+      this.cue(d.power_id,'shot',b?.center||{x:(this.layer()?.clientWidth||0)/2,y:0});
       if(!a||!b)return;
       const from=a.center,to=b.center,n=this.surface(d.power_id,[from,to]),shape=THEMES[d.power_id].shape;
       n.dataset.coreEvent='impact';n.dataset.coreTarget=d.target_module_id;n.dataset.coreDamage=String(d.damage||0);
@@ -131,7 +134,6 @@
       if(!d.damage)this.ring(n,to,39,'core-blocked');
       // One distinct effect per affected target: an AoE never overwrites itself.
       this.put(`hit:${d.attacker_player_id}:${d.target_module_id}`,n,this.reduced()?320:shape==='storm'?520:900);
-      this.cue(d.power_id,'shot',to);
     }
     sync(s){
       const keep=new Set();

@@ -659,6 +659,8 @@ class PlayerDataStoreService:
             "operator_title_claims": list(profile.operator_title_claims),
             "legacy_module_unlocks": list(profile.legacy_module_unlocks),
             "active_season_id": profile.active_meta_season_id,
+            "season_mission_state": deepcopy(profile.season_mission_state),
+            "season_reward_state": deepcopy(profile.season_reward_state),
             "season_archives": [dict(item) for item in profile.season_archives],
             "coins": profile.coins,
             "circuit_credits": profile.circuit_credits,
@@ -696,6 +698,7 @@ class PlayerDataStoreService:
                 for request_id, receipt in profile.shop_receipts.items()
             },
             "weekly_tournament_period": profile.weekly_tournament_period,
+            "weekly_reward_closures": deepcopy(profile.weekly_reward_closures),
             "weekly_tournament_matches": profile.weekly_tournament_matches,
             "weekly_tournament_wins": profile.weekly_tournament_wins,
             "weekly_tournament_registered_period": profile.weekly_tournament_registered_period,
@@ -849,6 +852,9 @@ class PlayerDataStoreService:
                 for value in engagement.get("claimed_season_tiers", [])
             ),
             daily_mission_day=str(engagement.get("daily_mission_day", "")),
+            season_mission_state=deepcopy(meta.get("season_mission_state") or {}),
+            season_reward_state=deepcopy(meta.get("season_reward_state") or {}),
+            weekly_reward_closures=deepcopy(meta.get("weekly_reward_closures") or {}),
             daily_mission_progress={
                 str(item.get("id")): int(item.get("progress", 0))
                 for item in engagement.get("daily_missions", [])

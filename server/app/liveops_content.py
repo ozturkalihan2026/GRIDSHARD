@@ -157,9 +157,12 @@ def content_coverage(cosmetics, *, sources=None, cycles=2, starts_at=None,
     for source, count in counts.items():
         contract = sources.sources[source]
         row_assigned = {}
+        resource_periods = [period for period in periods.get(source, ())
+                            if cosmetics.releases.get((source, period), {}).get('reward_kind') == 'resource_only']
+        cosmetic_count = count - len(resource_periods)
         for field, amount in contract["cosmetics_per_period"].items():
             key = (contract["stock_pool"], field)
-            required[key] += amount * count
+            required[key] += amount * cosmetic_count
             # A larger authored placement cannot cancel another period's need.
             covered = 0
             for period in periods.get(source, ()):
@@ -170,6 +173,7 @@ def content_coverage(cosmetics, *, sources=None, cycles=2, starts_at=None,
             row_assigned[field] = covered
         source_rows.append({"source": source, "state": contract["state"], "stock_pool": contract["stock_pool"],
                             "period_count": count, "period_ids": periods.get(source),
+                            "resource_only_periods": resource_periods, "cosmetic_period_count": cosmetic_count,
                             "cosmetics_per_period": dict(contract["cosmetics_per_period"]), "reserved_for_calendar": row_assigned})
     tasks = [{"stock_pool": pool, "field": field, "required": total,
               "reserved_for_calendar": assigned[pool, field], "ready_unassigned": available[pool, field],

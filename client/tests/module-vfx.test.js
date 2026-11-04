@@ -69,7 +69,8 @@ test("24 canon profiles use bounded quiet WAVs and are present in the web/native
     assert.equal(bytes.toString("ascii",0,4),"RIFF");assert.equal(bytes.readUInt32LE(24),22050);
     assert.ok(bytes.length<23000);assert.equal(bytes.readInt16LE(44),0);
     let peak=0;for(let i=44;i<bytes.length;i+=2)peak=Math.max(peak,Math.abs(bytes.readInt16LE(i))/32768);
-    assert.ok(peak>0&&peak<.23,p.id);
+    const retuned = ['railgun','drone_bay','arc_cannon','plasma_mortar','quantum_repeater','burst_cannon','shield_breaker'].includes(p.id);
+    assert.ok(peak>0&&peak<(retuned?.381:.23),p.id);
     hashes.add(crypto.createHash("sha256").update(bytes).digest("hex"));
   }
   assert.equal(Object.keys(profiles).length,24);assert.equal(hashes.size,24);

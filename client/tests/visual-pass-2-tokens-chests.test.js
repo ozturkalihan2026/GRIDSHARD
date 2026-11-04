@@ -208,7 +208,7 @@ Object.assign(this, { createModulePuzzlePiece });`, sandbox);
 test("ödül bölümleri sayfasında her satırın kendi simgesi vardır", () => {
   for (const [screen, icon, label] of [
     ["daily-rewards", "calendar:gold", "Günlük Ödüller"],
-    ["daily-missions", "target:red", "Günlük Devre Emirleri"],
+    ["daily-missions", "target:red", "Devre Emirleri"],
     ["rewards", "trophy:violet", "Sezon Ödülleri"],
   ]) {
     assert.ok(html.includes(`<button type="button" data-ui-icon="${icon}" data-open-screen="${screen}"><strong>${label}</strong></button>`), screen);

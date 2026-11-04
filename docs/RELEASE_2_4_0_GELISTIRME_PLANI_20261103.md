@@ -1,5 +1,13 @@
 # GRIDSHARD 2.4.0 — mevcut içerikle ilk sezon
 
+**4 Kasım kullanıcı açıklaması:** XP açığı bilinçlidir; 12.240 son kademe eşiği
+korunur. Günlük/sezonluk emirler (SEASON-01), mesaj kutusu Topla kasa açılışı
+(UI-08) ve sabit kasa çekirdek teslimi (REWARD-06) 2.4.0 zorunlu kapsamıdır.
+[S1 ödül ve XP sözleşmesi](planning/season-1-rewards-and-xp.md) miktarları,
+senaryoları, akışı ve kalıcılık kabulünü ayrıntılandırır. Bu ek işler önceki
+14–17 aktif gün tahminine dahildir diye varsayılmaz; 6 Kasım kapasite kontrolünde
+yeniden ölçülür. Yayın/sezon hedefleri otomatik kaydırılmadı.
+
 **4 Kasım ayrıntılandırması:** Güncel [2.4.0 uygulama briefi](planning/releases/2.4.0.md)
 haftalık sıra, uygulama adımları, dosya bağlantıları ve checklist görevlerini birlikte
 gösterir. Bütün sürümler için [bağlı rehber](GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md).

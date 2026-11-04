@@ -2,7 +2,7 @@
 
 **Tarih: 3 Kasım 2026 · Proje: mağaza, ödül, içerik ve yaşayan oyun**
 
-Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **68 iş** vardır: **57 yapılacak**, **2 çalışılıyor**, **2 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
+Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **71 iş** vardır: **52 yapılacak**, **3 dalda hazır; canlıda yok**, **6 çalışılıyor**, **3 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
 
 **Son ayrıntılandırma: 4 Kasım 2026.** Takvim → sürüm briefi → görev → dosya/kanıt bağlantıları kuruldu; 2.4.0 sarı geri/ileri kontrolleri ve saldırı/çekirdek sesleri zorunlu kapsamdadır.
 
@@ -49,7 +49,7 @@ Bütün sürümlerde mevcut onaylı sanat yönü korunur. Yön değişecekse ön
 | --- | --- |
 | Canlı sunucu 2.3.0 | Profil/takım düzeltmeleri, ortak yalnız-ok geri düğmeleri ve sürüm mesajları; mevcut mağaza/sandık/ödül sistemi korunur. |
 | Canlıda kilitli | 15 kozmetik ve üç tema önizlemesi; tahsis/yayın sıfır, mevcut sahiplik korundu; `COS-01` tamam. |
-| Bu turda hazırlanan | Kaynaklı araştırma, teknik tasarım, 68 görev, sürümlü yayın kademeleri ve yerel plan doğrulama aracı. |
+| Bu turda hazırlanan | Kaynaklı araştırma, teknik tasarım, 71 görev, sürümlü yayın kademeleri ve yerel plan doğrulama aracı. |
 | Uygulanacak | Yeni teklifler, seçim hakları, kapanış kurtarması, genel takvim kapısı, yeni ekranlar ve modlar. |
 
 2.3.0 sunucu ve AAB yayını kullanıcı tarafından teyit edildi; RELEASE-00 tamam. Fiziksel cihaz testinin ayrıca raporlanmadığı kayıtta korunur. Aktif geliştirme 2.4.0 mevcut 24 modülle ilk sezon açılışıdır; geniş üretim sonraki paketlere bölündü.
@@ -73,7 +73,7 @@ R1/R2/R3 bir takvim günü veya kesin sürüm sözü değildir. Tek geliştirici
 | Sürüm | Hedef yayın | Oyuncuya gelen kapsam | Kapalı kalan | Çıkış kapısı |
 | --- | --- | --- | --- | --- |
 | **2.3.0 — Kilitli kozmetik ve önizleme** | Yayımlandı | Kutup Işığı, Güneş Ocağı ve Derin Akım: 15 kilitli oyuncu/takım öğesi, adlar, önizleme ve açık kilit açıklaması. | Sezon/turnuva başlangıcı, yeni ödül tahsisi, yeni mağaza ürünü ve yeni modlar. | RELEASE-00: Kilit/kuşanma, eski sahiplik, TR/EN ve iki mobil boyut; sürüm mesajı, yeşil CI, veri koruyan sunucu ve yeni imzalı AAB. |
-| **[2.4.0](planning/releases/2.4.0.md) — Mevcut içerikle ilk sezon** | 2026-11-23 | Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. | Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu. | RELEASE-01: İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. |
+| **[2.4.0](planning/releases/2.4.0.md) — Mevcut içerikle ilk sezon** | 2026-11-23 | Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. | Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu. | RELEASE-01: İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. REWARD-06, UI-08 ve SEASON-01; tekil makbuz, güvenli açılış ve 1.800 sezonluk XP tavanı kabulü. |
 | **[2.5.0](planning/releases/2.5.0.md) — Seçim kasası, mağaza ve ilk yeni modül** | 2026-12-21 | Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. | Yeni gerçek para ürünü, yeni para birimi, ücretli yeniden çekiliş ve PvP deneme gücü artışı. | RELEASE-02: Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. |
 | **[2.6.0](planning/releases/2.6.0.md) — Günlük deney ve ikinci yeni modül** | 2027-01-18 | Günlük Devre Deneyi: önce 7 özgün problem, ilk başarı ödülü ve keşif günlüğü; Kor Fırlatıcı; üçüncü sezon için 6 yeni oyuncu kozmetiği. | Dereceli maçta kiralık güç, PvE seferi ve ayrı kalıcı PvP kuyruğu. | RELEASE-03: Sunucu doğrulaması, ilk/tekrar ödülü ayrımı, gün değişimi, kaynak bütçesi, yeni problem stoğu ve modül karşı oyunu. |
 | **[2.7.0](planning/releases/2.7.0.md) — PvE Seferi** | 2027-02-15 | Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi. | Takım boss'u ve gerçek zamanlı 2v2. | RELEASE-04: Koşu kurtarma, ilk/tekrar ödülü, yan rota tek teslimi; yeni modül için çalışma kodu/görsel/denge/ücretsiz edinim. CARD-03 taslak brief'i hazır modül sayılmaz. İlk üç takım seti tüketildiyse yeni takım seti de üretilir; oyuncu stoğu buna yetmiş sayılmaz. |
@@ -113,14 +113,15 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 <a id="base-01"></a>
 
-- [ ] **BASE-01 — Mevcut ekonomi ve ürünlerin baz çizgisini çıkar**
-  - Durum: Yapılacak. Öncelik: P0; rol: Oyun tasarımı / backend; efor: M.
+- [x] **BASE-01 — Mevcut ekonomi ve ürünlerin baz çizgisini çıkar**
+  - Durum: Kanıtla tamamlandı. Öncelik: P0; rol: Oyun tasarımı / backend; efor: M.
   - Önkoşullar: yok.
-  - Mevcut bağlar: `server/app/meta_progression.py`, `server/app/player_progression.py`, `server/app/store_catalog.py`.
-  - Yeni teslim önerisi: `docs/planning/economy-baseline.md`.
+  - Mevcut bağlar: `server/app/meta_progression.py`, `server/app/player_progression.py`, `server/app/store_catalog.py`, `server/app/season_competition.py`, `server/app/player_profile.py`, `server/app/reward_delivery.py`, `server/app/match_accounting.py`.
+  - Yeni teslim önerisi: `docs/planning/economy-baseline.md`, `docs/planning/economy-baseline.json`, `tools/report_economy_baseline.py`.
   - Sürüm briefleri: [2.4.0](planning/releases/2.4.0.md).
   - Kabul 1: Dört sandığın garanti/olasılık, fiyat, limit ve hediye kaynağı tek tabloda doğrulanır.
   - Kabul 2: Ücretsiz/premium/AI-insan ayrımı ve kaynak giriş-çıkış varsayımları kaydedilir; mevcut fiyatlar değiştirilmez.
+  - Geçmiş hazırlık kanıtı: `docs/planning/economy-baseline.md`, `docs/planning/economy-baseline.json`, `tools/report_economy_baseline.py`, `tools/tests/test_economy_baseline.py`, `tools/tests/test_economy_income_model.py`.
 
 <a id="base-02"></a>
 
@@ -307,13 +308,14 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 - [ ] **RELEASE-01 — 2.4.0 mevcut içerikle ilk sezonu yayıma hazırla**
   - Durum: Yapılacak. Öncelik: P0; rol: Ürün / QA / operasyon; efor: L.
-  - Önkoşullar: SEASON-00, COMPAT-01, RELEASE-00, UI-07, AUDIO-01, AUDIO-02, COS-04.
+  - Önkoşullar: SEASON-00, COMPAT-01, RELEASE-00, UI-07, AUDIO-01, AUDIO-02, COS-04, REWARD-06, UI-08, SEASON-01.
   - Mevcut bağlar: `.github/workflows/quality.yml`, `tools/release_guard.py`, `tools/package_release.py`, `server/data/game_updates.json`.
   - Yeni teslim önerisi: `docs/planning/release-r1-evidence.md`.
   - Sürüm briefleri: [2.4.0](planning/releases/2.4.0.md).
   - Kabul 1: Mevcut 24 modül ve 15 kozmetikle S1 profili, sabit kaynak haftaları, tekil teslim, kapanış hakları ve gerçek restore kanıtı tamamlanır.
   - Kabul 2: 23 Kasım hedefli sürüm notu/CI/AAB ve 30 Kasım hedefli başlangıç ayrı kapılardır; eski istemci, TR/EN mobil ve Play cihaz testi geçmeden açılmaz. Yeni kart veya 18 yeni kozmetik bu sürümün koşulu değildir.
   - Kabul 3: UI-07 sarı geri/ileri envanteri, AUDIO-01 saldırı ve AUDIO-02 çekirdek ses matrisleri ile Android dinleme kabulü kapanmadan 2.4.0 tamamlanmaz.
+  - Kabul 4: Sabit kasa çekirdek teslimi, Topla açılış animasyonu ve 12.240 XP eşiğini koruyan günlük/sezonluk emirler kabul edilmeden S1 yayını tamamlanmaz.
 
 <a id="release-00"></a>
 
@@ -332,16 +334,18 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 <a id="season-00"></a>
 
 - [ ] **SEASON-00 — Mevcut içerikle ilk sezon ve kaynak ödülü profilini geliştir**
-  - Durum: Yapılacak. Öncelik: P0; rol: Backend / QA / ürün; efor: L.
+  - Durum: Çalışılıyor. Öncelik: P0; rol: Backend / QA / ürün; efor: L.
   - Önkoşullar: BASE-01, COS-01.
-  - Mevcut bağlar: `server/app/season_module_releases.py`, `server/app/cosmetic_releases.py`, `server/app/liveops_content.py`, `server/app/competition_control.py`, `server/app/reward_delivery.py`, `server/tests/test_production_launch.py`.
-  - Yeni teslim önerisi: `docs/planning/first-season-launch-profile.md`.
+  - Mevcut bağlar: `server/app/season_module_releases.py`, `server/app/cosmetic_releases.py`, `server/app/liveops_content.py`, `server/app/competition_control.py`, `server/app/reward_delivery.py`, `server/tests/test_production_launch.py`, `server/app/season_entitlements.py`, `server/app/first_season_profile.py`, `server/data/first_season_launch_v1.json`, `server/tests/test_season_entitlements.py`.
+  - Yeni teslim önerisi: mevcut temel korunur.
   - Sürüm briefleri: [2.4.0](planning/releases/2.4.0.md).
   - Kabul 1: Yalnız ilk açılış sezonu mevcut 24 modülle başlayabilir; açık profil/tek sezon sınırı test edilir. S2 ve sonrasında yeni hazır modül koşulu korunur.
   - Kabul 2: Kaynak ödüllü dönem açık türdür; eksik kozmetiği saklamak veya eski kozmetiğe düşmek için adet sıfırlanmaz. Kaynak/kozmetik önizlemesi gerçek sabit teslimle eşleşir.
   - Kabul 3: Kutup Işığı sezon yolu, Güneş Ocağı sıralama ve Derin Akım son hafta önerisi tekil stok/tahsis ile doğrulanır; üç oyuncu seti başka döneme dönmez.
   - Kabul 4: Kazanılmış/toplanmamış ve premium kökenli haklar sezon kapanışı, geç dönüş, tekrar/eşzamanlı talep ve restart/restore sırasında korunur. Profil/ekonomi sıfırlanmaz.
   - Kabul 5: 40 kademe/haftalık bütçe, gerçek katılım eşiği, owner/AI hariçliği, TR/EN 320/393 px, bağımsız takım başlangıcı ve yayın durdurma kanıtı gerekir.
+  - Kabul 6: BASE-01 raporundaki 40 kademe ve haftalık paket bütçesi teslimle eşleşir; chest_tier/chest_count etiketi fazladan rastgele sandık üretmez. Kullanıcı kararıyla 12.240 XP tamamlama yükü korunur; SEASON-01 emirleri ve 234 ek sıradan parça önerisi uygulama kabulünde değerlendirilir; miktar/XP değişirse rapor yenilenir.
+  - Geçmiş hazırlık kanıtı: `docs/planning/first-season-launch-profile.md`, `server/app/season_entitlements.py`, `server/app/first_season_profile.py`, `server/data/first_season_launch_v1.json`, `server/tests/test_season_entitlements.py`, `tools/prepare_first_season.py`, `tools/tests/test_first_season_preparation.py`.
 
 <a id="compat-01"></a>
 
@@ -356,39 +360,82 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 <a id="ui-07"></a>
 
-- [ ] **UI-07 — Bütün geri ve ileri gezinme kontrollerini son sarı tasarımda birleştir**
-  - Durum: Yapılacak. Öncelik: P0; rol: Geliştirme / tasarım / QA; efor: S.
+- [x] **UI-07 — Bütün geri ve ileri gezinme kontrollerini son sarı tasarımda birleştir**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P0; rol: Geliştirme / tasarım / QA; efor: S.
   - Önkoşullar: RELEASE-00.
-  - Mevcut bağlar: `client/src/navigation-back-v1.css`, `client/src/canon.css`, `client/src/ui-components-v2.css`, `client/src/visual-polish-v9.css`, `client/src/app.js`, `client/index.html`, `e2e/navigation-back.spec.js`, `e2e/reward-navigation.spec.js`.
+  - Mevcut bağlar: `client/src/navigation-back-v1.css`, `client/src/canon.css`, `client/src/ui-components-v2.css`, `client/src/visual-polish-v9.css`, `client/src/app.js`, `client/index.html`, `e2e/navigation-back.spec.js`, `e2e/reward-navigation.spec.js`, `client/src/tutorial/onboarding.js`, `client/src/tutorial/tutorial-controller.js`.
   - Yeni teslim önerisi: `docs/planning/release-240-navigation-matrix.md`.
   - Sürüm briefleri: [2.4.0](planning/releases/2.4.0.md).
   - Kabul 1: Ödüllerdeki her alt sayfa dahil sistemdeki geri/ileri gezinme düğmelerinin ekran/selector/yön/hedef envanteri çıkarılır. Son navigation-back-v1.css sarı yüzey, kahverengi kenar, gölge ve 44×44 boyut tek referanstır; ileri yalnız ok yönüyle ayrılır.
   - Kabul 2: Normal/basılı/odaklı/devre dışı durumlarda eski mavi yüzey veya pseudo-element sızıntısı kalmaz. İptal/geri al/satın al gibi başka işlemler gezinme diye dönüştürülmez; hedef ve tarayıcı/native geri davranışı korunur.
   - Kabul 3: Günlük ödül/görev, sezon yolu, sıralama, haftalık/takım ödülü ve tüm diğer envanter satırları TR/EN 320×568 ve 393×852 üzerinde ekran görüntüsü ve gerçek gidiş/dönüşle doğrulanır; ileri kontrolleri ayrı kapsanır.
+  - Geçmiş hazırlık kanıtı: `docs/planning/release-240-navigation-matrix.md`, `11 statik geri ve iki ileri kontrol sahibinin envanteri; tek sarı yüzey, eski mavi pseudo katmanlarının kaldırılması. Ödül/rehber TR/EN 320×568 ve 393×852 normal/basılı/odak/devre dışı kontrolü; Chromium, Android Chrome ve WebKit yerel gezinme akışları.`, `Takım yönetimi ve boş sohbet fixture’ı ile gerçek dönüş; mesaj gönderilmez. Fiziksel Android kabulü kullanıcı isteğiyle sonraya bırakıldı; her profil penceresinin dört dil/boyut birleşiminin ayrı görsel kabulü açık.`.
 
 <a id="audio-01"></a>
 
-- [ ] **AUDIO-01 — Saldırı modüllerinin VFX ses kapsamını tamamla ve cızırtıyı gider**
-  - Durum: Yapılacak. Öncelik: P0; rol: Geliştirme / tasarım / QA; efor: M.
+- [x] **AUDIO-01 — Saldırı modüllerinin VFX ses kapsamını tamamla ve cızırtıyı gider**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P0; rol: Geliştirme / tasarım / QA; efor: M.
   - Önkoşullar: RELEASE-00.
-  - Mevcut bağlar: `client/src/gridshard-audio.js`, `client/src/gridshard-audio-formats.js`, `client/src/battle/module-vfx.js`, `client/src/battle/module-presentation-profiles.js`, `client/src/app.js`, `client/assets/audio`, `tools/generate-module-audio.py`, `tools/audio_lufs_scan.py`, `tools/encode_mobile_audio.py`, `client/tests/gridshard-audio.test.js`, `client/tests/gridshard-audio-voice-limit.test.js`, `client/tests/gridshard-audio-mobile-formats.test.js`.
+  - Mevcut bağlar: `client/src/gridshard-audio.js`, `client/src/gridshard-audio-formats.js`, `client/src/battle/module-vfx.js`, `client/src/battle/module-presentation-profiles.js`, `client/src/app.js`, `client/assets/audio`, `tools/generate-module-audio.py`, `tools/audio_lufs_scan.py`, `tools/encode_mobile_audio.py`, `client/tests/gridshard-audio.test.js`, `client/tests/gridshard-audio-voice-limit.test.js`, `client/tests/gridshard-audio-mobile-formats.test.js`, `tools/combat_sfx_synth.py`, `tools/report_combat_audio.py`, `tools/tests/test_combat_audio_generation.py`, `e2e/battle-audio.spec.js`, `client/tests/battle-audio-240.test.js`.
   - Yeni teslim önerisi: `docs/planning/release-240-module-audio-matrix.md`.
   - Sürüm briefleri: [2.4.0](planning/releases/2.4.0.md).
   - Kabul 1: Aktif 24 modüllük katalogdan bütün saldırı modülleri ve hasar veren özel olaylar listelenir: event, VFX, cue, WAV, mobil türev, tetikleme ve duyulma kanıtı. Eksik dosya, eksik event bağlantısı ve miks/voice-limit bastırması ayrı teşhis edilir.
   - Kabul 2: Atış/isabet/özel etki kimliği okunur; cızırtılı örnekler ham dosya ve miks içinde karşılaştırılır. Tepe/clip, DC, başlangıç-bitiş süreksizliği, decode ve ses yığılması ölçülür; nedenine göre yeniden düzenleme/üretim yapılır, yalnız toplam sesi yükseltmek çözüm sayılmaz.
   - Kabul 3: İzolasyonda her gerekli olayın sesi çalışır. Yoğun savaşta sınırlayıcının bilinçli bastırması kayıtlıdır; eksik bağlantı gibi gizlenmez. Müzik dengesi, mute/volume, pause/resume ve eski voice bütçesi korunur; gerçek Android hoparlör/kulaklık kaydıyla rahatsız edici cızırtı kalmadığı kabul edilir.
+  - Geçmiş hazırlık kanıtı: `docs/planning/release-240-module-audio-matrix.md`, `docs/planning/release-240-audio-measurements.json`, `24 modül/10 saldırı envanteri; sekiz saldırı kaynağı sürekli faz/yumuşak uçlarla üretildi. Modül alt klasörü OGG/AAC üretimine ve içerik hash kontrolüne alındı; WAV olmayan pakette diğer codec fallback’i gerçek Chromium/Android öykünmesinde geçti.`, `24 cue izolasyonu ve 4 saniyelik yoğun miks: tepe 0.782059, kırpılan örnek 0; eski 3 rutin ses/420 ms bütçesi korundu. Fiziksel hoparlör/kulaklık dinlemesi kullanıcı isteğiyle ertelendi. Windows WebKit AudioContext sunmadığından yerel ses testi atlanır; macOS CI ses kapısı korunur.`.
 
 <a id="audio-02"></a>
 
-- [ ] **AUDIO-02 — Çekirdeklerin aktivasyon ve etki seslerini tamamla ve miksle**
-  - Durum: Yapılacak. Öncelik: P0; rol: Geliştirme / tasarım / QA; efor: S.
+- [x] **AUDIO-02 — Çekirdeklerin aktivasyon ve etki seslerini tamamla ve miksle**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P0; rol: Geliştirme / tasarım / QA; efor: S.
   - Önkoşullar: AUDIO-01.
-  - Mevcut bağlar: `client/src/battle/core-vfx-v6.js`, `client/src/gridshard-audio.js`, `client/src/app.js`, `client/assets/audio`, `tools/generate-core-audio-v6.py`, `client/tests/core-vfx-v6.test.js`, `client/tests/gridshard-audio-resources.test.js`, `client/tests/gridshard-audio-browser-lifecycle.test.js`.
+  - Mevcut bağlar: `client/src/battle/core-vfx-v6.js`, `client/src/gridshard-audio.js`, `client/src/app.js`, `client/assets/audio`, `tools/generate-core-audio-v6.py`, `client/tests/core-vfx-v6.test.js`, `client/tests/gridshard-audio-resources.test.js`, `client/tests/gridshard-audio-browser-lifecycle.test.js`, `tools/combat_sfx_synth.py`, `tools/report_combat_audio.py`, `client/tests/battle-audio-240.test.js`, `e2e/battle-audio.spec.js`.
   - Yeni teslim önerisi: `docs/planning/release-240-core-audio-matrix.md`.
   - Sürüm briefleri: [2.4.0](planning/releases/2.4.0.md).
   - Kabul 1: Aktif bütün çekirdekler için aktivasyon ve varsa atış/isabet/iyileştirme/kalkan/yeniden doğuş olayı eşlenir; mevcut yedi core cue ailesi kontrol edilir. Olmayan bir mekanik için yapay atış üretilmez.
   - Kabul 2: Her çekirdek ayırt edilebilir kısa ses imzası alır; aktivasyon ile tekrarlanan etki seviyesi dengelenir. Re-render/tekrar snapshot çift ses üretmez; öncelikli sesler dahi miks taşmasına yol açmaz.
   - Kabul 3: Saldırı sesleriyle birlikte yoğun savaş, düşük ses, mute, arka plan dönüşü ve Android decode/fallback kabulü kanıtlanır; cızırtı dinleme kaydı AUDIO-01 ile aynı oturumda alınır.
+  - Geçmiş hazırlık kanıtı: `docs/planning/release-240-core-audio-matrix.md`, `Yedi çekirdeğin 14 kaynak/türevi yenilendi; gerçek aktivasyon/atış sesleri görsel ankraj yokken de çalışır, yeniden snapshot çift ses üretmez. Takviye için yapay atış eklenmedi; shot kaynağı yalnız uyumluluktur.`, `Sürekli fazlı kısa imzalar, PCM/codec hash ölçümleri, gerçek tarayıcı decode/miks, mute/düşük ses/yaşam döngüsü ve olay tekilliği kontrol edildi. Fiziksel Android ses kabulü kullanıcı isteğiyle ertelendi; bu durum canlı yayın kabulü sayılmaz.`.
+
+<a id="reward-06"></a>
+
+- [ ] **REWARD-06 — Sabit ödül kasasında çekirdek parçası ve içerik sözleşmesini tamamla**
+  - Durum: Çalışılıyor. Öncelik: P0; rol: Backend / istemci / QA; efor: M.
+  - Önkoşullar: BASE-01.
+  - Mevcut bağlar: `server/app/reward_delivery.py`, `server/app/meta_progression.py`, `server/app/player_profile.py`, `server/app/season_competition.py`, `server/tests/test_reward_delivery.py`.
+  - Yeni teslim önerisi: `docs/planning/release-240-fixed-crate-contract.md`.
+  - Sürüm briefleri: [2.4.0](planning/releases/2.4.0.md).
+  - Kabul 1: Haftalık, takım ve lider panosu ilk 10 ödülleri sabit kaynak/dönem/sıra/revision/hash içeriğiyle postalanır; rastgele mağaza sandığı ek teslim edilmez.
+  - Kabul 2: core_type_id/core_shards birlikte doğrulanıp tek işlemde teslim edilir; geçersiz/uygunsuz hedef ödülü sessizce düşürmez. Mevcut girişteki 25 çekirdek parçası korunur; yarışma kasasına ek tutar varsa ayrı baz bütçe toplamı yayın öncesi kaydedilir.
+  - Kabul 3: Kredi/Akı, modül/evrensel parça, kişisel kozmetik ve takım görünümü sahiplikleri ayrıdır; takım hakkı üyelerle çoğaltılmaz. Tekrar/eşzamanlı talep, restore ve premium kökeni korunur.
+  - Geçmiş hazırlık kanıtı: `docs/planning/release-240-fixed-crate-contract.md`, `server/tests/test_inbox_open_delivery.py`, `e2e/casual-chest-opening.spec.js`.
+
+<a id="ui-08"></a>
+
+- [ ] **UI-08 — Mesaj kutusu Topla işleminde ödül kasasının açılışını ve sonucunu göster**
+  - Durum: Çalışılıyor. Öncelik: P0; rol: Backend / istemci / QA; efor: M.
+  - Önkoşullar: REWARD-06, SEASON-00.
+  - Mevcut bağlar: `client/src/app.js`, `client/index.html`, `client/src/reward-chest-art-v5.css`, `server/app/reward_delivery.py`, `e2e/casual-chest-opening.spec.js`, `e2e/reward-navigation.spec.js`.
+  - Yeni teslim önerisi: `docs/planning/release-240-crate-opening-acceptance.md`.
+  - Sürüm briefleri: [2.4.0](planning/releases/2.4.0.md).
+  - Kabul 1: Topla → aynı kasa kimliğini teslim al/aç → kısa animasyon/ses → sunucu makbuzuyla ödül kartları akışı kurulur; oyuncu mağazada kasayı aramak zorunda kalmaz.
+  - Kabul 2: Kopma/yanıt kaybında envanter veya açılmış makbuz kurtarılır; çift tıklama/animasyonu tekrar oynatma ikinci ödül vermez. Topla Tümü seri kimliklerle açılır veya tek gerçek sonuç özetiyle atlanır.
+  - Kabul 3: Atla, azaltılmış hareket, mute, TR/EN 320/393 px ve Android kabulü; Kredi/Akı/modül/çekirdek/kozmetik sonucunun gerçek makbuzla eşliği doğrulanır. UI-03 seçim kasası 2.5 işidir; bu işi bekletmez.
+  - Geçmiş hazırlık kanıtı: `docs/planning/release-240-fixed-crate-contract.md`, `server/tests/test_inbox_open_delivery.py`, `e2e/casual-chest-opening.spec.js`.
+
+<a id="season-01"></a>
+
+- [ ] **SEASON-01 — Günlük ve sezonluk Devre Emirleri ile kontrollü XP ilerlemesini geliştir**
+  - Durum: Çalışılıyor. Öncelik: P0; rol: Backend / istemci / QA; efor: L.
+  - Önkoşullar: BASE-01, SEASON-00.
+  - Mevcut bağlar: `server/app/player_profile.py`, `server/app/player_progression.py`, `server/app/match_accounting.py`, `client/src/app.js`, `client/index.html`, `server/tests/test_beta33_engagement.py`, `docs/planning/season-1-engagement-v1.json`, `server/app/season_missions.py`, `server/app/player_data_store.py`, `client/src/relay-client.js`.
+  - Yeni teslim önerisi: mevcut temel korunur.
+  - Sürüm briefleri: [2.4.0](planning/releases/2.4.0.md).
+  - Kabul 1: 40. kademe 12.240 XP olarak kalır. Mevcut altı günlük emrin 135 XP/75 Akı ödülü korunur; 4 ve 6 uygun savaş için ayrı 15 XP eklenir. Yeni emirler para/parça veya premium XP çarpanı vermez.
+  - Kabul 2: Sezonluk 12 emir toplam 1.800 XP tavanlıdır; savaş/zafer/aktif savaş günü/doğrulanmış çekirdek kullanımı sayaçları sezon kimliğiyle birikir. Günlük/Sezonluk sekmeleri, koşul ve bitiş zamanı görünür.
+  - Kabul 3: Mevcut maç sonrası doğrulanmış reklam bonusu korunur; maç başına bir hak. Altı maç/bir reklam senaryosu 27. gün; sekiz maç/reklamsız 25. gün bitirme beklentisidir, garanti oyuncu süresi değildir; düşük katılım otomatik tamamlamaz.
+  - Kabul 4: Oyuncu+sezon+maç/olay ve oyuncu+sezon+[UTC gün]+görev tekilliği; hesap değişimi, tekrar/eşzamanlı talep, gün/sezon sınırı, geç toplama ve restore test edilir. Kazanılmış görev XP kapanan sezonu doğru sırayla sonuçlandırır; yeni sezona XP taşmaz.
+  - Geçmiş hazırlık kanıtı: `docs/planning/release-240-mission-acceptance.md`, `server/app/season_missions.py`, `server/tests/test_season_missions.py`, `client/tests/season-missions.test.js`, `e2e/beta33-season.spec.js`.
 
 ### R2 — Mağaza ve seçim kasası — sonraki minor
 
@@ -892,4 +939,4 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 Bu sıra tek olası plan değildir; önkoşulları önceleyen doğrulanmış bir sıralamadır. `later` işlerin burada bulunması başlayacakları anlamına gelmez.
 
-BASE-01 → BASE-02 → BASE-03 → ECON-01 → COS-01 → COS-05 → COS-06 → COS-07 → COS-02 → COS-03 → COS-04 → CARD-01 → CARD-02 → CARD-03 → REWARD-01 → DATA-01 → REWARD-02 → REWARD-03 → REWARD-04 → SHOP-01 → SHOP-02 → SHOP-03 → SEASON-00 → RELEASE-00 → COMPAT-01 → UI-07 → AUDIO-01 → AUDIO-02 → RELEASE-01 → UI-01 → UI-02 → UI-03 → POLICY-01 → BALANCE-01 → LIVE-01 → OPS-02 → QA-01 → ANALYT-01 → UI-04 → RELEASE-02 → SHOP-04 → UI-05 → UI-06 → ANALYT-02 → LIVE-02 → LIVE-03 → PLAY-01 → LIVE-12 → RELEASE-03 → LIVE-04 → LIVE-05 → LIVE-06 → LIVE-07 → LIVE-08 → LIVE-09 → LIVE-10 → LIVE-11 → OPS-01 → RET-01 → REWARD-05 → COS-08 → CARD-04 → CARD-05 → CARD-06 → RELEASE-04 → RELEASE-05 → COS-09 → RELEASE-06
+BASE-01 → BASE-02 → BASE-03 → ECON-01 → COS-01 → COS-05 → COS-06 → COS-07 → COS-02 → COS-03 → COS-04 → CARD-01 → CARD-02 → CARD-03 → REWARD-01 → DATA-01 → REWARD-02 → REWARD-03 → REWARD-04 → SHOP-01 → SHOP-02 → SHOP-03 → SEASON-00 → RELEASE-00 → COMPAT-01 → UI-07 → AUDIO-01 → AUDIO-02 → REWARD-06 → UI-08 → SEASON-01 → RELEASE-01 → UI-01 → UI-02 → UI-03 → POLICY-01 → BALANCE-01 → LIVE-01 → OPS-02 → QA-01 → ANALYT-01 → UI-04 → RELEASE-02 → SHOP-04 → UI-05 → UI-06 → ANALYT-02 → LIVE-02 → LIVE-03 → PLAY-01 → LIVE-12 → RELEASE-03 → LIVE-04 → LIVE-05 → LIVE-06 → LIVE-07 → LIVE-08 → LIVE-09 → LIVE-10 → LIVE-11 → OPS-01 → RET-01 → REWARD-05 → COS-08 → CARD-04 → CARD-05 → CARD-06 → RELEASE-04 → RELEASE-05 → COS-09 → RELEASE-06

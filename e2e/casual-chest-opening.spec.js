@@ -1,6 +1,43 @@
 const {test,expect}=require("@playwright/test");
 const {waitForParticipantReady}=require("./ui-helpers");
 
+test("inbox collection opens its confirmed receipt without visiting the shop",async({page},info)=>{
+  // UI-only receipt fixture. Real delivery/replay/refund uses Python service tests.
+  let opened=false,claims=0;
+  const message={message_id:'opening-preview',source:'season_leaderboard',category:'reward',status:'unclaimed',
+    title_tr:'Sezon Sıralama Ödülü',chest:{chest_tier:'gold',chest_name_tr:'Prizma Kasası',chest_visual_id:'rank_prism'}};
+  await page.route(/\/profile\/[^/]+\/reward-inbox(?:\/opening-preview\/claim)?(?:\?.*)?$/,async route=>{
+    if(route.request().method()==='POST'){
+      claims++;expect(route.request().url()).toContain('chest_delivery=open');
+      await new Promise(resolve=>setTimeout(resolve,500));opened=true;
+      return route.fulfill({json:{messages:[],opened_receipt:{chest_id:'opening-preview',definition_id:'core_24h',
+        rewards:{chest_name_tr:'Prizma Kasası',chest_visual_id:'rank_prism',circuit_credits:100,flux_shards:5,
+          core_type_id:'core_resonance',core_shards:3}}}});
+    }
+    return route.fulfill({json:{messages:opened?[]:[message],purchases:[],notices:[],invitations:[]}});
+  });
+  await page.goto('/?e2e=1');await waitForParticipantReady(page,60000);
+  await page.locator('#reward-inbox-button').click();
+  await page.locator('#inbox-tab-reward').click();
+  await page.locator('#reward-inbox-list .reward-inbox-card > button:last-child').click();
+  await expect(page.locator('#chest-reveal-card')).toHaveAttribute('data-state','opening');
+  await expect(page.locator('#chest-reveal-card')).toHaveAttribute('data-state','revealed');
+  await expect(page.locator('#chest-reveal-title')).toHaveText('Prizma Kasası');
+  await expect(page.locator('#chest-reveal-rewards')).toContainText('100');
+  await expect(page.locator('#chest-reveal-rewards')).toContainText('3');
+  const rows=page.locator('#chest-reveal-rewards .reward-resource-row');
+  await expect(rows).toHaveCount(3);
+  for(const row of await rows.all()) await expect(row).toHaveCSS('opacity','1');
+  await expect(page.locator('#chest-reveal-close')).toBeEnabled();
+  await page.screenshot({path:info.outputPath('inbox-confirmed-core-reward.png')});
+  await page.setViewportSize({width:320,height:568});
+  await page.evaluate(()=>window.GridshardI18n.apply('en'));
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await expect(rows).toHaveCount(3);
+  await page.screenshot({path:info.outputPath('inbox-confirmed-core-reward-en-320.png')});
+  expect(claims).toBe(1);
+});
+
 test.use({viewport:{width:393,height:852},video:{mode:"on",size:{width:393,height:852}}});
 test("casual opening stays closed until a receipt; all four tiers, errors and reduced motion",async({page},testInfo)=>{
   test.setTimeout(120000);

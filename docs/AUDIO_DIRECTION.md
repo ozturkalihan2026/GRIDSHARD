@@ -15,3 +15,14 @@ Android hoparlör/kulaklık kabulü [2.4 briefindedir](planning/releases/2.4.0.m
 
 [Mobil ses hattı](MOBILE_AUDIO.md), `tools/audio_lufs_scan.py`,
 `tools/encode_mobile_audio.py` ve aktif istemci ses regresyonları kullanılır.
+
+2.4.0 yerel uygulaması: [modül matrisi](planning/release-240-module-audio-matrix.md),
+[çekirdek matrisi](planning/release-240-core-audio-matrix.md),
+[PCM ölçümleri](planning/release-240-audio-measurements.json).
+Faz sürekliliği ve yumuşak uçlar kaynak üretiminde sağlanır; genel kanallar
+yükseltilmez. Modül alt klasörü de OGG/AAC üretim ve hash doğrulamasına dahildir.
+Üretim paketi WAV içermediğinde WebAudio önce diğer paketlenmiş codec’i dener.
+Kullanıcı fiziksel Android dinlemesini sonraya bıraktı; yerel testler bu öznel
+kabulün yerine geçirilmez. Windows yerel WebKit ikilisinde AudioContext yoktur;
+ses decode/miks kabulü yerel Chromium/Android öykünmesinde yapılır, macOS WebKit
+CI kapısı korunur.

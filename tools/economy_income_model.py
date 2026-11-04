@@ -27,7 +27,6 @@ RARITIES = ("common", "rare", "epic", "legendary")
 RARITY = {"common": "Sıradan", "rare": "Ender", "epic": "Destansı", "legendary": "Efsanevi"}
 LEVELS = (5, 8, 10, 12, 15)
 DAYS = len(profile.LOGIN_PERIOD_REWARDS)
-SEASON_CHEST = {"silver": "circuit_8h", "gold": "core_24h", "diamond": "diamond_24h"}
 GIFT_CHESTS_PER_DAY = 3
 
 
@@ -98,13 +97,8 @@ def daily_income(rating: int, matches: float, win_rate: float) -> dict:
         season[0] += reward["circuit_credits"]
         season[1] += reward["flux_shards"]
         untargeted.append(reward["module_shards"])
-        if reward["chest_tier"]:
-            value = chest_value(SEASON_CHEST[reward["chest_tier"]])
-            season[0] += value["credits"]
-            season[1] += value["flux"]
-            core_per_cycle += value["core"]
-            for rarity in RARITIES:
-                pool[rarity] += value["shards"][rarity] / DAYS
+        # Tier claim handlers grant the direct contents above. chest_tier is
+        # presentation metadata, not an additional random chest entitlement.
     sources["Sezon yolu"] = [season[0] / DAYS, season[1] / DAYS]
     core += core_per_cycle / DAYS
 
@@ -154,6 +148,8 @@ def main() -> None:
     win_rate = float(sys.argv[2]) if len(sys.argv) > 2 else 0.55
     print(f"Ücretsiz oyuncu, günde {matches:g} maç, galibiyet %{win_rate * 100:.0f}, "
           f"günde {GIFT_CHESTS_PER_DAY} hediye sandık, bütün devre emirleri.")
+    print("Sezon sandık etiketleri ek rastgele sandık geliri sayılmaz. "
+          "İlk sezonun ayrıntılı 1/28 gün bütçesi: docs/planning/economy-baseline.md")
     for rating in (0, canon.ARENA_MINIMUM_RATING_BY_INDEX[6], canon.ARENA_MINIMUM_RATING_BY_INDEX[12], canon.GRIDSHARD_SUMMIT_RATING):
         report(rating, matches, win_rate)
     all_credits = sum(module_cost(item["rarity"], 15)[0] for item in canon.MODULES.values())

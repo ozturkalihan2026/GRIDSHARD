@@ -163,7 +163,7 @@ test("laser-specific trim is shared by HTML and WebAudio instead of being lost i
   for(const webAudio of [false,true]){
     const f=fixture({webAudio}),d=f.director;d.state="battle";
     assert.equal(d._cueGain("laser_fire"),.65);
-    assert.equal(d._cueGain("missile_fire"),1);
+    assert.equal(d._cueGain("missile_fire"),.50);
     if(webAudio){
       await d.unlock();await f.flush();
       // Inspect the cue routing, independent of the shared compressor output.

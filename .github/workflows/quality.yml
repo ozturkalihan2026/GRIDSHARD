@@ -37,6 +37,10 @@ jobs:
         run: python tools/prepare_liveops_rewards.py validate
       - name: Check connected release plans
         run: |
+          python tools/report_economy_baseline.py --check
+          python tools/plan_season_xp.py --check
+          python tools/prepare_first_season.py --check
+          python tools/report_combat_audio.py --check
           python tools/development_checklist.py --check
           python tools/release_calendar.py --check
           python tools/release_delivery_plan.py --check
@@ -231,7 +235,7 @@ jobs:
           e2e/visual-atmosphere.spec.js
           e2e/onboarding-visibility.spec.js
           e2e/presentation-refinements.spec.js
-          e2e/battle-polish.spec.js e2e/release221-social.spec.js e2e/liveops-cosmetics.spec.js e2e/navigation-back.spec.js
+          e2e/battle-polish.spec.js e2e/battle-audio.spec.js e2e/release221-social.spec.js e2e/liveops-cosmetics.spec.js e2e/navigation-back.spec.js
           e2e/beta381-battle-events.spec.js e2e/battle-density.spec.js
           e2e/mobile-battle.spec.js
           ${{ matrix.projects }}

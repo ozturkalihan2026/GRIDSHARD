@@ -708,6 +708,7 @@
               ...this.profile.engagement,
               dailyMissions: [
                 ...(this.profile.engagement.daily_missions || []),
+                ...(this.profile.engagement.extra_daily_missions || []),
               ],
               rewardTrack: [
                 ...(this.profile.engagement.reward_track || []),
@@ -2531,10 +2532,11 @@
       }
     }
 
-    async claimEngagementReward(kind, id, requestId = null) {
+    async claimEngagementReward(kind, id, requestId = null, missionContext = null) {
       if (![
         "login",
         "missions",
+        "season-missions",
         "tiers",
         "premium-tiers",
       ].includes(kind)) {
@@ -2556,7 +2558,12 @@
           {
             method: "POST",
             ...(requestId
-              ? { body: JSON.stringify({ request_id: requestId }) }
+              ? { body: JSON.stringify({ request_id: requestId,
+                  ...(kind === "season-missions" ? {
+                    season_id: missionContext?.season_id || "",
+                    day_key: missionContext?.day_key || "",
+                  } : {}),
+                }) }
               : {}),
           }
         );

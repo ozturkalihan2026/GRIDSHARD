@@ -55,6 +55,10 @@ def encoder_args(extension: str, channels: int, music: bool) -> list[str]:
 FORMATS = ("ogg", "m4a")
 
 
+def source_wavs():
+    return sorted([*AUDIO.glob('*.wav'), *(AUDIO / 'modules').glob('*.wav')])
+
+
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -117,8 +121,8 @@ def build(ffmpeg: str, force: bool) -> int:
     wav_bytes = 0
     encoded_bytes = {extension: 0 for extension in FORMATS}
 
-    for source in sorted(AUDIO.glob("*.wav")):
-        name = source.stem
+    for source in source_wavs():
+        name = source.relative_to(AUDIO).with_suffix('').as_posix()
         digest = sha256(source)
         wav_bytes += source.stat().st_size
         entry = {"sha256": digest, "wav_bytes": source.stat().st_size}
@@ -129,13 +133,17 @@ def build(ffmpeg: str, force: bool) -> int:
                 encode(ffmpeg, source, target, extension)
                 print(f"kodlandı: {target.relative_to(ROOT).as_posix()}")
             entry[f"{extension}_bytes"] = target.stat().st_size
+            entry[f"{extension}_sha256"] = sha256(target)
             encoded_bytes[extension] += target.stat().st_size
             formats[extension].append(name)
         sources[name] = entry
 
     # Kanonik WAV'ı silinmiş türevler istemciye sunulmamalı.
-    for orphan in OUTPUT.glob("*.*"):
-        if orphan.name != MANIFEST.name and orphan.stem not in sources:
+    for orphan in OUTPUT.rglob("*.*"):
+        identity = orphan.relative_to(OUTPUT).with_suffix('').as_posix()
+        if orphan.is_file() and orphan.name != MANIFEST.name and identity not in sources:
+            if not orphan.resolve().is_relative_to(OUTPUT.resolve()):
+                raise ValueError('Audio cleanup target is outside the output directory')
             orphan.unlink()
             print(f"silindi (kaynağı yok): {orphan.relative_to(ROOT).as_posix()}")
 
@@ -163,7 +171,7 @@ def check() -> int:
         return 0
     recorded = json.loads(MANIFEST.read_text(encoding="utf-8")).get("sources", {})
     problems = []
-    actual = {path.stem: path for path in AUDIO.glob("*.wav")}
+    actual = {path.relative_to(AUDIO).with_suffix('').as_posix(): path for path in source_wavs()}
     for name, path in sorted(actual.items()):
         entry = recorded.get(name)
         if not entry:
@@ -172,8 +180,11 @@ def check() -> int:
         if entry.get("sha256") != sha256(path):
             problems.append(f"{name}: WAV değişmiş, türev eski")
         for extension in FORMATS:
-            if not (OUTPUT / f"{name}.{extension}").exists():
+            target = OUTPUT / f"{name}.{extension}"
+            if not target.exists():
                 problems.append(f"{name}.{extension}: dosya eksik")
+            elif entry.get(f'{extension}_sha256') and entry[f'{extension}_sha256'] != sha256(target):
+                problems.append(f"{name}.{extension}: türev içeriği değişmiş")
     for name in sorted(set(recorded) - set(actual)):
         problems.append(f"{name}: kaynak WAV yok")
     for problem in problems:

@@ -14,6 +14,18 @@ gerçekten uygulanıp kanıtlanana kadar oyunda mevcut sayılmaz.
 - [Ödül portföyü ve takvim](GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md),
   [takvim kaynağı](planning/release_calendar_v1.json).
 - [Teknik tasarım](GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md).
+- [BASE-01 ödül bütçesi ve ekonomi baz çizgisi](planning/economy-baseline.md):
+  40 kademe, giriş/görevler, ücretsiz/premium senaryoları ve S1 haftalık paket önerisi.
+- [S1 ödül kasaları, açılış ve XP emirleri](planning/season-1-rewards-and-xp.md):
+  Topla animasyonu ve mevcut XP eşiğini koruyan yeni günlük/sezonluk görevler.
+- [SEASON-01 uygulaması ve kabul durumu](planning/release-240-mission-acceptance.md):
+  sunucu sayaçları, tekil XP, UTC devir, TR/EN sekmeler ve kalan yayın kontrolleri.
+- [S1 yayın profili ve kazanılmış haklar](planning/first-season-launch-profile.md):
+  tekil setler, üç kaynak haftası, sabit kademe kayıtları ve güvenli kapanış.
+- [Sarı geri/ileri envanteri](planning/release-240-navigation-matrix.md),
+  [modül sesleri](planning/release-240-module-audio-matrix.md) ve
+  [çekirdek sesleri](planning/release-240-core-audio-matrix.md): yerel uygulama,
+  ölçümler ve kullanıcı isteğiyle ertelenen fiziksel dinleme kabulü.
 
 ## Geçerli oyun ve sunum
 

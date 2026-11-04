@@ -1391,12 +1391,20 @@ class MetaProgressionService:
         premium_before = wallet_snapshot(profile)
         if chest.get("fixed_reward") is not None:
             from .reward_delivery import current_reward_contents
+            from .season_entitlements import fingerprint
+            if chest.get('fixed_reward_hash') and chest['fixed_reward_hash'] != fingerprint(chest['fixed_reward']):
+                raise MetaProgressionError('Sezon ödül kaydı doğrulanamadı; kazanılmış hakkın korunuyor.')
             rewards = current_reward_contents(chest["fixed_reward"])
-            apply_fixed_contents(profile, rewards)
+            try:
+                apply_fixed_contents(profile, rewards)
+            except ValueError as exc:
+                raise MetaProgressionError(str(exc)) from exc
             record_opened_premium_chest(profile, chest, premium_before)
             profile.chest_slots = [item for item in profile.chest_slots if item.get("chest_id") != chest_id]
             receipt = {"request_id": request_id, "chest_id": chest_id, "definition_id": chest["definition_id"],
-                       "opened_at": iso_utc(now), "rewards": rewards, "team_reward": chest.get("team_reward")}
+                       "opened_at": iso_utc(now), "rewards": rewards, "team_reward": chest.get("team_reward"),
+                       **({"reward_revision": chest['reward_revision'], "reward_content_hash": chest['reward_content_hash']}
+                          if chest.get('reward_content_hash') else {})}
             profile.chest_receipts[request_id] = dict(receipt)
             return receipt
         definition = CHEST_DEFINITIONS[str(chest["definition_id"])]
@@ -1564,13 +1572,26 @@ def archive_and_soft_reset_season(profile, next_season_id: str, archived_at: str
         raise MetaProgressionError("Yeni sezon kimliği zorunludur.")
     if profile.active_meta_season_id == next_season_id:
         return None
+    from .season_missions import settle_earned
+    from copy import deepcopy
+    from dataclasses import fields
+    from .season_entitlements import queue_unclaimed
+    original = profile
+    profile = deepcopy(original)
+    settle_earned(profile, closing=True)
+    closed_at = archived_at or iso_utc(utc_now())
+    queued = queue_unclaimed(profile, now_iso=closed_at)
     archive = {
         "season_id": profile.active_meta_season_id,
         "final_rating": int(profile.rating),
         "final_rank": rank_stage_for_rating(profile.rating),
         "season_xp": int(profile.season_xp),
         "claimed_tiers": list(profile.claimed_season_tiers),
-        "archived_at": archived_at or iso_utc(utc_now()),
+        "claimed_premium_tiers": list(profile.claimed_premium_season_tiers),
+        "queued_earned_rewards": queued,
+        "reward_state": deepcopy(profile.season_reward_state),
+        "mission_state": deepcopy(profile.season_mission_state),
+        "archived_at": closed_at,
     }
     profile.season_archives.append(archive)
     # Arena progress is permanent. League players return to League 1.
@@ -1579,7 +1600,11 @@ def archive_and_soft_reset_season(profile, next_season_id: str, archived_at: str
     profile.season_xp = 0
     profile.claimed_season_tiers = ()
     profile.claimed_premium_season_tiers = ()
+    profile.season_mission_state = {}
+    profile.season_reward_state = {}
     profile.active_meta_season_id = next_season_id
+    for item in fields(original):
+        setattr(original, item.name, getattr(profile, item.name))
     return archive
 
 

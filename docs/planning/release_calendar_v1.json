@@ -4,7 +4,7 @@
   "as_of": "2026-11-04",
   "timezone": "Europe/Istanbul",
   "capacity_assumption": "Tek ana geliştirme akışı; haftada 5 gün, günde 4–6 saat odaklı çalışma; kapasitenin yaklaşık yüzde 20'si hata/test/gözlem payı. Bu çalışma kapasitesi teyit edilmiş zaman çizelgesi değildir.",
-  "scope_decision": "Kullanıcı 2.4.0'da mevcut 24 modülle ilk sezonun açılmasını önceliklendirdi. Yeni kart ve geniş kozmetik üretimi sonraki paketlere bölündü. 4 Kasım: aynı takvim korunarak sürüm içerikleri ayrıntılandırıldı; 2.4.0 sarı geri/ileri gezinme ve saldırı/çekirdek ses kalitesi zorunlu kapsamına alındı.",
+  "scope_decision": "Kullanıcı 2.4.0'da mevcut 24 modülle ilk sezonun açılmasını önceliklendirdi. Yeni kart ve geniş kozmetik üretimi sonraki paketlere bölündü. 4 Kasım: aynı takvim korunarak sürüm içerikleri ayrıntılandırıldı; 2.4.0 sarı geri/ileri gezinme ve saldırı/çekirdek ses kalitesi zorunlu kapsamına alındı. 4 Kasım kullanıcı açıklaması: XP açığı bilinçli; eşik düşmez. Topla kasa açılışı ve çekirdek teslimi ile günlük/sezonluk XP emirleri 2.4 zorunlu kapsamıdır.",
   "season_policy": "Yalnız ilk açılış sezonunda mevcut 24 modül kullanılır. İkinci sezondan itibaren en az bir yeni hazır modül; yeni modül hazırlığı yoksa yeni sezon otomatik açılmaz. Bu istisna ve kapı henüz çalışma koduna uygulanmadı.",
   "releases": [
     {
@@ -14,8 +14,8 @@
       "scope_freezes_on": "2026-11-16",
       "tests_start_on": "2026-11-19",
       "target_release_on": "2026-11-23",
-      "content": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi.",
-      "required": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur.",
+      "content": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri.",
+      "required": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. REWARD-06, UI-08 ve SEASON-01; tekil makbuz, güvenli açılış ve 1.800 sezonluk XP tavanı kabulü.",
       "optional": "Takım turnuvası için ayrı hazırlık; yeterli gerçek takım yoksa beklemede kalır.",
       "excluded": "Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu.",
       "work_items": [
@@ -26,7 +26,10 @@
         "AUDIO-01",
         "AUDIO-02",
         "COMPAT-01",
-        "RELEASE-01"
+        "RELEASE-01",
+        "REWARD-06",
+        "UI-08",
+        "SEASON-01"
       ],
       "season": {
         "number": 1,
@@ -110,6 +113,43 @@
           "kind": "required"
         },
         {
+          "id": "S1-KASALAR",
+          "title": "Sıralama kasası, çekirdek teslimi ve Topla açılışı",
+          "tasks": [
+            "REWARD-06",
+            "UI-08"
+          ],
+          "kind": "required",
+          "steps": [
+            "Haftalık, takım ve ilk 10 kasasını hak anında kaynak/dönem/sıra/miktar/hedef/revision/hash ile sabitle; mevcut kozmetik tekil tahsisini koru.",
+            "Sabit kasaya core_type_id/core_shards doğrulaması ve gerçek teslim desteği ekle; yeni kaynak miktarı bütçelenmeden yayınlama. Kasa görünümü rastgele mağaza sandığına ek ödül değildir.",
+            "Topla ile aynı sandığı güvenle al/aç; mevcut renderer ile kısa animasyon/ses ve gerçek makbuz sonuçlarını göster. Oyuncuyu mağazada kasa aramaya gönderme.",
+            "Bağlantı kopması, çift tıklama, Topla Tümü, atla/mute/azaltılmış hareket ve gerçek Android kabulünü kanıtla."
+          ],
+          "acceptance": [
+            "Her hak bir kasa ve bir gerçek teslim; animasyon ikinci teslim üretmiyor.",
+            "Çekirdek/modül/para/kozmetik sonuçları ve takım sahipliği doğru; eski haklar korunuyor."
+          ]
+        },
+        {
+          "id": "S1-EMIRLER",
+          "title": "Savaş/reklam ihtiyacını koruyan günlük ve sezonluk XP emirleri",
+          "tasks": [
+            "SEASON-01"
+          ],
+          "kind": "required",
+          "steps": [
+            "Kullanıcı kararı: 12.240 XP eşiğini düşürme. Mevcut altı günlük emri koru; 4/6 normal Arena savaşı için ayrı 15 XP ekle, yeni para/parça verme.",
+            "season-1-engagement-v1.json içindeki 12 sezonluk emri 1.800 XP tavanıyla uygula; görev ekranında Günlük/Sezonluk sekmeleri ve gerçek ilerleme/bitiş göster.",
+            "Mevcut doğrulanmış maç sonrası reklam bir defalık XP/kredi tekrarını koru. Altı maç/bir reklam ve sekiz maç/reklamsız senaryolarını düşük katılımla birlikte plan_season_xp raporunda denetle.",
+            "Maç/olay ve görev haklarını sunucuda tekilleştir; kapanışta kazanılmış görev XP ile sezon kademelerini doğru sırayla kapat; yeni sezona XP taşıma."
+          ],
+          "acceptance": [
+            "Giriş tek başına yeni emir XP’si vermiyor; savaş ve düzenli katılım gerekiyor.",
+            "Sabit eşikler ve kaynak bütçesi korunuyor; sezonluk/günlük ilerleme ve tek teslim restore/sınır testlerinden geçiyor."
+          ]
+        },
+        {
           "id": "S1-YAYIN",
           "title": "Eski istemci uyumu ve iki aşamalı açılış",
           "tasks": [
@@ -135,9 +175,12 @@
           "tasks": [
             "BASE-01",
             "UI-07",
-            "AUDIO-01"
+            "AUDIO-01",
+            "REWARD-06",
+            "UI-08",
+            "SEASON-01"
           ],
-          "output": "Bütçe ve buton/ses envanteri; 6 Kasım kapasite kontrolü."
+          "output": "Bütçe ve buton/ses envanteri; 6 Kasım kapasite kontrolü. Kasa açılışı/çekirdek teslimi ve emir sözleşmeleri; ek kapsamın kapasite kontrolü."
         },
         {
           "starts_on": "2026-11-09",
@@ -147,7 +190,10 @@
             "SEASON-00",
             "UI-07",
             "AUDIO-01",
-            "AUDIO-02"
+            "AUDIO-02",
+            "REWARD-06",
+            "UI-08",
+            "SEASON-01"
           ],
           "output": "S1 kaynak profili ve hak koruma; sarı kontroller ile saldırı/çekirdek sesleri uygulaması."
         },
@@ -159,7 +205,10 @@
             "UI-07",
             "AUDIO-01",
             "AUDIO-02",
-            "SEASON-00"
+            "SEASON-00",
+            "REWARD-06",
+            "UI-08",
+            "SEASON-01"
           ],
           "output": "16 Kasım kapsam kapanışı; eski istemci, TR/EN, ses ve yoğun savaş regresyonu."
         },

@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "status": "draft",
+  "season_number": 1,
+  "season_id": "gridshard_2026_11_30",
+  "starts_at": "2026-11-30T00:00:00Z",
+  "road_additional_store_chests": false,
+  "existing_module_ids": [
+    "laser",
+    "pulse_cannon",
+    "railgun",
+    "missile_launcher",
+    "drone_bay",
+    "arc_cannon",
+    "plasma_mortar",
+    "quantum_repeater",
+    "burst_cannon",
+    "shield_breaker",
+    "shield",
+    "armor",
+    "barrier",
+    "reflector",
+    "guardian_dome",
+    "phase_armor",
+    "buffer_shield",
+    "last_bastion",
+    "repair",
+    "amplifier",
+    "emp",
+    "virus",
+    "cleanser",
+    "speed_relay"
+  ],
+  "release_checks": {
+    "reward_budget": false,
+    "unique_cosmetics": false,
+    "rollover_restore": false,
+    "old_clients": false,
+    "android_acceptance": false
+  },
+  "cosmetic_allocations": [
+    {
+      "source": "season_road",
+      "period_id": "gridshard_2026_11_30",
+      "slot": 40,
+      "cosmetics": {
+        "avatar_frame_id": "aurora_frame",
+        "profile_background_id": "aurora_banner"
+      }
+    },
+    {
+      "source": "season_leaderboard",
+      "period_id": "gridshard_2026_11_30",
+      "slot": 1,
+      "cosmetics": {
+        "avatar_frame_id": "solar_frame",
+        "profile_background_id": "solar_banner"
+      }
+    },
+    {
+      "source": "weekly_tournament",
+      "period_id": "2026-W52",
+      "slot": 1,
+      "cosmetics": {
+        "avatar_frame_id": "abyss_frame",
+        "profile_background_id": "abyss_banner"
+      }
+    }
+  ],
+  "resource_weeks": [
+    {
+      "period_id": "2026-W49",
+      "prizes": [
+        {
+          "position": 1,
+          "circuit_credits": 1200,
+          "flux_shards": 90,
+          "module_definition_id": "laser",
+          "module_shards": 36
+        },
+        {
+          "position": 2,
+          "circuit_credits": 760,
+          "flux_shards": 55,
+          "module_definition_id": "laser",
+          "module_shards": 24
+        },
+        {
+          "position": 3,
+          "circuit_credits": 420,
+          "flux_shards": 30,
+          "module_definition_id": "laser",
+          "module_shards": 18
+        }
+      ]
+    },
+    {
+      "period_id": "2026-W50",
+      "prizes": [
+        {
+          "position": 1,
+          "circuit_credits": 1200,
+          "flux_shards": 90,
+          "module_definition_id": "shield",
+          "module_shards": 36
+        },
+        {
+          "position": 2,
+          "circuit_credits": 760,
+          "flux_shards": 55,
+          "module_definition_id": "shield",
+          "module_shards": 24
+        },
+        {
+          "position": 3,
+          "circuit_credits": 420,
+          "flux_shards": 30,
+          "module_definition_id": "shield",
+          "module_shards": 18
+        }
+      ]
+    },
+    {
+      "period_id": "2026-W51",
+      "prizes": [
+        {
+          "position": 1,
+          "circuit_credits": 1200,
+          "flux_shards": 90,
+          "module_definition_id": "pulse_cannon",
+          "module_shards": 36
+        },
+        {
+          "position": 2,
+          "circuit_credits": 760,
+          "flux_shards": 55,
+          "module_definition_id": "pulse_cannon",
+          "module_shards": 24
+        },
+        {
+          "position": 3,
+          "circuit_credits": 420,
+          "flux_shards": 30,
+          "module_definition_id": "pulse_cannon",
+          "module_shards": 18
+        }
+      ]
+    }
+  ]
+}

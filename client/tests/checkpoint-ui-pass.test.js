@@ -112,7 +112,7 @@ const dailyRewardsPanel = html.match(
 const dailyMissionsPanel = html.match(
   /<section class="engagement-summary-panel daily-missions-screen"[\s\S]*?<\/section>\s*<section class="engagement-summary-panel season-rewards-screen"/
 )?.[0] || "";
-assert.ok(html.includes('data-open-screen="daily-missions"><strong>Günlük Devre Emirleri</strong>'));
+assert.ok(html.includes('data-open-screen="daily-missions"><strong>Devre Emirleri</strong>'));
 assert.ok(dailyRewardsPanel.includes('id="monthly-login-track"'));
 assert.ok(!dailyRewardsPanel.includes('id="daily-mission-list"'));
 assert.ok(dailyMissionsPanel.includes('id="daily-mission-list"'));

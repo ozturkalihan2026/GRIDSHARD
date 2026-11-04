@@ -54,6 +54,15 @@ test('a channel is visible without fake hits and ends when the source dies',()=>
   f.fx.receive([],f.snapshot);assert.equal(f.fx.effects.get('channel:a').node.dataset.coreEvent,'channel');assert.equal(f.sounds.length,0);
   f.snapshot.players.a.modules[0].hp=0;f.fx.receive([],f.snapshot);assert.equal(f.fx.effects.size,0);
 });
+
+test('real core events remain audible while visual geometry is unavailable, without replaying snapshots',()=>{
+  const f=fixture();f.anchors.clear();f.fx.cellAnchor=()=>null;
+  const events=[f.activate('core_resonance'),f.shot('core_resonance')];
+  f.fx.receive(events,f.snapshot);
+  assert.deepEqual(f.sounds,['core_resonance_activate','core_resonance_shot']);
+  assert.equal(f.layer.children.length,0);
+  f.fx.receive(events,f.snapshot);assert.equal(f.sounds.length,2);
+});
 test('summon shows the real created module; drain return requires actual healing',()=>{
   const f=fixture();f.fx.receive([f.activate('core_capacitor',{role:'reinforcement',affected_targets:[{player_id:'b',module_id:'one'}]})],f.snapshot);
   assert.ok(f.fx.effects.has('summon:a:one'));

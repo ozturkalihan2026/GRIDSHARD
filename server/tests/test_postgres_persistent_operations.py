@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from threading import Barrier
 from uuid import uuid4
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -12,10 +13,93 @@ from app.postgres_team import PostgresTeamRepository
 from app.team_service import TeamService
 from app.store_catalog import process_purchase
 from app.premium_reward_recovery import POLICY_VERSION, wallet_snapshot
-from app.player_profile import SEASON_PREMIUM_REWARD_TRACK
+from app.player_profile import SEASON_PREMIUM_REWARD_TRACK, SEASON_REWARD_TRACK
 from fastapi import HTTPException
 from test_postgres_social_api import social_db  # noqa: F401 -- shared guarded DB fixture
 from test_postgres_social_api import erasure_db  # noqa: F401
+
+
+def test_inbox_collect_and_open_rolls_back_then_replays_original_core_receipt(social_db, monkeypatch):
+    _, players, _, (player, _, _) = social_db
+    message_id = 'fixed-core-' + uuid4().hex
+    with gateway._store_economy_transaction(player):
+        profile = gateway.player_profile_service.get_or_create(player)
+        profile.core_shards_by_type.setdefault('core_resonance', 0)
+        profile.reward_inbox.append(dict(message_id=message_id, status='unclaimed', source='season_leaderboard',
+            chest=dict(chest_tier='gold', circuit_credits=100, core_type_id='core_resonance', core_shards=3)))
+        gateway.persist_player_data(player)
+    before = deepcopy(players.load(player).profile)
+    core_before = profile.core_shards_by_type['core_resonance']
+    request = gateway.MetaOperationRequest(request_id=uuid4().hex)
+    with monkeypatch.context() as patch:
+        def fail(*args):
+            raise RuntimeError('injected inbox open persistence failure')
+        patch.setattr(gateway, 'persist_player_data', fail)
+        with pytest.raises(RuntimeError, match='inbox open persistence failure'):
+            gateway.claim_reward_inbox_item(player, message_id, request, chest_delivery='open')
+    assert players.load(player).profile == before
+    result = gateway.claim_reward_inbox_item(player, message_id, request, chest_delivery='open')
+    gateway.player_profile_service._profiles.pop(player)
+    gateway.player_data_store_service.load_player(player)
+    replay = gateway.claim_reward_inbox_item(player, message_id, request, chest_delivery='open')
+    assert replay['opened_receipt'] == result['opened_receipt']
+    assert gateway.player_profile_service.get_or_create(player).core_shards_by_type['core_resonance'] == core_before + 3
+
+
+def test_season_mission_claim_rolls_back_then_replays_after_reload(social_db, monkeypatch):
+    _, players, _, (player, _, _) = social_db
+    with gateway._store_economy_transaction(player):
+        for i in range(4):
+            profile = gateway.player_profile_service.record_battle_engagement(
+                player, battle_id=f'mission-{uuid4().hex}', match_type='arena_ai',
+                season_xp_awarded=0, damage_dealt=0, circuit_actions=0,
+            )
+        gateway.persist_player_data(player)
+    before = deepcopy(players.load(player).profile)
+    xp_before = profile.season_xp
+    request = gateway.SeasonMissionClaimRequest(request_id=uuid4().hex,
+        season_id=profile.active_meta_season_id, day_key=profile.daily_mission_day)
+    with monkeypatch.context() as patch:
+        def fail(*args):
+            raise RuntimeError('injected mission persistence failure')
+        patch.setattr(gateway, 'persist_player_data', fail)
+        with pytest.raises(RuntimeError, match='mission persistence failure'):
+            gateway.claim_season_mission_reward(player, 'daily_battles_4', request)
+    assert players.load(player).profile == before
+    result = gateway.claim_season_mission_reward(player, 'daily_battles_4', request)
+    gateway.player_profile_service._profiles.pop(player)
+    gateway.player_data_store_service.load_player(player)
+    replay = gateway.claim_season_mission_reward(player, 'daily_battles_4', request)
+    assert result['season_mission_receipt'] == replay['season_mission_receipt']
+    assert gateway.player_profile_service.get_or_create(player).season_xp == xp_before + 15
+
+
+def test_road_rollover_read_rolls_back_then_survives_reload(social_db, monkeypatch):
+    _, players, _, (player, _, _) = social_db
+    clock = [datetime(2026, 11, 4, tzinfo=timezone.utc)]
+    monkeypatch.setenv('GRIDSHARD_SEASON_STARTS_AT', '2026-11-02T00:00:00Z')
+    monkeypatch.setattr(gateway.player_profile_service, '_now_func', lambda: clock[0])
+    with gateway._store_economy_transaction(player):
+        profile = gateway.player_profile_service.get_or_create(player)
+        profile.season_xp = SEASON_REWARD_TRACK[4]['required_xp']
+        gateway.persist_player_data(player)
+    before = deepcopy(players.load(player).profile)
+    clock[0] += timedelta(days=28)
+    with monkeypatch.context() as patch:
+        def fail(*args):
+            raise RuntimeError('injected rollover save failure')
+        patch.setattr(gateway.player_data_store_service, 'save_player', fail)
+        with pytest.raises(RuntimeError, match='rollover save failure'):
+            gateway.get_profile(player)
+    assert players.load(player).profile == before
+    gateway.get_profile(player)
+    saved = deepcopy(players.load(player).profile)
+    gateway.player_profile_service._profiles.pop(player)
+    gateway.player_data_store_service.load_player(player)
+    gateway.get_profile(player)
+    restored = gateway.player_profile_service.get_or_create(player)
+    assert len([a for a in restored.season_archives if a['season_id'] == 'gridshard_2026_11_02']) == 1
+    assert restored.reward_inbox == saved['meta_progression_state']['reward_inbox']
 
 
 def _premium_fixture(social_db, request):

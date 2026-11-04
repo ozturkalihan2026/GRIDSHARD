@@ -261,6 +261,8 @@ class PlayerProgressionService:
                         player_id,
                     ),
                     core_power_uses=int(summary.get("core_power_uses", 0)),
+                    battle_id=state.battle_id,
+                    match_type=state.match_type,
                 )
             tier_after = int(updated.engagement_view()["current_tier"])
             completed_at = (completed_at or datetime.now(timezone.utc)).astimezone(timezone.utc)
