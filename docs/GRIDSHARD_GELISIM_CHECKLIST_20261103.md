@@ -2,7 +2,7 @@
 
 **Tarih: 3 Kasım 2026 · Proje: mağaza, ödül, içerik ve yaşayan oyun**
 
-Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **74 iş** vardır: **53 yapılacak**, **5 dalda hazır; canlıda yok**, **6 çalışılıyor**, **3 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
+Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **74 iş** vardır: **53 yapılacak**, **3 dalda hazır; canlıda yok**, **6 çalışılıyor**, **5 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
 
 **Son ayrıntılandırma: 4 Kasım 2026.** Takvim → sürüm briefi → görev → dosya/kanıt bağlantıları kuruldu; 2.4.0 sarı geri/ileri kontrolleri ve saldırı/çekirdek sesleri zorunlu kapsamdadır.
 
@@ -350,14 +350,14 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 <a id="compat-01"></a>
 
 - [x] **COMPAT-01 — 2.4 geçişinde kurulu 2.3 ve 2.2.1 başlangıcını koru**
-  - Durum: Dalda hazır; canlıda yok. Öncelik: P0; rol: İstemci / backend / QA; efor: M.
+  - Durum: Kanıtla tamamlandı. Öncelik: P0; rol: İstemci / backend / QA; efor: M.
   - Önkoşullar: RELEASE-00.
   - Mevcut bağlar: `client/src/relay-client.js`, `server/app/main.py`, `tools/release_guard.py`, `server/tests/test_release_221_profiles_updates.py`, `server/app/client_compatibility.py`, `client/tests/client-compatibility.test.js`, `client/tests/fixtures/installed/manifest.json`, `server/tests/test_client_compatibility.py`, `tools/verify_client_compatibility.py`, `tools/verify-client-compatibility.cjs`, `e2e/client-compatibility.spec.js`.
   - Yeni teslim önerisi: `docs/planning/release-240-client-compatibility.md`.
   - Sürüm briefleri: [2.4.0](planning/releases/2.4.0.md).
   - Kabul 1: Değiştirilmemiş 2.3 ve 2.2.1 istemci kaynaklarıyla yeni sağlık/başlangıç/protokol sözleşmesi doğrulanır; sadece sürüm metni artırılarak eski istemci engellenmez.
   - Kabul 2: Gerçek sürüm raporu, minimum/capability uyumu, geçişte eski API/istemci, native yönlendirme ve güvenli güncelleme açıklaması test edilir. Yeni modül açılışı sonraki sürümde eski render/match güvenliğiyle değerlendirilir.
-  - Geçmiş hazırlık kanıtı: `docs/planning/release-240-client-compatibility.md`, `artifacts/compat-240-20261104/http-proof-r3/proof.json`, `artifacts/compat-240-20261104/mobile-results.json`, `artifacts/compat-240-20261104/client-tests-final.log`, `artifacts/compat-240-20261104/server-tests-final.log`.
+  - Geçmiş hazırlık kanıtı: `docs/planning/release-240-client-compatibility.md`, `artifacts/compat-240-20261104/http-proof-r3/proof.json`, `artifacts/compat-240-20261104/mobile-results.json`, `artifacts/compat-240-20261104/client-tests-final.log`, `artifacts/compat-240-20261104/server-tests-final.log`, `docs/planning/prerelease-announcement-acceptance-20261105.md`, `artifacts/prerelease-20261104/FINAL_STATUS.json`, `artifacts/prerelease-20261104/http-proof-aac-final/proof.json`.
 
 <a id="ui-07"></a>
 
@@ -441,7 +441,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 <a id="comm-01"></a>
 
 - [x] **COMM-01 — Sürüm ön duyurusunu tek gösterim ve Sistem mesajıyla standartlaştır**
-  - Durum: Dalda hazır; canlıda yok. Öncelik: P0; rol: Geliştirme / ürün / QA; efor: M.
+  - Durum: Kanıtla tamamlandı. Öncelik: P0; rol: Geliştirme / ürün / QA; efor: M.
   - Önkoşullar: RELEASE-00.
   - Mevcut bağlar: `server/app/release_announcements.py`, `server/data/release_announcements_v1.json`, `client/src/release-announcement.js`, `client/src/release-announcement.css`, `tools/release_announcements.py`.
   - Yeni teslim önerisi: `docs/planning/prerelease-announcements-and-music.md`.
@@ -449,7 +449,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 1: TR/EN tek kaynak, hedef tarih takvim denetimi, yayın penceresi, eski API ve sürüm sonrası görünmezlik doğrulanır.
   - Kabul 2: Tamam onayı hesapta kalıcı ve idempotenttir; ağ hatası outbox, yeniden giriş/başka hesap ve mesaj kutusu bağımsızlığı; 320/393 px, modal/savaş sırası ve veri koruma kanıtlanır.
   - Kabul 3: 2.3.0 sonrası her sürümün incelenmiş ön duyurusu release_guard tarafından aranır; gerçek sürüm notları ayrı tutulur.
-  - Geçmiş hazırlık kanıtı: `docs/planning/prerelease-announcements-and-music.md`, `server/tests/test_release_announcements.py`, `tools/tests/test_prerelease_communication_gate.py`, `e2e/release-announcement.spec.js`, `artifacts/prerelease-20261104/browser-final.log`, `artifacts/prerelease-20261104/pg-ack.log`.
+  - Geçmiş hazırlık kanıtı: `docs/planning/prerelease-announcements-and-music.md`, `server/tests/test_release_announcements.py`, `tools/tests/test_prerelease_communication_gate.py`, `e2e/release-announcement.spec.js`, `artifacts/prerelease-20261104/browser-final.log`, `artifacts/prerelease-20261104/pg-ack.log`, `docs/planning/prerelease-announcement-acceptance-20261105.md`, `artifacts/prerelease-20261104/FINAL_STATUS.json`, `artifacts/prerelease-20261104/http-proof-aac-final/proof.json`.
 
 ### R2 — Mağaza ve seçim kasası — sonraki minor
 

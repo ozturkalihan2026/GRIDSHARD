@@ -2088,7 +2088,7 @@
       "owner": "İstemci / backend / QA",
       "effort": "M",
       "priority": "P0",
-      "status": "branch_ready",
+      "status": "done",
       "depends_on": [
         "RELEASE-00"
       ],
@@ -2125,7 +2125,10 @@
         "artifacts/compat-240-20261104/http-proof-r3/proof.json",
         "artifacts/compat-240-20261104/mobile-results.json",
         "artifacts/compat-240-20261104/client-tests-final.log",
-        "artifacts/compat-240-20261104/server-tests-final.log"
+        "artifacts/compat-240-20261104/server-tests-final.log",
+        "docs/planning/prerelease-announcement-acceptance-20261105.md",
+        "artifacts/prerelease-20261104/FINAL_STATUS.json",
+        "artifacts/prerelease-20261104/http-proof-aac-final/proof.json"
       ],
       "planned_releases": [
         "2.4.0"
@@ -2933,7 +2936,7 @@
       "owner": "Geliştirme / ürün / QA",
       "effort": "M",
       "priority": "P0",
-      "status": "branch_ready",
+      "status": "done",
       "depends_on": [
         "RELEASE-00"
       ],
@@ -2966,7 +2969,10 @@
         "tools/tests/test_prerelease_communication_gate.py",
         "e2e/release-announcement.spec.js",
         "artifacts/prerelease-20261104/browser-final.log",
-        "artifacts/prerelease-20261104/pg-ack.log"
+        "artifacts/prerelease-20261104/pg-ack.log",
+        "docs/planning/prerelease-announcement-acceptance-20261105.md",
+        "artifacts/prerelease-20261104/FINAL_STATUS.json",
+        "artifacts/prerelease-20261104/http-proof-aac-final/proof.json"
       ],
       "planned_releases": [
         "2.4.0"
@@ -3192,7 +3198,7 @@
     "target_version": "2.4.0",
     "branch": "codex/release-2-4-0",
     "plan": "docs/RELEASE_2_4_0_GELISTIRME_PLANI_20261103.md",
-    "milestone": "client_compatibility_acceptance",
+    "milestone": "remaining_release_240_acceptance",
     "status": "in_progress",
     "scope_decision": "user_approved",
     "target_release_on": "2026-11-23",

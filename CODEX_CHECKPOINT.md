@@ -1,3 +1,25 @@
+# Güncel kabul — 5 Kasım 2026
+
+- COMM-01 ve COMPAT-01 yazılım kabulü done. Dal `codex/prerelease-announcements`.
+  Uygulama kaynağı `0cbe34cc8113dccdd7e62f0022a870ad19eec3e6`; CI 41919146605 bütün işler PASS.
+  Sonraki commit yalnız kabul/checklist/checkpoint belgeleridir.
+- Duyuru ilk uygun ana ekranda bir kez; Tamam hesapta kalıcı, offline outbox
+  ve Sistem mesajı ayrı. Sürüm sonrası aynı kimlikte sezon metni; eski onay
+  yeniden açılmaz. Patch/minor/major sürüm kapısı ön duyuruyu zorunlu tutar.
+- AUDIO-03 / 2.5.0 ve AUDIO-04 / 2.7.0 yalnız üretim planıdır; todo kalır.
+  Hedefler 21 Aralık / 15 Şubat, sayılar 1 menü+1 savaş / 1 menü+2 savaş.
+- Kabul: `docs/planning/prerelease-announcement-acceptance-20261105.md`. Yerel 2072 Python PASS / 48 dış servis SKIP,
+  779 istemci; son kaynak CI gerçek PG/Redis/imaj/Chromium/Android/WebKit/kaynak
+  paketini geçti. Oyun grafik uyumu 4 saniyelik pencerelerle korunur;
+  Safari referansı Apple Silicon'dır; performans yayın eşikleri değişmedi.
+- Canlı 2.3.0/code14, AAB, sezon açılışı ve fiziksel cihaz/ses dinlemesi
+  yapılmadı. Sırada S1 kaynak/ödül/görsel/cihaz yayın matrisinin kalan kabulleri
+  var; yeni sanat üretimi ya da BASE-01 tekrarı değildir.
+- Aşağıdaki eski CI bekleme kayıtları tarihsel kayıttır; güncel kaynak üstteki
+  kabul ve `artifacts/prerelease-20261104/FINAL_STATUS.json` ile doğrulanır.
+
+---
+
 # Ön duyuru standardı ve müzik planı — 4 Kasım 2026
 
 - Yeni dal: `codex/prerelease-announcements`; önceki sürüm dalındaki takılı

@@ -129,3 +129,10 @@ Play'den fiziksel cihaz güncellemesi, hesap/ödeme/ödül ve hoparlör/kulaklı
 kabulü RELEASE-01'de izlenir. Yeni modülün eski istemcide render/match
 güvenliği 2.5.0 kart açılışı öncesinde ayrıca kanıtlanır. COMPAT-01 sezona
 başlangıç tarihi veya canlı ortam değişikliği yapmaz.
+
+## Güncel kabul — 5 Kasım 2026
+
+COMPAT-01, yeni duyuru kaynağıyla birlikte tamamlandı. Kaynak `0cbe34cc8113dccdd7e62f0022a870ad19eec3e6`;
+[CI başarılı](https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/41919146605). 10 gerçek HTTP ve üç UI başlangıcı
+son temiz commit için tekrar geçti. Fiziksel cihaz/Play kabulü ayrı kalır.
+Ayrıntı [ortak kabul kaydında](prerelease-announcement-acceptance-20261105.md).
