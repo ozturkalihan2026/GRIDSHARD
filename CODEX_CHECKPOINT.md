@@ -21,6 +21,11 @@
   build, 320/393 TR/EN + reload/offline, gerçek PG rollback/cache kaybı geçti.
   CI kaynak/sonuç dosyaları aynı klasördedir; yeni commit CI sonucu beklenecek.
   Fiziksel Android, canlı sunucu, AAB veya sezon açılışı yapılmadı.
+- İlk yeni CI'da sunucu/istemci/PG-imaj geçti; Safari savaş bütçesi kaldı.
+  5 Kasım düzeltmesi: otomatik grafik ölçüm penceresi 4 yerine 2 saniye,
+  iki kötü pencere koşulu ve aynı eşiklerle daha hızlı uyum. Elle ayar ve
+  yayın bütçesi değişmez. Teste bağımsız boş sayfa rAF ölçümü eklendi;
+  savaş kareleri atılmaz. Son istemci kapsamı 779 PASS; yeni CI tekrar denenecek.
 - Bu istemci kodu kurulmadan eski native 2.3.0 popup gösteremez; sunucu
   dağıtılınca Sistem mesajını okuyabilir. 2.4.0 istemcisinde sezon öncesi
   metin, aynı onay kimliğiyle desteklenir. Kaynak hazırlığı canlı yayın sayılmaz.
