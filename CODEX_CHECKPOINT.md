@@ -1,3 +1,28 @@
+# COMPAT-01 ara CI kaydı — 4 Kasım 2026, 20.29 Türkiye saati
+
+- Uygulama kaynağı `0c90cc9037983ee21b9ff206cfe9051ceb05b61a`,
+  `codex/release-2-4-0` dalına push edildi. Görev hâlâ `branch_ready`.
+- CI: https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/41873986873
+  Sunucu, istemci, gerçek PG/Redis/üretim imajı ve Chromium/Android PASS.
+- Safari ARM Mac kapasitesinden dolayı önce hiç başlamadı; desteklenen
+  `macos-15-intel` havuzuna taşındı. Bu son kaynakta Intel Mac işi
+  `126728333059`, tarayıcı kurulumunda tanımlı 10 dakika sınırını aştı.
+  Normal ve force-cancel istekleri kabul edildi; GitHub işi kapatmadığından
+  tek işi yeniden çalıştırma isteğini `already running` ile reddediyor.
+  GitHub bağlayıcısında Actions yazma izni yok; mevcut Git oturumu API'si
+  dispatch/cancel işlemlerinde kullanıldı. Kimlik bilgisi dosyaya yazılmadı.
+- Sıradaki adım: iş kapandığında aynı kaynaktaki Safari işini ve bağımlı
+  kaynak paketleme kontrolünü yeniden çalıştır; bütün CI işleri geçince
+  COMPAT-01'i done yap, checklist/sürüm belgelerini üret ve kayıt commit'ini push et.
+- Yerel son kaynak kanıtı: `artifacts/compat-240-20261104/http-proof-mac-source/proof.json`.
+  Temiz commit, 10 gerçek HTTP + üç UI açılışı PASS. Python 2057 PASS / 47
+  dış servis SKIP; client 778, build 11, yerel PG 77 PASS / 1 Redis SKIP;
+  6 mobil akış + 2 saklı kimlik kontrolü PASS. Son durum `FINAL_STATUS.json`.
+- Canlı 2.3.0/code14, sezon başlangıcı, AWS/env, AAB ve 8891 değişmedi.
+  Fiziksel Android/Play/ses dinlemesi yayın kapısında kalır.
+
+---
+
 # COMPAT-01 — 4 Kasım 2026 ev bilgisayarındaki uygulama
 
 - Dal codex/release-2-4-0. Kurulu2.3/2.2.1 ve yeni istemci yazılım uyumu
