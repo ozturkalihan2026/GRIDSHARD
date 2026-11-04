@@ -31,7 +31,7 @@ def test_publication_window_and_release_cutoff_do_not_open_a_season():
     assert not announcements.can_acknowledge('unknown', NOW)
 
 
-@pytest.mark.parametrize('change', ['duplicate', 'language', 'timezone', 'window', 'version'])
+@pytest.mark.parametrize('change', ['duplicate', 'language', 'timezone', 'window', 'version', 'late-publication'])
 def test_bad_catalog_is_rejected(change):
     document = deepcopy(announcements.CATALOG)
     item = document['announcements'][0]
@@ -40,6 +40,7 @@ def test_bad_catalog_is_rejected(change):
     if change == 'timezone': item['publish_at'] = '2026-11-04T00:00:00'
     if change == 'window': item['expires_at'] = item['publish_at']
     if change == 'version': item['target_version'] = 'bad'
+    if change == 'late-publication': item['publish_at'] = '2026-11-24T00:00:00Z'
     with pytest.raises(ValueError): announcements.validate(document)
 
 

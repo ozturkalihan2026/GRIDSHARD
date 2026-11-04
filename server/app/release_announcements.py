@@ -1,6 +1,6 @@
 """Versioned prerelease mail and account-scoped, explicit popup acknowledgements."""
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 import json
 from pathlib import Path
 import re
@@ -35,6 +35,8 @@ def validate(document):
             raise ValueError('Invalid announcement status')
         if instant(item['publish_at']) >= instant(item['expires_at']):
             raise ValueError('Invalid announcement window')
+        if instant(item['publish_at']).date() > date.fromisoformat(item['target_release_on']):
+            raise ValueError('Prerelease announcement cannot start after its target release date')
         for language in ('tr', 'en'):
             for field in ('title', 'body'):
                 text = item[f'{field}_{language}']

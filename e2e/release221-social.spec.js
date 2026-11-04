@@ -76,7 +76,8 @@ test('2.2.0 and 2.2.1 notes expand in System and stay read after reload', async 
   await waitForParticipantReady(page,60000);
   await page.locator('#reward-inbox-button').click();
   await page.locator('#inbox-tab-system').click();
-  const notes = page.locator('#reward-inbox-notices .inbox-notice-card');
+  await expect(page.locator('#reward-inbox-notices .inbox-notice-card[data-kind="announcement"]')).toHaveCount(1);
+  const notes = page.locator('#reward-inbox-notices .inbox-notice-card[data-kind="update"]');
   await expect(notes.nth(0)).toContainText('GRIDSHARD 2.3.0');
   await expect(notes.nth(1)).toContainText('GRIDSHARD 2.2.1');
   for (const version of ['2.2.0','2.2.1','2.3.0']) {
