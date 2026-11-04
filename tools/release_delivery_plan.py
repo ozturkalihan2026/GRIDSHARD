@@ -124,7 +124,11 @@ def render_brief(release, backlog):
             for criterion in t['acceptance']:
                 lines.append('  - Kabul: ' + criterion)
             if t['evidence']:
-                records = [link(p, output) if repository_path(p).exists()
+                # Ignored local outputs must render identically in a clean CI
+                # checkout and on the machine that produced the evidence.
+                records = [f'`{p}` (yerel kabul kaydı; depoya dahil değildir)'
+                           if p.split('/', 1)[0] in {'artifacts', 'qa_reports', 'deliverables'}
+                           else link(p, output) if repository_path(p).exists()
                            else f'`{p}` (tarihsel referans; bu yerel kopyada yok)'
                            for p in t['evidence']]
                 lines.append('  - Önceki hazırlık kaydı (güncel kabul yerine geçmez): ' + ', '.join(records) + '.')

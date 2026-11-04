@@ -3,6 +3,7 @@ from copy import deepcopy
 import json
 import re
 import unittest
+from unittest.mock import Mock, patch
 
 from tools import release_delivery_plan as plan
 
@@ -63,6 +64,17 @@ class ReleaseDeliveryPlanTests(unittest.TestCase):
                 self.assertTrue(target.exists(), (origin, href))
                 if anchor:
                     self.assertIn(f'id="{anchor}"', target.read_text(encoding='utf-8'))
+
+    def test_local_evidence_presence_cannot_change_generated_briefs(self):
+        original = plan.repository_path
+        def render(local_exists):
+            def resolve(path):
+                if path.split('/', 1)[0] in {'artifacts', 'qa_reports', 'deliverables'}:
+                    return Mock(exists=lambda: local_exists)
+                return original(path)
+            with patch.object(plan, 'repository_path', resolve):
+                return [plan.render_brief(release, self.backlog) for release in self.calendar['releases']]
+        self.assertEqual(render(True), render(False))
 
 
 if __name__ == '__main__':
