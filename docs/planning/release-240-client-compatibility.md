@@ -115,6 +115,10 @@ koruma sürer. Ayrı yerel PostgreSQL 16 kümesinde kalıcılık kapsamı 77 PAS
 1 Redis SKIP; CI ayrıca PostgreSQL 17 ve gerçek Redis ile doğrular.
 Ekonomi baz çizgisinin değişen handler kaynak özeti yeniden üretildi;
 ödül miktarları, XP eşikleri ve sezon tarihi değişmedi.
+Temiz üretim imajında eksik olan salt okunur `first_season_launch_v1.json`
+de açık Docker izin listesine eklendi. Profilin `draft` durumu korunur;
+bu dosyanın imaja dahil edilmesi sezonu açmaz. Yerel test raporları sürüm
+planını makineye göre değiştiremez; temiz checkout ile aynı metin üretilir.
 
 Gerçek PostgreSQL/Redis ve macOS WebKit CI sonuçları; imzalı 2.4.0 AAB ile
 Play'den fiziksel cihaz güncellemesi, hesap/ödeme/ödül ve hoparlör/kulaklık

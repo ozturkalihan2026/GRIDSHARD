@@ -10,12 +10,12 @@ from tools.package_release import ROOT, STATIC_SERVER_DATA_FILES, release_files,
 
 class ReleaseDataBoundaryTests(unittest.TestCase):
     def test_content_source_contract_ships_without_admitting_runtime_data(self) -> None:
-        relative = "server/data/liveops_content_sources_v1.json"
-        self.assertIn(relative, STATIC_SERVER_DATA_FILES)
-        self.assertTrue(is_release_input(relative))
-        self.assertIn("COPY " + relative + " /app/server/data/", (ROOT / "Dockerfile").read_text())
-        for name in (".dockerignore", ".gitignore"):
-            self.assertIn("!" + relative, (ROOT / name).read_text())
+        for relative in ("server/data/liveops_content_sources_v1.json", "server/data/first_season_launch_v1.json"):
+            self.assertIn(relative, STATIC_SERVER_DATA_FILES)
+            self.assertTrue(is_release_input(relative))
+            self.assertIn("COPY " + relative + " /app/server/data/", (ROOT / "Dockerfile").read_text())
+            for name in (".dockerignore", ".gitignore"):
+                self.assertIn("!" + relative, (ROOT / name).read_text())
         self.assertFalse(is_release_input("server/data/liveops_player_entitlements.json"))
 
     def test_source_package_rejects_checkout_line_ending_changes_to_migrations(self) -> None:
