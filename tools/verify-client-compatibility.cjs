@@ -57,17 +57,24 @@ assert.equal(base.protocol,'http:');assert.equal(base.hostname,'127.0.0.1');
   const {chromium,expect}=require('@playwright/test');
   const {waitForParticipantReady}=require('../e2e/ui-helpers');
   const browser=await chromium.launch({channel:'chrome',headless:true});
-  const page=await browser.newPage({viewport:{width:393,height:852},locale:'tr-TR'});
-  const errors=[],missing=[];
+  const page=await browser.newPage({viewport:{width:393,height:852},locale:'tr-TR',serviceWorkers:'block'});
+  const errors=[],missing=[],unexpectedOrigins=[];
+  // Even an accidentally changed runtime-config must not contact production.
+  await page.context().route('**/*',async route=>{
+   const url=new URL(route.request().url());
+   if(['data:','blob:'].includes(url.protocol)||url.origin===base.origin)return route.continue();
+   unexpectedOrigins.push(url.origin);return route.abort('blockedbyclient');
+  });
   page.on('pageerror',e=>errors.push(e.message));
   page.on('response',r=>{if(r.status()>=400&&/\.(js|css|webp|png|woff2?)(\?|$)/.test(r.url()))missing.push(new URL(r.url()).pathname);});
   try{
    await page.goto(base.href,{waitUntil:'domcontentloaded'});await waitForParticipantReady(page,60000);
    await expect(page.locator('#participant-bootstrap-status')).toHaveAttribute('data-status','ready');
+   assert.equal(unexpectedOrigins.length,0,JSON.stringify(unexpectedOrigins));
    assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(missing.length,0,JSON.stringify(missing));
    await page.screenshot({path:spec.screenshot});
    browserProof={passed:true,actual_guest_ui_bootstrap:true,browser_errors:0,missing_assets:0,
-    current_build_label:await page.locator('#boot-version').getAttribute('data-version'),physical_device:false};
+    network_confined_to_loopback:true,current_build_label:await page.locator('#boot-version').getAttribute('data-version'),physical_device:false};
   }finally{await browser.close();}
  }
  console.log(JSON.stringify({client_version:spec.client_version,api_version:spec.api_version,passed:true,results,browser:browserProof}));
