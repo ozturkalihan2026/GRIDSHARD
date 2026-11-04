@@ -1,3 +1,32 @@
+# Ön duyuru standardı ve müzik planı — 4 Kasım 2026
+
+- Yeni dal: `codex/prerelease-announcements`; önceki sürüm dalındaki takılı
+  CI'ın concurrency grubundan bağımsızdır. Uygulama/Play etiketleri 2.3.0/code14.
+- COMM-01 dalda hazır. `release_announcements_v1.json` tek TR/EN kaynaktır:
+  2.4.0 öncesi sürüm duyurusu; aynı kimlikle sürüm sonrası S1 öncesi metin.
+  Önceden Tamam diyen yeniden görmez. Sistem mesajı ayrıca okunabilir.
+- Onay hesapta kalıcıdır; cihazdaki hesaba özel outbox ağ hatasında Tamam'ı
+  kaydeder ve sonraki inbox yenilemesinde eşitler. Okuma/silme onaydan ayrıdır.
+  Yükleme/savaş/başka modal sırasında açılmaz; eski API'de alan yoksa devam eder.
+- 2.3.0 sonrası patch/minor/major sürümlerde release_guard incelenmiş ön
+  duyuru ister. Taslak/denetim: `tools/release_announcements.py`; yayın penceresi,
+  hedef takvim ve iki dil doğrulanır. Ön duyuru, gerçek güncelleme notu değildir.
+- AUDIO-03 / 2.5.0: en az bir yeni menü + bir savaş bestesi; merak/umut ve
+  kontrollü rekabet. AUDIO-04 / 2.7.0: bir menü + iki özgün savaş bestesi;
+  gizem, keşif gerilimi ve cesaret. Bu iki iş planlandı, müzik üretilmedi.
+  Ortak sanat/ses yönü, mevcut codec/miks/tercih hattı ve master kararı korunur.
+- Ayrıntı: `docs/planning/prerelease-announcements-and-music.md`; checklist,
+  takvim ve 2.4/2.5/2.7 briefleri bağlı olarak üretildi. Tarihler değişmedi.
+- Yerel testler `artifacts/prerelease-20261104/`: tam Python ve istemci,
+  build, 320/393 TR/EN + reload/offline, gerçek PG rollback/cache kaybı geçti.
+  CI kaynak/sonuç dosyaları aynı klasördedir; yeni commit CI sonucu beklenecek.
+  Fiziksel Android, canlı sunucu, AAB veya sezon açılışı yapılmadı.
+- Bu istemci kodu kurulmadan eski native 2.3.0 popup gösteremez; sunucu
+  dağıtılınca Sistem mesajını okuyabilir. 2.4.0 istemcisinde sezon öncesi
+  metin, aynı onay kimliğiyle desteklenir. Kaynak hazırlığı canlı yayın sayılmaz.
+
+---
+
 # COMPAT-01 ara CI kaydı — 4 Kasım 2026, 20.29 Türkiye saati
 
 - Uygulama kaynağı `0c90cc9037983ee21b9ff206cfe9051ceb05b61a`,

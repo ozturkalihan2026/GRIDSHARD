@@ -19,6 +19,29 @@ from test_postgres_social_api import social_db  # noqa: F401 -- shared guarded D
 from test_postgres_social_api import erasure_db  # noqa: F401
 
 
+def test_announcement_ack_rolls_back_and_survives_cache_loss(social_db, monkeypatch):
+    _, players, _, (player, _, _) = social_db
+    identity = 'preview-2-4-0-season-one'
+    monkeypatch.setattr(gateway.player_profile_service, '_now_func',
+                        lambda: datetime(2026, 11, 5, tzinfo=timezone.utc))
+    before = deepcopy(players.load(player).profile)
+    save = gateway.persist_player_data
+    def fail_after_save(player_id):
+        save(player_id)
+        raise RuntimeError('injected announcement write failure')
+    with monkeypatch.context() as patch:
+        patch.setattr(gateway, 'persist_player_data', fail_after_save)
+        with pytest.raises(RuntimeError, match='announcement write failure'):
+            gateway.acknowledge_release_announcement(player, identity)
+    assert players.load(player).profile == before
+    assert gateway.acknowledge_release_announcement(player, identity)['announcement'] is None
+    saved = deepcopy(players.load(player).profile)
+    gateway.player_profile_service._profiles.clear()
+    assert gateway.acknowledge_release_announcement(player, identity)['announcement'] is None
+    assert players.load(player).profile == saved
+    assert saved['meta_progression_state']['acknowledged_announcement_ids'] == [identity]
+
+
 def test_inbox_collect_and_open_rolls_back_then_replays_original_core_receipt(social_db, monkeypatch):
     _, players, _, (player, _, _) = social_db
     message_id = 'fixed-core-' + uuid4().hex

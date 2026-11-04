@@ -91,6 +91,7 @@ const runAnimationFrame = (now) => {
 };
 
 const sandbox = {
+  MutationObserver: class { observe() {} disconnect() {} },
   ...relayApi,
   RelayAppScreen: { MENU:"menu", PLAY:"play", PROFILE:"profile", STATISTICS:"statistics", SETTINGS:"settings" },
   document,
@@ -126,6 +127,7 @@ sandbox.globalThis = sandbox;
 vm.createContext(sandbox);
 
 for (const relativePath of [
+  ["src", "release-announcement.js"],
   ["src", "native-push.js"],
   ["src", "screens", "screen-controller.js"],
   ["src", "screens", "card-swipe.js"],

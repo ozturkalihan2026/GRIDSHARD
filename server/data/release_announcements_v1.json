@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "announcements": [
+    {
+      "notice_id": "preview-2-4-0-season-one",
+      "target_version": "2.4.0",
+      "status": "published",
+      "publish_at": "2026-11-04T00:00:00Z",
+      "expires_at": "2026-11-30T00:00:00Z",
+      "target_release_on": "2026-11-23",
+      "season_starts_on": "2026-11-30",
+      "title_tr": "Yeni devre açılıyor: 2.4.0 ve ilk sezon",
+      "title_en": "A new circuit begins: 2.4.0 and the first season",
+      "body_tr": "Devreni hazırla! GRIDSHARD 2.4.0 için hedefimiz 23 Kasım. İlk sezonu 30 Kasım, saat 03.00 Türkiye saatiyle açmayı planlıyoruz. Tarih değişikliklerini burada duyuracağız.\n\n• İlk sezon mevcut 24 modülle başlayacak. Sevdiğin desteyi geliştirip 40 kademeli sezon yolunda ilerleyebileceksin.\n• Sezon ve haftalık yarışlarda Devre Kredisi, Akı ve mevcut modül parçaları gibi kaynak ödülleri; belirli başarılarda koleksiyondaki özel görünümler planlanıyor. Her ödül kendi kazanma koşuluna bağlı olacak.\n• Günlük ve sezonluk Devre Emirleri, sabit içerikli ödül kasaları ve daha anlaşılır ödül açılışları hazırlanıyor.\n• Gezinme düğmeleri ile saldırı ve çekirdek seslerinde iyileştirmeler geliyor. Hesabın, mevcut görünümlerin ve ilerlemen korunacak.\n\nYeni modüller ve yeni oyun modları sonraki sürümlerin planında. Takım turnuvası, yeterli katılım ve ayrı hazırlık tamamlandığında açılacak. Tarih değişirse mesaj kutusundan haber vereceğiz. Ayrıntıları daha sonra Mesaj Kutusu → Sistem bölümünden tekrar okuyabilirsin.",
+      "body_en": "Get your circuit ready! Our target for GRIDSHARD 2.4.0 is November 23. The first season is planned for November 30 at 03:00 Türkiye time (00:00 UTC). We will announce any changes to these target dates here.\n\n• The first season will use the existing 24 modules. Develop your favorite deck and progress along a 40-tier season road.\n• Season and weekly competitions are planned to offer resources such as Circuit Credits, Flux and existing module shards, with collection cosmetics for selected achievements. Each reward has its own earning conditions.\n• Daily and seasonal Circuit Orders, fixed-content reward crates and clearer reward reveals are being prepared.\n• Navigation buttons, attack sounds and core sounds are being improved. Your account, existing appearances and progress will be preserved.\n\nNew modules and game modes are planned for later releases. The team tournament needs sufficient participation and separate preparation. We will announce date changes in the inbox. You can read this again under Inbox → System.",
+      "released_title_tr": "İlk sezon için devreni hazırla!",
+      "released_title_en": "Get your circuit ready for the first season!",
+      "released_body_tr": "Sıradaki durak: GRIDSHARD’ın ilk sezonu! Hedef başlangıç 30 Kasım, saat 03.00 Türkiye saati. Sezon açılışı son kalite kontrollerinden sonra ayrıca duyurulacak.\n\n• Mevcut 24 modülle desteni geliştir, 40 kademeli sezon yolunda ilerle.\n• Günlük ve sezonluk Devre Emirleriyle yeni hedefler edin. Kaynak ödüllü haftalarda Devre Kredisi, Akı ve mevcut modül parçaları için yarış.\n• Özel görünümler belirli sezon ve turnuva başarılarıyla kazanılacak; kazanma koşullarını oyun içinden görebileceksin.\n• Sabit içerikli ödül kasaları, yenilenen açılışlar, ortak altın gezinme düğmeleri ve geliştirilmiş saldırı/çekirdek sesleri sezon hazırlığına eşlik ediyor.\n\nHesabın ve mevcut ilerlemen korunur. Takım turnuvası yeterli katılım ve ayrı hazırlık tamamlandığında açılacak. Güncel takvim ve duyuruları Mesaj Kutusu → Sistem bölümünden takip edebilirsin.",
+      "released_body_en": "Next stop: GRIDSHARD’s first season! The target start is November 30 at 03:00 Türkiye time (00:00 UTC). The season opening will be announced separately after final quality checks.\n\n• Develop your deck with the existing 24 modules and progress along the 40-tier season road.\n• Take on daily and seasonal Circuit Orders. Compete for Circuit Credits, Flux and existing module shards during resource-reward weeks.\n• Special appearances will be earned through selected season and tournament achievements, with their earning conditions shown in the game.\n• Fixed-content reward crates, refreshed reveals, shared gold navigation buttons and improved attack/core sounds accompany season preparations.\n\nYour account and existing progress are preserved. The team tournament needs sufficient participation and separate preparation. Follow the latest schedule and announcements under Inbox → System."
+    }
+  ]
+}

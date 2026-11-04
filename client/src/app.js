@@ -511,6 +511,18 @@
   let activeTrophyLeaderboardScope = "general";
   let leaderboardPayload = null;
   let rewardInboxState = null;
+  const releaseAnnouncement = globalThis.GridshardReleaseAnnouncement.create({
+    document, playerId:() => participantPlayerId,
+    canPresent:() => participantBootstrap.status === 'ready' && startupLoading?.state === 'done'
+      && !document.hidden && document.body.dataset.appScreen === 'menu'
+      && !document.querySelector('dialog[open]'),
+    acknowledge:async (owner, id) => {
+      const payload = await requestJsonWithDeadline(
+        `/profile/${encodeURIComponent(owner)}/release-announcements/${encodeURIComponent(id)}/acknowledge`,
+        {method:'POST'}, 12000);
+      if (owner === participantPlayerId) { rewardInboxState = payload; renderRewardInbox(); }
+    },
+  });
   let publicProfileReturnDialogId = null;
   let teamProfileReturnDialogId = null;
   let teamState = null;
@@ -19343,8 +19355,10 @@
       rewardInboxState = payload;
       if (status && !quiet) status.textContent = "";
       renderRewardInbox();
+      releaseAnnouncement.offer(payload.announcement, playerId);
       maybeAutoLaunchAcceptedInvite();
     } catch (error) {
+      releaseAnnouncement.unavailable(playerId);
       if (status && !quiet) status.textContent = error instanceof Error ? error.message : String(error);
     }
     if (open) {

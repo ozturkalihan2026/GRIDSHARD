@@ -6,6 +6,9 @@ gerçekten uygulanıp kanıtlanana kadar oyunda mevcut sayılmaz.
 
 ## Plan ve takip
 
+- [Sürüm öncesi duyuru standardı ve iki müzik paketi](planning/prerelease-announcements-and-music.md):
+  hesaba bağlı tek gösterim/Sistem mesajı; 2.5.0 ve 2.7.0 özgün menü/savaş müzikleri.
+
 - [Sürüm uygulama rehberi](GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md):
   2.4–2.9 tarihleri, ayrıntılı içerik, dosyalar ve iş sırası.
 - [2.4.0 uygulama briefi](planning/releases/2.4.0.md).

@@ -1,6 +1,6 @@
 const {expect} = require("@playwright/test");
 
-async function completeFirstLaunch(page) {
+async function completeFirstLaunch(page, {ackAnnouncements = true} = {}) {
   await expect(page.locator("#startup-loading")).toBeHidden();
   const guest = page.locator("#account-onboarding-guest");
   if (await guest.isVisible()) {
@@ -18,6 +18,13 @@ async function completeFirstLaunch(page) {
     }
     await roll.click();
     await expect(daily).toBeHidden();
+  }
+  const announcement = page.locator('#release-announcement-dialog');
+  await expect(announcement).not.toHaveAttribute('data-delivery', 'loading');
+  if (ackAnnouncements && await announcement.getAttribute('data-delivery') === 'pending') {
+    await expect(announcement).toBeVisible();
+    await page.locator('#release-announcement-confirm').click();
+    await expect(announcement).toBeHidden();
   }
 }
 

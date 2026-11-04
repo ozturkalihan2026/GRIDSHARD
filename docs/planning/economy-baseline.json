@@ -13,7 +13,7 @@
   "scenario_reward_policy": "s1_fixed_road_draft_excluding_legacy_api_extra_chests",
   "current_legacy_api_has_additional_road_chests": true,
   "source_hashes": {
-    "server/app/player_profile.py": "1825ad6994405d7000a78e0d9a1f8c0d9471b3aa74f31f1e62b28e81ca35a16b",
+    "server/app/player_profile.py": "4dbc5590b2eabbf901e70aba454fcc1330a6ad30001b8fc868b9d8a23eafeafb",
     "server/app/player_progression.py": "248a4a001d3e3d8d94cf12bdef515c8e3bd0bf06e57ea3790868a06e72a91bde",
     "server/app/meta_progression.py": "19775809df2b3358e41c56f04123b7024e20b852cc7af1e220e3c0022b7d45dd",
     "server/app/season_competition.py": "fa8d11813d94f95cb92bbce33da5a9c9ec5eac4cdc9e842ae3ad6541c1347c9f",
@@ -26,11 +26,11 @@
     "docs/planning/season-1-engagement-v1.json": "9539be37219632246d6ba5ecefe250d30f3e3aa1df4e53910ebaecc9571bc9cb",
     "server/app/season_entitlements.py": "0b61c2f73c2435e21309ef5a0c5c9d1fbfb465004fa145303ba18ebd09f4f241",
     "server/app/first_season_profile.py": "111333dc5ec10b25f4a2cbb7151b3a0e48954079031c5aca3d7b0059dd5e2637",
-    "server/app/main.py": "946aee8c22d6c28edbc872d85c3e4831a6f9133f0f6334fb53989fc79daba6ae",
+    "server/app/main.py": "dc153e484d88e25bf2bb1a2225f21698107af7f2e4d2d434ace737445babce82",
     "server/app/cosmetic_releases.py": "12a8c1ec82a5e2567a62c5c28b145db1265ed87b369252950cdf022aa5a2aa83",
     "server/data/first_season_launch_v1.json": "694615ab17bcb0589a2faf8473caab604a98670b05854af87d61b2e8ccb2b203",
     "server/data/cosmetic_releases_v1.json": "80dd80285ea4c3a895927e41918604b2e905e311d2c13c7330dfb3fcf4a70f54",
-    "docs/planning/release_calendar_v1.json": "c0df21f6ea957db5060c517aa296b3ca64aca09356c5c31034c2d695beef0dbf"
+    "docs/planning/release_calendar_v1.json": "38f4fb7afd95f8c28b9ba3ad8034fbcbe215e09a7b2f0555e56041cd98615963"
   },
   "season": {
     "number": 1,

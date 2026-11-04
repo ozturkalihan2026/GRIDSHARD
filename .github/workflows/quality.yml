@@ -38,6 +38,7 @@ jobs:
       - name: Check connected release plans
         run: |
           python tools/report_economy_baseline.py --check
+          python tools/release_announcements.py --check --require 2.4.0
           python tools/plan_season_xp.py --check
           python tools/prepare_first_season.py --check
           python tools/report_combat_audio.py --check
@@ -243,7 +244,7 @@ jobs:
         env:
           GRIDSHARD_E2E_HUMAN_MATCHMAKING: '0'
         run: >-
-          pnpm exec playwright test e2e/client-compatibility.spec.js e2e/startup-loading.spec.js
+          pnpm exec playwright test e2e/release-announcement.spec.js e2e/client-compatibility.spec.js e2e/startup-loading.spec.js
           e2e/menu-navigation.spec.js e2e/beta33-season.spec.js
           e2e/persistent-render.spec.js
           e2e/visual-atmosphere.spec.js

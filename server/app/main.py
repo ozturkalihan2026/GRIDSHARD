@@ -101,6 +101,7 @@ from .safe_chat import team_description_text, visible_message
 from .match_accounting import TUTORIAL_TRAINING_MATCH_TYPE
 from .version import VERSION, LEGACY_HEALTH_VERSION, LEGACY_RELEASE_VERSION
 from .release_updates import INBOX_UPDATE_NOTICES
+from .release_announcements import active_announcements, pending_announcement, can_acknowledge
 from .cosmetic_releases import period_reward
 from .player_profile import (
     PlayerProfileError,
@@ -3680,6 +3681,7 @@ def _inbox_invitations(profile) -> list[dict]:
 def _inbox_notices(profile, *, include_dismissed: bool = False) -> list[dict]:
     seen = set(profile.seen_inbox_notice_ids)
     notices = [dict(item) for item in INBOX_UPDATE_NOTICES]
+    notices.extend(active_announcements(VERSION, player_profile_service.now()))
     try:
         events = _events_view()
     except Exception:  # Bildirim üretimi mesaj kutusunu hiçbir zaman düşürmez.
@@ -3751,6 +3753,7 @@ def _reward_inbox_view(profile) -> dict:
         "universal_module_shards": int(profile.universal_module_shards),
         "invitations": invitations,
         "notices": notices,
+        "announcement": pending_announcement(profile, VERSION, player_profile_service.now()),
         "team": _team_notification_summary(profile),
         "unread_count": (
             unclaimed_count
@@ -3783,6 +3786,25 @@ def mark_reward_inbox_notices_seen(player_id: str, request: InboxNoticeSeenReque
 def get_reward_inbox(player_id: str) -> dict:
     _settle_competition_rewards(player_id)
     return _reward_inbox_view(_team_member_profile(player_id))
+
+
+@app.post("/profile/{player_id}/release-announcements/{notice_id}/acknowledge")
+@persistent_operation
+def acknowledge_release_announcement(player_id: str, notice_id: str) -> dict:
+    with _store_economy_transaction(player_id), REWARD_INBOX_LOCK:
+        profile = _team_member_profile(player_id)
+        if notice_id not in profile.acknowledged_announcement_ids:
+            if not can_acknowledge(notice_id, player_profile_service.now()):
+                raise HTTPException(status_code=404, detail="Duyuru artık yayında değil.")
+            previous = profile.acknowledged_announcement_ids, profile.seen_inbox_notice_ids
+            try:
+                profile.acknowledged_announcement_ids = (*profile.acknowledged_announcement_ids, notice_id)
+                profile.seen_inbox_notice_ids = tuple(dict.fromkeys((*profile.seen_inbox_notice_ids, notice_id)))
+                persist_player_data(player_id)
+            except BaseException:
+                profile.acknowledged_announcement_ids, profile.seen_inbox_notice_ids = previous
+                raise
+        return _reward_inbox_view(profile)
 
 
 @app.post("/profile/{player_id}/reward-inbox/messages/dismiss")

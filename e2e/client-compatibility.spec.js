@@ -4,7 +4,8 @@ const {waitForParticipantReady}=require('./ui-helpers');
 test('future runtime version preserves startup through the explicit API contract',async({page})=>{
  await page.route('**/health',async route=>{
   const response=await route.fetch(),body=await response.json();
-  await route.fulfill({response,json:{...body,runtime_release_version:'2.4.0'}});
+  const [major,minor]=body.runtime_release_version.split('.').map(Number);
+  await route.fulfill({response,json:{...body,runtime_release_version:`${major}.${minor+1}.0`}});
  });
  await page.goto('/?e2e=1');await waitForParticipantReady(page,60000);
  await expect(page.locator('#startup-loading')).toBeHidden();
@@ -18,7 +19,8 @@ test('minimum version gives a localized safe update explanation and keeps accoun
  });
  await page.route('**/health',async route=>{
   const response=await route.fetch(),body=await response.json();
-  body.client_compatibility.minimum_client_version='2.4.0';
+  const [major,minor,patch]=body.runtime_release_version.split('.').map(Number);
+  body.client_compatibility.minimum_client_version=`${major}.${minor}.${patch+1}`;
   await route.fulfill({response,json:body});
  });
  await page.goto('/?e2e=1');

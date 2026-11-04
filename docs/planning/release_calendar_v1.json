@@ -14,8 +14,8 @@
       "scope_freezes_on": "2026-11-16",
       "tests_start_on": "2026-11-19",
       "target_release_on": "2026-11-23",
-      "content": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri.",
-      "required": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. REWARD-06, UI-08 ve SEASON-01; tekil makbuz, güvenli açılış ve 1.800 sezonluk XP tavanı kabulü.",
+      "content": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. Sürüm öncesi iki dilli duyuru, ilk açılışta hesaba bağlı bir defalık pencere ve Sistem mesajı.",
+      "required": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. REWARD-06, UI-08 ve SEASON-01; tekil makbuz, güvenli açılış ve 1.800 sezonluk XP tavanı kabulü. COMM-01 kabulü ve ön duyuru standardı sürüm kapısındadır.",
       "optional": "Takım turnuvası için ayrı hazırlık; yeterli gerçek takım yoksa beklemede kalır.",
       "excluded": "Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu.",
       "work_items": [
@@ -29,7 +29,8 @@
         "RELEASE-01",
         "REWARD-06",
         "UI-08",
-        "SEASON-01"
+        "SEASON-01",
+        "COMM-01"
       ],
       "season": {
         "number": 1,
@@ -150,6 +151,24 @@
           ]
         },
         {
+          "id": "S1-DUYURU",
+          "title": "Sürüm ön duyurusunu tek gösterim ve Sistem mesajıyla standartlaştır",
+          "kind": "required",
+          "tasks": [
+            "COMM-01"
+          ],
+          "steps": [
+            "İki dilli plan duyurusunu kalıcı kimlik ve yayın penceresiyle hazırla; hedef tarihleri kanonik takvimle denetle.",
+            "İlk uygun ana ekranda göster; Tamam onayını hesapta sakla ve ağ hatasında cihaz outbox ile yeniden dene. Sistem mesajını bağımsız tut.",
+            "Sürüm kapısına ön duyuru zorunluluğu, 320/393 px ve TR/EN, hesap/reload/rollback/çift istek kabulünü bağla."
+          ],
+          "acceptance": [
+            "TR/EN tek kaynak, hedef tarih takvim denetimi, yayın penceresi, eski API ve sürüm sonrası görünmezlik doğrulanır.",
+            "Tamam onayı hesapta kalıcı ve idempotenttir; ağ hatası outbox, yeniden giriş/başka hesap ve mesaj kutusu bağımsızlığı; 320/393 px, modal/savaş sırası ve veri koruma kanıtlanır.",
+            "2.4.0 ve sonraki her sürümün incelenmiş ön duyurusu release_guard tarafından aranır; gerçek sürüm notları ayrı tutulur."
+          ]
+        },
+        {
           "id": "S1-YAYIN",
           "title": "Eski istemci uyumu ve iki aşamalı açılış",
           "tasks": [
@@ -178,7 +197,8 @@
             "AUDIO-01",
             "REWARD-06",
             "UI-08",
-            "SEASON-01"
+            "SEASON-01",
+            "COMM-01"
           ],
           "output": "Bütçe ve buton/ses envanteri; 6 Kasım kapasite kontrolü. Kasa açılışı/çekirdek teslimi ve emir sözleşmeleri; ek kapsamın kapasite kontrolü."
         },
@@ -229,8 +249,8 @@
       "scope_freezes_on": "2026-12-14",
       "tests_start_on": "2026-12-17",
       "target_release_on": "2026-12-21",
-      "content": "Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe.",
-      "required": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı.",
+      "content": "Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. En az bir yeni menü ve bir özgün savaş bestesi; merak/umut ve kontrollü rekabet.",
+      "required": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. AUDIO-03 kabulü ve ön duyuru standardı sürüm kapısındadır.",
       "optional": "Ek mağaza teklifleri yalnız ana pilot tamamlanırsa değerlendirilir.",
       "excluded": "Yeni gerçek para ürünü, yeni para birimi, ücretli yeniden çekiliş ve PvP deneme gücü artışı.",
       "work_items": [
@@ -256,7 +276,8 @@
         "BALANCE-01",
         "COS-05",
         "OPS-02",
-        "RELEASE-02"
+        "RELEASE-02",
+        "AUDIO-03"
       ],
       "season": {
         "number": 2,
@@ -355,6 +376,24 @@
           "kind": "required"
         },
         {
+          "id": "S2-MUZIK",
+          "title": "2.5.0 için keşif menüsü ve rekabet savaş müziği üret",
+          "kind": "required",
+          "tasks": [
+            "AUDIO-03"
+          ],
+          "steps": [
+            "Ortak ses yönünü koruyarak kısa A/B eskizleri ve farklı duygu motiflerini mevcut oyun üzerinde dinle; üretim kapsamını kapasite kontrolünde doğrula.",
+            "Onaylı özgün besteleri loop ve yoğunluk düzenlemeleriyle hazırla; kaynak/lisans/hash, WAV ve mobil OGG/AAC türevlerini mevcut müzik yöneticisine bağla.",
+            "Yoğun savaşta SFX maskeleme, geçiş/tekrar, tercih/arka plan ve decode/bellek/paket/kare bütçesini raporla; fiziksel cihazda karşılaştırmalı kabulü kaydet."
+          ],
+          "acceptance": [
+            "En az bir yeni menü ve bir özgün savaş bestesi; Devrenin Ufku merak/umut, Akımın Nabzı kontrollü rekabet ve taktik odak duygusunu karşılaştırmalı dinlemeyle taşır.",
+            "Loop/stem/crossfade, düşük-orta-kritik yoğunluk, tekrar engeli ve tercih/mute/arka plan/codec hattı; paket/bellek/kare bütçesi ile yoğun savaşta SFX okunabilirliği kanıtlanır.",
+            "Kaynak/lisans/hash ve loudness/true peak/clip/DC/decode raporu; fiziksel Android hoparlör/kulaklık ve macOS WebKit kabulü bulunur. Global master/gain kendiliğinden değişmez."
+          ]
+        },
+        {
           "id": "S2-YAYIN",
           "title": "Hak koruyan operasyon ve S2 açılışı",
           "tasks": [
@@ -383,7 +422,8 @@
             "DATA-01",
             "BASE-02",
             "BASE-03",
-            "UI-01"
+            "UI-01",
+            "AUDIO-03"
           ],
           "output": "Ekonomi ve hak tasarımı; 30 Kasım kapasite kararı, S1 gözlemi payı."
         },
@@ -587,15 +627,16 @@
       "scope_freezes_on": "2027-02-08",
       "tests_start_on": "2027-02-11",
       "target_release_on": "2027-02-15",
-      "content": "Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi.",
-      "required": "Koşu kurtarma, ilk/tekrar ödülü, yan rota tek teslimi; yeni modül için çalışma kodu/görsel/denge/ücretsiz edinim. CARD-03 taslak brief'i hazır modül sayılmaz. İlk üç takım seti tüketildiyse yeni takım seti de üretilir; oyuncu stoğu buna yetmiş sayılmaz.",
+      "content": "Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi. En az bir yeni menü ve iki özgün sefer savaş bestesi; gizem, keşif gerilimi ve cesaret.",
+      "required": "Koşu kurtarma, ilk/tekrar ödülü, yan rota tek teslimi; yeni modül için çalışma kodu/görsel/denge/ücretsiz edinim. CARD-03 taslak brief'i hazır modül sayılmaz. İlk üç takım seti tüketildiyse yeni takım seti de üretilir; oyuncu stoğu buna yetmiş sayılmaz. AUDIO-04 kabulü ve ön duyuru standardı sürüm kapısındadır.",
       "optional": "İkinci sefer rotası ilk pilotun kalite ve katılım verisi uygunsa.",
       "excluded": "Takım boss'u ve gerçek zamanlı 2v2.",
       "work_items": [
         "LIVE-04",
         "CARD-04",
         "COS-07",
-        "RELEASE-04"
+        "RELEASE-04",
+        "AUDIO-04"
       ],
       "season": {
         "number": 4,
@@ -643,6 +684,24 @@
           "kind": "required"
         },
         {
+          "id": "S4-MUZIK",
+          "title": "2.7.0 için gizemli menü ve iki sefer savaş müziği üret",
+          "kind": "required",
+          "tasks": [
+            "AUDIO-04"
+          ],
+          "steps": [
+            "Ortak ses yönünü koruyarak kısa A/B eskizleri ve farklı duygu motiflerini mevcut oyun üzerinde dinle; üretim kapsamını kapasite kontrolünde doğrula.",
+            "Onaylı özgün besteleri loop ve yoğunluk düzenlemeleriyle hazırla; kaynak/lisans/hash, WAV ve mobil OGG/AAC türevlerini mevcut müzik yöneticisine bağla.",
+            "Yoğun savaşta SFX maskeleme, geçiş/tekrar, tercih/arka plan ve decode/bellek/paket/kare bütçesini raporla; fiziksel cihazda karşılaştırmalı kabulü kaydet."
+          ],
+          "acceptance": [
+            "En az bir menü ve iki özgün savaş bestesi: Derin Devre dinginlik/gizem; Bilinmeyen Hat keşif gerilimi; Son Bağlantı baskı/cesaret/çözülme. Yeniden renklendirilmiş aynı melodi yeni eser sayılmaz.",
+            "Sefer/arena bağlamı, yoğunluk geçişi ve ardışık tekrar koruması mevcut çalıcıda; önceki repertuvar ve kullanıcı tercihleri korunur.",
+            "AUDIO-03 ile aynı loop/lisans/mastering/codec/performans ve fiziksel cihaz kabulü; önceki sürümden duygusal ayrım A/B oyun içi dinlemeyle kanıtlanır."
+          ]
+        },
+        {
           "id": "S4-YAYIN",
           "title": "Sefer pilotu ve dördüncü sezon",
           "tasks": [
@@ -665,7 +724,8 @@
           "starts_on": "2027-01-19",
           "ends_on": "2027-01-25",
           "tasks": [
-            "LIVE-04"
+            "LIVE-04",
+            "AUDIO-04"
           ],
           "output": "Üç durak + bonus brief ve koşu kayıt sözleşmesi; S3 gözlemi."
         },

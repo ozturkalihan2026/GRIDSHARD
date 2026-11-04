@@ -38,6 +38,7 @@
   <link rel="stylesheet" href="./src/battle-platform-v17.css" />
   <link rel="stylesheet" href="./src/navigation-back-v1.css" />
   <link rel="stylesheet" href="./src/startup-loading.css" />
+  <link rel="stylesheet" href="./src/release-announcement.css" />
   <!-- /build:styles -->
 </head>
 <!-- Açılış ekranı betikler yüklenmeden de Ev düzeninde çizilir (Ev'e özgü
@@ -511,6 +512,13 @@
       </section>
     </dialog>
 
+    <dialog id="release-announcement-dialog" class="release-announcement-dialog" data-delivery="loading" aria-labelledby="release-announcement-title" aria-describedby="release-announcement-body">
+      <span id="release-announcement-label" class="announcement-label"></span>
+      <h2 id="release-announcement-title"></h2>
+      <div id="release-announcement-body" class="announcement-body"></div>
+      <p id="release-announcement-note" class="announcement-note"></p>
+      <div class="announcement-actions"><button id="release-announcement-confirm" type="button">TAMAM</button></div>
+    </dialog>
     <dialog id="reward-inbox-dialog" class="reward-inbox-dialog" aria-labelledby="reward-inbox-title">
       <header><div><h2 id="reward-inbox-title" data-ui-icon="mail:blue">Mesaj Kutusu</h2></div><button id="reward-inbox-close" class="detail-card-close" type="button" aria-label="Kapat">×</button></header>
       <p id="reward-inbox-status" role="status" aria-live="polite"></p>
@@ -2020,6 +2028,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
   <script src="./src/competition-chest-art.js"></script>
   <script src="./src/detail-card-layout.js"></script>
   <script src="./src/trophy-select.js"></script>
+  <script src="./src/release-announcement.js"></script>
   <script src="./src/app.js"></script>
   <!-- /build:scripts -->
 </body>

@@ -56,6 +56,19 @@ def main() -> None:
         json.dumps({"pid": os.getpid(), "started_at_ms": int(time.time() * 1000)}),
         encoding="utf-8",
     )
+    # Browser fixtures must keep exercising a real announcement after the live
+    # campaign expires or the product version changes. Only this owned loopback
+    # process gets an in-memory campaign window/target; production code has no
+    # query-string or environment bypass of publication rules.
+    from copy import deepcopy
+    from app import release_announcements
+    from app.version import VERSION
+    fixture_catalog = deepcopy(release_announcements.CATALOG)
+    major, minor, _ = map(int, VERSION.split('.'))
+    for item in fixture_catalog['announcements']:
+        item.update(status='published', target_version=f'{major}.{minor + 1}.0',
+                    publish_at='2000-01-01T00:00:00Z', expires_at='2100-01-01T00:00:00Z')
+    release_announcements.CATALOG = release_announcements.validate(fixture_catalog)
     config = uvicorn.Config("app.main:app", host="127.0.0.1", port=base.port or 8879, access_log=False)
     server = uvicorn.Server(config)
     default_handle_exit = server.handle_exit
