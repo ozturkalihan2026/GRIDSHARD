@@ -262,16 +262,27 @@ jobs:
           e2e/beta381-battle-events.spec.js e2e/battle-density.spec.js
           e2e/mobile-battle.spec.js
           ${{ matrix.projects }}
-      - name: Published S1 receipts and mobile layouts (isolated fixture)
-        if: success() || failure()
-        env:
-          GRIDSHARD_E2E_S1_ACCEPTANCE: '1'
-        run: pnpm exec playwright test e2e/s1-acceptance.spec.js ${{ matrix.projects }}
       - name: Preserve browser performance and failure evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gridshard-browser-evidence-${{ matrix.platform }}-${{ github.sha }}
+          path: |
+            qa_reports/playwright-results.json
+            test-results/
+            playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Published S1 receipts and mobile layouts (isolated fixture)
+        if: success() || failure()
+        env:
+          GRIDSHARD_E2E_S1_ACCEPTANCE: '1'
+        run: pnpm exec playwright test e2e/s1-acceptance.spec.js ${{ matrix.projects }}
+      - name: Preserve separate S1 browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridshard-s1-evidence-${{ matrix.platform }}-${{ github.sha }}
           path: |
             qa_reports/playwright-results.json
             test-results/
