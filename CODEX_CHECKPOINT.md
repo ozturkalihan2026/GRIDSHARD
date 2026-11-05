@@ -6,21 +6,21 @@
 - Son kullanıcı eki **UI-09**: Gelen/Giden İstek sekmelerindeki sarılan metnin
   üstüne taşan alt çizgi kaldırıldı. Seçili turkuaz yüzey/kenar, odak ve rozet
   korunur. Üç tarayıcıda TR/EN 320/393 geçti; 2.4.0 paketi/takvim/checklist bağlı.
-- PR #3 / `56ebd24` CI’ında sunucu, istemci, 83 gerçek PG/Redis/imaj,
-  Safari 35+4 ve Chromium/Android 78 genel senaryo geçti. İki Türkçe 320 px
-  S1 senaryosu kaldı; yerelde geçen 12 birleşim uzak kabul sayılmaz.
-  Çağrı izi gecikmiş `season-reward-panel` kaydırmasının tıklamayla sabitlenen
-  paneli kapattığını doğruladı. Düzeltme: sandık görünürken sabit paneli yeniden
-  konumlandır; sandık görünümden çıkınca kapat. Yeni akış, pin sonrasında gerçek
-  üst kapsayıcı kaydırması üretip aynı paneli ve görünümden çıkışta kapanmasını
-  doğrular. Güncel kaynak CI sonucu ayrıca kaydedilecek; önceki başarısız
-  koşular kabul sayılmaz.
-- Ek iz: yalnız `notifications` / `seen_notification_keys` değiştiğinde
-  ödül düğmeleri gereksiz yeniden kuruluyordu. Bu iki rozet alanı liste
-  imzasından çıkarıldı; rozetler yine güncellenir, gerçek ödül değişimi listeyi
-  yeniler. Sabit panel hover/odakla başka sandığa geçirilmez; açık seçim için
-  tıklama sürer. Gerçek okunma yanıtı pin sonrasına bırakılarak TR/EN 320 px
-  Chromium/Android dört regresyonu ve 779 istemci testi geçti.
+- Üretim kodu referansı `619c90a7527146ebc0ee2652fa81cfc9ccdf2bfe`;
+  [PR #3](https://github.com/ozturkalihan2026/GRIDSHARD/pull/3),
+  [CI 42019478488](https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/42019478488).
+  **Bütün işler PASS**: sunucu 2024/50 SKIP, araçlar 61/4 platform SKIP;
+  gerçek PG/Redis 83 ve imaj restart/restore; istemci 779, build 11;
+  Chromium/Android genel 78 + S1 8 + performans 2 + gerçek PvP 3;
+  Safari genel 35 + S1 4 + performans 1; kaynak paketi üretildi.
+  Sonraki kayıt commit’i belge ve WebKit’in mevcut 150 sn proje test bütçesine
+  uyumdur; üretim kodu bu referansla aynıdır. Önceki başarısız koşular kabul değildir.
+- Ödül önizlemesi okundu yanıtında kartın yeniden kurulması, gecikmiş odak
+  kaydırması ve hover ile kapanıyordu. Rozet alanları liste imzasından çıkarıldı;
+  gerçek ödül değişimi hâlâ listeyi yeniler. Sabit panel görünür sandıkla kayar,
+  görünümden çıkınca kapanır; hover/odak seçimi değiştirmez, açık tıklama değiştirir.
+  Regresyon gerçek okunma yanıtını pin sonrasına bırakıp aynı paneli, rozetin
+  sönmesini, kaydırmayı ve görünümden çıkışta kapanmayı birlikte sınar.
 - [S1 matrisi](docs/planning/release-240-s1-acceptance.md): REWARD-06 ve
   SEASON-01 yazılım kabulü done; SEASON-00 ve UI-08 branch_ready. Gerçek yerel
   PostgreSQL ile 68 test geçti; 80 hak kapanış/rollback/reload ve gerçek
@@ -48,7 +48,9 @@
 - Yerel: 2089 Python PASS / 50 dış servis SKIP, 779 istemci PASS, build 11 PASS;
   yeni turnuva popup’ı üç tarayıcıda TR/EN 320/393; eski 2.3.0’ın değiştirilmemiş
   arayüzü ve gerçek eski API ile System mesajı/okunma kalıcılığı geçti.
-  Yeni dalın uzak CI sonucu ayrıca kaydedilecek. Eski CI kayıtları aşağıda tarihseldir.
+  Yerel son S1 matrisinde Windows WebKit EN393 toplam 120 sn sınırını bir kez
+  aştı; proje bütçesiyle tekrarsız geçti. Uzak 12 S1 birleşimi tekrarsız PASS.
+  Kanıt: `qa_reports/s1-ci-42019478488.json`; eski CI kayıtları aşağıda tarihseldir.
 - Evde önce bu dalı güncelle. `tools/prepare_legacy_announcement.py` ile
   `qa_reports/legacy-230-announcement-handoff` üret; `tools/verify_legacy_announcement.py --browser`
   ile doğrula. `qa_reports` Git ile taşınmaz, komutlarla aynı paket yeniden üretilir.

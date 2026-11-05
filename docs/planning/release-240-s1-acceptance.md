@@ -68,23 +68,31 @@ profili `published` yapmak doğrulamada reddedilir.
 
 Son yerel tam regresyon: **2089 Python PASS / 50 dış servis SKIP**, **779 istemci PASS**,
 **11 paketleme PASS**. Gerçek yerel PG kabul koşusu ayrıca **68 PASS**, atlama yoktur.
-Son UI-09 eki sonrasında 779 istemci ve 65 araç testi, 11 paketleme kontrolü
-yeniden geçti. `56ebd24` üzerinde güncel S1 tarayıcı matrisinin 12 birleşimi
-tek koşuda geçti (`qa_reports/s1-browser-evidence-56ebd24/`). Ancak aynı
-kaynağın CI’ında iki TR320 senaryosu gecikmiş kaydırmada panel kapandığı için
-kaldı; bu yerel PASS tek başına uzak kabul değildir. Kaydırma işleyicisi
-görünür sandığın sabit panelini yeniden konumlandırır; yeni regresyon gerçek
-üst kapsayıcı kaydırmasıyla panel kimliğini, sonra görünümden çıkışta kapanmayı
-doğrular. Panel/dock
-ölçümüne ek olarak gerçek okunma yanıtı pin sonrasına bırakılır: yalnız rozet
-alanlarının değişimi kartları yeniden kuramaz; rozet sönerken aynı panel
-korunur. Sabit panel başka sandığa hover/odakla aktarılmaz, açık seçim tıklaması
-çalışır. Bu birleşik regresyonun TR/EN 320 px Chromium/Android dört koşusu geçti.
-Panel/dock
-ölçümünde güncel DOM öğeleri aynı tarayıcı görevi içinde okunur; görünürlük,
-44 px gezinme yüksekliği ve örtüşmeme koşulları beklenir, eylem zorlanmaz.
-Yeni dalın uzak CI sonucu ayrıca kaydedilir; eski kaynak CI’ı bu değişikliklerin
-kabulü diye sunulmaz.
+Son arayüz düzeltmelerinden sonra 779 istemci ve 65 araç testi, 11 paketleme
+kontrolü yeniden geçti. Üretim kodu referansı `619c90a7527146ebc0ee2652fa81cfc9ccdf2bfe`.
+Yerel 12 birleşimde işlevler doğrulandı; Windows WebKit EN393 ilk koşuda
+toplam 120 saniyelik test bütçesini aştı, tekrarda geçti. Test mevcut WebKit
+projesinin 150 saniyelik bütçesine uyarlandı; aynı senaryo **tekrarsız PASS**.
+Bu, savaş performansı eşiklerini veya tek eylemin görünürlük koşullarını değiştirmez.
+
+Regresyon gerçek okunma yanıtını pin sonrasına bırakır: rozet sönerken ödül
+düğmesi ve aynı panel korunur. Üst kapsayıcının gerçek kaydırması görünür
+sandığın panelini yeniden konumlandırır; görünümden çıkışta kapatır. Masaüstünde
+başka sandığa hover sabit paneli değiştirmez. Panel ve dock aynı tarayıcı
+görevinde ölçülür; görünürlük, 44 px gezinme yüksekliği ve örtüşmeme koşulları
+korunur. Açma/teslim istekleri gerçek sunucu handler’larına gider.
+
+[CI 42019478488](https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/42019478488),
+PR başı `619c90a`, test edilen birleştirme `522c0482655c1750dc146d67543668626844227b`:
+sunucu 2024 PASS / 50 SKIP, araçlar 61 PASS / 4 platform SKIP; gerçek PG/Redis
+83 PASS ve imaj yeniden başlatma/restore PASS; istemci 779 ve build 11 PASS;
+Safari performans 1, genel 35 ve S1 4 PASS; Chromium/Android performans 2,
+genel 78 ve S1 8 PASS; iki gerçek istemcili PvP 3 PASS. **CI’ın bütün işleri
+ve yeniden üretilebilir kaynak paketi PASS**, tekrar/flaky yoktur.
+Kaynak artifact’i `13412945325`; ayrı S1 kanıtları Chromium/Android
+`13411428273`, Safari `13411307516`. Metadata `qa_reports/s1-ci-42019478488.json`.
+Sonraki kayıt commit’inde üretim kodu değişmez; belgeler ve yerelde sınanan
+WebKit proje test bütçesi uyumu bulunur. Önceki başarısız koşular kabul değildir.
 
 - `server/tests/test_s1_release_acceptance.py`: 80 kademe, 22 yarışma kasası,
   yayınlanmış S1 fixture’ıyla gerçek PG kapanışı ve dump/restore.
@@ -95,7 +103,9 @@ kabulü diye sunulmaz.
   authenticated talep/açılış handler’ları kullanılır. Yanıt fixture’ıyla ödül
   uydurulmaz. Çekirdek kasası ekonomik S1 ödülüne eklenmeyen ayrı kabul örneğidir.
 - Yerel çıktılar: `qa_reports/s1-postgres-acceptance.xml`,
-  `qa_reports/s1-browser-evidence/`, `qa_reports/s1-launch-candidate-20261105/`.
+  `qa_reports/s1-browser-evidence-619c90a-initial/`,
+  `qa_reports/s1-browser-evidence-619c90a-webkit-budget/`,
+  `qa_reports/s1-launch-candidate-20261105/`.
   Bunlar yeniden üretilen kanıtlardır; kaynaktan bağımsız eski PASS geçerli sayılmaz.
 - CI’ın migration işi S1 PG/restore testini; tarayıcı işi ayrıca izole S1
   senaryolarını çalıştırır. Test endpoint’i yalnız `tools/e2e_server.py` içindeki

@@ -37,3 +37,8 @@ kanıtı `server/tests/test_s1_release_acceptance.py` ve PG testleridir.
 REWARD-06 yazılım kabulü tamamlandı. UI-08 yerelde/dalda hazırdır;
 fiziksel Android güncellemesi ve cihaz sesi kullanıcı isteğiyle ertelendi,
 RELEASE-01 içinde açık kalır. Canlı ödül veya AAB yayınlanmadı.
+
+Üretim kaynağı `619c90a`; [CI 42019478488](https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/42019478488)
+Chromium/Android 8 ve Safari 4 gerçek makbuz senaryosunu tekrarsız geçti.
+PG/Redis’in 83 entegrasyonu, imaj restart/restore, genel arayüz, gerçek PvP
+ve kaynak paketleme de PASS; ayrıntılı sınırlar S1 matrisindedir.

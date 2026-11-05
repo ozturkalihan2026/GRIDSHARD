@@ -3,7 +3,8 @@ const {waitForParticipantReady}=require('./ui-helpers');
 
 for(const width of [320,393])for(const language of ['tr','en'])test(`S1 real receipts and orders ${language} ${width}px`,async({page,isMobile},info)=>{
  test.skip(process.env.GRIDSHARD_E2E_S1_ACCEPTANCE!=='1','Run only with the owned published-S1 loopback fixture');
- test.setTimeout(120000);
+ // Preserve the longer WebKit project deadline for this multi-step flow.
+ test.setTimeout(Math.max(120000,info.project.timeout));
  await page.setViewportSize({width,height:width===320?568:852});
  await page.emulateMedia({reducedMotion:language==='en'?'reduce':'no-preference'});
  await page.goto('/?e2e=1');await waitForParticipantReady(page,60000);

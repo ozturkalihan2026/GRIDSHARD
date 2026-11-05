@@ -21,3 +21,8 @@ Bu, fiziksel Android kabulünün yerine geçmez; kullanıcı yerel kontrol isted
 
 Görev checklist, 2.4.0 S1-GEZINME paketi, çalışma aralıkları ve RELEASE-01
 bağımlılığına bağlandı. Canlı sunucu ve AAB değiştirilmedi.
+
+Üretim kaynağı `619c90a`; [CI 42019478488](https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/42019478488)
+bütün işleri geçti. Arkadaşlık sekmesi akışı Chromium/Android’in 78 ve
+Safari’nin 35 genel senaryosuna dahildir; ayrı genel tarayıcı artifact’lerinde
+TR/EN 320/393 ekran görüntüleri korunur.
