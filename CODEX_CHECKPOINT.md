@@ -1,3 +1,116 @@
+# Güncel kabul — 5 Kasım 2026
+
+- COMM-01 ve COMPAT-01 yazılım kabulü done. Dal `codex/prerelease-announcements`.
+  Uygulama kaynağı `0cbe34cc8113dccdd7e62f0022a870ad19eec3e6`; CI 41919146605 bütün işler PASS.
+  Sonraki commit yalnız kabul/checklist/checkpoint belgeleridir.
+- Duyuru ilk uygun ana ekranda bir kez; Tamam hesapta kalıcı, offline outbox
+  ve Sistem mesajı ayrı. Sürüm sonrası aynı kimlikte sezon metni; eski onay
+  yeniden açılmaz. Patch/minor/major sürüm kapısı ön duyuruyu zorunlu tutar.
+- AUDIO-03 / 2.5.0 ve AUDIO-04 / 2.7.0 yalnız üretim planıdır; todo kalır.
+  Hedefler 21 Aralık / 15 Şubat, sayılar 1 menü+1 savaş / 1 menü+2 savaş.
+- Kabul: `docs/planning/prerelease-announcement-acceptance-20261105.md`. Yerel 2072 Python PASS / 48 dış servis SKIP,
+  779 istemci; son kaynak CI gerçek PG/Redis/imaj/Chromium/Android/WebKit/kaynak
+  paketini geçti. Oyun grafik uyumu 4 saniyelik pencerelerle korunur;
+  Safari referansı Apple Silicon'dır; performans yayın eşikleri değişmedi.
+- Canlı 2.3.0/code14, AAB, sezon açılışı ve fiziksel cihaz/ses dinlemesi
+  yapılmadı. Sırada S1 kaynak/ödül/görsel/cihaz yayın matrisinin kalan kabulleri
+  var; yeni sanat üretimi ya da BASE-01 tekrarı değildir.
+- Aşağıdaki eski CI bekleme kayıtları tarihsel kayıttır; güncel kaynak üstteki
+  kabul ve `artifacts/prerelease-20261104/FINAL_STATUS.json` ile doğrulanır.
+
+---
+
+# Ön duyuru standardı ve müzik planı — 4 Kasım 2026
+
+- Yeni dal: `codex/prerelease-announcements`; önceki sürüm dalındaki takılı
+  CI'ın concurrency grubundan bağımsızdır. Uygulama/Play etiketleri 2.3.0/code14.
+- COMM-01 dalda hazır. `release_announcements_v1.json` tek TR/EN kaynaktır:
+  2.4.0 öncesi sürüm duyurusu; aynı kimlikle sürüm sonrası S1 öncesi metin.
+  Önceden Tamam diyen yeniden görmez. Sistem mesajı ayrıca okunabilir.
+- Onay hesapta kalıcıdır; cihazdaki hesaba özel outbox ağ hatasında Tamam'ı
+  kaydeder ve sonraki inbox yenilemesinde eşitler. Okuma/silme onaydan ayrıdır.
+  Yükleme/savaş/başka modal sırasında açılmaz; eski API'de alan yoksa devam eder.
+- 2.3.0 sonrası patch/minor/major sürümlerde release_guard incelenmiş ön
+  duyuru ister. Taslak/denetim: `tools/release_announcements.py`; yayın penceresi,
+  hedef takvim ve iki dil doğrulanır. Ön duyuru, gerçek güncelleme notu değildir.
+- AUDIO-03 / 2.5.0: en az bir yeni menü + bir savaş bestesi; merak/umut ve
+  kontrollü rekabet. AUDIO-04 / 2.7.0: bir menü + iki özgün savaş bestesi;
+  gizem, keşif gerilimi ve cesaret. Bu iki iş planlandı, müzik üretilmedi.
+  Ortak sanat/ses yönü, mevcut codec/miks/tercih hattı ve master kararı korunur.
+- Ayrıntı: `docs/planning/prerelease-announcements-and-music.md`; checklist,
+  takvim ve 2.4/2.5/2.7 briefleri bağlı olarak üretildi. Tarihler değişmedi.
+- Yerel testler `artifacts/prerelease-20261104/`: tam Python ve istemci,
+  build, 320/393 TR/EN + reload/offline, gerçek PG rollback/cache kaybı geçti.
+  CI kaynak/sonuç dosyaları aynı klasördedir; yeni commit CI sonucu beklenecek.
+  Fiziksel Android, canlı sunucu, AAB veya sezon açılışı yapılmadı.
+- İlk yeni CI'da sunucu/istemci/PG-imaj geçti; Safari savaş bütçesi kaldı.
+  Bağımsız boş sayfa rAF kanıtı Intel Mac havuzunun oyunsuz durumda bile
+  34 ms sınırını aştığını gösterdi. Grafik uyumu denemesi geri alındı;
+  oyun kodunun 4 saniyelik kademesi, manuel ayar ve yayın bütçesi korunur.
+  macOS 15 Apple Silicon havuzunda aynı test tekrar çalışacak.
+  Testte savaş kareleri atılmaz; bağımsız zamanlama kanıtı ayrıca kaydedilir.
+- Bu istemci kodu kurulmadan eski native 2.3.0 popup gösteremez; sunucu
+  dağıtılınca Sistem mesajını okuyabilir. 2.4.0 istemcisinde sezon öncesi
+  metin, aynı onay kimliğiyle desteklenir. Kaynak hazırlığı canlı yayın sayılmaz.
+
+---
+
+# COMPAT-01 ara CI kaydı — 4 Kasım 2026, 20.29 Türkiye saati
+
+- Uygulama kaynağı `0c90cc9037983ee21b9ff206cfe9051ceb05b61a`,
+  `codex/release-2-4-0` dalına push edildi. Görev hâlâ `branch_ready`.
+- CI: https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/41873986873
+  Sunucu, istemci, gerçek PG/Redis/üretim imajı ve Chromium/Android PASS.
+- Safari ARM Mac kapasitesinden dolayı önce hiç başlamadı; desteklenen
+  `macos-15-intel` havuzuna taşındı. Bu son kaynakta Intel Mac işi
+  `126728333059`, tarayıcı kurulumunda tanımlı 10 dakika sınırını aştı.
+  Normal ve force-cancel istekleri kabul edildi; GitHub işi kapatmadığından
+  tek işi yeniden çalıştırma isteğini `already running` ile reddediyor.
+  GitHub bağlayıcısında Actions yazma izni yok; mevcut Git oturumu API'si
+  dispatch/cancel işlemlerinde kullanıldı. Kimlik bilgisi dosyaya yazılmadı.
+- Sıradaki adım: iş kapandığında aynı kaynaktaki Safari işini ve bağımlı
+  kaynak paketleme kontrolünü yeniden çalıştır; bütün CI işleri geçince
+  COMPAT-01'i done yap, checklist/sürüm belgelerini üret ve kayıt commit'ini push et.
+- Yerel son kaynak kanıtı: `artifacts/compat-240-20261104/http-proof-mac-source/proof.json`.
+  Temiz commit, 10 gerçek HTTP + üç UI açılışı PASS. Python 2057 PASS / 47
+  dış servis SKIP; client 778, build 11, yerel PG 77 PASS / 1 Redis SKIP;
+  6 mobil akış + 2 saklı kimlik kontrolü PASS. Son durum `FINAL_STATUS.json`.
+- Canlı 2.3.0/code14, sezon başlangıcı, AWS/env, AAB ve 8891 değişmedi.
+  Fiziksel Android/Play/ses dinlemesi yayın kapısında kalır.
+
+---
+
+# COMPAT-01 — 4 Kasım 2026 ev bilgisayarındaki uygulama
+
+- Dal codex/release-2-4-0. Kurulu2.3/2.2.1 ve yeni istemci yazılım uyumu
+  uygulandı. Kabul docs/planning/release-240-client-compatibility.md; en son
+  durum artifacts/compat-240-20261104/FINAL_STATUS.json'dan okunur.
+- Gerçek sağlık derlemesi **runtime_release_version**. server_release_version
+  artık2.3.0 alias; release_version2.2.1, versionbeta72 sabit. Operatör gerçek
+  sürümü yeni alandan okumalı. API/minimum/incelenmiş minor hatları/yetenekler
+  ayrıca denetlenir. Yeni eksik sözleşme eski alana düşmez; proto/kalıcılık geçmez.
+- client/tests/fixtures/installed altında iki TAM değiştirilmemiş eski relay
+  executable ve Git/SHA-256 kökeni; bunlar aktif test girdisidir, eski PASS
+  raporu değildir. .gitattributes baytları korur, üretim bundle'a girmezler.
+- Gerçek loopback HTTP: eski2.2.1/2.3→yeniAPI ve yeni→yeni/iki eskiAPI;
+  web+native-origin emülasyonuyla10senaryo PASS. Auth/bootstrap/yüklemede
+  aynı kimlik/korunan takım rotası gerçekHTTP; SecureStorage bellekte emüle.
+- Yeni UI üç API'de Chrome'da açıldı, JS/varlık hatası0. İki telefonda6E2E
+  PASS: geleceksürüm/minimumTR-EN/protokol hazır olma/503retry. Fiziksel
+  Android/Keystore/TLS/Play yükseltmesi kanıtı değildir; bu kabul kullanıcı
+  isteğiyle ertelenmiş genel RELEASE-01 kapısında kalır.
+- Gelecek2.4 karşılaştırması için yalnız izole sağlık kimliği ve test
+  expectedVersion parametresi2.4 simüle edildi. Gerçek handler'lar çalıştı;
+  paket etiketleri hâlâ2.3/code14. AWS/env/S1 başlangıcı/AAB/8891 değişmedi.
+- Tam yerel Python/istemci son sayıları ve CI kaydı FINAL_STATUS.json'dadır.
+  CI'a aynı gerçekHTTP kaynağı ve yeni browser testleri eklendi. Branch_ready
+  yerel kabulü anlatır; yeni commit CI sonucu ayrıca kaydedilecektir.
+- Sonraki iş: SEASON-00/REWARD-06/SEASON-01 gerçek PG/Redis rollback/reload,
+  genel CI/yayın kabulleri ve ertelenen cihaz doğrulamaları. BASE-01 done;
+  sıradaki iş tekrar ekonomi baz çizgisi veya yeni sanat üretimi değildir.
+
+---
+
 # GRIDSHARD — güncel çalışma durumu
 
 4 Kasım 2026. Başlangıç: [belge dizini](docs/README.md).

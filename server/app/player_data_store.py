@@ -731,6 +731,7 @@ class PlayerDataStoreService:
             },
             "seen_inbox_notice_ids": list(profile.seen_inbox_notice_ids),
             "dismissed_inbox_notice_ids": list(profile.dismissed_inbox_notice_ids),
+            "acknowledged_announcement_ids": list(profile.acknowledged_announcement_ids),
             "direct_messages_seen_at": int(profile.direct_messages_seen_at),
             "universal_module_shards": profile.universal_module_shards,
             "reward_inbox": [dict(item) for item in profile.reward_inbox],
@@ -1093,6 +1094,9 @@ class PlayerDataStoreService:
             ),
             dismissed_inbox_notice_ids=tuple(
                 str(value) for value in meta.get("dismissed_inbox_notice_ids", [])
+            ),
+            acknowledged_announcement_ids=tuple(
+                str(value) for value in meta.get("acknowledged_announcement_ids", [])
             ),
             direct_messages_seen_at=max(0, int(meta.get("direct_messages_seen_at", 0) or 0)),
             universal_module_shards=int(meta.get("universal_module_shards", 0)),

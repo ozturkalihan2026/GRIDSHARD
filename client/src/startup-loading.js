@@ -27,7 +27,7 @@
       if (!this.required.includes(step)) throw new Error("Unknown startup step");
       super.complete(step);
     }
-    fail() { super.fail("boot.failed"); }
+    fail(message = "boot.failed") { super.fail(message); }
     finish() {
       if (this.state !== "done" && this.completed.size !== this.required.length) {
         throw new Error("Startup is not ready");

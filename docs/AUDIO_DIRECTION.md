@@ -26,3 +26,8 @@ Kullanıcı fiziksel Android dinlemesini sonraya bıraktı; yerel testler bu öz
 kabulün yerine geçirilmez. Windows yerel WebKit ikilisinde AudioContext yoktur;
 ses decode/miks kabulü yerel Chromium/Android öykünmesinde yapılır, macOS WebKit
 CI kapısı korunur.
+
+Yeni müzik üretimi: AUDIO-03 / 2.5.0 ve AUDIO-04 / 2.7.0; özgün besteler,
+duygu briefleri ve ortak codec/miks/dinleme kabulleri
+[ön duyuru ve müzik planındadır](planning/prerelease-announcements-and-music.md).
+Bu plan mevcut mastering hedefini seçmez veya global gain değiştirmez.

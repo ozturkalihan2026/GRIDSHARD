@@ -13,6 +13,18 @@ test.use({trace:"off",video:"off"});
 
 test("savaş hareketleri ve VFX aynı kare bütçesinde kalır", async ({page}, info) => {
   test.setTimeout(90_000);
+  // Record the host scheduler independently of the game, without changing any
+  // budget or filtering battle frames. This separates host cadence from render cost.
+  const idle=await page.context().newPage();
+  await idle.goto('data:text/html,<title>Frame scheduler baseline</title>');
+  const schedulerBaseline=await idle.evaluate(()=>new Promise(resolve=>{
+    const gaps=[];let first=null,last=null;
+    const frame=now=>{first ??=now;if(last!==null)gaps.push(now-last);last=now;
+      if(now-first<1500){requestAnimationFrame(frame);return;}
+      gaps.sort((a,b)=>a-b);resolve({frames:gaps.length,meanMs:(now-first)/gaps.length,p95Ms:gaps[Math.floor(gaps.length*.95)]});};
+    requestAnimationFrame(frame);
+  }));
+  await idle.close();await page.bringToFront();
   const errors=[]; page.on("pageerror", error=>errors.push(String(error)));
   const menuBackground=await page.evaluate(()=>getComputedStyle(document.body).backgroundImage);
   expect(menuBackground).not.toBe('none');
@@ -63,6 +75,7 @@ test("savaş hareketleri ve VFX aynı kare bütçesinde kalır", async ({page}, 
       target:a.effect?.target?.getAttribute('class'),iterations:String(a.effect?.getTiming().iterations)})),
     devices:document.querySelectorAll(".vertical-circuit-arena .module-device-rig").length,
     effects:document.querySelectorAll("#battle-effect-layer *").length}));
+  evidence.schedulerBaseline=schedulerBaseline;
   evidence.surfaces=await page.evaluate(()=>['html','body','.battle-shell','.battle-layout','.arena-panel','.vertical-circuit-arena','#battle-effect-layer'].map(selector=>{
     const el=document.querySelector(selector),s=getComputedStyle(el),r=el.getBoundingClientRect();
     const pseudo=kind=>{const p=getComputedStyle(el,kind);return {content:p.content,display:p.display,

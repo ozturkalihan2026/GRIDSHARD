@@ -536,6 +536,7 @@ class PlayerProfile:
     seen_inbox_notice_ids: tuple[str, ...] = ()
     # Mesaj görünürlüğü; satın alma/ödül makbuzları hiçbir zaman silinmez.
     dismissed_inbox_notice_ids: tuple[str, ...] = ()
+    acknowledged_announcement_ids: tuple[str, ...] = ()
     direct_messages_seen_at: int = 0
     daily_meta_day: str = ""
     daily_meta_id: str = ""

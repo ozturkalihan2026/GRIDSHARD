@@ -41,12 +41,15 @@ def test_legacy_collect_then_new_open_and_new_request_replays_never_duplicate(mo
     opened = claim(player, 'new-open')
     assert not player.chest_slots and player.core_shards_by_type['core_resonance'] == 3
     assert player.circuit_credits == credits + 100
+    settled = deepcopy(player)
     for identity in ('new-open', 'different-request'):
         replay = claim(player, identity)
         assert replay['opened_receipt'] == opened['opened_receipt']
         assert player.circuit_credits == credits + 100
         assert player.core_shards_by_type['core_resonance'] == 3
+        assert player == settled
     assert len(player.chest_receipts) == 1
+    assert set(player.reward_inbox_receipts) == {'legacy'}
 
 
 def test_collect_replay_recovers_a_crate_already_opened_in_inventory(monkeypatch):

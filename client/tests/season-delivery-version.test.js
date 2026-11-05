@@ -6,7 +6,7 @@ test("old server delivery rejection is actionable and never retries an instant-o
     const paths=[],loader=loaderFor(async path=>{paths.push(path);throw new Error("Bilinmeyen sandık teslim yöntemi.");});
     const result=await loader.claimEngagementReward(kind,5,"stable-id");
     assert.equal(result.ok,false);assert.equal(result.requiresServerRestart,true);
-    assert.equal(result.code,"season_delivery_unsupported");assert.match(result.reason,/yeniden başlat/);
+    assert.equal(result.code,"season_delivery_unsupported");assert.match(result.reason,/sunucu güncelleniyor/);
     assert.equal(paths.length,1);assert.match(paths[0],/chest_delivery=stock-v1$/);
   }
 });

@@ -19,11 +19,12 @@ from pathlib import Path
 from threading import Lock, RLock
 from urllib.parse import parse_qs, urlencode, urlsplit
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, WebSocket
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, Response, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .production_config import environment_secret, production_endpoints
 from .competition_control import competition_eligible, launch_status, minimum_participants, configured_start
+from .client_compatibility import health_release_fields
 from .season_entitlements import additional_chest_count, origin_for as season_premium_origin, reward_for as earned_season_reward
 from .postgres_economic_operations import PostgresEconomicOperations, EconomicOperationConflict
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -100,6 +101,7 @@ from .safe_chat import team_description_text, visible_message
 from .match_accounting import TUTORIAL_TRAINING_MATCH_TYPE
 from .version import VERSION, LEGACY_HEALTH_VERSION, LEGACY_RELEASE_VERSION
 from .release_updates import INBOX_UPDATE_NOTICES
+from .release_announcements import active_announcements, pending_announcement, can_acknowledge
 from .cosmetic_releases import period_reward
 from .player_profile import (
     PlayerProfileError,
@@ -3679,6 +3681,7 @@ def _inbox_invitations(profile) -> list[dict]:
 def _inbox_notices(profile, *, include_dismissed: bool = False) -> list[dict]:
     seen = set(profile.seen_inbox_notice_ids)
     notices = [dict(item) for item in INBOX_UPDATE_NOTICES]
+    notices.extend(active_announcements(VERSION, player_profile_service.now()))
     try:
         events = _events_view()
     except Exception:  # Bildirim üretimi mesaj kutusunu hiçbir zaman düşürmez.
@@ -3750,6 +3753,7 @@ def _reward_inbox_view(profile) -> dict:
         "universal_module_shards": int(profile.universal_module_shards),
         "invitations": invitations,
         "notices": notices,
+        "announcement": pending_announcement(profile, VERSION, player_profile_service.now()),
         "team": _team_notification_summary(profile),
         "unread_count": (
             unclaimed_count
@@ -3782,6 +3786,25 @@ def mark_reward_inbox_notices_seen(player_id: str, request: InboxNoticeSeenReque
 def get_reward_inbox(player_id: str) -> dict:
     _settle_competition_rewards(player_id)
     return _reward_inbox_view(_team_member_profile(player_id))
+
+
+@app.post("/profile/{player_id}/release-announcements/{notice_id}/acknowledge")
+@persistent_operation
+def acknowledge_release_announcement(player_id: str, notice_id: str) -> dict:
+    with _store_economy_transaction(player_id), REWARD_INBOX_LOCK:
+        profile = _team_member_profile(player_id)
+        if notice_id not in profile.acknowledged_announcement_ids:
+            if not can_acknowledge(notice_id, player_profile_service.now()):
+                raise HTTPException(status_code=404, detail="Duyuru artık yayında değil.")
+            previous = profile.acknowledged_announcement_ids, profile.seen_inbox_notice_ids
+            try:
+                profile.acknowledged_announcement_ids = (*profile.acknowledged_announcement_ids, notice_id)
+                profile.seen_inbox_notice_ids = tuple(dict.fromkeys((*profile.seen_inbox_notice_ids, notice_id)))
+                persist_player_data(player_id)
+            except BaseException:
+                profile.acknowledged_announcement_ids, profile.seen_inbox_notice_ids = previous
+                raise
+        return _reward_inbox_view(profile)
 
 
 @app.post("/profile/{player_id}/reward-inbox/messages/dismiss")
@@ -3861,7 +3884,10 @@ def claim_reward_inbox_item(player_id: str, message_id: str, request: MetaOperat
                 except MetaProgressionError as exc:
                     raise HTTPException(status_code=422, detail=str(exc)) from exc
             _complete_chest_team_rewards(opened)
-        profile.reward_inbox_receipts[request.request_id] = dict(receipt)
+        # A retry with a new request ID still replays the original collect.
+        # Do not grow the player's economic state with aliases of that receipt.
+        if not replayed:
+            profile.reward_inbox_receipts[request.request_id] = dict(receipt)
         if profile is not stored:
             for name in stored.__dataclass_fields__:
                 setattr(stored, name, getattr(profile, name))
@@ -6702,7 +6728,9 @@ def gridshard_identity() -> dict:
 
 
 @app.get("/health")
-async def health() -> dict:
+async def health(response: Response = None) -> dict:
+    if response is not None:
+        response.headers["Cache-Control"] = "no-store"
     player_persistence, telemetry_persistence = await asyncio.gather(
         asyncio.to_thread(player_data_persistence_health),
         asyncio.to_thread(telemetry_persistence_health),
@@ -6720,10 +6748,7 @@ async def health() -> dict:
 
     payload = {
         "status": "ok" if ready else "degraded",
-        "version": LEGACY_HEALTH_VERSION,
-        "release_version": LEGACY_RELEASE_VERSION,
-        "server_release_version": VERSION,
-        "compatible_client_releases": [LEGACY_RELEASE_VERSION, VERSION],
+        **health_release_fields(VERSION),
         "pvp_protocol_version": PVP_PROTOCOL_VERSION,
         "combat_ruleset": "modules_v7",
         # Explicit rollout signal: a client must never silently downgrade a
@@ -6766,7 +6791,7 @@ async def health() -> dict:
         },
     }
     if RUNTIME_STRICT and not ready:
-        return JSONResponse(status_code=503, content=payload)
+        return JSONResponse(status_code=503, content=payload, headers={"Cache-Control": "no-store"})
     return payload
 
 

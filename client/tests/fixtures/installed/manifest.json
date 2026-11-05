@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "purpose": "Unmodified installed client executables for active COMPAT-01 regression; never production bundle inputs",
+  "clients": [
+    {
+      "version": "2.2.1",
+      "commit": "4866e58a179d320b9b997d77798faabe4c4f99cf",
+      "path": "client/src/relay-client.js",
+      "sha256": "328db71de7e0d65d9159076fe1de76c765249a5b3dd491354e40330cca6c65de",
+      "fixture": "2.2.1/relay-client.js"
+    },
+    {
+      "version": "2.3.0",
+      "commit": "cef09390d01480d0152dabd22bbc60c53a14f9a2",
+      "path": "client/src/relay-client.js",
+      "sha256": "4d44ef5d82fbbde2691450df08a85263fa5829aeeee48aed149181b916adde62",
+      "fixture": "2.3.0/relay-client.js"
+    }
+  ]
+}

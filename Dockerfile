@@ -20,6 +20,8 @@ COPY server/data/module_roster_v2.json server/data/module_talents_v7.json server
 COPY server/data/game_updates.json /app/server/data/
 COPY server/data/cosmetic_releases_v1.json /app/server/data/
 COPY server/data/liveops_content_sources_v1.json /app/server/data/
+COPY server/data/first_season_launch_v1.json /app/server/data/
+COPY server/data/release_announcements_v1.json /app/server/data/
 COPY --from=client-build /build/dist /app/client
 RUN groupadd --gid 10001 gridshard && useradd --uid 10001 --gid 10001 --no-create-home gridshard \
     && mkdir -p /var/lib/gridshard && chown gridshard:gridshard /var/lib/gridshard

@@ -51,6 +51,17 @@ test('retuned masters have soft zero boundaries, bounded peaks and no abrupt cor
   }
 });
 
+test('every shipped AAC container has an explicit MP4 brand for WebKit decoding', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, 'assets/audio/mobile/manifest.json')));
+  for (const identity of Object.keys(manifest.sources)) {
+    const bytes = fs.readFileSync(path.join(root, 'assets/audio/mobile', `${identity}.m4a`));
+    assert.equal(bytes.toString('ascii', 4, 8), 'ftyp', identity);
+    const end = bytes.readUInt32BE(0), brands = [bytes.toString('ascii', 8, 12)];
+    for (let offset = 16; offset < end; offset += 4) brands.push(bytes.toString('ascii', offset, offset + 4));
+    assert.ok(brands.some(brand => brand.startsWith('mp4')), `${identity}: ${brands}`);
+  }
+});
+
 test('the existing three-routine-voice budget, priority activation and user controls remain distinct', async () => {
   const director = new global.GridshardAudioDirector();director.state='battle';
   for(const name of attacks.slice(0,3).map(id=>sandbox.weaponCue(id))) assert.equal(director.triggerCue(name).played,true);

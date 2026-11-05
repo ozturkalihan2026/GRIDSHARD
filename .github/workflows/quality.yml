@@ -38,6 +38,7 @@ jobs:
       - name: Check connected release plans
         run: |
           python tools/report_economy_baseline.py --check
+          python tools/release_announcements.py --check --require 2.4.0
           python tools/plan_season_xp.py --check
           python tools/prepare_first_season.py --check
           python tools/report_combat_audio.py --check
@@ -47,6 +48,18 @@ jobs:
       - name: Run server regression tests
         working-directory: server
         run: python -m pytest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Installed clients and old APIs over isolated real HTTP
+        run: python tools/verify_client_compatibility.py --fetch-missing
+      - name: Preserve client compatibility proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridshard-client-compatibility-${{ github.sha }}
+          path: qa_reports/client-compatibility/proof.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Run release and operator tool contracts
         run: python -m pytest tools/tests
 
@@ -167,6 +180,8 @@ jobs:
             browsers: chromium
             projects: --project=desktop-chromium --project=android-chrome-emulated
           - platform: Safari-WebKit
+            # Keep the same macOS 15/WebKit gate on Apple Silicon. The Intel
+            # hosted pool exceeded the frame budget even on an empty page.
             os: macos-15
             browsers: webkit
             projects: --project=iphone-safari-emulated
@@ -226,10 +241,13 @@ jobs:
           GRIDSHARD_E2E_HUMAN_MATCHMAKING: '0'
         run: pnpm exec playwright test e2e/battle-render-budget.spec.js ${{ matrix.projects }}
       - name: Startup, current UI and mobile layouts (AI-only fixture)
+        # Retain functional evidence even when the independent frame gate fails;
+        # a failed frame gate still fails this job and blocks source packaging.
+        if: success() || failure()
         env:
           GRIDSHARD_E2E_HUMAN_MATCHMAKING: '0'
         run: >-
-          pnpm exec playwright test e2e/startup-loading.spec.js
+          pnpm exec playwright test e2e/release-announcement.spec.js e2e/client-compatibility.spec.js e2e/startup-loading.spec.js
           e2e/menu-navigation.spec.js e2e/beta33-season.spec.js
           e2e/persistent-render.spec.js
           e2e/visual-atmosphere.spec.js

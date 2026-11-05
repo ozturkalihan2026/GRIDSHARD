@@ -45,14 +45,14 @@ def test_new_release_does_not_rearm_old_notice_or_resurrect_dismissed_notice(mon
     monkeypatch.setattr(gateway, "_events_view", lambda: {})
     profile = PlayerProfileService().get_or_create("release221-inbox")
     profile.seen_inbox_notice_ids = ("update-2-1-1", "update-2-2-0")
-    first = gateway._inbox_notices(profile)
+    first = [item for item in gateway._inbox_notices(profile) if item['kind'] == 'update']
     assert [item["version"] for item in first] == ["2.3.0", "2.2.1", "2.2.0", "2.1.1"]
     assert [item["seen"] for item in first] == [False, False, True, True]
     assert len({item["notice_id"] for item in first}) == len(first)
     profile.dismissed_inbox_notice_ids = ("update-2-2-0",)
     profile.seen_inbox_notice_ids += ("update-2-2-1", "update-2-3-0")
     for _ in range(3):
-        result = gateway._inbox_notices(profile)
+        result = [item for item in gateway._inbox_notices(profile) if item['kind'] == 'update']
         assert [item["version"] for item in result] == ["2.3.0", "2.2.1", "2.1.1"]
         assert all(item["seen"] for item in result)
 

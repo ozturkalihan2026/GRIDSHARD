@@ -361,7 +361,7 @@
   async function bootstrapParticipant() {
     if (startupFlight) return startupFlight;
     startupFlight = performParticipantBootstrap().catch((error) => {
-      startupLoading?.fail();
+      startupLoading?.fail(error?.bootMessageKey || "boot.failed");
       if (globalThis.GridshardAuth?.session?.requiresReauthentication) {
         void accountSessionControls?.openRecovery();
       }
@@ -373,7 +373,12 @@
   async function performParticipantBootstrap() {
     startupLoading?.begin();
     const readiness = await checkServerReadiness();
-    if (!readiness.ok) throw new Error(readiness.reason || "Sunucu bağlantısı hazır değil.");
+    if (!readiness.ok) {
+      const error = new Error(readiness.reason || "Sunucu bağlantısı hazır değil.");
+      error.bootMessageKey = readiness.updateRequired ? "boot.update_required"
+        : readiness.compatibilityError ? "boot.incompatible" : "boot.failed";
+      throw error;
+    }
     startupLoading?.complete("server");
     startupLoading?.stage("boot.stage.profile");
     const result =
@@ -506,6 +511,18 @@
   let activeTrophyLeaderboardScope = "general";
   let leaderboardPayload = null;
   let rewardInboxState = null;
+  const releaseAnnouncement = globalThis.GridshardReleaseAnnouncement.create({
+    document, playerId:() => participantPlayerId,
+    canPresent:() => participantBootstrap.status === 'ready' && startupLoading?.state === 'done'
+      && !document.hidden && document.body.dataset.appScreen === 'menu'
+      && !document.querySelector('dialog[open]'),
+    acknowledge:async (owner, id) => {
+      const payload = await requestJsonWithDeadline(
+        `/profile/${encodeURIComponent(owner)}/release-announcements/${encodeURIComponent(id)}/acknowledge`,
+        {method:'POST'}, 12000);
+      if (owner === participantPlayerId) { rewardInboxState = payload; renderRewardInbox(); }
+    },
+  });
   let publicProfileReturnDialogId = null;
   let teamProfileReturnDialogId = null;
   let teamState = null;
@@ -8641,7 +8658,7 @@
         serverHealthState,
       expectedVersion:
         "2.3.0",
-      compatibleServerVersions: ["2.2.1"],
+      compatibleServerVersions: ["2.2.1", "2.3.0"],
       expectedProtocolVersion: 2,
     });
   const playReadinessGate =
@@ -19338,8 +19355,10 @@
       rewardInboxState = payload;
       if (status && !quiet) status.textContent = "";
       renderRewardInbox();
+      releaseAnnouncement.offer(payload.announcement, playerId);
       maybeAutoLaunchAcceptedInvite();
     } catch (error) {
+      releaseAnnouncement.unavailable(playerId);
       if (status && !quiet) status.textContent = error instanceof Error ? error.message : String(error);
     }
     if (open) {

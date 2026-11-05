@@ -5,7 +5,7 @@
   "runtime_changes_authorized_by_this_file": false,
   "baseline_release": "2.2.1",
   "proposed_first_minor": "2.3.0",
-  "working_branch": "main",
+  "working_branch": "codex/prerelease-announcements",
   "goals": [
     "shop",
     "chests",
@@ -31,7 +31,8 @@
     "docs/GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md",
     "docs/GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md",
     "docs/planning/season-1-rewards-and-xp.md",
-    "docs/planning/season-1-engagement-v1.json"
+    "docs/planning/season-1-engagement-v1.json",
+    "docs/planning/prerelease-announcements-and-music.md"
   ],
   "tasks": [
     {
@@ -1809,7 +1810,8 @@
         "COS-04",
         "REWARD-06",
         "UI-08",
-        "SEASON-01"
+        "SEASON-01",
+        "COMM-01"
       ],
       "existing_paths": [
         ".github/workflows/quality.yml",
@@ -1863,7 +1865,8 @@
         "QA-01",
         "COS-05",
         "ANALYT-01",
-        "UI-04"
+        "UI-04",
+        "AUDIO-03"
       ],
       "existing_paths": [
         "e2e/reward-navigation.spec.js",
@@ -2085,7 +2088,7 @@
       "owner": "İstemci / backend / QA",
       "effort": "M",
       "priority": "P0",
-      "status": "todo",
+      "status": "done",
       "depends_on": [
         "RELEASE-00"
       ],
@@ -2093,7 +2096,14 @@
         "client/src/relay-client.js",
         "server/app/main.py",
         "tools/release_guard.py",
-        "server/tests/test_release_221_profiles_updates.py"
+        "server/tests/test_release_221_profiles_updates.py",
+        "server/app/client_compatibility.py",
+        "client/tests/client-compatibility.test.js",
+        "client/tests/fixtures/installed/manifest.json",
+        "server/tests/test_client_compatibility.py",
+        "tools/verify_client_compatibility.py",
+        "tools/verify-client-compatibility.cjs",
+        "e2e/client-compatibility.spec.js"
       ],
       "proposed_paths": [
         "docs/planning/release-240-client-compatibility.md"
@@ -2110,7 +2120,16 @@
         4,
         9
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/release-240-client-compatibility.md",
+        "artifacts/compat-240-20261104/http-proof-r3/proof.json",
+        "artifacts/compat-240-20261104/mobile-results.json",
+        "artifacts/compat-240-20261104/client-tests-final.log",
+        "artifacts/compat-240-20261104/server-tests-final.log",
+        "docs/planning/prerelease-announcement-acceptance-20261105.md",
+        "artifacts/prerelease-20261104/FINAL_STATUS.json",
+        "artifacts/prerelease-20261104/http-proof-aac-final/proof.json"
+      ],
       "planned_releases": [
         "2.4.0"
       ]
@@ -2605,7 +2624,8 @@
         "RELEASE-03",
         "LIVE-04",
         "CARD-04",
-        "COS-07"
+        "COS-07",
+        "AUDIO-04"
       ],
       "existing_paths": [
         ".github/workflows/quality.yml",
@@ -2908,6 +2928,138 @@
       "planned_releases": [
         "2.4.0"
       ]
+    },
+    {
+      "id": "COMM-01",
+      "title": "Sürüm ön duyurusunu tek gösterim ve Sistem mesajıyla standartlaştır",
+      "stage": "R1",
+      "owner": "Geliştirme / ürün / QA",
+      "effort": "M",
+      "priority": "P0",
+      "status": "done",
+      "depends_on": [
+        "RELEASE-00"
+      ],
+      "existing_paths": [
+        "server/app/release_announcements.py",
+        "server/data/release_announcements_v1.json",
+        "client/src/release-announcement.js",
+        "client/src/release-announcement.css",
+        "tools/release_announcements.py"
+      ],
+      "proposed_paths": [
+        "docs/planning/prerelease-announcements-and-music.md"
+      ],
+      "acceptance": [
+        "TR/EN tek kaynak, hedef tarih takvim denetimi, yayın penceresi, eski API ve sürüm sonrası görünmezlik doğrulanır.",
+        "Tamam onayı hesapta kalıcı ve idempotenttir; ağ hatası outbox, yeniden giriş/başka hesap ve mesaj kutusu bağımsızlığı; 320/393 px, modal/savaş sırası ve veri koruma kanıtlanır.",
+        "2.3.0 sonrası her sürümün incelenmiş ön duyurusu release_guard tarafından aranır; gerçek sürüm notları ayrı tutulur."
+      ],
+      "goals": [
+        "presentation",
+        "operations"
+      ],
+      "old_plan_sections": [
+        4,
+        9
+      ],
+      "evidence": [
+        "docs/planning/prerelease-announcements-and-music.md",
+        "server/tests/test_release_announcements.py",
+        "tools/tests/test_prerelease_communication_gate.py",
+        "e2e/release-announcement.spec.js",
+        "artifacts/prerelease-20261104/browser-final.log",
+        "artifacts/prerelease-20261104/pg-ack.log",
+        "docs/planning/prerelease-announcement-acceptance-20261105.md",
+        "artifacts/prerelease-20261104/FINAL_STATUS.json",
+        "artifacts/prerelease-20261104/http-proof-aac-final/proof.json"
+      ],
+      "planned_releases": [
+        "2.4.0"
+      ]
+    },
+    {
+      "id": "AUDIO-03",
+      "title": "2.5.0 için keşif menüsü ve rekabet savaş müziği üret",
+      "stage": "R2",
+      "owner": "Geliştirme / ses tasarımı / QA",
+      "effort": "M",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "AUDIO-01",
+        "AUDIO-02"
+      ],
+      "existing_paths": [
+        "client/src/gridshard-audio.js",
+        "client/src/audio-mix.js",
+        "client/src/gridshard-audio-formats.js",
+        "tools/encode_mobile_audio.py",
+        "docs/AUDIO_DIRECTION.md"
+      ],
+      "proposed_paths": [
+        "docs/planning/prerelease-announcements-and-music.md"
+      ],
+      "acceptance": [
+        "En az bir yeni menü ve bir özgün savaş bestesi; Devrenin Ufku merak/umut, Akımın Nabzı kontrollü rekabet ve taktik odak duygusunu karşılaştırmalı dinlemeyle taşır.",
+        "Loop/stem/crossfade, düşük-orta-kritik yoğunluk, tekrar engeli ve tercih/mute/arka plan/codec hattı; paket/bellek/kare bütçesi ile yoğun savaşta SFX okunabilirliği kanıtlanır.",
+        "Kaynak/lisans/hash ve loudness/true peak/clip/DC/decode raporu; fiziksel Android hoparlör/kulaklık ve macOS WebKit kabulü bulunur. Global master/gain kendiliğinden değişmez."
+      ],
+      "goals": [
+        "presentation",
+        "operations"
+      ],
+      "old_plan_sections": [
+        4,
+        9
+      ],
+      "evidence": [
+        "docs/planning/prerelease-announcements-and-music.md"
+      ],
+      "planned_releases": [
+        "2.5.0"
+      ]
+    },
+    {
+      "id": "AUDIO-04",
+      "title": "2.7.0 için gizemli menü ve iki sefer savaş müziği üret",
+      "stage": "R3",
+      "owner": "Geliştirme / ses tasarımı / QA",
+      "effort": "M",
+      "priority": "P1",
+      "status": "todo",
+      "depends_on": [
+        "AUDIO-03"
+      ],
+      "existing_paths": [
+        "client/src/gridshard-audio.js",
+        "client/src/audio-mix.js",
+        "client/src/gridshard-audio-formats.js",
+        "tools/encode_mobile_audio.py",
+        "docs/AUDIO_DIRECTION.md"
+      ],
+      "proposed_paths": [
+        "docs/planning/prerelease-announcements-and-music.md"
+      ],
+      "acceptance": [
+        "En az bir menü ve iki özgün savaş bestesi: Derin Devre dinginlik/gizem; Bilinmeyen Hat keşif gerilimi; Son Bağlantı baskı/cesaret/çözülme. Yeniden renklendirilmiş aynı melodi yeni eser sayılmaz.",
+        "Sefer/arena bağlamı, yoğunluk geçişi ve ardışık tekrar koruması mevcut çalıcıda; önceki repertuvar ve kullanıcı tercihleri korunur.",
+        "AUDIO-03 ile aynı loop/lisans/mastering/codec/performans ve fiziksel cihaz kabulü; önceki sürümden duygusal ayrım A/B oyun içi dinlemeyle kanıtlanır."
+      ],
+      "goals": [
+        "presentation",
+        "operations"
+      ],
+      "old_plan_sections": [
+        4,
+        9
+      ],
+      "evidence": [
+        "docs/planning/prerelease-announcements-and-music.md"
+      ],
+      "planned_releases": [
+        "2.7.0"
+      ]
     }
   ],
   "release_plan": [
@@ -2929,9 +3081,9 @@
       "gate_tasks": [
         "RELEASE-01"
       ],
-      "scope": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri.",
+      "scope": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. Sürüm öncesi iki dilli duyuru, ilk açılışta hesaba bağlı bir defalık pencere ve Sistem mesajı.",
       "keep_closed": "Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu.",
-      "exit": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. REWARD-06, UI-08 ve SEASON-01; tekil makbuz, güvenli açılış ve 1.800 sezonluk XP tavanı kabulü.",
+      "exit": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. REWARD-06, UI-08 ve SEASON-01; tekil makbuz, güvenli açılış ve 1.800 sezonluk XP tavanı kabulü. COMM-01 kabulü ve ön duyuru standardı sürüm kapısındadır.",
       "target_release_on": "2026-11-23",
       "scope_freezes_on": "2026-11-16",
       "season_starts_on": "2026-11-30",
@@ -2945,9 +3097,9 @@
       "gate_tasks": [
         "RELEASE-02"
       ],
-      "scope": "Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe.",
+      "scope": "Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. En az bir yeni menü ve bir özgün savaş bestesi; merak/umut ve kontrollü rekabet.",
       "keep_closed": "Yeni gerçek para ürünü, yeni para birimi, ücretli yeniden çekiliş ve PvP deneme gücü artışı.",
-      "exit": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı.",
+      "exit": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. AUDIO-03 kabulü ve ön duyuru standardı sürüm kapısındadır.",
       "target_release_on": "2026-12-21",
       "scope_freezes_on": "2026-12-14",
       "season_starts_on": "2026-12-28",
@@ -2977,9 +3129,9 @@
       "gate_tasks": [
         "RELEASE-04"
       ],
-      "scope": "Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi.",
+      "scope": "Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi. En az bir yeni menü ve iki özgün sefer savaş bestesi; gizem, keşif gerilimi ve cesaret.",
       "keep_closed": "Takım boss'u ve gerçek zamanlı 2v2.",
-      "exit": "Koşu kurtarma, ilk/tekrar ödülü, yan rota tek teslimi; yeni modül için çalışma kodu/görsel/denge/ücretsiz edinim. CARD-03 taslak brief'i hazır modül sayılmaz. İlk üç takım seti tüketildiyse yeni takım seti de üretilir; oyuncu stoğu buna yetmiş sayılmaz.",
+      "exit": "Koşu kurtarma, ilk/tekrar ödülü, yan rota tek teslimi; yeni modül için çalışma kodu/görsel/denge/ücretsiz edinim. CARD-03 taslak brief'i hazır modül sayılmaz. İlk üç takım seti tüketildiyse yeni takım seti de üretilir; oyuncu stoğu buna yetmiş sayılmaz. AUDIO-04 kabulü ve ön duyuru standardı sürüm kapısındadır.",
       "target_release_on": "2027-02-15",
       "scope_freezes_on": "2027-02-08",
       "season_starts_on": "2027-02-22",
@@ -3044,9 +3196,9 @@
   },
   "active_development": {
     "target_version": "2.4.0",
-    "branch": "main",
+    "branch": "codex/release-2-4-0",
     "plan": "docs/RELEASE_2_4_0_GELISTIRME_PLANI_20261103.md",
-    "milestone": "fixed_crate_delivery_first_slice",
+    "milestone": "remaining_release_240_acceptance",
     "status": "in_progress",
     "scope_decision": "user_approved",
     "target_release_on": "2026-11-23",
