@@ -62,7 +62,8 @@ profili `published` yapmak doğrulamada reddedilir.
 | 2.3/2.2.1 yazılım uyumu | Geçti | COMPAT-01 ve değişmemiş 2.3.0 + eski API üzerinde Sistem mesajı; native origin emülasyonu fiziksel kanıt değildir |
 | Gerçek Android kurulum/yükseltme/hesap dönüşü | Kullanıcı isteğiyle ertelendi | Yerel emülasyonla kapatılmaz; RELEASE-01 kapısında kalır |
 | Hoparlör/kulaklık dinlemesi | Kullanıcı isteğiyle ertelendi | Sayısal ses/miks kabulü öznel cihaz dinlemesi değildir |
-| Canlı duyuru / sezon / AAB | Yayınlanmadı | Ön duyuru için ayrı küçük 2.3.0 sunucu paketi; S1 ve AAB bu çalışmada açılmaz |
+| 2.3.0 bakım ön duyurusu | Canlıda | [5 Kasım evden dağıtım](release-230-prerelease-deployment-20261105.md); yalnız üç dosya, 55 profil korunumu, yedek/restore ve gerçek Sistem mesajı geçti |
+| 2.4.0 / S1 / yeni AAB | Yayınlanmadı | Bakım ön duyurusu bu paket veya sezonun açılışı değildir; fiziksel cihaz ve yayın kapıları sürer |
 
 ## Tekrar üretilebilir kanıt
 
@@ -112,4 +113,4 @@ WebKit proje test bütçesi uyumu bulunur. Önceki başarısız koşular kabul d
   açık yerel fixture seçeneğinde kurulur; üretim API’sine eklenmez.
 
 Paket yayın hedefi 23 Kasım, S1 ve ilk haftalık turnuva hedefi 30 Kasım 03.00 TR.
-Fiziksel kabul ve canlı dağıtım tamamlanmadan RELEASE-01 kapanmaz.
+Fiziksel kabul ve 2.4.0/S1 canlı dağıtımı tamamlanmadan RELEASE-01 kapanmaz.

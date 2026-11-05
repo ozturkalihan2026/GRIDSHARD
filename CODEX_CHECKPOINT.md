@@ -1,4 +1,42 @@
-# Güncel devir — S1 kabulü ve iki aşamalı duyuru, 5 Kasım 2026
+# Güncel durum — bakım ön duyurusu canlıda, 5 Kasım 2026
+
+- Ev bilgisayarından küçük 2.3.0 Sistem mesajı yaması dağıtıldı. Kayıt:
+  `docs/planning/release-230-prerelease-deployment-20261105.md`.
+  Duyuru kaynağı main `c720f22`; yalnız üç dosya alındı, bütün 2.4/S1 kodu dağıtılmadı.
+  Bu operasyonun kayıt dalı `codex/legacy-230-system-mail`; uygulama kodu değişmedi.
+- Canlı ana kaynak ilk LF manifestinden farklı hash taşıdı; içerik birebir aynı,
+  yalnız CRLF satır sonları farklıydı. Canlı baytlar korunarak yama yeniden
+  hazırlandı ve eski 2.3.0 uygulaması/gerçek API ile tekrar sınandı.
+- İmaj `gridshard-production:2.3.0-mail-20261105`; kimliği
+  `sha256:060346eabfb7c05919a0ae6cbdbdb98fb785f7a0aff8fe6dec2b1c741f05ba39`.
+  Server 2.3.0, legacy alias 2.2.1, protokol 2; Android code14/AAB değişmedi.
+- Aktif savaş/WebSocket/bekleyen sonuç yokken yalnız API durdu. Gerçek yedek,
+  boş PostgreSQL restore ve bütün tablo karşılaştırması geçti. 55 mevcut profil
+  ve korunan tablolar geçişte birebir aynı; ortam/secret/birimler korundu.
+  Duruş-yedek-restore-açılış 22,4 sn. Healthy/restart0; prova kaynakları kaldırıldı.
+- Yedek `/var/backups/gridshard-production/20261105-before-legacy-mail-c720f22`;
+  operasyon `/opt/gridshard/operations/legacy-mail-20261105-c720f22`.
+  Yeni Compose katmanı bu operasyonun `overlay.json` dosyasıdır. Sonraki
+  dağıtımda mevcut katmanları yeniden keşfet; eski komutu varsayma.
+- Gerçek HTTPS eski istemci: tek yeni konuk hesabı, normal auth/bootstrap,
+  Sistem mesajı ve okundu/yeniden açılış PASS; mevcut oyuncu hesabı kullanılmadı.
+  TR/EN 320/393 dört birleşim, aynı dağıtılan hash'lerle yerelde gerçek Ayarlar
+  dil seçimi üzerinden ayrıca PASS. Canlı dil değiştirme görsellerinin tamamı
+  kabul değildir; ikinci canlı hesap oluşturulmadı. Ayrıntı raporda.
+- Son HTTPS kontrolü 5 Kasım 18.39 TR: 200, PostgreSQL/Redis hazır, savaş0.
+  Operasyon/kapsayıcı son kontrolünden sonraki isteğe bağlı ek SSH denemesi
+  zaman aşımına uğradı; sonraki sunucu işinde erişimi yeniden doğrula.
+- `preview-2-4-0-season-one` artık mevcut uygulamada Sistem'de görünür.
+  Bakım hedefi 23 Kasım 22.00–24 Kasım 00.00 TR. Ayrı turnuva popup'ı henüz
+  görünmez; 2.4.0 sunucusu/AAB sonrasındaki kendi kapısı geçerli. S1/ilk haftalık
+  turnuva hedefi 30 Kasım 03.00 TR; sezon ve takım başlangıcı açılmadı.
+- Sırada 2.4.0/S1'in ertelenmiş fiziksel Android yükseltme/hesap dönüşü,
+  hoparlör/kulaklık ve genel yayın kabulleri var. RELEASE-01 açık; bakım
+  duyurusu diye tam geliştirme sunucusunu şimdi dağıtma. Takvim değişmedi.
+
+---
+
+# Önceki devir — S1 kabulü ve iki aşamalı duyuru, 5 Kasım 2026
 
 - Dal `codex/s1-release-acceptance`; taban `afad546` (PR #2 sonrası main).
   Kullanıcı bu turdaki hazırlığı iş bilgisayarında, canlı ön duyuru dağıtımını
