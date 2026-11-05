@@ -30,7 +30,7 @@
     "server/app/cosmetic_releases.py": "12a8c1ec82a5e2567a62c5c28b145db1265ed87b369252950cdf022aa5a2aa83",
     "server/data/first_season_launch_v1.json": "f3878c91c9a20cb89f9fa9bf5747ad62da9bb1054bbf7f00f53f43818e622675",
     "server/data/cosmetic_releases_v1.json": "80dd80285ea4c3a895927e41918604b2e905e311d2c13c7330dfb3fcf4a70f54",
-    "docs/planning/release_calendar_v1.json": "5a572c6e30bc0b56357d06a4b706b9e73dc662458cfa2a42ef3d52210d467ebf"
+    "docs/planning/release_calendar_v1.json": "9f4e4372e5eade9be10f4cc4ccd867d7c28658fd5c53ff9e433ad6b0270aed2a"
   },
   "season": {
     "number": 1,

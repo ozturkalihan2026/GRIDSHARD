@@ -10,6 +10,8 @@ gerçekten uygulanıp kanıtlanana kadar oyunda mevcut sayılmaz.
   tekil tahsis, gerçek PG yedek/restore ve kasa/görsel kabulü; açık cihaz kapıları.
 - [2.3.0 bakım haberi ve 2.4.0 turnuva penceresi](planning/release-230-prerelease-system-mail.md):
   23 Kasım 22.00 bakım planı, iki ayrı duyuru ve ev bilgisayarından gönderim.
+- [Arkadaşlık isteği sekmeleri](planning/release-240-friend-request-tabs.md):
+  Gelen/Giden İstek satırlarının üstüne taşan çizgi için 2.4.0 düzeltmesi.
 
 - [Sürüm öncesi duyuru standardı ve iki müzik paketi](planning/prerelease-announcements-and-music.md):
   hesaba bağlı tek gösterim/Sistem mesajı; 2.5.0 ve 2.7.0 özgün menü/savaş müzikleri.

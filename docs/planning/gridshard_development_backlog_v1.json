@@ -35,7 +35,8 @@
     "docs/planning/prerelease-announcements-and-music.md",
     "docs/planning/release-240-s1-acceptance.md",
     "docs/planning/release-240-crate-opening-acceptance.md",
-    "docs/planning/release-230-prerelease-system-mail.md"
+    "docs/planning/release-230-prerelease-system-mail.md",
+    "docs/planning/release-240-friend-request-tabs.md"
   ],
   "tasks": [
     {
@@ -1814,7 +1815,8 @@
         "REWARD-06",
         "UI-08",
         "SEASON-01",
-        "COMM-01"
+        "COMM-01",
+        "UI-09"
       ],
       "existing_paths": [
         ".github/workflows/quality.yml",
@@ -3081,6 +3083,46 @@
       "planned_releases": [
         "2.7.0"
       ]
+    },
+    {
+      "id": "UI-09",
+      "title": "Arkadaşlar Gelen/Giden İstek sekmelerindeki metin üstü çizgiyi kaldır",
+      "stage": "R1",
+      "owner": "İstemci / tasarım / QA",
+      "effort": "S",
+      "priority": "P0",
+      "status": "branch_ready",
+      "depends_on": [
+        "RELEASE-00"
+      ],
+      "existing_paths": [
+        "client/src/ui-components-v2.css",
+        "client/index.html",
+        "client/src/app.js",
+        "client/src/i18n-catalog.js",
+        "e2e/release221-social.spec.js"
+      ],
+      "proposed_paths": [
+        "docs/planning/release-240-friend-request-tabs.md"
+      ],
+      "acceptance": [
+        "GELEN İSTEK/GİDEN İSTEK dar ekranda sarıldığında etkin sekmenin ilk satır alt çizgisi ikinci satırdaki İSTEK kelimesinin üzerinden geçmez.",
+        "Her iki sekmenin seçimi, turkuaz etkin yüzey/kenar, klavye odağı ve bildirim noktası korunur. TR/EN 320×568 ve 393×852 görsel/gerçek gezinme kabulü yapılır; diğer ortak sekmeler etkilenmez."
+      ],
+      "goals": [
+        "presentation"
+      ],
+      "old_plan_sections": [
+        4,
+        9
+      ],
+      "evidence": [
+        "docs/planning/release-240-friend-request-tabs.md",
+        "e2e/release221-social.spec.js"
+      ],
+      "planned_releases": [
+        "2.4.0"
+      ]
     }
   ],
   "release_plan": [
@@ -3100,9 +3142,10 @@
       "name": "Mevcut içerikle ilk sezon",
       "stage": "R1",
       "gate_tasks": [
-        "RELEASE-01"
+        "RELEASE-01",
+        "UI-09"
       ],
-      "scope": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. AAB değiştirmeden 2.3.0 Sistem mesajında 23 Kasım 22.00–24 Kasım 00.00 TR bakım ön duyurusu; 2.4.0 sunucu/AAB sonrasında ayrı kimlikli turnuva penceresi. S1 ve ilk haftalık turnuva 30 Kasım 03.00 TR.",
+      "scope": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. AAB değiştirmeden 2.3.0 Sistem mesajında 23 Kasım 22.00–24 Kasım 00.00 TR bakım ön duyurusu; 2.4.0 sunucu/AAB sonrasında ayrı kimlikli turnuva penceresi. S1 ve ilk haftalık turnuva 30 Kasım 03.00 TR. Arkadaşlar sayfasındaki Gelen/Giden İstek yazılarının üstüne taşan çizgi düzeltilir.",
       "keep_closed": "Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu.",
       "exit": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. REWARD-06, UI-08 ve SEASON-01; tekil makbuz, güvenli açılış ve 1.800 sezonluk XP tavanı kabulü. COMM-01 kabulü ve ön duyuru standardı sürüm kapısındadır.",
       "target_release_on": "2026-11-23",

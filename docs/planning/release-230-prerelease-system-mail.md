@@ -76,3 +76,12 @@ CI aynı eski istemci/gerçek HTTP kanıtını yeniden üretir.
 Paketin hazır olması oyuncuların mesajı aldığı anlamına gelmez. Evde dağıtımda
 önce canlı kaynak hash’i, ardından yedek/geri dönüş ve salt bu üç dosyanın
 dağıtımı doğrulanır; kullanıcıların veri ve hesapları korunur.
+
+Ön duyurunun görünmesi için bu küçük 2.3.0 backend yaması yüklenip servis
+kontrollü yeniden başlatılmalıdır; veri dosyası yüklemek tek başına bellekteki
+eski handler’ı değiştirmez. Mevcut RAM savaşları süreçler arasında taşınmadığından
+aktif savaşlar bitmeden kesilmez; mevcut dağıtımın maç boşaltma/bakım akışı kullanılır.
+Bu işlem için 23 Kasım’daki tam 2.4.0 kaynağı erkenden yüklenmez. İşlem sonrası
+sağlık/sürüm hâlâ 2.3.0, hesap/ilerleme korunmuş ve eski uygulamanın Sistem
+mesajında 22.00/iki saat bilgisi görünür olmalıdır. Geri dönüşte kod/imaj geri
+alınır; güncel oyuncu verisinin üzerine eski yedek yazılmaz.

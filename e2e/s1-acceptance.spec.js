@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const {waitForParticipantReady}=require('./ui-helpers');
 
-for(const width of [320,393])for(const language of ['tr','en'])test(`S1 real receipts and orders ${language} ${width}px`,async({page},info)=>{
+for(const width of [320,393])for(const language of ['tr','en'])test(`S1 real receipts and orders ${language} ${width}px`,async({page,isMobile},info)=>{
  test.skip(process.env.GRIDSHARD_E2E_S1_ACCEPTANCE!=='1','Run only with the owned published-S1 loopback fixture');
  test.setTimeout(120000);
  await page.setViewportSize({width,height:width===320?568:852});
@@ -22,12 +22,17 @@ for(const width of [320,393])for(const language of ['tr','en'])test(`S1 real rec
  await page.locator('#daily-missions-screen .navigation-back').click();
  await page.locator('#rewards-hub-screen [data-open-screen="rewards"]').click();
  await expect(page.locator('#season-reward-track .season-pass-row')).toHaveCount(40);
- await page.locator('#season-reward-track .reward-chest-button').first().hover();
- await page.locator('#season-reward-track .reward-chest-button').first().click();
+ const previewTrigger=page.locator('#season-reward-track .reward-chest-button').first();
+ if(isMobile)await previewTrigger.tap();else await previewTrigger.click();
  await expect(page.locator('.reward-preview-panel')).toBeVisible();
- const bounds=await page.locator('.reward-preview-panel').boundingBox();
- const dock=await page.locator('#app-bottom-dock').boundingBox();
- expect(bounds.y+bounds.height).toBeLessThanOrEqual(dock.y);
+ // Both rectangles belong to one browser frame. Separate CDP boundingBox
+ // calls can observe different layout frames on an emulated touch viewport.
+ const layout=await page.locator('.reward-preview-panel').evaluate(panel=>{
+  const preview=panel.getBoundingClientRect(),dock=document.getElementById('app-bottom-dock').getBoundingClientRect();
+  return {previewWidth:preview.width,previewHeight:preview.height,previewBottom:preview.bottom,dockHeight:dock.height,dockTop:dock.top};
+ });
+ expect(layout.previewWidth).toBeGreaterThan(0);expect(layout.previewHeight).toBeGreaterThan(0);
+ expect(layout.dockHeight).toBeGreaterThanOrEqual(44);expect(layout.previewBottom).toBeLessThanOrEqual(layout.dockTop);
  await page.screenshot({path:info.outputPath('s1-road.png')});
  await page.locator('[data-shell-screen="menu"]').click();await page.locator('#reward-inbox-button').click();
  await page.locator('#inbox-tab-reward').click();

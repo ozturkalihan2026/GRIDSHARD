@@ -14,7 +14,7 @@
       "scope_freezes_on": "2026-11-16",
       "tests_start_on": "2026-11-19",
       "target_release_on": "2026-11-23",
-      "content": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. AAB değiştirmeden 2.3.0 Sistem mesajında 23 Kasım 22.00–24 Kasım 00.00 TR bakım ön duyurusu; 2.4.0 sunucu/AAB sonrasında ayrı kimlikli turnuva penceresi. S1 ve ilk haftalık turnuva 30 Kasım 03.00 TR.",
+      "content": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. AAB değiştirmeden 2.3.0 Sistem mesajında 23 Kasım 22.00–24 Kasım 00.00 TR bakım ön duyurusu; 2.4.0 sunucu/AAB sonrasında ayrı kimlikli turnuva penceresi. S1 ve ilk haftalık turnuva 30 Kasım 03.00 TR. Arkadaşlar sayfasındaki Gelen/Giden İstek yazılarının üstüne taşan çizgi düzeltilir.",
       "required": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. REWARD-06, UI-08 ve SEASON-01; tekil makbuz, güvenli açılış ve 1.800 sezonluk XP tavanı kabulü. COMM-01 kabulü ve ön duyuru standardı sürüm kapısındadır.",
       "optional": "Takım turnuvası için ayrı hazırlık; yeterli gerçek takım yoksa beklemede kalır.",
       "excluded": "Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu.",
@@ -30,7 +30,8 @@
         "REWARD-06",
         "UI-08",
         "SEASON-01",
-        "COMM-01"
+        "COMM-01",
+        "UI-09"
       ],
       "season": {
         "number": 1,
@@ -79,18 +80,22 @@
         },
         {
           "id": "S1-GEZINME",
-          "title": "Bütün geri ve ileri düğmelerinde son sarı tasarım",
+          "title": "Sarı gezinme ve okunur arkadaşlık isteği sekmeleri",
           "tasks": [
-            "UI-07"
+            "UI-07",
+            "UI-09"
           ],
           "steps": [
             "Ödüllerin her alt sayfasından başlayarak bütün geri/ileri kontrollerini selector, ekran, yön ve hedefleriyle envantere al; yalnız mevcut 11 geri düğmesini sayan test kapsamını genişlet.",
             "navigation-back-v1.css içindeki son sarı tasarımı ortak geri/ileri stile taşı; ileri oku aynı yüzey üzerinde sağa çevir. canon/ui-components/visual-polish/reward stillerinin normal ve pseudo-element çakışmalarını temizle.",
-            "Sarı yüzey, kenar, gölge ve dokunma alanını normal/basılı/odaklı/devre dışı durumlarda karşılaştır; ekran hedefleri, erişilebilir adlar ve native geri davranışını kontrol et."
+            "Sarı yüzey, kenar, gölge ve dokunma alanını normal/basılı/odaklı/devre dışı durumlarda karşılaştır; ekran hedefleri, erişilebilir adlar ve native geri davranışını kontrol et.",
+            "Gelen/Giden İstek etiketlerinin sarılan satırlarında alt çizgi taşmasını kaldır; etkin kenar, odak ve bildirimleri koru."
           ],
           "acceptance": [
             "Ödül sayfalarında mavi/sarı karışımı kalmıyor; sistem envanterindeki bütün gezinme okları aynı tasarım ailesinde.",
-            "TR/EN ve iki mobil boyutta geri/ileri gidiş dönüşü ile ekran görüntüsü kanıtı var."
+            "TR/EN ve iki mobil boyutta geri/ileri gidiş dönüşü ile ekran görüntüsü kanıtı var.",
+            "GELEN İSTEK/GİDEN İSTEK dar ekranda sarıldığında etkin sekmenin ilk satır alt çizgisi ikinci satırdaki İSTEK kelimesinin üzerinden geçmez.",
+            "Her iki sekmenin seçimi, turkuaz etkin yüzey/kenar, klavye odağı ve bildirim noktası korunur. TR/EN 320×568 ve 393×852 görsel/gerçek gezinme kabulü yapılır; diğer ortak sekmeler etkilenmez."
           ],
           "kind": "required"
         },
@@ -199,7 +204,8 @@
             "REWARD-06",
             "UI-08",
             "SEASON-01",
-            "COMM-01"
+            "COMM-01",
+            "UI-09"
           ],
           "output": "Bütçe ve buton/ses envanteri; 6 Kasım kapasite kontrolü. Kasa açılışı/çekirdek teslimi ve emir sözleşmeleri; ek kapsamın kapasite kontrolü."
         },
@@ -214,7 +220,8 @@
             "AUDIO-02",
             "REWARD-06",
             "UI-08",
-            "SEASON-01"
+            "SEASON-01",
+            "UI-09"
           ],
           "output": "S1 kaynak profili ve hak koruma; sarı kontroller ile saldırı/çekirdek sesleri uygulaması."
         },
@@ -229,7 +236,8 @@
             "SEASON-00",
             "REWARD-06",
             "UI-08",
-            "SEASON-01"
+            "SEASON-01",
+            "UI-09"
           ],
           "output": "16 Kasım kapsam kapanışı; eski istemci, TR/EN, ses ve yoğun savaş regresyonu."
         },
