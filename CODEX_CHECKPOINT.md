@@ -15,6 +15,12 @@
   üst kapsayıcı kaydırması üretip aynı paneli ve görünümden çıkışta kapanmasını
   doğrular. Güncel kaynak CI sonucu ayrıca kaydedilecek; önceki başarısız
   koşular kabul sayılmaz.
+- Ek iz: yalnız `notifications` / `seen_notification_keys` değiştiğinde
+  ödül düğmeleri gereksiz yeniden kuruluyordu. Bu iki rozet alanı liste
+  imzasından çıkarıldı; rozetler yine güncellenir, gerçek ödül değişimi listeyi
+  yeniler. Sabit panel hover/odakla başka sandığa geçirilmez; açık seçim için
+  tıklama sürer. Gerçek okunma yanıtı pin sonrasına bırakılarak TR/EN 320 px
+  Chromium/Android dört regresyonu ve 779 istemci testi geçti.
 - [S1 matrisi](docs/planning/release-240-s1-acceptance.md): REWARD-06 ve
   SEASON-01 yazılım kabulü done; SEASON-00 ve UI-08 branch_ready. Gerçek yerel
   PostgreSQL ile 68 test geçti; 80 hak kapanış/rollback/reload ve gerçek

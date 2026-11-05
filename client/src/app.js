@@ -2364,6 +2364,7 @@
   // odaklanınca ya da dokununca içerik paneli açılır; dokunuş paneli sabitler.
   function bindRewardPreview(button, options) {
     button.addEventListener("pointerenter", (event) => {
+      if (rewardPreviewState?.pinned) return;
       if (!event.pointerType || event.pointerType === "mouse" || event.pointerType === "pen") showRewardPreview(button, options);
     });
     button.addEventListener("pointerleave", (event) => {
@@ -2373,12 +2374,14 @@
     });
     // Mouse-only fallback for hosts that do not dispatch pointerenter.
     button.addEventListener("mouseenter", (event) => {
+      if (rewardPreviewState?.pinned) return;
       if (!event.sourceCapabilities?.firesTouchEvents) showRewardPreview(button, options);
     });
     button.addEventListener("mouseleave", (event) => {
       if (rewardPreviewState?.trigger === button && !rewardPreviewState.pinned) scheduleRewardPreviewClose(event);
     });
     button.addEventListener("focus", () => {
+      if (rewardPreviewState?.pinned) return;
       if (button.matches(":focus-visible")) showRewardPreview(button, options);
     });
     button.addEventListener("blur", () => {
@@ -19638,7 +19641,12 @@
     const loginTrack = document.getElementById("monthly-login-track");
     const missions = document.getElementById("daily-mission-list");
     const rewards = document.getElementById("season-reward-track");
-    const listsSignature = `${activeMissionTab}|${document.documentElement.lang || "tr"}|${JSON.stringify(engagement)}`;
+    // Read acknowledgements update the badges above, not the list contents.
+    // Replacing these controls would discard an open/pinned chest preview.
+    const listContent = { ...engagement };
+    delete listContent.notifications;
+    delete listContent.seen_notification_keys;
+    const listsSignature = `${activeMissionTab}|${document.documentElement.lang || "tr"}|${JSON.stringify(listContent)}`;
     // Liste başka bir yerden boşaltıldıysa imza aynı olsa da yeniden kurulur.
     const rebuildLists = listsSignature !== renderedEngagementListsSignature
       || (loginTrack && loginTrack.childElementCount !== loginRewards.length)
@@ -19717,6 +19725,7 @@
 
     if (rewards) renderSeasonPremiumPurchase();
     if (rewards && rebuildLists) {
+      if (rewardPreviewState && rewards.contains(rewardPreviewState.trigger)) hideRewardPreview();
       rewards.replaceChildren();
       const premiumPass = engagement.premium_pass || {};
       const premiumTrack = engagement.premiumRewardTrack || engagement.premium_reward_track || [];

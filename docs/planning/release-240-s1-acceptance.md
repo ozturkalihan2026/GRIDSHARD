@@ -76,6 +76,11 @@ kaldı; bu yerel PASS tek başına uzak kabul değildir. Kaydırma işleyicisi
 görünür sandığın sabit panelini yeniden konumlandırır; yeni regresyon gerçek
 üst kapsayıcı kaydırmasıyla panel kimliğini, sonra görünümden çıkışta kapanmayı
 doğrular. Panel/dock
+ölçümüne ek olarak gerçek okunma yanıtı pin sonrasına bırakılır: yalnız rozet
+alanlarının değişimi kartları yeniden kuramaz; rozet sönerken aynı panel
+korunur. Sabit panel başka sandığa hover/odakla aktarılmaz, açık seçim tıklaması
+çalışır. Bu birleşik regresyonun TR/EN 320 px Chromium/Android dört koşusu geçti.
+Panel/dock
 ölçümünde güncel DOM öğeleri aynı tarayıcı görevi içinde okunur; görünürlük,
 44 px gezinme yüksekliği ve örtüşmeme koşulları beklenir, eylem zorlanmaz.
 Yeni dalın uzak CI sonucu ayrıca kaydedilir; eski kaynak CI’ı bu değişikliklerin

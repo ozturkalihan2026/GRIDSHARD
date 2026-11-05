@@ -25,6 +25,10 @@ gerekmez. Haftalık Lazer 36 parça, sezon liderliği Güneş Ocağı ve ayrı b
   kapatıyordu. Sandık görünürken panel kaydırmayla yeniden konumlandırılır;
   sandık görünümden çıkınca kapanır. Regresyon gerçek üst kapsayıcı kaydırması
   üretir; aynı panel kimliği, dock sınırı ve görünümden çıkışta kapanma sınanır.
+- Bildirim okundu yanıtı yalnız rozetleri yeniler; ödüller aynıysa kartları
+  yeniden kurmaz. Sabit panel başka sandığın hover/odağıyla değiştirilmez;
+  açık tıklama seçimi sürer. E2E gerçek okunma isteğini pin sonrasında tamamlar,
+  rozetin söndüğünü ve panel kimliğinin korunduğunu birlikte doğrular.
 
 `e2e/s1-acceptance.spec.js` sunucu makbuzlarını test ekine yazar. Görsel ekran
 görüntüsü tek başına ekonomik teslim kanıtı sayılmaz; cüzdan/tekrar/restore

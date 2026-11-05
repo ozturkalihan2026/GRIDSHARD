@@ -20,18 +20,34 @@ for(const width of [320,393])for(const language of ['tr','en'])test(`S1 real rec
  await expect(page.locator('#daily-mission-list .daily-mission-card')).toHaveCount(8);
  await page.locator('#mission-tab-seasonal').click();await expect(page.locator('#daily-mission-list .daily-mission-card')).toHaveCount(12);
  await page.locator('#daily-missions-screen .navigation-back').click();
+ // Keep the real read acknowledgement pending until the preview is pinned.
+ // A badges-only response must not rebuild the reward controls underneath it.
+ let releaseSeen,requestedSeen;
+ const seenGate=new Promise(resolve=>releaseSeen=resolve),seenRequested=new Promise(resolve=>requestedSeen=resolve);
+ await page.route(/\/profile\/[^/]+\/notifications\/season\/seen$/,async route=>{
+  requestedSeen();await seenGate;await route.continue();
+ });
+ const seenResponse=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith('/notifications/season/seen'));
  await page.locator('#rewards-hub-screen [data-open-screen="rewards"]').click();
+ await seenRequested;
  await expect(page.locator('#season-reward-track .season-pass-row')).toHaveCount(40);
  const previewTrigger=page.locator('#season-reward-track .reward-chest-button').first();
  if(isMobile)await previewTrigger.tap();else await previewTrigger.click();
  await expect(page.locator('.reward-preview-panel')).toBeVisible();
  const previewId=await page.locator('.reward-preview-panel').getAttribute('id');
+ releaseSeen();expect((await seenResponse).ok()).toBe(true);
+ await expect(page.locator('#rewards-hub-screen [data-open-screen="rewards"]')).not.toHaveClass(/has-persistent-notification/);
+ await expect(page.locator('.reward-preview-panel')).toHaveAttribute('id',previewId);
  // Deliver a real ancestor scroll after pinning, as delayed focus scrolling
  // does on narrow screens. The same panel must remain usable and anchored.
  await page.locator('#season-reward-panel').evaluate(panel=>new Promise(resolve=>{
   panel.addEventListener('scroll',resolve,{once:true});panel.scrollTop+=4;
  }));
  await expect(page.locator('.reward-preview-panel')).toHaveAttribute('id',previewId);
+ if(!isMobile){
+  await page.locator('#season-reward-track .reward-chest-button').nth(1).hover();
+  await expect(page.locator('.reward-preview-panel')).toHaveAttribute('id',previewId);
+ }
  // Resolve both current nodes and their layout in one browser task. A locator
  // ElementHandle can detach between resolution and evaluation during layout.
  // Retry only the read-only assertion; a missing/covered panel still fails.
