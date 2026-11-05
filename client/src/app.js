@@ -2245,11 +2245,13 @@
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
     const host = trigger.closest("dialog[open]")?.getBoundingClientRect();
+    const dock = !host ? document.getElementById("app-bottom-dock")?.getBoundingClientRect() : null;
     const bounds = {
       left:Math.max(margin, host ? host.left + margin : margin),
       right:Math.min(viewportWidth - margin, host ? host.right - margin : viewportWidth - margin),
       top:Math.max(margin, host ? host.top + margin : margin),
-      bottom:Math.min(viewportHeight - margin, host ? host.bottom - margin : viewportHeight - margin),
+      bottom:Math.min(viewportHeight - margin, host ? host.bottom - margin
+        : dock?.height > 0 && dock.top > margin ? dock.top - margin : viewportHeight - margin),
     };
     const below = Math.max(0, bounds.bottom - target.bottom - margin);
     const above = Math.max(0, target.top - margin - bounds.top);
@@ -2362,6 +2364,7 @@
   // odaklanınca ya da dokununca içerik paneli açılır; dokunuş paneli sabitler.
   function bindRewardPreview(button, options) {
     button.addEventListener("pointerenter", (event) => {
+      if (rewardPreviewState?.pinned) return;
       if (!event.pointerType || event.pointerType === "mouse" || event.pointerType === "pen") showRewardPreview(button, options);
     });
     button.addEventListener("pointerleave", (event) => {
@@ -2371,12 +2374,14 @@
     });
     // Mouse-only fallback for hosts that do not dispatch pointerenter.
     button.addEventListener("mouseenter", (event) => {
+      if (rewardPreviewState?.pinned) return;
       if (!event.sourceCapabilities?.firesTouchEvents) showRewardPreview(button, options);
     });
     button.addEventListener("mouseleave", (event) => {
       if (rewardPreviewState?.trigger === button && !rewardPreviewState.pinned) scheduleRewardPreviewClose(event);
     });
     button.addEventListener("focus", () => {
+      if (rewardPreviewState?.pinned) return;
       if (button.matches(":focus-visible")) showRewardPreview(button, options);
     });
     button.addEventListener("blur", () => {
@@ -2401,7 +2406,22 @@
     hideRewardPreview();
   }, true);
   document.addEventListener("scroll", (event) => {
-    if (rewardPreviewState?.panel.contains(event.target)) return;
+    const state = rewardPreviewState;
+    if (!state || state.panel.contains(event.target)) return;
+    // Focus/scroll-into-view can deliver its scroll event after the tap that
+    // pinned this panel. Keep it anchored while its chest remains visible.
+    if (state.pinned && event.target.contains?.(state.trigger)) {
+      const target = state.trigger.getBoundingClientRect();
+      const clip = event.target === document
+        ? { left:0, top:0, right:window.innerWidth, bottom:window.innerHeight }
+        : event.target.getBoundingClientRect();
+      if (state.trigger.isConnected && target.width > 0 && target.height > 0
+        && target.bottom > Math.max(0, clip.top) && target.top < Math.min(window.innerHeight, clip.bottom)
+        && target.right > Math.max(0, clip.left) && target.left < Math.min(window.innerWidth, clip.right)) {
+        positionRewardPreview(state.trigger, state.panel);
+        return;
+      }
+    }
     hideRewardPreview();
   }, true);
   window.addEventListener("resize", hideRewardPreview);
@@ -19621,7 +19641,12 @@
     const loginTrack = document.getElementById("monthly-login-track");
     const missions = document.getElementById("daily-mission-list");
     const rewards = document.getElementById("season-reward-track");
-    const listsSignature = `${activeMissionTab}|${document.documentElement.lang || "tr"}|${JSON.stringify(engagement)}`;
+    // Read acknowledgements update the badges above, not the list contents.
+    // Replacing these controls would discard an open/pinned chest preview.
+    const listContent = { ...engagement };
+    delete listContent.notifications;
+    delete listContent.seen_notification_keys;
+    const listsSignature = `${activeMissionTab}|${document.documentElement.lang || "tr"}|${JSON.stringify(listContent)}`;
     // Liste başka bir yerden boşaltıldıysa imza aynı olsa da yeniden kurulur.
     const rebuildLists = listsSignature !== renderedEngagementListsSignature
       || (loginTrack && loginTrack.childElementCount !== loginRewards.length)
@@ -19700,6 +19725,7 @@
 
     if (rewards) renderSeasonPremiumPurchase();
     if (rewards && rebuildLists) {
+      if (rewardPreviewState && rewards.contains(rewardPreviewState.trigger)) hideRewardPreview();
       rewards.replaceChildren();
       const premiumPass = engagement.premium_pass || {};
       const premiumTrack = engagement.premiumRewardTrack || engagement.premium_reward_track || [];

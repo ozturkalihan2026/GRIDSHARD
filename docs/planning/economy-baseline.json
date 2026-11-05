@@ -28,9 +28,9 @@
     "server/app/first_season_profile.py": "111333dc5ec10b25f4a2cbb7151b3a0e48954079031c5aca3d7b0059dd5e2637",
     "server/app/main.py": "dc153e484d88e25bf2bb1a2225f21698107af7f2e4d2d434ace737445babce82",
     "server/app/cosmetic_releases.py": "12a8c1ec82a5e2567a62c5c28b145db1265ed87b369252950cdf022aa5a2aa83",
-    "server/data/first_season_launch_v1.json": "694615ab17bcb0589a2faf8473caab604a98670b05854af87d61b2e8ccb2b203",
+    "server/data/first_season_launch_v1.json": "f3878c91c9a20cb89f9fa9bf5747ad62da9bb1054bbf7f00f53f43818e622675",
     "server/data/cosmetic_releases_v1.json": "80dd80285ea4c3a895927e41918604b2e905e311d2c13c7330dfb3fcf4a70f54",
-    "docs/planning/release_calendar_v1.json": "38f4fb7afd95f8c28b9ba3ad8034fbcbe215e09a7b2f0555e56041cd98615963"
+    "docs/planning/release_calendar_v1.json": "9f4e4372e5eade9be10f4cc4ccd867d7c28658fd5c53ff9e433ad6b0270aed2a"
   },
   "season": {
     "number": 1,

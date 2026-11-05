@@ -1,5 +1,12 @@
 # 2.4.0 / SEASON-00 — ilk sezon profili ve kazanılmış haklar
 
+**5 Kasım güncellemesi:** [S1 yazılım kabul matrisi](release-240-s1-acceptance.md).
+80 hak, 22 yarışma kasası, gerçek PostgreSQL kapanış/rollback ve dump/restore,
+üç tarayıcıda gerçek makbuz akışları geçti. Profilde bütçe/tekil tahsis/
+kapanış-restore/eski istemci kontrolleri true; fiziksel Android kullanıcı
+isteğiyle ertelendiği için profil draft ve cihaz kontrolü false kalır.
+Aşağıdaki ilk dilim sayıları tarihsel kayıttır; yazılım kabulü dalda hazırdır.
+
 4 Kasım 2026. **Kod dilimi hazır, yayın kapısı açık.** Kaynak profil `draft`;
 canlı tarih/ayar, kozmetik kataloğunun yayınları, sürüm etiketi ve AAB değiştirilmedi.
 [2.4.0 briefi](releases/2.4.0.md) · [Checklist](../GRIDSHARD_GELISIM_CHECKLIST_20261103.md#season-00) ·

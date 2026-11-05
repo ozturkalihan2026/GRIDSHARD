@@ -9,10 +9,10 @@ from pathlib import Path
 
 if __package__:
     from tools.development_checklist import ROOT, BACKLOG, CHECKLIST, repository_path, validate as validate_backlog
-    from tools.release_calendar import SOURCE, validate as validate_calendar
+    from tools.release_calendar import SOURCE, validate as validate_calendar, maintenance_summary
 else:
     from development_checklist import ROOT, BACKLOG, CHECKLIST, repository_path, validate as validate_backlog
-    from release_calendar import SOURCE, validate as validate_calendar
+    from release_calendar import SOURCE, validate as validate_calendar, maintenance_summary
 
 INDEX = ROOT / 'docs/GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md'
 
@@ -102,6 +102,9 @@ def render_brief(release, backlog):
              '| Tarih aralığı | İşler | Somut teslim / karar |', '| --- | --- | --- |']
     for phase in release['work_schedule']:
         lines.append(f"| {phase['starts_on']}–{phase['ends_on']} | {', '.join(phase['tasks'])} | {phase['output']} |")
+    if release.get('server_transition'):
+        position=lines.index('## Oyuncuya teslim ve sınır')
+        lines[position:position]=[maintenance_summary(release),'']
     lines += ['', 'Aralıklar aynı ana geliştirme akışının iş sırasıdır; eşzamanlı tam zamanlı ekip varsayımı değildir. '
               'Gözlem/patch için ayrılan kapasite kullanılır; kapsam kapanışında yeni özellik eklenmez.', '',
               '## İçerik nasıl geliştirilecek?', '']
@@ -163,6 +166,8 @@ def render_index(releases, backlog):
              '| --- | --- | --- | --- | --- | --- | --- |']
     for r in releases:
         lines.append(f"| {link(r['delivery_document'], INDEX, r['version'])} | {r['content']} | {r['work_starts_on']} | {r['scope_freezes_on']} | {r['tests_start_on']} | {r['target_release_on']} ({r['confidence']}) | S{r['season']['number']}: {r['season']['starts_on']}, 03.00 TR |")
+    for r in releases:
+        if r.get('server_transition'):lines+=['',maintenance_summary(r)]
     lines += ['', '## Kapasite ve karar sınırları', '',
               '- Tek ana akış, haftada 5 gün/günde 4–6 saat ve yaklaşık %20 hata/test/gözlem payı önceki varsayımdır. '
               'Önceki buton/ses kapsamı için 2.4.0 ön tahmini 14–17 aktif gündü; kasa açılışı, çekirdek teslimi ve '

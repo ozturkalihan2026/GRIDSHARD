@@ -1,6 +1,6 @@
 """Versioned prerelease mail and account-scoped, explicit popup acknowledgements."""
 from copy import deepcopy
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 import json
 from pathlib import Path
 import re
@@ -31,12 +31,30 @@ def validate(document):
             raise ValueError('Invalid/duplicate announcement identity')
         ids.add(identity)
         version_key(item['target_version'])
+        if item.get('min_server_version') and version_key(item['min_server_version']) > version_key(item['target_version']):
+            raise ValueError('Announcement minimum server version exceeds its target')
         if item['status'] not in {'draft', 'published', 'withdrawn'}:
             raise ValueError('Invalid announcement status')
+        if item.get('delivery','popup_and_system') not in {'popup_and_system','system_mail'}:
+            raise ValueError('Invalid announcement delivery channel')
         if instant(item['publish_at']) >= instant(item['expires_at']):
             raise ValueError('Invalid announcement window')
         if instant(item['publish_at']).date() > date.fromisoformat(item['target_release_on']):
             raise ValueError('Prerelease announcement cannot start after its target release date')
+        if item.get('server_transition_on') and date.fromisoformat(item['server_transition_on']) != date.fromisoformat(item['target_release_on']):
+            raise ValueError('Server transition must match the reviewed release target')
+        if item.get('weekly_tournament_starts_at') and instant(item['weekly_tournament_starts_at']).date() != date.fromisoformat(item['season_starts_on']):
+            raise ValueError('First weekly tournament must match the first-season opening')
+        maintenance = ('server_transition_starts_at','server_transition_ends_at','maintenance_duration_minutes')
+        if any(key in item for key in maintenance):
+            if not all(key in item for key in maintenance):
+                raise ValueError('Incomplete maintenance window')
+            start,end = instant(item[maintenance[0]]),instant(item[maintenance[1]])
+            minutes = item[maintenance[2]]
+            if type(minutes) is not int or minutes<=0 or end-start!=timedelta(minutes=minutes):
+                raise ValueError('Maintenance duration differs from its window')
+            if start.astimezone(timezone(timedelta(hours=3))).date()!=date.fromisoformat(item['server_transition_on']):
+                raise ValueError('Maintenance date differs from the Türkiye transition date')
         for language in ('tr', 'en'):
             for field in ('title', 'body'):
                 text = item[f'{field}_{language}']
@@ -69,6 +87,8 @@ def active_announcements(current_version, now, document=None):
     for raw in sorted(document['announcements'], key=lambda i: (instant(i['publish_at']), i['notice_id'])):
         if raw['status'] != 'published' or not instant(raw['publish_at']) <= moment < instant(raw['expires_at']):
             continue
+        if raw.get('min_server_version') and current < version_key(raw['min_server_version']):
+            continue
         target = version_key(raw['target_version'])
         item = dict(deepcopy(raw), kind='announcement', release_date=raw['publish_at'], phase='release-preview')
         if current >= target:
@@ -86,4 +106,5 @@ def pending_announcement(profile, current_version, now):
     # Show one current campaign, never a stack of obsolete launch popups.
     active = active_announcements(current_version, now)
     newest = active[-1] if active else None
-    return newest if newest and newest['notice_id'] not in acknowledged else None
+    return newest if (newest and newest.get('delivery','popup_and_system') == 'popup_and_system'
+                      and newest['notice_id'] not in acknowledged) else None

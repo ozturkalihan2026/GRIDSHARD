@@ -1,5 +1,10 @@
 # Ön duyuru ve müzik planı — yazılım kabulü
 
+5 Kasım sonraki kullanıcı kararıyla 2.4 kampanyası ikiye ayrıldı:
+[2.3.0 bakım Sistem mesajı ve 2.4.0 turnuva penceresi](release-230-prerelease-system-mail.md).
+Aşağıdaki CI kaydı önceki uygulama kaynağının kabulüdür; yeni dalın kanıtı
+[S1 kabul kaydında](release-240-s1-acceptance.md) ve yeni CI koşusunda izlenir.
+
 5 Kasım 2026. COMM-01 ve aynı kaynaktaki COMPAT-01 yazılım kabulü tamamlandı.
 Uygulama kaynağı `0cbe34cc8113dccdd7e62f0022a870ad19eec3e6`; [bütün CI işleri başarılı](https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/41919146605).
 Kabul sonrası kayıt commit'i yalnız belgeleri günceller.

@@ -32,10 +32,10 @@
     "speed_relay"
   ],
   "release_checks": {
-    "reward_budget": false,
-    "unique_cosmetics": false,
-    "rollover_restore": false,
-    "old_clients": false,
+    "reward_budget": true,
+    "unique_cosmetics": true,
+    "rollover_restore": true,
+    "old_clients": true,
     "android_acceptance": false
   },
   "cosmetic_allocations": [

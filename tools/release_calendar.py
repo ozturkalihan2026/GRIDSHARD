@@ -1,5 +1,5 @@
 """Validate/render planning dates only. Never configures the live game."""
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 import argparse
 import json
 from pathlib import Path
@@ -29,6 +29,17 @@ def validate(document):
                 for key in ('target_release_on', 'scope_freezes_on'))
                 or plans[version].get('season_starts_on') != release['season']['starts_on']):
             raise ValueError('Backlog and calendar release dates differ: ' + version)
+        if plans[version].get('server_transition') != release.get('server_transition'):
+            raise ValueError('Backlog and calendar maintenance windows differ: '+version)
+        maintenance=release.get('server_transition')
+        if maintenance:
+            start=datetime.fromisoformat(maintenance['starts_at'].replace('Z','+00:00'))
+            end=datetime.fromisoformat(maintenance['ends_at'].replace('Z','+00:00'))
+            minutes=maintenance['duration_minutes']
+            if (start.tzinfo is None or end.tzinfo is None or type(minutes) is not int or minutes<=0
+                    or end-start!=timedelta(minutes=minutes) or maintenance['timezone']!='Europe/Istanbul'
+                    or start.astimezone(timezone(timedelta(hours=3))).date().isoformat()!=release['target_release_on']):
+                raise ValueError('Invalid maintenance window: '+version)
         if (release['confidence'] not in {'hedef','tahmin','koşullu'} or not release['required']
                 or not release['content'] or set(release['work_items']) - known):
             raise ValueError('Missing scope, gate or work items: ' + version)
@@ -46,6 +57,17 @@ def validate(document):
     return releases
 
 
+def maintenance_summary(release):
+    maintenance=release.get('server_transition')
+    if not maintenance:return ''
+    tr=timezone(timedelta(hours=3))
+    display=lambda value:datetime.fromisoformat(value.replace('Z','+00:00')).astimezone(tr).strftime('%d.%m.%Y %H.%M')
+    minutes=maintenance['duration_minutes']
+    duration=f'{minutes//60} saat' if minutes%60==0 else f'{minutes} dakika'
+    return (f"**{release['version']} sunucu bakım penceresi:** {display(maintenance['starts_at'])} → "
+            f"{display(maintenance['ends_at'])}, Türkiye saati; yaklaşık {duration}. Sezon açılışı ayrı tarihtedir.")
+
+
 def render(document, releases):
     display = lambda value: date.fromisoformat(value).strftime('%d.%m.%Y')
     rows = [START, '| Sürüm | Çalışma dönemi | Kapsam kapanışı | Hedef yayın | Sezon başlangıcı | Oyuncuya gelen ana içerik | Kesinlik |',
@@ -57,6 +79,8 @@ def render(document, releases):
     for r in releases:
         s = r['season']
         rows.append(f"| S{s['number']} | {display(s['starts_on'])}–{display(s['ends_on'])}, 03.00 TR | {s['module']} |")
+    for r in releases:
+        if r.get('server_transition'):rows+=['',maintenance_summary(r)]
     rows += ['', END]
     return '\n'.join(rows)
 

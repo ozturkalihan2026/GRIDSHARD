@@ -36,7 +36,9 @@
       const english = document.documentElement.lang === 'en';
       document.getElementById('release-announcement-title').textContent = english ? pending.item.title_en : pending.item.title_tr;
       document.getElementById('release-announcement-body').textContent = english ? pending.item.body_en : pending.item.body_tr;
-      document.getElementById('release-announcement-label').textContent = english ? 'COMING TO GRIDSHARD' : 'GRIDSHARD’DA YAKINDA';
+      document.getElementById('release-announcement-label').textContent = pending.item.phase === 'season-preview'
+        ? (english ? 'SEASON AND TOURNAMENTS' : 'SEZON VE TURNUVALAR')
+        : (english ? 'COMING TO GRIDSHARD' : 'GRIDSHARD’DA YAKINDA');
       document.getElementById('release-announcement-note').textContent = english
         ? 'You can read this again in Inbox → System.' : 'Mesaj Kutusu → Sistem bölümünden tekrar okuyabilirsin.';
       button.textContent = english ? 'OK' : 'TAMAM';

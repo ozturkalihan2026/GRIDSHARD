@@ -97,3 +97,23 @@ test('2.2.0 and 2.2.1 notes expand in System and stay read after reload', async 
     await expect(page.locator('#reward-inbox-notices .inbox-notice-card').filter({hasText:`GRIDSHARD ${version}`})).toHaveAttribute('data-seen','true');
   }
 });
+
+test('friend request tabs keep wrapped TR/EN labels clear and retain selection',async({page},info)=>{
+ test.setTimeout(120000);
+ await page.goto('/?e2e=1');await waitForParticipantReady(page,60000);
+ await page.locator('#lobby-menu-button').click();await page.locator('#lobby-menu [data-open-screen="friends"]').click();
+ for(const width of [320,393])for(const language of ['tr','en']){
+  await page.setViewportSize({width,height:width===320?568:852});
+  await page.evaluate(l=>GridshardI18n.apply(l),language);
+  for(const tab of ['incoming','outgoing']){
+   const button=page.locator(`[data-friends-tab="${tab}"]`);await button.click();
+   await expect(button).toHaveAttribute('aria-pressed','true');
+   await expect(page.locator(`[data-friends-panel="${tab}"]`)).toBeVisible();
+   await expect(button).toHaveCSS('text-decoration-line','none');
+   await expect(button).toHaveCSS('border-top-color','rgb(132, 237, 223)');
+   await expect(button).toHaveText(language==='en'?(tab==='incoming'?'INCOMING':'OUTGOING'):(tab==='incoming'?'GELEN İSTEK':'GİDEN İSTEK'));
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+   await page.screenshot({path:info.outputPath(`friend-${tab}-${language}-${width}.png`)});
+  }
+ }
+});

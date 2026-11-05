@@ -1,5 +1,11 @@
 # 2.4.0 — ilk kasa teslimi ve Topla açılışı uygulaması
 
+**5 Kasım güncellemesi:** REWARD-06 yazılım kabulü tamamlandı;
+[gerçek makbuz/kasa kabulü](release-240-crate-opening-acceptance.md) ve
+[S1 matrisi](release-240-s1-acceptance.md) günceldir. Aşağıdaki ilk uygulama
+diliminin eski açıkları ve test sayıları tarihsel kayıttır. UI-08 dalda hazır;
+fiziksel cihaz/dinleme kullanıcı isteğiyle ertelenmiş yayın kapısıdır.
+
 4 Kasım 2026. REWARD-06 ve UI-08 **çalışılıyor**; bu dilim yayın veya S1 açılışı değildir.
 [S1 sözleşmesi](season-1-rewards-and-xp.md) · [2.4.0 briefi](releases/2.4.0.md).
 

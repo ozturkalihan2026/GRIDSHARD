@@ -71,13 +71,14 @@ def environment(runtime):
     return env
 
 
-def start_api(source,output,version=None):
+def start_api(source,output,version=None,now=None):
     runtime=output/'runtime';runtime.mkdir()
     with socket.socket() as listener:
         listener.bind(('127.0.0.1',0));port=listener.getsockname()[1]
     log=(output/'server.private.log').open('w',encoding='utf-8')
     args=[sys.executable,str(Path(__file__).resolve()),'--serve',str(source),'--port',str(port)]
     if version:args+=['--simulate-release',version]
+    if now:args+=['--simulate-now',now]
     process=subprocess.Popen(args,cwd=ROOT,env=environment(runtime),stdout=log,stderr=log)
     url=f'http://127.0.0.1:{port}'
     try:
@@ -109,6 +110,7 @@ def main():
     parser.add_argument('--serve',type=Path,help=argparse.SUPPRESS)
     parser.add_argument('--port',type=int,help=argparse.SUPPRESS)
     parser.add_argument('--simulate-release',help=argparse.SUPPRESS)
+    parser.add_argument('--simulate-now',help=argparse.SUPPRESS)
     args=parser.parse_args()
     if args.serve:
         sys.path.insert(0,str(args.serve/'server'))
@@ -117,6 +119,11 @@ def main():
         # Release labels stay 2.3 until final packaging. This simulates only the
         # future health build identity; actual development API handlers run.
         if args.simulate_release:gateway.VERSION=args.simulate_release
+        if args.simulate_now:
+            from datetime import datetime
+            moment=datetime.fromisoformat(args.simulate_now.replace('Z','+00:00'))
+            if moment.tzinfo is None:raise ValueError('Owned fixture clock requires a timezone')
+            gateway.player_profile_service._now_func=lambda:moment
         uvicorn.run(gateway.app,host='127.0.0.1',port=args.port,access_log=False,log_level='error')
         return
     output=(ROOT/args.output).resolve()

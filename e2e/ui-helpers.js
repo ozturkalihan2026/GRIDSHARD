@@ -20,6 +20,8 @@ async function completeFirstLaunch(page, {ackAnnouncements = true} = {}) {
     await expect(daily).toBeHidden();
   }
   const announcement = page.locator('#release-announcement-dialog');
+  // Unchanged installed 2.3.0 has System mail but no popup DOM/controller.
+  if (await announcement.count() === 0) return;
   await expect(announcement).not.toHaveAttribute('data-delivery', 'loading');
   if (ackAnnouncements && await announcement.getAttribute('data-delivery') === 'pending') {
     await expect(announcement).toBeVisible();
