@@ -32,7 +32,10 @@
     "docs/GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md",
     "docs/planning/season-1-rewards-and-xp.md",
     "docs/planning/season-1-engagement-v1.json",
-    "docs/planning/prerelease-announcements-and-music.md"
+    "docs/planning/prerelease-announcements-and-music.md",
+    "docs/planning/release-240-s1-acceptance.md",
+    "docs/planning/release-240-crate-opening-acceptance.md",
+    "docs/planning/release-230-prerelease-system-mail.md"
   ],
   "tasks": [
     {
@@ -2032,7 +2035,7 @@
       "owner": "Backend / QA / ürün",
       "effort": "L",
       "priority": "P0",
-      "status": "in_progress",
+      "status": "branch_ready",
       "depends_on": [
         "BASE-01",
         "COS-01"
@@ -2075,7 +2078,11 @@
         "server/data/first_season_launch_v1.json",
         "server/tests/test_season_entitlements.py",
         "tools/prepare_first_season.py",
-        "tools/tests/test_first_season_preparation.py"
+        "tools/tests/test_first_season_preparation.py",
+        "docs/planning/release-240-s1-acceptance.md",
+        "server/tests/test_s1_release_acceptance.py",
+        "5 Kasım: 68 odaklı test gerçek yerel PostgreSQL ile geçti; 80 hak gerçek pg_dump/pg_restore ile korundu. Üç tarayıcı profilinde TR/EN 320/393 gerçek makbuz akışları doğrulandı. Fiziksel Android ve dinleme kullanıcı isteğiyle ertelendi; RELEASE-01 açık.",
+        "Kaynak profil draft; bütçe/tekil tahsis/kapanış-restore/eski istemci kontrolleri true, android_acceptance false. Aday paket altı draft dönem ve altı benzersiz öğeyi hash ile sabitler; canlı katalog yayımlanmadı."
       ],
       "planned_releases": [
         "2.4.0"
@@ -2790,7 +2797,7 @@
       "owner": "Backend / istemci / QA",
       "effort": "M",
       "priority": "P0",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "BASE-01"
       ],
@@ -2823,7 +2830,10 @@
       "evidence": [
         "docs/planning/release-240-fixed-crate-contract.md",
         "server/tests/test_inbox_open_delivery.py",
-        "e2e/casual-chest-opening.spec.js"
+        "e2e/casual-chest-opening.spec.js",
+        "docs/planning/release-240-s1-acceptance.md",
+        "server/tests/test_s1_release_acceptance.py",
+        "5 Kasım: 68 odaklı test gerçek yerel PostgreSQL ile geçti; 80 hak gerçek pg_dump/pg_restore ile korundu. Üç tarayıcı profilinde TR/EN 320/393 gerçek makbuz akışları doğrulandı. Fiziksel Android ve dinleme kullanıcı isteğiyle ertelendi; RELEASE-01 açık."
       ],
       "planned_releases": [
         "2.4.0"
@@ -2836,7 +2846,7 @@
       "owner": "Backend / istemci / QA",
       "effort": "M",
       "priority": "P0",
-      "status": "in_progress",
+      "status": "branch_ready",
       "depends_on": [
         "REWARD-06",
         "SEASON-00"
@@ -2870,7 +2880,11 @@
       "evidence": [
         "docs/planning/release-240-fixed-crate-contract.md",
         "server/tests/test_inbox_open_delivery.py",
-        "e2e/casual-chest-opening.spec.js"
+        "e2e/casual-chest-opening.spec.js",
+        "docs/planning/release-240-s1-acceptance.md",
+        "server/tests/test_s1_release_acceptance.py",
+        "5 Kasım: 68 odaklı test gerçek yerel PostgreSQL ile geçti; 80 hak gerçek pg_dump/pg_restore ile korundu. Üç tarayıcı profilinde TR/EN 320/393 gerçek makbuz akışları doğrulandı. Fiziksel Android ve dinleme kullanıcı isteğiyle ertelendi; RELEASE-01 açık.",
+        "docs/planning/release-240-crate-opening-acceptance.md"
       ],
       "planned_releases": [
         "2.4.0"
@@ -2883,7 +2897,7 @@
       "owner": "Backend / istemci / QA",
       "effort": "L",
       "priority": "P0",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "BASE-01",
         "SEASON-00"
@@ -2923,7 +2937,10 @@
         "server/app/season_missions.py",
         "server/tests/test_season_missions.py",
         "client/tests/season-missions.test.js",
-        "e2e/beta33-season.spec.js"
+        "e2e/beta33-season.spec.js",
+        "docs/planning/release-240-s1-acceptance.md",
+        "server/tests/test_s1_release_acceptance.py",
+        "5 Kasım: 68 odaklı test gerçek yerel PostgreSQL ile geçti; 80 hak gerçek pg_dump/pg_restore ile korundu. Üç tarayıcı profilinde TR/EN 320/393 gerçek makbuz akışları doğrulandı. Fiziksel Android ve dinleme kullanıcı isteğiyle ertelendi; RELEASE-01 açık."
       ],
       "planned_releases": [
         "2.4.0"
@@ -2953,7 +2970,8 @@
       "acceptance": [
         "TR/EN tek kaynak, hedef tarih takvim denetimi, yayın penceresi, eski API ve sürüm sonrası görünmezlik doğrulanır.",
         "Tamam onayı hesapta kalıcı ve idempotenttir; ağ hatası outbox, yeniden giriş/başka hesap ve mesaj kutusu bağımsızlığı; 320/393 px, modal/savaş sırası ve veri koruma kanıtlanır.",
-        "2.3.0 sonrası her sürümün incelenmiş ön duyurusu release_guard tarafından aranır; gerçek sürüm notları ayrı tutulur."
+        "2.3.0 sonrası her sürümün incelenmiş ön duyurusu release_guard tarafından aranır; gerçek sürüm notları ayrı tutulur.",
+        "5 Kasım kararı: 2.3.0’da yalnız Sistem mesajıyla 23 Kasım 22.00 bakım ön haberi; 2.4.0 sunucu/AAB sonrasında ayrı kimlikle turnuva penceresi. İlki ikincinin hesap onayını tüketmez; min_server_version kapısı ve takvimdeki iki saatlik pencere doğrulanır."
       ],
       "goals": [
         "presentation",
@@ -2972,7 +2990,10 @@
         "artifacts/prerelease-20261104/pg-ack.log",
         "docs/planning/prerelease-announcement-acceptance-20261105.md",
         "artifacts/prerelease-20261104/FINAL_STATUS.json",
-        "artifacts/prerelease-20261104/http-proof-aac-final/proof.json"
+        "artifacts/prerelease-20261104/http-proof-aac-final/proof.json",
+        "docs/planning/release-230-prerelease-system-mail.md",
+        "tools/prepare_legacy_announcement.py",
+        "tools/verify_legacy_announcement.py"
       ],
       "planned_releases": [
         "2.4.0"
@@ -3081,14 +3102,20 @@
       "gate_tasks": [
         "RELEASE-01"
       ],
-      "scope": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. Sürüm öncesi iki dilli duyuru, ilk açılışta hesaba bağlı bir defalık pencere ve Sistem mesajı.",
+      "scope": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. AAB değiştirmeden 2.3.0 Sistem mesajında 23 Kasım 22.00–24 Kasım 00.00 TR bakım ön duyurusu; 2.4.0 sunucu/AAB sonrasında ayrı kimlikli turnuva penceresi. S1 ve ilk haftalık turnuva 30 Kasım 03.00 TR.",
       "keep_closed": "Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu.",
       "exit": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. REWARD-06, UI-08 ve SEASON-01; tekil makbuz, güvenli açılış ve 1.800 sezonluk XP tavanı kabulü. COMM-01 kabulü ve ön duyuru standardı sürüm kapısındadır.",
       "target_release_on": "2026-11-23",
       "scope_freezes_on": "2026-11-16",
       "season_starts_on": "2026-11-30",
       "date_confidence": "hedef",
-      "delivery_document": "docs/planning/releases/2.4.0.md"
+      "delivery_document": "docs/planning/releases/2.4.0.md",
+      "server_transition": {
+        "starts_at": "2026-11-23T19:00:00Z",
+        "ends_at": "2026-11-23T21:00:00Z",
+        "timezone": "Europe/Istanbul",
+        "duration_minutes": 120
+      }
     },
     {
       "version": "2.5.0",

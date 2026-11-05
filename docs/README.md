@@ -6,6 +6,11 @@ gerçekten uygulanıp kanıtlanana kadar oyunda mevcut sayılmaz.
 
 ## Plan ve takip
 
+- [5 Kasım S1 kabul matrisi](planning/release-240-s1-acceptance.md): bütçe,
+  tekil tahsis, gerçek PG yedek/restore ve kasa/görsel kabulü; açık cihaz kapıları.
+- [2.3.0 bakım haberi ve 2.4.0 turnuva penceresi](planning/release-230-prerelease-system-mail.md):
+  23 Kasım 22.00 bakım planı, iki ayrı duyuru ve ev bilgisayarından gönderim.
+
 - [Sürüm öncesi duyuru standardı ve iki müzik paketi](planning/prerelease-announcements-and-music.md):
   hesaba bağlı tek gösterim/Sistem mesajı; 2.5.0 ve 2.7.0 özgün menü/savaş müzikleri.
 

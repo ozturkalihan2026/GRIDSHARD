@@ -12,6 +12,31 @@ NOW = datetime(2026, 11, 5, tzinfo=timezone.utc)
 ID = 'preview-2-4-0-season-one'
 
 
+@pytest.fixture(autouse=True)
+def popup_engine_campaign(monkeypatch):
+    # The real 2.4 campaign is mail-only by user choice. Keep the reusable popup
+    # engine covered with an explicit popup campaign, not a production override.
+    catalog = deepcopy(announcements.CATALOG)
+    catalog['announcements'][0]['delivery'] = 'popup_and_system'
+    monkeypatch.setattr(announcements,'CATALOG',catalog)
+
+
+def test_mail_only_campaign_is_visible_on_230_without_a_later_240_popup(inbox, monkeypatch):
+    profile, profiles, _ = inbox
+    monkeypatch.setattr(profiles, '_now_func', lambda: NOW)
+    announcements.CATALOG['announcements'][0]['delivery'] = 'system_mail'
+    for version in ('2.3.0','2.4.0'):
+        monkeypatch.setattr(gateway,'VERSION',version)
+        view = gateway._reward_inbox_view(profile)
+        assert view['announcement'] is None
+        notice = next(n for n in view['notices'] if n['notice_id']==ID)
+        assert notice['kind']=='announcement' and notice['delivery']=='system_mail'
+    older = deepcopy(announcements.CATALOG['announcements'][0])
+    older.update(notice_id='preview-older-popup',publish_at='2026-11-03T00:00:00Z',delivery='popup_and_system')
+    announcements.CATALOG['announcements'].append(older)
+    assert announcements.pending_announcement(profile,'2.3.0',NOW) is None
+
+
 def test_publication_window_and_release_cutoff_do_not_open_a_season():
     document = deepcopy(announcements.CATALOG)
     assert announcements.active_announcements('2.3.0', NOW, document)[0]['notice_id'] == ID
@@ -31,7 +56,7 @@ def test_publication_window_and_release_cutoff_do_not_open_a_season():
     assert not announcements.can_acknowledge('unknown', NOW)
 
 
-@pytest.mark.parametrize('change', ['duplicate', 'language', 'timezone', 'window', 'version', 'late-publication'])
+@pytest.mark.parametrize('change', ['duplicate', 'language', 'timezone', 'window', 'version', 'late-publication', 'delivery', 'server-transition', 'weekly-start', 'maintenance-duration', 'maintenance-timezone', 'minimum-server'])
 def test_bad_catalog_is_rejected(change):
     document = deepcopy(announcements.CATALOG)
     item = document['announcements'][0]
@@ -41,6 +66,12 @@ def test_bad_catalog_is_rejected(change):
     if change == 'window': item['expires_at'] = item['publish_at']
     if change == 'version': item['target_version'] = 'bad'
     if change == 'late-publication': item['publish_at'] = '2026-11-24T00:00:00Z'
+    if change == 'delivery': item['delivery'] = 'unknown'
+    if change == 'server-transition': item['server_transition_on'] = '2026-11-24'
+    if change == 'weekly-start': item['weekly_tournament_starts_at'] = '2026-12-01T00:00:00Z'
+    if change == 'maintenance-duration': item['maintenance_duration_minutes'] = 90
+    if change == 'maintenance-timezone': item['server_transition_starts_at'] = '2026-11-23T19:00:00'
+    if change == 'minimum-server': item['min_server_version'] = '2.5.0'
     with pytest.raises(ValueError): announcements.validate(document)
 
 
@@ -87,3 +118,31 @@ def test_ack_keeps_system_mail_and_protected_routes_reject_other_accounts(inbox,
     gateway.acknowledge_release_announcement(profile.player_id, ID)
     notice = next(i for i in gateway._inbox_notices(profile) if i['notice_id'] == ID)
     assert notice['seen'] and notice['kind'] == 'announcement'
+
+
+def test_maintenance_uses_2200_tr_and_crosses_midnight_with_two_hours():
+    item=announcements.CATALOG['announcements'][0]
+    assert item['server_transition_starts_at']=='2026-11-23T19:00:00Z'
+    assert item['server_transition_ends_at']=='2026-11-23T21:00:00Z'
+    assert item['maintenance_duration_minutes']==120
+    assert '22.00' in item['body_tr'] and '24 Kasım' in item['body_tr'] and '2 saat' in item['body_tr']
+
+
+def test_post_upgrade_tournament_popup_has_its_own_ack_and_server_gate(inbox, monkeypatch):
+    profile,profiles,_=inbox
+    clock=datetime(2026,11,24,tzinfo=timezone.utc)
+    monkeypatch.setattr(profiles,'_now_func',lambda:clock)
+    profile.acknowledged_announcement_ids=(ID,)
+    tour_id='preview-2-4-0-tournament-launch'
+    assert announcements.pending_announcement(profile,'2.3.0',clock) is None
+    assert announcements.pending_announcement(profile,'2.4.0',datetime(2026,11,23,18,59,tzinfo=timezone.utc)) is None
+    selected=announcements.pending_announcement(profile,'2.4.0',clock)
+    assert selected['notice_id']==tour_id and selected['phase']=='season-preview'
+    assert '30 Kasım 2026' in selected['body_tr'] and '36/24/18' in selected['body_tr']
+    assert 'Takım turnuvası bu açılışla birlikte başlamayacak' in selected['body_tr']
+    monkeypatch.setattr(gateway,'VERSION','2.4.0')
+    assert gateway._reward_inbox_view(profile)['announcement']['notice_id']==tour_id
+    gateway.acknowledge_release_announcement(profile.player_id,tour_id)
+    assert gateway._reward_inbox_view(profile)['announcement'] is None
+    assert set(profile.acknowledged_announcement_ids)=={ID,tour_id}
+    assert announcements.pending_announcement(profile,'2.5.0',clock) is None

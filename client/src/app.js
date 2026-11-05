@@ -2245,11 +2245,13 @@
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
     const host = trigger.closest("dialog[open]")?.getBoundingClientRect();
+    const dock = !host ? document.getElementById("app-bottom-dock")?.getBoundingClientRect() : null;
     const bounds = {
       left:Math.max(margin, host ? host.left + margin : margin),
       right:Math.min(viewportWidth - margin, host ? host.right - margin : viewportWidth - margin),
       top:Math.max(margin, host ? host.top + margin : margin),
-      bottom:Math.min(viewportHeight - margin, host ? host.bottom - margin : viewportHeight - margin),
+      bottom:Math.min(viewportHeight - margin, host ? host.bottom - margin
+        : dock?.height > 0 && dock.top > margin ? dock.top - margin : viewportHeight - margin),
     };
     const below = Math.max(0, bounds.bottom - target.bottom - margin);
     const above = Math.max(0, target.top - margin - bounds.top);

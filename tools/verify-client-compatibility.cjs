@@ -42,6 +42,21 @@ assert.equal(base.protocol,'http:');assert.equal(base.hostname,'127.0.0.1');
   const team=await requestJson('/team-profiles/ai-team-anka');assert.ok(team.team_id||team.name);
   assert.ok(calls.find(c=>c.path==='/team-profiles/ai-team-anka'&&c.authorized&&c.status===200));
   const real=await requestJson('/health');
+  if(spec.system_notice_id){
+   const inbox=await requestJson(`/profile/${playerId}/reward-inbox`);
+   const notices=inbox.notices.filter(n=>n.notice_id===spec.system_notice_id);
+   assert.equal(notices.length,1);assert.equal(notices[0].kind,'announcement');
+   assert.match(notices[0].body_tr,/23 Kasım 2026/);assert.match(notices[0].body_tr,/30 Kasım 2026/);
+   assert.match(notices[0].body_en,/November 23, 2026/);
+   assert.match(notices[0].body_tr,/22\.00/);assert.match(notices[0].body_tr,/2 saat/);
+   assert.equal(notices[0].server_transition_starts_at,'2026-11-23T19:00:00Z');
+   assert.equal(notices[0].server_transition_ends_at,'2026-11-23T21:00:00Z');
+   assert.equal(inbox.notices.some(n=>n.notice_id==='preview-2-4-0-tournament-launch'),false);
+   assert.equal(Object.hasOwn(inbox,'announcement'),false,'Legacy server must not require the new popup contract');
+   await requestJson(`/profile/${playerId}/reward-inbox/notices/seen`,{method:'POST',body:JSON.stringify({player_id:playerId,notice_ids:[spec.system_notice_id]})});
+   const reread=await requestJson(`/profile/${playerId}/reward-inbox`);
+   assert.equal(reread.notices.find(n=>n.notice_id===spec.system_notice_id).seen,true);
+  }
   for(const changed of [{...real,pvp_protocol_version:99},{...real,status:'degraded'}]){
    const invalid=new context.RelayServerBootGate({healthState:new context.RelayServerHealthState(),expectedVersion:spec.client_version,
     compatibleServerVersions:spec.current_client?['2.2.1','2.3.0']:[],requestJson:async()=>changed});
@@ -50,7 +65,7 @@ assert.equal(base.protocol,'http:');assert.equal(base.hostname,'127.0.0.1');
   if(native){assert.ok(secure.size>0);assert.equal(store.getItem('gridshard.auth.device-secret'),null);}
   results.push({transport:native?'native-origin-emulation':'web',boot_ready:true,normal_guest_authentication:true,profile_bootstrap:true,
    stable_account_on_reload:true,public_team_authenticated:true,protocol_and_degraded_rejected:true,
-   secure_storage_emulated:native,api_requests: calls.length});
+   secure_storage_emulated:native,api_requests: calls.length,...(spec.system_notice_id?{legacy_system_notice_received:true,notice_read_survives_reload:true}: {})});
  }
  let browserProof=null;
  if(spec.browser_proof){

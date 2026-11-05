@@ -111,7 +111,7 @@ backlog ile eşleşmek zorundadır.
 <!-- release-calendar:begin -->
 | Sürüm | Çalışma dönemi | Kapsam kapanışı | Hedef yayın | Sezon başlangıcı | Oyuncuya gelen ana içerik | Kesinlik |
 | --- | --- | --- | --- | --- | --- | --- |
-| **[2.4.0](planning/releases/2.4.0.md)** | 04.11.2026–16.11.2026 | 16.11.2026 | **23.11.2026** | 30.11.2026, 03.00 TR | Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. Sürüm öncesi iki dilli duyuru, ilk açılışta hesaba bağlı bir defalık pencere ve Sistem mesajı. | hedef |
+| **[2.4.0](planning/releases/2.4.0.md)** | 04.11.2026–16.11.2026 | 16.11.2026 | **23.11.2026** | 30.11.2026, 03.00 TR | Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. AAB değiştirmeden 2.3.0 Sistem mesajında 23 Kasım 22.00–24 Kasım 00.00 TR bakım ön duyurusu; 2.4.0 sunucu/AAB sonrasında ayrı kimlikli turnuva penceresi. S1 ve ilk haftalık turnuva 30 Kasım 03.00 TR. | hedef |
 | **[2.5.0](planning/releases/2.5.0.md)** | 24.11.2026–14.12.2026 | 14.12.2026 | **21.12.2026** | 28.12.2026, 03.00 TR | Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. En az bir yeni menü ve bir özgün savaş bestesi; merak/umut ve kontrollü rekabet. | hedef |
 | **[2.6.0](planning/releases/2.6.0.md)** | 22.12.2026–11.01.2027 | 11.01.2027 | **18.01.2027** | 25.01.2027, 03.00 TR | Günlük Devre Deneyi: önce 7 özgün problem, ilk başarı ödülü ve keşif günlüğü; Kor Fırlatıcı; üçüncü sezon için 6 yeni oyuncu kozmetiği. | tahmin |
 | **[2.7.0](planning/releases/2.7.0.md)** | 19.01.2027–08.02.2027 | 08.02.2027 | **15.02.2027** | 22.02.2027, 03.00 TR | Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi. En az bir yeni menü ve iki özgün sefer savaş bestesi; gizem, keşif gerilimi ve cesaret. | tahmin |
@@ -126,6 +126,8 @@ backlog ile eşleşmek zorundadır.
 | S4 | 22.02.2027–22.03.2027, 03.00 TR | Darbe Muhafızı — ayrıntılı üretim eforu 4 Ocak kontrolünde yeniden tahmin edilecek |
 | S5 | 22.03.2027–19.04.2027, 03.00 TR | Toparlanma Feneri — ayrıntılı üretim eforu 4 Ocak kontrolünde yeniden tahmin edilecek |
 | S6 | 19.04.2027–17.05.2027, 03.00 TR | Yeni modül konsepti 1 Mart tasarım kontrolünde belirlenecek; hazır olmadan sezon açılmaz |
+
+**2.4.0 sunucu bakım penceresi:** 23.11.2026 22.00 → 24.11.2026 00.00, Türkiye saati; yaklaşık 2 saat. Sezon açılışı ayrı tarihtedir.
 
 <!-- release-calendar:end -->
 

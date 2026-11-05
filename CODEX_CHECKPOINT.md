@@ -1,4 +1,49 @@
-# Güncel kabul — 5 Kasım 2026
+# Güncel devir — S1 kabulü ve iki aşamalı duyuru, 5 Kasım 2026
+
+- Dal `codex/s1-release-acceptance`; taban `afad546` (PR #2 sonrası main).
+  Kullanıcı bu turdaki hazırlığı iş bilgisayarında, canlı ön duyuru dağıtımını
+  **ev bilgisayarında** yapmamızı istedi. Bu bilgisayarda canlı sunucuya bağlanılmadı.
+- [S1 matrisi](docs/planning/release-240-s1-acceptance.md): REWARD-06 ve
+  SEASON-01 yazılım kabulü done; SEASON-00 ve UI-08 branch_ready. Gerçek yerel
+  PostgreSQL ile 68 test geçti; 80 hak kapanış/rollback/reload ve gerçek
+  pg_dump/pg_restore ile korundu. 22 haftalık/ilk 10 kasası sabit bütçeyle açıldı.
+- `first_season_launch_v1.json`: reward_budget, unique_cosmetics,
+  rollover_restore, old_clients true; android_acceptance false; status draft.
+  Altı dönem/altı oyuncu öğesi/234 ek sıradan parça, hash’li aday pakette sabit.
+  Yetkili kozmetik kataloğu ve canlı sezon yayımlanmadı; takım ayrıca kapalı.
+- Yeni `e2e/s1-acceptance.spec.js`: gerçek yerel API makbuzları; üç tarayıcıda
+  TR/EN 320/393 boyutlarının 12 birleşimi, ayrıca azaltılmış hareket geçti.
+  Önizlemenin alt dock’u kapatması düzeltildi. Fiziksel Android ve hoparlör/
+  kulaklık kullanıcı isteğiyle ertelendi; emülasyonla kapatılmayacak.
+- [İki duyuru ve evden dağıtım](docs/planning/release-230-prerelease-system-mail.md):
+  `preview-2-4-0-season-one` yalnız 2.3.0 Sistem mesajında bakım ön haberi.
+  **23 Kasım 22.00 → 24 Kasım 00.00 TR**, yaklaşık 2 saat;
+  UTC 23 Kasım 19.00–21.00. AAB değiştirmeyen üç dosyalık eski sunucu paketi hazır.
+- `preview-2-4-0-tournament-launch` ayrı popup+Sistem kampanyasıdır. 2.4.0
+  sunucusu ve yeni AAB sonrasında; min_server_version 2.4.0, yayın başlangıcı
+  23 Kasım 19.00 UTC. S1/ilk haftalık turnuva **30 Kasım 03.00 TR**, haftalık
+  katılım/kupa/ödüller, ilk 10, kozmetikler ve ayrı takım başlangıcı anlatılır.
+  Eski haberin okunması/onayı yeni pencerenin onayını tüketmez. İkisi aynı kimlik değildir.
+- Bakım penceresi takvim/backlog/katalogda bağlı ve doğrulanır. Genel sonraki
+  sürüm popup standardı korunur; 2.4.0 turnuva penceresi tek başına önceki ön
+  duyuru yayın kapısını karşılamaz. Tarih kayarsa iki dil ve kanonik takvim birlikte değişir.
+- Yerel: 2089 Python PASS / 50 dış servis SKIP, 779 istemci PASS, build 11 PASS;
+  yeni turnuva popup’ı üç tarayıcıda TR/EN 320/393; eski 2.3.0’ın değiştirilmemiş
+  arayüzü ve gerçek eski API ile System mesajı/okunma kalıcılığı geçti.
+  Yeni dalın uzak CI sonucu ayrıca kaydedilecek. Eski CI kayıtları aşağıda tarihseldir.
+- Evde önce bu dalı güncelle. `tools/prepare_legacy_announcement.py` ile
+  `qa_reports/legacy-230-announcement-handoff` üret; `tools/verify_legacy_announcement.py --browser`
+  ile doğrula. `qa_reports` Git ile taşınmaz, komutlarla aynı paket yeniden üretilir.
+  Canlı main SHA-256, manifestteki incelenmiş 2.3.0 tabanıyla eşleşmiyorsa
+  üzerine yazma; gerçek tabandan aynı küçük yamayı yeniden hazırlayıp test et.
+  Bütün 2.4/S1 geliştirme sunucusunu bakım duyurusu diye erkenden dağıtma.
+- Paket etiketi 2.3.0/code14, canlı ortam/AAB/başlangıç ayarları değişmedi.
+  RELEASE-01 ve fiziksel cihaz/yayın kapıları açıktır; yeni sanat veya ekonomi
+  baz çizgisini baştan üretmek sıradaki iş değildir.
+
+---
+
+# Önceki kabul — 5 Kasım 2026
 
 - COMM-01 ve COMPAT-01 yazılım kabulü done. Dal `codex/prerelease-announcements`.
   Uygulama kaynağı `0cbe34cc8113dccdd7e62f0022a870ad19eec3e6`; CI 41919146605 bütün işler PASS.

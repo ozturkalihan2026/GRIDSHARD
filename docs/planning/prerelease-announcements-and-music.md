@@ -1,5 +1,12 @@
 # Sürüm öncesi duyuru standardı ve iki müzik paketi
 
+**5 Kasım güncel karar:** [2.3.0 bakım ön haberi ve 2.4.0 turnuva penceresi](release-230-prerelease-system-mail.md)
+iki ayrı kimlik kullanır. İlk haber AAB değiştirmeden Sistem mesajıdır;
+23 Kasım 22.00–24 Kasım 00.00 TR bakım planını anlatır. Yeni 2.4.0 sunucu/AAB
+sonrasında ayrı, bir kez gösterilen turnuva rehberi açılır. Aşağıdaki ilk
+tek-kimlikli 4 Kasım tasarımı bu kampanya için bu kararla değiştirilmiştir;
+genel popup/onay motoru ve sonraki sürümlerin standardı korunur.
+
 4 Kasım 2026 kullanıcı kararı. Uygulama etiketleri hâlâ 2.3.0/code14;
 2.4.0 paket hedefi 23 Kasım, S1 hedefi 30 Kasım 03.00 Türkiye saatidir.
 Hedef tarih, sezonu açan ayar veya kesin yayın taahhüdü değildir.

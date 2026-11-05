@@ -64,11 +64,17 @@ def main() -> None:
     from app import release_announcements
     from app.version import VERSION
     fixture_catalog = deepcopy(release_announcements.CATALOG)
+    # Generic popup engine tests retain one explicit pre-release fixture.
+    # Production has separate pre-maintenance mail and post-upgrade campaigns.
+    fixture_catalog['announcements'] = fixture_catalog['announcements'][:1]
     major, minor, _ = map(int, VERSION.split('.'))
     for item in fixture_catalog['announcements']:
-        item.update(status='published', target_version=f'{major}.{minor + 1}.0',
+        item.update(status='published', delivery='popup_and_system', target_version=f'{major}.{minor + 1}.0',
                     publish_at='2000-01-01T00:00:00Z', expires_at='2100-01-01T00:00:00Z')
     release_announcements.CATALOG = release_announcements.validate(fixture_catalog)
+    if os.environ.get('GRIDSHARD_E2E_S1_ACCEPTANCE') == '1':
+        from s1_browser_fixture import install
+        install()
     config = uvicorn.Config("app.main:app", host="127.0.0.1", port=base.port or 8879, access_log=False)
     server = uvicorn.Server(config)
     default_handle_exit = server.handle_exit

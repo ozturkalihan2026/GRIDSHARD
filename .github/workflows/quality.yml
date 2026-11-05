@@ -53,11 +53,15 @@ jobs:
           node-version: "22"
       - name: Installed clients and old APIs over isolated real HTTP
         run: python tools/verify_client_compatibility.py --fetch-missing
+      - name: Legacy 2.3.0 System announcement without a client update
+        run: python tools/verify_legacy_announcement.py
       - name: Preserve client compatibility proof
         uses: actions/upload-artifact@v4
         with:
           name: gridshard-client-compatibility-${{ github.sha }}
-          path: qa_reports/client-compatibility/proof.json
+          path: |
+            qa_reports/client-compatibility/proof.json
+            qa_reports/legacy-230-proof/proof.json
           if-no-files-found: error
           retention-days: 14
       - name: Run release and operator tool contracts
@@ -138,6 +142,7 @@ jobs:
           server/tests/test_postgres_platform.py
           server/tests/test_postgres_social_api.py
           server/tests/test_postgres_persistent_operations.py
+          server/tests/test_s1_release_acceptance.py
           server/tests/test_postgres_runtime_integration.py
           server/tests/test_postgres_battle_results.py
           server/tests/test_review_access_postgres.py
@@ -257,6 +262,11 @@ jobs:
           e2e/beta381-battle-events.spec.js e2e/battle-density.spec.js
           e2e/mobile-battle.spec.js
           ${{ matrix.projects }}
+      - name: Published S1 receipts and mobile layouts (isolated fixture)
+        if: success() || failure()
+        env:
+          GRIDSHARD_E2E_S1_ACCEPTANCE: '1'
+        run: pnpm exec playwright test e2e/s1-acceptance.spec.js ${{ matrix.projects }}
       - name: Preserve browser performance and failure evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,5 +1,11 @@
 # 2.4.0 / SEASON-01 — Devre Emirleri uygulaması
 
+**5 Kasım güncellemesi:** SEASON-01 yazılım kabulü tamamlandı.
+[S1 kabul matrisi](release-240-s1-acceptance.md) bütçe, gerçek PG rollback/reload,
+kapanış ve 8/12 kartın üç tarayıcıdaki gerçek sunucu akışını bağlar. Aşağıdaki
+ilk dilim kayıtları tarihsel kanıttır. Fiziksel Android güncellemesi ve hesap
+dönüşü kullanıcı isteğiyle ertelenmiş RELEASE-01 kapısında kalır.
+
 4 Kasım 2026. İlk kod dilimi hazır; görev **in_progress**. Canlı dağıtım ve
 fiziksel cihaz kabulü yapılmadı. [S1 bütçesi/hesabı](season-1-rewards-and-xp.md),
 [kaynak tanım](season-1-engagement-v1.json), [2.4.0 briefi](releases/2.4.0.md),

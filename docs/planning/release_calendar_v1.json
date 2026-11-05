@@ -14,7 +14,7 @@
       "scope_freezes_on": "2026-11-16",
       "tests_start_on": "2026-11-19",
       "target_release_on": "2026-11-23",
-      "content": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. Sürüm öncesi iki dilli duyuru, ilk açılışta hesaba bağlı bir defalık pencere ve Sistem mesajı.",
+      "content": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. AAB değiştirmeden 2.3.0 Sistem mesajında 23 Kasım 22.00–24 Kasım 00.00 TR bakım ön duyurusu; 2.4.0 sunucu/AAB sonrasında ayrı kimlikli turnuva penceresi. S1 ve ilk haftalık turnuva 30 Kasım 03.00 TR.",
       "required": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. REWARD-06, UI-08 ve SEASON-01; tekil makbuz, güvenli açılış ve 1.800 sezonluk XP tavanı kabulü. COMM-01 kabulü ve ön duyuru standardı sürüm kapısındadır.",
       "optional": "Takım turnuvası için ayrı hazırlık; yeterli gerçek takım yoksa beklemede kalır.",
       "excluded": "Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu.",
@@ -152,20 +152,21 @@
         },
         {
           "id": "S1-DUYURU",
-          "title": "Sürüm ön duyurusunu tek gösterim ve Sistem mesajıyla standartlaştır",
+          "title": "2.3.0 bakım ön haberi ve 2.4.0 turnuva penceresini ayrı sun",
           "kind": "required",
           "tasks": [
             "COMM-01"
           ],
           "steps": [
-            "İki dilli plan duyurusunu kalıcı kimlik ve yayın penceresiyle hazırla; hedef tarihleri kanonik takvimle denetle.",
-            "İlk uygun ana ekranda göster; Tamam onayını hesapta sakla ve ağ hatasında cihaz outbox ile yeniden dene. Sistem mesajını bağımsız tut.",
-            "Sürüm kapısına ön duyuru zorunluluğu, 320/393 px ve TR/EN, hesap/reload/rollback/çift istek kabulünü bağla."
+            "2.3.0 Sistem mesajını AAB değiştirmeden sunacak üç dosyalık eski sunucu paketini hazırla; 23 Kasım 22.00–24 Kasım 00.00 TR, yaklaşık iki saat bilgisini takvimle denetle.",
+            "2.4.0 sunucu ve yeni istemci sonrasında ayrı kimlikli turnuva penceresi göster; 30 Kasım 03.00 başlangıcı, haftalık/ilk 10 ödülleri ve ayrı takım başlangıcını anlat. Eski mesajın okunması bu pencereyi kapatmasın.",
+            "Değişmemiş 2.3.0 arayüzü/API, tarih/sürüm kapısı, 320/393 TR/EN ve hesap onayını doğrula. Kullanıcı kararıyla eski sunucu paketinin canlıya gönderimini ev bilgisayarına bırak."
           ],
           "acceptance": [
             "TR/EN tek kaynak, hedef tarih takvim denetimi, yayın penceresi, eski API ve sürüm sonrası görünmezlik doğrulanır.",
             "Tamam onayı hesapta kalıcı ve idempotenttir; ağ hatası outbox, yeniden giriş/başka hesap ve mesaj kutusu bağımsızlığı; 320/393 px, modal/savaş sırası ve veri koruma kanıtlanır.",
-            "2.4.0 ve sonraki her sürümün incelenmiş ön duyurusu release_guard tarafından aranır; gerçek sürüm notları ayrı tutulur."
+            "2.4.0 ve sonraki her sürümün incelenmiş ön duyurusu release_guard tarafından aranır; gerçek sürüm notları ayrı tutulur.",
+            "Bakım penceresi takvim/backlog/katalogda aynı; 2.3 Sistem haberi ve 2.4 turnuva penceresi ayrı kimliklidir. Evden canlı dağıtım ve fiziksel cihaz kapısı açıkça ayrılır."
           ]
         },
         {
@@ -240,7 +241,13 @@
           ],
           "output": "Gerçek cihaz/CI/AAB; 23 Kasım kontrollü paket yayın hedefi."
         }
-      ]
+      ],
+      "server_transition": {
+        "starts_at": "2026-11-23T19:00:00Z",
+        "ends_at": "2026-11-23T21:00:00Z",
+        "timezone": "Europe/Istanbul",
+        "duration_minutes": 120
+      }
     },
     {
       "version": "2.5.0",
