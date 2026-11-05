@@ -57,7 +57,8 @@ profili `published` yapmak doğrulamada reddedilir.
 | Günlük/sezonluk emirler | Geçti | Maç/gün/sezon tekilliği, geç toplama, 1.800 tavanı; PG rollback/reload ve 8/12 kart |
 | Topla ve gerçek ödül sonucu | Geçti | Gerçek yerel API: haftalık modül, liderlik kozmetiği ve ayrıca sentetik çekirdek kabul kasası |
 | TR/EN, 320×568 ve 393×852 | Geçti | Chromium, Android Chrome ve WebKit öykünmesinde 12 birleşim; EN320 azaltılmış hareket üç profilde de geçti |
-| Önizleme varken alt gezinme | Düzeltildi/geçti | Kaydırılabilir önizleme korunur; panel alt dock’u kapatamaz |
+| Önizleme varken alt gezinme | Düzeltildi/geçti | Kaydırılabilir önizleme korunur; panel alt dock’u kapatamaz; sabit panel görünür sandıkla kayar, sandık görünümden çıkınca kapanır |
+| Gelen/Giden İstek sekmelerindeki çizgi | Düzeltildi/geçti | [UI-09](release-240-friend-request-tabs.md); iki gerçek sekme seçimi, TR/EN 320/393 ve üç tarayıcı |
 | 2.3/2.2.1 yazılım uyumu | Geçti | COMPAT-01 ve değişmemiş 2.3.0 + eski API üzerinde Sistem mesajı; native origin emülasyonu fiziksel kanıt değildir |
 | Gerçek Android kurulum/yükseltme/hesap dönüşü | Kullanıcı isteğiyle ertelendi | Yerel emülasyonla kapatılmaz; RELEASE-01 kapısında kalır |
 | Hoparlör/kulaklık dinlemesi | Kullanıcı isteğiyle ertelendi | Sayısal ses/miks kabulü öznel cihaz dinlemesi değildir |
@@ -67,6 +68,16 @@ profili `published` yapmak doğrulamada reddedilir.
 
 Son yerel tam regresyon: **2089 Python PASS / 50 dış servis SKIP**, **779 istemci PASS**,
 **11 paketleme PASS**. Gerçek yerel PG kabul koşusu ayrıca **68 PASS**, atlama yoktur.
+Son UI-09 eki sonrasında 779 istemci ve 65 araç testi, 11 paketleme kontrolü
+yeniden geçti. `56ebd24` üzerinde güncel S1 tarayıcı matrisinin 12 birleşimi
+tek koşuda geçti (`qa_reports/s1-browser-evidence-56ebd24/`). Ancak aynı
+kaynağın CI’ında iki TR320 senaryosu gecikmiş kaydırmada panel kapandığı için
+kaldı; bu yerel PASS tek başına uzak kabul değildir. Kaydırma işleyicisi
+görünür sandığın sabit panelini yeniden konumlandırır; yeni regresyon gerçek
+üst kapsayıcı kaydırmasıyla panel kimliğini, sonra görünümden çıkışta kapanmayı
+doğrular. Panel/dock
+ölçümünde güncel DOM öğeleri aynı tarayıcı görevi içinde okunur; görünürlük,
+44 px gezinme yüksekliği ve örtüşmeme koşulları beklenir, eylem zorlanmaz.
 Yeni dalın uzak CI sonucu ayrıca kaydedilir; eski kaynak CI’ı bu değişikliklerin
 kabulü diye sunulmaz.
 

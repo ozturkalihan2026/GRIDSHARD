@@ -6,11 +6,15 @@
 - Son kullanıcı eki **UI-09**: Gelen/Giden İstek sekmelerindeki sarılan metnin
   üstüne taşan alt çizgi kaldırıldı. Seçili turkuaz yüzey/kenar, odak ve rozet
   korunur. Üç tarayıcıda TR/EN 320/393 geçti; 2.4.0 paketi/takvim/checklist bağlı.
-- PR #3 ilk CI’ında sunucu/istemci/83 gerçek PG-Redis-imaj/Safari ve 76 genel
-  Chromium/Android senaryosu geçti; bir yeni S1 testinde iki ayrı kareden alınan
-  boundingBox ölçümü null geldi. Test gerçek touch tap ve aynı karede iki
-  görünür dikdörtgeni ölçer; 44 px ve örtüşmeme kabulleri korunur. Hatalı Android
-  EN393 senaryosu yerelde üç tekrar geçti; güncel kaynağın CI’ı yeniden çalışacak.
+- PR #3 / `56ebd24` CI’ında sunucu, istemci, 83 gerçek PG/Redis/imaj,
+  Safari 35+4 ve Chromium/Android 78 genel senaryo geçti. İki Türkçe 320 px
+  S1 senaryosu kaldı; yerelde geçen 12 birleşim uzak kabul sayılmaz.
+  Çağrı izi gecikmiş `season-reward-panel` kaydırmasının tıklamayla sabitlenen
+  paneli kapattığını doğruladı. Düzeltme: sandık görünürken sabit paneli yeniden
+  konumlandır; sandık görünümden çıkınca kapat. Yeni akış, pin sonrasında gerçek
+  üst kapsayıcı kaydırması üretip aynı paneli ve görünümden çıkışta kapanmasını
+  doğrular. Güncel kaynak CI sonucu ayrıca kaydedilecek; önceki başarısız
+  koşular kabul sayılmaz.
 - [S1 matrisi](docs/planning/release-240-s1-acceptance.md): REWARD-06 ve
   SEASON-01 yazılım kabulü done; SEASON-00 ve UI-08 branch_ready. Gerçek yerel
   PostgreSQL ile 68 test geçti; 80 hak kapanış/rollback/reload ve gerçek

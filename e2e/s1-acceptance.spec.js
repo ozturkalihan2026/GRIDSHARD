@@ -25,6 +25,13 @@ for(const width of [320,393])for(const language of ['tr','en'])test(`S1 real rec
  const previewTrigger=page.locator('#season-reward-track .reward-chest-button').first();
  if(isMobile)await previewTrigger.tap();else await previewTrigger.click();
  await expect(page.locator('.reward-preview-panel')).toBeVisible();
+ const previewId=await page.locator('.reward-preview-panel').getAttribute('id');
+ // Deliver a real ancestor scroll after pinning, as delayed focus scrolling
+ // does on narrow screens. The same panel must remain usable and anchored.
+ await page.locator('#season-reward-panel').evaluate(panel=>new Promise(resolve=>{
+  panel.addEventListener('scroll',resolve,{once:true});panel.scrollTop+=4;
+ }));
+ await expect(page.locator('.reward-preview-panel')).toHaveAttribute('id',previewId);
  // Resolve both current nodes and their layout in one browser task. A locator
  // ElementHandle can detach between resolution and evaluation during layout.
  // Retry only the read-only assertion; a missing/covered panel still fails.
@@ -40,6 +47,11 @@ for(const width of [320,393])for(const language of ['tr','en'])test(`S1 real rec
   expect(layout.dockHeight).toBeGreaterThanOrEqual(44);expect(layout.previewBottom).toBeLessThanOrEqual(layout.dockTop);
  }).toPass({timeout:10000});
  await page.screenshot({path:info.outputPath('s1-road.png')});
+ if(!isMobile)await page.mouse.move(0,0);
+ await page.locator('#season-reward-panel').evaluate(panel=>new Promise(resolve=>{
+  panel.addEventListener('scroll',resolve,{once:true});panel.scrollTop=panel.scrollHeight;
+ }));
+ await expect(page.locator('.reward-preview-panel')).toHaveCount(0);
  await page.locator('[data-shell-screen="menu"]').click();await page.locator('#reward-inbox-button').click();
  await page.locator('#inbox-tab-reward').click();
  const receipts=[];

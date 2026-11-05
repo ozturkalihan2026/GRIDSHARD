@@ -2403,7 +2403,22 @@
     hideRewardPreview();
   }, true);
   document.addEventListener("scroll", (event) => {
-    if (rewardPreviewState?.panel.contains(event.target)) return;
+    const state = rewardPreviewState;
+    if (!state || state.panel.contains(event.target)) return;
+    // Focus/scroll-into-view can deliver its scroll event after the tap that
+    // pinned this panel. Keep it anchored while its chest remains visible.
+    if (state.pinned && event.target.contains?.(state.trigger)) {
+      const target = state.trigger.getBoundingClientRect();
+      const clip = event.target === document
+        ? { left:0, top:0, right:window.innerWidth, bottom:window.innerHeight }
+        : event.target.getBoundingClientRect();
+      if (state.trigger.isConnected && target.width > 0 && target.height > 0
+        && target.bottom > Math.max(0, clip.top) && target.top < Math.min(window.innerHeight, clip.bottom)
+        && target.right > Math.max(0, clip.left) && target.left < Math.min(window.innerWidth, clip.right)) {
+        positionRewardPreview(state.trigger, state.panel);
+        return;
+      }
+    }
     hideRewardPreview();
   }, true);
   window.addEventListener("resize", hideRewardPreview);

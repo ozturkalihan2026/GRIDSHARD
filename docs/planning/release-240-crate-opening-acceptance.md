@@ -21,6 +21,10 @@ gerekmez. Haftalık Lazer 36 parça, sezon liderliği Güneş Ocağı ve ayrı b
   hata ve kısmi başarı sözleşmesi mevcut istemci regresyonlarıyla korunur.
 - Dar ekranda ödül önizlemesi alt dock’u kapatıyordu. Önizlemenin kullanılabilir
   alt sınırı dock’un üstünde tutuldu; panelin içerik kaydırması korunur.
+- Dar ekranın gecikmiş odak kaydırması tıklamayla sabitlenen önizlemeyi de
+  kapatıyordu. Sandık görünürken panel kaydırmayla yeniden konumlandırılır;
+  sandık görünümden çıkınca kapanır. Regresyon gerçek üst kapsayıcı kaydırması
+  üretir; aynı panel kimliği, dock sınırı ve görünümden çıkışta kapanma sınanır.
 
 `e2e/s1-acceptance.spec.js` sunucu makbuzlarını test ekine yazar. Görsel ekran
 görüntüsü tek başına ekonomik teslim kanıtı sayılmaz; cüzdan/tekrar/restore
