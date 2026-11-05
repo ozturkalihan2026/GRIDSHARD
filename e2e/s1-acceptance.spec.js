@@ -25,14 +25,20 @@ for(const width of [320,393])for(const language of ['tr','en'])test(`S1 real rec
  const previewTrigger=page.locator('#season-reward-track .reward-chest-button').first();
  if(isMobile)await previewTrigger.tap();else await previewTrigger.click();
  await expect(page.locator('.reward-preview-panel')).toBeVisible();
- // Both rectangles belong to one browser frame. Separate CDP boundingBox
- // calls can observe different layout frames on an emulated touch viewport.
- const layout=await page.locator('.reward-preview-panel').evaluate(panel=>{
-  const preview=panel.getBoundingClientRect(),dock=document.getElementById('app-bottom-dock').getBoundingClientRect();
-  return {previewWidth:preview.width,previewHeight:preview.height,previewBottom:preview.bottom,dockHeight:dock.height,dockTop:dock.top};
- });
- expect(layout.previewWidth).toBeGreaterThan(0);expect(layout.previewHeight).toBeGreaterThan(0);
- expect(layout.dockHeight).toBeGreaterThanOrEqual(44);expect(layout.previewBottom).toBeLessThanOrEqual(layout.dockTop);
+ // Resolve both current nodes and their layout in one browser task. A locator
+ // ElementHandle can detach between resolution and evaluation during layout.
+ // Retry only the read-only assertion; a missing/covered panel still fails.
+ await expect(async()=>{
+  const layout=await page.evaluate(()=>{
+   const panel=document.querySelector('.reward-preview-panel'),dock=document.getElementById('app-bottom-dock');
+   if(!panel||!dock)return null;
+   const preview=panel.getBoundingClientRect(),navigation=dock.getBoundingClientRect();
+   return {previewWidth:preview.width,previewHeight:preview.height,previewBottom:preview.bottom,dockHeight:navigation.height,dockTop:navigation.top};
+  });
+  expect(layout).not.toBeNull();
+  expect(layout.previewWidth).toBeGreaterThan(0);expect(layout.previewHeight).toBeGreaterThan(0);
+  expect(layout.dockHeight).toBeGreaterThanOrEqual(44);expect(layout.previewBottom).toBeLessThanOrEqual(layout.dockTop);
+ }).toPass({timeout:10000});
  await page.screenshot({path:info.outputPath('s1-road.png')});
  await page.locator('[data-shell-screen="menu"]').click();await page.locator('#reward-inbox-button').click();
  await page.locator('#inbox-tab-reward').click();
