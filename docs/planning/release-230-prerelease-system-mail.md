@@ -72,10 +72,12 @@ Kanıt: `qa_reports/legacy-230-handoff-proof/proof.json`; paket manifesti:
 saati yalnız test sürecinde 5 Kasım’a sabitlenir; canlı yayın penceresi atlanmaz.
 CI aynı eski istemci/gerçek HTTP kanıtını yeniden üretir.
 
-**Canlıya uygulanmadı.** Kullanıcı paketin ev bilgisayarından gönderilmesini istedi.
-Paketin hazır olması oyuncuların mesajı aldığı anlamına gelmez. Evde dağıtımda
-önce canlı kaynak hash’i, ardından yedek/geri dönüş ve salt bu üç dosyanın
-dağıtımı doğrulanır; kullanıcıların veri ve hesapları korunur.
+**5 Kasım 2026 ev bilgisayarından canlıya uygulandı.** Gerçek canlı tabanın
+CRLF satır sonları korunarak üç dosyalık yama hazırlandı; yedek/izole restore,
+55 mevcut profil ve korunan tablolar, eski sürüm uyumu ve gerçek Sistem mesajı
+doğrulandı. [Dağıtım kaydı ve kabul sınırları](release-230-prerelease-deployment-20261105.md).
+Sonraki dağıtımda yine canlı kaynak hash’i ve mevcut Compose/imaj keşfi gerekir;
+bu rehberdeki ilk LF paketinin hash’i doğrudan canlı dosyanın yerine geçmez.
 
 Ön duyurunun görünmesi için bu küçük 2.3.0 backend yaması yüklenip servis
 kontrollü yeniden başlatılmalıdır; veri dosyası yüklemek tek başına bellekteki

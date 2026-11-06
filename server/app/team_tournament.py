@@ -25,7 +25,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 
 from .competition_cycle import competition_cycle, cycle_for_id
-from .competition_control import launch_status, minimum_participants, competition_eligible
+from .competition_control import launch_status, minimum_participants, competition_eligible, first_season_bots, configured_start
 
 
 TOURNAMENT_WEEKS = 4
@@ -67,7 +67,10 @@ def _stable_fraction(key: str) -> float:
 
 
 def period_id_for(moment: datetime | None = None) -> str:
-    return competition_cycle(_utc(moment), team=True)["id"]
+    current = _utc(moment)
+    start = configured_start(team=True)
+    # Before the independent opening, preview its actual upcoming period.
+    return competition_cycle(max(current, start) if start else current, team=True)["id"]
 
 
 def period_id_of_leg(leg_id: str) -> str:
@@ -434,14 +437,15 @@ def _team_rows(teams: list[dict], schedule: list[dict], calendar: dict, legs: di
             key=lambda member: (-member["contribution_points"], -member["rating"], member["display_name"].casefold()),
         )
         for member in members:
-            member["reward_eligible"] = member["contribution_points"] >= MINIMUM_REWARD_POINTS
+            member["reward_eligible"] = not row['is_ai'] and member["contribution_points"] >= MINIMUM_REWARD_POINTS
         ordered.append({
             **row,
             "members": members,
             "member_count": len(members),
             "qualified_member_count": sum(member["reward_eligible"] for member in members),
+            "active_member_count": sum(member['contribution_points'] >= MINIMUM_REWARD_POINTS for member in members),
         })
-    ordered.sort(key=lambda row: (-row["points"], -row["qualified_member_count"], row["team_name"].casefold(), row["team_id"]))
+    ordered.sort(key=lambda row: (-row["points"], -row["active_member_count"], row["team_name"].casefold(), row["team_id"]))
     for position, row in enumerate(ordered, start=1):
         row["position"] = position
     return ordered
@@ -506,18 +510,24 @@ def build_team_tournament_view(
     current = _utc(moment)
     calendar = tournament_calendar(period_id)
     phase, week_number = tournament_phase(calendar, current)
-    launch = launch_status(current, team=True)
+    # A historical final remains readable after the next content gate closes.
+    seeded = first_season_bots(period_id=period_id, team=True)
+    launch_moment = (calendar['starts_at'] if seeded and current >= calendar['starts_at'] else
+                     min(current, calendar['ends_at'] - timedelta(microseconds=1)))
+    launch = launch_status(launch_moment, team=True)
     real_registrations = {
         key:{**value, "roster":[m for m in value.get("roster", []) if competition_eligible(m.get("player_id"))]}
         for key,value in (registrations or {}).items()
         if not str(key).startswith("ai-")
     }
     real_registrations = {key:value for key,value in real_registrations.items() if value["roster"]}
-    if not launch["active"] or len(real_registrations) < minimum_participants(team=True):
+    ai_teams = dict(ai_teams or {}) if seeded else {}
+    participant_count = len(real_registrations) + len(ai_teams)
+    if not launch["active"] or participant_count < minimum_participants(team=True):
         registrations, ai_teams, legs = {}, {}, {}
         phase = "waiting_for_participants" if launch["active"] else "waiting_for_launch"
     else:
-        registrations, ai_teams = real_registrations, {}
+        registrations = real_registrations
     teams = participating_teams(registrations or {}, ai_teams or {})
     schedule = build_schedule(period_id, teams, paired_week_count(calendar, current))
     recorded_legs = dict(legs or {})
@@ -564,7 +574,7 @@ def build_team_tournament_view(
         "week": week_number,
         "weeks_total": TOURNAMENT_WEEKS,
         "registration_open": launch["active"] and (phase == "registration" or phase == "waiting_for_participants"),
-        "status": phase, "participant_count": len(real_registrations),
+        "status": phase, "participant_count": participant_count,
         "minimum_participants": minimum_participants(team=True),
         "next_milestone": next_milestone,
         "rules_tr": RULES_TR,

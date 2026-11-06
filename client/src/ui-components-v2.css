@@ -508,6 +508,7 @@
   color:#c6d9ec !important;
   background:linear-gradient(180deg,#234568,#172e4c) !important;
   box-shadow:0 2px #061326 !important;
+  text-decoration:none;
   text-shadow:none !important;
   animation:none !important;
 }
@@ -528,9 +529,7 @@
   color:#062e38 !important;
   background:linear-gradient(180deg,#8ceddb 0 12%,#4bcebf 13% 81%,#2ba398 82%) !important;
   box-shadow:0 2px #11646b !important;
-  text-decoration:underline;
-  text-decoration-thickness:2px;
-  text-underline-offset:4px;
+  text-decoration:none;
   text-shadow:none !important;
 }
 :root body[data-app-screen] :is(
@@ -568,10 +567,8 @@
   text-decoration:none;
 }
 
-/* These request labels wrap on small screens. A first-line underline with a
- * 4px offset paints over the following "İSTEK" line; selection keeps its
- * existing turquoise face/border and keyboard focus. */
-:root body[data-app-screen] #friends-screen button:is([data-friends-tab="incoming"],[data-friends-tab="outgoing"]) {
+/* Friend tabs share their selected face/border and focus ring without a text underline. */
+:root body[data-app-screen] #friends-screen button[data-friends-tab] {
   text-decoration:none;
 }
 

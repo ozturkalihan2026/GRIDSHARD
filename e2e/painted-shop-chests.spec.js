@@ -1,6 +1,40 @@
 const {test,expect}=require("@playwright/test");
 const {waitForParticipantReady}=require("./ui-helpers");
 
+test("shop gift lights the dock until the gift is claimed, including after reload",async({page},info)=>{
+  await page.addInitScript(()=>localStorage.setItem("gridshard.tutorial.v1","complete"));
+  await page.goto("/?e2e=1",{waitUntil:"domcontentloaded"});
+  await waitForParticipantReady(page);
+  const shop=page.locator('#app-bottom-dock [data-shell-screen="shop"]');
+  await expect(shop).toHaveClass(/has-gift-notification/);
+  await expect(shop).toHaveAttribute("aria-label",/Hediye sandık hazır/);
+  const light=await shop.evaluate(button=>{
+    const s=getComputedStyle(button,"::after");
+    return {content:s.content,display:s.display,width:s.width,height:s.height,background:s.backgroundImage};
+  });
+  expect(light.display).toBe("block");
+  expect(light.content).toBe('""');
+  expect(light.width).toBe("12px");
+  expect(light.height).toBe("12px");
+  expect(light.background).toContain("radial-gradient");
+  await page.locator('#app-bottom-dock').screenshot({path:info.outputPath("shop-gift-ready.png")});
+  await shop.click();
+  const gift=page.locator('#chest-store-list .gift-chest-action');
+  await expect(gift).toBeEnabled();
+  // A real claim on this disposable local account must clear the notification;
+  // opening the shop by itself must leave it lit.
+  await expect(shop).toHaveClass(/has-gift-notification/);
+  await gift.click();
+  await expect(page.locator('#chest-reveal-card')).toHaveAttribute('data-state','revealed');
+  await page.locator('#chest-reveal-close').click();
+  await expect(shop).not.toHaveClass(/has-gift-notification/);
+  await expect(shop).not.toHaveAttribute("aria-label",/Hediye sandık hazır/);
+  await page.reload();
+  await waitForParticipantReady(page);
+  await expect(shop).not.toHaveClass(/has-gift-notification/);
+  await info.attach("gift-light",{body:JSON.stringify(light),contentType:"application/json"});
+});
+
 test("painted shop chests load and keep one aligned action per card on narrow screens",async({page},testInfo)=>{
   const errors=[];
   page.on("pageerror",error=>errors.push(String(error)));

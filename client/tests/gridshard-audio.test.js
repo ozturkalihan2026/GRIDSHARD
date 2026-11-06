@@ -70,12 +70,12 @@ assert.strictEqual(
   false
 );
 
-// The amplifier reused the full-scale UI/energy source (~0.466 RMS), much
-// louder than the other crafted module WAVs. Its own alias trims both audio
-// backends through _cueGain without changing the shared source or bus.
+// The authored coil has its own source instead of reusing the full-scale UI
+// energy pulse. Both backends share the support trim; the UI stays unchanged.
 const amplifierCue=global.GRIDSHARD_SFX_CUES.amplifier_charge;
-assert.strictEqual(amplifierCue.asset,global.GRIDSHARD_SFX_CUES.energy_transfer.asset);
-assert.strictEqual(director._cueGain("amplifier_charge"),0.045);
+assert.strictEqual(amplifierCue.asset,"./assets/audio/modules/amplifier.wav");
+assert.notStrictEqual(amplifierCue.asset,global.GRIDSHARD_SFX_CUES.energy_transfer.asset);
+assert.strictEqual(director._cueGain("amplifier_charge"),0.28);
 assert.strictEqual(director._cueGain("energy_transfer"),1);
 function wavRms(asset) {
   const fs=require("node:fs"),path=require("node:path");
@@ -121,7 +121,7 @@ assert.strictEqual(
 
 assert.strictEqual(
   global.GRIDSHARD_AUDIO_MIX.version,
-  "shardglass-seamless-v19"
+  "shardglass-seamless-v21"
 );
 assert.strictEqual(global.GRIDSHARD_BATTLE_LAYERS.length, 7);
 assert.strictEqual(

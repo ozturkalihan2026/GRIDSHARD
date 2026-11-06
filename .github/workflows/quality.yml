@@ -42,6 +42,7 @@ jobs:
           python tools/plan_season_xp.py --check
           python tools/prepare_first_season.py --check
           python tools/report_combat_audio.py --check
+          python tools/generate_combat_theme.py --check
           python tools/development_checklist.py --check
           python tools/release_calendar.py --check
           python tools/release_delivery_plan.py --check
@@ -143,6 +144,7 @@ jobs:
           server/tests/test_postgres_social_api.py
           server/tests/test_postgres_persistent_operations.py
           server/tests/test_s1_release_acceptance.py
+          server/tests/test_s1_bot_competition.py
           server/tests/test_postgres_runtime_integration.py
           server/tests/test_postgres_battle_results.py
           server/tests/test_review_access_postgres.py
@@ -283,6 +285,23 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gridshard-s1-evidence-${{ matrix.platform }}-${{ github.sha }}
+          path: |
+            qa_reports/playwright-results.json
+            test-results/
+            playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: First-season bot boards and read-only reward previews
+        if: success() || failure()
+        env:
+          GRIDSHARD_E2E_S1_ACCEPTANCE: '1'
+          GRIDSHARD_E2E_S1_BOTS: '1'
+        run: pnpm exec playwright test e2e/release221-social.spec.js --grep "S1 tournament rewards" ${{ matrix.projects }}
+      - name: Preserve separate S1 bot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridshard-s1-bots-${{ matrix.platform }}-${{ github.sha }}
           path: |
             qa_reports/playwright-results.json
             test-results/

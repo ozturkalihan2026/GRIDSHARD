@@ -5,6 +5,8 @@ COPY tools/web-build/package.json tools/web-build/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY client ./client
 COPY tools/build-client.js tools/mobile-network-policy.js ./tools/
+COPY tools/client-version.js ./tools/
+COPY package.json ./package.json
 RUN node tools/build-client.js
 
 FROM python:3.12-slim
@@ -16,6 +18,7 @@ COPY server/app /app/server/app
 COPY server/migrations /app/server/migrations
 COPY server/json_migrations /app/server/json_migrations
 COPY server/data/arena_bot_profiles_v1.json server/data/arena_progression_v1.json /app/server/data/
+COPY server/data/bot_nicknames_v1.json /app/server/data/
 COPY server/data/module_roster_v2.json server/data/module_talents_v7.json server/data/season_module_releases_v2.json /app/server/data/
 COPY server/data/game_updates.json /app/server/data/
 COPY server/data/cosmetic_releases_v1.json /app/server/data/

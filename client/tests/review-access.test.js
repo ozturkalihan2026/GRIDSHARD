@@ -166,9 +166,16 @@ test("switches are serialized, and UI clears password on rejection, success and 
   assert.equal(field.value, "");
 });
 
-test("real source has review entry before boot, onboarding, recovery and settings, with English labels", () => {
+test("review entry is absent from boot and registration; settings and recovery retain working access", () => {
   const html = fs.readFileSync("index.html", "utf8");
-  assert.equal((html.match(/data-review-access-open/g) || []).length, 4);
+  assert.equal((html.match(/data-review-access-open/g) || []).length, 2);
+  for (const id of ["startup-loading", "account-onboarding-dialog"]) {
+    const section=html.slice(html.indexOf(`id="${id}"`),html.indexOf(id === "startup-loading" ? '</section>' : '</dialog>',html.indexOf(`id="${id}"`)));
+    assert.ok(!section.includes('data-review-access-open'));
+    assert.ok(!section.includes('REVIEW / DEMO SIGN-IN'));
+  }
+  const account=html.slice(html.indexOf('id="settings-panel-account"'),html.indexOf('</section>',html.indexOf('id="settings-panel-account"')));
+  assert.ok(account.includes('data-review-access-open'));
   assert.ok(html.indexOf("review-access.js") < html.indexOf('src/app.js'));
   assert.ok(html.includes('id="review-access-dialog" class="review-access-dialog" lang="en"'));
   assert.ok(html.includes('type="password" required maxlength="100" autocomplete="off"'));

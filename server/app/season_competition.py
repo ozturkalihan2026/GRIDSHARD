@@ -1,7 +1,7 @@
 """Daily meta catalog, canonical AI population and tournament read models.
 
 The event hub deliberately derives its seeded AI standings from stable hashes.
-This gives the beta a repeatable six-team competition without writing synthetic
+This gives the beta a repeatable first-season competition without writing synthetic
 accounts into the real player repository.  Human weekly rows are merged by the
 HTTP gateway from server-owned counters; the team tournament (four-week cycle,
 see team_tournament.py) reads its registrations and match legs from the team
@@ -16,6 +16,9 @@ import hashlib
 
 from .team_tournament import build_team_tournament_view, period_id_for
 from .competition_control import competition_eligible, launch_status, minimum_participants
+from .competition_control import first_season_bots
+import json
+from pathlib import Path
 
 
 DAILY_META_DEFINITIONS: tuple[dict, ...] = (
@@ -34,6 +37,12 @@ AI_TEAM_DEFINITIONS: tuple[dict, ...] = (
     {"team_id": "ai-team-poyraz", "name": "Poyraz Akımı", "strategy_tr": "Akım ekonomisi"},
     {"team_id": "ai-team-miras", "name": "Miras Çekirdeği", "strategy_tr": "Sürdürülebilirlik"},
     {"team_id": "ai-team-gece", "name": "Gece Frekansı", "strategy_tr": "Kontrol ve sabotaj"},
+    {"team_id": "ai-team-kiyi", "name": "Kıyı Rölesi", "strategy_tr": "Dengeli baskı"},
+    {"team_id": "ai-team-kor", "name": "Kor Hattı", "strategy_tr": "Hızlı karşılık"},
+    {"team_id": "ai-team-yanki", "name": "Yankı Devresi", "strategy_tr": "Alan kontrolü"},
+    {"team_id": "ai-team-kivilcim", "name": "Kıvılcım Birliği", "strategy_tr": "Akım ekonomisi"},
+    {"team_id": "ai-team-kalkan", "name": "Kalkan Ağı", "strategy_tr": "Savunma ve onarım"},
+    {"team_id": "ai-team-yolgezer", "name": "Yolgezer Çekirdeği", "strategy_tr": "Dengeli karşı-meta"},
 )
 
 
@@ -61,7 +70,7 @@ def _clean_legacy_name(value: str) -> str:
 
 
 def build_ai_population(base_bots: list[dict], arena_bounds: dict[int, tuple[int, int]]) -> list[dict]:
-    """Return 120 cleaned legacy bots plus 120 new, team-backed bots.
+    """Keep 240 stable IDs/decks with single-word handles and 12 legal rosters.
 
     ``arena_bounds`` arena numarasından (en düşük, en yüksek) kupaya gider.
     """
@@ -101,7 +110,58 @@ def build_ai_population(base_bots: list[dict], arena_bounds: dict[int, tuple[int
             "mistake_rate": round(max(0.025, min(0.18, float(source.get("mistake_rate", .1)) + ((_stable_int(display_name, 5) - 2) * .01))), 3),
         })
         additions.append(source)
-    return [*legacy, *additions]
+    names = json.loads((Path(__file__).resolve().parents[1] / 'data/bot_nicknames_v1.json').read_text(encoding='utf-8'))
+    population = [*legacy, *additions]
+    if (len(names) != len(population) or len({name.casefold() for name in names}) != len(names)
+            or any(not name.isalpha() or name.casefold() == 'uç' for name in names)):
+        raise ValueError('Bot takma adları tek kelime, benzersiz ve 240 adet olmalıdır.')
+    for index, row in enumerate(population):
+        team = AI_TEAM_DEFINITIONS[index % len(AI_TEAM_DEFINITIONS)]
+        row.update(display_name=names[index], team_id=team['team_id'], team_name=team['name'])
+    return population
+
+
+def first_season_ai_teams(players, period_id):
+    if not first_season_bots(period_id=period_id, team=True):
+        return {}
+    teams = {}
+    for player in players:
+        if player.get('is_bot') and player.get('team_id'):
+            team = teams.setdefault(player['team_id'], dict(team_name=player['team_name'], roster=[]))
+            team['roster'].append(dict(player_id=player['player_id'], display_name=player['display_name'], rating=player['rating']))
+    return teams
+
+
+def weekly_standings(players, moment):
+    """Deterministic S1 AI activity; human counters remain server-owned results.
+
+    Two to six seeded AI matches per elapsed day. Reading a board never writes
+    wallets, XP, trophies or fabricated human battles.
+    """
+    week = _weekly_period(moment)
+    days = min(7, max(0, (moment - datetime.fromisoformat(week['starts_at'].replace('Z', '+00:00'))).days))
+    rows = []
+    for player in players:
+        bot = bool(player.get('is_bot'))
+        if bot:
+            if not first_season_bots(moment):
+                continue
+            seed = f"{week['id']}:{player['player_id']}"
+            matches = days * (2 + _stable_int(seed, 5))
+            wins = matches * (35 + _stable_int(seed + ':wins', 41)) // 100
+            points = wins * (5 + _stable_int(seed + ':points', 7))
+        else:
+            if not competition_eligible(player['player_id']) or player.get('weekly_registered_period') != week['id']:
+                continue
+            same = player.get('weekly_period') == week['id']
+            matches = max(0, int(player.get('weekly_matches', 0))) if same else 0
+            wins = min(matches, max(0, int(player.get('weekly_wins', 0)))) if same else 0
+            points = max(0, int(player.get('weekly_trophies_earned', 0))) if same else 0
+        rows.append(dict(player_id=player['player_id'], display_name=player['display_name'], rating=int(player.get('rating', 0)),
+                         matches=matches, wins=wins, losses=matches-wins, points=points, trophies_earned=points,
+                         is_bot=bot, registered=True))
+    rows.sort(key=lambda row: (-row['points'], -row['wins'], row['player_id']))
+    return [dict(row, position=index) for index, row in enumerate(rows, 1)]
 
 
 def daily_meta_by_id(meta_id: str) -> dict | None:
@@ -193,44 +253,25 @@ def build_events_view(
     current = (moment or datetime.now(timezone.utc)).astimezone(timezone.utc)
     week = _weekly_period(current)
 
-    weekly_rows = []
-    for player in players:
-        if not competition_eligible(player.get("player_id"), is_bot=player.get("is_bot")):
-            continue
-        if player.get("weekly_registered_period") != week["id"]:
-            continue
-        matches = max(0, int(player.get("weekly_matches", 0))) if player.get("weekly_period") == week["id"] else 0
-        wins = min(matches, max(0, int(player.get("weekly_wins", 0))))
-        trophies_earned = max(0, int(player.get("weekly_trophies_earned", 0)))
-        weekly_rows.append({
-            "player_id": player["player_id"],
-            "display_name": player["display_name"],
-            "rating": int(player.get("rating", 0)),
-            "matches": matches,
-            "wins": wins,
-            "losses": max(0, matches - wins),
-            "points": trophies_earned,
-            "trophies_earned": trophies_earned,
-            "is_bot": False,
-            "registered": True,
-        })
-    weekly_rows.sort(key=lambda row: (-row["points"], -row["wins"], -row["rating"], row["display_name"].casefold()))
-    for position, row in enumerate(weekly_rows, start=1):
-        row["position"] = position
+    weekly_rows = weekly_standings(players, current)
 
-    # Official competitions contain registered real teams only.
     state = team_tournament_state or {}
     team_view = build_team_tournament_view(
         period_id_for(current),
         current,
         registrations=state.get("registrations") or {},
-        ai_teams={},
+        ai_teams=first_season_ai_teams(players, period_id_for(current)),
         legs=state.get("legs") or {},
     )
     launch = launch_status(current)
     pending_content = launch['status'] == 'waiting_for_content'
-    team_view["prizes"] = [] if pending_content else [period_reward("team_tournament", period_id_for(current), item["position"], item) for item in TEAM_PRIZES]
+    from .first_season_profile import PROFILE
+    from .cosmetic_releases import REGISTRY
+    team_content_pending = (PROFILE.get('status') == 'published' and
+        REGISTRY.releases.get(('team_tournament', period_id_for(current)), {}).get('status') != 'published')
+    team_view["prizes"] = [] if pending_content or team_content_pending else [period_reward("team_tournament", period_id_for(current), item["position"], item) for item in TEAM_PRIZES]
     enough = len(weekly_rows) >= minimum_participants()
+    exception = first_season_bots(current)
 
     return {
         "daily_meta_catalog": daily_meta_catalog_view(current),
@@ -242,6 +283,8 @@ def build_events_view(
             "period": week,
             "rules_tr": "100 Devre Kredisi ile katıl. Katıldıktan sonra normal Arena savaşlarında kazandığın kupalar haftalık sıralamaya eklenir; sıralama pazartesi yenilenir.",
             "entry_fee": WEEKLY_ENTRY_FEE,
+            "first_season_bots": exception,
+            "bot_reward_policy": "actual_rank_no_bot_rewards_all_bot_package_deferred" if exception else "none",
             "prizes": [] if pending_content else [period_reward("weekly_tournament", week['id'], item["position"], item) for item in WEEKLY_PRIZES],
             "standings": weekly_rows,
         },

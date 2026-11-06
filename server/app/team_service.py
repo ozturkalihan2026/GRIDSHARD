@@ -655,6 +655,67 @@ class TeamService:
                 member["rating"] = rating_on_current_scale(member.get("rating", 0) or 0, scale)
         return state
 
+    def competition_reward_state(self) -> dict:
+        """Durable closing witnesses and the append-only deferred reward plan.
+
+        Kept in the team document so JSON and transactional PostgreSQL stores
+        preserve the same state across backups, restores and process restarts.
+        """
+        with self._lock:
+            payload = self.repository.load()
+            state = (payload.get('tournaments') or {}).get('_competition_rewards_v1') or {}
+            return self._checked_reward_state(state)
+
+    @staticmethod
+    def _checked_reward_state(state):
+        from .season_entitlements import fingerprint
+        result = json.loads(json.dumps(dict(closures=state.get('closures', {}), deferred=state.get('deferred', []))))
+        for key, item in result['closures'].items():
+            content = {k:item[k] for k in ('source','period_id','standings','prizes','minimum_met')}
+            if key != f"{item['source']}:{item['period_id']}" or item.get('content_hash') != fingerprint(content):
+                raise TeamServiceError('Yarışma kapanış kaydı doğrulanamadı.')
+        for index, item in enumerate(result['deferred'], 1):
+            original = result['closures'].get(item['id'], {})
+            frozen = {k:item[k] for k in ('source','original_period_id','prizes')}
+            if (item.get('sequence') != index or not original.get('all_reward_positions_bots')
+                    or item['prizes'] != original['prizes'] or item['source'] != original['source']
+                    or item['original_period_id'] != original['period_id']
+                    or item.get('content_hash') != fingerprint(frozen)):
+                raise TeamServiceError('Ertelenen ödül planı doğrulanamadı.')
+        return result
+
+    def close_competition_period(self, source: str, period_id: str, standings: list[dict], prizes: list[dict], *, minimum_met=True) -> dict:
+        """Freeze once; append a whole all-bot prize package to the plan tail.
+
+        No human positions are compressed. Deferred content is frozen, not a
+        second allocation of its cosmetics. Publication must later schedule
+        this existing package; a read can never open an unreviewed period.
+        """
+        from .season_entitlements import fingerprint
+        if source not in {'weekly_tournament', 'team_tournament', 'season_leaderboard'}:
+            raise ValueError('Unknown competition reward source')
+        key = f'{source}:{period_id}'
+        with self._lock:
+            payload = self.repository.load()
+            state = payload.setdefault('tournaments', {}).setdefault('_competition_rewards_v1', dict(closures={}, deferred=[]))
+            self._checked_reward_state(state)
+            if key not in state['closures']:
+                ranks = {int(row['position']): row for row in standings}
+                all_bots = bool(minimum_met and prizes and all(
+                    ranks.get(int(prize['position']), {}).get('is_bot') or
+                    ranks.get(int(prize['position']), {}).get('is_ai') for prize in prizes))
+                content = dict(source=source, period_id=period_id, standings=standings, prizes=prizes, minimum_met=bool(minimum_met))
+                closure = dict(content, content_hash=fingerprint(content), all_reward_positions_bots=all_bots)
+                state['closures'][key] = closure
+                if all_bots:
+                    frozen = dict(source=source, original_period_id=period_id, prizes=prizes)
+                    state['deferred'].append(dict(
+                        id=key, sequence=len(state['deferred']) + 1, status='planned',
+                        placement='after_reviewed_calendar', scheduled_period_id=None,
+                        content_hash=fingerprint(frozen), **frozen))
+                self.repository.save(payload)
+            return json.loads(json.dumps(state['closures'][key]))
+
     def register_tournament(
         self,
         team_id: str,

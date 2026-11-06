@@ -10,7 +10,7 @@ function fixture(){
   const queue=new GridshardBattleDeferredQueue({now:()=>now,onError:e=>{throw e;}});
   context.scheduleBattleSweep=(delay,fn)=>queue.schedule(delay,fn);
   const start=app.indexOf("  const WEAPON_PRESENTATION = Object.freeze({"),end=app.indexOf("  function selectedBattlePoolDefinitionIds()",start);
-  vm.runInNewContext(app.slice(start,end)+"\nthis.impact=attackImpactCue;this.schedule=scheduleAttackImpactCue;this.weapon=weaponCue;",context);
+  vm.runInNewContext(app.slice(start,end)+"\nthis.impact=attackImpactCue;this.schedule=scheduleAttackImpactCue;this.weapon=weaponCue;this.defended=attackWasDefended;",context);
   return{context,sounds,queue,advance:t=>{now=t;queue.flush();}};
 }
 test("each weapon contact uses its own acoustic family, never energy-transfer pings",()=>{
@@ -30,6 +30,25 @@ test("laser pulse is a single firing sound; ordinary contact schedules no second
   const f=fixture();assert.equal(f.context.weapon("laser"),"laser_fire");
   assert.equal(global.GRIDSHARD_SFX_CUES.laser_fire.asset,"./assets/audio/laser_pulse_v2.wav");
   f.context.schedule({sourceDefinitionId:"laser",travelMs:0});assert.equal(f.queue.entries.length,0);assert.deepEqual(f.sounds,[]);
+});
+
+test('protection contacts use the receiving module role instead of one generic shield sound',()=>{
+  const {context:c}=fixture();
+  for(const id of ['shield','armor','barrier','reflector','guardian_dome','phase_armor','buffer_shield','last_bastion']){
+    assert.equal(c.impact({sourceDefinitionId:'laser',targetDefinitionId:id,defended:true}),'module_'+id);
+  }
+});
+
+test('target names and lethal overkill do not invent a block or a support sound',()=>{
+  const {context:c}=fixture();
+  assert.equal(c.defended({defense_type:'laser',raw_damage:30,damage:30},{hp:70}),false);
+  assert.equal(c.defended({defense_type:'repair',raw_damage:30,damage:30},{hp:70}),false);
+  assert.equal(c.defended({raw_damage:100,damage:10},{hp:0}),false);
+  assert.equal(c.defended({raw_damage:100,damage:70,reduced_damage:30},{hp:0}),true);
+  assert.equal(c.defended({raw_damage:100,damage:60},{hp:40}),true);
+  assert.equal(c.defended({raw_damage:100,damage:0},{hp:100}),true);
+  assert.equal(c.impact({sourceDefinitionId:'laser',targetDefinitionId:'repair',defended:true}),null);
+  assert.equal(c.impact({sourceDefinitionId:'plasma_mortar',targetDefinitionId:'virus',defended:true}),null);
 });
 
 test("replacement laser is a quiet 240ms tonal impulse, not the old sustained high-frequency hiss",()=>{

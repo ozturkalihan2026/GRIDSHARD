@@ -1,10 +1,11 @@
 const {test,expect}=require('@playwright/test');
 const {waitForParticipantReady}=require('./ui-helpers');
+const clientVersion=require('../package.json').version;
 
 test('future runtime version preserves startup through the explicit API contract',async({page})=>{
  await page.route('**/health',async route=>{
   const response=await route.fetch(),body=await response.json();
-  const [major,minor]=body.runtime_release_version.split('.').map(Number);
+  const [major,minor]=clientVersion.split('.').map(Number);
   await route.fulfill({response,json:{...body,runtime_release_version:`${major}.${minor+1}.0`}});
  });
  await page.goto('/?e2e=1');await waitForParticipantReady(page,60000);
@@ -19,7 +20,9 @@ test('minimum version gives a localized safe update explanation and keeps accoun
  });
  await page.route('**/health',async route=>{
   const response=await route.fetch(),body=await response.json();
-  const [major,minor,patch]=body.runtime_release_version.split('.').map(Number);
+  // The server can intentionally run an older compatible release. Force an
+  // update relative to the installed client, not the server's runtime version.
+  const [major,minor,patch]=clientVersion.split('.').map(Number);
   body.client_compatibility.minimum_client_version=`${major}.${minor}.${patch+1}`;
   await route.fulfill({response,json:body});
  });

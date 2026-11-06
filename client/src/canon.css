@@ -6789,8 +6789,10 @@ body[data-graphics="dusuk"] .upgrade-arrow { animation:none; }
    öğesi başka amaçla kapatıldığı için ışık burada açıkça tanımlanır. */
 :root { --gs-upgrade-light:#4be38a; }
 body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification,
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-gift-notification,
 body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-sale-badge { position:relative;overflow:visible !important; }
-body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification::after {
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification::after,
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-gift-notification::after {
   content:"" !important;
   display:block !important;
   position:absolute;
@@ -7574,7 +7576,8 @@ body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active .menu
 body:not([data-app-screen="play"]) #app-bottom-dock .menu-action:active { transform:translateY(1px); }
 body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.is-active:active { transform:translateY(2px); }
 body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-persistent-notification::after,
-body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification::after {
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification::after,
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-gift-notification::after {
   top:1px !important;
   left:calc(50% + 11px) !important;
   width:10px !important;
@@ -10109,14 +10112,16 @@ body[data-graphics="dusuk"]:not([data-app-screen="play"]) #app-bottom-dock .menu
   border-width:1.5px !important;
 }
 body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-persistent-notification::after,
-body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification::after {
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification::after,
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-gift-notification::after {
   top:0 !important;
   left:calc(50% + 10px) !important;
   width:12px !important;
   height:12px !important;
   border-width:1.5px !important;
 }
-body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification::after { box-shadow:0 1.5px 0 #0a1024 !important; }
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-upgrade-notification::after,
+body:not([data-app-screen="play"]) #app-bottom-dock .menu-action.has-gift-notification::after { box-shadow:0 1.5px 0 #0a1024 !important; }
 .app-progress-ribbon #lobby-player-details[data-claimable="true"]::before,
 #profile-hero-details[data-claimable="true"]::before {
   width:9px !important;

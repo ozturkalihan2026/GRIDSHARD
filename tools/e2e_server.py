@@ -15,7 +15,6 @@ import uvicorn
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
-PID_PATH = ROOT / "qa_reports" / "e2e-server.pid.json"
 
 
 def main() -> None:
@@ -25,6 +24,7 @@ def main() -> None:
     base = urlsplit(os.environ.get("GRIDSHARD_E2E_BASE_URL", "http://127.0.0.1:8879"))
     if base.scheme != "http" or base.hostname not in {"localhost", "127.0.0.1"}:
         raise RuntimeError("The owned E2E server only listens on localhost HTTP")
+    pid_path = ROOT / 'qa_reports' / f'e2e-server-{base.port or 8879}.pid.json'
     # Every browser run gets fresh identities and every runtime store. Never
     # inherit a developer's database, Redis or server/data file paths.
     isolated = None
@@ -51,9 +51,9 @@ def main() -> None:
         # USB test API is HTTP localhost. Authorize this exact native origin.
         os.environ["GRIDSHARD_CORS_ORIGINS"] = "https://localhost"
     os.environ.pop("GRIDSHARD_AUTH_SIGNING_KEY_FILE", None)
-    PID_PATH.parent.mkdir(parents=True, exist_ok=True)
-    PID_PATH.write_text(
-        json.dumps({"pid": os.getpid(), "started_at_ms": int(time.time() * 1000)}),
+    pid_path.parent.mkdir(parents=True, exist_ok=True)
+    pid_path.write_text(
+        json.dumps({"pid": os.getpid(), "port": base.port or 8879, "started_at_ms": int(time.time() * 1000)}),
         encoding="utf-8",
     )
     # Browser fixtures must keep exercising a real announcement after the live
@@ -102,7 +102,7 @@ def main() -> None:
     try:
         server.run()
     finally:
-        PID_PATH.unlink(missing_ok=True)
+        pid_path.unlink(missing_ok=True)
         if isolated is not None:
             isolated.cleanup()
         # Windows'ta AnyIO/Psycopg yardımcı thread'leri Uvicorn kapandıktan

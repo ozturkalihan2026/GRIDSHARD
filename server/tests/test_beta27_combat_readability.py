@@ -70,7 +70,9 @@ def test_six_weapon_cues_are_original_distinct_and_mix_safe():
         values = struct.unpack("<" + "h" * (len(raw) // 2), raw)
         peak = max(abs(value) for value in values)
         peak_dbfs = 20 * math.log10(peak / 32_767)
-        assert (-12 <= peak_dbfs <= -8) if filename == 'pulse_cannon_fire.wav' else (-3.2 <= peak_dbfs <= -2.8)
+        # v21 controls the pulse crest while preserving its mid-band presence;
+        # legacy masters keep their original -3 dBFS contract.
+        assert (-14 <= peak_dbfs <= -10) if filename == 'pulse_cannon_fire.wav' else (-3.2 <= peak_dbfs <= -2.8)
 
     assert len(hashes) == len(WEAPON_FILES)
     for cue in (

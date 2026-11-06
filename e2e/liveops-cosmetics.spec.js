@@ -63,8 +63,17 @@ test('new player and team cosmetics have distinct previews and remain locked', a
   await preview.locator('#cosmetic-collection-close').click();
   await page.evaluate(()=>window.GridshardI18n.apply('tr'));
   await page.locator('[data-shell-screen="team"]').click();
+  for(const tab of await page.locator('.team-tabs > button').all()){
+    await tab.click();
+    await expect(tab).toHaveCSS('text-decoration-line','none');
+  }
+  await page.locator('[data-team-tab="profile"]').click();
   await page.locator('#team-menu-button').click();
   await page.locator('[data-team-management-tab="cosmetics"]').click();
+  const teamPreview=page.locator('#team-screen [data-open-cosmetic-collection]');
+  await expect(teamPreview).toHaveCSS('color','rgb(48, 37, 20)');
+  expect(await teamPreview.evaluate(el=>getComputedStyle(el).getPropertyValue('--gs2-face').trim())).toBe('#d7b66b');
+  expect(await teamPreview.evaluate(el=>getComputedStyle(el,'::before').clipPath)).toContain('polygon');
   await expect(page.locator('#team-emblem-options .team-appearance-option[data-locked="true"]')).toHaveCount(3);
   await expect(page.locator('#team-frame-options .team-appearance-option[data-locked="true"]')).toHaveCount(3);
   await expect(page.locator('#team-name-color-options .team-appearance-option[data-locked="true"]')).toHaveCount(3);

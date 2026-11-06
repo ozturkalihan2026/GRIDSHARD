@@ -65,6 +65,16 @@
         "avatar_frame_id": "abyss_frame",
         "profile_background_id": "abyss_banner"
       }
+    },
+    {
+      "source": "team_tournament",
+      "period_id": "2026-12-07",
+      "slot": 1,
+      "cosmetics": {
+        "team_emblem_id": "aurora_sigil",
+        "team_frame_id": "aurora_team_frame",
+        "team_name_color_id": "aurora_team_name"
+      }
     }
   ],
   "resource_weeks": [
@@ -146,5 +156,13 @@
         }
       ]
     }
-  ]
+  ],
+  "bot_competition_policy": {
+    "scope": "first_season_only",
+    "population": 240,
+    "teams": 12,
+    "reward_positions": "actual_rank",
+    "bot_rewards": false,
+    "all_bot_prizes": "append_frozen_package_to_plan_tail"
+  }
 }

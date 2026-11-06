@@ -112,7 +112,7 @@ test("crystal boot fits compact portrait and desktop; reduced motion has no loop
         const r = document.querySelector(selector).getBoundingClientRect();
         return {left:r.left, right:r.right, top:r.top, bottom:r.bottom, height:r.height};
       };
-      return {version:rect(".boot-version"), review:rect(".review-access-startup"),
+      return {version:rect(".boot-version"),
         title:rect(".boot-title"), tagline:rect(".boot-tagline"), scene:rect(".boot-circuit-scene"),
         crystal:rect(".boot-reactor-crystal"), progress:rect(".boot-progress"),
         height:innerHeight, width:innerWidth};
@@ -122,7 +122,8 @@ test("crystal boot fits compact portrait and desktop; reduced motion has no loop
       expect(part.left).toBeGreaterThanOrEqual(0); expect(part.right).toBeLessThanOrEqual(layout.width);
       expect(part.top).toBeGreaterThanOrEqual(0); expect(part.bottom).toBeLessThanOrEqual(layout.height);
     }
-    expect(layout.version.right).toBeLessThan(layout.review.left);
+    await expect(page.locator('#startup-loading [data-review-access-open]')).toHaveCount(0);
+    expect(layout.version.right).toBeLessThanOrEqual(layout.width);
     expect(layout.tagline.top).toBeGreaterThan(layout.title.bottom);
     expect(layout.tagline.bottom).toBeLessThan(layout.crystal.top);
     expect(layout.title.bottom).toBeLessThan(layout.progress.top);

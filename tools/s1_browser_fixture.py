@@ -28,6 +28,20 @@ def install():
     from app import main as gateway
     gateway.player_profile_service._now_func = lambda:now
     gateway.meta_progression_service._now_func = lambda:now
+    if os.environ.get('GRIDSHARD_E2E_S1_BOTS') == '1':
+        # Optional local-only tournament window for the connected test phone.
+        # No production clock, launch variable or account is changed.
+        from datetime import timedelta
+        from app import competition_control
+        now = now + timedelta(days=12)  # Saturday, first team match window
+        os.environ['GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT'] = '2026-12-07T00:00:00Z'
+        original_utc = competition_control.utc
+        competition_control.utc = lambda moment=None: original_utc(moment or now)
+        class FixtureDateTime(datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return now.astimezone(tz) if tz else now.replace(tzinfo=None)
+        gateway.datetime = FixtureDateTime
 
     @gateway.app.post('/__e2e/s1/{player_id}/prepare')
     async def seed(player_id: str, request: Request):
@@ -52,5 +66,25 @@ def install():
                     fixture=True,production_changed=False)
     # main's static '/' mount is last at import time. This loopback-only
     # fixture route must precede that catch-all; production never imports us.
+    fixture_route = gateway.app.router.routes.pop()
+    gateway.app.router.routes.insert(0, fixture_route)
+
+    @gateway.app.post('/__e2e/s1/{player_id}/unlock-modules')
+    async def unlock_modules(player_id: str, request: Request):
+        if request.client.host not in {'127.0.0.1','::1'} or request.headers.get('x-gridshard-e2e') != 's1-local-only':
+            raise HTTPException(status_code=403)
+        # Explicit native sound-test preparation, never imported by production.
+        # Use the existing unlock entitlement without changing trophies, levels,
+        # wallet, inbox, cosmetics or the player's chosen deck.
+        from app.module_roster import MODULE_SPECS
+        if gateway.player_data_repository.load(player_id) is None:
+            raise HTTPException(status_code=404,detail='Existing owned test account required')
+        with gateway._store_economy_transaction(player_id):
+            profile = gateway._team_member_profile(player_id)
+            profile.legacy_module_unlocks = tuple(dict.fromkeys((*profile.legacy_module_unlocks, *MODULE_SPECS)))
+            gateway.persist_player_data(player_id)
+            result = gateway.meta_progression_service.view(profile)
+        return dict(unlocked_module_ids=list(MODULE_SPECS),unlocked_count=len(MODULE_SPECS),
+                    meta_progression=result,fixture=True,production_changed=False)
     fixture_route = gateway.app.router.routes.pop()
     gateway.app.router.routes.insert(0, fixture_route)

@@ -334,7 +334,7 @@ assert.match(css, /\.collection-module-tile > \.upgrade-arrow,\s*\.core-collecti
 // Destedeki modülde ok ✓ işaretinin altına iner; seçili çekirdekte sol üste geçer.
 assert.match(css, /\.collection-module-tile\[data-selected="true"\] > \.upgrade-arrow \{ top:21px; \}/);
 assert.match(css, /\.core-collection-tile > b \+ \.upgrade-arrow \{ right:auto;left:3px; \}/);
-assert.match(css, /#app-bottom-dock \.menu-action\.has-upgrade-notification::after \{[^}]*background:var\(--gs-upgrade-light\) !important;/);
+assert.match(css, /#app-bottom-dock \.menu-action\.has-upgrade-notification::after,\s*body:not\(\[data-app-screen="play"\]\) #app-bottom-dock \.menu-action\.has-gift-notification::after \{[^}]*background:var\(--gs-upgrade-light\) !important;/);
 assert.match(css, /:root \{ --gs-upgrade-light:#4be38a; \}/);
 assert.match(css, /\.module-detail-stats \.stat-next-gain \{[^}]*color:#5ff09a;/);
 assert.match(css, /\.module-overview-grid > div:last-child:nth-child\(odd\) \{ grid-column:1 \/ -1; \}/);
@@ -349,6 +349,9 @@ assert.equal(i18n.translateText("Kartlar · Yükseltme mevcut", "en"), "Cards ·
 assert.equal(i18n.translateText("Sonraki seviye", "en"), "Next level");
 assert.equal(i18n.translateText("-%40", "en"), "-40%");
 assert.equal(i18n.translateText("Mağaza · %40 indirim", "en"), "Store · 40% off");
+assert.equal(i18n.translateText("Mağaza · Hediye sandık hazır", "en"), "Store · Gift chest ready");
+assert.equal(i18n.translateText("Mağaza · Hediye sandık hazır · %40 indirim", "en"), "Store · Gift chest ready · 40% off");
+assert.equal(i18n.translateText("Store · Gift chest ready · 40% off", "tr"), "Mağaza · Hediye sandık hazır · %40 indirim");
 // Harfsiz yüzde yazısı ("%40" gibi) düğüm belleğiyle Türkçeye döner; eski kural da sürer.
 assert.equal(i18n.translateText("%40", "en"), "40%");
 assert.equal(i18n.translateText("Store · 40% off", "tr"), "Mağaza · %40 indirim");

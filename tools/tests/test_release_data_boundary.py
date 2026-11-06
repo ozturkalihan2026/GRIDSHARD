@@ -11,7 +11,7 @@ from tools.package_release import ROOT, STATIC_SERVER_DATA_FILES, release_files,
 class ReleaseDataBoundaryTests(unittest.TestCase):
     def test_content_source_contract_ships_without_admitting_runtime_data(self) -> None:
         for relative in ("server/data/liveops_content_sources_v1.json", "server/data/first_season_launch_v1.json",
-                         "server/data/release_announcements_v1.json"):
+                         "server/data/release_announcements_v1.json", "server/data/bot_nicknames_v1.json"):
             self.assertIn(relative, STATIC_SERVER_DATA_FILES)
             self.assertTrue(is_release_input(relative))
             self.assertIn("COPY " + relative + " /app/server/data/", (ROOT / "Dockerfile").read_text())

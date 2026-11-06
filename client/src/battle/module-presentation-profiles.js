@@ -27,9 +27,17 @@
     ["cleanser","heal","#57ef9a",null,370,0.28],
     ["speed_relay","chevrons","#a4f55b",null,320,0.24],
   ];
+  // Different roles share a sound family without equal foreground loudness.
+  const soundGains=Object.freeze({laser:.38, pulse_cannon:.60, missile_launcher:.60,
+    railgun:.58, drone_bay:.52, arc_cannon:.58, plasma_mortar:.62,
+    quantum_repeater:.52, burst_cannon:.54, shield_breaker:.60,
+    shield:.40, armor:.36, barrier:.38, reflector:.38, guardian_dome:.40,
+    phase_armor:.36, buffer_shield:.36, last_bastion:.40,
+    repair:.30, amplifier:.28, emp:.35, virus:.30, cleanser:.30, speed_relay:.28});
   const profiles=Object.freeze(Object.fromEntries(rows.map(([id,shape,color,travel,hz,seconds])=>[id,Object.freeze({
     id,shape,color,travel,hz,seconds,cue:"module_"+id,
-    asset:"./assets/audio/modules/"+id+".wav",gain:id==="laser"?.38:id==="emp"?.35:.50
+    asset:"./assets/audio/modules/"+id+".wav",gain:soundGains[id],
+    audioFamily:travel!==null?"weapon":["shield","armor","barrier","reflector","guardian_dome","phase_armor","buffer_shield","last_bastion"].includes(id)?"protection":"utility"
   })])));
   root.GridshardModulePresentation=profiles;
   if(typeof module!=="undefined"&&module.exports)module.exports=profiles;

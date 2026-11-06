@@ -8,6 +8,7 @@ const net = require("node:net");
 const {spawn} = require("node:child_process");
 const assert = require("node:assert/strict");
 const {chromium} = require("@playwright/test");
+const {waitForParticipantReady} = require("../e2e/ui-helpers");
 
 async function step(label, action) {
   let timer;
@@ -37,12 +38,16 @@ async function check() {
   const env = {...process.env, GRIDSHARD_RUNTIME_MODE:"development", GRIDSHARD_AUTH_REQUIRED:"1",
     GRIDSHARD_RATE_LIMIT_REQUIRED:"0", GRIDSHARD_RUNTIME_DATA_DIR:temporary,
     GRIDSHARD_PLAY_REVIEW_CONFIG_FILE:configPath, DATABASE_URL:"", REDIS_URL:"",
+    GRIDSHARD_E2E_BASE_URL:origin, GRIDSHARD_E2E_S1_ACCEPTANCE:"1", GRIDSHARD_E2E_S1_BOTS:"0",
     GRIDSHARD_PUSH_ENABLED:"0", GRIDSHARD_STORE_RECONCILE_INTERVAL_SECONDS:"0"};
   for (const name of ["DATABASE_URL_FILE", "REDIS_URL_FILE", "GRIDSHARD_AUTH_SIGNING_KEY", "GRIDSHARD_AUTH_SIGNING_KEY_FILE",
     "RELAY_PLAYER_DATA_PATH", "RELAY_TELEMETRY_PATH", "RELAY_BATTLE_POOL_PRESET_PATH", "GRIDSHARD_AUTH_IDENTITY_PATH",
     "GRIDSHARD_AUTH_KEY_PATH", "GRIDSHARD_PLATFORM_STATE_PATH", "GRIDSHARD_PRODUCT_ANALYTICS_PATH", "GRIDSHARD_TEAM_DATA_PATH",
     "GRIDSHARD_CLIENT_DIR", "GRIDSHARD_DIST_DIR"]) delete env[name];
-  const child = spawn(process.env.GRIDSHARD_TEST_PYTHON || "python", ["-m","uvicorn","app.main:app","--host","127.0.0.1","--port",String(port),"--log-level","warning"],
+  // Premium is deliberately closed before the first season. Use the existing
+  // loopback-only published S1 fixture to verify access during an active season;
+  // never bypass the season gate or publish the production draft for this test.
+  const child = spawn(process.env.GRIDSHARD_TEST_PYTHON || "python", [path.join(root,"tools/e2e_server.py")],
     {cwd:path.join(root,"server"), env, windowsHide:true, stdio:["ignore","pipe","pipe"]});
   let output = "";
   child.stdout.on("data", chunk => {output += chunk;}); child.stderr.on("data",chunk => {output += chunk;});
@@ -65,12 +70,19 @@ async function check() {
       const pageErrors = [];
       page.on("pageerror",error => pageErrors.push(error.message));
       await page.route("**/*", route => route.request().url().startsWith(origin) ? route.continue() : route.abort());
+      await page.addInitScript(()=>localStorage.setItem("gridshard.tutorial.v1","complete"));
       await step(`Open source app at ${viewport.width}x${viewport.height}`, () => page.goto(origin));
       // The actual source app boots an ordinary isolated guest, no native PGS.
       await page.waitForFunction(() => !!localStorage.getItem("project-relay.web-test.participant-id"));
       const original = await page.evaluate(() => localStorage.getItem("project-relay.web-test.participant-id"));
-      // All four actual entry points use the same dialog; boot can finish fast.
-      await page.locator("[data-review-access-open]:visible").first().click();
+      assert.equal(await page.locator('#startup-loading [data-review-access-open], #account-onboarding-dialog [data-review-access-open]').count(),0);
+      await waitForParticipantReady(page);
+      await step("Open reviewer access through Settings",async()=>{
+        await page.locator('#lobby-menu-button').click();
+        await page.locator('#lobby-menu [data-open-screen="settings"]').click();
+        await page.locator('#settings-tab-account').click();
+        await page.locator('#settings-panel-account [data-review-access-open]').click();
+      });
       const panel = page.locator("#review-access-dialog");
       await panel.waitFor({state:"visible"});
       const bounds = await panel.boundingBox();
@@ -84,7 +96,7 @@ async function check() {
       const signedResponse = await signedIn;
       if (!signedResponse || signedResponse.status() !== 200) throw new Error(`Review UI did not sign in: HTTP ${signedResponse?.status() || "no request"}; ${await page.locator("#review-access-status").textContent()}; browser errors: ${pageErrors.join(" | ")}`);
       await page.waitForFunction(id => localStorage.getItem("project-relay.web-test.participant-id") === id, config.player_id);
-      await step("Wait for authenticated source-app reload", () => page.waitForFunction(() => GridshardAuth.session.playerId === localStorage.getItem("project-relay.web-test.participant-id") && !!GridshardAuth.session.accessToken));
+      await step("Wait for authenticated source-app reload", () => page.waitForFunction(() => globalThis.GridshardAuth?.session?.playerId === localStorage.getItem("project-relay.web-test.participant-id") && !!globalThis.GridshardAuth?.session?.accessToken));
       const state = await step("Inspect authenticated premium state", () => page.evaluate(async() => {
         const id = localStorage.getItem("project-relay.web-test.participant-id");
         const [profile,store] = await Promise.all([fetch(`/profile/${id}`).then(r => r.json()),fetch(`/store/${id}`).then(r => r.json())]);
@@ -108,6 +120,9 @@ async function check() {
           await page.locator("#daily-meta-dialog").waitFor({state:"hidden"});
         });
       }
+      // Current clients may have a one-time release announcement after the
+      // daily meta. Acknowledge it through its normal button before Settings.
+      await waitForParticipantReady(page);
       // Exercise the real Settings entry point after the reload.
       await step("Open the top-bar menu", () => page.locator("#lobby-menu-button").click());
       await step("Open Settings in source app", () => page.locator('#lobby-menu [data-open-screen="settings"]').click());
@@ -118,8 +133,10 @@ async function check() {
       assert.equal(dialogState.open,true, `Settings must open the modal review dialog: ${JSON.stringify(dialogState)}`);
       await page.locator("#review-access-restore").click();
       await step("Verify return to unchanged original profile", () => page.waitForFunction(id => localStorage.getItem("project-relay.web-test.participant-id") === id, original));
+      await step("Wait for restored profile reload",()=>page.waitForFunction(id=>globalThis.GridshardAuth?.session?.playerId===id&&!!globalThis.GridshardAuth?.session?.accessToken,original));
+      await waitForParticipantReady(page);
       assert.deepEqual(pageErrors,[]);
-      await page.close(); checked++;
+      await step("Close isolated viewport",()=>page.close()); checked++;
     }
     console.log(`Review sign-in, all premium tiers, battle premium and original-profile return verified at ${checked} viewport sizes. Source only; no APK/AAB or deployment.`);
     console.log(`Screenshots (password fields masked): ${screenshots}`);

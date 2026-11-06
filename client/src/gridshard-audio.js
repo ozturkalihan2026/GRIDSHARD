@@ -26,7 +26,7 @@
   });
 
   const GRIDSHARD_AUDIO_MIX = Object.freeze({
-    version:"shardglass-seamless-v19",
+    version:"shardglass-seamless-v21",
     crossfadeMs:1200,
     menuPoolCrossfadeMs:480,
     resultCrossfadeMs:320,
@@ -36,10 +36,11 @@
     sfxBaseGain:0.55,
     // Battle stems use a limited music bus; combat SFX use a separate
     // compressed bus with makeup compensation and bounded voice density.
-    battleMusicGain:2.85,
-    // v19: the physical devices need readable attack/defence feedback again.
-    // Voice limits and compressor remain; +8.4 dB restores the audible bus.
-    battleSfxGain:0.42,
+    battleMusicGain:2.35,
+    // v21: restore the music bed after the v20 physical listening trial.
+    // Role-authored effects carry detail; cores own the larger sonic signature.
+    // User sliders, compressor and bounded voice density stay unchanged.
+    battleSfxGain:0.70,
     resultMusicGain:0.80,
     battlePriorityCueGain:1.4,
     sfxCompressor:Object.freeze({ threshold:-20, knee:12, ratio:4, attack:.004, release:.22 }),
@@ -272,20 +273,20 @@
   });
 
   const GRIDSHARD_SFX_CUES = Object.freeze({
-    core_resonance_activate:{asset:"./assets/audio/core_resonance_activate.wav",gain:0.52,identity:"core v6 resonance activate"},
-    core_resonance_shot:{asset:"./assets/audio/core_resonance_shot.wav",gain:0.32,identity:"core v6 resonance shot"},
-    core_guardian_activate:{asset:"./assets/audio/core_guardian_activate.wav",gain:0.52,identity:"core v6 guardian activate"},
-    core_guardian_shot:{asset:"./assets/audio/core_guardian_shot.wav",gain:0.32,identity:"core v6 guardian shot"},
-    core_overdrive_activate:{asset:"./assets/audio/core_overdrive_activate.wav",gain:0.52,identity:"core v6 overdrive activate"},
-    core_overdrive_shot:{asset:"./assets/audio/core_overdrive_shot.wav",gain:0.32,identity:"core v6 overdrive shot"},
-    core_disruptor_activate:{asset:"./assets/audio/core_disruptor_activate.wav",gain:0.52,identity:"core v6 disruptor activate"},
-    core_disruptor_shot:{asset:"./assets/audio/core_disruptor_shot.wav",gain:0.32,identity:"core v6 disruptor shot"},
-    core_capacitor_activate:{asset:"./assets/audio/core_capacitor_activate.wav",gain:0.52,identity:"core v6 capacitor activate"},
-    core_capacitor_shot:{asset:"./assets/audio/core_capacitor_shot.wav",gain:0.32,identity:"core v6 capacitor shot"},
-    core_phoenix_activate:{asset:"./assets/audio/core_phoenix_activate.wav",gain:0.52,identity:"core v6 phoenix activate"},
-    core_phoenix_shot:{asset:"./assets/audio/core_phoenix_shot.wav",gain:0.32,identity:"core v6 phoenix shot"},
-    core_quantum_activate:{asset:"./assets/audio/core_quantum_activate.wav",gain:0.52,identity:"core v6 quantum activate"},
-    core_quantum_shot:{asset:"./assets/audio/core_quantum_shot.wav",gain:0.32,identity:"core v6 quantum shot"},
+    core_resonance_activate:{asset:"./assets/audio/core_resonance_activate.wav",gain:0.78,identity:"core v6 resonance activate"},
+    core_resonance_shot:{asset:"./assets/audio/core_resonance_shot.wav",gain:0.58,identity:"core v6 resonance shot"},
+    core_guardian_activate:{asset:"./assets/audio/core_guardian_activate.wav",gain:0.78,identity:"core v6 guardian activate"},
+    core_guardian_shot:{asset:"./assets/audio/core_guardian_shot.wav",gain:0.58,identity:"core v6 guardian shot"},
+    core_overdrive_activate:{asset:"./assets/audio/core_overdrive_activate.wav",gain:0.78,identity:"core v6 overdrive activate"},
+    core_overdrive_shot:{asset:"./assets/audio/core_overdrive_shot.wav",gain:0.58,identity:"core v6 overdrive shot"},
+    core_disruptor_activate:{asset:"./assets/audio/core_disruptor_activate.wav",gain:0.78,identity:"core v6 disruptor activate"},
+    core_disruptor_shot:{asset:"./assets/audio/core_disruptor_shot.wav",gain:0.58,identity:"core v6 disruptor shot"},
+    core_capacitor_activate:{asset:"./assets/audio/core_capacitor_activate.wav",gain:0.78,identity:"core v6 capacitor activate"},
+    core_capacitor_shot:{asset:"./assets/audio/core_capacitor_shot.wav",gain:0.58,identity:"core v6 capacitor shot"},
+    core_phoenix_activate:{asset:"./assets/audio/core_phoenix_activate.wav",gain:0.78,identity:"core v6 phoenix activate"},
+    core_phoenix_shot:{asset:"./assets/audio/core_phoenix_shot.wav",gain:0.58,identity:"core v6 phoenix shot"},
+    core_quantum_activate:{asset:"./assets/audio/core_quantum_activate.wav",gain:0.78,identity:"core v6 quantum activate"},
+    core_quantum_shot:{asset:"./assets/audio/core_quantum_shot.wav",gain:0.58,identity:"core v6 quantum shot"},
     ...Object.fromEntries(Object.values(global.GridshardModulePresentation || {}).map(p=>[p.cue,{asset:p.asset,gain:p.gain,identity:p.id+" · "+p.shape}])),
     cooling_air:{
       asset:"./assets/audio/cooling_air.wav",
@@ -307,11 +308,11 @@
       identity:"arka planda kalan batarya üretim darbesi",
     },
     amplifier_charge:{
-      asset:"./assets/audio/energy_transfer.wav",
+      asset:"./assets/audio/modules/amplifier.wav",
       // Sustained production/support sources must sit below a short laser shot.
       // The untrimmed UI/core-ready energy_transfer alias remains unchanged.
-      gain:0.045,
-      identity:"dengelenmiş güçlendirici akım darbesi",
+      gain:0.28,
+      identity:"kısa akım bobini gerilimi",
     },
     laser_fire:{
       asset:"./assets/audio/laser_pulse_v2.wav",
@@ -365,10 +366,9 @@
     },
     emp:{
       asset:"./assets/audio/emp.wav",
-      // This legacy transient is much hotter than the current module files;
-      // include its battle-priority multiplier when matching routine devices.
-      gain:0.06,
-      identity:"yüksek frekans kırılması → kısa sessizlik",
+      // The authored power-down includes battle priority; keep EMP below shots.
+      gain:0.25,
+      identity:"yuvarlak güç kesilmesi ve kısa elektrik sönümü",
     },
     virus_glitch:{
       asset:"./assets/audio/virus_glitch.wav",
@@ -438,17 +438,17 @@
     },
     omega_link:{
       asset:"./assets/audio/port_connect.wav",
-      gain:0.15,
+      gain:0.12,
       identity:"omega rezonans bağlantısı",
     },
     chrono_shift:{
       asset:"./assets/audio/port_connect.wav",
-      gain:0.15,
+      gain:0.12,
       identity:"kronos penceresinin açılması",
     },
     target_lock:{
       asset:"./assets/audio/port_connect.wav",
-      gain:0.15,
+      gain:0.12,
       identity:"hedefe kilitlenme",
     },
     nano_pulse:{
@@ -1243,7 +1243,7 @@
     }
 
     _sfxTargetVolume() {
-      // Savaş durumlarında efektler katmanlı müziğin arkasında kalır.
+      // Combat uses its own tested balance beneath the unchanged user slider.
       const battleDuck = this._usesCombatSfxMix()
         ? GRIDSHARD_AUDIO_MIX.battleSfxGain
         : 1;

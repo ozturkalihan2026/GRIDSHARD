@@ -4,6 +4,14 @@ Status: source access is implemented; the user subsequently authorized the match
 
 ## Reviewer instructions (English, for Play Console)
 
+2.4.0 candidate: the loading and first-registration buttons have been removed.
+Review access remains in Settings > Account and Privacy and session recovery.
+The English instructions below must replace the old loading/account-screen route
+in Play Console App access before submitting 2.4.0; the Console has not been
+updated by this local change. The private review account and entitlements remain
+unchanged. Google requires usable review access, not a startup button:
+[sign-in requirements](https://support.google.com/googleplay/android-developer/answer/15748846?hl=en).
+
 Access group name: `GRIDSHARD review demo`
 
 Enter the private username and password in the dedicated Console fields. They are not a Google account or a real player's credentials. Do not place the password in this document, source, an APK, runtime-config.js, a URL or a chat.
@@ -11,7 +19,7 @@ Enter the private username and password in the dedicated Console fields. They ar
 Paste the following in “Other information required to access your app” (under 500 characters):
 
 ```text
-Open GRIDSHARD and tap "REVIEW / DEMO SIGN-IN" on the loading/account screen or in Profile > Settings > Account and Privacy. Enter the supplied username/password and tap "SIGN IN TO REVIEW". No Google account, OTP, subscription or payment is required. The separate demo profile has Season Pass and Battle Premium enabled, all premium tiers unlocked, and currency to inspect paid items. Complete daily meta selection if prompted. Internet is required. Do not link a personal account.
+Open GRIDSHARD. On first launch choose guest access and finish the daily meta prompt. Open the top-right menu > Settings > Account and Privacy > "REVIEW / DEMO SIGN-IN". Enter the supplied username/password and tap "SIGN IN TO REVIEW". No Google account, OTP or payment is needed. This separate demo has Season Pass, Battle Premium and currency for review. Do not link a personal account. Internet required.
 ```
 
 After sign-in the app reloads into the demo profile. If the daily-meta dialog appears, tap its selection button, wait for the result, then tap the same button to continue. Open the Season screen to inspect and claim premium tiers; open Shop to inspect products and spend the preloaded currency on chests/items. Battle Premium applies to normal completed battles. Ordinary progression, matchmaking and reward rules remain in effect; this is not an admin mode or a fabricated payment flow. Cash/NFT rewards are not provided. The automatic first-player guide is skipped only for the private demo; reviewers can start it explicitly in Settings. Normal players keep their existing guide.

@@ -8,6 +8,7 @@ const {configureNativeDisplay} = require("./configure-native-display.js");
 const {configureNativeOAuth} = require("./configure-native-oauth.js");
 const {configureNativePlayGames} = require("./configure-native-play-games.js");
 const {configureNativeBilling} = require("./configure-native-billing.js");
+const {clientVersion, androidVersion} = require("./client-version.js");
 const {DEMO_APP_ID, adBuildConfig, configureNativeAdSafety} = require("./configure-native-ad-safety.js");
 
 function androidPortrait(source) {
@@ -122,6 +123,12 @@ function configure(platform) {
     configureNativeOAuth(nativeRoot, nativeDebugTarget);
     configureNativePlayGames(nativeRoot, root);
     configureNativeAdSafety(nativeRoot, root, adConfig);
+    if (nativeDebugTarget) {
+      const gradle = path.join(nativeRoot, "app/build.gradle");
+      const beforeGradle = fs.readFileSync(gradle, "utf8");
+      const afterGradle = androidVersion(beforeGradle, clientVersion(root));
+      if (beforeGradle !== afterGradle) fs.writeFileSync(gradle, afterGradle, "utf8");
+    }
     if (!nativeDebugTarget) {
       const gradle = path.join(nativeRoot,"app/build.gradle");
       const beforeGradle = fs.readFileSync(gradle,"utf8");

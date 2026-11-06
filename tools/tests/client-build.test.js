@@ -18,6 +18,7 @@ function fixture(t, { audio = false } = {}) {
     fs.mkdirSync(path.join(root, "client", folder), { recursive: true });
   }
   const write = (file, text) => fs.writeFileSync(path.join(root, "client", file), text);
+  fs.writeFileSync(path.join(root, "package.json"), JSON.stringify({version:"2.4.0", gridshard:{androidVersionCode:15}}));
   const audioScripts = audio
     ? '\n<script src="./src/gridshard-audio-formats.js"></script>\n<script src="./src/gridshard-audio.js"></script>'
     : "";
@@ -29,6 +30,8 @@ function fixture(t, { audio = false } = {}) {
 <link rel="stylesheet" href="./src/canon.css" />
 <!-- /build:styles -->
 </head><body>
+<span id="boot-version" data-version="2.4.0">Sürüm: 2.4.0</span>
+<dd id="ui-build-version">2.4.0</dd>
 <script src="./runtime-config.js"></script>
 <!-- build:scripts -->
 <script src="./src/first.js"></script>${audioScripts}
@@ -79,6 +82,34 @@ test("veri kaydındaki yön kareleri HTML etiketi olmadan pakete girer", async(t
   const {destination}=await buildClient({root,environment:{}});
   assert.equal(fs.readFileSync(path.join(destination,"assets/virus-y00.webp"),"utf8"),"front-frame");
   assert.equal(fs.readFileSync(path.join(destination,"assets/virus-y12.webp"),"utf8"),"rear-frame");
+});
+
+test("eski açılış veya ayarlar sürümü önceki paketi değiştirmeden derlemeyi durdurur", async(t)=>{
+  const {root,write}=fixture(t);
+  const html=fs.readFileSync(path.join(root,"client/index.html"),"utf8");
+  const {destination,manifest}=await buildClient({root,environment:{}});
+  assert.deepEqual(manifest.release,{versionName:"2.4.0",versionCode:15});
+  const original=fs.readFileSync(path.join(destination,"index.html"),"utf8");
+  for(const stale of [
+    html.replace('data-version="2.4.0"','data-version="2.3.0"'),
+    html.replace('Sürüm: 2.4.0','Sürüm: 2.3.0'),
+    html.replace('id="ui-build-version">2.4.0','id="ui-build-version">2.3.0'),
+  ]){
+    write("index.html",stale);
+    await assert.rejects(buildClient({root,environment:{}}),/sürüm uyuşmazlığı/);
+    assert.equal(fs.readFileSync(path.join(destination,"index.html"),"utf8"),original);
+  }
+});
+
+test("Android test sürümü canonical istemciden gelir; belirsiz şablon reddedilir",()=>{
+  const {androidVersion}=require("../client-version");
+  const old='defaultConfig { versionCode 1\nversionName "1.0" }';
+  const release={versionName:"2.4.0",versionCode:15};
+  const updated=androidVersion(old,release);
+  assert.match(updated,/versionCode 15\s+versionName "2\.4\.0"/);
+  assert.equal(androidVersion(updated,release),updated);
+  assert.throws(()=>androidVersion(old+'\nversionCode 2',release),/tek versionCode/);
+  assert.throws(()=>androidVersion('defaultConfig {}',release),/tek versionCode/);
 });
 
 test("API ayarı web için aynı origin'e izin verir, mobilde açık adres ister", () => {

@@ -1,5 +1,21 @@
 # UI-09 — Gelen / Giden İstek çizgi düzeltmesi
 
+**7 Kasım ortak düzeltme:** Mesaj kutusu, kart sayfaları/modül sınıfları,
+takım, turnuva, ayarlar, kozmetik ve ortak lider panosu alt sekmelerindeki
+seçili metin alt çizgisi ortak bileşen kuralından kaldırıldı. Turkuaz yüzey,
+kenar, bildirim ve klavye odağı korunur. Oyuncu ve takım koleksiyonu önizleme
+düğmeleri aynı pahlı `gs-action-button` yüzeyini, sakin altın `#d7b66b`
+ve koyu `#302514` yazıyı kullanır; kilit/sahiplik değişmez.
+`presentation-refinements.spec.js` bütün ana alt sekme akışlarını ve393/320
+düğme görünümünü; `liveops-cosmetics.spec.js` takım sekmelerini ve her iki
+önizlemenin sahiplik vermediğini doğrular. Chromium/Android dört test PASS;
+yerel kanıt `qa_reports/release240-tabs-e2e.log`. Genel yayın takvimi korunur.
+
+**6 Kasım genişletmesi:** Aynı çizgi düzeltmesi Arkadaş, Mesaj, Gelen İstek,
+Giden İstek ve Savaş sekmelerinin tamamına uygulandı. Seçim/odak ve rozetler
+korunur. Üç tarayıcıdaki TR/EN 320/393 gerçek gezinme kabulü beş sekmeyi kapsar.
+Aşağıdaki iki sekmeli kapsam 5 Kasım tarihsel kaydıdır.
+
 5 Kasım 2026 kullanıcı isteği; 2.4.0 kapsamına eklendi.
 
 Ortak etkin sekme stili metne 4 px ofsetli alt çizgi veriyordu. Arkadaşlar

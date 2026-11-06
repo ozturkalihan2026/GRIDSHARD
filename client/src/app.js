@@ -1428,8 +1428,18 @@
     else if (!arrow) button.appendChild(createUpgradeArrow());
   }
 
-  // Alt çubuk: yükseltilebilir kart ya da seçilebilir yetenek varken Kartlar
-  // düğmesinde yeşil ışık; sandık indirimi günü Mağaza düğmesinde indirim oranı.
+  function shopHasClaimableGift(state) {
+    if (!state || state.unavailable) return false;
+    return (state.chests?.definitions || []).some((gift) =>
+      (gift.gift ?? gift.id === "field_3h")
+      && gift.claim_available !== false
+      && Number(gift.claim_remaining_seconds || 0) === 0
+      && (state.shop?.chest_store?.items || []).some(item => item.definition_id === gift.id)
+    );
+  }
+
+  // Kart yükseltmesi ve alınabilir mağaza hediyesi aynı yeşil ışığı kullanır.
+  // İndirim rozeti, hediye bildiriminden bağımsız olarak gösterilir.
   function renderDockIndicators() {
     const state = metaProgressionState;
     for (const button of document.querySelectorAll("[data-card-page]")) {
@@ -1448,14 +1458,18 @@
     }
     const shopButton = document.querySelector('#app-bottom-dock [data-open-screen="shop"]');
     const badge = document.getElementById("dock-shop-sale");
-    if (shopButton && badge) {
+    if (shopButton) {
       const store = state?.shop?.chest_store || null;
       const percent = Math.round(Number(store?.discount_percent || 0));
       const onSale = Boolean(store?.sale_active) && percent > 0;
-      badge.hidden = !onSale;
-      badge.textContent = onSale ? `-%${percent}` : "";
+      const giftReady = shopHasClaimableGift(state);
+      if (badge) {
+        badge.hidden = !onSale;
+        badge.textContent = onSale ? `-%${percent}` : "";
+      }
       shopButton.classList.toggle("has-sale-badge", onSale);
-      shopButton.setAttribute("aria-label", onSale ? `Mağaza · %${percent} indirim` : "Mağaza");
+      shopButton.classList.toggle("has-gift-notification", giftReady);
+      shopButton.setAttribute("aria-label", ["Mağaza", giftReady ? "Hediye sandık hazır" : "", onSale ? `%${percent} indirim` : ""].filter(Boolean).join(" · "));
     }
   }
 
@@ -6452,6 +6466,33 @@
     }
   }
 
+  function renderTournamentRewards(hostId, prizes, note) {
+    const host = document.getElementById(hostId);
+    if (!host) return;
+    host.replaceChildren();
+    if (!prizes?.length) {
+      const empty = document.createElement("li");
+      empty.textContent = localizedUiText("Ödül içeriği yayın hazırlığı tamamlandığında açıklanacak.");
+      host.appendChild(empty);
+      return;
+    }
+    for (const prize of [...prizes].sort((a,b) => Number(a.position)-Number(b.position))) {
+      const item = document.createElement("li");
+      const position = document.createElement("strong");
+      position.className = "tournament-position";
+      position.textContent = String(prize.position);
+      const identity = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = localizedUiText(prize.chest_name_tr || "Sıralama Ödülü");
+      const detail = document.createElement("small");
+      detail.textContent = localizedUiText(note);
+      identity.append(title, detail);
+      item.append(position, identity);
+      appendTournamentPrizeChest(item, [prize], prize.position, note);
+      host.appendChild(item);
+    }
+  }
+
   function renderWeeklyTournament(state) {
     const tournament = state?.weekly_tournament || {};
     const name = document.getElementById("weekly-tournament-name");
@@ -6474,6 +6515,9 @@
       ["SIRAN", participant ? `#${participant.position}` : "Henüz yok"],
       ["KAZANILAN KUPA", participant ? participant.trophies_earned || participant.points : 0, true],
     ]);
+    if (activeWeeklyEventTab === "rewards") {
+      renderTournamentRewards("weekly-tournament-rewards", tournament.prizes || [], "Hafta sonunda mesaj kutusuna teslim edilir.");
+    }
     if (activeWeeklyEventTab !== "standings") return;
     const host = document.getElementById("weekly-tournament-standings");
     if (!host) return;
@@ -6555,10 +6599,15 @@
       ["TAKIM PUANI", viewerTeam ? `${viewerTeam.points} P` : viewer.team_id ? "Kayıtlı değil" : "Takımın yok"],
     ]);
     if (activeTeamEventTab === "overview") renderTeamTournamentCalendar(tournament);
+    if (activeTeamEventTab === "rewards") {
+      renderTournamentRewards("team-tournament-rewards", tournament.prizes || [], `Turnuva bitince en az ${Number(tournament.minimum_reward_points || 4)} katkı puanı olan oyuncuların mesaj kutusuna teslim edilir.`);
+    }
     const standings = document.getElementById("team-tournament-standings");
     if (standings && activeTeamEventTab === "standings") {
       standings.replaceChildren();
-      for (const row of standingsRows.slice(0, 12)) {
+      const visibleTeams = standingsRows.slice(0, 12);
+      if (viewerTeam && !visibleTeams.includes(viewerTeam)) visibleTeams.push(viewerTeam);
+      for (const row of visibleTeams) {
         const item = document.createElement("li");
         if (row.team_id === viewer.team_id && !row.is_ai) item.classList.add("is-current-player");
         const position = document.createElement("strong");
@@ -8677,7 +8726,7 @@
       healthState:
         serverHealthState,
       expectedVersion:
-        "2.3.0",
+        document.getElementById("boot-version").dataset.version,
       compatibleServerVersions: ["2.2.1", "2.3.0"],
       expectedProtocolVersion: 2,
     });
@@ -8720,7 +8769,7 @@
 
   telemetryDispatcher.trackGameOpened({
     platform: "web",
-    build: "2.3.0",
+    build: document.getElementById("boot-version").dataset.version,
   });
 
   const postMatchSync =
@@ -9662,7 +9711,9 @@
   }
 
   function attackImpactCue({sourceDefinitionId=null, defended=false, targetDefinitionId=null}={}) {
-    if (defended) return CRAFTED_WEAPON_IDS.has(targetDefinitionId)||!globalThis.GridshardModulePresentation?.[targetDefinitionId] ? "shield_absorb" : globalThis.GridshardModulePresentation[targetDefinitionId].cue;
+    const protection=globalThis.GridshardModulePresentation?.[targetDefinitionId];
+    if (defended && protection?.audioFamily === "protection") return protection.cue;
+    if (defended && !targetDefinitionId) return "shield_absorb";
     if(!CRAFTED_WEAPON_IDS.has(sourceDefinitionId)&&globalThis.GridshardModulePresentation?.[sourceDefinitionId])return null; // One quiet, complete shot sound, no layered impact ping.
     const presentation=WEAPON_PRESENTATION[String(sourceDefinitionId || "").trim().replaceAll("-", "_")];
     if (presentation && Object.hasOwn(presentation, "impactCue")) return presentation.impactCue;
@@ -9693,6 +9744,15 @@
       }
       triggerGridshardCue(cue,{pan});
     });
+  }
+
+  function attackWasDefended(data, targetModule) {
+    const raw=Math.max(0,Number(data.raw_damage ?? data.base_damage ?? 0));
+    const applied=Math.max(0,Number(data.damage || 0));
+    // defense_type names the target definition, even on an unblocked hit.
+    // A lethal overkill is not absorption; explicit reduction still counts.
+    return Number(data.reduced_damage || 0)>0 || (raw>applied &&
+      (applied===0 || Number(targetModule?.hp || 0)>0));
   }
 
   // Left/right placement of a battle sound from its device on screen (±0.6).
@@ -12247,15 +12307,7 @@
             module.instance_id
             === data.target_module_id
         );
-      const defenseType=String(
-        data.defense_type || ""
-      ).trim().toLocaleLowerCase("tr");
-      const defended=
-        Boolean(defenseType)
-        && ![
-          "none",
-          "yok",
-        ].includes(defenseType);
+      const defended=attackWasDefended(data,targetModule);
       if (
         !data.attacker_player_id
         || !data.target_player_id

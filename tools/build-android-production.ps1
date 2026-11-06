@@ -4,6 +4,10 @@ $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot 'android-toolchain.ps1')
 $taskConfig = Get-Content -LiteralPath (Join-Path $taskRoot 'config\android-production.json') -Raw | ConvertFrom-Json
+$taskPackage = Get-Content -LiteralPath (Join-Path $taskRoot 'package.json') -Raw | ConvertFrom-Json
+if ($taskConfig.versionName -ne $taskPackage.version -or $taskConfig.versionCode -ne $taskPackage.gridshard.androidVersionCode) {
+    throw 'Client and production release versions differ. Prepare the reviewed production version before building a signed release.'
+}
 $taskEnvNames = @('GRIDSHARD_ANDROID_PRODUCTION','GRIDSHARD_APP_ID','GRIDSHARD_API_BASE_URL',
     'GRIDSHARD_PLAY_GAMES_ID','GRIDSHARD_PLAY_GAMES_SERVER_CLIENT_ID','GRIDSHARD_LOCAL_DEBUG',
     'GRIDSHARD_REMOTE_DEBUG','GRIDSHARD_ADMOB_TEST_CONFIG','GRIDSHARD_ALLOW_INSECURE_MOBILE_API',
