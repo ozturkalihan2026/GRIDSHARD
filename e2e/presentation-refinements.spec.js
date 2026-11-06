@@ -7,6 +7,63 @@ test.beforeEach(async ({page}) => {
   await waitForParticipantReady(page);
 });
 
+test("all subpage tabs select without underlining their labels",async({page},info)=>{
+  test.setTimeout(120000);
+  const checked=[];
+  async function tabs(selector){
+    const buttons=page.locator(selector);
+    const count=await buttons.count();
+    expect(count).toBeGreaterThan(1);
+    for(let index=0;index<count;index++){
+      const button=buttons.nth(index);
+      await button.click();
+      await expect.poll(()=>button.evaluate(el=>el.classList.contains('is-active')||el.getAttribute('aria-selected')==='true'||el.getAttribute('aria-pressed')==='true')).toBe(true);
+      const styles=await button.evaluate(el=>[el,...el.querySelectorAll('strong,small,span:not(.ui-art)')].map(n=>getComputedStyle(n).textDecorationLine));
+      expect(styles.every(value=>!value.includes('underline')),selector).toBe(true);
+    }
+    checked.push({selector,count});
+  }
+  await page.locator('#reward-inbox-button').click();
+  await tabs('.reward-inbox-tabs > button');
+  await page.locator('#reward-inbox-dialog').screenshot({path:info.outputPath('inbox-clean-tabs.png')});
+  await page.locator('#reward-inbox-close').click();
+  await page.locator('#app-bottom-dock [data-shell-screen="modules"]').click();
+  await tabs('.cards-page-tabs > button');
+  await page.locator('[data-card-page="modules"]').click();
+  await tabs('#module-category-tabs > button');
+  await page.locator('#app-bottom-dock [data-shell-screen="events"]').click();
+  await page.locator('#events-screen [data-open-screen="weekly-event"]').click();
+  await tabs('[data-weekly-event-tab]');
+  await page.locator('#app-bottom-dock [data-shell-screen="events"]').click();
+  await page.locator('#events-screen [data-open-screen="team-event"]').click();
+  await tabs('[data-team-event-tab]');
+  await page.locator('#app-bottom-dock [data-shell-screen="menu"]').click();
+  await page.locator('#lobby-menu-button').click();
+  await page.locator('#lobby-menu [data-open-screen="settings"]').click();
+  await tabs('[data-settings-tab]');
+  await page.locator('#app-bottom-dock [data-shell-screen="menu"]').click();
+  await page.locator('#lobby-menu-button').click();
+  await page.locator('#lobby-menu [data-open-screen="avatar"]').click();
+  await tabs('[data-cosmetic-tab]');
+  const preview=page.locator('#avatar-customization-screen [data-open-cosmetic-collection]');
+  await expect(preview).toHaveCSS('color','rgb(48, 37, 20)');
+  expect(await preview.evaluate(el=>getComputedStyle(el).getPropertyValue('--gs2-face').trim())).toBe('#d7b66b');
+  expect(await preview.evaluate(el=>getComputedStyle(el,'::before').clipPath)).toContain('polygon');
+  for(const width of [393,320]){
+    await page.setViewportSize({width,height:852});
+    await preview.scrollIntoViewIfNeeded();
+    const box=await preview.boundingBox();
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x+box.width).toBeLessThanOrEqual(width);
+    await page.screenshot({path:info.outputPath('collection-highlight-'+width+'.png')});
+  }
+  await preview.click();
+  await expect(page.locator('#cosmetic-collection-dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await info.attach('tab-coverage',{body:JSON.stringify(checked),contentType:'application/json'});
+});
+
 
 test("mesaj kutusu doğru sekmeyi açar ve gerçek geri eylemiyle kapanır", async ({page}) => {
   test.setTimeout(90_000);

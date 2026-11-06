@@ -1,5 +1,21 @@
 # Güncel durum — 2.4.0/15 test paketi; sürüm, mağaza ışığı ve sade başlangıç, 6 Kasım 2026
 
+- **7 Kasım son UI isteği:** Mesaj/Kartlar/Takım/Turnuva/Ayarlar/Kozmetik
+  dahil ortak alt sekmelerin seçili metin alt çizgisi kaldırıldı; turkuaz
+  yüzey/kenar, bildirim ve klavye odağı korundu. Oyuncu/takım koleksiyon
+  önizleme düğmesi ortak gs-action-button pahını, sakin altın yüzeyi
+  (#d7b66b) ve koyu yazıyı (#302514) kullanır; hak/mağaza davranışı değişmedi.
+  İki tarayıcıdaki4 UI akışı PASS;393/320 görselleri test-results altında.
+  Kanıt qa_reports/release240-tabs-e2e.log. Telefona son UI güncellemesi
+  kurulum öncesi savaş/bağlantı durumuna göre ayrıca doğrulanmalı.
+- **Git/CI ilerlemesi:** b61e3e62 ana2.4 hazırlığı ve4f48e630 ekonomi kaynak
+  özeti düzeltmesi uzak dalda. İlk CI ekonomi raporunda takvim hash’i,
+  Docker build’de eksik client-version.js/ana package.json ve iki tarihsel
+  ses testinin v19/eski pulse tepe beklentisini yakaladı. Kaynak özeti
+  güncellendi; Docker girdileri tamamlandı, ses testleri v21 sözleşmesine
+  alındı. Yerel781 istemci ve17 ilgili Python testi geçti. Son UI/CI düzeltmesi
+  aynı dala ek commit ile gönderilecek; son uzak CI sonucu ayrıca izlenir.
+  Bu işler üretim yayını veya fiziksel ses kabulü değildir.
 - **Git teslimi:** Kullanıcı bütün biriken 2.4.0 çalışmalarını commit/push
   etmeyi istedi. Dal codex/s1-bots-tournament-rewards; yayın/merge talebi yok.
   Kaynak ve plan kontrolleri geçti. Commit/push ve uzak CI sonucu Git/GitHub

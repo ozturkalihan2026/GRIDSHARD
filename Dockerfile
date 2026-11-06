@@ -5,6 +5,8 @@ COPY tools/web-build/package.json tools/web-build/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY client ./client
 COPY tools/build-client.js tools/mobile-network-policy.js ./tools/
+COPY tools/client-version.js ./tools/
+COPY package.json ./package.json
 RUN node tools/build-client.js
 
 FROM python:3.12-slim

@@ -16,6 +16,8 @@ def test_runtime_image_has_an_allowlist_and_unprivileged_single_worker():
     assert '"--no-access-log"' in source
     assert '"--no-proxy-headers"' in source
     assert "COPY tools/build-client.js tools/mobile-network-policy.js ./tools/" in source
+    assert "COPY tools/client-version.js ./tools/" in source
+    assert "COPY package.json ./package.json" in source
 
 
 def test_production_file_does_not_expose_database_or_api_or_inline_secrets():
