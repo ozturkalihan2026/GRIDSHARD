@@ -16,6 +16,21 @@
   alındı. Yerel781 istemci ve17 ilgili Python testi geçti. Son UI/CI düzeltmesi
   aynı dala ek commit ile gönderilecek; son uzak CI sonucu ayrıca izlenir.
   Bu işler üretim yayını veya fiziksel ses kabulü değildir.
+- UI düzeltmesi cb239d53 ile push edildi. Bu commit’in uzak CI’sinde sunucu,
+  istemci, PostgreSQL/Redis ve üretim imajı/restore işleri geçti. Safari genel
+  akışında tek minimum-sürüm fixture’ı eski sunucu2.3.0’a göre2.3.1 istediği
+  için başarısızdı; istemci2.4.0 doğru biçimde bunu güncelleme saymıyordu.
+  e2e/client-compatibility.spec.js artık minimumu canonical istemcinin bir
+  üst patch’inden, gelecek sunucuyu bir üst minor’dan üretir. TR/EN korunmuş
+  hesap ve gelecek sunucu senaryoları üç tarayıcıda6 PASS:
+  qa_reports/release240-compat-e2e.log. Son fixture düzeltmesi ek commit ile
+  gönderilir; son CI sonucu GitHub’dan kontrol edilmeli.
+- Son UI test APK’sı hazır/audit PASS582 dosya; web00bd3a9962bf82d4,
+  SHA256641c990038a308efe4ad2bf11f003a09cf5e2d90bb63616c05680539ce002a78.
+  Telefon USB’den ayrıldığı için bu son sekme/düğme paketi **kurulmadı**.
+  Son kurulan/proof’lu içerik b7bb715fe124efdd’dir. apk-v21-ready.json yeni
+  paketi installed=false ve pending_usb_connection olarak kaydeder; kullanıcı
+  yeniden bağladığında savaşta olmadığını doğrulayarak adb install -r uygula.
 - **Git teslimi:** Kullanıcı bütün biriken 2.4.0 çalışmalarını commit/push
   etmeyi istedi. Dal codex/s1-bots-tournament-rewards; yayın/merge talebi yok.
   Kaynak ve plan kontrolleri geçti. Commit/push ve uzak CI sonucu Git/GitHub
