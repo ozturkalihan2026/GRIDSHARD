@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
+import re
 import sys
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -55,14 +57,19 @@ def main()->None:
     ).read_text(
         encoding="utf-8"
     )
-    if EXPECTED_VERSION not in html:
-        fail(
-            "UI build etiketi sunucu sürümüyle eşleşmiyor."
-        )
+    from app.client_compatibility import SUPPORTED_CLIENT_VERSIONS
+    client_version = json.loads((ROOT/"package.json").read_text(encoding="utf-8"))["version"]
+    if client_version not in SUPPORTED_CLIENT_VERSIONS:
+        fail("İstemci sürümü incelenmiş sunucu uyumluluk listesinde yok.")
+    require_prerelease_notice(client_version, CATALOG)
+    boot = re.findall(r'id="boot-version"[^>]*data-version="([^"]+)"[^>]*>([^<]*)<', html)
+    settings = re.findall(r'id="ui-build-version">([^<]*)<', html)
+    if boot != [(client_version, f"Sürüm: {client_version}")] or settings != [client_version]:
+        fail("Açılış ve ayarlar sürümü package.json istemci sürümüyle eşleşmiyor.")
 
     print(
         "[GRIDSHARD] Kaynak bütünlüğü doğrulandı: "
-        f"{EXPECTED_VERSION}."
+        f"sunucu {EXPECTED_VERSION}, istemci {client_version}."
     )
 
 

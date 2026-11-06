@@ -1,5 +1,25 @@
 # S1 — yazılım kabulü ve kalan yayın matrisi
 
+**6 Kasım yayın öncesi UI eki:** Ayrı test APK’sı 2.4.0/15 olarak
+güncellendi; açılış/ayarlar/Android sürümü eşleştirme kapısı eklendi.
+Alınabilir mağaza hediyesi Kartlar ile ortak yeşil ışığı kullanır;
+sunucu onaylı alım sonrası ve yeniden açılışta söndüğü doğrulandı.
+REVIEW / DEMO SIGN-IN başlangıç/kayıttan kaldırıldı, Ayarlar → Hesap ve
+Gizlilik ve kurtarma erişimi korundu. Yayından önce Play Console App access
+açıklaması [yeni giriş yoluna](../PLAY_REVIEW_ACCESS.md) göre güncellenmeli.
+İmzalı AAB için üretim yapılandırması istemcinin 2.4.0/15 kimliğine birlikte
+hazırlanmalı; mevcut canlı 2.3.0 bu test güncellemesiyle değiştirilmedi.
+Ayrıntı ve native kanıt: [test kaydı](native-s1-test-20261106.md).
+
+**6 Kasım eki:** [S1 bot katılımı ve ödül ertelemesi](release-240-bot-competition.md)
+SEASON-02/UI-10 kapsamındadır. Yerel 2108 Python/araç testi geçti (52 dış
+servis testi atlandı); gerçek PostgreSQL'de 25 odaklı test ayrıca geçti.
+779 istemci ve 11 build testi geçti. Üç tarayıcıda yeni ödül sekmeleri ve
+beş arkadaş sekmesi TR/EN 320/393 kabulünü geçti. Ayrı fiziksel S1 TEST APK’sı,
+normal giriş, 40 kademe ve üç açılmamış kabul kasası doğrulandı. Kullanıcının
+ses/dokunma testi için 24 modül aynı yerel hesaba açıldı; mağaza veya canlı
+hesap değiştirilmedi. Dinleme kabulü kullanıcıdan bekleniyor.
+
 5 Kasım 2026. Kullanıcı fiziksel cihaz yerine yerel kontrollerle ilerlenmesini
 istedi. Bu kayıt yazılım kabulüdür; canlı sezon açılışı veya fiziksel cihaz kabulü
 değildir. [S1 profili](first-season-launch-profile.md), [kasa kabulü](release-240-crate-opening-acceptance.md),
@@ -30,9 +50,11 @@ Sabit sezon ödülünün sandık etiketi fazladan rastgele mağaza sandığı ü
 | W51 / 14–21 Aralık | Darbe Topu 36/24/18; aynı Kredi/Akı |
 | W52 / 21–28 Aralık, birincilik | Derin Akım çerçeve + profil çubuğu; mevcut kaynaklar |
 
-Üç oyuncu çifti toplam altı benzersiz öğedir. Dokuz takım öğesi bu tahsise
-katılmaz; takım turnuvası ayrı başlangıç ve katılım koşuluna bağlıdır.
-Hazırlık paketindeki altı dönem **draft** rezervasyondur; yetkili katalog,
+Üç oyuncu çifti toplam altı benzersiz öğedir. 6 Kasım kararıyla dokuz takım
+öğesinden üç Kutup Işığı öğesi 7 Aralık takım dönemine ayrıca ayrılır;
+takım turnuvası ayrı operatör başlangıcına bağlıdır. S1 bot takımları katılım
+eşiğine dahildir, gerçek sıralar korunur ve botlara ödül verilmez.
+Hazırlık paketindeki yedi dönem **draft** rezervasyondur; yetkili katalog,
 oyuncu sahipliği ve canlı stok bu komutla değiştirilmez:
 
 ```text

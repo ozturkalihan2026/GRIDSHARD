@@ -79,6 +79,8 @@
   min-height:56px; padding:8px; gap:7px; border:1px solid #315278; border-radius:7px; background:#102841;
 }
 :root body[data-app-screen] :is(#weekly-event-screen,#team-event-screen) .tournament-standings li.has-prize { grid-template-columns:24px minmax(0,1fr) auto 44px; }
+:root body[data-app-screen] :is(#weekly-event-screen,#team-event-screen) .tournament-reward-list li.has-prize { grid-template-columns:24px minmax(0,1fr) 44px; }
+:root body[data-app-screen] :is(#weekly-event-screen,#team-event-screen) .tournament-reward-list li:not(.has-prize) { display:block; }
 :root body[data-app-screen] :is(#weekly-event-screen,#team-event-screen) .tournament-standings li > div { min-width:0; }
 :root body[data-app-screen] :is(#weekly-event-screen,#team-event-screen) .tournament-points { min-width:0; max-width:80px; white-space:normal; overflow-wrap:anywhere; text-align:right; }
 :root body[data-app-screen] :is(#weekly-event-screen,#team-event-screen) .tournament-standings li.is-current-player { border-left:3px solid #72ded1; background:#123b40; }
@@ -94,5 +96,6 @@
 :root body[data-app-screen] #team-event-screen .team-tournament-fixtures .team-profile-link { font-size:13px; }
 @media (max-width:350px) {
   :root body[data-app-screen] :is(#weekly-event-screen,#team-event-screen) .tournament-standings li.has-prize { grid-template-columns:22px minmax(0,1fr) auto 44px; gap:4px; padding-inline:6px; }
+  :root body[data-app-screen] :is(#weekly-event-screen,#team-event-screen) .tournament-reward-list li.has-prize { grid-template-columns:22px minmax(0,1fr) 44px; }
   :root body[data-app-screen] :is(#weekly-event-screen,#team-event-screen) .event-summary-metrics { grid-template-columns:minmax(0,1fr); }
 }

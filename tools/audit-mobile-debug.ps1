@@ -125,6 +125,11 @@ try {
     }
     [xml]$manifestXml = $manifest
     $androidNamespace = "http://schemas.android.com/apk/res/android"
+    $clientPackage = Get-Content -LiteralPath (Join-Path $projectRoot 'package.json') -Raw | ConvertFrom-Json
+    if ($manifestXml.manifest.GetAttribute('versionName', $androidNamespace) -ne $clientPackage.version -or
+        [int]$manifestXml.manifest.GetAttribute('versionCode', $androidNamespace) -ne $clientPackage.gridshard.androidVersionCode) {
+        throw 'Android test paketinin sürümü package.json istemci sürümüyle eşleşmiyor.'
+    }
     $adMobIds = @($manifestXml.manifest.application.'meta-data' | Where-Object {
         $_.GetAttribute("name", $androidNamespace) -eq "com.google.android.gms.ads.APPLICATION_ID"
     })

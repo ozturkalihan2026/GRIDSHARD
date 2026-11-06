@@ -243,7 +243,8 @@ def test_unsafe_display_name_is_rejected_without_spending_the_single_rename():
         service.set_display_name(profile.player_id, "Ara 05551112233")
     assert (profile.display_name, profile.display_name_changes) == (original, 0)
 
-    assert service.set_display_name(profile.player_id, "Kıvılcım").display_name == "Kıvılcım"
+    # Kıvılcım is now a reserved canonical AI handle; use a free safe name.
+    assert service.set_display_name(profile.player_id, "GizliDevre").display_name == "GizliDevre"
     assert profile.display_name_changes == 1
 
 

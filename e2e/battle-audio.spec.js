@@ -19,10 +19,12 @@ test('all attack/core mobile sounds decode, reach the real mixer and retain AAC 
   d.state='battle';await d.unlock();
   if(!d._ensureAudioContext())throw new Error('AudioContext initialization: '+JSON.stringify(d._lastPlaybackError));
   const names=['laser_fire','pulse_cannon_fire','missile_fire',...['railgun','drone_bay','arc_cannon','plasma_mortar','quantum_repeater','burst_cannon','shield_breaker'].map(id=>'module_'+id),
-    ...['resonance','guardian','overdrive','disruptor','capacitor','phoenix','quantum'].flatMap(id=>['core_'+id+'_activate','core_'+id+'_shot'])];
+    ...['resonance','guardian','overdrive','disruptor','capacitor','phoenix','quantum'].flatMap(id=>['core_'+id+'_activate','core_'+id+'_shot']),
+    ...['shield','armor','barrier','reflector','guardian_dome','phase_armor','buffer_shield','last_bastion','virus','cleanser','speed_relay'].map(id=>'module_'+id),
+    'repair_beam','amplifier_charge','emp'];
   const rows=[];
   for(const name of names){
-   d._sfxLastTriggeredAt.clear();d._routineSfxStarts=[];
+   d._sfxLastTriggeredAt.clear();d._routineSfxStarts=[];d._lastSupportSfxAt=-Infinity;
    const cue=d.triggerCue(name),started=await cue.playback;
    const b=await d._loadAudioBuffer(cue.asset),data=b.getChannelData(0);
    let peak=0,power=0;for(const v of data){peak=Math.max(peak,Math.abs(v));power+=v*v;}
@@ -66,11 +68,11 @@ test('all attack/core mobile sounds decode, reach the real mixer and retain AAC 
   d.setAppActive(false);const hidden=d.triggerCue('core_guardian_activate');
   return {rows,budget,mixPeak,clipped,muted:muted.played,hidden:hidden.played};
  });
- expect(result.rows).toHaveLength(24);expect(result.rows.every(r=>r.started)).toBe(true);
+ await info.attach('decoded-mobile-cue-matrix',{body:JSON.stringify(result,null,2),contentType:'application/json'});
+ expect(result.rows).toHaveLength(38);expect(result.rows.every(r=>r.started)).toBe(true);
  expect(result.rows.every(r=>r.peak>0.05&&r.peak<0.55)).toBe(true);
  expect(result.budget.map(r=>r.played)).toEqual([true,true,true,false]);
  expect(result.budget[3].suppression).toBe('voice_limit');expect(result.muted).toBe(false);expect(result.hidden).toBe(false);
  expect(result.mixPeak).toBeLessThan(1);expect(result.clipped).toBe(0);
  expect(wavRequests).toHaveLength(0);expect(failures).toEqual([]);
- await info.attach('decoded-mobile-cue-matrix',{body:JSON.stringify(result,null,2),contentType:'application/json'});
 });

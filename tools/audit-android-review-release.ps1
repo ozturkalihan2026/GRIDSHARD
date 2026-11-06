@@ -53,7 +53,10 @@ try {
                         if ($taskText.Contains($taskPrivateValue)) { throw 'Private review material embedded in client' }
                     }
                     if ($taskRelative -eq 'runtime-config.js' -and $taskText -notmatch 'https://play.gridshardgame.com') { throw 'Wrong API origin' }
-                    if ($taskRelative -eq 'index.html' -and $taskText -notmatch 'REVIEW / DEMO SIGN-IN') { throw 'Review entry missing from package' }
+                    if ($taskRelative -eq 'index.html') {
+                        if ($taskText -notmatch '(?s)id="settings-panel-account"(?:(?!</section>).)*data-review-access-open') { throw 'Settings review entry missing from package' }
+                        if ($taskText -match '(?s)id="(?:startup-loading|account-onboarding-dialog)"(?:(?!</(?:section|dialog)>).)*data-review-access-open') { throw 'Review entry must not appear on startup or registration' }
+                    }
                     # Fonts ship inside the package; a cold start must not call Google's font hosts.
                     if ($taskText -match 'fonts\.(googleapis|gstatic)\.com') { throw "External font host in packaged asset: $taskRelative" }
                 }

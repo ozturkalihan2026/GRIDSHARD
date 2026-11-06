@@ -70,7 +70,11 @@ def maintenance_summary(release):
 
 def render(document, releases):
     display = lambda value: date.fromisoformat(value).strftime('%d.%m.%Y')
-    rows = [START, '| Sürüm | Çalışma dönemi | Kapsam kapanışı | Hedef yayın | Sezon başlangıcı | Oyuncuya gelen ana içerik | Kesinlik |',
+    rows = [START]
+    for release in releases:
+        if release.get('development_policy'):
+            rows += [f"**{release['version']} geliştirme ve yayın kararı:** {release['development_policy']}", '']
+    rows += ['| Sürüm | Çalışma dönemi | Kapsam kapanışı | Hedef yayın | Sezon başlangıcı | Oyuncuya gelen ana içerik | Kesinlik |',
             '| --- | --- | --- | --- | --- | --- | --- |']
     for r in releases:
         label = f"[{r['version']}](planning/releases/{r['version']}.md)" if r.get('delivery_document') else r['version']

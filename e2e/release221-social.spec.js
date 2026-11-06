@@ -105,15 +105,62 @@ test('friend request tabs keep wrapped TR/EN labels clear and retain selection',
  for(const width of [320,393])for(const language of ['tr','en']){
   await page.setViewportSize({width,height:width===320?568:852});
   await page.evaluate(l=>GridshardI18n.apply(l),language);
-  for(const tab of ['incoming','outgoing']){
+  for(const tab of ['friends','messages','incoming','outgoing','battle']){
    const button=page.locator(`[data-friends-tab="${tab}"]`);await button.click();
    await expect(button).toHaveAttribute('aria-pressed','true');
    await expect(page.locator(`[data-friends-panel="${tab}"]`)).toBeVisible();
    await expect(button).toHaveCSS('text-decoration-line','none');
    await expect(button).toHaveCSS('border-top-color','rgb(132, 237, 223)');
-   await expect(button).toHaveText(language==='en'?(tab==='incoming'?'INCOMING':'OUTGOING'):(tab==='incoming'?'GELEN İSTEK':'GİDEN İSTEK'));
+   if(['incoming','outgoing'].includes(tab))await expect(button).toHaveText(language==='en'?(tab==='incoming'?'INCOMING':'OUTGOING'):(tab==='incoming'?'GELEN İSTEK':'GİDEN İSTEK'));
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
    await page.screenshot({path:info.outputPath(`friend-${tab}-${language}-${width}.png`)});
   }
  }
+});
+
+test('S1 tournament rewards preview uses real prizes without granting and bot boards stay populated',async({page},info)=>{
+ test.skip(process.env.GRIDSHARD_E2E_S1_BOTS!=='1','Owned published-S1 bot fixture only');
+ test.setTimeout(Math.max(120000,info.project.timeout));
+ await page.goto('/?e2e=1');await waitForParticipantReady(page,60000);
+ const economy=()=>page.evaluate(async()=>{
+  const r=await fetch(GRIDSHARD_API_BASE_URL+'/profile/'+encodeURIComponent(GridshardAuth.session.playerId)+'/meta-progression');
+  if(!r.ok)throw Error('Economy HTTP '+r.status);
+  const m=await r.json();return {credits:m.circuit_credits,flux:m.flux_shards,
+   modules:m.module_collection.map(item=>({id:item.definition_id,shards:item.shards,level:item.level,unlocked:item.unlocked})),
+   cores:m.cores,chests:{slots:m.chests.slots,inventory:m.chests.inventory}};
+ });
+ const before=await economy();expect(typeof before.credits).toBe('number');
+ await page.locator('[data-shell-screen="events"]').click();
+ for(const width of [320,393])for(const language of ['tr','en']){
+  await page.setViewportSize({width,height:width===320?568:852});
+  await page.evaluate(l=>GridshardI18n.apply(l),language);
+  for(const kind of ['weekly','team']){
+   await page.locator(`#events-screen [data-open-screen="${kind}-event"]`).click();
+   const tab=page.locator(`[data-${kind}-event-tab="rewards"]`);await tab.click();
+   await expect(tab).toHaveText(language==='en'?'REWARDS':'ÖDÜLLER');
+   const rows=page.locator(`#${kind}-tournament-rewards > li`);await expect(rows).toHaveCount(3);
+   const chest=rows.first().locator('.reward-chest-button');await chest.click();
+   await expect(page.locator('.reward-preview-panel')).toBeVisible();
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+   await page.screenshot({path:info.outputPath(`${kind}-rewards-${language}-${width}.png`)});
+   // Clicking the same crate closes the pinned preview, without collection.
+   await chest.click();await page.locator(`#${kind}-event-screen .navigation-back`).click();
+  }
+ }
+ const events=await page.evaluate(async()=>{
+  const r=await fetch(GRIDSHARD_API_BASE_URL+'/events?player_id='+encodeURIComponent(GridshardAuth.session.playerId));
+  if(!r.ok)throw Error('Events HTTP '+r.status);return r.json();
+ });
+ expect(events.weekly_tournament.standings.filter(r=>r.is_bot)).toHaveLength(240);
+ expect(events.team_tournament.standings.filter(r=>r.is_ai)).toHaveLength(12);
+ expect(events.team_tournament.fixtures.length).toBeGreaterThan(0);
+ const boards=await page.evaluate(async()=>{
+  const r=await fetch(GRIDSHARD_API_BASE_URL+'/leaderboards?player_id='+encodeURIComponent(GridshardAuth.session.playerId));
+  if(!r.ok)throw Error('Boards HTTP '+r.status);return r.json();
+ });
+ expect(boards.trophies.some(row=>row.is_bot)).toBe(true);
+ expect(boards.core_damage.some(row=>row.is_bot)).toBe(true);
+ expect(boards.teams.filter(row=>row.team_id.startsWith('ai-team-'))).toHaveLength(12);
+ expect(new Set(boards.trophy_groups.flatMap(group=>group.standings.filter(row=>row.is_bot).map(row=>row.player_id))).size).toBe(240);
+ expect(await economy()).toEqual(before);
 });

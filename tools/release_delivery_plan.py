@@ -105,6 +105,9 @@ def render_brief(release, backlog):
     if release.get('server_transition'):
         position=lines.index('## Oyuncuya teslim ve sınır')
         lines[position:position]=[maintenance_summary(release),'']
+    if release.get('development_policy'):
+        position=lines.index('## Oyuncuya teslim ve sınır')
+        lines[position:position]=['**Geliştirme ve yayın kararı:** '+release['development_policy'],'']
     lines += ['', 'Aralıklar aynı ana geliştirme akışının iş sırasıdır; eşzamanlı tam zamanlı ekip varsayımı değildir. '
               'Gözlem/patch için ayrılan kapasite kullanılır; kapsam kapanışında yeni özellik eklenmez.', '',
               '## İçerik nasıl geliştirilecek?', '']
@@ -164,6 +167,11 @@ def render_index(releases, backlog):
              '## Sürüm özeti ve ayrıntılı içerik bağlantıları', '',
              '| Sürüm / brief | Somut içerik | Çalışma başlangıcı | Kapsam kapanışı | Kabul testleri | Yayın hedefi | Sezon |',
              '| --- | --- | --- | --- | --- | --- | --- |']
+    policy_lines=[]
+    for release in releases:
+        if release.get('development_policy'):
+            policy_lines += [f"**{release['version']} geliştirme ve yayın kararı:** {release['development_policy']}", '']
+    lines[4:4]=policy_lines
     for r in releases:
         lines.append(f"| {link(r['delivery_document'], INDEX, r['version'])} | {r['content']} | {r['work_starts_on']} | {r['scope_freezes_on']} | {r['tests_start_on']} | {r['target_release_on']} ({r['confidence']}) | S{r['season']['number']}: {r['season']['starts_on']}, 03.00 TR |")
     for r in releases:

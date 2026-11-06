@@ -9,7 +9,7 @@ assert.strictEqual(limit.maxRoutineVoices, 3);
 assert.ok(limit.priorityCues.includes("core_hit"));
 assert.ok(global.GRIDSHARD_AUDIO_MIX.sfxBaseGain < 0.72);
 assert.ok(global.GRIDSHARD_AUDIO_MIX.battleMusicGain > 1.22);
-// v12: savaş efektleri müziğin arkasında kalır.
+// Physical mix correction keeps routine voice density bounded.
 assert.ok(global.GRIDSHARD_AUDIO_MIX.battleSfxGain < 1);
 assert.ok(global.GRIDSHARD_AUDIO_MIX.musicLimiter.threshold <= -1);
 

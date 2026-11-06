@@ -1,7 +1,13 @@
 [CmdletBinding()]
-param([switch]$FullSuite)
+param([switch]$FullSuite, [string[]]$TestPaths)
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
+foreach ($taskTestPath in $TestPaths) {
+    $taskResolvedTest = [IO.Path]::GetFullPath((Join-Path $taskRoot $taskTestPath))
+    if (!$taskResolvedTest.StartsWith((Join-Path $taskRoot 'server\tests\'), [StringComparison]::OrdinalIgnoreCase) -or !(Test-Path -LiteralPath $taskResolvedTest)) {
+        throw 'Explicit test paths must exist within server/tests.'
+    }
+}
 $taskPgBin = 'C:\Program Files\PostgreSQL\16\bin'
 foreach ($taskExecutable in @('initdb.exe', 'pg_ctl.exe', 'createdb.exe')) {
     if (!(Test-Path -LiteralPath (Join-Path $taskPgBin $taskExecutable))) {
@@ -31,6 +37,7 @@ try {
     $env:GRIDSHARD_TEST_DATABASE_URL = "postgresql://postgres@127.0.0.1:$taskPort/gridshard_test"
     $taskTests = @('server/tests/test_review_access.py', 'server/tests/test_review_access_postgres.py')
     if ($FullSuite) { $taskTests = @('server/tests') }
+    if ($TestPaths) { $taskTests = $TestPaths }
     Invoke-TaskChecked 'python' (@('-m', 'pytest') + $taskTests + @('-q', '-p', 'no:cacheprovider'))
 } finally {
     [Environment]::SetEnvironmentVariable('GRIDSHARD_TEST_DATABASE_URL', $taskPreviousUrl, 'Process')

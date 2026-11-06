@@ -8,7 +8,7 @@ import random
 import struct
 import wave
 from pathlib import Path
-from combat_sfx_synth import attack as synth_attack
+from combat_sfx_synth import module_sound
 
 RATE = 22050
 OUT = Path(__file__).resolve().parents[1] / "client" / "assets" / "audio"
@@ -17,8 +17,10 @@ SOUNDS = {"pulse_cannon_fire": .27, "laser_pulse_v2": .24, "laser_burn": .72, "r
 
 
 def render(name, duration):
-    if name == 'pulse_cannon_fire':
-        return [round(v * 32767) for v in synth_attack('pulse_cannon', duration)]
+    themed = {'pulse_cannon_fire':'pulse_cannon', 'laser_pulse_v2':'laser',
+              'rocket_launch':'missile_launcher', 'shield_absorb':'shield'}
+    if name in themed:
+        return [round(v * 32767) for v in module_sound(themed[name], duration)]
     rng = random.Random(15017)
     low = smooth = 0.0
     samples = []

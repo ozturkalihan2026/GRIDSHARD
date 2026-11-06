@@ -568,10 +568,8 @@
   text-decoration:none;
 }
 
-/* These request labels wrap on small screens. A first-line underline with a
- * 4px offset paints over the following "İSTEK" line; selection keeps its
- * existing turquoise face/border and keyboard focus. */
-:root body[data-app-screen] #friends-screen button:is([data-friends-tab="incoming"],[data-friends-tab="outgoing"]) {
+/* Friend tabs share their selected face/border and focus ring without a text underline. */
+:root body[data-app-screen] #friends-screen button[data-friends-tab] {
   text-decoration:none;
 }
 

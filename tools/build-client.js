@@ -6,6 +6,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 const esbuild = require("esbuild");
 const { apiBaseForBuild } = require("./mobile-network-policy.js");
+const { clientVersion, assertClientVersion } = require("./client-version.js");
 
 const TARGETS = ["chrome109", "safari15"];
 const digest = (bytes) => crypto.createHash("sha256").update(bytes).digest("hex");
@@ -184,6 +185,8 @@ async function buildClient({ root = path.resolve(__dirname, ".."), mobile = fals
   const destination = path.join(root, "dist");
   const apiBase = apiBaseForBuild(environment, mobile);
   const html = readText(path.join(source, "index.html"));
+  const release = clientVersion(root);
+  assertClientVersion(html, release);
   const scripts = readBuildBlock(html, "scripts");
   const styles = readBuildBlock(html, "styles");
   const omittedWav = compressedAudioReplacements(source, scripts.inputs, environment);
@@ -260,6 +263,7 @@ async function buildClient({ root = path.resolve(__dirname, ".."), mobile = fals
     }
     const manifest = {
       schema_version: 1, project: "GRIDSHARD", platform: mobile ? "mobile" : "web",
+      release,
       build_id: digest(outputHtml + runtime + JSON.stringify(immutable)).slice(0, 16),
       toolchain: { esbuild: esbuild.version, targets: TARGETS },
       inputs: { scripts: scripts.inputs, styles: styles.inputs },

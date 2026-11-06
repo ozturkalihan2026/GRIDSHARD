@@ -23,7 +23,7 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, Res
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .production_config import environment_secret, production_endpoints
-from .competition_control import competition_eligible, launch_status, minimum_participants, configured_start
+from .competition_control import competition_eligible, launch_status, minimum_participants, configured_start, first_season_bots, ranking_eligible
 from .client_compatibility import health_release_fields
 from .season_entitlements import additional_chest_count, origin_for as season_premium_origin, reward_for as earned_season_reward
 from .postgres_economic_operations import PostgresEconomicOperations, EconomicOperationConflict
@@ -130,6 +130,8 @@ from .season_competition import (
     daily_meta_by_id,
     daily_meta_catalog_view,
     daily_meta_for_seed,
+    weekly_standings,
+    first_season_ai_teams,
 )
 from .team_tournament import (
     MINIMUM_REWARD_POINTS as TEAM_TOURNAMENT_MINIMUM_POINTS,
@@ -3066,21 +3068,30 @@ def _team_tournament_state(period_id: str) -> dict:
 
 def _events_view(moment: datetime | None = None) -> dict:
     current = moment or datetime.now(timezone.utc)
-    return build_events_view(
+    view = build_events_view(
         _leaderboard_profile_rows(),
         current,
         team_tournament_state=_team_tournament_state(team_tournament_period_id(current)),
     )
+    view['deferred_reward_plan'] = team_service.competition_reward_state()['deferred']
+    return view
+
+
+def _first_season_ai_teams(period_id: str) -> dict:
+    return first_season_ai_teams(_leaderboard_profile_rows(), period_id)
 
 
 def _team_tournament_final_standings(period_id: str) -> list[dict]:
+    closed = team_service.competition_reward_state()['closures'].get(f'team_tournament:{period_id}')
+    if closed is not None:
+        return closed['standings']
     calendar = team_tournament_calendar(period_id)
     state = _team_tournament_state(period_id)
     return build_team_tournament_view(
         period_id,
         calendar["ends_at"],
         registrations=state["registrations"],
-        ai_teams={},
+        ai_teams=_first_season_ai_teams(period_id),
         legs=state["legs"],
     )["standings"]
 
@@ -3111,7 +3122,7 @@ def _record_team_tournament_leg(state) -> None:
             period_id,
             leg_id,
             registrations=_team_tournament_state(period_id)["registrations"],
-            ai_teams={},
+            ai_teams=_first_season_ai_teams(period_id),
         )
     except (TypeError, ValueError):
         return
@@ -3132,12 +3143,11 @@ def _record_team_tournament_leg(state) -> None:
 
 
 def _ranked_player_rows(players: list[dict], value_key: str) -> list[dict]:
-    players = [row for row in players if competition_eligible(row["player_id"], is_bot=row.get("is_bot"))]
+    players = [row for row in players if ranking_eligible(row["player_id"], is_bot=row.get("is_bot"), moment=datetime.now(timezone.utc))]
     ordered = sorted(
         players,
         key=lambda row: (
             -int(row[value_key]),
-            row["display_name"].casefold(),
             row["player_id"],
         ),
     )[:100]
@@ -3405,7 +3415,7 @@ def get_public_team_profile(team_id: str) -> dict:
 @persistent_operation
 def get_leaderboards(player_id: str | None = None) -> dict:
     players = [row for row in _leaderboard_profile_rows()
-               if competition_eligible(row["player_id"], is_bot=row.get("is_bot"))]
+               if ranking_eligible(row["player_id"], is_bot=row.get("is_bot"), moment=datetime.now(timezone.utc))]
     teams: dict[str, dict] = {}
     for player in players:
         team_id = str(player.get("team_id") or "").strip()
@@ -3485,11 +3495,13 @@ def _real_competition_profiles() -> list:
     return [_team_member_profile(player_id) for player_id in sorted(player_ids) if competition_eligible(player_id)]
 
 
-def _queue_competition_reward(profile, *, source: str, period_id: str, position: int, prize: dict, team_id: str | None = None) -> bool:
+def _queue_competition_reward(profile, *, source: str, period_id: str, position: int, prize: dict, team_id: str | None = None, frozen=False) -> bool:
+    if not competition_eligible(profile.player_id):
+        return False
     message_id = f"{source}:{period_id}:{profile.player_id}"
     if any(item.get("message_id") == message_id for item in profile.reward_inbox):
         return False
-    prize = period_reward(source, period_id, position, prize)
+    prize = dict(prize) if frozen else period_reward(source, period_id, position, prize)
     from .season_entitlements import fingerprint
     reward_hash = fingerprint(dict(source=source, period_id=period_id, position=int(position), team_id=team_id, chest=prize))
     source_names = {
@@ -3513,6 +3525,79 @@ def _queue_competition_reward(profile, *, source: str, period_id: str, position:
     return True
 
 
+def _settle_first_season_rewards(profiles, moment):
+    """Close S1 with AI in their actual positions, even with no human entrants."""
+    from .first_season_profile import PROFILE
+    from datetime import timedelta
+    if not first_season_bots(period_id=PROFILE['season_id']):
+        return
+    start = datetime.fromisoformat(PROFILE['starts_at'].replace('Z', '+00:00'))
+    by_player = {profile.player_id: profile for profile in profiles}
+    players = _leaderboard_profile_rows()
+
+    def close(source, period, rows, base, enough=True):
+        # Immutable content is resolved against the original period, once.
+        previous = team_service.competition_reward_state()['closures'].get(f'{source}:{period}')
+        if previous is None:
+            prizes = [period_reward(source, period, item['position'], item) for item in base]
+            previous = team_service.close_competition_period(source, period, rows, prizes, minimum_met=enough)
+        prizes = {int(prize['position']): prize for prize in previous['prizes']}
+        for row in previous['standings']:
+            position = int(row['position'])
+            if source == 'team_tournament':
+                recipients = [] if row['is_ai'] else [member['player_id'] for member in row['members']
+                    if member['contribution_points'] >= TEAM_TOURNAMENT_MINIMUM_POINTS]
+            else:
+                recipients = [] if row['is_bot'] else [row['player_id']]
+            for recipient in recipients:
+                winner = by_player.get(recipient)
+                if winner is None:
+                    continue
+                changed = False
+                if source == 'weekly_tournament':
+                    witness = dict(revision=2, standings_hash=previous['content_hash'],
+                        position=position, participant_count=len(previous['standings']), minimum_met=previous['minimum_met'])
+                    changed = winner.weekly_reward_closures.get(period) != witness
+                    winner.weekly_reward_closures[period] = witness
+                if (previous['minimum_met'] and position in prizes
+                        and (source != 'weekly_tournament' or row['matches'] > 0)):
+                    changed |= _queue_competition_reward(winner, source=source, period_id=period, position=position,
+                        prize=prizes[position], team_id=row.get('team_id'), frozen=True)
+                if changed:
+                    persist_player_data(recipient)
+
+    for index in range(4):
+        week_start = start + timedelta(days=index * 7)
+        end = week_start + timedelta(days=7)
+        if moment < end:
+            continue
+        final = end - timedelta(microseconds=1)
+        year, week, _ = week_start.isocalendar()
+        rows = weekly_standings(players, final)
+        close('weekly_tournament', f'{year}-W{week:02d}', rows, WEEKLY_PRIZES,
+              enough=len(rows) >= minimum_participants())
+
+    if moment >= start + timedelta(days=28):
+        rows = [dict(player_id=row['player_id'], rating=row['rating'], is_bot=True)
+                for row in players if row.get('is_bot')]
+        for profile in profiles:
+            archive = next((item for item in profile.season_archives
+                if str(item.get('season_id') or item.get('id')) == PROFILE['season_id']), None)
+            if archive is not None:
+                rows.append(dict(player_id=profile.player_id, rating=int(archive.get('final_rating', 0)), is_bot=False))
+        rows.sort(key=lambda row: (-row['rating'], row['player_id']))
+        rows = [dict(row, position=index) for index, row in enumerate(rows, 1)]
+        close('season_leaderboard', PROFILE['season_id'], rows, LEADERBOARD_PRIZES)
+
+    team_start = configured_start(team=True)
+    if team_start and first_season_bots(team_start, team=True):
+        period = team_tournament_period_id(team_start)
+        if moment >= team_tournament_calendar(period)['ends_at']:
+            rows = _team_tournament_final_standings(period)
+            close('team_tournament', period, rows, TEAM_PRIZES,
+                  enough=len(rows) >= minimum_participants(team=True))
+
+
 def _settle_competition_rewards(player_id: str) -> None:
     """Lazily materialize ended season/week/team rewards exactly once."""
     start = configured_start()
@@ -3523,6 +3608,7 @@ def _settle_competition_rewards(player_id: str) -> None:
         target = next((item for item in profiles if item.player_id == player_id), None)
         if target is None:
             return
+        _settle_first_season_rewards(profiles, datetime.now(timezone.utc))
         changed = False
         iso_year, iso_week, _ = datetime.now(timezone.utc).isocalendar()
         current_week = f"{iso_year}-W{iso_week:02d}"
@@ -3534,6 +3620,8 @@ def _settle_competition_rewards(player_id: str) -> None:
             period_id = str(archive.get("season_id") or archive.get("id") or "")
             if not period_id or period_id == current_season or period_id == "gridshard_waiting":
                 continue
+            if first_season_bots(period_id=period_id):
+                continue  # S1 uses the durable combined human/AI closure above.
             rows = []
             for profile in profiles:
                 record = next(

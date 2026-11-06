@@ -225,7 +225,6 @@
   <!-- Illustrated circuit chamber: one in-scene reactor, actual API
        readiness. No canvas, background render loop or simulated loading. -->
   <section id="startup-loading" class="boot-screen" data-state="loading" aria-labelledby="startup-title" aria-busy="true">
-    <button class="review-access-launch review-access-startup" type="button" data-review-access-open>REVIEW / DEMO SIGN-IN</button>
     <div class="boot-screen-backdrop" aria-hidden="true">
       <div class="boot-circuit-stage">
         <img class="boot-circuit-scene" src="./assets/branding/startup-circuit-v1/circuit-scene.webp" alt="" width="1024" height="1536" decoding="async" fetchpriority="high">
@@ -235,7 +234,7 @@
       </div>
     </div>
     <div class="boot-screen-meta">
-      <span id="boot-version" class="boot-version" data-version="2.3.0">Sürüm: 2.3.0</span>
+      <span id="boot-version" class="boot-version" data-version="2.4.0">Sürüm: 2.4.0</span>
     </div>
     <div class="boot-brand">
       <h1 id="startup-title" class="boot-title">GRIDSHARD</h1>
@@ -482,7 +481,6 @@
              telefon alınmaz (docs/CHILD_AUDIENCE_AUDIT.md). -->
         <p id="account-onboarding-status" role="status" aria-live="polite"></p>
         <button id="account-onboarding-guest" class="account-onboarding-guest" type="button">ŞİMDİLİK MİSAFİR OLARAK DEVAM ET</button>
-        <button class="review-access-launch" type="button" data-review-access-open>REVIEW / DEMO SIGN-IN</button>
         <small>Misafir ilerlemesi bu cihazda korunur. Daha sonra Ayarlar → Hesap ve Gizlilik bölümünden hesabını bağlayabilirsin.</small>
       </section>
     </dialog>
@@ -841,11 +839,15 @@
         <section data-weekly-event-panel="standings" class="event-subpage" hidden>
           <section class="tournament-panel"><h4>Oyuncu Sıralaması</h4><ol id="weekly-tournament-standings" class="tournament-standings"></ol></section>
         </section>
+        <section data-weekly-event-panel="rewards" class="event-subpage" hidden>
+          <section class="tournament-panel"><h4>Sıralama Ödülleri</h4><p class="tournament-reward-note">Sandığa dokunarak içeriği inceleyebilirsin. Bu bir önizlemedir; ödül hakkı vermez.</p><ol id="weekly-tournament-rewards" class="tournament-standings tournament-reward-list"></ol></section>
+        </section>
       </div>
       <p id="weekly-event-status" class="mobile-action-status" role="status" aria-live="polite"></p>
       <nav class="event-detail-tabs" aria-label="Haftalık etkinlik bölümleri">
         <button type="button" data-weekly-event-tab="overview" class="is-active">GENEL</button>
         <button type="button" data-weekly-event-tab="standings">SIRALAMA</button>
+        <button type="button" data-weekly-event-tab="rewards">ÖDÜLLER</button>
       </nav>
     </section>
 
@@ -866,12 +868,16 @@
         <section data-team-event-panel="fixtures" class="event-subpage" hidden>
           <section class="tournament-panel"><h4>Takımının Eşleşmeleri</h4><div id="team-tournament-fixtures" class="team-tournament-fixtures"></div></section>
         </section>
+        <section data-team-event-panel="rewards" class="event-subpage" hidden>
+          <section class="tournament-panel"><h4>Sıralama Ödülleri</h4><p class="tournament-reward-note">Sandığa dokunarak içeriği inceleyebilirsin. Bu bir önizlemedir; ödül hakkı vermez.</p><ol id="team-tournament-rewards" class="tournament-standings tournament-reward-list"></ol></section>
+        </section>
       </div>
       <p id="team-event-status" class="mobile-action-status" role="status" aria-live="polite"></p>
       <nav class="event-detail-tabs" aria-label="Takım etkinliği bölümleri">
         <button type="button" data-team-event-tab="overview" class="is-active">GENEL</button>
         <button type="button" data-team-event-tab="standings">SIRALAMA</button>
         <button type="button" data-team-event-tab="fixtures">EŞLEŞMELER</button>
+        <button type="button" data-team-event-tab="rewards">ÖDÜLLER</button>
       </nav>
     </section>
 
@@ -1190,7 +1196,7 @@
           <p>Kalabalık savunmaya karşı zincir ve alan hasarı sağlayan saldırıları dene.</p>
           <p>Çekirdeğin aldığı veya verdiği hasar bu iki sayacı doldurmaz. Akım veren çekirdek yetenekleri kendi açıklamalarındaki gibi çalışır.</p>
         </details>
-        <dl><div><dt>Sürüm</dt><dd id="ui-build-version">2.3.0</dd></div></dl>
+        <dl><div><dt>Sürüm</dt><dd id="ui-build-version">2.4.0</dd></div></dl>
       </section>
       </section>
       <section id="settings-panel-audio" role="tabpanel" aria-labelledby="settings-tab-audio" data-settings-panel="audio" hidden>

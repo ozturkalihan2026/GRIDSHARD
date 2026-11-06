@@ -26,6 +26,11 @@ def validate_profile(document, *, cosmetics=None):
         raise ValueError('İlk sezon başlangıcı UTC Pazartesi olmalıdır.')
     if document.get('season_id') != 'gridshard_' + start.strftime('%Y_%m_%d'):
         raise ValueError('İlk sezon kimliği başlangıç tarihiyle eşleşmiyor.')
+    if document.get('bot_competition_policy') != dict(
+            scope='first_season_only', population=240, teams=12,
+            reward_positions='actual_rank', bot_rewards=False,
+            all_bot_prizes='append_frozen_package_to_plan_tail'):
+        raise ValueError('İlk sezon bot katılımı ve ödül erteleme sözleşmesi eksik.')
     year, week, _ = (start + timedelta(days=21)).isocalendar()
     expected = [
         dict(source='season_road', period_id=document['season_id'], slot=40,
@@ -34,6 +39,8 @@ def validate_profile(document, *, cosmetics=None):
              cosmetics=dict(avatar_frame_id='solar_frame', profile_background_id='solar_banner')),
         dict(source='weekly_tournament', period_id=f'{year}-W{week:02d}', slot=1,
              cosmetics=dict(avatar_frame_id='abyss_frame', profile_background_id='abyss_banner')),
+        dict(source='team_tournament', period_id=(start + timedelta(days=7)).date().isoformat(), slot=1,
+             cosmetics=dict(team_emblem_id='aurora_sigil', team_frame_id='aurora_team_frame', team_name_color_id='aurora_team_name')),
     ]
     if document.get('cosmetic_allocations') != expected:
         raise ValueError('İlk sezonun üç oyuncu seti tekil kaynak/dönem/konuma ayrılmalıdır.')

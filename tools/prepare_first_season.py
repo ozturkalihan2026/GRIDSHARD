@@ -25,7 +25,7 @@ def write_bundle(output):
         hashes[name] = hashlib.sha256(data).hexdigest()
     report = dict(schema_version=1,production_changed=False,season_activated=False,
         status=PROFILE['status'],release_checks=PROFILE['release_checks'],files=hashes,
-        reserved_periods=len(registry.releases),unique_personal_items=6,
+        reserved_periods=len(registry.releases),unique_personal_items=6, unique_team_items=3,
         added_common_shards=sum(p['module_shards'] for w in PROFILE['resource_weeks'] for p in w['prizes']))
     (output/'manifest.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
     return report
@@ -66,7 +66,7 @@ def main():
         return
     registry, coverage = candidate()
     print(json.dumps(dict(profile_valid=True, published=PROFILE['status'] == 'published', production_changed=False,
-        reserved_periods=len(registry.releases) - len(REGISTRY.releases), personal_items_reserved=6,
+        reserved_periods=len(registry.releases) - len(REGISTRY.releases), personal_items_reserved=6, team_items_reserved=3,
         added_common_shards=sum(p['module_shards'] for w in PROFILE['resource_weeks'] for p in w['prizes']),
         **(dict(profile=PROFILE, candidate_catalog=registry.document, coverage=coverage) if args.preview else {})),
         ensure_ascii=False, indent=2))

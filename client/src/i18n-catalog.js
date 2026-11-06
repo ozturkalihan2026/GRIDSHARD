@@ -3,6 +3,12 @@
 
   // New screen copy belongs here; the legacy dictionary remains in i18n.js.
   const translations = Object.freeze({
+    "Sıralama Ödülleri":"Ranking Rewards",
+    "Sıralama Ödülü":"Ranking Reward",
+    "Hafta sonunda mesaj kutusuna teslim edilir.":"Delivered to your inbox at the end of the week.",
+    "Turnuva bitince en az 4 katkı puanı olan oyuncuların mesaj kutusuna teslim edilir.":"Delivered to players with at least 4 contribution points when the tournament ends.",
+    "Sandığa dokunarak içeriği inceleyebilirsin. Bu bir önizlemedir; ödül hakkı vermez.":"Tap a crate to inspect its contents. This is a preview and does not grant a reward.",
+    "Ödül içeriği yayın hazırlığı tamamlandığında açıklanacak.":"Reward contents will be announced when launch preparations are complete.",
     "Yeni sezon hazırlanıyor":"The next season is being prepared",
     "Önceki sezonun kazanılmış ödülü":"Earned reward from the previous season",
     "Sezon ödül kaydı doğrulanamadı; kazanılmış hakkın korunuyor.":"The season reward record could not be verified; your earned reward is preserved.",

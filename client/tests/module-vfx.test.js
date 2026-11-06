@@ -55,7 +55,7 @@ test("V7 full-board echo keeps thirteen target marks inside one low-quality root
  f.setHidden(true);f.fx.receive([],f.snapshot);assert.equal(f.layer.children.length,0);
 });
 
-test("24 canon profiles use bounded quiet WAVs and are present in the web/native asset list",()=>{
+test("24 canon profiles use bounded WAVs with distinct attack/support trims in the web/native asset list",()=>{
   const profiles=require("../src/battle/module-presentation-profiles.js"),crypto=require("node:crypto");
   require("../src/canon-data.js");
   assert.deepEqual(Object.keys(profiles).sort(),globalThis.GRIDSHARD_CANON_MODULES.map(m=>m.id).sort());
@@ -64,13 +64,13 @@ test("24 canon profiles use bounded quiet WAVs and are present in the web/native
   for(const p of Object.values(profiles)){
     assert.ok(html.includes(p.asset),p.id);
     assert.equal(globalThis.GRIDSHARD_SFX_CUES[p.cue].asset,p.asset);
-    assert.ok(globalThis.GRIDSHARD_SFX_CUES[p.cue].gain<=.5);
+    assert.ok(globalThis.GRIDSHARD_SFX_CUES[p.cue].gain<=(p.travel!==null?.70:.50));
     const bytes=fs.readFileSync(path.join(__dirname,"..",p.asset));
     assert.equal(bytes.toString("ascii",0,4),"RIFF");assert.equal(bytes.readUInt32LE(24),22050);
     assert.ok(bytes.length<23000);assert.equal(bytes.readInt16LE(44),0);
     let peak=0;for(let i=44;i<bytes.length;i+=2)peak=Math.max(peak,Math.abs(bytes.readInt16LE(i))/32768);
-    const retuned = ['railgun','drone_bay','arc_cannon','plasma_mortar','quantum_repeater','burst_cannon','shield_breaker'].includes(p.id);
-    assert.ok(peak>0&&peak<(retuned?.381:.23),p.id);
+    const retuned = ['pulse_cannon','railgun','drone_bay','arc_cannon','plasma_mortar','quantum_repeater','burst_cannon','shield_breaker'].includes(p.id);
+    assert.ok(peak>0&&peak<(p.travel!==null?.381:.301),p.id);
     hashes.add(crypto.createHash("sha256").update(bytes).digest("hex"));
   }
   assert.equal(Object.keys(profiles).length,24);assert.equal(hashes.size,24);
@@ -91,10 +91,11 @@ test('core shots follow authoritative hits once, stay bounded and clear with bat
   assert.equal(f.fx.effects.size,0);
 });
 
-test('every direct core shot cue is a packaged quiet WAV',()=>{
+test('every direct core shot cue is packaged, bounded and below its activation trim',()=>{
   require('../src/gridshard-audio.js');
   for(const id of ['resonance','guardian','overdrive','disruptor','capacitor','phoenix','quantum']){
-    const cue=globalThis.GRIDSHARD_SFX_CUES[`core_${id}_shot`];assert.ok(cue.gain<=.4);
+    const cue=globalThis.GRIDSHARD_SFX_CUES[`core_${id}_shot`];assert.ok(cue.gain<=.60);
+    assert.ok(cue.gain<globalThis.GRIDSHARD_SFX_CUES[`core_${id}_activate`].gain);
     assert.equal(fs.readFileSync(path.join(__dirname,'..',cue.asset)).toString('ascii',0,4),'RIFF');
   }
 });

@@ -1,5 +1,10 @@
 # UI-09 — Gelen / Giden İstek çizgi düzeltmesi
 
+**6 Kasım genişletmesi:** Aynı çizgi düzeltmesi Arkadaş, Mesaj, Gelen İstek,
+Giden İstek ve Savaş sekmelerinin tamamına uygulandı. Seçim/odak ve rozetler
+korunur. Üç tarayıcıdaki TR/EN 320/393 gerçek gezinme kabulü beş sekmeyi kapsar.
+Aşağıdaki iki sekmeli kapsam 5 Kasım tarihsel kaydıdır.
+
 5 Kasım 2026 kullanıcı isteği; 2.4.0 kapsamına eklendi.
 
 Ortak etkin sekme stili metne 4 px ofsetli alt çizgi veriyordu. Arkadaşlar

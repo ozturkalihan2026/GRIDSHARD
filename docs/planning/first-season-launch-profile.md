@@ -1,5 +1,13 @@
 # 2.4.0 / SEASON-00 — ilk sezon profili ve kazanılmış haklar
 
+**6 Kasım güncellemesi:** [240 bot, gerçek sıra ve kalıcı ödül planı](release-240-bot-competition.md).
+S1 adayında 240 tek kelimelik bot adı, 12×20 takım ve 7 Aralık takım dönemi
+için üç mevcut Kutup Işığı takım öğesi eklendi. Aday artık yedi dönem,
+altı oyuncu + üç takım öğesidir. Ayrı takım başlangıcı ve yayın kapıları korunur.
+Telefondaki ayrı S1 TEST APK’sı kuruldu; gerçek açılış, 40 kademe, üç test kasası
+ve 24 açık modül doğrulandı. Kullanıcının dokunma/ses kabulü henüz bekleniyor;
+`android_acceptance=false` ve profil draft kalır.
+
 **5 Kasım güncellemesi:** [S1 yazılım kabul matrisi](release-240-s1-acceptance.md).
 80 hak, 22 yarışma kasası, gerçek PostgreSQL kapanış/rollback ve dump/restore,
 üç tarayıcıda gerçek makbuz akışları geçti. Profilde bütçe/tekil tahsis/
@@ -31,8 +39,9 @@ yayın kontrolleri tamamlanmış modül ve yayınlanmış dönem ödülleri gere
 İlk üç hafta `resource_only` türüdür; boş kozmetik veya sıfırlanmış adetle
 eksik stok saklanmaz. Üç haftanın toplam ek modül bütçesi **234 sıradan parça**.
 Kredi 1200/760/420, Akı 90/55/30 olarak korunur. Üç oyuncu seti birer kaynağa
-ayrılır; başka hafta veya dönemde tekrar kullanılamaz. Dokuz takım öğesi bu
-kişisel tahsise katılmaz. Takım başlangıcı ayrı operatör ayarıdır.
+ayrılır; başka hafta veya dönemde tekrar kullanılamaz. Dokuz takım öğesinden
+üç Kutup Işığı öğesi 7 Aralık takım dönemine ayrıca ayrılır; kalan altı öğe
+kilitli stokta kalır. Takım başlangıcı ayrı operatör ayarıdır.
 
 `cosmetic_releases.py` açık kaynak ödülü türünü, pozitif miktarları, gerçek modül
 kimliğini ve yayın sonrası içerik hash'ini doğrular. `liveops_content.py` kapasite
@@ -80,8 +89,8 @@ eksik tarihsel kanıt varsa ayrı inceleme gerekir.
 
 ## Çalıştırma ve kabul
 
-`python tools/prepare_first_season.py --check` taslağı, altı dönem rezervasyonunu,
-altı tekil oyuncu öğesini ve 234 parça bütçesini bellekte doğrular.
+`python tools/prepare_first_season.py --check` taslağı, yedi dönem rezervasyonunu,
+altı tekil oyuncu + üç takım öğesini ve 234 parça bütçesini bellekte doğrular.
 `--preview` incelemeye uygun aday kataloğu JSON olarak gösterir. Bu komutlar
 dosya yazmaz, yayınlamaz veya sezon açmaz. Yayınlanmış profil de aynı komutla
 doğrulanabilir. CI bu kontrolü çalıştırır; profil kaynak paketine dahildir.
