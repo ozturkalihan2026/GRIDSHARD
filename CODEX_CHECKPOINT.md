@@ -1,5 +1,19 @@
 # Güncel durum — 2.4.0/15 test paketi; sürüm, mağaza ışığı ve sade başlangıç, 6 Kasım 2026
 
+- **7 Kasım CI kırmızı düzeltmesi:** 044a7c7a koşusu42297048089’da sunucu,
+  istemci, PostgreSQL/Redis/imaj ve Safari işleri geçti; Android’de S1 ödül
+  önizlemesi geri tuşunu kapattı. Geç /events yanıtı aynı ödül listesini
+  yeniden kurup açık önizlemenin tetikleyicisini DOM’dan koparıyordu.
+  Gerçek gecikmeli yanıt testi eski kodda isConnected=false ile hatayı
+  yeniden üretti. renderTournamentRewards artık içerik+dil+not değişmedikçe
+  düğmeyi korur; içerik gerçekten değişirse kendi eski önizlemesini kapatır.
+  Zorlanmış tıklama veya uzatılmış timeout kullanılmadı. Yeni regresyon ve
+  mevcut TR/EN320/393 bot/ödül akışları üç tarayıcıda6 PASS;781 istemci PASS.
+  Kanıt qa_reports/release240-preview-refresh-repro.log (önceki FAIL) ve
+  release240-preview-refresh-e2e.log (düzeltilmiş PASS). CI S1 grep’i her iki
+  testi kapsar. Son düzeltme aynı2.4 dalına commit/push edilip tam CI yeniden
+  başlatılacak; son koşunun GitHub sonucunu kontrol et. APK yeniden üretildi,
+  web76319202e6e08898; USB bağlantısı olmadan kurulum yapılmaz.
 - **7 Kasım son UI isteği:** Mesaj/Kartlar/Takım/Turnuva/Ayarlar/Kozmetik
   dahil ortak alt sekmelerin seçili metin alt çizgisi kaldırıldı; turkuaz
   yüzey/kenar, bildirim ve klavye odağı korundu. Oyuncu/takım koleksiyon

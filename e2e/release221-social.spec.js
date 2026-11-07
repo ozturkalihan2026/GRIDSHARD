@@ -118,6 +118,33 @@ test('friend request tabs keep wrapped TR/EN labels clear and retain selection',
  }
 });
 
+test('S1 tournament preview keeps its trigger during a delayed event refresh',async({page,isMobile})=>{
+ test.skip(process.env.GRIDSHARD_E2E_S1_BOTS!=='1','Owned published-S1 bot fixture only');
+ await page.goto('/?e2e=1');await waitForParticipantReady(page,60000);
+ const initial=page.waitForResponse(r=>new URL(r.url()).pathname==='/events'&&r.ok());
+ await page.locator('[data-shell-screen="events"]').click();await initial;
+ let release;
+ const gate=new Promise(resolve=>release=resolve);
+ await page.route('**/events?*',async route=>{
+  const response=await route.fetch();await gate;await route.fulfill({response});
+ });
+ const refreshed=page.waitForResponse(r=>new URL(r.url()).pathname==='/events'&&r.ok());
+ await page.locator('#events-screen [data-open-screen="weekly-event"]').click();
+ await page.locator('[data-weekly-event-tab="rewards"]').click();
+ const chest=page.locator('#weekly-tournament-rewards .reward-chest-button').first();
+ if(isMobile)await chest.tap();else await chest.click();
+ await expect(chest).toHaveAttribute('aria-expanded','true');
+ const trigger=await chest.elementHandle();
+ release();await refreshed;
+ await expect(page.locator('#weekly-event-status')).toHaveText('');
+ expect(await trigger.evaluate(el=>el.isConnected)).toBe(true);
+ await expect(chest).toHaveAttribute('aria-expanded','true');
+ if(isMobile)await chest.tap();else await chest.click();
+ await expect(page.locator('.reward-preview-panel')).toHaveCount(0);
+ await page.locator('#weekly-event-screen .navigation-back').click();
+ await expect(page.locator('body')).toHaveAttribute('data-app-screen','events');
+});
+
 test('S1 tournament rewards preview uses real prizes without granting and bot boards stay populated',async({page},info)=>{
  test.skip(process.env.GRIDSHARD_E2E_S1_BOTS!=='1','Owned published-S1 bot fixture only');
  test.setTimeout(Math.max(120000,info.project.timeout));
@@ -144,7 +171,8 @@ test('S1 tournament rewards preview uses real prizes without granting and bot bo
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
    await page.screenshot({path:info.outputPath(`${kind}-rewards-${language}-${width}.png`)});
    // Clicking the same crate closes the pinned preview, without collection.
-   await chest.click();await page.locator(`#${kind}-event-screen .navigation-back`).click();
+   await chest.click();await expect(page.locator('.reward-preview-panel')).toHaveCount(0);
+   await page.locator(`#${kind}-event-screen .navigation-back`).click();
   }
  }
  const events=await page.evaluate(async()=>{

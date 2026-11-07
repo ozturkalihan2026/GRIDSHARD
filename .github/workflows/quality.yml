@@ -296,7 +296,7 @@ jobs:
         env:
           GRIDSHARD_E2E_S1_ACCEPTANCE: '1'
           GRIDSHARD_E2E_S1_BOTS: '1'
-        run: pnpm exec playwright test e2e/release221-social.spec.js --grep "S1 tournament rewards" ${{ matrix.projects }}
+        run: pnpm exec playwright test e2e/release221-social.spec.js --grep "S1 tournament" ${{ matrix.projects }}
       - name: Preserve separate S1 bot evidence
         if: always()
         uses: actions/upload-artifact@v4

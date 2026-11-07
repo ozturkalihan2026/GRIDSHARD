@@ -6466,14 +6466,21 @@
     }
   }
 
+  const tournamentRewardRenderKeys = new WeakMap();
   function renderTournamentRewards(hostId, prizes, note) {
     const host = document.getElementById(hostId);
     if (!host) return;
+    const key = JSON.stringify([uiLocale(), prizes || [], note || ""]);
+    // A late /events response must not detach the chest that owns a pinned
+    // preview. Rebuild only when its actual reward content/language changes.
+    if (tournamentRewardRenderKeys.get(host) === key) return;
+    if (rewardPreviewState && host.contains(rewardPreviewState.trigger)) hideRewardPreview();
     host.replaceChildren();
     if (!prizes?.length) {
       const empty = document.createElement("li");
       empty.textContent = localizedUiText("Ödül içeriği yayın hazırlığı tamamlandığında açıklanacak.");
       host.appendChild(empty);
+      tournamentRewardRenderKeys.set(host, key);
       return;
     }
     for (const prize of [...prizes].sort((a,b) => Number(a.position)-Number(b.position))) {
@@ -6491,6 +6498,7 @@
       appendTournamentPrizeChest(item, [prize], prize.position, note);
       host.appendChild(item);
     }
+    tournamentRewardRenderKeys.set(host, key);
   }
 
   function renderWeeklyTournament(state) {
