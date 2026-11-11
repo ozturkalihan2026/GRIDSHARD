@@ -1,3 +1,33 @@
+# Tam CI yeşil — aktif 2.4.0 adayı rc.2, 11 Kasım 2026
+
+- Kullanıcının bildirdiği kırmızı CI giderildi. Sebep uygulama hatası değil,
+  e2e/release221-social.spec.js'in yeni sunucuda da ilk notu2.3.0 beklemesiydi.
+  Test artık gerçek server VERSION ve game_updates.json'dan sıralamayı üretir;
+  ön duyuru/güncelleme türü ayrılır. Güncel ve eski notların açılması, tarih ve
+  reload'da okundu korunması hedef üç tarayıcıda3 PASS/57,6sn doğrulandı.
+- **RC2 tam CI43078476162:6/6 SUCCESS.** Server contracts, Client contracts,
+  gerçek PostgreSQL/Redis/production image+restore, Safari/WebKit,
+  Chromium/Android ve kaynak paketi geçti. Exact kaynak:
+  **7e8eb4155c2d2a102317e514c0413735f982428a**.
+  https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/43078476162
+- **Aktif etiket v2.4.0-rc.2**; codex/release-2.4.0 aynıSHA'da origin'de.
+  Eski v2.4.0-rc.1/d5ba0e96 aynen korundu; eski kırmızı koşu tarihçedir.
+  İki rc arasında client/server/android/config diff'i boş: yalnız E2E ve
+  hazırlık kaydı değişti. Yeni özellik veya sonraki sezon içeriği2.4'e girmedi.
+- Çalışma dalı codex/develop-2.5.0. config/release-candidates/2.4.0.json
+  rc2/tag2/yeniSHA ve başarılıCI URL'sine bağlı. Kaynak bağımsız
+  qa_reports/release-candidates/2.4.0-rc2/source; offline deps, gerçek native
+  -PrepareOnly ve root launcher check PASS.2.4 aab/server-image/server-source
+  komutları yalnız bu kaynağı kullanır. Sonuç qa_reports/release240-freeze-ready.json.
+- Yeni AAB/APK imzalama, Play upload, yerel yayın imajı veya canlı geçiş yok.
+  CI kendi izole test imajını ve kaynakZIP'ini üretir; bunlar dağıtım değildir.
+  Sezon draft/Android yayın kabulü kapalıdır; fiziksel kabul/Play App access ve
+  canlı yedek/restore önkontrolü yayın zamanının kalan kapılarıdır.
+- Test düzeltmesi ve pin4cf52e3a ile dev dalına push edildi; bu yeşil sonuç
+  checkpoint kaydı da ayrı doküman commit'iyle push edilir. RC2 taşınmaz.
+
+---
+
 # CI düzeltildi; aktif aday rc.2, tam CI sonucu bekleniyor — 11 Kasım 2026
 
 - Kullanıcı CI kırmızı bildirdi. rc.1 koşusu43070306313'te tek neden eski
