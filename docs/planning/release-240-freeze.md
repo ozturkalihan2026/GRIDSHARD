@@ -13,6 +13,8 @@
 
 ## Komutlar (depo kökünde)
 
+Bu komutlar manifesti taşıyan `codex/develop-2.5.0` çalışma dalından çalıştırılır. Başlatıcı bu dalda bulunur; oyun/Android/sunucu kaynakları ise daima manifestteki etiketten gelir. Yeni bilgisayarda önce bu dal alınır. Windows native üreticisinin yalnız CRLF/LF yazım farkı gerçek kod değişikliği sayılmaz; karşılaştırma Git'in normalize edilmiş içeriğiyle yapılır. Migration/binary `-text` kuralları korunur.
+
 ```powershell
 # Salt okunur: hangi commit ve komutlar kullanılacak?
 python tools/release_candidate.py 2.4.0 plan
@@ -21,6 +23,8 @@ python tools/release_candidate.py 2.4.0 plan
 python tools/release_candidate.py 2.4.0 check
 
 # Başka bilgisayarda: etiketi/dalı alın, bağımsız kaynak ve bağımlılıkları hazırlayın
+git fetch origin
+git switch codex/develop-2.5.0
 git fetch origin tag v2.4.0-rc.1
 python tools/release_candidate.py 2.4.0 prepare
 

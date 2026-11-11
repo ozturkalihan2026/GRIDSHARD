@@ -22,6 +22,8 @@ def repo(tmp_path):
         path.write_text(json.dumps(data))
     path=tmp_path/'server/app/version.py';path.parent.mkdir(parents=True)
     path.write_text('VERSION = "2.4.0"\n')
+    (tmp_path/'server/app/demo.txt').write_bytes(b'one\ntwo\n')
+    (tmp_path/'.gitattributes').write_text('**/demo.txt text eol=crlf\n')
     (tmp_path/'.gitignore').write_text('qa_reports/\nnode_modules/\n')
     git(tmp_path,'add','.')
     git(tmp_path,'-c','user.name=Release tests','-c','user.email=release-tests@example.invalid','commit','-m','candidate')
@@ -34,10 +36,14 @@ def test_new_development_cannot_enter_the_frozen_source(repo):
     root,data=repo
     frozen=candidate.prepare(data,root=root,source_only=True)
     (root/'future-module.txt').write_text('not for 2.4.0')
-    git(root,'add','future-module.txt')
+    (root/'package.json').write_text(json.dumps({'version':'2.5.0','gridshard':{'androidVersionCode':16}}))
+    (root/'config/android-production.json').write_text(json.dumps({'versionName':'2.5.0','versionCode':16}))
+    (root/'server/app/version.py').write_text('VERSION = "2.5.0"\n')
+    git(root,'add','future-module.txt','package.json','config/android-production.json','server/app/version.py')
     git(root,'-c','user.name=Release tests','-c','user.email=release-tests@example.invalid','commit','-m','future content')
     assert candidate.check_source(data,root)==frozen
     assert not (frozen/'future-module.txt').exists()
+    assert json.loads((frozen/'package.json').read_text())['version']=='2.4.0'
     (frozen/'package.json').write_text('{}')
     with pytest.raises(ValueError,match='dirty'):
         candidate.check_source(data,root)
@@ -85,3 +91,11 @@ def test_ignored_future_art_in_source_also_stops_a_build(repo):
     art.write_bytes(b'future concept')
     with pytest.raises(ValueError,match='Ignored extra files'):
         candidate.check_source(data,root)
+
+
+def test_native_line_ending_rewrite_is_not_mistaken_for_changed_source(repo):
+    root,data=repo
+    frozen=candidate.prepare(data,root=root,source_only=True)
+    (frozen/'server/app/demo.txt').write_bytes(b'one\ntwo\n')
+    assert git(frozen,'diff','--name-only','HEAD','--')==''
+    assert candidate.check_source(data,root)==frozen

@@ -1,3 +1,54 @@
+# 2.4.0 sabitlendi; sonraki çalışma dalı2.5.0 — 11 Kasım 2026
+
+- Kullanıcı AAB üretmeden ve canlıya geçmeden2.4 kaynağını sabitlememizi istedi;
+  main varsayımı düzeltildi. Kaynak d5ba0e9629e3ef76b0f292b2c82ee6b67d7f7c5d,
+  **v2.4.0-rc.1** annotated etiketi ve **codex/release-2.4.0** dalıyla origin'e
+  push edildi. Main'e merge yapılmadı; final v2.4.0 etiketi henüz yok.
+- Şu an çalışma dalı **codex/develop-2.5.0**. Manifest
+  config/release-candidates/2.4.0.json yalnız tam SHA+etikete bağlıdır.
+  İzole source qa_reports/release-candidates/2.4.0-rc1/source; detached aynıSHA.
+  Gelecek dalda sürümün2.5/16 yapılması ve yeni dosya eklenmesi, dondurulmuş
+  kaynakta görünmüyor: gerçek izole Git fixture regresyonu6 PASS.
+- Adayın kendi node_modules bağımlılıkları --offline/frozen-lockfile ile
+  kuruldu; paylaşılmış geliştirme node_modules'u kullanılmadı. Bu izole
+  kaynakta build-android-production.ps1 -PrepareOnly PASS; AAB/APK imzalanmadı.
+  Native üreticinin CRLF/LF değişiklikleri Git status'ta M görünebilir; Git
+  normalize diff HEAD sıfır. Dev daldaki başlatıcı gerçek Git içerik farkı+
+  untracked+ignored üretim kaynağı denetler; migration -text kuralı korunur.
+  Başlatıcı/root config dev dalındadır; frozen klasörden doğrudan başlatma.
+- Tek komutlar depo kökünde:
+  python tools/release_candidate.py 2.4.0 check
+  python tools/release_candidate.py 2.4.0 aab
+  python tools/release_candidate.py 2.4.0 server-image
+  python tools/release_candidate.py 2.4.0 server-source
+  Son üçü gerektiğinde üretir; hiçbirisi Play upload, canlı deploy veya sezon
+  aktivasyonu yapmaz. Kaynak/commit/etiket yanlış veya gerçek kod kirliyse durur.
+- JDK/SDK ve mevcut DPAPI/PKCS12 anahtar erişimi gerçek keytool-list ile PASS;
+  şifre/log/anahtar kopyalanmadı. JAVA_HOME17 otomatik Studio21'e fallback yapar;
+  açık geçersiz JavaHome reddedilir. Docker engine29.9.2 erişilebilir. Dosya
+  secrets/android-release ana çalışma alanında kalır; Git'e girmez.
+- RC1 kaynak server VERSION2.4.0, production Android2.4.0/15, native meta,
+  release_guard/source archive2.4.0-season-one olarak hazır. Legacy alias ve
+  protokol2 değişmedi.2.4 notları kaynakta var; mesaj ancak sunucu deploy olunca
+  görünür. Bugün canlı2.3 sunucu/oyuncu/telefon API verisine dokunulmadı.
+- Yerel782 istemci PASS;100 araç PASS, launcher son ek regresyon6 PASS;
+  yeni2.4 mesajının25 ilgili testi PASS. Tam sunucudaki tek sabit seen-list
+  beklentisi düzeltildi. CI **43070306313** tam d5ba0e96 üzerinde başlatıldı;
+  son kontrolde Server, Client ve gerçek PG/Redis/imaj/restore PASS; iki tarayıcı
+  işi sürüyor. URL https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/43070306313
+  CI takip helper'ı qa_reports/github-quality-frozen.py (credential yalnız memory).
+  Sonuç gelmeden tümCI yeşil/yayın hazır deme. Hazırlık kanıtı
+  qa_reports/release240-freeze-ready.json; native log release240-pin-native.log.
+-2.4 son kabul veya bug fix gerekirse release dalında yeni commit/test ve yeni
+  rc.2 etiketi+manifest/path; rc.1 taşınmaz. S1 draft/Android kabulüfalse kalır.
+  Eski tools/production_cutover.py beta reset aracıdır, bu geçişte kullanılmaz.
+  Canlı uygulama bakımda güncel keşif/yedek/restore/sağlık ve aynı imaj digest'iyle
+  yapılır. Bu tur AAB, yerel yayın imajı/ZIP, Play upload veya canlı geçiş yok.
+- Yeni pin manifesti, başlatıcı EOL denetimi, runbook ve bu checkpoint dev dalına
+  commit/push edilerek diğer bilgisayara taşınır;2.4 etiketi değişmeyecek.
+
+---
+
 # 2.4.0 kaynak dondurma hazırlığı — 11 Kasım 2026
 
 - Kullanıcı gelecekteki içeriğin2.4 paket/sunucu kaynağına karışmasını önlemek

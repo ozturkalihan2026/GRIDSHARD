@@ -68,7 +68,11 @@ def check_source(data, root=ROOT):
         raise ValueError('Prepare the isolated candidate checkout first')
     if git('rev-parse', 'HEAD', cwd=path) != data['source_commit']:
         raise ValueError('Wrong candidate commit; never reset or replace a checkout automatically')
-    if git('status', '--porcelain', '--untracked-files=all', cwd=path):
+    # Native generators write LF on Windows. Git status can report a stat/EOL
+    # change even when the normalized Git content is identical to HEAD.
+    # SQL/binary files retain their -text byte checks through Git attributes.
+    if (git('diff', '--name-only', 'HEAD', '--', cwd=path)
+            or git('ls-files', '--others', '--exclude-standard', '-z', cwd=path)):
         raise ValueError('Candidate source is dirty; make and review a new candidate instead')
     extras = git('ls-files', '--others', '--ignored', '--exclude-standard', '-z', '--',
                  'client', 'server/app', 'server/data', 'server/migrations', 'tools', cwd=path).split('\0')
