@@ -2,13 +2,15 @@
 
 11 Kasım 2026 kullanıcı kararı: yeni içerik çalışmaları sürerken 2.4.0 AAB ve sunucu kaynağı sabit tutulur. Bu hazırlık AAB üretimi, Play yüklemesi, canlı geçiş veya sezon açılışı değildir.
 
+Önceki `v2.4.0-rc.1` etiketi korunur. Güncel aday `rc.2`, yalnız sürüm notları tarayıcı testini düzeltir; oyun kodu aynı kalır.
+
 ## Kaynak ayrımı
 
-- İncelenen kaynak commit'i `v2.4.0-rc.1` etiketi ve `codex/release-2.4.0` dalıyla korunur.
+- İncelenen kaynak commit'i `v2.4.0-rc.2` etiketi ve `codex/release-2.4.0` dalıyla korunur.
 - `config/release-candidates/2.4.0.json` tam 40 karakterli commit'i tutar. Komutlar güncel dalı, `main`in son halini veya taşınabilen bir dal adını derlemez.
-- Kaynak ayrı `qa_reports/release-candidates/2.4.0-rc1/source` worktree'sindedir. Aynı bilgisayarda 2.5 çalışmaları ayrı `codex/develop-2.5.0` dalında devam eder.
+- Kaynak ayrı `qa_reports/release-candidates/2.4.0-rc2/source` worktree'sindedir. Aynı bilgisayarda 2.5 çalışmaları ayrı `codex/develop-2.5.0` dalında devam eder.
 - Gelecek sezon brief'leri plan dosyasıdır; yeni modül/kozmetik/müzik çalışma verisi henüz eklenmedi. Sonraki içerik commit'leri sabit adayın parçası olmaz.
-- 2.4 hata düzeltmesi gerekirse yalnız incelenen düzeltme release dalına alınır; yeniden test edilir, `rc.2` etiketi ve yeni manifest/path oluşturulur. Eski etiket taşınmaz; eski worktree otomatik silinmez/resetlenmez. Yeni özelliğin tamamı topluca release dalına birleştirilmez.
+- 2.4 hata düzeltmesi gerekirse yalnız incelenen düzeltme release dalına alınır; yeniden test edilir, yeni `rc` etiketi ve yeni manifest/path oluşturulur. Eski etiket taşınmaz; eski worktree otomatik silinmez/resetlenmez. Yeni özelliğin tamamı topluca release dalına birleştirilmez.
 - `v2.4.0` final etiketi gerçek yayın kararındadır; `rc` etiketi yayımlanmış sürüm anlamına gelmez.
 
 ## Komutlar (depo kökünde)
@@ -25,7 +27,7 @@ python tools/release_candidate.py 2.4.0 check
 # Başka bilgisayarda: etiketi/dalı alın, bağımsız kaynak ve bağımlılıkları hazırlayın
 git fetch origin
 git switch codex/develop-2.5.0
-git fetch origin tag v2.4.0-rc.1
+git fetch origin tag v2.4.0-rc.2
 python tools/release_candidate.py 2.4.0 prepare
 
 # Yalnız yayın zamanı: aynı sabit kaynaktan imzalı AAB/APK üretimi

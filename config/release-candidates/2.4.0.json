@@ -2,11 +2,12 @@
   "schema_version": 1,
   "version": "2.4.0",
   "version_code": 15,
-  "candidate_id": "2.4.0-rc1",
-  "tag": "v2.4.0-rc.1",
-  "source_commit": "d5ba0e9629e3ef76b0f292b2c82ee6b67d7f7c5d",
+  "candidate_id": "2.4.0-rc2",
+  "tag": "v2.4.0-rc.2",
+  "source_commit": "7e8eb4155c2d2a102317e514c0413735f982428a",
   "release_branch": "codex/release-2.4.0",
   "published": false,
   "production_deployed": false,
-  "season_activated": false
+  "season_activated": false,
+  "ci_run_url": "https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/43078476162"
 }

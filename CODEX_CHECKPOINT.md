@@ -1,3 +1,31 @@
+# CI düzeltildi; aktif aday rc.2, tam CI sonucu bekleniyor — 11 Kasım 2026
+
+- Kullanıcı CI kırmızı bildirdi. rc.1 koşusu43070306313'te tek neden eski
+  mesaj E2E beklentisiydi:2.3.0 bekleyip doğru2.4.0'ı reddediyordu. İki browser
+  işi aynı nedenle FAIL; Server/Client/PG-Redis-image-restore PASS.
+- Release düzeltmesi **7e8eb4155c2d2a102317e514c0413735f982428a**, etiket
+  **v2.4.0-rc.2**, codex/release-2.4.0 origin'e push edildi. rc.1/d5ba0e96
+  aynen korunur. Oyun/runtime değişmedi; yalnız mesaj testi ve hazırlık kaydı.
+- E2E beklenen not listesini gerçek sunucu VERSION ve game_updates.json'dan
+  hesaplar; hepsinin sırasını, güncel+eski notların açılmasını ve reload'da
+  okundu kalmasını doğrular. Ön duyuru da2.4 metni içerebildiğinden data-kind
+  update seçimi reload sonrasında da korunur. Hedef3 browser PASS/57,6sn;
+  timeout artışı, force click, test atlama yok.
+- codex/develop-2.5.0 dalına yalnız aynı E2E dosyası alındı. Aktif pin manifest
+  config/release-candidates/2.4.0.json rc2/tag2/yeniSHA'ya bağlı. Kaynak ayrı
+  qa_reports/release-candidates/2.4.0-rc2/source; offline bağımsız deps ve
+  native -PrepareOnly PASS. Root başlatıcı check PASS. AAB/Play/canlı yok.
+- Tam yeni CI **43078476162** release dalı ve tam7e8eb415 üzerindedir:
+  https://github.com/ozturkalihan2026/GRIDSHARD/actions/runs/43078476162
+  Takip: python qa_reports/github-quality-rc2.py status. Helper credential'ı
+  yalnız memory'de kullanır. Eski github-quality-frozen.py rc.1 kırmızıyı izler;
+  onu güncel sonuç sanma. YeniCI bitene kadar yeşil deme; sonuca kadar takip et.
+- Kaynak etiket/branch/protokol/sürümler sabit; sonraki içerik2.5 dalındadır.
+  Sonuç geldiğinde qa_reports/release240-freeze-ready.json ve bu checkpoint'i
+  yeni kanıtla güncelle; dev dalını push et, rc etiketlerini taşıma.
+
+---
+
 # 2.4.0 sabitlendi; sonraki çalışma dalı2.5.0 — 11 Kasım 2026
 
 - Kullanıcı AAB üretmeden ve canlıya geçmeden2.4 kaynağını sabitlememizi istedi;
