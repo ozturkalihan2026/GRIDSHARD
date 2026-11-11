@@ -1,5 +1,21 @@
 const {test, expect} = require('@playwright/test');
 const {waitForParticipantReady} = require('./ui-helpers');
+const fs = require('node:fs');
+const path = require('node:path');
+
+// The client may be ahead of the deployed server during development. Inbox
+// notes are governed by the server release, never by a hard-coded latest note.
+const serverVersion = fs.readFileSync(path.join(__dirname, '../server/app/version.py'), 'utf8')
+  .match(/^VERSION = "([0-9.]+)"/m)[1];
+const compareVersions = (a,b) => {
+  const left=a.split('.').map(Number),right=b.split('.').map(Number);
+  for (let i=0;i<3;i++) if(left[i]!==right[i]) return left[i]-right[i];
+  return 0;
+};
+const releasedVersions = require('../server/data/game_updates.json').map(note=>note.version)
+  .filter(version=>compareVersions(version,serverVersion)<=0).sort((a,b)=>compareVersions(b,a));
+const readVersions = [...new Set(['2.2.0','2.2.1','2.3.0',serverVersion])]
+  .filter(version=>releasedVersions.includes(version));
 
 const deck = ['burst_cannon','shield_breaker','buffer_shield','last_bastion','cleanser','speed_relay'];
 
@@ -71,16 +87,18 @@ test('current deck paintings, public team navigation, visible back buttons and p
   expect(errors).toEqual([]);
 });
 
-test('2.2.0 and 2.2.1 notes expand in System and stay read after reload', async ({page}, info) => {
+test('current and legacy update notes stay ordered and read after reload', async ({page}, info) => {
   await page.goto('/?e2e=1');
   await waitForParticipantReady(page,60000);
   await page.locator('#reward-inbox-button').click();
   await page.locator('#inbox-tab-system').click();
   await expect(page.locator('#reward-inbox-notices .inbox-notice-card[data-kind="announcement"]')).toHaveCount(1);
   const notes = page.locator('#reward-inbox-notices .inbox-notice-card[data-kind="update"]');
-  await expect(notes.nth(0)).toContainText('GRIDSHARD 2.3.0');
-  await expect(notes.nth(1)).toContainText('GRIDSHARD 2.2.1');
-  for (const version of ['2.2.0','2.2.1','2.3.0']) {
+  await expect(notes).toHaveCount(releasedVersions.length);
+  for (const [index,version] of releasedVersions.entries()) {
+    await expect(notes.nth(index).locator('strong').first()).toContainText(`GRIDSHARD ${version}`);
+  }
+  for (const version of readVersions) {
     const card = notes.filter({hasText:`GRIDSHARD ${version}`});
     await expect(card).toHaveCount(1);
     await card.locator('div > strong').first().click();
@@ -93,8 +111,8 @@ test('2.2.0 and 2.2.1 notes expand in System and stay read after reload', async 
   await waitForParticipantReady(page,60000);
   await page.locator('#reward-inbox-button').click();
   await page.locator('#inbox-tab-system').click();
-  for (const version of ['2.2.0','2.2.1','2.3.0']) {
-    await expect(page.locator('#reward-inbox-notices .inbox-notice-card').filter({hasText:`GRIDSHARD ${version}`})).toHaveAttribute('data-seen','true');
+  for (const version of readVersions) {
+    await expect(notes.filter({hasText:`GRIDSHARD ${version}`})).toHaveAttribute('data-seen','true');
   }
 });
 

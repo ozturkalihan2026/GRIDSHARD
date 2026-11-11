@@ -1,3 +1,23 @@
+# CI kırmızı düzeltmesi — 2.4.0 rc.2 hazırlığı, 11 Kasım 2026
+
+- rc.1/d5ba0e96 CI43070306313 kırmızı: iki tarayıcı işinin ortak eski
+  e2e/release221-social.spec.js:81 beklentisi ilk mesajı2.3.0 sanıyordu;
+  gerçek doğru sonuç2.4.0. Sunucu, istemci, PG/Redis/imaj/restore işleri PASS.
+- Release dalında yalnız E2E düzeltmesi: beklenen sıralama sunucunun VERSION'ı
+  ve game_updates.json'dan sürüm karşılaştırmasıyla hesaplanır. Güncel ve
+  eski notların okundu durumu reload'da korunur. Ön duyuru aynı2.4 metnini
+  içerebildiği için ikinci okundu kontrolü de data-kind=update ile sınırlıdır.
+- Üç gerçek tarayıcıdaki hedef test3 PASS/57,6sn; kanıt
+  qa_reports/release240-rc2-notes-e2e.log. Timeout uzatılmadı/test atlanmadı,
+  oyun kodu değişmedi. Eski rc.1 etiketi taşınmaz.
+- Sıradaki: düzeltmeyi release commit'i ve v2.4.0-rc.2 etiketiyle push;
+  tam CI'yi release dalından çalıştırıp sonuca kadar izle. Ardından dev2.5
+  dalına yalnız bu fix alınır,2.4 pin manifesti yeni SHA/tag/rc2 worktree'sine
+  geçirilir. Yeni adayın yerel hazırlığını AAB üretmeden doğrula.
+- Yayın/Play/AAB/sezon aktivasyonu bu düzeltmenin parçası değildir.
+
+---
+
 # 2.4.0 kaynak dondurma hazırlığı — 11 Kasım 2026
 
 - Kullanıcı gelecekteki içeriğin2.4 paket/sunucu kaynağına karışmasını önlemek
