@@ -1,4 +1,35 @@
-# Güncel durum — 2.4.0/15 test paketi; sürüm, mağaza ışığı ve sade başlangıç, 6 Kasım 2026
+# Güncel durum — son 2.4.0 test paketi telefonda doğrulandı, 11 Kasım 2026
+
+- Kullanıcı telefonu bağladı ve devam etmemizi istedi. Önceki kurulum komutu
+  otomatik onay incelemesinin kullanım limiti hatasıyla hiç çalışmamıştı;
+  11 Kasım yeniden denemesinde onay verildi. Telefon57abfae6 bağlı, test
+  uygulaması kapalı/savaş dışında olduğu doğrulandı. APK SHA256 denetlendi.
+- Kapalı8897 yerel API, korunmuş .mobile-debug/runtime-s1-20261106 verisiyle
+  PID4120 olarak gizli yeniden açıldı; sabit fixture tarihi12 Aralık değişmedi.
+  Hiçbir hesap/veri yeniden seed edilmedi. Yeniden kullanırken PID komut
+  satırını ve health içindeki retained runtime yolunu tekrar doğrula.
+- **Son APK kuruldu:** com.gridshard.localdebug / GRIDSHARD S1 TEST2.4.0/15,
+  web76319202e6e08898; SHA256
+  d55adf33a4c3b625c607590570aabb48d8bf3bb03ad20a0e484d094e75d81d2e.
+  adb install -r Success ve USB reverse8897. Aynı test hesabı,24 açık modül,
+  mixv21 ve44 OGG dosyasının hash eşitliği native WebView’de doğrulandı.
+  Açılış/ayarlar2.4.0; açılış/kayıtta review düğmesi yok. Mesaj/Kartlar
+  sekmelerine tıklanarak alt çizgisiz görünüm doğrulandı; iki koleksiyon
+  düğmesinin #d7b66b yüzeyi ve #302514 yazısı native CSS’te doğrulandı,
+  oyuncu önizleme düğmesi gerçekten görünür bulundu. Uygulama menüye bırakıldı.
+- Kanıt qa_reports/native-s1-20261106/native-240-installed-20261111-proof.json;
+  apk-v21-ready.json artık installed=true/native_verification=passed.
+  Element screenshot adımındaki stabilite timeout’u sonrasında yalnız gereksiz
+  screenshot kaldırılıp gerçek UI kontrolleri tamamlandı; başarılı ekran
+  görüntüsü varmış gibi gösterilmez. Fiziksel ses beğenisi hâlâ pending;
+  android_acceptance ve canlı sezon taslağı bu kurulumla açılmadı.
+- Son ürün kodu f5050ae8 push edildi; tam CI42345535071’de sunucu, istemci,
+  Chromium/Android, Safari/WebKit, PostgreSQL/Redis/imaj ve kaynak paketi
+  işlerinin6’sı da geçti. Bu kurulum kaydı ürün kodunu değiştirmez.
+
+---
+
+# Önceki hazırlık ve CI kayıtları — 6–7 Kasım 2026
 
 - **7 Kasım CI kırmızı düzeltmesi:** 044a7c7a koşusu42297048089’da sunucu,
   istemci, PostgreSQL/Redis/imaj ve Safari işleri geçti; Android’de S1 ödül
