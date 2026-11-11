@@ -432,6 +432,7 @@
   .team-training-card,
   .team-request-card,
   .settings-form > label,
+  .settings-audio-channel,
   .settings-about-panel,
   [id="module-quick-actions"],
   [id="core-quick-actions"]
@@ -664,6 +665,37 @@
   box-shadow:inset 0 2px #dffbb5,0 2px #357b36;
 }
 :root body[data-app-screen] .settings-toggle > input[type="checkbox"]:disabled { opacity:.6; border-style:dashed; }
+
+/* Audio: one compact card per channel; keep the shared physical switch. */
+:root body[data-app-screen] #settings-panel-audio .settings-form { gap:10px; }
+:root body[data-app-screen] #settings-panel-audio .settings-audio-channel {
+  display:grid;
+  gap:4px;
+  padding:10px 12px;
+  min-width:0;
+}
+:root body[data-app-screen] #settings-panel-audio .settings-audio-channel label {
+  margin:0;
+  padding:0;
+  border:0;
+  background:none;
+}
+:root body[data-app-screen] #settings-panel-audio .settings-audio-level {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:4px 10px;
+}
+:root body[data-app-screen] #settings-panel-audio .settings-audio-level > input { grid-column:1 / -1; }
+:root body[data-app-screen] #settings-panel-audio .settings-audio-level > output {
+  color:var(--gs2-text);
+  font:700 .85rem/1.2 var(--gs-font-copy);
+  font-variant-numeric:tabular-nums;
+}
+:root body[data-app-screen] #settings-panel-audio .settings-audio-channel > .settings-toggle {
+  min-height:44px;
+  gap:10px;
+}
 
 /* 09 / İlerleme: yalnız yüzey; value/max/width ve oyun hesabına dokunma. */
 :root body[data-app-screen] :is(

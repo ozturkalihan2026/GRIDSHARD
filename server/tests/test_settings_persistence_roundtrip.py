@@ -34,6 +34,7 @@ def test_settings_language_survives_service_memory_clear():
         json={
             "sound_volume":42,
             "music_volume":18,
+            "battle_music_volume":63,
             "vibration_enabled":False,
             "graphics_quality":"orta",
             "language":"en",
@@ -55,6 +56,7 @@ def test_settings_language_survives_service_memory_clear():
     assert settings["language"]=="en"
     assert settings["sound_volume"]==42
     assert settings["music_volume"]==18
+    assert settings["battle_music_volume"]==63
     assert settings["vibration_enabled"] is False
     assert settings["graphics_quality"]=="orta"
 

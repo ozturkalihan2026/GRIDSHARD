@@ -46,7 +46,8 @@ SUPPORTED_LANGUAGES = {
 class PlayerSettings:
     player_id: str
     sound_volume: int = 100
-    music_volume: int = 70
+    music_volume: int = 5
+    battle_music_volume: int = 50
     sound_muted: bool = False
     music_muted: bool = False
     vibration_enabled: bool = True
@@ -61,6 +62,7 @@ class PlayerSettings:
             "player_id": self.player_id,
             "sound_volume": self.sound_volume,
             "music_volume": self.music_volume,
+            "battle_music_volume": self.battle_music_volume,
             "sound_muted": self.sound_muted,
             "music_muted": self.music_muted,
             "vibration_enabled": (
@@ -109,6 +111,7 @@ class PlayerSettingsService:
         *,
         sound_volume: int | None = None,
         music_volume: int | None = None,
+        battle_music_volume: int | None = None,
         sound_muted: bool | None = None,
         music_muted: bool | None = None,
         vibration_enabled: bool | None = None,
@@ -142,6 +145,9 @@ class PlayerSettingsService:
                     music_volume,
                 )
             )
+
+        if battle_music_volume is not None:
+            settings.battle_music_volume = self._validate_volume('Savaş müziği', battle_music_volume)
 
         if sound_muted is not None:
             if not isinstance(

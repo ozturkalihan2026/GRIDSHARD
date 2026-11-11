@@ -888,7 +888,7 @@
     "playlistCrossfadeMs": 2400,
     "musicBaseGain": 0.72,
     "sfxBaseGain": 0.55,
-    "battleMusicGain": 2.35,
+    "battleMusicGain": 2.15,
     "battleSfxGain": 0.7,
     "resultMusicGain": 0.8,
     "battlePriorityCueGain": 1.4,

@@ -146,17 +146,45 @@ test("late HTML play rejection after ad stop cannot become a gesture-unlock retr
   assert.equal(d.currentTrack,null);
 });
 
-test("v21 restores music around role-authored effects and preserves user sliders", () => {
+test("v21 listening trim starts music quietly and preserves explicit user sliders", () => {
   const {director:d,sandbox} = fixture();
-  assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.battleMusicGain,2.35);
+  assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.battleMusicGain,2.15);
   assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.battleSfxGain,.70);
   assert.equal(sandbox.GRIDSHARD_AUDIO_MIX.resultMusicGain,.80);
+  assert.equal(d.musicVolume,.05);
+  assert.equal(d.battleMusicVolume,.50);
+  d.setPreferences({musicVolume:.70,battleMusicVolume:.70});
   assert.equal(d._musicTargetVolume(),.504);
   assert.equal(d._sfxTargetVolume(),.55,"menu effects are unchanged");
   for(const state of ["battle","battle_pressure","critical_core","victory","defeat"]){
     d.state=state;assert.ok(Math.abs(d._sfxTargetVolume()-.385)<1e-12,state);
   }
   assert.equal(d._musicTargetVolume(),.504,"the music slider/base gain is unchanged");
+});
+
+test('menu zero does not silence battle, and battle zero does not silence menu in either renderer', async () => {
+  for (const webAudio of [false,true]) {
+    const f=fixture({webAudio}),d=f.director;
+    d.setPreferences({musicVolume:0,battleMusicVolume:.70});
+    d.setState('battle');await d.unlock();await f.flush();f.advance(500);
+    assert.ok(d.battleLayerTracks.some(track=>track.volume>0));
+    const loud=d.battleLayerTracks.map(track=>track.volume);
+    d.setPreferences({musicVolume:1});f.advance(500);
+    assert.deepEqual(d.battleLayerTracks.map(track=>track.volume),loud,'menu slider cannot change battle gain');
+    d.setPreferences({musicVolume:0});d.setAppActive(false);d.setAppActive(true);
+    await f.flush();f.advance(500);
+    assert.ok(d.battleLayerTracks.some(track=>track.volume>0),'foreground resumes the battle channel');
+    d.setState('menu');await f.flush();f.advance(500);
+    assert.equal(d.currentTrack,null,'entering a silent menu stops the previous battle music');
+    d.setPreferences({musicVolume:.10,battleMusicVolume:0});await f.flush();f.advance(500);
+    assert.ok(d.currentTrack&&d.currentTrack.volume>0);
+    d.setState('battle');await f.flush();f.advance(500);
+    assert.equal(d.currentTrack,null,'entering silent battle stops the previous menu music');
+    d.setPreferences({battleMusicVolume:.60});await f.flush();f.advance(500);
+    assert.ok(d.battleLayerTracks.some(track=>track.volume>0));
+    d.setPreferences({musicMuted:true});
+    assert.equal(d.currentTrack,null,'the shared mute still stops both music channels');
+  }
 });
 
 test("laser-specific trim is shared by HTML and WebAudio instead of being lost in fallback", async () => {
@@ -186,7 +214,7 @@ test("HTML battle stems clamp only the final gain, preserving the requested musi
   for (const track of d.battleLayerTracks) {
     const layer=track._gridshardLayer;
     const active=f.sandbox.GRIDSHARD_BATTLE_STATE_LAYERS.battle.includes(layer.id);
-    const expected=active ? Math.min(1,d._musicTargetVolume()*2.35*(layer.baseGain+layer.pressureGain*d.battlePressure)) : 0;
+    const expected=active ? Math.min(1,d._musicTargetVolume()*2.15*(layer.baseGain+layer.pressureGain*d.battlePressure)) : 0;
     assert.equal(track.volume,expected);
   }
 });

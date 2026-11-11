@@ -1206,6 +1206,9 @@ class PlayerDataStoreService:
             music_volume=int(
                 data["music_volume"]
             ),
+            # Existing records have only a menu/shared slider. The independent
+            # combat channel starts audible even when that old slider is low.
+            battle_music_volume=int(data.get("battle_music_volume", 50)),
             sound_muted=bool(
                 data.get(
                     "sound_muted",

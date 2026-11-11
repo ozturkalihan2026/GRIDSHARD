@@ -26,7 +26,7 @@
     "docs/planning/season-1-engagement-v1.json": "9539be37219632246d6ba5ecefe250d30f3e3aa1df4e53910ebaecc9571bc9cb",
     "server/app/season_entitlements.py": "0b61c2f73c2435e21309ef5a0c5c9d1fbfb465004fa145303ba18ebd09f4f241",
     "server/app/first_season_profile.py": "c779acb584e172bbad4de7c138c49451b6d6d5506e4b5805e3586343da5ceade",
-    "server/app/main.py": "fc37bc3bba8f5e072512886d9db2da686d8b582210b1ae29fad93080177bd7b5",
+    "server/app/main.py": "1402b26b192928f7746711bd08add0173cc07d3177c69d8153d71bfd3be9e2eb",
     "server/app/cosmetic_releases.py": "12a8c1ec82a5e2567a62c5c28b145db1265ed87b369252950cdf022aa5a2aa83",
     "server/data/first_season_launch_v1.json": "e266dea1f2e48df1f702b023c4c5b24e8b78055db15c3df1258fc3521ffbc0ad",
     "server/data/cosmetic_releases_v1.json": "80dd80285ea4c3a895927e41918604b2e905e311d2c13c7330dfb3fcf4a70f54",

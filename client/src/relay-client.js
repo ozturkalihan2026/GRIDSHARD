@@ -833,6 +833,8 @@
           this.settings.sound_volume,
         musicVolume:
           this.settings.music_volume,
+        battleMusicVolume:
+          this.settings.battle_music_volume ?? 50,
         soundMuted:
           Boolean(
             this.settings.sound_muted

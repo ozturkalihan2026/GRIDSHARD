@@ -2,7 +2,7 @@
 
 **Tarih: 3 Kasım 2026 · Proje: mağaza, ödül, içerik ve yaşayan oyun**
 
-Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **77 iş** vardır: **53 yapılacak**, **8 dalda hazır; canlıda yok**, **2 çalışılıyor**, **7 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
+Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **77 iş** vardır: **52 yapılacak**, **8 dalda hazır; canlıda yok**, **2 çalışılıyor**, **8 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
 
 **Son ayrıntılandırma: 4 Kasım 2026.** Takvim → sürüm briefi → görev → dosya/kanıt bağlantıları kuruldu; 2.4.0 sarı geri/ileri kontrolleri ve saldırı/çekirdek sesleri zorunlu kapsamdadır.
 
@@ -193,8 +193,8 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 <a id="cos-04"></a>
 
-- [ ] **COS-04 — Kaynak kayıtlarını ve stok denetimini genişlet**
-  - Durum: Çalışılıyor. Öncelik: P0; rol: Backend / içerik araçları; efor: M.
+- [x] **COS-04 — Kaynak kayıtlarını ve stok denetimini genişlet**
+  - Durum: Kanıtla tamamlandı. Öncelik: P0; rol: Backend / içerik araçları; efor: M.
   - Önkoşullar: COS-01.
   - Mevcut bağlar: `server/app/cosmetic_releases.py`, `tools/prepare_liveops_rewards.py`, `server/tests/test_cosmetic_releases.py`, `server/app/liveops_content.py`, `server/data/liveops_content_sources_v1.json`, `server/tests/test_liveops_content.py`.
   - Yeni teslim önerisi: `server/data/liveops_content_sources_v1.json`.
@@ -202,7 +202,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 1: 2.4.0 mevcut dört kaynağın ilk sezon profilini doğrular; planlı mağaza/yeni etkinlik adaptörleri kapalı kalır. Mağaza adaptörü SHOP-01/2.5.0 işidir; yalnız JSON adı ekleyerek yayın yapılamaz.
   - Kabul 2: Coverage aktif kaynak/takvim/profilden ihtiyaç hesaplar; eski tam-koleksiyon profilindeki 30 dönem öğesi hesabı korunur, yeni kaynak haftası profiliyle karıştırılmaz. Mağaza stoğu ayrıdır; yetersiz gerçek stokta yayın durur.
   - Kabul 3: Yeni ilk-sezon profilinde fixed_resources/cosmetic_set türleri ayrı sayılır; kaynak haftası eksik kozmetik fallback'i değildir. Eski tam-koleksiyon coverage raporu ayrı profil olarak korunur.
-  - Geçmiş hazırlık kanıtı: `artifacts/release-240-foundations-tests.log`, `artifacts/release-240-20261103/coverage-aligned.json`, `artifacts/release-240-20261103/coverage-midweek.json`.
+  - Geçmiş hazırlık kanıtı: `docs/planning/season-1-stock-audit.md`, `docs/planning/season-1-stock-audit.json`, `tools/tests/test_first_season_preparation.py`, `server/tests/test_liveops_content.py`.
 
 <a id="reward-01"></a>
 
@@ -285,12 +285,14 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 <a id="ops-01"></a>
 
 - [ ] **OPS-01 — Dönem bazlı içerik üretim takvimini işlet**
-  - Durum: Yapılacak. Öncelik: P0; rol: Ürün / sanat / backend; efor: M.
+  - Durum: Çalışılıyor. Öncelik: P0; rol: Ürün / sanat / backend; efor: M.
   - Önkoşullar: COS-02, COS-04, CARD-02, ECON-01.
-  - Mevcut bağlar: `tools/prepare_liveops_rewards.py`, `server/app/competition_cycle.py`, `server/app/competition_control.py`.
-  - Yeni teslim önerisi: `docs/planning/two-cycle-production-calendar.md`.
+  - Mevcut bağlar: `tools/prepare_liveops_rewards.py`, `server/app/competition_cycle.py`, `server/app/competition_control.py`, `docs/planning/two-cycle-production-calendar.md`, `docs/planning/season-1-stock-audit.md`.
+  - Yeni teslim önerisi: `docs/planning/two-cycle-production-calendar.md`, `server/data/season_reward_profiles_v1.json`, `server/app/season_reward_profiles.py`.
   - Kabul 1: S1 mevcut içerik; S2/S3/S4 altışar yeni oyuncu öğesi ve S2'den itibaren yeni modül; kaynak haftaları ve ayrı takım/mağaza stoğu dönem bazında kaydedilir.
   - Kabul 2: Haftalık/aylık yeni stok yetersizse tarih revize edilir; eski kozmetik geri dönmez, açılışlar operatör kontrolündedir.
+  - Kabul 3: S2 ve sonraki dönemlerin kaynak haftaları genel, incelenmiş sezon ödül profiliyle açıkça tanımlanır; S1 istisnası kopyalanmaz. 24 öğelik tam-profil açığı ile altı oyuncu öğesi/sezon kapsamı ayrı raporlanır. 11 Kasım üretim briefi hazırdır; çalışma adaptörü ve gerçek üretim kabulü henüz yoktur.
+  - Geçmiş hazırlık kanıtı: `docs/planning/two-cycle-production-calendar.md`.
 
 <a id="ops-02"></a>
 
@@ -496,7 +498,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 - [ ] **COS-03 — Mağazaya özel dört ayrı kozmetik hazırla**
   - Durum: Yapılacak. Öncelik: P1; rol: Sanat / ürün; efor: L.
   - Önkoşullar: COS-01, ECON-01.
-  - Mevcut bağlar: `server/data/cosmetic_releases_v1.json`, `client/src/liveops-cosmetic-catalog.js`.
+  - Mevcut bağlar: `server/data/cosmetic_releases_v1.json`, `client/src/liveops-cosmetic-catalog.js`, `docs/planning/shop-art-manifest.md`.
   - Yeni teslim önerisi: `docs/planning/shop-art-manifest.md`.
   - Sürüm briefleri: [2.5.0](planning/releases/2.5.0.md).
   - Kabul 1: İki mağaza çerçevesi ve iki zemin dönem ödül stoğundan farklı ID/tasarımla hazırlanır.
@@ -507,7 +509,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 - [ ] **CARD-01 — Yankı Rölesi sezon modülünü uçtan uca geliştir**
   - Durum: Yapılacak. Öncelik: P0; rol: Oyun motoru / sanat / denge; efor: XL.
   - Önkoşullar: ECON-01.
-  - Mevcut bağlar: `server/app/season_module_releases.py`, `server/data/season_module_releases_v2.json`, `server/app/module_roster.py`, `server/app/game/engine.py`.
+  - Mevcut bağlar: `server/app/season_module_releases.py`, `server/data/season_module_releases_v2.json`, `server/app/module_roster.py`, `server/app/game/engine.py`, `docs/planning/echo-relay-release.md`.
   - Yeni teslim önerisi: `docs/planning/echo-relay-release.md`.
   - Sürüm briefleri: [2.5.0](planning/releases/2.5.0.md).
   - Kabul 1: Planlı echo_relay için mekanik, karşı oyun, çalışma görseli, aktif katalog ve arena kapısı tamamlanır.
@@ -619,7 +621,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 - [ ] **COS-05 — 2.5.0 için altı özgün oyuncu kozmetiğini teslim et**
   - Durum: Yapılacak. Öncelik: P1; rol: Geliştirme / tasarım / QA; efor: M.
   - Önkoşullar: COS-01.
-  - Mevcut bağlar: `docs/planning/two-cycle-art-manifest.md`, `server/data/cosmetic_releases_v1.json`, `client/src/liveops-cosmetic-catalog.js`, `client/src/liveops-cosmetics-v1.css`, `e2e/liveops-cosmetics.spec.js`.
+  - Mevcut bağlar: `docs/planning/two-cycle-art-manifest.md`, `server/data/cosmetic_releases_v1.json`, `client/src/liveops-cosmetic-catalog.js`, `client/src/liveops-cosmetics-v1.css`, `e2e/liveops-cosmetics.spec.js`, `docs/planning/art-2.5.0-acceptance.md`, `docs/planning/two-cycle-production-calendar.md`.
   - Yeni teslim önerisi: `docs/planning/art-2.5.0-acceptance.md`.
   - Sürüm briefleri: [2.5.0](planning/releases/2.5.0.md).
   - Kabul 1: Manyetik Köprü, Bakır Örgü, Kırık Halka: üç çerçeve ve üç zemin; her biri ayrı tasarım kimliği, özgün geometri, TR/EN, kilit/sahiplik/kuşanma ve 320/393 px kabulü alır.
@@ -645,7 +647,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 - [ ] **CARD-02 — Kor Fırlatıcı ile ikinci dönem kart stoğunu hazırla**
   - Durum: Yapılacak. Öncelik: P1; rol: Oyun motoru / sanat / denge; efor: XL.
   - Önkoşullar: CARD-01.
-  - Mevcut bağlar: `server/data/season_module_releases_v2.json`, `server/app/season_module_releases.py`, `server/app/game/engine.py`.
+  - Mevcut bağlar: `server/data/season_module_releases_v2.json`, `server/app/season_module_releases.py`, `server/app/game/engine.py`, `docs/planning/ember-launcher-release.md`.
   - Yeni teslim önerisi: `docs/planning/ember-launcher-release.md`.
   - Sürüm briefleri: [2.6.0](planning/releases/2.6.0.md).
   - Kabul 1: Planlı ember_launcher için yanma, arındırma/karşı oyun ve okunabilir süre/hasar göstergesi hazırlanır.
@@ -787,7 +789,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 - [ ] **COS-06 — 2.6.0 için altı özgün oyuncu kozmetiğini teslim et**
   - Durum: Yapılacak. Öncelik: P1; rol: Geliştirme / tasarım / QA; efor: M.
   - Önkoşullar: COS-01.
-  - Mevcut bağlar: `docs/planning/two-cycle-art-manifest.md`, `server/data/cosmetic_releases_v1.json`, `client/src/liveops-cosmetic-catalog.js`, `client/src/liveops-cosmetics-v1.css`, `e2e/liveops-cosmetics.spec.js`.
+  - Mevcut bağlar: `docs/planning/two-cycle-art-manifest.md`, `server/data/cosmetic_releases_v1.json`, `client/src/liveops-cosmetic-catalog.js`, `client/src/liveops-cosmetics-v1.css`, `e2e/liveops-cosmetics.spec.js`, `docs/planning/two-cycle-production-calendar.md`.
   - Yeni teslim önerisi: `docs/planning/art-2.6.0-acceptance.md`.
   - Sürüm briefleri: [2.6.0](planning/releases/2.6.0.md).
   - Kabul 1: Reaktör Kepengi, Prizma Yuvası, Türbin Dişlisi: üç çerçeve ve üç zemin; her biri ayrı tasarım kimliği, özgün geometri, TR/EN, kilit/sahiplik/kuşanma ve 320/393 px kabulü alır.
@@ -906,7 +908,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 - [ ] **COS-07 — 2.7.0 için altı özgün oyuncu kozmetiğini teslim et**
   - Durum: Yapılacak. Öncelik: P1; rol: Geliştirme / tasarım / QA; efor: M.
   - Önkoşullar: COS-01.
-  - Mevcut bağlar: `docs/planning/two-cycle-art-manifest.md`, `server/data/cosmetic_releases_v1.json`, `client/src/liveops-cosmetic-catalog.js`, `client/src/liveops-cosmetics-v1.css`, `e2e/liveops-cosmetics.spec.js`.
+  - Mevcut bağlar: `docs/planning/two-cycle-art-manifest.md`, `server/data/cosmetic_releases_v1.json`, `client/src/liveops-cosmetic-catalog.js`, `client/src/liveops-cosmetics-v1.css`, `e2e/liveops-cosmetics.spec.js`, `docs/planning/two-cycle-production-calendar.md`.
   - Yeni teslim önerisi: `docs/planning/art-2.7.0-acceptance.md`.
   - Sürüm briefleri: [2.7.0](planning/releases/2.7.0.md).
   - Kabul 1: Seramik Siper, Kablo Kemeri, Kristal Kıskaç: üç çerçeve ve üç zemin; her biri ayrı tasarım kimliği, özgün geometri, TR/EN, kilit/sahiplik/kuşanma ve 320/393 px kabulü alır.

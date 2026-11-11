@@ -63,6 +63,17 @@ class AndroidToolchainTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("JDK 21", result.stderr)
 
+    def test_old_global_java_home_falls_back_to_installed_studio_jdk(self):
+        program_files = self.base / 'Program Files'
+        studio = program_files / 'Android/Android Studio/jbr'
+        shutil.copytree(self.java, studio)
+        (self.java / 'release').write_text('JAVA_VERSION="17.0.20"\n', encoding='utf-8')
+        result = self.resolve('$env:JAVA_HOME=' + self.quoted(self.java)
+            + '; $env:ProgramFiles=' + self.quoted(program_files)
+            + '; $env:ANDROID_HOME=' + self.quoted(self.sdk) + '; ', explicit=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(Path(json.loads(result.stdout)['JavaHome']), studio)
+
     def test_incomplete_sdk_fails_closed(self):
         (self.sdk / "platforms/android-36/android.jar").unlink()
         result = self.resolve()

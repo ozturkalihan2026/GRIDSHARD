@@ -264,7 +264,9 @@ def test_resource_weeks_are_explicit_and_preview_equals_frozen_delivery(s1):
             assert message['chest'] == row and message['reward_content_hash']
             total += row['module_shards']
     assert total == 234
-    report = content_coverage(cosmetic_releases.REGISTRY, cycles=1, starts_at=first.PROFILE['starts_at'])
+    team = next(a['period_id'] for a in first.PROFILE['cosmetic_allocations'] if a['source'] == 'team_tournament')
+    report = content_coverage(cosmetic_releases.REGISTRY, cycles=1, starts_at=first.PROFILE['starts_at'],
+        team_starts_at=team + 'T00:00:00Z', first_season_profile=first.PROFILE)
     weekly = next(r for r in report['sources'] if r['source'] == 'weekly_tournament')
     assert weekly['period_count'] == 4 and weekly['cosmetic_period_count'] == 1
     assert len(weekly['resource_only_periods']) == 3 and report['stock_ready']

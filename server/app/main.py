@@ -1621,6 +1621,7 @@ class TelemetryEventRequest(BaseModel):
 class PlayerSettingsRequest(BaseModel):
     sound_volume: int | None = None
     music_volume: int | None = None
+    battle_music_volume: int | None = None
     sound_muted: bool | None = None
     music_muted: bool | None = None
     vibration_enabled: bool | None = None
@@ -2815,6 +2816,7 @@ def update_player_settings(
             player_id,
             sound_volume=request.sound_volume,
             music_volume=request.music_volume,
+            battle_music_volume=request.battle_music_volume,
             sound_muted=request.sound_muted,
             music_muted=request.music_muted,
             vibration_enabled=(

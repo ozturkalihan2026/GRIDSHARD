@@ -6,7 +6,7 @@ import re
 import sys
 
 ROOT=Path(__file__).resolve().parents[1]
-EXPECTED_VERSION="2.3.0"
+EXPECTED_VERSION="2.4.0"
 
 
 def fail(message:str)->None:

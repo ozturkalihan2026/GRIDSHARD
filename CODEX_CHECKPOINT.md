@@ -1,3 +1,121 @@
+# 2.4.0 kaynak dondurma hazırlığı — 11 Kasım 2026
+
+- Kullanıcı gelecekteki içeriğin2.4 paket/sunucu kaynağına karışmasını önlemek
+  için sabit aday ve sonradan tek komutla üretim istedi; AAB/canlı yayın bugün yok.
+  Kullanıcıya v2.4.0-rc.1 etiketinin current main değil mevcut geliştirme dalındaki
+  tam commit'e konacağı, final v2.4.0'ın yayın gününde kalacağı açıklandı.
+- tools/release_candidate.py plan/prepare/check/aab/server-image/server-source
+  komutları: config/release-candidates/2.4.0.json içindeki SHA+tag eşleşmesini
+  ve ayrı qa_reports/release-candidates/2.4.0-rc1/source worktree'sini doğrular.
+  Kirli/yanlış kaynak, ignored ek üretim dosyası ve sürüm uyuşmazlığında durur.
+  Eski worktree silinmez/resetlenmez; sonraki düzeltme rc.2/newpin/newpath olur.
+- Üretim kaynak kimliği2.4.0/15'e hazırlandı: server VERSION, config Android,
+  root native version, release_guard ve source package label season-one.
+  Legacy health/release/server alias'ları ve protokol2 korundu. Üretim24 notu
+  kaynakta eklendi, yalnız2.4 sunucu yayınında görünür; bugünkü canlı230 değişmedi.
+- build-android-production.ps1 dış SigningDirectory alır; upload key/DPAPI
+  secret Git/worktree içine kopyalanmaz. -PrepareOnly gerçek native/web sync
+  PASS; final AAB/APK, kaynakZIP veya Docker imajı üretilmedi.
+- docs/planning/release-240-freeze.md komutlar, dal/etiket disiplini ve kalan
+  yayın kabulünü kaydeder. S1 draft/Android kapalı kaldı; sunucu hazırlığı
+  sezon açılışı veya canlı geçiş değildir. Eski beta reset aracı kullanılmaz.
+- İstemci782 PASS; araç ve tam sunucu sonuçları qa_reports/release240-freeze-*.log.
+  Sunucuda yeni2.4 mesajıyla bir testin sabit seen listesi güncellendi; ilgili25
+  test PASS. İmzalama/JDK/SDK önkontrolü PASS; eski global JAVA_HOME17 yerine Studio21 fallback düzeltildi. Commit/tag/worktree sıradaki adımlardır.
+- Önceki bütün ses/stok/gelecek üretim planı değişiklikleri aynı aday kaydına
+  dahil edilir; gelecek içerik runtime'ı henüz yok. Etiketli kayıttan sonra ayrı
+  codex/develop-2.5.0 dalına geçilir. Bu kayıttan canlı dağıtım yapma.
+
+---
+
+# Güncel devam işi — gelecek sezon üretim planı, 11 Kasım 2026
+
+- Kullanıcı sunucu/AAB için erken olduğunu, gelecek sezonlar için içerik üretimi
+  veya en azından somut üretim planı hazırlanmasını istedi. Yayın takvimi korundu.
+- Ana teslim docs/planning/two-cycle-production-calendar.md. İlk iki görsel
+  örnek Manyetik Köprü çerçeve+zemin; sonra altı S2 oyuncu öğesi, ayrı dört
+  mağaza öğesi ve Yankı Rölesi. S3 Kor Fırlatıcı ve altı oyuncu öğesi; S4 altı
+  oyuncu öğesi + Siper İttifakı üç takım öğesi. Ortak boyalı/hacimli sanat yönü,
+  en fazla 10 öğelik inceleme grupları, TR/EN 320/393 ve kilit/sahiplik korunur.
+- Hazırlanan 5 dosya: two-cycle-production-calendar.md, shop-art-manifest.md,
+  art-2.5.0-acceptance.md, echo-relay-release.md, ember-launcher-release.md.
+  Hepsi docs/planning altında. İki modülün sayıları prototip önerisidir;
+  denge/katalog/ücretsiz edinim/sanat/ses kabulü olmadan modül hazır sayılmaz.
+  Sanat dosyaları brief'tir, gerçek çizim/approved stok üretilmedi.
+- Önemli ayrım: 24 yeni öğelik açık, S1 sonrası iki tam-kozmetik çevrimindir.
+  Mevcut 6 yeni oyuncu öğesi/sezon kapsamı iki sezonda12 öğe ister; diğer üç
+  haftanın açık kaynak profilinin ayrıca üretilmesi gerekir. S1'e özel istisna
+  S2'ye taşınmaz. Genel season_reward_profiles.py/JSON önerilen, mevcut olmayan
+  işler olarak OPS-01'e bağlandı. OPS-01 in_progress yalnız hazırlık/plan kısmı;
+  COS-03/05/06/07 ve CARD-01/02 üretim görevleri todo kaldı.
+- Takvim motoruyla gerçek dönemler kontrol edildi: S2 W53/W01/W02/W03, S3
+  W04–07, S4 W08–11. Takım adayları bağımsız4 Ocak/1 Şubat/1 Mart; ilk iki
+  mevcut takım seti yalnız hiç ayrılmamış/dağıtılmamışsa kullanılabilir.
+- Backlog'a dosyalar bağlandı; checklist/sürüm briefleri araçlarla güncellendi.
+  Plan kontrolleri, yeni5 dosyanın bağlantıları, git diff --check ve S1 stok
+  audit --check geçti. Canonical yayın takvimi, oyun kaynakları ve istemci
+  paketine bu planlama turunda ekleme yapılmadı. Yeni test gerektiren çalışma
+  kodu yok; aşağıdaki ses/test sonuçları önceki işindir.
+- Bu üretim planı ve önceki ses/stok çalışmaları henüz commit/push edilmedi.
+  Yeni PNG/rasterses yok, canlı yayın/sezon/AAB işlemi yapılmadı. Sıradaki
+  somut üretim Manyetik Köprü çiftinin oyun dışında iki görsel örneği;
+  ardından renderer şablonları ve2.5 motor/ödül prototipi.
+
+---
+
+# Güncel durum — ayrı müzik kontrolleri ve S1 stok denetimi, 11 Kasım 2026
+
+- Son kullanıcı kararı: menü müziği varsayılanı **%5**, savaş müziği **%50**.
+  Ortak sliderın savaşı da aşırı kısması düzeltildi: music_volume menü/hazırlık,
+  battle_music_volume savaş/sonuç içindir. Üç slider Efekt Sesi, Menü Müziği,
+  Savaş Müziği anlık yüzde ve aria-valuetext gösterir. Kayıtlı tercihler korunur;
+  eski kayıtta savaş alanı yoksa %50 kullanılır. Ortak müzik mute ikisini kapatır.
+- Savaş müzik çarpanı 2,35 → 2,15 (yaklaşık %9); SFX çarpanı 0,70 korundu.
+  İki kompakt ses kartı, üç slider; müzik/SFX önizleme düğmeleri ve app
+  handlerları kaldırıldı. Gerçek input/kayıt boyunca dock konumu üç tarayıcıda
+  kare kare kontrol edildi. Bir kanalı sıfırlamak diğer kanalı susturmaz;
+  sessiz kanala geçişte önceki ekranın müziği devam etmez. HTML/Web Audio ve
+  arka plandan dönüş sınırları testlidir.
+- Yeni battle_music_volume alanı API, client viewModel, request, JSON/PG snapshot
+  geri yükleme yoluna eklendi; eski istemcinin kısmi güncellemesi alanı sıfırlamaz.
+  Eski kayıtta eksik alan ve açıkça saklanmış sıfır ayrı testlerle doğrulandı.
+- **COS-04 tamamlandı:** docs/planning/season-1-stock-audit.md/json çevrimdışı
+  kanıtı; tools/prepare_first_season.py --audit-check artık CI kapısıdır.
+  İlk sezon coverage takımın bağımsız 7 Aralık başlangıcını önce saymıyordu;
+  artık 7 dönem, 6 oyuncu + 3 takım öğesinin tümü doğrulanır. Kaynak haftası
+  indirimi yalnız tam eşleşen açık ilk-sezon profiliyle olur; generic full_cosmetic
+  profilde sessiz fallback yok. Üç haftada 7.140 kredi, 525 akı, 234 sıradan parça;
+  bunlar mevcut bütçedir, yeni ek hibe değildir. Eksik/değişmiş tahsis kapanır.
+  Eski iki çevrim profili 30 öğe/18 eksik; S1 sonrası iki tam-kozmetik çevrim
+  profili 24 yeni öğe gerektirir. Mağaza/yeni etkinlik adaptörleri kapalıdır.
+  Kaynak hash'leri CRLF/LF normalize; test iki platform eşitliğini ve stale rapor
+  reddini doğrular. Takvim ve ilk sezon canlı taslak/Android kabulü değiştirilmedi.
+- Son yerel doğrulama: **782 istemci PASS**, **2047 sunucu PASS / 52 dış servis
+  SKIP**, **7 stok araç testi PASS**, **13 paketleme testi PASS**. Son %5/%50
+  ile 3 tarayıcıda yüzde/bağımsız kayıt/reload/dock testi PASS (320/393).
+  Tam sunucu ilk denemesinde eski generic coverage çağrısı tek hata verdi;
+  test açık ilk-sezon+takım profiline geçirilip tam suite yeniden yeşil alındı.
+  Plan/ekonomi/ses/stock kontrolleri ve APK audit PASS (582 dosya).
+- Telefona son **GRIDSHARD S1 TEST / com.gridshard.localdebug 2.4.0/15** kuruldu.
+  Web **71ac115e81b2a271**; APK SHA256 **2f0238184a227fd6e70a1df895c723f7c0a3faa0eb9c4ed7a2317771c34e711a**.
+  Yerel API retained runtime korunarak, yedeği alınıp son varsayılanlarla yeniden
+  açıldı: PID18376 / 8897, .mobile-debug/runtime-s1-20261106, 12 Aralık fixture.
+  PID tekrar kullanılmadan komut satırını ve runtime yolunu doğrula. Üretim yok.
+  Aynı hesap/24 modül ve native varsayılan %5/%50 doğrulandı. Kullanıcının
+  kaydettiği gerçek %5 menü/%55 savaş korunup yüzde etiketleriyle sunucuda eşleşti.
+  Kanıt qa_reports/native-s1-20261106/native-240-split-audio-20261111-proof.json.
+  apk-v21-ready.json installed=true/native_verification=passed. Ekran görüntüsü
+  ve sonradan backgrounddaki UI click timeout'ları ürün hatası sayılmadı;
+  salt okunur odaklı native kontrol tamamlandı, yeni native screenshot yok.
+  Fiziksel dinleme beğenisi ayrı pending kabul; kullanıcı seviyeleri değiştirilmeyecek.
+- **Bu turun değişiklikleri henüz commit/push edilmedi.** Dal
+  codex/s1-bots-tournament-rewards, başlangıç HEAD2c8fa72e. Önceki ürün CI'si
+  f5050ae8/42345535071 yeşildi; bu yeni değişiklikler için uzak CI çalışmadı.
+  Yeni audit JSON/MD de commit'e dahil edilmeli. 2.4.0 geliştirme sürümünde
+  kalındı; canlı sunucu geçişi, imzalı AAB ve sezon açılışı yapılmadı.
+
+---
+
 # Güncel durum — son 2.4.0 test paketi telefonda doğrulandı, 11 Kasım 2026
 
 - Kullanıcı telefonu bağladı ve devam etmemizi istedi. Önceki kurulum komutu

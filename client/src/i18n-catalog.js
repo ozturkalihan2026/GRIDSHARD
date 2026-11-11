@@ -3,6 +3,9 @@
 
   // New screen copy belongs here; the legacy dictionary remains in i18n.js.
   const translations = Object.freeze({
+    "Efekt Sesi":"Effects Volume",
+    "Menü Müziği":"Menu Music",
+    "Savaş Müziği":"Battle Music",
     "Sıralama Ödülleri":"Ranking Rewards",
     "Sıralama Ödülü":"Ranking Reward",
     "Hafta sonunda mesaj kutusuna teslim edilir.":"Delivered to your inbox at the end of the week.",

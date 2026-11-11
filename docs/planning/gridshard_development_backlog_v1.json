@@ -38,7 +38,8 @@
     "docs/planning/release-230-prerelease-system-mail.md",
     "docs/planning/release-240-friend-request-tabs.md",
     "docs/planning/release-240-bot-competition.md",
-    "docs/planning/audio-direction-circuit-forge-v21.md"
+    "docs/planning/audio-direction-circuit-forge-v21.md",
+    "docs/planning/two-cycle-production-calendar.md"
   ],
   "tasks": [
     {
@@ -309,7 +310,8 @@
       ],
       "existing_paths": [
         "server/data/cosmetic_releases_v1.json",
-        "client/src/liveops-cosmetic-catalog.js"
+        "client/src/liveops-cosmetic-catalog.js",
+        "docs/planning/shop-art-manifest.md"
       ],
       "proposed_paths": [
         "docs/planning/shop-art-manifest.md"
@@ -338,7 +340,7 @@
       "owner": "Backend / içerik araçları",
       "effort": "M",
       "priority": "P0",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "COS-01"
       ],
@@ -368,9 +370,10 @@
         9
       ],
       "evidence": [
-        "artifacts/release-240-foundations-tests.log",
-        "artifacts/release-240-20261103/coverage-aligned.json",
-        "artifacts/release-240-20261103/coverage-midweek.json"
+        "docs/planning/season-1-stock-audit.md",
+        "docs/planning/season-1-stock-audit.json",
+        "tools/tests/test_first_season_preparation.py",
+        "server/tests/test_liveops_content.py"
       ],
       "planned_releases": [
         "2.4.0"
@@ -391,7 +394,8 @@
         "server/app/season_module_releases.py",
         "server/data/season_module_releases_v2.json",
         "server/app/module_roster.py",
-        "server/app/game/engine.py"
+        "server/app/game/engine.py",
+        "docs/planning/echo-relay-release.md"
       ],
       "proposed_paths": [
         "docs/planning/echo-relay-release.md"
@@ -430,7 +434,8 @@
       "existing_paths": [
         "server/data/season_module_releases_v2.json",
         "server/app/season_module_releases.py",
-        "server/app/game/engine.py"
+        "server/app/game/engine.py",
+        "docs/planning/ember-launcher-release.md"
       ],
       "proposed_paths": [
         "docs/planning/ember-launcher-release.md"
@@ -1727,7 +1732,7 @@
       "owner": "Ürün / sanat / backend",
       "effort": "M",
       "priority": "P0",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [
         "COS-02",
         "COS-04",
@@ -1737,14 +1742,19 @@
       "existing_paths": [
         "tools/prepare_liveops_rewards.py",
         "server/app/competition_cycle.py",
-        "server/app/competition_control.py"
+        "server/app/competition_control.py",
+        "docs/planning/two-cycle-production-calendar.md",
+        "docs/planning/season-1-stock-audit.md"
       ],
       "proposed_paths": [
-        "docs/planning/two-cycle-production-calendar.md"
+        "docs/planning/two-cycle-production-calendar.md",
+        "server/data/season_reward_profiles_v1.json",
+        "server/app/season_reward_profiles.py"
       ],
       "acceptance": [
         "S1 mevcut içerik; S2/S3/S4 altışar yeni oyuncu öğesi ve S2'den itibaren yeni modül; kaynak haftaları ve ayrı takım/mağaza stoğu dönem bazında kaydedilir.",
-        "Haftalık/aylık yeni stok yetersizse tarih revize edilir; eski kozmetik geri dönmez, açılışlar operatör kontrolündedir."
+        "Haftalık/aylık yeni stok yetersizse tarih revize edilir; eski kozmetik geri dönmez, açılışlar operatör kontrolündedir.",
+        "S2 ve sonraki dönemlerin kaynak haftaları genel, incelenmiş sezon ödül profiliyle açıkça tanımlanır; S1 istisnası kopyalanmaz. 24 öğelik tam-profil açığı ile altı oyuncu öğesi/sezon kapsamı ayrı raporlanır. 11 Kasım üretim briefi hazırdır; çalışma adaptörü ve gerçek üretim kabulü henüz yoktur."
       ],
       "goals": [
         "content",
@@ -1755,7 +1765,9 @@
         4,
         9
       ],
-      "evidence": []
+      "evidence": [
+        "docs/planning/two-cycle-production-calendar.md"
+      ]
     },
     {
       "id": "OPS-02",
@@ -2370,7 +2382,9 @@
         "server/data/cosmetic_releases_v1.json",
         "client/src/liveops-cosmetic-catalog.js",
         "client/src/liveops-cosmetics-v1.css",
-        "e2e/liveops-cosmetics.spec.js"
+        "e2e/liveops-cosmetics.spec.js",
+        "docs/planning/art-2.5.0-acceptance.md",
+        "docs/planning/two-cycle-production-calendar.md"
       ],
       "proposed_paths": [
         "docs/planning/art-2.5.0-acceptance.md"
@@ -2410,7 +2424,8 @@
         "server/data/cosmetic_releases_v1.json",
         "client/src/liveops-cosmetic-catalog.js",
         "client/src/liveops-cosmetics-v1.css",
-        "e2e/liveops-cosmetics.spec.js"
+        "e2e/liveops-cosmetics.spec.js",
+        "docs/planning/two-cycle-production-calendar.md"
       ],
       "proposed_paths": [
         "docs/planning/art-2.6.0-acceptance.md"
@@ -2450,7 +2465,8 @@
         "server/data/cosmetic_releases_v1.json",
         "client/src/liveops-cosmetic-catalog.js",
         "client/src/liveops-cosmetics-v1.css",
-        "e2e/liveops-cosmetics.spec.js"
+        "e2e/liveops-cosmetics.spec.js",
+        "docs/planning/two-cycle-production-calendar.md"
       ],
       "proposed_paths": [
         "docs/planning/art-2.7.0-acceptance.md"

@@ -11,8 +11,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "2.3.0"
-PACKAGE_LABEL = "cosmetic-preview"
+VERSION = "2.4.0"
+PACKAGE_LABEL = "season-one"
 ARCHIVE_ROOT = f"GRIDSHARD-{VERSION}-{PACKAGE_LABEL}"
 
 EXCLUDED_RUNTIME_PATTERNS = (
@@ -153,7 +153,8 @@ def main(output_dir: Path | None = None) -> int:
         "package_label": PACKAGE_LABEL,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "source_commit": commit,
-        "working_tree_changes_included": True,
+        "working_tree_changes_included": bool(subprocess.check_output(
+            ["git", "status", "--porcelain", "--untracked-files=all"], cwd=ROOT).strip()),
         "runtime_player_and_telemetry_data_included": False,
         "file_count": len(files),
         "files": [path.relative_to(ROOT).as_posix() for path in files],

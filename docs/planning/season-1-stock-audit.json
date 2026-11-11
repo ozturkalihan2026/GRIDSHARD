@@ -1,0 +1,701 @@
+{
+  "schema_version": 1,
+  "release": "2.4.0",
+  "production_changed": false,
+  "season_activated": false,
+  "publication_ready": false,
+  "stock_ready": true,
+  "source_hash_normalization": "CRLF-to-LF",
+  "source_sha256": {
+    "server/data/first_season_launch_v1.json": "e266dea1f2e48df1f702b023c4c5b24e8b78055db15c3df1258fc3521ffbc0ad",
+    "server/data/cosmetic_releases_v1.json": "80dd80285ea4c3a895927e41918604b2e905e311d2c13c7330dfb3fcf4a70f54",
+    "server/data/liveops_content_sources_v1.json": "fdac5048019eca1fc4c14c5b665465c838c75d33b8116bdfb5b534866a7273c8",
+    "server/app/liveops_content.py": "cee74588a407672ca87ae049f09e103e443dbc25eb814e650eaf17c501afd0cb",
+    "server/app/cosmetic_releases.py": "12a8c1ec82a5e2567a62c5c28b145db1265ed87b369252950cdf022aa5a2aa83",
+    "server/app/first_season_profile.py": "c779acb584e172bbad4de7c138c49451b6d6d5506e4b5805e3586343da5ceade",
+    "docs/planning/release_calendar_v1.json": "ad245e426f879a2e17ff4031b481c63b59c24274ad0341b5e84bbc5e9fc44021",
+    "tools/prepare_first_season.py": "ea902d9c754b394bf8a56558a4c17ab72dc946cb063dd76d6db3b61f35a30d6b"
+  },
+  "season_calendar": {
+    "starts_at": "2026-11-30T00:00:00Z",
+    "ends_at": "2026-12-28T00:00:00+00:00",
+    "team_starts_at": "2026-12-07T00:00:00Z",
+    "team_ends_at": "2027-01-04T00:00:00+00:00"
+  },
+  "source_contracts": [
+    {
+      "id": "season_road",
+      "state": "supported",
+      "schedule": "season",
+      "stock_pool": "competition",
+      "cosmetics_per_period": {
+        "avatar_frame_id": 1,
+        "profile_background_id": 1
+      }
+    },
+    {
+      "id": "season_leaderboard",
+      "state": "supported",
+      "schedule": "season",
+      "stock_pool": "competition",
+      "cosmetics_per_period": {
+        "avatar_frame_id": 1,
+        "profile_background_id": 1
+      }
+    },
+    {
+      "id": "weekly_tournament",
+      "state": "supported",
+      "schedule": "iso_week",
+      "stock_pool": "competition",
+      "cosmetics_per_period": {
+        "avatar_frame_id": 1,
+        "profile_background_id": 1
+      }
+    },
+    {
+      "id": "team_tournament",
+      "state": "supported",
+      "schedule": "team_cycle",
+      "stock_pool": "competition",
+      "cosmetics_per_period": {
+        "team_emblem_id": 1,
+        "team_frame_id": 1,
+        "team_name_color_id": 1
+      }
+    },
+    {
+      "id": "shop_collection",
+      "state": "planned",
+      "schedule": "manual",
+      "stock_pool": "shop",
+      "cosmetics_per_period": {
+        "avatar_frame_id": 1,
+        "profile_background_id": 1
+      }
+    },
+    {
+      "id": "daily_trial",
+      "state": "planned",
+      "schedule": "manual",
+      "stock_pool": "daily_trial",
+      "cosmetics_per_period": {
+        "avatar_frame_id": 1,
+        "profile_background_id": 1
+      }
+    }
+  ],
+  "allocations": [
+    {
+      "source": "season_leaderboard",
+      "period_id": "gridshard_2026_11_30",
+      "reward_kind": "cosmetic_set",
+      "status": "draft",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {
+            "avatar_frame_id": "solar_frame",
+            "profile_background_id": "solar_banner"
+          }
+        }
+      ]
+    },
+    {
+      "source": "season_road",
+      "period_id": "gridshard_2026_11_30",
+      "reward_kind": "cosmetic_set",
+      "status": "draft",
+      "placements": [
+        {
+          "slot": 40,
+          "cosmetics": {
+            "avatar_frame_id": "aurora_frame",
+            "profile_background_id": "aurora_banner"
+          }
+        }
+      ]
+    },
+    {
+      "source": "team_tournament",
+      "period_id": "2026-12-07",
+      "reward_kind": "cosmetic_set",
+      "status": "draft",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {
+            "team_emblem_id": "aurora_sigil",
+            "team_frame_id": "aurora_team_frame",
+            "team_name_color_id": "aurora_team_name"
+          }
+        }
+      ]
+    },
+    {
+      "source": "weekly_tournament",
+      "period_id": "2026-W49",
+      "reward_kind": "resource_only",
+      "status": "draft",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 1200,
+            "flux_shards": 90,
+            "module_definition_id": "laser",
+            "module_shards": 36
+          }
+        },
+        {
+          "slot": 2,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 760,
+            "flux_shards": 55,
+            "module_definition_id": "laser",
+            "module_shards": 24
+          }
+        },
+        {
+          "slot": 3,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 420,
+            "flux_shards": 30,
+            "module_definition_id": "laser",
+            "module_shards": 18
+          }
+        }
+      ]
+    },
+    {
+      "source": "weekly_tournament",
+      "period_id": "2026-W50",
+      "reward_kind": "resource_only",
+      "status": "draft",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 1200,
+            "flux_shards": 90,
+            "module_definition_id": "shield",
+            "module_shards": 36
+          }
+        },
+        {
+          "slot": 2,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 760,
+            "flux_shards": 55,
+            "module_definition_id": "shield",
+            "module_shards": 24
+          }
+        },
+        {
+          "slot": 3,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 420,
+            "flux_shards": 30,
+            "module_definition_id": "shield",
+            "module_shards": 18
+          }
+        }
+      ]
+    },
+    {
+      "source": "weekly_tournament",
+      "period_id": "2026-W51",
+      "reward_kind": "resource_only",
+      "status": "draft",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 1200,
+            "flux_shards": 90,
+            "module_definition_id": "pulse_cannon",
+            "module_shards": 36
+          }
+        },
+        {
+          "slot": 2,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 760,
+            "flux_shards": 55,
+            "module_definition_id": "pulse_cannon",
+            "module_shards": 24
+          }
+        },
+        {
+          "slot": 3,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 420,
+            "flux_shards": 30,
+            "module_definition_id": "pulse_cannon",
+            "module_shards": 18
+          }
+        }
+      ]
+    },
+    {
+      "source": "weekly_tournament",
+      "period_id": "2026-W52",
+      "reward_kind": "cosmetic_set",
+      "status": "draft",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {
+            "avatar_frame_id": "abyss_frame",
+            "profile_background_id": "abyss_banner"
+          }
+        }
+      ]
+    }
+  ],
+  "first_season": {
+    "cycles": 1,
+    "calendar_bound": true,
+    "production_changed": false,
+    "reward_profile": "first_season",
+    "missing_profile_periods": [],
+    "publication_ready": false,
+    "stock_ready": true,
+    "unimplemented_sources": [],
+    "sources": [
+      {
+        "source": "season_road",
+        "state": "supported",
+        "stock_pool": "competition",
+        "period_count": 1,
+        "period_ids": [
+          "gridshard_2026_11_30"
+        ],
+        "resource_only_periods": [],
+        "cosmetic_period_count": 1,
+        "cosmetics_per_period": {
+          "avatar_frame_id": 1,
+          "profile_background_id": 1
+        },
+        "reserved_for_calendar": {
+          "avatar_frame_id": 1,
+          "profile_background_id": 1
+        }
+      },
+      {
+        "source": "season_leaderboard",
+        "state": "supported",
+        "stock_pool": "competition",
+        "period_count": 1,
+        "period_ids": [
+          "gridshard_2026_11_30"
+        ],
+        "resource_only_periods": [],
+        "cosmetic_period_count": 1,
+        "cosmetics_per_period": {
+          "avatar_frame_id": 1,
+          "profile_background_id": 1
+        },
+        "reserved_for_calendar": {
+          "avatar_frame_id": 1,
+          "profile_background_id": 1
+        }
+      },
+      {
+        "source": "weekly_tournament",
+        "state": "supported",
+        "stock_pool": "competition",
+        "period_count": 4,
+        "period_ids": [
+          "2026-W49",
+          "2026-W50",
+          "2026-W51",
+          "2026-W52"
+        ],
+        "resource_only_periods": [
+          "2026-W49",
+          "2026-W50",
+          "2026-W51"
+        ],
+        "cosmetic_period_count": 1,
+        "cosmetics_per_period": {
+          "avatar_frame_id": 1,
+          "profile_background_id": 1
+        },
+        "reserved_for_calendar": {
+          "avatar_frame_id": 1,
+          "profile_background_id": 1
+        }
+      },
+      {
+        "source": "team_tournament",
+        "state": "supported",
+        "stock_pool": "competition",
+        "period_count": 1,
+        "period_ids": [
+          "2026-12-07"
+        ],
+        "resource_only_periods": [],
+        "cosmetic_period_count": 1,
+        "cosmetics_per_period": {
+          "team_emblem_id": 1,
+          "team_frame_id": 1,
+          "team_name_color_id": 1
+        },
+        "reserved_for_calendar": {
+          "team_emblem_id": 1,
+          "team_frame_id": 1,
+          "team_name_color_id": 1
+        }
+      }
+    ],
+    "content_tasks": [
+      {
+        "stock_pool": "competition",
+        "field": "avatar_frame_id",
+        "required": 3,
+        "reserved_for_calendar": 3,
+        "ready_unassigned": 0,
+        "create_and_review": 0
+      },
+      {
+        "stock_pool": "competition",
+        "field": "profile_background_id",
+        "required": 3,
+        "reserved_for_calendar": 3,
+        "ready_unassigned": 0,
+        "create_and_review": 0
+      },
+      {
+        "stock_pool": "competition",
+        "field": "team_emblem_id",
+        "required": 1,
+        "reserved_for_calendar": 1,
+        "ready_unassigned": 2,
+        "create_and_review": 0
+      },
+      {
+        "stock_pool": "competition",
+        "field": "team_frame_id",
+        "required": 1,
+        "reserved_for_calendar": 1,
+        "ready_unassigned": 2,
+        "create_and_review": 0
+      },
+      {
+        "stock_pool": "competition",
+        "field": "team_name_color_id",
+        "required": 1,
+        "reserved_for_calendar": 1,
+        "ready_unassigned": 2,
+        "create_and_review": 0
+      }
+    ]
+  },
+  "full_cosmetic_two_cycle_baseline": {
+    "cycles": 2,
+    "calendar_bound": true,
+    "production_changed": false,
+    "reward_profile": "full_cosmetic",
+    "missing_profile_periods": [],
+    "publication_ready": false,
+    "stock_ready": false,
+    "unimplemented_sources": [],
+    "sources": [
+      {
+        "source": "season_road",
+        "state": "supported",
+        "stock_pool": "competition",
+        "period_count": 2,
+        "period_ids": [
+          "gridshard_2026_11_30",
+          "gridshard_2026_12_28"
+        ],
+        "resource_only_periods": [],
+        "cosmetic_period_count": 2,
+        "cosmetics_per_period": {
+          "avatar_frame_id": 1,
+          "profile_background_id": 1
+        },
+        "reserved_for_calendar": {
+          "avatar_frame_id": 0,
+          "profile_background_id": 0
+        }
+      },
+      {
+        "source": "season_leaderboard",
+        "state": "supported",
+        "stock_pool": "competition",
+        "period_count": 2,
+        "period_ids": [
+          "gridshard_2026_11_30",
+          "gridshard_2026_12_28"
+        ],
+        "resource_only_periods": [],
+        "cosmetic_period_count": 2,
+        "cosmetics_per_period": {
+          "avatar_frame_id": 1,
+          "profile_background_id": 1
+        },
+        "reserved_for_calendar": {
+          "avatar_frame_id": 0,
+          "profile_background_id": 0
+        }
+      },
+      {
+        "source": "weekly_tournament",
+        "state": "supported",
+        "stock_pool": "competition",
+        "period_count": 8,
+        "period_ids": [
+          "2026-W49",
+          "2026-W50",
+          "2026-W51",
+          "2026-W52",
+          "2026-W53",
+          "2027-W01",
+          "2027-W02",
+          "2027-W03"
+        ],
+        "resource_only_periods": [],
+        "cosmetic_period_count": 8,
+        "cosmetics_per_period": {
+          "avatar_frame_id": 1,
+          "profile_background_id": 1
+        },
+        "reserved_for_calendar": {
+          "avatar_frame_id": 0,
+          "profile_background_id": 0
+        }
+      },
+      {
+        "source": "team_tournament",
+        "state": "supported",
+        "stock_pool": "competition",
+        "period_count": 2,
+        "period_ids": [
+          "2026-12-07",
+          "2027-01-04"
+        ],
+        "resource_only_periods": [],
+        "cosmetic_period_count": 2,
+        "cosmetics_per_period": {
+          "team_emblem_id": 1,
+          "team_frame_id": 1,
+          "team_name_color_id": 1
+        },
+        "reserved_for_calendar": {
+          "team_emblem_id": 0,
+          "team_frame_id": 0,
+          "team_name_color_id": 0
+        }
+      }
+    ],
+    "content_tasks": [
+      {
+        "stock_pool": "competition",
+        "field": "avatar_frame_id",
+        "required": 12,
+        "reserved_for_calendar": 0,
+        "ready_unassigned": 3,
+        "create_and_review": 9
+      },
+      {
+        "stock_pool": "competition",
+        "field": "profile_background_id",
+        "required": 12,
+        "reserved_for_calendar": 0,
+        "ready_unassigned": 3,
+        "create_and_review": 9
+      },
+      {
+        "stock_pool": "competition",
+        "field": "team_emblem_id",
+        "required": 2,
+        "reserved_for_calendar": 0,
+        "ready_unassigned": 3,
+        "create_and_review": 0
+      },
+      {
+        "stock_pool": "competition",
+        "field": "team_frame_id",
+        "required": 2,
+        "reserved_for_calendar": 0,
+        "ready_unassigned": 3,
+        "create_and_review": 0
+      },
+      {
+        "stock_pool": "competition",
+        "field": "team_name_color_id",
+        "required": 2,
+        "reserved_for_calendar": 0,
+        "ready_unassigned": 3,
+        "create_and_review": 0
+      }
+    ]
+  },
+  "next_two_cycles_after_s1": {
+    "cycles": 2,
+    "calendar_bound": true,
+    "production_changed": false,
+    "reward_profile": "full_cosmetic",
+    "missing_profile_periods": [],
+    "publication_ready": false,
+    "stock_ready": false,
+    "unimplemented_sources": [],
+    "sources": [
+      {
+        "source": "season_road",
+        "state": "supported",
+        "stock_pool": "competition",
+        "period_count": 2,
+        "period_ids": [
+          "gridshard_2026_12_28",
+          "gridshard_2027_01_25"
+        ],
+        "resource_only_periods": [],
+        "cosmetic_period_count": 2,
+        "cosmetics_per_period": {
+          "avatar_frame_id": 1,
+          "profile_background_id": 1
+        },
+        "reserved_for_calendar": {
+          "avatar_frame_id": 0,
+          "profile_background_id": 0
+        }
+      },
+      {
+        "source": "season_leaderboard",
+        "state": "supported",
+        "stock_pool": "competition",
+        "period_count": 2,
+        "period_ids": [
+          "gridshard_2026_12_28",
+          "gridshard_2027_01_25"
+        ],
+        "resource_only_periods": [],
+        "cosmetic_period_count": 2,
+        "cosmetics_per_period": {
+          "avatar_frame_id": 1,
+          "profile_background_id": 1
+        },
+        "reserved_for_calendar": {
+          "avatar_frame_id": 0,
+          "profile_background_id": 0
+        }
+      },
+      {
+        "source": "weekly_tournament",
+        "state": "supported",
+        "stock_pool": "competition",
+        "period_count": 8,
+        "period_ids": [
+          "2026-W53",
+          "2027-W01",
+          "2027-W02",
+          "2027-W03",
+          "2027-W04",
+          "2027-W05",
+          "2027-W06",
+          "2027-W07"
+        ],
+        "resource_only_periods": [],
+        "cosmetic_period_count": 8,
+        "cosmetics_per_period": {
+          "avatar_frame_id": 1,
+          "profile_background_id": 1
+        },
+        "reserved_for_calendar": {
+          "avatar_frame_id": 0,
+          "profile_background_id": 0
+        }
+      },
+      {
+        "source": "team_tournament",
+        "state": "supported",
+        "stock_pool": "competition",
+        "period_count": 2,
+        "period_ids": [
+          "2027-01-04",
+          "2027-02-01"
+        ],
+        "resource_only_periods": [],
+        "cosmetic_period_count": 2,
+        "cosmetics_per_period": {
+          "team_emblem_id": 1,
+          "team_frame_id": 1,
+          "team_name_color_id": 1
+        },
+        "reserved_for_calendar": {
+          "team_emblem_id": 0,
+          "team_frame_id": 0,
+          "team_name_color_id": 0
+        }
+      }
+    ],
+    "content_tasks": [
+      {
+        "stock_pool": "competition",
+        "field": "avatar_frame_id",
+        "required": 12,
+        "reserved_for_calendar": 0,
+        "ready_unassigned": 0,
+        "create_and_review": 12
+      },
+      {
+        "stock_pool": "competition",
+        "field": "profile_background_id",
+        "required": 12,
+        "reserved_for_calendar": 0,
+        "ready_unassigned": 0,
+        "create_and_review": 12
+      },
+      {
+        "stock_pool": "competition",
+        "field": "team_emblem_id",
+        "required": 2,
+        "reserved_for_calendar": 0,
+        "ready_unassigned": 2,
+        "create_and_review": 0
+      },
+      {
+        "stock_pool": "competition",
+        "field": "team_frame_id",
+        "required": 2,
+        "reserved_for_calendar": 0,
+        "ready_unassigned": 2,
+        "create_and_review": 0
+      },
+      {
+        "stock_pool": "competition",
+        "field": "team_name_color_id",
+        "required": 2,
+        "reserved_for_calendar": 0,
+        "ready_unassigned": 2,
+        "create_and_review": 0
+      }
+    ]
+  },
+  "release_checks": {
+    "reward_budget": true,
+    "unique_cosmetics": true,
+    "rollover_restore": true,
+    "old_clients": true,
+    "android_acceptance": false
+  },
+  "resource_totals": {
+    "circuit_credits": 7140,
+    "flux_shards": 525,
+    "module_shards": 234
+  },
+  "deferred_prize_policy": "append_frozen_package_to_plan_tail"
+}

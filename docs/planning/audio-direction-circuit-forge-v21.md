@@ -64,9 +64,13 @@ tekrar eden atışlar yaklaşık0,23–0,32 saniyedir.
 
 ## Miks ve uygulama
 
-V21 savaş müzik çarpanı2,35, efekt çarpanı0,70. V20’nin1,65/0,90 dengesine
-göre müzik geri gelir, rutin efektler biraz geriye alınır. Menü/sonuç müziği,
-kişisel sliderlar ve besteler korunur. Çekirdek trimleri0,78/0,58; modüllerin
+11 Kasım dinleme geri bildirimiyle savaş müzik çarpanı2,35’ten2,15’e
+(yaklaşık%9) indirildi; efekt çarpanı0,70 kaldı. Son kullanıcı kararı: menü müziği varsayılanı%5; savaş ve sonuç müziği ayrı kanalda%50 başlar.
+Kaydedilmiş menü tercihleri korunur; eski kayıtta savaş alanı yoksa%50 kullanılır.
+Efekt, menü ve savaş kaydırıcılarının yüzde değerleri anında gösterilir.
+İki kompakt kanal kartında üç kaydırıcı vardır; önizleme düğmeleri kaldırıldı.
+Bir kanalı sıfırlamak diğerini susturmaz; ortak müzik sessiz anahtarı ikisini kapatır.
+Menü/sonuç besteleri ve müzik ana kazancı değişmedi. Çekirdek trimleri0,78/0,58; modüllerin
 trimleri görevlerine göre ayrılır. Destek üretimi silahların önüne geçmez.
 Üç rutin başlangıç/420ms ve mevcut öncelik/tekrar kuralları korunur.
 

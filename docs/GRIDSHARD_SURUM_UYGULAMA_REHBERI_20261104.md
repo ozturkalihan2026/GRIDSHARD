@@ -53,7 +53,7 @@ Aşağıdaki işler kaybolmadı; ana paketlerin zorunlu kapsamına kendiliğinde
 - [LIVE-09](GRIDSHARD_GELISIM_CHECKLIST_20261103.md#live-09) — BO3 ve deste yasağı fizibilitesini hazırla (later).
 - [LIVE-10](GRIDSHARD_GELISIM_CHECKLIST_20261103.md#live-10) — 2v2 için protokol ve performans araştırması yap (later).
 - [LIVE-11](GRIDSHARD_GELISIM_CHECKLIST_20261103.md#live-11) — Boss ve özel arena davranışı prototiple (later).
-- [OPS-01](GRIDSHARD_GELISIM_CHECKLIST_20261103.md#ops-01) — Dönem bazlı içerik üretim takvimini işlet (todo).
+- [OPS-01](GRIDSHARD_GELISIM_CHECKLIST_20261103.md#ops-01) — Dönem bazlı içerik üretim takvimini işlet (in_progress).
 - [RET-01](GRIDSHARD_GELISIM_CHECKLIST_20261103.md#ret-01) — Geri dönüş ve bildirim tercihlerini uygula (todo).
 
 Ortak sanat yönü: [docs/SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md](SANAT_YONU_VE_GORSEL_YAYIN_KAPISI.md). Teknik sözleşmeler: [docs/GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md](GRIDSHARD_GELISIM_PROJESI_TEKNIK_TASARIM_20261103.md).

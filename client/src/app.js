@@ -249,7 +249,8 @@
   settingsState.applySettings({
     player_id: participantPlayerId,
     sound_volume: 100,
-    music_volume: 70,
+    music_volume: 5,
+    battle_music_volume: 50,
     sound_muted: false,
     music_muted: false,
     vibration_enabled: true,
@@ -17361,8 +17362,9 @@
           ) / 100,
         musicVolume:
           Number(
-            view.musicVolume ?? 70
+            view.musicVolume ?? 5
           ) / 100,
+        battleMusicVolume: Number(view.battleMusicVolume ?? 50) / 100,
         soundMuted:
           Boolean(
             view.soundMuted
@@ -17417,6 +17419,9 @@
       music.value =
         view.musicVolume;
     }
+    const battleMusic = document.getElementById('settings-battle-music');
+    if (battleMusic) battleMusic.value = view.battleMusicVolume ?? 50;
+    renderAudioLevelLabels();
     if (soundMuted) {
       soundMuted.checked =
         Boolean(
@@ -17582,7 +17587,8 @@
           sound_volume:
             Number(sound?.value ?? 100),
           music_volume:
-            Number(music?.value ?? 70),
+            Number(music?.value ?? 5),
+          battle_music_volume: Number(document.getElementById('settings-battle-music')?.value ?? 50),
           sound_muted:
             Boolean(
               soundMuted?.checked
@@ -21152,7 +21158,19 @@
     claimEngagementReward("tiers", button.dataset.tierClaim, button);
   });
 
+  function renderAudioLevelLabels() {
+    for (const id of ['settings-sound', 'settings-music', 'settings-battle-music']) {
+      const control = document.getElementById(id);
+      const output = document.getElementById(id + '-value');
+      if (!control || !output) continue;
+      const label = `${Math.round(Number(control.value))}%`;
+      output.textContent = label;
+      control.setAttribute('aria-valuetext', label);
+    }
+  }
+
   function previewAudioSettingsFromControls() {
+    renderAudioLevelLabels();
     const sound=
       document.getElementById(
         "settings-sound"
@@ -21182,8 +21200,9 @@
           ) / 100,
         musicVolume:
           Number(
-            music?.value ?? 70
+            music?.value ?? 5
           ) / 100,
+        battleMusicVolume: Number(document.getElementById('settings-battle-music')?.value ?? 50) / 100,
         soundMuted:
           Boolean(
             soundMuted?.checked
@@ -21193,62 +21212,6 @@
             musicMuted?.checked
           ),
       });
-  }
-
-  const settingsPreviewMusicEl =
-    document.getElementById(
-      "settings-preview-music"
-    );
-  if (settingsPreviewMusicEl) {
-    settingsPreviewMusicEl.addEventListener(
-      "click",
-      () => {
-        previewAudioSettingsFromControls();
-        const result=
-          gridshardAudioDirector
-            ?.previewMusic(
-              "menu"
-            );
-        const status=
-          document.getElementById(
-            "settings-save-status"
-          );
-        if (status) {
-          status.textContent=
-            result?.ok
-              ? "GRIDSHARD müzik önizlemesi çalıyor"
-              : "Müzik önizlemesi kullanılamadı";
-        }
-      }
-    );
-  }
-
-  const settingsPreviewSfxEl =
-    document.getElementById(
-      "settings-preview-sfx"
-    );
-  if (settingsPreviewSfxEl) {
-    settingsPreviewSfxEl.addEventListener(
-      "click",
-      () => {
-        previewAudioSettingsFromControls();
-        const result=
-          gridshardAudioDirector
-            ?.previewSfx(
-              "core_hit"
-            );
-        const status=
-          document.getElementById(
-            "settings-save-status"
-          );
-        if (status) {
-          status.textContent=
-            result?.ok
-              ? "Çekirdek hasarı SFX önizlemesi çalındı"
-              : "SFX önizlemesi kullanılamadı";
-        }
-      }
-    );
   }
 
   document.getElementById("ad-privacy-options")?.addEventListener("click", async () => {
@@ -21268,6 +21231,7 @@
     of [
       "settings-sound",
       "settings-music",
+      "settings-battle-music",
       "settings-sound-muted",
       "settings-music-muted",
       "settings-vibration",

@@ -46,19 +46,19 @@ def test_new_release_does_not_rearm_old_notice_or_resurrect_dismissed_notice(mon
     profile = PlayerProfileService().get_or_create("release221-inbox")
     profile.seen_inbox_notice_ids = ("update-2-1-1", "update-2-2-0")
     first = [item for item in gateway._inbox_notices(profile) if item['kind'] == 'update']
-    assert [item["version"] for item in first] == ["2.3.0", "2.2.1", "2.2.0", "2.1.1"]
-    assert [item["seen"] for item in first] == [False, False, True, True]
+    assert [item["version"] for item in first] == ["2.4.0", "2.3.0", "2.2.1", "2.2.0", "2.1.1"]
+    assert [item["seen"] for item in first] == [False, False, False, True, True]
     assert len({item["notice_id"] for item in first}) == len(first)
     profile.dismissed_inbox_notice_ids = ("update-2-2-0",)
-    profile.seen_inbox_notice_ids += ("update-2-2-1", "update-2-3-0")
+    profile.seen_inbox_notice_ids += ("update-2-2-1", "update-2-3-0", "update-2-4-0")
     for _ in range(3):
         result = [item for item in gateway._inbox_notices(profile) if item['kind'] == 'update']
-        assert [item["version"] for item in result] == ["2.3.0", "2.2.1", "2.1.1"]
+        assert [item["version"] for item in result] == ["2.4.0", "2.3.0", "2.2.1", "2.1.1"]
         assert all(item["seen"] for item in result)
 
 
 def test_release_registry_requires_current_bilingual_notes_and_stable_unique_ids():
-    assert INBOX_UPDATE_NOTICES[-1]["version"] == "2.3.0"
+    assert INBOX_UPDATE_NOTICES[-1]["version"] == "2.4.0"
     note = {"version": "2.2.1", "body_tr": "Düzeltmeler", "body_en": "Fixes"}
     future = {**note, "version": "2.3.0"}
     assert len(update_notices([future, note], "2.2.1")) == 1

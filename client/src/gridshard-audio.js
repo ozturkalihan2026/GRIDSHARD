@@ -36,8 +36,8 @@
     sfxBaseGain:0.55,
     // Battle stems use a limited music bus; combat SFX use a separate
     // compressed bus with makeup compensation and bounded voice density.
-    battleMusicGain:2.35,
-    // v21: restore the music bed after the v20 physical listening trial.
+    battleMusicGain:2.15,
+    // v21: final listening trim, about 9% below the earlier 2.35 music bed.
     // Role-authored effects carry detail; cores own the larger sonic signature.
     // User sliders, compressor and bounded voice density stay unchanged.
     battleSfxGain:0.70,
@@ -634,7 +634,8 @@
       this.musicMuted = false;
       this.soundMuted = false;
       this.masterVolume = 1.0;
-      this.musicVolume = 0.70;
+      this.musicVolume = 0.05;
+      this.battleMusicVolume = 0.50;
       this.sfxVolume = 1.0;
       this.currentTrack = null;
       this.criticalLayerTrack = null;
@@ -693,7 +694,7 @@
             if (this._appActive) this._resumeAudioContext();
           }).catch(() => {});
         }
-      } else if (this.enabled && !this.musicMuted && this.musicVolume > 0) {
+      } else if (this.enabled && !this.musicMuted && this._musicVolumeForState() > 0) {
         if ([GRIDSHARD_AUDIO_STATES.VICTORY, GRIDSHARD_AUDIO_STATES.DEFEAT].includes(this.state)) {
           this.playResultSting(this.state, {restart:true});
         } else {
@@ -1210,13 +1211,19 @@
       return audio;
     }
 
-    _musicTargetVolume() {
+    _musicVolumeForState(state=this.state) {
+      return this._isLayeredBattleState(state)
+        || [GRIDSHARD_AUDIO_STATES.VICTORY, GRIDSHARD_AUDIO_STATES.DEFEAT].includes(state)
+        ? this.battleMusicVolume : this.musicVolume;
+    }
+
+    _musicTargetVolume(state=this.state) {
       return Math.max(
         0,
         Math.min(
           1,
           this.masterVolume
-          * this.musicVolume
+          * this._musicVolumeForState(state)
           * GRIDSHARD_AUDIO_MIX.musicBaseGain
         )
       );
@@ -1227,14 +1234,14 @@
         0,
         Math.min(
           1,
-          this._musicTargetVolume()
+          this._musicTargetVolume(GRIDSHARD_AUDIO_STATES.BATTLE)
           * GRIDSHARD_AUDIO_MIX.battleMusicGain
         )
       );
     }
 
     _resultMusicTargetVolume() {
-      return this._musicTargetVolume() * GRIDSHARD_AUDIO_MIX.resultMusicGain;
+      return this._musicTargetVolume(GRIDSHARD_AUDIO_STATES.VICTORY) * GRIDSHARD_AUDIO_MIX.resultMusicGain;
     }
 
     _usesCombatSfxMix() {
@@ -1541,7 +1548,7 @@
       if (
         !this.enabled
         || this.musicMuted
-        || this.musicVolume<=0
+        || this._musicVolumeForState(GRIDSHARD_AUDIO_STATES.CRITICAL_CORE)<=0
         || !this._canPlayAudio()
       ) {
         return;
@@ -1631,7 +1638,7 @@
           && Boolean(this._battleMusicBusNode);
         // HTML only clamps the final per-stem level. Clamping the boosted
         // bus first silently erased battle-gain changes at default volume.
-        const base = this._musicTargetVolume()
+        const base = this._musicTargetVolume(GRIDSHARD_AUDIO_STATES.BATTLE)
           * (busApplied ? 1 : GRIDSHARD_AUDIO_MIX.battleMusicGain);
         const target = activeIds.includes(layer.id)
           ? Math.min(
@@ -1749,7 +1756,7 @@
       if (
         !this.enabled
         || this.musicMuted
-        || this.musicVolume <= 0
+        || this._musicVolumeForState(state) <= 0
         || !this._canPlayAudio()
       ) return;
 
@@ -1802,9 +1809,10 @@
         ||
         !this.enabled
         || this.musicMuted
-        || this.musicVolume<=0
+        || this._musicVolumeForState(state)<=0
         || !this._canPlayAudio()
       ) {
+        this._stopAllMusic();
         return;
       }
 
@@ -1992,7 +2000,7 @@
         this._resultSuppressed
         || !this.enabled
         || this.musicMuted
-        || this.musicVolume<=0
+        || this._musicVolumeForState(outcome)<=0
       ) {
         return Promise.resolve(false);
       }
@@ -2091,7 +2099,7 @@
         ].includes(outcome)
         || !this.enabled
         || this.musicMuted
-        || this.musicVolume<=0
+        || this._musicVolumeForState(outcome)<=0
       ) {
         return Promise.resolve(false);
       }
@@ -2453,6 +2461,8 @@
         this.sfxVolume,
       musicVolume =
         this.musicVolume,
+      battleMusicVolume =
+        this.battleMusicVolume,
       soundMuted =
         this.soundMuted,
       musicMuted =
@@ -2472,6 +2482,7 @@
           Number(musicVolume)
         )
       );
+      this.battleMusicVolume=Math.max(0,Math.min(1,Number(battleMusicVolume)));
       this.soundMuted=
         Boolean(soundMuted);
       this.musicMuted=
@@ -2487,7 +2498,7 @@
 
       if (
         this.musicMuted
-        || this.musicVolume<=0
+        || this._musicVolumeForState()<=0
       ) {
         this._stopAllMusic();
       } else if (
@@ -2532,6 +2543,8 @@
           this.sfxVolume,
         musicVolume:
           this.musicVolume,
+        battleMusicVolume:
+          this.battleMusicVolume,
         soundMuted:
           this.soundMuted,
         musicMuted:

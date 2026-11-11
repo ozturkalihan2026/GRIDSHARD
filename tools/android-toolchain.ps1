@@ -3,8 +3,20 @@ function Resolve-GridshardAndroidToolchain {
     [CmdletBinding()]
     param([string]$JavaHome, [string]$AndroidSdkRoot, [string]$BuildToolsVersion = '36.0.0')
     if (!$JavaHome) {
-        $JavaHome = $env:JAVA_HOME
-        if (!$JavaHome) { $JavaHome = Join-Path $env:ProgramFiles 'Android\Android Studio\jbr' }
+        # An old global JAVA_HOME must not hide Android Studio's valid JDK.
+        # Explicit -JavaHome is still validated as supplied below.
+        $taskJavaCandidates = @($env:JAVA_HOME, (Join-Path $env:ProgramFiles 'Android\Android Studio\jbr'))
+        foreach ($taskJavaCandidate in $taskJavaCandidates) {
+            if (!$taskJavaCandidate) { continue }
+            $taskCandidateRelease = Join-Path $taskJavaCandidate 'release'
+            if (!(Test-Path -LiteralPath $taskCandidateRelease -PathType Leaf)) { continue }
+            $taskCandidateVersion = [regex]::Match((Get-Content -LiteralPath $taskCandidateRelease -Raw), '(?m)^JAVA_VERSION="(\d+)')
+            if ($taskCandidateVersion.Success -and [int]$taskCandidateVersion.Groups[1].Value -ge 21) {
+                $JavaHome = $taskJavaCandidate
+                break
+            }
+        }
+        if (!$JavaHome) { throw 'JDK 21 or newer is required. Pass -JavaHome.' }
     }
     if (!$AndroidSdkRoot) {
         $AndroidSdkRoot = $env:ANDROID_HOME

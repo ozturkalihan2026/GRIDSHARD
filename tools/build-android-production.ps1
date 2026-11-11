@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$PrepareOnly, [switch]$Offline, [string]$JavaHome, [string]$AndroidSdkRoot)
+param([switch]$PrepareOnly, [switch]$Offline, [string]$JavaHome, [string]$AndroidSdkRoot, [string]$SigningDirectory)
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot 'android-toolchain.ps1')
@@ -35,7 +35,7 @@ try {
         $taskTools = Resolve-GridshardAndroidToolchain -JavaHome $JavaHome -AndroidSdkRoot $AndroidSdkRoot
         $env:JAVA_HOME = $taskTools.JavaHome
         $env:ANDROID_HOME = $taskTools.AndroidSdkRoot
-        $taskKeyDirectory = Join-Path $taskRoot 'secrets\android-release'
+        $taskKeyDirectory = if ($SigningDirectory) { (Resolve-Path -LiteralPath $SigningDirectory).Path } else { Join-Path $taskRoot 'secrets\android-release' }
         foreach ($taskKeyItem in @('gridshard-upload.p12', 'credential.dpapi.xml')) {
             if (!(Test-Path -LiteralPath (Join-Path $taskKeyDirectory $taskKeyItem) -PathType Leaf)) {
                 throw 'The existing upload key and this Windows account''s DPAPI credential are required. Never generate a replacement key.'

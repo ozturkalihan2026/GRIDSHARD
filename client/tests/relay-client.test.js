@@ -3232,14 +3232,14 @@ function createClient() {
   const css=fs.readFileSync("./src/styles.css","utf8");
   const audio=fs.readFileSync("./src/gridshard-audio.js","utf8");
 
-  assert.ok(html.includes('id="settings-preview-music"'));
-  assert.ok(html.includes('id="settings-preview-sfx"'));
+  assert.ok(!html.includes('id="settings-preview-music"'));
+  assert.ok(!html.includes('id="settings-preview-sfx"'));
   assert.ok(html.includes('id="battle-pool-preset-open"'));
   assert.ok(app.includes("quickLoadoutFilter"));
   assert.ok(app.includes("renderQuickLoadoutActiveSummary"));
   assert.ok(app.includes("syncCriticalCoreAudioState"));
-  assert.ok(app.includes('previewMusic('));
-  assert.ok(app.includes('previewSfx('));
+  assert.ok(!app.includes('settingsPreviewMusicEl'));
+  assert.ok(!app.includes('settingsPreviewSfxEl'));
   assert.ok(css.includes(".quick-loadout-badges"));
   assert.ok(audio.includes("GRIDSHARD_AUDIO_MIX"));
   assert.ok(audio.includes("crossfadeMs:1200"));

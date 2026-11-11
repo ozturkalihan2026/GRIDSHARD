@@ -39,3 +39,11 @@ olmadan durum `approved` yapılmaz. Dönem/kaynak tahsisi stok ve kart kapısın
 sonra yapılır; bu brief herhangi bir ödül sözü veya yayın başlangıcı değildir.
 
 Her hafta kozmetik isteyen eski profil 18/20 ek öğe ister; güncel ilk-sezon kaynak haftası profili farklıdır. Gerçek dönem ihtiyacı yeni ödül türlerine göre hesaplanır. İki mağaza çifti 2.5.0'a aittir ve bu listedeki 18 öğeden seçilmez.
+
+## 11 Kasım üretim bağlantısı
+
+Güncel kaynak/dönem eşlemesi, erken hazırlık sırası ve takım/mağaza ayrımı
+[üretim takviminde](two-cycle-production-calendar.md) tutulur. İlk iki örnek
+Manyetik Köprü çiftidir; [S2 kabul listesi](art-2.5.0-acceptance.md) şu anda
+brief durumundadır. Yeni geometri renderer desteği ve S2 sonrası açık kaynak
+haftası profili üretilmeden yalnız öğe adlarını kataloğa eklemek yeterli değildir.

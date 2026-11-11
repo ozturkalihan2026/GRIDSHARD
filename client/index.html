@@ -1201,13 +1201,23 @@
       </section>
       <section id="settings-panel-audio" role="tabpanel" aria-labelledby="settings-tab-audio" data-settings-panel="audio" hidden>
       <div class="settings-form">
-        <label>Ses <input id="settings-sound" type="range" min="0" max="100" value="100" /></label>
+        <div class="settings-audio-channel">
+        <div class="settings-audio-level">
+          <label for="settings-sound">Efekt Sesi</label><output id="settings-sound-value" for="settings-sound">100%</output>
+          <input id="settings-sound" type="range" min="0" max="100" value="100" />
+        </div>
         <label class="settings-toggle"><input id="settings-sound-muted" type="checkbox" /> Sesi Sessize Al</label>
-        <label>Müzik <input id="settings-music" type="range" min="0" max="100" value="70" /></label>
+        </div>
+        <div class="settings-audio-channel">
+        <div class="settings-audio-level">
+          <label for="settings-music">Menü Müziği</label><output id="settings-music-value" for="settings-music">5%</output>
+          <input id="settings-music" type="range" min="0" max="100" value="5" />
+        </div>
+        <div class="settings-audio-level">
+          <label for="settings-battle-music">Savaş Müziği</label><output id="settings-battle-music-value" for="settings-battle-music">50%</output>
+          <input id="settings-battle-music" type="range" min="0" max="100" value="50" />
+        </div>
         <label class="settings-toggle"><input id="settings-music-muted" type="checkbox" /> Müziği Sessize Al</label>
-        <div class="audio-preview-actions">
-          <button id="settings-preview-music" type="button">Müziği Önizle</button>
-          <button id="settings-preview-sfx" type="button">SFX Önizle</button>
         </div>
       </div>
       </section>

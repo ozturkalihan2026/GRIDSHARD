@@ -119,7 +119,7 @@ def calendar_periods(*, starts_at, cycles, team_starts_at=None):
 
 
 def content_coverage(cosmetics, *, sources=None, cycles=2, starts_at=None,
-                     team_starts_at=None, extra_periods=None):
+                     team_starts_at=None, extra_periods=None, first_season_profile=None):
     sources = sources or load_sources()
     if type(cycles) is not int or not 1 <= cycles <= 12:
         raise ContentPlanError("Cycles must be between 1 and 12")
@@ -127,6 +127,28 @@ def content_coverage(cosmetics, *, sources=None, cycles=2, starts_at=None,
         raise ContentPlanError("A team calendar requires a season calendar")
     periods = (calendar_periods(starts_at=starts_at, cycles=cycles, team_starts_at=team_starts_at)
                if starts_at is not None else {})
+    profile_resources = {}
+    missing_profile_periods = []
+    if first_season_profile is not None:
+        from .first_season_profile import validate_profile
+        validate_profile(first_season_profile, cosmetics=cosmetics)
+        team = next(a['period_id'] for a in first_season_profile['cosmetic_allocations']
+                    if a['source'] == 'team_tournament')
+        if (cycles != 1 or starts_at is None or _moment(starts_at) != _moment(first_season_profile['starts_at'])
+                or team_starts_at is None or _moment(team_starts_at) != _moment(team + 'T00:00:00Z')):
+            raise ContentPlanError('First-season stock requires its exact season and independent team calendar')
+        for week in first_season_profile['resource_weeks']:
+            placements = [dict(slot=p['position'], cosmetics={}, resources={k:v for k,v in p.items() if k != 'position'})
+                          for p in week['prizes']]
+            release = cosmetics.releases.get(('weekly_tournament', week['period_id']), {})
+            if release.get('reward_kind') == 'resource_only' and release.get('placements') == placements:
+                profile_resources[week['period_id']] = placements
+            else:
+                missing_profile_periods.append('weekly_tournament:' + week['period_id'])
+        for allocation in first_season_profile['cosmetic_allocations']:
+            release = cosmetics.releases.get((allocation['source'], allocation['period_id']), {})
+            if release.get('placements') != [dict(slot=allocation['slot'], cosmetics=allocation['cosmetics'])]:
+                missing_profile_periods.append(allocation['source'] + ':' + allocation['period_id'])
     counts = ({key: len(value) for key, value in periods.items()} if periods else
               {"season_road": cycles, "season_leaderboard": cycles,
                "weekly_tournament": cycles * (CYCLE_LENGTH.days // 7), "team_tournament": cycles})
@@ -158,7 +180,7 @@ def content_coverage(cosmetics, *, sources=None, cycles=2, starts_at=None,
         contract = sources.sources[source]
         row_assigned = {}
         resource_periods = [period for period in periods.get(source, ())
-                            if cosmetics.releases.get((source, period), {}).get('reward_kind') == 'resource_only']
+                            if source == 'weekly_tournament' and period in profile_resources]
         cosmetic_count = count - len(resource_periods)
         for field, amount in contract["cosmetics_per_period"].items():
             key = (contract["stock_pool"], field)
@@ -181,5 +203,7 @@ def content_coverage(cosmetics, *, sources=None, cycles=2, starts_at=None,
              for (pool, field), total in sorted(required.items())]
     unsupported = sorted(source for source, count in counts.items() if count and source not in SUPPORTED)
     return {"cycles": cycles, "calendar_bound": starts_at is not None, "production_changed": False,
-            "publication_ready": False, "stock_ready": not unsupported and not any(t["create_and_review"] for t in tasks),
+            "reward_profile": "first_season" if first_season_profile is not None else "full_cosmetic",
+            "missing_profile_periods": missing_profile_periods,
+            "publication_ready": False, "stock_ready": not unsupported and not missing_profile_periods and not any(t["create_and_review"] for t in tasks),
             "unimplemented_sources": unsupported, "sources": source_rows, "content_tasks": tasks}

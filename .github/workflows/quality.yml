@@ -41,6 +41,7 @@ jobs:
           python tools/release_announcements.py --check --require 2.4.0
           python tools/plan_season_xp.py --check
           python tools/prepare_first_season.py --check
+          python tools/prepare_first_season.py --audit-check
           python tools/report_combat_audio.py --check
           python tools/generate_combat_theme.py --check
           python tools/development_checklist.py --check

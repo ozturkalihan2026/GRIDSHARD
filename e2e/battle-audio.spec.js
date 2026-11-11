@@ -1,6 +1,75 @@
 const {test,expect}=require('@playwright/test');
 const {waitForParticipantReady}=require('./ui-helpers');
 
+test('compact audio settings retain music preferences without moving the battle dock', async ({page}, info) => {
+ await page.goto('/?e2e=1'); await waitForParticipantReady(page,60000);
+ const openAudio = async () => {
+  await page.locator('#lobby-menu-button').click();
+  await page.locator('#lobby-menu [data-open-screen=settings]').click();
+  await page.locator('[data-settings-tab=audio]').click();
+ };
+ await openAudio();
+ await expect(page.locator('#settings-music')).toHaveValue('5');
+ await expect(page.locator('#settings-battle-music')).toHaveValue('50');
+ await expect(page.locator('#settings-music-value')).toHaveText('5%');
+ await expect(page.locator('#settings-battle-music-value')).toHaveText('50%');
+ await expect(page.locator('#settings-sound-value')).toHaveText('100%');
+ await expect(page.locator('#settings-preview-music, #settings-preview-sfx')).toHaveCount(0);
+ for (const width of [320,393]) {
+  await page.setViewportSize({width,height:852});
+  const geometry=await page.locator('#settings-panel-audio').evaluate(panel=>({
+   overflow:document.documentElement.scrollWidth>innerWidth,
+   toggles:[...panel.querySelectorAll('.settings-toggle')].map(n=>n.getBoundingClientRect().height),
+   height:panel.getBoundingClientRect().height,
+  }));
+  expect(geometry.overflow).toBe(false);
+  expect(geometry.toggles.every(h=>h>=44&&h<=48)).toBe(true);
+  expect(geometry.height).toBeLessThan(340);
+  await page.screenshot({path:info.outputPath(`compact-audio-${width}.png`)});
+ }
+ // Observe every animation frame through actual input, save and re-render;
+ // comparing only the final positions would miss the reported spring.
+ await page.evaluate(()=>{
+  const dock=document.querySelector('#app-bottom-dock [data-open-screen="menu"]');
+  window.__audioDockFrames=[];
+  window.__audioDockTrack=true;
+  const frame=()=>{window.__audioDockFrames.push(dock.getBoundingClientRect().top);if(window.__audioDockTrack)requestAnimationFrame(frame);};
+  requestAnimationFrame(frame);
+ });
+ const save = page.waitForResponse(r=>r.request().method()==='PUT'&&/\/settings\//.test(r.url()));
+ const verified = page.waitForResponse(r=>r.request().method()==='GET'&&/\/settings\//.test(r.url()));
+ await page.locator('#settings-music').fill('38');
+ await expect(page.locator('#settings-music-value')).toHaveText('38%');
+ expect((await (await save).json()).music_volume).toBe(38);
+ expect((await (await verified).json()).music_volume).toBe(38);
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ await expect(page.locator('#settings-battle-music')).toHaveValue('50');
+ const battleSave=page.waitForResponse(r=>r.request().method()==='PUT'&&/\/settings\//.test(r.url()));
+ const battleVerified=page.waitForResponse(r=>r.request().method()==='GET'&&/\/settings\//.test(r.url()));
+ await page.locator('#settings-battle-music').fill('64');
+ await expect(page.locator('#settings-battle-music-value')).toHaveText('64%');
+ expect((await (await battleSave).json()).battle_music_volume).toBe(64);
+ expect((await (await battleVerified).json()).music_volume).toBe(38);
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ const muteSave=page.waitForResponse(r=>r.request().method()==='PUT'&&/\/settings\//.test(r.url()));
+ const muteVerified=page.waitForResponse(r=>r.request().method()==='GET'&&/\/settings\//.test(r.url()));
+ await page.locator('#settings-sound-muted').check();
+ expect((await (await muteSave).json()).sound_muted).toBe(true);
+ expect((await (await muteVerified).json()).sound_muted).toBe(true);
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ const drift=await page.evaluate(()=>{
+  window.__audioDockTrack=false;
+  const f=window.__audioDockFrames;return Math.max(...f)-Math.min(...f);
+ });
+ expect(drift).toBeLessThan(1);
+ await page.reload();await waitForParticipantReady(page,60000);await openAudio();
+ await expect(page.locator('#settings-music')).toHaveValue('38');
+ await expect(page.locator('#settings-battle-music')).toHaveValue('64');
+ await expect(page.locator('#settings-music-value')).toHaveText('38%');
+ await expect(page.locator('#settings-battle-music-value')).toHaveText('64%');
+ await expect(page.locator('#settings-sound-muted')).toBeChecked();
+});
+
 test('all attack/core mobile sounds decode, reach the real mixer and retain AAC fallback and voice limits',async({page,browserName},info)=>{
  test.setTimeout(120000);
  const wavRequests=[],failures=[];

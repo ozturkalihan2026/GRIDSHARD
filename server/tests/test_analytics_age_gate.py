@@ -37,7 +37,7 @@ def test_analytics_starts_off_and_cannot_be_enabled_without_a_birth_year():
     settings = service.get_or_create("a")
     assert settings.analytics_consent is False and settings.analytics_age_gate == ""
     # Reddedilen istek başka ayarı da değiştirmez.
-    assert settings.music_volume == 70
+    assert settings.music_volume == 5
 
 
 def test_an_adult_answer_enables_analytics_and_the_birth_year_is_not_kept():
@@ -150,7 +150,7 @@ def test_gateway_asks_for_the_birth_year_and_records_events_only_for_adults():
         rejected = client.put(f"/settings/{adult}", json={"music_volume": 11, "analytics_consent": True})
         assert rejected.status_code == 422
         assert rejected.json()["detail"] == ANALYTICS_AGE_REQUIRED_MESSAGE
-        assert client.get(f"/settings/{adult}").json()["music_volume"] == 70
+        assert client.get(f"/settings/{adult}").json()["music_volume"] == 5
         assert _event(adult) is False
 
         current_year = datetime.now(timezone.utc).year
