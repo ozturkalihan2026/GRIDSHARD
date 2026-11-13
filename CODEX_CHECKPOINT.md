@@ -1,4 +1,65 @@
-# Güncel durum — 2.4.0/15 test paketi; sürüm, mağaza ışığı ve sade başlangıç, 6 Kasım 2026
+# Güncel durum — 13 Kasım erken yama ve evde 22.00–00.00 TR geçişi
+
+- Kullanıcı 2.4.0 sunucu geçişi ve imzalı AAB hazırlığını ev bilgisayarından
+  **13 Kasım 2026 22.00 → 14 Kasım 00.00 Türkiye saati** olarak onayladı.
+  Önceki 23 Kasım hedefi yalnız 2.4.0 için öne alındı. S1–S6, haftalık
+  dönemler, koşullu takım açılışı ve sonraki sürümler değişmedi.
+- [Evde uygulanacak sıra](docs/planning/release-240-expedited-handoff-20261113.md)
+  güncel ana teslimdir; docs/README, bağlı takvim/backlog/checklist ve briefler
+  buna göre güncellendi. Açık fiziksel cihaz/ses/CI/restore kapıları kapanmış sayılmaz.
+- Yeni TR/EN Sistem haberi: `preview-2-4-0-early-patch-20261113`.
+  Yalnız zorunlu yama gerekçesi, yeni bakım saati ve tam S1–S6 takvimi var;
+  özel gerekçe yok. 5 Kasım’da canlıya gönderilmiş eski haberi okuyan/silen/
+  onaylayan hesap yeni haberi okunmamış alır. Ön haber bakımda sona erer.
+  Sonraki `preview-2-4-0-tournament-launch` ayrı kimlik ve 2.4.0 sürüm kapısını
+  korur; 13 Kasım 19.00 UTC’den sonra seçilebilir. Ödül/bot açıklamaları aynı.
+- Canlı 2.3.0’da duyuru modülü zaten mevcut. Evde canlı taban keşfi ve hash
+  kontrolünden sonra katalog güncellemesi yapılır; ilk kurulum main.py yaması
+  tekrar uygulanmaz. Yeni haber henüz canlıya gönderilmedi.
+- Kaynak sunucu hâlâ 2.3.0; istemci 2.4.0/code15. Üretim ayarı hâlâ
+  2.3.0/code14. Evde sürüm damgası/sürüm notu/release_guard ve üretim ayarı
+  birlikte hazırlanıp denetlenmeli. Mağazada kullanılmışsa code15 yükseltilir.
+  Güncel kaynakla imzalı AAB henüz üretilmedi; eski debug APK yeterli değildir.
+- MONETIZATION_ENABLED=false değişikliği aşağıda ayrıntılıdır. Eski AAB
+  kendiliğinden değişmez. Evde AdMob rollout disabled/test oyuncu listesi boş
+  kontrolü yapılır; mevcut ödeme kurtarması/iade doğrulaması korunur.
+- **Bu kaynakta yerel kabul:** 40 ilgili Python testi PASS; bağlı plan,
+  ekonomi, duyuru ve release_guard kontrolleri PASS. Duyuru E2E: Chromium,
+  Android Chrome/Safari öykünmesinde **12 PASS**, retry yok. Eski orijinal
+  2.3.0 API/istemci web+native-origin doğrulaması ve Ayarlar dil seçicisiyle
+  **TR/EN × 320/393 dört görsel** PASS; fiziksel telefon değildir.
+  Kanıt: `qa_reports/early-patch-20261113-reviewed-proof/proof.json`,
+  `.audit-runtime/early-patch-announcement-browser.log` (12 PASS).
+  Yerel kanıtlar Git ile taşınmaz; rehberde tekrar üretim komutları var.
+- Evde alınacak dal: `codex/early-240-patch-20261113`. Son commit ve uzak
+  eşleşmesi Git’ten doğrulanır. Git teslimi canlı yayın veya mağaza dağıtımı değildir.
+
+---
+
+# Önceki yerel kabul — 2.4.0 istemcisinde ödeme/reklam görünürlüğü, 13 Kasım 2026
+
+- Kullanıcı yeni gerçek para alımlarını ve savaş sonu reklamını silmeden
+  gizlememizi istedi. `client/src/app.js`: `MONETIZATION_ENABLED = false`.
+  Mağaza ücretli paket bölümü, sezon premium satın alma girişi, savaş sonu
+  premium teklifi/reklam alanı ilk boyamadan itibaren CSS ile gizli; doğrudan
+  çağrılan ödeme/reklam işleyicileri de yeni işlem başlatmaz. Fiyat/UMP otomatik
+  sorguları bekler. Mevcut kod/katalog ve önceki ödeme kurtarması korunur.
+- Oyun içi para birimiyle sandık/hediye ve mevcut ödül/XP bütçeleri korunur.
+  Tek anahtarı tekrar `true` yapmak kaynak özelliğini açar; yeni paket gerekir.
+  Canlı sunucu, kurulu eski APK/AAB, Play Console veya AdMob değiştirilmedi.
+  Bu ek yerel çalışma ağacındadır; commit/push/yayın yapılmış sayılmaz.
+- Yerel 783 istemci ve 13 build sözleşmesi PASS; web paketleme PASS.
+  Chromium/Android Chrome/Safari öykünmesinde 3 akış PASS: TR/EN 320/393
+  mağaza, reload, gerçek yerel savaş sonucu, hidden yeniden açıldığında CSS
+  gizlemesi ve programatik ödeme/reklam tıklamalarında sıfır yeni işlem.
+  QA yanıtında sağlayıcılar test olarak açık gösterildi; gerçek ödeme/reklam yok.
+  Kanıt: `qa_reports/monetization-pause-browser.json` ve aynı adlı görsel klasörü.
+  Web hash `a06418bf9a90e484`; release_guard/diff-check PASS.
+  Ayrıntı: `docs/STORE_PURCHASES.md`.
+
+---
+
+# Önceki durum — 2.4.0/15 test paketi; sürüm, mağaza ışığı ve sade başlangıç, 6 Kasım 2026
 
 - **7 Kasım son UI isteği:** Mesaj/Kartlar/Takım/Turnuva/Ayarlar/Kozmetik
   dahil ortak alt sekmelerin seçili metin alt çizgisi kaldırıldı; turkuaz

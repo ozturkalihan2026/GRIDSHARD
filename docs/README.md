@@ -1,17 +1,20 @@
 # GRIDSHARD — güncel belge dizini
 
-5 Kasım 2026. Çalışmaya bu dizinden başla. Aktif sürüm geliştirmesi **2.4.0**;
+13 Kasım 2026. Çalışmaya bu dizinden başla. Aktif sürüm geliştirmesi **2.4.0**;
 2.3.0/code14 yayını kullanıcı tarafından teyit edilmiştir. Planlanan özellikler,
 gerçekten uygulanıp kanıtlanana kadar oyunda mevcut sayılmaz.
 
 ## Plan ve takip
 
+- [13 Kasım erken yama ve ev bilgisayarı geçiş planı](planning/release-240-expedited-handoff-20261113.md):
+  22.00–00.00 TR bakım, yeni kimlikli Sistem haberi, değişmeyen S1–S6 takvimi;
+  canlı geçiş ve imzalı AAB henüz uygulanmadı.
 - [5 Kasım canlı bakım duyurusu dağıtımı](planning/release-230-prerelease-deployment-20261105.md):
   mevcut 2.3.0 Sistem mesajı canlıda; üç dosyalık yama, yedek/restore ve hesap koruma kanıtı.
 - [5 Kasım S1 kabul matrisi](planning/release-240-s1-acceptance.md): bütçe,
   tekil tahsis, gerçek PG yedek/restore ve kasa/görsel kabulü; açık cihaz kapıları.
 - [2.3.0 bakım haberi ve 2.4.0 turnuva penceresi](planning/release-230-prerelease-system-mail.md):
-  23 Kasım 22.00 bakım planı, iki ayrı duyuru ve ev bilgisayarından gönderim.
+  13 Kasım 22.00 bakım planı, iki ayrı duyuru ve ev bilgisayarından gönderim.
 - [Arkadaşlık isteği sekmeleri](planning/release-240-friend-request-tabs.md):
   Gelen/Giden İstek satırlarının üstüne taşan çizgi için 2.4.0 düzeltmesi.
 

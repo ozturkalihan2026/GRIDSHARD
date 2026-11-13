@@ -1,6 +1,11 @@
 (() => {
   "use strict";
 
+  // Temporary client pause: retain billing/ad code and existing entitlements.
+  // Change only this flag to restore the existing purchase and rewarded-ad UI.
+  const MONETIZATION_ENABLED = false;
+  document.documentElement.classList.toggle("monetization-paused", !MONETIZATION_ENABLED);
+
   // İstemci telemetrisi yalnız ?diagnostics=1 ile gönderilir; normal oyunda
   // menü, eşleştirme ve ilerleme istekleri ek ağ trafiğiyle yavaşlatılmaz.
   const operationalDiagnosticsEnabled = (() => {
@@ -4188,6 +4193,7 @@
   }
 
   async function refreshNativeProductPrices() {
+    if (!MONETIZATION_ENABLED) return;
     const state = storeState;
     await nativeStore?.refreshProductPrices?.(paidProducts(),state);
     if (storeState !== state) return; // Do not rerender an old account response.
@@ -4209,6 +4215,7 @@
   }
 
   async function refreshNativeAdConsent() {
+    if (!MONETIZATION_ENABLED) return;
     // A background store refresh must not overlap the native consent/reward UI.
     if (nativeStore?.adsBusy) { renderAdsPrivacyOptions(); return; }
     try {
@@ -4383,6 +4390,7 @@
   }
 
   async function purchasePaidProduct(productId, { status = null } = {}) {
+    if (!MONETIZATION_ENABLED) return { ok:false, disabled:true };
     const statusElement = status || document.getElementById("shop-action-status");
     const setStatus = (message, state = "") => {
       if (!statusElement) return;
@@ -4618,6 +4626,7 @@
   }
 
   async function watchRewardAd() {
+    if (!MONETIZATION_ENABLED) return;
     const battleId = postMatchSync.lastBattleId;
     const provider = currentAdProvider();
     const adStoreState = storeState;
@@ -8606,6 +8615,7 @@
   // Kaynak barındaki Akı / Devre Kredisi mağazayı ilgili paketlerin önünde açar.
   document.querySelectorAll("[data-resource-shop]").forEach((button) => {
     button.addEventListener("click", () => {
+      if (!MONETIZATION_ENABLED) return;
       // Ekran geçişi aynı dokunuşla başlar; kaydırma mağaza çizildikten sonra yapılır.
       window.setTimeout(() => {
         const target = document.getElementById(

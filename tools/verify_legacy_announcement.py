@@ -1,5 +1,6 @@
 """Real 2.3.0 API + unchanged installed client proof for the three-file mail overlay."""
 import argparse
+from datetime import timedelta
 import hashlib
 import json
 from pathlib import Path
@@ -8,6 +9,7 @@ import sys
 
 from prepare_legacy_announcement import ROOT, BASE, files
 from verify_client_compatibility import snapshot, start_api, stop_api, git
+from app.release_announcements import CATALOG, instant
 
 
 def main():
@@ -33,10 +35,12 @@ def main():
         target=old/name;target.parent.mkdir(parents=True,exist_ok=True)
         target.write_bytes(git('show',BASE+':'+name))
     run=output/'runtime-proof';run.mkdir()
-    process,log,url=start_api(old,run,now='2026-11-05T00:00:00Z')
+    notice=CATALOG['announcements'][0]
+    clock=(instant(notice['publish_at'])+timedelta(minutes=1)).isoformat()
+    process,log,url=start_api(old,run,now=clock)
     try:
         spec=dict(client_dir=str(old/'client/src'),client_version='2.3.0',api_version='2.3.0',base_url=url,current_client=False,
-                  system_notice_id='preview-2-4-0-season-one',browser_proof=False)
+                  system_notice_id=notice['notice_id'],system_notice=notice,browser_proof=False)
         path=output/'scenario.json';path.write_text(json.dumps(spec),encoding='utf-8')
         completed=subprocess.run(['node',str(ROOT/'tools/verify-client-compatibility.cjs'),str(path)],cwd=ROOT,capture_output=True,text=True,encoding='utf-8',timeout=120)
         if completed.returncode:
@@ -53,7 +57,7 @@ def main():
             result['browser']=json.loads(completed.stdout)
     finally:stop_api(process,log)
     result.update(base_commit=BASE,overlay_files=sorted(payload),production_changed=False,aab_changed=False,
-                  popup_supported=False,fixture_clock='2026-11-05T00:00:00Z',
+                  popup_supported=False,fixture_clock=clock,
                   overlay_sha256={name:hashlib.sha256(data).hexdigest() for name,data in payload.items()},
                   working_tree_changes_included=bool(git('status','--porcelain').strip()),
                   source_commit=git('rev-parse','HEAD').decode().strip())

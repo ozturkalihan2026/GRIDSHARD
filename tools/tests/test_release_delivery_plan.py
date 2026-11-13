@@ -18,6 +18,20 @@ class ReleaseDeliveryPlanTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'scope differs'):
             plan.validate(self.calendar, self.backlog)
 
+    def test_same_day_final_acceptance_requires_an_explicit_expedited_decision(self):
+        release = self.calendar['releases'][0]
+        self.assertEqual(release['tests_start_on'], release['target_release_on'])
+        self.assertEqual(release['expedited_patch']['previous_target_release_on'], '2026-11-23')
+        plan.validate(self.calendar, self.backlog)
+        # Both sources must be changed: removing the exception from just one
+        # source is rejected as drift, removing both restores the normal rule.
+        release.pop('expedited_patch')
+        matching = next(r for r in self.backlog['release_plan'] if r['version'] == '2.4.0')
+        matching.pop('expedited_patch')
+        with patch('tools.release_calendar.json.loads', return_value=self.backlog):
+            with self.assertRaisesRegex(ValueError, 'Invalid development/release sequence'):
+                plan.validate(self.calendar, self.backlog)
+
     def test_required_audio_cannot_be_detached_from_release_gate(self):
         gate = next(t for t in self.backlog['tasks'] if t['id'] == 'RELEASE-01')
         gate['depends_on'] = [t for t in gate['depends_on'] if t not in {'AUDIO-01', 'AUDIO-02'}]

@@ -16,6 +16,7 @@ function fixture(mode = "live") {
   ].map(id => [id, {dataset:{}}]));
   const calls = {ads:[], requests:[], profiles:[], waits:[], audioStops:0};
   const context = vm.createContext({
+    MONETIZATION_ENABLED:true,
     Error, Map, Set, Promise,
     document:{getElementById:id => elements[id]},
     progressionState:{viewModel:() => ({profileProgressionApplied:true, circuitCreditsAwarded:10})},
@@ -43,6 +44,16 @@ function fixture(mode = "live") {
   vm.runInContext(`${render}\n${claimAndWatch}`, context);
   return {context, calls, elements};
 }
+
+test("monetization pause prevents ad playback and reward requests", async () => {
+  const {context:c, calls} = fixture();
+  c.MONETIZATION_ENABLED = false;
+  await c.watchRewardAd();
+  assert.equal(calls.ads.length, 0);
+  assert.equal(calls.requests.length, 0);
+  assert.equal(calls.audioStops, 0);
+  assert.equal(c.adRewardPending, false);
+});
 
 test("delayed SSV keeps a claim-only retry; success clears it without another ad", async () => {
   const {context:c, calls, elements} = fixture();
