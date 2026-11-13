@@ -8,6 +8,12 @@ veya kabul kapılarının geçtiği anlamına gelmez.
 
 ## Evde kaynak birleştirmesi
 
+Evde kullanıcı daha sonra **22.00'yi beklemeden hemen geçiş** yapılmasını
+istedi. İlk paragraftaki 22.00–00.00 okul planı tarihsel kayıttır; fiilî
+geçiş saati operasyon sonucuna yazılır. Sezon ve sonraki sürüm hedefleri
+değişmez. 2.4.0 sonrası Sistem metni eski bakım saatini tekrar etmez;
+turnuva rehberi 13 Kasım15.30UTC + 2.4.0 sunucu kapısıyla açılır.
+
 Okul dalı 2.3.0 sunucu tabanından geldiği için doğrudan eski kaynaktan paket
 üretilmez. `4249aa14` değişikliği, son rc.2 düzeltmelerini ve bağımsız yayın
 araçlarını koruyan `codex/release-2.4.0-rc3` dalına alındı. Bu dalda sunucu,

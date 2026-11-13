@@ -135,7 +135,11 @@ def test_post_upgrade_tournament_popup_has_its_own_ack_and_server_gate(inbox, mo
     profile.acknowledged_announcement_ids=(ID,)
     tour_id='preview-2-4-0-tournament-launch'
     assert announcements.pending_announcement(profile,'2.3.0',clock) is None
-    assert announcements.pending_announcement(profile,'2.4.0',datetime(2026,11,13,18,59,tzinfo=timezone.utc)) is None
+    publication=next(n for n in announcements.CATALOG['announcements'] if n['notice_id']==tour_id)['publish_at']
+    from datetime import timedelta
+    opens=announcements.instant(publication)
+    assert announcements.pending_announcement(profile,'2.4.0',opens-timedelta(seconds=1)) is None
+    assert announcements.pending_announcement(profile,'2.4.0',opens)['notice_id']==tour_id
     selected=announcements.pending_announcement(profile,'2.4.0',clock)
     assert selected['notice_id']==tour_id and selected['phase']=='season-preview'
     assert '30 Kasım 2026' in selected['body_tr'] and '36/24/18' in selected['body_tr']

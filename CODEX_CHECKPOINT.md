@@ -1,4 +1,39 @@
-# Evde birleştirme — 13 Kasım 2026, yeni 2.4.0 yayın adayı
+# Evde yayın kabulü — 13 Kasım 2026, geçiş için kullanıcı şimdi onay verdi
+
+- Kullanıcı 22.00'yi beklemeyip geçişi **şimdi** yapmamızı istedi. S1
+  30 Kasım 03.00 TR; takım turnuvası ayrı kapıda, bu kararla sezon açılmaz.
+- SSH ev IP kuralı kullanıcı tarafından güncellendi; bağlantı çalışıyor.
+  Canlı 2.3.0 sağlıklı, 59 profil ve son kontrolde sıfır aktif maç/WebSocket.
+- Yerel kabul: 784 istemci, 13 build, 2048 sunucu (52 harici servis atlaması),
+  103 araç testi; gerçek PostgreSQL17/Redis grubunda 104 PASS. Duyuru PG testi
+  değişmiş canlı kampanyaya bağımlılıktan ayrıldı; görünür popup, rollback ve
+  cache kaybı sonrası tekrar onayı doğrular. Ürün davranışı gevşetilmedi.
+- Üç tarayıcı ana UI: 118 PASS / 7 koşullu skip, retry/flaky yok. Ücretli alan
+  duraklatma 3 PASS; hazır test sağlayıcısı, TR/EN×320/393, reload, gerçek savaş
+  ve programatik tıklamalarda sıfır yeni işlem. S1 12, bot UI 6, PvP 3 PASS.
+- Üretim imajı hesap/restart/boş hedef restore ve reviewer hesabı akışlarını
+  geçti. Eski 2.2.1/2.3.0 gerçek HTTP uyumu 10 senaryo PASS; eski 2.3.0'da
+  yeni haberin okunması/okundu kalması web ve native-origin emülasyonunda PASS.
+- İmzalı 2.4.0/code15 AAB/APK mevcut yükleme anahtarıyla üretildi ve denetlendi;
+  kaynak kabulü bitince son sabit adaydan tekrar paketlenip teslim edilecek.
+  Kullanıcı Play'de code15'in kullanılmadığını doğruladı. Play yüklemesi yok.
+- Gerçek Android S1 TEST güncellendi: aynı hesap/24 modül, iki 2.4.0 etiketi,
+  gizli ücretli mağaza, normal sandıklar, 44 ses hash'i ve soğuk açılış PASS.
+  Kaydedilmiş menü5/savaş55 korunur; yeni hesap varsayılanı5/50. Test APK ve AAB
+  içindeki 582 ortak web dosyasında yalnız beklenen API runtime-config farkı var.
+  Ses beğenisi kullanıcı dinleme kabulüdür; bu tur yeniden dinlendi sayılmaz.
+- Ön haberin yalnız katalog operasyonunda güncel yedek ve izole restore geçti:
+  28 tablonun tüm içerikleri eşleşti. Env/Mounts sıralaması karşılaştırması
+  geri dönüş tetikledi; çalışan eski imaj geri geldi. Son kontrol değer bazında
+  tüm ortam/bağların aynı olduğunu doğruladı. Yeni tam operatör karşılaştırması
+  anahtar/hedef bazında yapılır. Canlı 2.4.0 henüz uygulanmadı.
+- Kullanıcının erken geçiş kararı nedeniyle 2.4.0 sonrası haber eski 22.00
+  bakım vaadini tekrar etmez. Ayrı turnuva rehberi 13 Kasım15.30UTC'den ve
+  yalnız 2.4.0 sunucu kapısından sonra görünür. Sezon takvimi değişmez.
+
+---
+
+# Önceki evde birleştirme — 13 Kasım 2026, yeni 2.4.0 yayın adayı
 
 - Okulun `4249aa14` değişikliği, 11 Kasım ses/UI düzeltmeleri ve kaynak
   sabitleme araçları korunarak `codex/release-2.4.0-rc3` dalına alındı.

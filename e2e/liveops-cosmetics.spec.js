@@ -2,6 +2,77 @@ const {test, expect} = require('@playwright/test');
 const {waitForParticipantReady} = require('./ui-helpers');
 const catalog = require('../server/data/cosmetic_releases_v1.json');
 
+test('paused purchases and ads stay hidden in TR/EN, after reload and a real battle, and reject direct clicks', async ({page}, info) => {
+  test.setTimeout(180000);
+  const transactions = [];
+  page.on('request', request => {
+    if (request.method() === 'POST' && /\/store\//.test(new URL(request.url()).pathname)) {
+      transactions.push(new URL(request.url()).pathname);
+    }
+  });
+  page.on('dialog', dialog => dialog.accept());
+  // Local presentation fixture: even when the server reports test providers
+  // ready, the client pause must prevent a checkout/ad request. No real SDK,
+  // payment or production provider is enabled by this response override.
+  await page.route(/\/store\/[^/?]+(?:\?.*)?$/, async route => {
+    const response = await route.fetch(), body = await response.json();
+    body.providers = {...body.providers, purchase:'test', ads:'test'};
+    for (const product of [body.season_pass, body.battle_premium,
+      ...(body.flux_packs || []), ...(body.credit_packs || [])].filter(Boolean)) {
+      Object.assign(product, {active:false, purchasable:true, update_required:false});
+    }
+    await route.fulfill({response, json:body});
+  });
+  const selectors = '.paid-store-section, #season-premium-buy, #post-match-premium, #post-match-premium-buy, #post-match-ad-reward, #post-match-ad-button';
+  const assertPaused = async () => {
+    const visible = await page.locator(selectors).evaluateAll(elements => elements.filter(el => {
+      // Async UI renders may remove hidden; the pause CSS must still prevail.
+      el.hidden = false;
+      el.style.display = 'block';
+      return getComputedStyle(el).display !== 'none';
+    }).map(el => el.id || el.className));
+    expect(visible).toEqual([]);
+  };
+  await page.goto('/?e2e=1');
+  await waitForParticipantReady(page,60000);
+  await expect(page.locator('html')).toHaveClass(/monetization-paused/);
+  for (const language of ['tr','en']) {
+    await page.locator('[data-shell-screen="menu"]').click();
+    await page.locator('#lobby-menu-button').click();
+    await page.locator('#lobby-menu [data-open-screen="settings"]').click();
+    await page.locator('#settings-language').selectOption(language);
+    await expect(page.locator('html')).toHaveAttribute('lang',language);
+    await page.locator('[data-shell-screen="shop"]').click();
+    await expect(page.locator('#chest-store-list .chest-store-card').first()).toBeVisible();
+    await expect(page.locator('#paid-flux-packs button').first()).toBeEnabled();
+    for (const width of [320,393]) {
+      await page.setViewportSize({width,height:852});
+      await assertPaused();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({path:info.outputPath(`paused-shop-${language}-${width}.png`)});
+    }
+  }
+  await page.locator('#paid-flux-packs button').first().evaluate(button => button.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+  await page.reload();
+  await waitForParticipantReady(page,60000);
+  await expect(page.locator('html')).toHaveClass(/monetization-paused/);
+  await page.locator('[data-shell-screen="menu"]').click();
+  await page.locator('#home-battle-button').click();
+  await expect(page.locator('body')).toHaveAttribute('data-online-status','battle',{timeout:40000});
+  await expect(page.locator('.post-match-panel')).toBeVisible({timeout:90000});
+  await page.locator('#post-match-continue').click();
+  await expect(page.locator('#post-match-reward-stage')).toBeVisible();
+  await assertPaused();
+  await page.locator('#post-match-ad-button').evaluate(button => {
+    button.disabled = false;
+    button.dispatchEvent(new MouseEvent('click',{bubbles:true}));
+  });
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  expect(transactions).toEqual([]);
+  await expect(page.locator('#post-match-continue')).toBeEnabled();
+  await page.screenshot({path:info.outputPath('paused-battle-rewards.png')});
+});
+
 test('new player and team cosmetics have distinct previews and remain locked', async ({page}, info) => {
   const errors = [], mutations = [];
   page.on('pageerror', e => errors.push(String(e)));
