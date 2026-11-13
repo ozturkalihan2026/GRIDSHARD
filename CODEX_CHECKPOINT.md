@@ -1,29 +1,44 @@
-# Son düzeltme: turnuva kartları ve telefonun sezon öncesi görünümü — 13 Kasım 2026
+# Güncel teslim: 2.4.0 rc.5 sunucu ve imzalı AAB tamamlandı — 13 Kasım 2026 23.28 TR
 
-- Kullanıcı telefonda turnuvaların henüz başlamamış ve sıralamaların boş olmasını
-  istedi. Önceki açıklama yalnız ileri test saatini açıklıyordu; takım kartındaki
-  dönem sonunu “yenilenir” diye gösteren gerçek metin hatası da düzeltildi.
-- Kaynakta haftalık API artık açılış öncesinde ilk oynanabilir haftayı önizler ve
-  geçmiş kayıtlar bulunsa bile sıralama/katılımcı sayısı boştur. İki turnuva API'si
-  açılış tarihini taşır. Kartlar başlangıç öncesi **30 Kas · Başlangıç bekleniyor**,
-  aktif takım turnuvasında hafta + dört haftalık dönem aralığını gösterir.
-- S1 TEST aynı paket/imza/hesapla telefonda güncellendi. Yerel API8897/PID8992,
-  aynı `.mobile-debug/runtime-s1-20261106` verileriyle çalışıyor. Eski runtime
-  `qa_reports/native-240-20261113/runtime-before-prelaunch-preview` altında yedekli.
-  Yeniden başlatırken önceki S1_ACCEPTANCE=1 / S1_BOTS=1 bayraklarına ek olarak
-  **GRIDSHARD_E2E_S1_PRELAUNCH=1** kullan: test saati gerçek bugüne alınır;
-  bu bayrak olmadan bot kabul senaryosu yeniden 12 Aralık'ı gösterir.
-- Telefon doğrulaması: aynı hesap/24 açık modül, iki kartta 30 Kas başlangıcı,
-  haftalık 30 Kas–6 Ara, takım 30 Kas–27 Ara, iki sıralama ve takım eşleşmeleri
-  boş PASS. Kanıt: `qa_reports/native-240-20261113/prelaunch-date-fix-proof.json`
-  ve `prelaunch-*.png`. Telefon Etkinlik ekranında bırakıldı.
-- 784 istemci testi,33 ilgili sunucu testi PASS /2 harici PG testi skip;
-  yeni turnuva kartı/sıralama regresyonu Chromium+WebKit2/2 PASS. Debug APK582
-  web dosyası/ağ politikası denetimi ve Android derleme PASS.
-- **Bu son düzeltmeler çalışma ağacında; henüz commit/push veya canlıya geçiş
-  yapılmadı. Aşağıdaki rc.4 canlı imajı ve hazır AAB değişmedi ve bu düzeltmeleri
-  içermez. Yeni yayın istenirse yeni kaynak pini/aday, AAB ve kontrollü sunucu
-  güncellemesi gerekir; mevcut değişmez etiketlerin üzerine yazma.**
+- Kullanıcının açık isteğiyle son turnuva düzeltmeleri canlıya alındı. Kaynak
+  **825cbe27c10407a729aeb50393f4979fdba96152**, etiket **v2.4.0-rc.5**;
+  güncel pin `config/release-candidates/2.4.0.json`. Eski rc.4 ve v2.4.0
+  etiketleri korunur, yeni teslim için seçilmez. AAB 2.4.0/code15 olarak kaldı.
+- Canlı imaj **sha256:4f9b62995f551770691adcb4f26926256618136cddf9759f6d19833c0fe32b52**.
+ 59 profil/28 tablonun bütün içeriği korundu; yeni yedek izole PG'de restore
+  doğrulandı. Geçiş 19,28 sn; ortam/mount/diğer servis değişikliği yok.
+  HTTPS healthy/runtime2.4.0, protokol 2/eski istemciler, restart 0 ve kabul
+  edilen JS hash'i doğrulandı. Wire alias server_release_version=2.3.0 kalır.
+- İki turnuva kartı 30 Kas başlangıcını gösterir; kapalı turnuvada eski kayıtlar
+  olsa bile sıralama boş, haftalık ilk dönem 30 Kas–6 Ara'dır. Takım kartı
+  artık dönem sonunu haftalık yenilenme tarihi diye göstermez. Sezon/iki
+  turnuva 30 Kasım 03.00 TR–28 Aralık 03.00 TR. S1 içerik yayın kabulü hâlâ ayrı
+  tamamlanacak; bu işlem sezonu aktive etmedi. Ücretli alanlar/reklamlar kapalı.
+- Son test: **2103 Linux/Python 3.12+PG17/Redis PASS, sıfır skip**; 784 istemci,
+ 13 build,103 araç; yeni turnuva Chromium/WebKit2/2 PASS. Üretim imajı gerçek
+  PG/Redis hesap/restart/full restore/reviewer iki cihaz/kapalı reklam PASS.
+  Windows tam testinin ilerlemeyen ilk süreci durduruldu; tanılı tekrar native
+  access violation ile kesildi. Linux ilk denemede rapor dizini readonly yüzünden
+  3 hata verdi; yalnız QA rapor bağı yazılabilir yapılıp tam 2103/2103 geçildi.
+  Yeni hosted CI sonucu yok; skip ci commitleri quota tüketimini önler.
+- **Güncel AAB:** `deliverables/release-2.4.0-v15-20261113-rc5/GRIDSHARD-2.4.0-v15.aab`
+ 42.713.464 byte; SHA256 **7a0ce973f6504555a3da2d3b90e6e378a22a9efbeff787b4e92478ff538403d1**.
+  Mevcut upload imzası,580 web dosyası/paket, 9 R8 native eklentisi PASS.
+  Manifest/mapping/TR-EN Play notları/App Access talimatı aynı klasörde.
+  **Play yüklemesi/dağıtımı yapılmadı; eski rc.4 AAB yerine rc.5 kullan.**
+- Fiziksel S1 TEST son AAB web dosyalarıyla tekrar güncellendi; 582 ortak dosyada
+  yalnız yerel API adresi farklı. Aynı hesap/24 modül, iki doğru kart ve boş
+  sıralamalar PASS. Play'deki üretim uygulaması değiştirilmedi.
+- Yerel telefon API 8897/PID 8992, `.mobile-debug/runtime-s1-20261106` korunur.
+  Yeniden başlatırken S1_ACCEPTANCE=1 / S1_BOTS=1 yanında
+  **GRIDSHARD_E2E_S1_PRELAUNCH=1** kullan: gerçek bugüne göre bekleme görünür;
+  bu bayrak olmadan bot kabul senaryosu yeniden 12 Aralık'a ilerler.
+  Telefonda test sırasında başka uygulama öne gelirse yeniden S1 TEST'i aç.
+- Yeni operasyon `/opt/gridshard/operations/release-240-20261113-825cbe27c104-r2`,
+  yedek `/var/backups/gridshard-production/20261113-before-240-825cbe27c104-r2`.
+  Geçici aktarım arşivi checksum doğrulandıktan sonra silindi, yedek/imajlar durur.
+- Kabul raporu `docs/planning/release-240-rc5-acceptance-20261113.md`.
+  Aşağıdaki rc.4 kayıtları tarihçedir; güncel teslim bu üst bölümdeki rc.5'tir.
 
 # 2.4.0 sunucu geçişi tamamlandı — 13 Kasım 2026 21.39 TR
 
@@ -32,7 +47,7 @@
   pin `config/release-candidates/2.4.0.json`; eski rc.1–rc.3 etiketleri korunur.
 - Yeni yedek ayrı PostgreSQL'e restore edildi;59 profil ve 28 tablonun tamamı
   birebir eşleşti. Uygulama geçişi22,72 sn; PG/Redis/Caddy ve kalıcı bağlar aynı.
-  Eski yedek canlıya yazılmadı. Son dış HTTPS healthy/runtime2.4.0, protokol2,
+  Eski yedek canlıya yazılmadı. Son dış HTTPS healthy/runtime2.4.0, protokol 2,
   2.2.1/2.3.0/2.4.0 istemci uyumu doğrulandı. Restart/sağlık son denetimi ayrıca kayıtlıdır.
 - **Wire alias tuzağı:** server_release_version=2.3.0 bilerek korunur;
   gerçek build `runtime_release_version` alanıdır. İlk tam deneme yanlış
@@ -104,7 +119,7 @@
 - SSH ev IP kuralı kullanıcı tarafından güncellendi; bağlantı çalışıyor.
   Canlı 2.3.0 sağlıklı, 59 profil ve son kontrolde sıfır aktif maç/WebSocket.
 - Yerel kabul: 784 istemci, 13 build, 2048 sunucu (52 harici servis atlaması),
-  103 araç testi; gerçek PostgreSQL17/Redis grubunda 104 PASS. Duyuru PG testi
+  103 araç testi; gerçek PostgreSQL 17/Redis grubunda 104 PASS. Duyuru PG testi
   değişmiş canlı kampanyaya bağımlılıktan ayrıldı; görünür popup, rollback ve
   cache kaybı sonrası tekrar onayı doğrular. Ürün davranışı gevşetilmedi.
 - Üç tarayıcı ana UI: 118 PASS / 7 koşullu skip, retry/flaky yok. Ücretli alan
@@ -302,7 +317,7 @@
   secrets/android-release ana çalışma alanında kalır; Git'e girmez.
 - RC1 kaynak server VERSION2.4.0, production Android2.4.0/15, native meta,
   release_guard/source archive2.4.0-season-one olarak hazır. Legacy alias ve
-  protokol2 değişmedi.2.4 notları kaynakta var; mesaj ancak sunucu deploy olunca
+  protokol 2 değişmedi.2.4 notları kaynakta var; mesaj ancak sunucu deploy olunca
   görünür. Bugün canlı2.3 sunucu/oyuncu/telefon API verisine dokunulmadı.
 - Yerel782 istemci PASS;100 araç PASS, launcher son ek regresyon6 PASS;
   yeni2.4 mesajının25 ilgili testi PASS. Tam sunucudaki tek sabit seen-list
@@ -335,7 +350,7 @@
   Eski worktree silinmez/resetlenmez; sonraki düzeltme rc.2/newpin/newpath olur.
 - Üretim kaynak kimliği2.4.0/15'e hazırlandı: server VERSION, config Android,
   root native version, release_guard ve source package label season-one.
-  Legacy health/release/server alias'ları ve protokol2 korundu. Üretim24 notu
+  Legacy health/release/server alias'ları ve protokol 2 korundu. Üretim24 notu
   kaynakta eklendi, yalnız2.4 sunucu yayınında görünür; bugünkü canlı230 değişmedi.
 - build-android-production.ps1 dış SigningDirectory alır; upload key/DPAPI
   secret Git/worktree içine kopyalanmaz. -PrepareOnly gerçek native/web sync
@@ -833,7 +848,7 @@ değişiklikleri henüz commit/push edilmedi. Canlı sunucu ve Play paketi deği
 - Aktif savaş/WebSocket/bekleyen sonuç yokken yalnız API durdu. Gerçek yedek,
   boş PostgreSQL restore ve bütün tablo karşılaştırması geçti. 55 mevcut profil
   ve korunan tablolar geçişte birebir aynı; ortam/secret/birimler korundu.
-  Duruş-yedek-restore-açılış 22,4 sn. Healthy/restart0; prova kaynakları kaldırıldı.
+  Duruş-yedek-restore-açılış 22,4 sn. Healthy/restart 0; prova kaynakları kaldırıldı.
 - Yedek `/var/backups/gridshard-production/20261105-before-legacy-mail-c720f22`;
   operasyon `/opt/gridshard/operations/legacy-mail-20261105-c720f22`.
   Yeni Compose katmanı bu operasyonun `overlay.json` dosyasıdır. Sonraki

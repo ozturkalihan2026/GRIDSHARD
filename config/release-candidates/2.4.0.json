@@ -2,14 +2,14 @@
   "schema_version": 1,
   "version": "2.4.0",
   "version_code": 15,
-  "candidate_id": "2.4.0-rc4",
-  "tag": "v2.4.0-rc.4",
-  "source_commit": "d465dffda1cb5c13d0faf2eca4e33924c83729a4",
-  "release_branch": "codex/release-2.4.0-rc4",
+  "candidate_id": "2.4.0-rc5",
+  "tag": "v2.4.0-rc.5",
+  "source_commit": "825cbe27c10407a729aeb50393f4979fdba96152",
+  "release_branch": "codex/release-2.4.0-rc5",
   "published": false,
   "production_deployed": true,
   "season_activated": false,
   "ci_run_url": null,
   "verification_mode": "local-release-acceptance",
-  "verification_report": "docs/planning/release-240-local-acceptance-20261113.md"
+  "verification_report": "docs/planning/release-240-rc5-acceptance-20261113.md"
 }
