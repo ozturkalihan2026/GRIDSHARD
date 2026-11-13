@@ -6,6 +6,20 @@ Kullanıcı kararı: zorunlu yama için 23 Kasım geçiş hedefi **13 Kasım 202
 ve mağaza işlemleri ev bilgisayarında yapılacak. Bu belge bunların yapıldığı
 veya kabul kapılarının geçtiği anlamına gelmez.
 
+## Evde kaynak birleştirmesi
+
+Okul dalı 2.3.0 sunucu tabanından geldiği için doğrudan eski kaynaktan paket
+üretilmez. `4249aa14` değişikliği, son rc.2 düzeltmelerini ve bağımsız yayın
+araçlarını koruyan `codex/release-2.4.0-rc3` dalına alındı. Bu dalda sunucu,
+istemci ve Android üretim ayarı 2.4.0/code15 olarak hizalı; sürüm notu tarihi
+13 Kasım'dır. Yeni aday kendi kabulü tamamlandığında ayrı etiketle sabitlenir;
+rc.1/rc.2 etiketleri taşınmaz. Aşağıdaki 2.3.0/code14 uyarıları okulun eski
+tabanını anlatır; son kaynak için sürüm kontrolü tekrar çalıştırılır.
+
+GitHub kotası nedeniyle yerel kontroller kullanılırsa her komut, kaynak commit'i,
+sonuç ve platform kaydedilir. Windows WebKit işlevsel kanıtı macOS performans
+kanıtı olarak, eski rc.2 CI başarısı yeni rc.3 CI başarısı olarak raporlanmaz.
+
 ## Oyuncuya gidecek mesaj
 
 Başlık: **2.4.0 bakım tarihi öne alındı; sezon takvimi aynı**.

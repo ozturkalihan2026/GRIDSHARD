@@ -1,4 +1,24 @@
-# Güncel durum — 13 Kasım erken yama ve evde 22.00–00.00 TR geçişi
+# Evde birleştirme — 13 Kasım 2026, yeni 2.4.0 yayın adayı
+
+- Okulun `4249aa14` değişikliği, 11 Kasım ses/UI düzeltmeleri ve kaynak
+  sabitleme araçları korunarak `codex/release-2.4.0-rc3` dalına alındı.
+  İki plan dosyasındaki çakışma iki tarafın kayıtları korunarak çözüldü.
+- Son uzak tam CI `43078476162`, rc.2 / `7e8eb415` için 6/6 başarılı.
+  Bugünkü yama için uzak CI sonucu yok; rc.2 başarısı yeni adayın kabulü değildir.
+  Yerel testler ve üretim paketi doğrulamaları devam ediyor.
+- Sunucu, istemci ve Android üretim ayarı 2.4.0/code15 olarak hizalı;
+  2.4.0 notunun tarihi erken yama günü 13 Kasım'a güncellendi.
+  S1 stok raporu değişen takvim hash'iyle yeniden üretildi; sezon taslak kalır.
+- 17.11'deki gerçek `pull`: main `4866e58a` → `103ad39a`; 196 eklenen dosya
+  gerekli kaynak/varlık/test/plan dosyalarıdır. Kökteki iki yeni dosya Playwright
+  yapılandırmasıdır. Altı eski yerel XML/boş klasör temizlendi; 28 eski pytest
+  klasörü NTFS erişim engeli nedeniyle korundu. Anahtarlar/adaylar silinmedi.
+- Canlı HTTPS sağlıklı 2.3.0; kayıtlı SSH hedefi zaman aşımına uğruyor.
+  Canlıda katalog/ayar/imaj/veri değişmedi; yeni imzalı AAB henüz üretilmedi.
+
+---
+
+# Okul teslimi — 13 Kasım erken yama ve evde 22.00–00.00 TR geçişi
 
 - Kullanıcı 2.4.0 sunucu geçişi ve imzalı AAB hazırlığını ev bilgisayarından
   **13 Kasım 2026 22.00 → 14 Kasım 00.00 Türkiye saati** olarak onayladı.
