@@ -70,6 +70,33 @@ def test_seeded_weekly_activity_is_stable_and_contains_all_240_without_accounts(
     assert rows[0]['points'] > rows[-1]['points']
 
 
+@pytest.mark.parametrize('days_before', [17, 1])
+def test_prelaunch_events_preview_first_week_without_saved_or_bot_standings(s1, monkeypatch, days_before):
+    start = s1[0][0]
+    monkeypatch.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT', first.PROFILE['starts_at'])
+    current = start - timedelta(days=days_before)
+    year, week, _ = current.isocalendar()
+    players = bot_rows() + [dict(player_id='old-entry', display_name='Old', rating=100,
+        weekly_registered_period=f'{year}-W{week:02d}', weekly_period=f'{year}-W{week:02d}',
+        weekly_matches=5, weekly_wins=4, weekly_trophies_earned=20)]
+    before = deepcopy(players)
+    events = build_events_view(players, current)
+    weekly, team = events['weekly_tournament'], events['team_tournament']
+    for tournament in (weekly, team):
+        assert tournament['status'] == 'waiting_for_launch'
+        assert tournament['starts_at'] == first.PROFILE['starts_at']
+        assert not tournament['registration_open']
+        assert tournament['standings'] == []
+        assert tournament['period']['starts_at'] == first.PROFILE['starts_at']
+    assert weekly['participant_count'] == 0
+    assert weekly['period']['ends_at'] == (start + timedelta(days=7, seconds=-1)).isoformat().replace('+00:00', 'Z')
+    assert team['fixtures'] == [] and team['week'] == 1
+    assert players == before
+    opened = build_events_view(players, start)
+    assert len(opened['weekly_tournament']['standings']) == 240
+    assert len(opened['team_tournament']['standings']) == 12
+
+
 def test_all_12_bot_teams_get_fixtures_only_after_independent_team_gate(s1, monkeypatch):
     start = s1[0][0]
     monkeypatch.delenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT', raising=False)

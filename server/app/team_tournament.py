@@ -574,6 +574,7 @@ def build_team_tournament_view(
         "week": week_number,
         "weeks_total": TOURNAMENT_WEEKS,
         "registration_open": launch["active"] and (phase == "registration" or phase == "waiting_for_participants"),
+        "starts_at": launch["starts_at"],
         "status": phase, "participant_count": participant_count,
         "minimum_participants": minimum_participants(team=True),
         "next_milestone": next_milestone,

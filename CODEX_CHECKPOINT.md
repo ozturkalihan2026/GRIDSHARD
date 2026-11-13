@@ -1,3 +1,30 @@
+# Son düzeltme: turnuva kartları ve telefonun sezon öncesi görünümü — 13 Kasım 2026
+
+- Kullanıcı telefonda turnuvaların henüz başlamamış ve sıralamaların boş olmasını
+  istedi. Önceki açıklama yalnız ileri test saatini açıklıyordu; takım kartındaki
+  dönem sonunu “yenilenir” diye gösteren gerçek metin hatası da düzeltildi.
+- Kaynakta haftalık API artık açılış öncesinde ilk oynanabilir haftayı önizler ve
+  geçmiş kayıtlar bulunsa bile sıralama/katılımcı sayısı boştur. İki turnuva API'si
+  açılış tarihini taşır. Kartlar başlangıç öncesi **30 Kas · Başlangıç bekleniyor**,
+  aktif takım turnuvasında hafta + dört haftalık dönem aralığını gösterir.
+- S1 TEST aynı paket/imza/hesapla telefonda güncellendi. Yerel API8897/PID8992,
+  aynı `.mobile-debug/runtime-s1-20261106` verileriyle çalışıyor. Eski runtime
+  `qa_reports/native-240-20261113/runtime-before-prelaunch-preview` altında yedekli.
+  Yeniden başlatırken önceki S1_ACCEPTANCE=1 / S1_BOTS=1 bayraklarına ek olarak
+  **GRIDSHARD_E2E_S1_PRELAUNCH=1** kullan: test saati gerçek bugüne alınır;
+  bu bayrak olmadan bot kabul senaryosu yeniden 12 Aralık'ı gösterir.
+- Telefon doğrulaması: aynı hesap/24 açık modül, iki kartta 30 Kas başlangıcı,
+  haftalık 30 Kas–6 Ara, takım 30 Kas–27 Ara, iki sıralama ve takım eşleşmeleri
+  boş PASS. Kanıt: `qa_reports/native-240-20261113/prelaunch-date-fix-proof.json`
+  ve `prelaunch-*.png`. Telefon Etkinlik ekranında bırakıldı.
+- 784 istemci testi,33 ilgili sunucu testi PASS /2 harici PG testi skip;
+  yeni turnuva kartı/sıralama regresyonu Chromium+WebKit2/2 PASS. Debug APK582
+  web dosyası/ağ politikası denetimi ve Android derleme PASS.
+- **Bu son düzeltmeler çalışma ağacında; henüz commit/push veya canlıya geçiş
+  yapılmadı. Aşağıdaki rc.4 canlı imajı ve hazır AAB değişmedi ve bu düzeltmeleri
+  içermez. Yeni yayın istenirse yeni kaynak pini/aday, AAB ve kontrollü sunucu
+  güncellemesi gerekir; mevcut değişmez etiketlerin üzerine yazma.**
+
 # 2.4.0 sunucu geçişi tamamlandı — 13 Kasım 2026 21.39 TR
 
 - Canlı runtime **2.4.0**, kaynak **d465dffda1cb5c13d0faf2eca4e33924c83729a4**,

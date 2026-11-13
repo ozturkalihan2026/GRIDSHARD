@@ -6418,7 +6418,9 @@
   }
 
   function competitionStatusLabel(tournament) {
-    if (tournament?.status === "waiting_for_launch") return "Başlangıç bekleniyor";
+    if (tournament?.status === "waiting_for_launch") {
+      return tournament.starts_at ? `${eventDateLabel(tournament.starts_at)} · Başlangıç bekleniyor` : "Başlangıç bekleniyor";
+    }
     if (tournament?.status === "waiting_for_participants") return `Kayıt bekliyor · ${Number(tournament.participant_count || 0)} / ${Number(tournament.minimum_participants || 4)}`;
     return `${eventDateLabel(tournament?.period?.starts_at)} — ${eventDateLabel(tournament?.period?.ends_at)}`;
   }
@@ -6905,7 +6907,7 @@
     if (weeklyLinkName) weeklyLinkName.textContent = weekly.name_tr || "Haftalık Devre Turnuvası";
     if (weeklyLinkPeriod) weeklyLinkPeriod.textContent = competitionStatusLabel(weekly);
     if (teamLinkName) teamLinkName.textContent = team.name_tr || "Takımlar Arası Turnuva";
-    if (teamLinkPeriod) teamLinkPeriod.textContent = String(team.status || "").startsWith("waiting_for_") ? competitionStatusLabel(team) : `${Number(team.week || 1)}. hafta · ${eventDateLabel(team.period?.ends_at)} tarihinde yenilenir`;
+    if (teamLinkPeriod) teamLinkPeriod.textContent = String(team.status || "").startsWith("waiting_for_") ? competitionStatusLabel(team) : `${Number(team.week || 1)}. hafta · ${competitionStatusLabel(team)}`;
   }
 
   const eventViewReads = createViewReadOwner(() => eventsState);

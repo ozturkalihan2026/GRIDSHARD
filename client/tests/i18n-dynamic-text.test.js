@@ -14,6 +14,8 @@ assert.strictEqual(en("Devre Kredisi +38"), "Circuit Credits +38");
 assert.strictEqual(en("★ Başlangıç Devresi · 6"), "★ Starting Circuit · 6");
 assert.strictEqual(en("Sonraki: Röle Sokakları · 1500 Kupa"), "Next: Relay Streets · 1500 Trophies");
 assert.strictEqual(en("4. hafta · Oct 01 tarihinde yenilenir"), "Week 4 · Resets on Oct 01");
+assert.strictEqual(en("Nov 30 · Başlangıç bekleniyor"), "Nov 30 · Awaiting launch");
+assert.strictEqual(en("2. hafta · Nov 30 — Dec 27"), "Week 2 · Nov 30 — Dec 27");
 assert.strictEqual(
   en("Savunma etkisi +%3 · SV 5 GEREKLİ · Açıklamayı göster"),
   "Defense effect +3% · LV 5 REQUIRED · Show description"

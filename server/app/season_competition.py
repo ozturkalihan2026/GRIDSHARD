@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 
 from .team_tournament import build_team_tournament_view, period_id_for
-from .competition_control import competition_eligible, launch_status, minimum_participants
+from .competition_control import competition_eligible, configured_start, launch_status, minimum_participants
 from .competition_control import first_season_bots
 import json
 from pathlib import Path
@@ -251,9 +251,11 @@ def build_events_view(
     team_tournament_state: dict | None = None,
 ) -> dict:
     current = (moment or datetime.now(timezone.utc)).astimezone(timezone.utc)
-    week = _weekly_period(current)
-
-    weekly_rows = weekly_standings(players, current)
+    launch = launch_status(current)
+    start = configured_start()
+    # Before opening, preview the first playable week, never a past week.
+    week = _weekly_period(max(current, start) if start else current)
+    weekly_rows = weekly_standings(players, current) if launch['active'] else []
 
     state = team_tournament_state or {}
     team_view = build_team_tournament_view(
@@ -263,7 +265,6 @@ def build_events_view(
         ai_teams=first_season_ai_teams(players, period_id_for(current)),
         legs=state.get("legs") or {},
     )
-    launch = launch_status(current)
     pending_content = launch['status'] == 'waiting_for_content'
     from .first_season_profile import PROFILE
     from .cosmetic_releases import REGISTRY
@@ -278,6 +279,7 @@ def build_events_view(
         "weekly_tournament": {
             "status": "waiting_for_launch" if not launch["active"] else "active" if enough else "waiting_for_participants",
             "registration_open": launch["active"],
+            "starts_at": launch["starts_at"],
             "minimum_participants": minimum_participants(), "participant_count": len(weekly_rows),
             "name_tr": "Haftalık Devre Turnuvası",
             "period": week,

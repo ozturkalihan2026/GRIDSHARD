@@ -43,6 +43,11 @@ def install():
                 return now.astimezone(tz) if tz else now.replace(tzinfo=None)
         gateway.datetime = FixtureDateTime
 
+    if os.environ.get('GRIDSHARD_E2E_S1_PRELAUNCH') == '1':
+        # The retained phone normally previews today's closed competitions.
+        # Advance to match windows only in explicit bot acceptance runs.
+        now = datetime.now(timezone.utc)
+
     @gateway.app.post('/__e2e/s1/{player_id}/prepare')
     async def seed(player_id: str, request: Request):
         if request.client.host not in {'127.0.0.1','::1'} or request.headers.get('x-gridshard-e2e') != 's1-local-only':
