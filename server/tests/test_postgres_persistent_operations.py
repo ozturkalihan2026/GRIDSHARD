@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from app import main as gateway
+from app import release_announcements as announcements
 from app.postgres_team import PostgresTeamRepository
 from app.team_service import TeamService
 from app.store_catalog import process_purchase
@@ -21,10 +22,19 @@ from test_postgres_social_api import erasure_db  # noqa: F401
 
 def test_announcement_ack_rolls_back_and_survives_cache_loss(social_db, monkeypatch):
     _, players, _, (player, _, _) = social_db
-    identity = 'preview-2-4-0-season-one'
+    # Persistence must survive campaign replacement/expiry. Use an explicit
+    # published popup fixture rather than a particular production notice ID.
+    identity = 'preview-persistence-fixture'
+    item = deepcopy(announcements.CATALOG['announcements'][0])
+    major, minor, _ = map(int, gateway.VERSION.split('.'))
+    item.update(notice_id=identity, status='published', delivery='popup_and_system',
+                target_version=f'{major}.{minor + 1}.0', publish_at='2026-11-04T00:00:00Z')
+    monkeypatch.setattr(announcements, 'CATALOG',
+                        announcements.validate({'schema_version':1, 'announcements':[item]}))
     monkeypatch.setattr(gateway.player_profile_service, '_now_func',
                         lambda: datetime(2026, 11, 5, tzinfo=timezone.utc))
     before = deepcopy(players.load(player).profile)
+    assert gateway._reward_inbox_view(gateway.player_profile_service.get_or_create(player))['announcement']['notice_id'] == identity
     save = gateway.persist_player_data
     def fail_after_save(player_id):
         save(player_id)
