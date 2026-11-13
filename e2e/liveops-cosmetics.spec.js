@@ -23,7 +23,7 @@ test('paused purchases and ads stay hidden in TR/EN, after reload and a real bat
     }
     await route.fulfill({response, json:body});
   });
-  const selectors = '.paid-store-section, #season-premium-buy, #post-match-premium, #post-match-premium-buy, #post-match-ad-reward, #post-match-ad-button';
+  const selectors = '.paid-store-section, #season-premium-buy, .season-pass-columns > .is-premium, .season-pass-cell.is-premium, #post-match-premium, #post-match-premium-buy, #post-match-ad-reward, #post-match-ad-button';
   const assertPaused = async () => {
     const visible = await page.locator(selectors).evaluateAll(elements => elements.filter(el => {
       // Async UI renders may remove hidden; the pause CSS must still prevail.
@@ -42,6 +42,21 @@ test('paused purchases and ads stay hidden in TR/EN, after reload and a real bat
     await page.locator('#lobby-menu [data-open-screen="settings"]').click();
     await page.locator('#settings-language').selectOption(language);
     await expect(page.locator('html')).toHaveAttribute('lang',language);
+    await page.locator('[data-shell-screen="menu"]').click();
+    await page.locator('#lobby-menu-button').click();
+    await page.locator('#lobby-menu [data-open-screen="daily"]').click();
+    await page.locator('#rewards-hub-screen [data-open-screen="rewards"]').click();
+    await expect(page.locator('.season-pass-cell:not(.is-premium)').first()).toBeVisible();
+    for (const width of [320,393]) {
+      await page.setViewportSize({width,height:852});
+      await assertPaused();
+      const layout=await page.locator('.season-pass-row').first().evaluate(row=>({
+        columns:getComputedStyle(row).gridTemplateColumns.split(' ').length,
+        overflow:document.documentElement.scrollWidth>innerWidth,
+      }));
+      expect(layout).toEqual({columns:2,overflow:false});
+      await page.screenshot({path:info.outputPath(`free-season-road-${language}-${width}.png`)});
+    }
     await page.locator('[data-shell-screen="shop"]').click();
     await expect(page.locator('#chest-store-list .chest-store-card').first()).toBeVisible();
     await expect(page.locator('#paid-flux-packs button').first()).toBeEnabled();

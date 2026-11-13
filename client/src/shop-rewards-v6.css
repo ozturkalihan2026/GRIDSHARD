@@ -154,3 +154,15 @@ html.monetization-paused body[data-app-screen] :is(
 ) {
   display:none !important;
 }
+html.monetization-paused body[data-app-screen] .season-reward-panel :is(
+  .season-pass-columns > .is-premium,
+  .season-pass-cell.is-premium
+) {
+  display:none !important;
+}
+html.monetization-paused body[data-app-screen] .season-reward-panel :is(
+  .season-pass-columns,
+  .season-pass-row
+) {
+  grid-template-columns:48px minmax(0,1fr) !important;
+}

@@ -34,7 +34,7 @@ def install():
         from datetime import timedelta
         from app import competition_control
         now = now + timedelta(days=12)  # Saturday, first team match window
-        os.environ['GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT'] = '2026-12-07T00:00:00Z'
+        os.environ['GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT'] = document['starts_at']
         original_utc = competition_control.utc
         competition_control.utc = lambda moment=None: original_utc(moment or now)
         class FixtureDateTime(datetime):

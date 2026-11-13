@@ -39,7 +39,7 @@ def validate_profile(document, *, cosmetics=None):
              cosmetics=dict(avatar_frame_id='solar_frame', profile_background_id='solar_banner')),
         dict(source='weekly_tournament', period_id=f'{year}-W{week:02d}', slot=1,
              cosmetics=dict(avatar_frame_id='abyss_frame', profile_background_id='abyss_banner')),
-        dict(source='team_tournament', period_id=(start + timedelta(days=7)).date().isoformat(), slot=1,
+        dict(source='team_tournament', period_id=start.date().isoformat(), slot=1,
              cosmetics=dict(team_emblem_id='aurora_sigil', team_frame_id='aurora_team_frame', team_name_color_id='aurora_team_name')),
     ]
     if document.get('cosmetic_allocations') != expected:

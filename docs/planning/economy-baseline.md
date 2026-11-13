@@ -194,7 +194,7 @@ Miktarlar yayınlanmamış ilk sezon taslağında doğrulanır. Kredi/Akı mevcu
 
 Sıralama tüm ilk 10 toplamı: 9550 Kredi / 701 Akı / 51 evrensel parça. Dört haftalık ilk üçlerin toplamı: 9520 Kredi / 700 Akı / 234 modül parçası. Bu tutarlar tek bir oyuncunun garantili geliri değildir; birden fazla hak sahibine dağılır.
 
-Takım turnuvası kişisel S1 bütçesine dahil değildir; yeterli gerçek takım ve hazır ayrı takvimle en erken 7 Aralık hedefi değerlendirilir. Aktifleşirse mevcut 1./2./3. ödül tutarları 1500/950/620 Kredi ve 110/70/45 Akı; takım kozmetiği bir takım hakkıdır. Kişisel üyelik/katılım dağıtım kuralı doğrulanmadan bunlar oyuncu başına veya bütün üyelerle çarpılarak raporlanmaz. Girişteki 25 çekirdek parçası dışında yeni sabit çekirdek paketi vaat edilmez.
+Takım turnuvası kişisel S1 bütçesine dahil değildir; yeterli katılım ve hazır içerikle sezon ve haftalık turnuvayla aynı 30 Kasım 03.00 TR başlangıcına hazırlanır. Mevcut 1./2./3. ödül tutarları 1500/950/620 Kredi ve 110/70/45 Akı; takım kozmetiği bir takım hakkıdır. Kişisel üyelik/katılım dağıtım kuralı doğrulanmadan bunlar oyuncu başına veya bütün üyelerle çarpılarak raporlanmaz. Girişteki 25 çekirdek parçası dışında yeni sabit çekirdek paketi vaat edilmez.
 
 ## 8. Harcama baz çizgisi ve uygulama kabulü
 

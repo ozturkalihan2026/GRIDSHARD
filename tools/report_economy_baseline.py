@@ -288,8 +288,8 @@ def render(r):
               f"{rank_total['universal_module_shards']} evrensel parça. Dört haftalık ilk üçlerin toplamı: "
               f"{weekly_total['circuit_credits']} Kredi / {weekly_total['flux_shards']} Akı / {weekly_total['module_shards']} modül parçası. "
               'Bu tutarlar tek bir oyuncunun garantili geliri değildir; birden fazla hak sahibine dağılır.', '',
-              'Takım turnuvası kişisel S1 bütçesine dahil değildir; yeterli gerçek takım ve hazır ayrı takvimle '
-              'en erken 7 Aralık hedefi değerlendirilir. Aktifleşirse mevcut 1./2./3. ödül tutarları '
+              'Takım turnuvası kişisel S1 bütçesine dahil değildir; yeterli katılım ve hazır içerikle '
+              'sezon ve haftalık turnuvayla aynı 30 Kasım 03.00 TR başlangıcına hazırlanır. Mevcut 1./2./3. ödül tutarları '
               '1500/950/620 Kredi ve 110/70/45 Akı; takım kozmetiği bir takım hakkıdır. '
               'Kişisel üyelik/katılım dağıtım kuralı doğrulanmadan bunlar oyuncu başına veya bütün üyelerle '
               'çarpılarak raporlanmaz. Girişteki 25 çekirdek parçası dışında yeni sabit çekirdek paketi vaat edilmez.', '',

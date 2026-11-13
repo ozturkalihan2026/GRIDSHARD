@@ -6,6 +6,16 @@ Kullanıcı kararı: zorunlu yama için 23 Kasım geçiş hedefi **13 Kasım 202
 ve mağaza işlemleri ev bilgisayarında yapılacak. Bu belge bunların yapıldığı
 veya kabul kapılarının geçtiği anlamına gelmez.
 
+## Son takvim ve görünürlük kararı
+
+S1, günlük giriş ve sezon ödülleri, haftalık ve takım turnuvaları **30 Kasım
+2026 03.00 TR** başlangıcını paylaşır. Dört tam hafta sonunda **28 Aralık
+03.00 TR** biter. Haftalık dönemler 30 Kasım, 7/14/21 Aralık; mevcut üç kaynak
+haftası ve kozmetik finali korunur. Takım başlangıcı önceki 7 Aralık hedefinden
+30 Kasım’a alındı. Ayrı hazır içerik/katılım kapıları korunur. Ücretli sezon
+başlığı ve sütunu, mağazadaki ödeme alanları gibi kod silinmeden gizlenir.
+Bu son karar, aşağıdaki eski okul teslimindeki farklı takım tarihini geçersiz kılar.
+
 ## Evde kaynak birleştirmesi
 
 Evde kullanıcı daha sonra **22.00'yi beklemeden hemen geçiş** yapılmasını

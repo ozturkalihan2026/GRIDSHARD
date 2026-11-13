@@ -71,29 +71,29 @@ def test_seeded_weekly_activity_is_stable_and_contains_all_240_without_accounts(
 
 
 def test_all_12_bot_teams_get_fixtures_only_after_independent_team_gate(s1, monkeypatch):
-    start = s1[0][0] + timedelta(days=7)
+    start = s1[0][0]
     monkeypatch.delenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT', raising=False)
-    assert first_season_ai_teams(bot_rows(), '2026-12-07') == {}
-    monkeypatch.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT', '2026-12-07T00:00:00Z')
-    teams = first_season_ai_teams(bot_rows(), '2026-12-07')
+    assert first_season_ai_teams(bot_rows(), '2026-11-30') == {}
+    monkeypatch.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT', '2026-11-30T00:00:00Z')
+    teams = first_season_ai_teams(bot_rows(), '2026-11-30')
     now = start + timedelta(days=5)
-    view = build_team_tournament_view('2026-12-07', now, ai_teams=teams)
+    view = build_team_tournament_view('2026-11-30', now, ai_teams=teams)
     assert len(teams) == view['participant_count'] == 12
     assert len(view['standings']) == 12 and len(view['fixtures']) == 6
     assert all(not m['reward_eligible'] for row in view['standings'] for m in row['members'])
-    final = build_team_tournament_view('2026-12-07', start + timedelta(days=29), ai_teams=teams)
+    final = build_team_tournament_view('2026-11-30', start + timedelta(days=29), ai_teams=teams)
     assert len(final['standings']) == 12  # next-season content gate does not erase history
 
 
 def test_human_gets_playable_return_legs_against_canonical_bots(s1, monkeypatch):
-    start = s1[0][0] + timedelta(days=7)
-    monkeypatch.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT', '2026-12-07T00:00:00Z')
-    teams = first_season_ai_teams(bot_rows(), '2026-12-07')
+    start = s1[0][0]
+    monkeypatch.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT', '2026-11-30T00:00:00Z')
+    teams = first_season_ai_teams(bot_rows(), '2026-11-30')
     registrations = {'human-team': dict(team_name='İnsan Devresi', roster=[dict(player_id='human', display_name='İnsan', rating=1000)])}
-    view = build_team_tournament_view('2026-12-07', start + timedelta(days=5), ai_teams=teams, registrations=registrations)
+    view = build_team_tournament_view('2026-11-30', start + timedelta(days=5), ai_teams=teams, registrations=registrations)
     leg = player_open_leg(view, 'human')
     assert leg is not None
-    located = locate_leg('2026-12-07', leg['leg']['leg_id'], ai_teams=teams, registrations=registrations)
+    located = locate_leg('2026-11-30', leg['leg']['leg_id'], ai_teams=teams, registrations=registrations)
     assert located is not None
     pairing = located['pairing']
     assert {pairing['home_player_id'], pairing['away_player_id']} & {b['id'] for b in BOTS}
@@ -182,7 +182,7 @@ def test_human_second_in_season_archive_does_not_receive_first_place_cosmetics(s
 
 def test_human_second_team_keeps_qualification_and_second_prize(s1,monkeypatch,tmp_path):
     clock, service, profile, teams = wire(s1,monkeypatch,tmp_path)
-    monkeypatch.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT','2026-12-07T00:00:00Z')
+    monkeypatch.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT','2026-11-30T00:00:00Z')
     rows=[dict(position=1,is_ai=True,team_id='ai-first',members=[]),
           dict(position=2,is_ai=False,team_id='human',members=[dict(player_id=profile.player_id,contribution_points=4)]),
           dict(position=3,is_ai=True,team_id='ai-third',members=[])]
@@ -204,11 +204,12 @@ def test_queue_rejects_bot_ids_even_if_a_profile_was_materialized(s1):
 def test_upcoming_team_rewards_use_approved_opening_period_and_missing_content_stays_closed(s1,monkeypatch):
     from app.competition_control import launch_status
     start=s1[0][0]
-    monkeypatch.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT','2026-12-07T00:00:00Z')
-    view=build_events_view(bot_rows(),start)['team_tournament']
-    assert view['period']['id']=='2026-12-07' and not view['registration_open']
+    monkeypatch.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT','2026-11-30T00:00:00Z')
+    view=build_events_view(bot_rows(),start-timedelta(seconds=1))['team_tournament']
+    assert view['period']['id']=='2026-11-30' and not view['registration_open']
     assert view['prizes'][0]['team_emblem_id']=='aurora_sigil'
-    assert launch_status(start+timedelta(days=7),team=True)['active']
+    assert launch_status(start,team=True)['active']
+    assert not launch_status(start-timedelta(seconds=1),team=True)['active']
     monkeypatch.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT','2026-12-14T00:00:00Z')
     assert launch_status(start+timedelta(days=14),team=True)['status']=='waiting_for_content'
     assert build_events_view(bot_rows(),start+timedelta(days=14))['team_tournament']['prizes']==[]
@@ -216,13 +217,13 @@ def test_upcoming_team_rewards_use_approved_opening_period_and_missing_content_s
 
 def test_first_team_period_keeps_its_ai_after_season_rollover_and_defers_exact_team_set(s1, monkeypatch,tmp_path):
     clock, service, profile, teams = wire(s1,monkeypatch,tmp_path)
-    monkeypatch.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT','2026-12-07T00:00:00Z')
+    monkeypatch.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT','2026-11-30T00:00:00Z')
     main._settle_first_season_rewards([profile],clock[0]+timedelta(days=35))
     state = teams.competition_reward_state()
     deferred = next(item for item in state['deferred'] if item['source']=='team_tournament')
-    assert deferred['original_period_id'] == '2026-12-07'
+    assert deferred['original_period_id'] == '2026-11-30'
     assert deferred['prizes'][0]['team_emblem_id'] == 'aurora_sigil'
-    closed = state['closures']['team_tournament:2026-12-07']
+    closed = state['closures']['team_tournament:2026-11-30']
     assert len(closed['standings']) == 12 and all(row['is_ai'] for row in closed['standings'])
     assert not profile.reward_inbox
 

@@ -1,7 +1,7 @@
 # 2.4.0 / SEASON-00 — ilk sezon profili ve kazanılmış haklar
 
 **6 Kasım güncellemesi:** [240 bot, gerçek sıra ve kalıcı ödül planı](release-240-bot-competition.md).
-S1 adayında 240 tek kelimelik bot adı, 12×20 takım ve 7 Aralık takım dönemi
+S1 adayında 240 tek kelimelik bot adı, 12×20 takım ve 30 Kasım takım dönemi
 için üç mevcut Kutup Işığı takım öğesi eklendi. Aday artık yedi dönem,
 altı oyuncu + üç takım öğesidir. Ayrı takım başlangıcı ve yayın kapıları korunur.
 Telefondaki ayrı S1 TEST APK’sı kuruldu; gerçek açılış, 40 kademe, üç test kasası
@@ -40,7 +40,7 @@ yayın kontrolleri tamamlanmış modül ve yayınlanmış dönem ödülleri gere
 eksik stok saklanmaz. Üç haftanın toplam ek modül bütçesi **234 sıradan parça**.
 Kredi 1200/760/420, Akı 90/55/30 olarak korunur. Üç oyuncu seti birer kaynağa
 ayrılır; başka hafta veya dönemde tekrar kullanılamaz. Dokuz takım öğesinden
-üç Kutup Işığı öğesi 7 Aralık takım dönemine ayrıca ayrılır; kalan altı öğe
+üç Kutup Işığı öğesi 30 Kasım takım dönemine ayrıca ayrılır; kalan altı öğe
 kilitli stokta kalır. Takım başlangıcı ayrı operatör ayarıdır.
 
 `cosmetic_releases.py` açık kaynak ödülü türünü, pozitif miktarları, gerçek modül

@@ -115,7 +115,7 @@ def audit_markdown(report):
         '**2.4.0 ilk sezon stoğu yeterli.** Bu çevrimdışı tahsis denetimidir; '
         'sezon açmaz, kozmetik vermez ve Android/yayın kabulünün yerine geçmez.', '',
         f"{tr(calendar['starts_at'])}–{tr(calendar['ends_at'])} TR; takım dönemi ayrı kapıyla {tr(calendar['team_starts_at'])} TR başlar. "
-        'Takım dönemi sezon bitişini aşsa da ayrılmış üç ödülü tam olarak korunur.', '',
+        'Sezon ve takım dönemi aynı 28 günü kapsar; ayrılmış üç takım ödülü korunur.', '',
         '| Kaynak | Dönem | Tür | Ayrılmış içerik |', '| --- | --- | --- | --- |']
     for allocation in report['allocations']:
         items = [i for p in allocation['placements'] for i in p['cosmetics'].values()]

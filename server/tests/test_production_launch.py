@@ -53,6 +53,42 @@ def test_manual_start_anchors_full_28_days_and_login_to_same_season(closed):
     assert not launch_status(start,team=True)["active"]
 
 
+def test_s1_daily_season_and_both_tournaments_share_the_approved_start(closed):
+    from app import player_profile as profiles
+    from app.first_season_profile import PROFILE
+    start=datetime.fromisoformat(PROFILE['starts_at'].replace('Z','+00:00'))
+    closed.setenv('GRIDSHARD_SEASON_STARTS_AT',PROFILE['starts_at'])
+    closed.setenv('GRIDSHARD_TEAM_TOURNAMENT_STARTS_AT',PROFILE['starts_at'])
+    clock=[start-timedelta(seconds=1)]
+    original_descriptor=profiles.season_descriptor
+    original_launch=profiles.launch_status
+    closed.setattr(profiles,'season_descriptor',lambda moment=None:original_descriptor(moment or clock[0]))
+    closed.setattr(profiles,'launch_status',lambda moment=None:original_launch(moment or clock[0]))
+    service=PlayerProfileService(now_func=lambda:clock[0])
+    profile=service.get_or_create('s1-scheduled-rewards')
+    wallet=deepcopy((profile.circuit_credits,profile.flux_shards,profile.module_shards))
+    assert not any(r['claimable'] for r in profile.engagement_view()['daily_login']['rewards'])
+    assert not any(r['claimable'] for r in profile.engagement_view()['reward_track'])
+    for claim in (service.claim_login_reward,service.claim_season_tier):
+        with pytest.raises(PlayerProfileError,match='başlamadı'):
+            claim(profile.player_id,1,'early-'+claim.__name__)
+    assert (profile.circuit_credits,profile.flux_shards,profile.module_shards)==wallet
+    assert not launch_status(clock[0])['active'] and not launch_status(clock[0],team=True)['active']
+    clock[0]=start
+    profile=service.get_or_create(profile.player_id)
+    assert launch_status(start)['active'] and launch_status(start,team=True)['active']
+    assert profile.engagement_view()['daily_login']['today']==1
+    assert profile.engagement_view()['daily_login']['rewards'][0]['claimable']
+    service.claim_login_reward(profile.player_id,1,'opening-login')
+    profile.season_xp=profiles.SEASON_REWARD_TRACK[0]['required_xp']
+    assert profile.engagement_view()['reward_track'][0]['claimable']
+    service.claim_season_tier(profile.player_id,1,'opening-season')
+    season=competition_cycle(start)
+    team=competition_cycle(start,team=True)
+    assert season['starts_at']==team['starts_at']==start
+    assert season['ends_at']==team['ends_at']==start+timedelta(days=28)
+
+
 def test_bots_and_owner_do_not_count_as_real_weekly_participants(closed):
     closed.setenv("GRIDSHARD_SEASON_STARTS_AT","2026-09-28T00:00:00Z")
     closed.setenv("GRIDSHARD_WEEKLY_MIN_PLAYERS","4")

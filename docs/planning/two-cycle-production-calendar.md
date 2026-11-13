@@ -26,7 +26,7 @@ Pencereler teslim hedefidir; tamamlanmış çalışma veya eşzamanlı tam ekip 
 | 2.6.0 / 18 Ocak 2027 | S3 / 25 Ocak | Kor Fırlatıcı | Reaktör Kepengi, Prizma Yuvası, Türbin Dişlisi: 3 çerçeve + 3 zemin | Yedi özgün Devre Deneyi; Keşif Günlüğü; ilk başarı ödülü |
 | 2.7.0 / 15 Şubat 2027 | S4 / 22 Şubat | Darbe Muhafızı | Seramik Siper, Kablo Kemeri, Kristal Kıskaç: 3 çerçeve + 3 zemin | PvE seferi; 1 menü + 2 savaş bestesi; aşağıdaki yeni takım seti |
 
-Takım dönemleri sezonlardan bağımsızdır; 28 günlük 7 Aralık çapası korunur. Dönemin ödülü sezon sınırı geçince değişmez.
+13 Kasım son kararı: sezon, haftalık ve takım turnuvaları 30 Kasım 03.00 TR aynı anda başlar. Takım dönemleri ayrı operatör kapısını korur; 28 günlük 30 Kasım çapasıyla sezon sınırlarıyla hizalanır. S1 28 Aralık 03.00 TR biter; ödül planı dört haftadır.
 
 ## Stok açığı nasıl kapanacak?
 

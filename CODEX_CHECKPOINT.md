@@ -1,4 +1,32 @@
-# Evde yayın kabulü — 13 Kasım 2026, geçiş için kullanıcı şimdi onay verdi
+# Son yayın kararı — 13 Kasım 2026, rc.4 hazırlığı
+
+- Kullanıcı aynı gün geçişin hemen yapılmasını onayladı. En son açık takvim:
+  **S1 + günlük giriş/sezon ödülleri + haftalık ve takım turnuvaları
+  30 Kasım 2026 03.00 TR**; bitiş **28 Aralık 03.00 TR**. Dört tam hafta
+  ve mevcut üç kaynak haftası + kozmetik finali korunur. S1/S2–S6 tarihleri
+  kaydırılmaz. Eski 7 Aralık takım başlangıcı kararı artık geçersizdir.
+- Ücretli sezon başlığı ve ödül sütunu, mağazadaki gibi gizlendi; ücretsiz
+  yol iki sütunlu (kademe + ücretsiz ödül) yerleşimde genişletildi. Kod ve
+  premium hakları silinmedi. Yeni TR/EN×320/393 mağaza/sezon/win-result
+  kabulü üç tarayıcıda 3 PASS. Sezon öncesinde günlük ve kademe haklarının
+  sunucuda reddedildiği, başlangıç anında açıldığı ve 28 günlük iki dönemin
+  eşit olduğu sınır testi PASS. Odaklı grup 60 PASS / 2 gerçek PG skip.
+- Takım kozmetik tahsisi 30 Kasım dönemine bağlandı; stok raporu 7 dönem,
+  9 tekil kozmetik, 7140 Kredi / 525 Akı / 234 modül parçası olarak yeterli.
+  Sezon profili hâlâ taslaktır; yayın kabulü/sezon açılışı tamamlandı sayılmaz.
+- rc.3 / 86ad7bf5 önceki ara adaydır; son istekleri içermez. Eski etiketler
+  korunur; son paketler yeni rc.4 kaynağından üretilecek. Eski AAB teslim edilmez.
+- Yerel Chromium/Android kare bütçesi PASS (p95 7,5ms). Windows WebKit
+  bütçesi FAIL; değiştirilmemiş ve macOS CI'si yeşil rc.2 de aynı Windows'ta
+  FAIL (yaklaşık13fps/p95 93,5ms; yeni aday12,3fps/p95 97,5ms). Bu Windows
+  ölçümü macOS veya gerçek iPhone kabulü olarak gösterilmez; eşik gevşetilmedi.
+  Üç tarayıcıdaki tüm işlevsel kontroller PASS; Android fiziksel kabul aşağıda.
+- Canlı son kontrol: sağlıklı 2.3.0,59 profil, sıfır maç/WebSocket. Önceki
+  katalog denemesi geri alındı; 2.4.0 dağıtımı bu kayıt anında henüz yapılmadı.
+
+---
+
+# Önceki evde yayın kabulü — 13 Kasım 2026
 
 - Kullanıcı 22.00'yi beklemeyip geçişi **şimdi** yapmamızı istedi. S1
   30 Kasım 03.00 TR; takım turnuvası ayrı kapıda, bu kararla sezon açılmaz.

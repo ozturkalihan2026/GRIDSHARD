@@ -143,7 +143,7 @@ def test_post_upgrade_tournament_popup_has_its_own_ack_and_server_gate(inbox, mo
     selected=announcements.pending_announcement(profile,'2.4.0',clock)
     assert selected['notice_id']==tour_id and selected['phase']=='season-preview'
     assert '30 Kasım 2026' in selected['body_tr'] and '36/24/18' in selected['body_tr']
-    assert 'Takım turnuvası bu açılışla birlikte başlamayacak' in selected['body_tr']
+    assert 'Takım turnuvası da sezon ve haftalık turnuvayla aynı anda' in selected['body_tr']
     monkeypatch.setattr(gateway,'VERSION','2.4.0')
     assert gateway._reward_inbox_view(profile)['announcement']['notice_id']==tour_id
     gateway.acknowledge_release_announcement(profile.player_id,tour_id)
