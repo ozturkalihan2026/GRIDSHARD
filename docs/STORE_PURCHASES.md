@@ -1,5 +1,35 @@
 # Gerçek para alımı ve ödüllü reklam
 
+## 13 Kasım 2026 — 2.4.0 istemcisinde geçici görünürlük/başlatma kapalı
+
+Kullanıcı isteğiyle `client/src/app.js` başındaki `MONETIZATION_ENABLED = false`
+anahtarı yeni satın alma ve ödüllü reklam girişlerini kapatır. Mağazadaki
+Premium/Akı/Kredi paketleri, sezon premium satın alma düğmesi, savaş sonucu
+premium teklifi ve ödüllü reklam alanı görünmez. Oyun içi kaynakla alınan
+sandıklar ve hediye sandık görünür kalır.
+
+İlk HTML'deki `monetization-paused` sınıfı ve `shop-rewards-v6.css` kuralı,
+betikler yüklenmeden başlayarak alanları gizler. Yeniden çizim `hidden`
+niteliğini değiştirse de bu kural geçerlidir. Satın alma/reklam işleyicileri
+aynı anahtarla erken döner; otomatik fiyat/UMP sorgusu da başlatılmaz.
+Mevcut kod, ürün kataloğu, makbuz doğrulama/kurtarma ve kazanılmış haklar
+korunur. Yeniden açmak için tek kaynak anahtarı `true` yapılıp yeni istemci
+paketi üretilir; sorgu parametresi veya localStorage ile açma yolu yoktur.
+
+Bu değişiklik güncellenmiş istemcide geçerlidir. Kurulu eski APK/AAB'leri
+uzaktan değiştirmez; canlı sunucu sağlayıcıları, Play ürünleri ve AdMob
+hesabı bu kod değişikliğiyle kapatılmış sayılmaz. Sezon XP/eşikleri ve
+ödül bütçesi değiştirilmedi.
+
+Yerel kabul: 783 istemci testi (yeni ödeme ve reklam başlatma engeli dahil),
+13 build sözleşmesi ve web paketleme PASS. Chromium/Android Chrome/Safari
+öykünmesinde 3 akış PASS; her birinde TR/EN 320/393 mağaza, reload, gerçek
+yerel savaş sonucu ve render'ın `hidden` niteliğini açmasına rağmen kalıcı
+CSS gizlemesi doğrulandı. QA mağaza yanıtında test sağlayıcıları açık
+gösterildi; programatik tıklamalar yeni purchase/ad-reward POST'u üretmedi.
+Kanıt `qa_reports/monetization-pause-browser.json`; görseller aynı adlı
+klasörde. Yeni APK/AAB veya canlıya dağıtım yapılmadı.
+
 ## 10 Ekim 2026 — iade politikası kodlandı; satış henüz açılmadı
 
 `31b0388480816ada79fc25a34d80b61f840cd65e` kullanıcı tarafından commit/push

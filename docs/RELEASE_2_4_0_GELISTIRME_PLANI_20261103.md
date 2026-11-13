@@ -1,5 +1,11 @@
 # GRIDSHARD 2.4.0 — mevcut içerikle ilk sezon
 
+**13 Kasım güncellemesi:** Zorunlu yama nedeniyle paket/geçiş hedefi
+**13 Kasım 22.00 → 14 Kasım 00.00 TR** olarak öne alındı. S1–S6 ve haftalık
+turnuva hedefleri aynı. [Ev bilgisayarı geçiş planı](planning/release-240-expedited-handoff-20261113.md)
+güncel işlemleri ve açık kabul kapılarını içerir. Aşağıdaki 3–4 Kasım efor
+tahminleri tarihsel planlama bağlamıdır; tamamlanma/yayın kanıtı değildir.
+
 **4 Kasım kullanıcı açıklaması:** XP açığı bilinçlidir; 12.240 son kademe eşiği
 korunur. Günlük/sezonluk emirler (SEASON-01), mesaj kutusu Topla kasa açılışı
 (UI-08) ve sabit kasa çekirdek teslimi (REWARD-06) 2.4.0 zorunlu kapsamıdır.
@@ -31,7 +37,7 @@ riske atıyorsa tarih yeniden karara bağlanır. Bu metin tarih kaydırma karar�
 Yeni modüller ve geniş kozmetik üretimi sonraki paketlere bölündü. Dal
 `main`; canlı 2.3.0. Bu belge sezonu veya ödül dağıtımını açmaz.
 
-**Çalışma hedefi: 23 Kasım 2026 sürüm yayını; 30 Kasım 2026 03.00 TR sezon
+**Çalışma hedefi: 13 Kasım 2026 akşamı sunucu geçişi/AAB hazırlığı; 30 Kasım 2026 03.00 TR sezon
 başlangıcı.** Tahmin 12–15 aktif geliştirici günü; kapasite ve test/Play
 koşulları [tarihli planda](GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md).
 Bu belge önceki “iki yeni modül + 18 yeni öğe önce tamamlansın” kapsamını değiştirir.
@@ -44,7 +50,7 @@ Bu belge önceki “iki yeni modül + 18 yeni öğe önce tamamlansın” kapsam
 | B — ilk sezon | BASE-01 bütçesi; SEASON-00: 40 kademe, üç ana kozmetik seti, diğer haftalarda sabit kaynak paketleri | Yalnız S1'e 24 modül istisnası; kaynak/kozmetik dönem türleri açık. Bunlar henüz kodlanmadı. |
 | C — güvenli teslim | Tek teslim, kayıt, dönem kapanışı, premium kökeni ve kazanılmış hak koruma | Tekrar/eşzamanlı talep, geç dönüş, restart/restore; kaynak yokluğu eski kozmetiğe düşmez. |
 | D — istemci ve sunum | COMPAT-01: değiştirilmemiş 2.3/2.2.1 istemci; TR/EN mobil önizleme, tarih ve gerçek ödül | Sağlık sürümü artırılarak eski kurulum bozulmaz. Ortak sanat yönü ve performans korunur. |
-| E — yayın ve açılış | Sürüm mesajı, CI, imzalı AAB, Play cihaz testi, veri koruyan geçiş | 23 Kasım sürüm; bir hafta gözlem; 30 Kasım başlangıç ancak bütün kapılar geçildiyse. |
+| E — yayın ve açılış | Sürüm mesajı, CI, imzalı AAB, Play cihaz testi, veri koruyan geçiş | 13 Kasım 22.00–00.00 TR geçiş hedefi; sezon açılışına kadar gözlem; 30 Kasım başlangıç ancak bütün kapılar geçildiyse. |
 
 ## Stok ve modül ayrımı
 

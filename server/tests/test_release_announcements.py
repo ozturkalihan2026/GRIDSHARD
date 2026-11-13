@@ -8,8 +8,8 @@ from app import main as gateway
 from app import release_announcements as announcements
 from test_inbox_dismissal import inbox  # noqa: F401
 
-NOW = datetime(2026, 11, 5, tzinfo=timezone.utc)
-ID = 'preview-2-4-0-season-one'
+NOW = datetime(2026, 11, 13, 12, tzinfo=timezone.utc)
+ID = 'preview-2-4-0-early-patch-20261113'
 
 
 @pytest.fixture(autouse=True)
@@ -122,10 +122,10 @@ def test_ack_keeps_system_mail_and_protected_routes_reject_other_accounts(inbox,
 
 def test_maintenance_uses_2200_tr_and_crosses_midnight_with_two_hours():
     item=announcements.CATALOG['announcements'][0]
-    assert item['server_transition_starts_at']=='2026-11-23T19:00:00Z'
-    assert item['server_transition_ends_at']=='2026-11-23T21:00:00Z'
+    assert item['server_transition_starts_at']=='2026-11-13T19:00:00Z'
+    assert item['server_transition_ends_at']=='2026-11-13T21:00:00Z'
     assert item['maintenance_duration_minutes']==120
-    assert '22.00' in item['body_tr'] and '24 Kasım' in item['body_tr'] and '2 saat' in item['body_tr']
+    assert '22.00' in item['body_tr'] and '14 Kasım' in item['body_tr'] and '2 saat' in item['body_tr']
 
 
 def test_post_upgrade_tournament_popup_has_its_own_ack_and_server_gate(inbox, monkeypatch):
@@ -135,7 +135,7 @@ def test_post_upgrade_tournament_popup_has_its_own_ack_and_server_gate(inbox, mo
     profile.acknowledged_announcement_ids=(ID,)
     tour_id='preview-2-4-0-tournament-launch'
     assert announcements.pending_announcement(profile,'2.3.0',clock) is None
-    assert announcements.pending_announcement(profile,'2.4.0',datetime(2026,11,23,18,59,tzinfo=timezone.utc)) is None
+    assert announcements.pending_announcement(profile,'2.4.0',datetime(2026,11,13,18,59,tzinfo=timezone.utc)) is None
     selected=announcements.pending_announcement(profile,'2.4.0',clock)
     assert selected['notice_id']==tour_id and selected['phase']=='season-preview'
     assert '30 Kasım 2026' in selected['body_tr'] and '36/24/18' in selected['body_tr']
@@ -146,3 +146,19 @@ def test_post_upgrade_tournament_popup_has_its_own_ack_and_server_gate(inbox, mo
     assert gateway._reward_inbox_view(profile)['announcement'] is None
     assert set(profile.acknowledged_announcement_ids)=={ID,tour_id}
     assert announcements.pending_announcement(profile,'2.5.0',clock) is None
+
+
+def test_reading_the_previous_maintenance_notice_does_not_hide_the_early_patch(inbox, monkeypatch):
+    profile, profiles, _ = inbox
+    monkeypatch.setattr(profiles, '_now_func', lambda: NOW)
+    monkeypatch.setattr(gateway, 'VERSION', '2.3.0')
+    announcements.CATALOG['announcements'][0]['delivery'] = 'system_mail'
+    previous_id = 'preview-2-4-0-season-one'
+    profile.seen_inbox_notice_ids = (previous_id,)
+    profile.dismissed_inbox_notice_ids = (previous_id,)
+    profile.acknowledged_announcement_ids = (previous_id,)
+    view = gateway._reward_inbox_view(profile)
+    notice = next(n for n in view['notices'] if n['notice_id'] == ID)
+    assert not notice['seen']
+    assert 'Zorunlu bir yama' in notice['body_tr']
+    assert view['announcement'] is None  # Installed 2.3.0 uses System mail only.

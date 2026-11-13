@@ -29,6 +29,7 @@ function fixture(confirm = true) {
   const native = {transactionId:"fixture", purchaseToken:"fixture-only", productIdentifier:product.store_product_id};
   const state = {season_pass:product, account_token:"fixture-account"};
   const context = vm.createContext({
+    MONETIZATION_ENABLED:true,
     document:{documentElement:{lang:"tr"}, getElementById:() => null},
     window:{confirm:() => {calls.push("confirm"); return confirm;}},
     GridshardPremiumRefundPolicy:policy,
@@ -57,6 +58,15 @@ test("declining before checkout produces no store call, no POST and no finish", 
   assert.equal(result.cancelled, true);
   assert.deepEqual(calls, ["confirm"]);
   assert.equal(context.purchaseInFlight, false);
+});
+
+test("monetization pause prevents checkout, policy prompts and purchase requests", async () => {
+  const {context, calls} = fixture(true);
+  context.MONETIZATION_ENABLED = false;
+  const result = await context.purchasePaidProduct(product.id);
+  assert.equal(result.ok, false);
+  assert.equal(result.disabled, true);
+  assert.equal(calls.length, 0);
 });
 
 test("acceptance occurs before native checkout and sends the exact policy version", async () => {

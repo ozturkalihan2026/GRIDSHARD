@@ -141,3 +141,16 @@
 :root body[data-app-screen] .shop-screen #chest-odds-open::after {
   content:""; position:absolute; inset:-11px 0; background:none; box-shadow:none;
 }
+/* Temporary pause. Applied in the initial HTML too, before any UI renders.
+   Keep these rules independent of hidden: async store/result renders may
+   legitimately update that attribute while monetization remains paused. */
+html.monetization-paused body[data-app-screen] :is(
+  .paid-store-section,
+  #season-premium-buy,
+  #post-match-premium,
+  #post-match-premium-buy,
+  #post-match-ad-reward,
+  #post-match-ad-button
+) {
+  display:none !important;
+}

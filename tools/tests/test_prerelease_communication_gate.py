@@ -1,4 +1,7 @@
 from copy import deepcopy
+from datetime import date
+import json
+from pathlib import Path
 
 import pytest
 
@@ -31,9 +34,24 @@ def test_post_release_tournament_popup_cannot_replace_prerelease_communication()
 
 def test_a_coherent_but_wrong_maintenance_hour_cannot_drift_from_calendar():
     document=deepcopy(CATALOG)
-    document['announcements'][0]['server_transition_starts_at']='2026-11-23T20:00:00Z'
-    document['announcements'][0]['server_transition_ends_at']='2026-11-23T22:00:00Z'
+    document['announcements'][0]['server_transition_starts_at']='2026-11-13T20:00:00Z'
+    document['announcements'][0]['server_transition_ends_at']='2026-11-13T22:00:00Z'
     with pytest.raises(ValueError,match='window differs'):check(document,required='2.4.0')
+
+
+def test_early_patch_repeats_the_full_unchanged_season_calendar_in_both_languages():
+    calendar=json.loads((Path(__file__).resolve().parents[2]/'docs/planning/release_calendar_v1.json').read_text(encoding='utf-8'))
+    expected=[('2026-11-30','2026-12-28'),('2026-12-28','2027-01-25'),
+              ('2027-01-25','2027-02-22'),('2027-02-22','2027-03-22'),
+              ('2027-03-22','2027-04-19'),('2027-04-19','2027-05-17')]
+    assert [(r['season']['starts_on'],r['season']['ends_on']) for r in calendar['releases']]==expected
+    months_tr={1:'Ocak',2:'Şubat',3:'Mart',4:'Nisan',5:'Mayıs',11:'Kasım',12:'Aralık'}
+    months_en={1:'January',2:'February',3:'March',4:'April',5:'May',11:'November',12:'December'}
+    notice=CATALOG['announcements'][0]
+    for number,(start,end) in enumerate(expected,1):
+        a,b=date.fromisoformat(start),date.fromisoformat(end)
+        assert f'S{number}: {a.day} {months_tr[a.month]} {a.year} → {b.day} {months_tr[b.month]} {b.year}' in notice['body_tr']
+        assert f'S{number}: {months_en[a.month]} {a.day}, {a.year} → {months_en[b.month]} {b.day}, {b.year}' in notice['body_en']
 
 
 @pytest.mark.parametrize('version', ['2.3.1', '2.4.0', '2.4.1', '3.0.0'])

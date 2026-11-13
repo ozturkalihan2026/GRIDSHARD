@@ -20,15 +20,30 @@ assert.equal(base.hostname,'127.0.0.1');
   await page.goto(spec.base_url+'/?e2e=1');await waitForParticipantReady(page,60000);
   await expect(page.locator('#release-announcement-dialog')).toHaveCount(0);
   await page.locator('#reward-inbox-button').click();await page.locator('#inbox-tab-system').click();
-  const notice=page.locator('#reward-inbox-notices .inbox-notice-card').filter({hasText:'Yeni devre açılıyor'});
+  const notice=page.locator('#reward-inbox-notices .inbox-notice-card').filter({hasText:spec.system_notice.title_tr});
   await expect(notice).toHaveCount(1);
   await notice.locator('strong').first().click();
-  await expect(notice).toContainText('23 Kasım 2026');await expect(notice).toContainText('30 Kasım 2026');
+  await expect(notice).toContainText('13 Kasım 2026');await expect(notice).toContainText('30 Kasım 2026');
   await expect(notice).toContainText('22.00');await expect(notice).toContainText('2 saat');
+  await page.locator('#reward-inbox-close').click();
   for(const width of [320,393])for(const language of ['tr','en']){
-   await page.setViewportSize({width,height:width===320?568:852});await page.evaluate(l=>GridshardI18n.apply(l),language);
+   await page.setViewportSize({width,height:width===320?568:852});
+   await page.locator('#lobby-menu-button').click();
+   await page.locator('#lobby-menu [data-open-screen=settings]').click();
+   await page.locator('#settings-language').selectOption(language);
+   await expect(page.locator('html')).toHaveAttribute('lang',language);
+   await page.locator('[data-shell-screen="menu"]').click();
+   await page.locator('#reward-inbox-button').click();await page.locator('#inbox-tab-system').click();
+   const localized=page.locator('#reward-inbox-notices .inbox-notice-card').filter({hasText:spec.system_notice['title_'+language]});
+   await expect(localized).toHaveCount(1);
+   const title=localized.locator('strong').first();
+   if(await title.getAttribute('aria-expanded')!=='true')await title.click();
+   await expect(localized.locator('.inbox-message-content')).toBeVisible();
+   await expect(localized).toContainText(language==='tr'?'13 Kasım 2026':'November 13, 2026');
+   await expect(localized).toContainText(language==='tr'?'S6: 19 Nisan 2027':'S6: April 19, 2027');
    await page.screenshot({path:path.join(spec.output,`legacy-system-${language}-${width}.png`)});
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+   await page.locator('#reward-inbox-close').click();
   }
   assert.equal(errors.length,0,JSON.stringify(errors));
   console.log(JSON.stringify({passed:true,unchanged_230_app:true,actual_230_api:true,source_ui_base:spec.old_client_root,

@@ -12,7 +12,7 @@ for (const width of [320,393]) test(`announcement at ${width}px acknowledges onc
   await start(page);
   const dialog=page.locator('#release-announcement-dialog');
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText('23 Kasım');
+  await expect(dialog).toContainText('13 Kasım 2026 saat 22.00');
   await expect(dialog).toContainText('30 Kasım');
   const button=page.locator('#release-announcement-confirm');
   const bounds=await button.boundingBox();
@@ -20,7 +20,7 @@ for (const width of [320,393]) test(`announcement at ${width}px acknowledges onc
   expect(bounds.y+bounds.height).toBeLessThanOrEqual(page.viewportSize().height);
   await page.screenshot({path:info.outputPath('announcement-tr.png')});
   await page.evaluate(()=>{document.documentElement.lang='en';});
-  await expect(dialog).toContainText('November 23');
+  await expect(dialog).toContainText('November 13, 2026 at 22:00');
   await expect(button).toHaveText('OK');
   await page.screenshot({path:info.outputPath('announcement-en.png')});
   const acknowledged=page.waitForResponse(r=>r.url().includes('/release-announcements/') && r.status()===200);
@@ -33,7 +33,7 @@ for (const width of [320,393]) test(`announcement at ${width}px acknowledges onc
   await expect(dialog).toBeHidden();
   await page.locator('#reward-inbox-button').click();
   await page.locator('#inbox-tab-system').click();
-  await expect(page.locator('#reward-inbox-notices')).toContainText('Yeni devre açılıyor');
+  await expect(page.locator('#reward-inbox-notices')).toContainText('2.4.0 bakım tarihi öne alındı');
 });
 
 test('offline confirmation closes the popup, survives reload and retries later',async({page})=>{

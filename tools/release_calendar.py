@@ -45,7 +45,16 @@ def validate(document):
             raise ValueError('Missing scope, gate or work items: ' + version)
         begin, freeze, testing, target = [date.fromisoformat(release[k]) for k in
             ('work_starts_on','scope_freezes_on','tests_start_on','target_release_on')]
-        if not begin < freeze <= testing < target or (last_date and target <= last_date):
+        expedited = release.get('expedited_patch')
+        if plans[version].get('expedited_patch') != expedited:
+            raise ValueError('Backlog and calendar expedited decisions differ: ' + version)
+        if expedited and (date.fromisoformat(expedited['decision_on']) != target
+                or date.fromisoformat(expedited['previous_target_release_on']) <= target
+                or not expedited.get('reason', '').strip()
+                or expedited.get('season_calendar_unchanged') is not True):
+            raise ValueError('Invalid expedited patch decision: ' + version)
+        valid_sequence = begin < freeze <= testing and (testing <= target if expedited else testing < target)
+        if not valid_sequence or (last_date and target <= last_date):
             raise ValueError('Invalid development/release sequence: ' + version)
         season = release['season']
         starts, ends = date.fromisoformat(season['starts_on']), date.fromisoformat(season['ends_on'])

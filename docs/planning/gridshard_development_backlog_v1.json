@@ -39,7 +39,8 @@
     "docs/planning/release-240-friend-request-tabs.md",
     "docs/planning/release-240-bot-competition.md",
     "docs/planning/audio-direction-circuit-forge-v21.md",
-    "docs/planning/two-cycle-production-calendar.md"
+    "docs/planning/two-cycle-production-calendar.md",
+    "docs/planning/release-240-expedited-handoff-20261113.md"
   ],
   "tasks": [
     {
@@ -1845,7 +1846,7 @@
       ],
       "acceptance": [
         "Mevcut 24 modül ve 15 kozmetikle S1 profili, sabit kaynak haftaları, tekil teslim, kapanış hakları ve gerçek restore kanıtı tamamlanır.",
-        "23 Kasım hedefli sürüm notu/CI/AAB ve 30 Kasım hedefli başlangıç ayrı kapılardır; eski istemci, TR/EN mobil ve Play cihaz testi geçmeden açılmaz. Yeni kart veya 18 yeni kozmetik bu sürümün koşulu değildir.",
+        "13 Kasım hedefli sürüm notu/CI/AAB ve 30 Kasım hedefli başlangıç ayrı kapılardır; eski istemci, TR/EN mobil ve Play cihaz testi geçmeden açılmaz. Yeni kart veya 18 yeni kozmetik bu sürümün koşulu değildir.",
         "UI-07 sarı geri/ileri envanteri, AUDIO-01 saldırı ve AUDIO-02 çekirdek ses matrisleri ile Android dinleme kabulü kapanmadan 2.4.0 tamamlanmaz.",
         "Sabit kasa çekirdek teslimi, Topla açılış animasyonu ve 12.240 XP eşiğini koruyan günlük/sezonluk emirler kabul edilmeden S1 yayını tamamlanmaz.",
         "240 botun gerçek sırası, tamamen bot kazanan paketlerin tekil kalıcı ertelemesi, turnuva ödül önizlemesi ve beş arkadaş sekmesinin çizgisiz görünümü doğrulanır. Yayın öncesi gerçek hesap adlarıyla bot adı çakışması raporlanır; oyuncu adları değiştirilmez."
@@ -2999,13 +3000,15 @@
         "tools/release_announcements.py"
       ],
       "proposed_paths": [
-        "docs/planning/prerelease-announcements-and-music.md"
+        "docs/planning/prerelease-announcements-and-music.md",
+        "docs/planning/release-240-expedited-handoff-20261113.md"
       ],
       "acceptance": [
         "TR/EN tek kaynak, hedef tarih takvim denetimi, yayın penceresi, eski API ve sürüm sonrası görünmezlik doğrulanır.",
         "Tamam onayı hesapta kalıcı ve idempotenttir; ağ hatası outbox, yeniden giriş/başka hesap ve mesaj kutusu bağımsızlığı; 320/393 px, modal/savaş sırası ve veri koruma kanıtlanır.",
         "2.3.0 sonrası her sürümün incelenmiş ön duyurusu release_guard tarafından aranır; gerçek sürüm notları ayrı tutulur.",
-        "5 Kasım kararı: 2.3.0’da yalnız Sistem mesajıyla 23 Kasım 22.00 bakım ön haberi; 2.4.0 sunucu/AAB sonrasında ayrı kimlikle turnuva penceresi. İlki ikincinin hesap onayını tüketmez; min_server_version kapısı ve takvimdeki iki saatlik pencere doğrulanır."
+        "5 Kasım kararı: 2.3.0’da yalnız Sistem mesajıyla 23 Kasım 22.00 bakım ön haberi; 2.4.0 sunucu/AAB sonrasında ayrı kimlikle turnuva penceresi. İlki ikincinin hesap onayını tüketmez; min_server_version kapısı ve takvimdeki iki saatlik pencere doğrulanır.",
+        "13 Kasım kararı: zorunlu yama için 13 Kasım 22.00–14 Kasım 00.00 TR erken bakım; yeni preview-2-4-0-early-patch-20261113 kimliği eski okunma/onayı devralmaz. S1–S6 takvimi aynı; evde canlı katalog güncellemesi ve 2.4.0 geçişi ayrı adımlardır."
       ],
       "goals": [
         "presentation",
@@ -3263,19 +3266,25 @@
         "SEASON-02",
         "UI-10"
       ],
-      "scope": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. AAB değiştirmeden 2.3.0 Sistem mesajında 23 Kasım 22.00–24 Kasım 00.00 TR bakım ön duyurusu; 2.4.0 sunucu/AAB sonrasında ayrı kimlikli turnuva penceresi. S1 ve ilk haftalık turnuva 30 Kasım 03.00 TR. Arkadaşlar sayfasındaki Gelen/Giden İstek yazılarının üstüne taşan çizgi düzeltilir. İlk sezonda 240 bot, 12 takım, gerçek sıra ve kalıcı ödül ertelemesi; turnuvalarda ÖDÜLLER sekmesi; bütün arkadaş sekmelerinde çizgisiz tasarım.",
+      "scope": "Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. AAB değiştirmeden 2.3.0 Sistem mesajında 13 Kasım 22.00–14 Kasım 00.00 TR bakım ön duyurusu; 2.4.0 sunucu/AAB sonrasında ayrı kimlikli turnuva penceresi. S1 ve ilk haftalık turnuva 30 Kasım 03.00 TR. Arkadaşlar sayfasındaki Gelen/Giden İstek yazılarının üstüne taşan çizgi düzeltilir. İlk sezonda 240 bot, 12 takım, gerçek sıra ve kalıcı ödül ertelemesi; turnuvalarda ÖDÜLLER sekmesi; bütün arkadaş sekmelerinde çizgisiz tasarım. Zorunlu yama için erken geçiş duyurusu ayrı kimlikle yeniden gönderilir. Gerçek para satın alma girişleri ve savaş sonu reklamı kod silinmeden istemcide gizlenir; mevcut haklar ve oyun içi para sandıkları korunur.",
       "keep_closed": "Yeni modül, 18 yeni kozmetik, seçim kasası, yeni mağaza ve yeni oyun modu.",
       "exit": "İlk sezona özel başlangıç kuralı, açık resource-only ödül türü, sabit/tek teslim, kapanışta hak koruma, 2.3/2.2.1 istemci uyumu ve yeşil CI/Play cihaz testi. Sarı gezinme kontrolü envanteri, tam saldırı/çekirdek ses matrisi ve gerçek Android dinleme kabulü zorunludur. REWARD-06, UI-08 ve SEASON-01; tekil makbuz, güvenli açılış ve 1.800 sezonluk XP tavanı kabulü. COMM-01 kabulü ve ön duyuru standardı sürüm kapısındadır.",
-      "target_release_on": "2026-11-23",
-      "scope_freezes_on": "2026-11-16",
+      "target_release_on": "2026-11-13",
+      "scope_freezes_on": "2026-11-13",
       "season_starts_on": "2026-11-30",
       "date_confidence": "hedef",
       "delivery_document": "docs/planning/releases/2.4.0.md",
       "server_transition": {
-        "starts_at": "2026-11-23T19:00:00Z",
-        "ends_at": "2026-11-23T21:00:00Z",
+        "starts_at": "2026-11-13T19:00:00Z",
+        "ends_at": "2026-11-13T21:00:00Z",
         "timezone": "Europe/Istanbul",
         "duration_minutes": 120
+      },
+      "expedited_patch": {
+        "decision_on": "2026-11-13",
+        "previous_target_release_on": "2026-11-23",
+        "reason": "Zorunlu yama nedeniyle erken sunucu geçişi ve AAB hazırlığı; ev bilgisayarından uygulanacak.",
+        "season_calendar_unchanged": true
       }
     },
     {
@@ -3389,9 +3398,9 @@
     "milestone": "remaining_release_240_acceptance",
     "status": "in_progress",
     "scope_decision": "user_approved",
-    "target_release_on": "2026-11-23",
+    "target_release_on": "2026-11-13",
     "season_starts_on": "2026-11-30",
     "calendar": "docs/planning/release_calendar_v1.json"
   },
-  "planning_updated_on": "2026-11-06"
+  "planning_updated_on": "2026-11-13"
 }

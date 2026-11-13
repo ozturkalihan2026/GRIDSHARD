@@ -134,5 +134,6 @@ WebKit proje test bütçesi uyumu bulunur. Önceki başarısız koşular kabul d
   senaryolarını çalıştırır. Test endpoint’i yalnız `tools/e2e_server.py` içindeki
   açık yerel fixture seçeneğinde kurulur; üretim API’sine eklenmez.
 
-Paket yayın hedefi 23 Kasım, S1 ve ilk haftalık turnuva hedefi 30 Kasım 03.00 TR.
+13 Kasım ek kararı: paket/geçiş hedefi 13 Kasım 22.00–14 Kasım 00.00 TR;
+S1 ve ilk haftalık turnuva hedefi 30 Kasım 03.00 TR olarak korunur.
 Fiziksel kabul ve 2.4.0/S1 canlı dağıtımı tamamlanmadan RELEASE-01 kapanmaz.
