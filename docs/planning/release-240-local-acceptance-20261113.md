@@ -28,25 +28,42 @@ sunucuda reddedilir; başlangıç sınır testi günlük ve sezon haklarını do
 | S1 bot/turnuva UI | 6 PASS |
 | İki tarayıcılı gerçek PvP/reconnect | 3 PASS |
 | Eski 2.2.1/2.3.0 gerçek HTTP uyumu | 10 senaryo PASS |
-| Üretim imajı/restart/izole restore | Ara aday PASS; son sabit imaj ayrıca doğrulanır |
+| rc.4 üretim imajı/restart/izole restore | PASS; reviewer iki cihaz ve reklam kapalı akışları dahil |
+| rc.4 Python3.12 + PostgreSQL17 + Redis | 129 PASS; gerçek dump/restore ve başlangıç sınırları dahil |
 | S1 stok | 7 dönem, 9 tekil kozmetik; 7140 Kredi /525 Akı /234 modül parçası |
 
 İlk gerçek PostgreSQL17/Redis grubunda kampanya kimliği değişikliğine bağımlı
 test düzeltildi; 104 test PASS oldu. Son kaynak aynı kontrolleri Python3.12
-test imajında tekrar çalıştırır. Makineye özgü ham kanıtlar `qa_reports/`
+test imajında 129 PASS ile doğrulandı. Makineye özgü ham kanıtlar `qa_reports/`
 altındadır; bu klasör Git ile taşınmaz.
 
 Chromium ve Android Chrome kare bütçesi PASS, p95 7,5ms. Windows WebKit
-bütçesi FAIL: yeni aday12,3fps/p95 97,5ms; değiştirilmemiş, macOS CI'si yeşil
-rc.2 de aynı Windows'ta13fps/p95 93,5ms ile FAIL. Bu ölçüm yeni macOS/iPhone
+bütçesi FAIL: yeni aday 12,3 fps / p95 97,5ms; değiştirilmemiş, macOS CI'si yeşil
+rc.2 de aynı Windows'ta 13 fps / p95 93,5ms ile FAIL. Bu ölçüm yeni macOS/iPhone
 performans kabulü değildir. Test/eşik atlanmadı veya gevşetilmedi. WebKit'teki
 işlevsel kabul başarılıdır; bu yayın Android AAB hedefidir.
 
 Fiziksel S1 TEST'te aynı hesap/24 modül, 44 ses hash'i, iki2.4.0 etiketi,
 gizli ücretli mağaza ve soğuk açılış geçti. Kayıtlı menü5/savaş55 korunur;
 yeni hesap varsayılanı5/50'dir. Son ücretli sezon sütunu değişikliği son test
-APK'sıyla ayrıca doğrulanır. Dinleme beğenisi bu tur yeniden verilmiş sayılmaz.
+APK'sıyla doğrulandı: ücretli başlık/40 hücre gizli, ücretsiz yol geniş,
+aynı hesap soğuk açılıştan sonra korunuyor. AAB ve telefondaki 582 ortak web
+dosyasında yalnız beklenen yerel API `runtime-config.js` farkı var.
+Dinleme beğenisi bu tur yeniden verilmiş sayılmaz.
 
-Canlı geçiş güncel yedek, ayrı boş PostgreSQL'e tam içerik karşılaştırmalı
-restore ve kod/imaj geri dönüşüyle yürütülür. Çalışan DB/runtime üzerine eski
-yedek yazılmaz. AAB üretimi Play yüklemesi veya mağaza onayı anlamına gelmez.
+Canlı geçiş 13 Kasım 21.39 TR'de d465dffda1cb kaynağından tamamlandı. 22,72 sn
+operasyonda 59 profil/28 tablonun tüm içeriği, kalıcı bağlar ve diğer üç servis
+korundu; yeni yedek ayrı PostgreSQL'e restore edilip birebir karşılaştırıldı.
+İlk denemede wire alias'ı gerçek sürüm sanan operatör geri döndü; runtime alanı
+düzeltilip ikinci yeni yedekle tamamlandı. SQL aynı baytlardır; JSON göçleri
+uygulamanın mevcut CRLF→LF checksum kuralıyla aynı kaynaktır. DB geçmişi ve
+canlı veri elle değiştirilmedi. Son dış HTTPS runtime2.4.0, protokol2 ve eski
+istemci listesi doğrulandı. Bu Android yayını için yerel kabul kaydıdır;
+GitHub Actions veya yeni macOS kabulü olarak gösterilmez.
+
+Teslim: `deliverables/release-2.4.0-v15-20261113-rc4/`. AAB 42.713.476 byte,
+SHA256 `dd406546b72f437ba2310a6cfa1e1f0eedcd7ebb37e96f6cbd14af965ee1b05b`.
+Mevcut upload sertifikası, AAB/APK imzaları, 580 web dosyası/paket, dokuz R8
+native eklentisi ve devre dışı Firebase başlangıcı doğrulandı. Play yüklemesi
+ve mağaza onayı yapılmadı. S1 profili taslak; sezon/ödül kataloğu yayın kabulü
+30 Kasım öncesinde ayrı tamamlanır, bu gece sezon aktive edilmedi.

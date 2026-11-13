@@ -1,4 +1,48 @@
-# Son yayın kararı — 13 Kasım 2026, rc.4 hazırlığı
+# 2.4.0 sunucu geçişi tamamlandı — 13 Kasım 2026 21.39 TR
+
+- Canlı runtime **2.4.0**, kaynak **d465dffda1cb5c13d0faf2eca4e33924c83729a4**,
+  değişmez **v2.4.0-rc.4**. AAB/code15 aynı ayrı kaynakta üretildi. Güncel
+  pin `config/release-candidates/2.4.0.json`; eski rc.1–rc.3 etiketleri korunur.
+- Yeni yedek ayrı PostgreSQL'e restore edildi;59 profil ve 28 tablonun tamamı
+  birebir eşleşti. Uygulama geçişi22,72 sn; PG/Redis/Caddy ve kalıcı bağlar aynı.
+  Eski yedek canlıya yazılmadı. Son dış HTTPS healthy/runtime2.4.0, protokol2,
+  2.2.1/2.3.0/2.4.0 istemci uyumu doğrulandı. Restart/sağlık son denetimi ayrıca kayıtlıdır.
+- **Wire alias tuzağı:** server_release_version=2.3.0 bilerek korunur;
+  gerçek build `runtime_release_version` alanıdır. İlk tam deneme yanlış
+  alan yüzünden geri döndü; ikinci deneme doğru alanla geçti. Runtime SQL
+  migration baytları aynı; JSON migration checksum'u zaten CRLF→LF normalize
+  eder. Bu farklar için veri/şema geçmişine dokunulmadı.
+- Son testler:2049 sunucu /52 harici skip;129 Python3.12+PG17/Redis;
+  784 istemci,13 build,103 araç PASS. Ana UI118PASS/7 koşullu skip;
+  TR/EN dar/geniş mağaza ve gizli ücretli sezon yolu3PASS; S1 gerçek teslim12,
+  son30Kasım takım takvimiyle bot UI6, gerçek iki istemcili PvP3PASS.
+  Windows WebKit FPS sınırlaması aşağıdaki kabul kaydında açıkça belirtilir;
+  yeni GitHub Actions/macOS sonucu yoktur, CI yeşil diye raporlanmaz.
+- Telefonda son rc.4 web içeriğiyle S1 TEST güncellendi. Aynı hesap/24 modül,
+  44 ses, iki2.4.0 etiketi, gizli ücretli sezon başlığı/hücreleri, geniş ücretsiz
+  yol ve soğuk açılış PASS.582 ortak AAB/telefon web dosyasında yalnız beklenen
+  yerel API runtime-config farkı var. Play'deki üretim uygulaması değiştirilmedi.
+- Teslim **deliverables/release-2.4.0-v15-20261113-rc4/GRIDSHARD-2.4.0-v15.aab**;
+  42.713.476 byte, SHA256 **dd406546b72f437ba2310a6cfa1e1f0eedcd7ebb37e96f6cbd14af965ee1b05b**.
+  Mevcut upload sertifikası ve paket denetimleri PASS; manifest/mapping/TR-EN
+  Play notları aynı klasörde. **Play Console yüklemesi/dağıtımı yapılmadı.**
+- Kullanıcının son kesin kararı: S1, günlük giriş/sezon ödülleri, haftalık ve
+  takım turnuvaları **30 Kasım03.00TR**; bitiş **28 Aralık03.00TR**. Dört hafta
+  korunur. İki canlı tarih de2026-11-30T00:00:00Z, AdMob rollout disabled,
+  test oyuncu listesi boş, ödeme/reklam test modları kapalı. Sezon şimdi aktif değil.
+- **Sonraki iş:** kullanıcı AAB'yi Play'e yüklerken App access açıklamasını
+  docs/PLAY_REVIEW_ACCESS.md'deki Settings > Account and Privacy yoluna günceller.
+  S1 profili/kozmetik tahsisleri taslak; 30 Kasım'dan önce yayın kabulü ve
+  dönem kataloğu ayrı tamamlanır. Bu gece otomatik olarak published/Android
+  kabul kutuları işaretlenmedi. Genel sürüm takvimi/S2–S6 değişmedi.
+- Operasyon: `/opt/gridshard/operations/release-240-20261113-d465dffda1cb-r2`;
+  yedek `/var/backups/gridshard-production/20261113-before-240-d465dffda1cb-r2`.
+  Operatör teşhis/secret/veri kayıtları yalnız sunucuda; Git'e alınmadı.
+  Ayrıntı: [yerel yayın kabulü](docs/planning/release-240-local-acceptance-20261113.md).
+
+---
+
+# Önceki son yayın kararı — 13 Kasım 2026, rc.4 hazırlığı
 
 - Kullanıcı aynı gün geçişin hemen yapılmasını onayladı. En son açık takvim:
   **S1 + günlük giriş/sezon ödülleri + haftalık ve takım turnuvaları
@@ -16,9 +60,9 @@
   Sezon profili hâlâ taslaktır; yayın kabulü/sezon açılışı tamamlandı sayılmaz.
 - rc.3 / 86ad7bf5 önceki ara adaydır; son istekleri içermez. Eski etiketler
   korunur; son paketler yeni rc.4 kaynağından üretilecek. Eski AAB teslim edilmez.
-- Yerel Chromium/Android kare bütçesi PASS (p95 7,5ms). Windows WebKit
+- Yerel Chromium/Android kare bütçesi PASS (p95 7,5 ms). Windows WebKit
   bütçesi FAIL; değiştirilmemiş ve macOS CI'si yeşil rc.2 de aynı Windows'ta
-  FAIL (yaklaşık13fps/p95 93,5ms; yeni aday12,3fps/p95 97,5ms). Bu Windows
+  FAIL (yaklaşık13fps/p95 93,5ms; yeni aday 12,3 fps / p95 97,5ms). Bu Windows
   ölçümü macOS veya gerçek iPhone kabulü olarak gösterilmez; eşik gevşetilmedi.
   Üç tarayıcıdaki tüm işlevsel kontroller PASS; Android fiziksel kabul aşağıda.
 - Canlı son kontrol: sağlıklı 2.3.0,59 profil, sıfır maç/WebSocket. Önceki

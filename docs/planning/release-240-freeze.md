@@ -1,5 +1,12 @@
 # 2.4.0 — sabit kaynak ve yayın hazırlığı
 
+13 Kasım son durum: canlı kaynak **v2.4.0-rc.4 / d465dffda1cb5c13d0faf2eca4e33924c83729a4**.
+Sunucu geçişi tamamlandı; aynı kaynaktan imzalı2.4.0/code15 AAB denetlendi.
+Play yüklemesi yapılmadı. Son pin main ve codex/release-2.4.0-rc4 dalındadır;
+komutlar yine sabit tag/SHA'dan çalışır. Yeni makinede bu dal ve v2.4.0-rc.4
+etiketi alınır. Aşağıdaki rc.1/rc.2 kayıtları tarihçedir, yeni teslim seçilmez.
+[Yerel kabul ve platform sınırları](release-240-local-acceptance-20261113.md).
+
 11 Kasım 2026 kullanıcı kararı: yeni içerik çalışmaları sürerken 2.4.0 AAB ve sunucu kaynağı sabit tutulur. Bu hazırlık AAB üretimi, Play yüklemesi, canlı geçiş veya sezon açılışı değildir.
 
 Önceki `v2.4.0-rc.1` etiketi korunur. Güncel aday `rc.2`, yalnız sürüm notları tarayıcı testini düzeltir; oyun kodu aynı kalır.
