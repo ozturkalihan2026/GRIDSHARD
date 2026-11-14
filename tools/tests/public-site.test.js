@@ -32,7 +32,7 @@ test("fallback preview binds loopback and serves only allowlisted static files",
   }
 });
 
-test("public Terms preserve all 14 approved clauses in both languages, not operator notes", () => {
+test("public Terms preserve earlier clauses and refund protections alongside the scoped free-play revision", () => {
   const draft = fs.readFileSync(path.join(root, "docs/TERMS_OF_SERVICE_DRAFT_20261009.md"), "utf8").replace(/\r\n/g, "\n");
   const files = outputPlan(root, "pub-4974825529326987");
   const markers = ["## Türkçe metin — yayın öncesi taslak", "## English text — pre-publication draft", "## Hazırlama dayanakları"];
@@ -44,8 +44,10 @@ test("public Terms preserve all 14 approved clauses in both languages, not opera
     assert.equal(sections.length, 14);
     headings.forEach((heading, sectionIndex) => {
       const paragraphs = body.slice(heading.index + heading[0].length, headings[sectionIndex + 1]?.index ?? body.length).trim().split(/\n\s*\n/).map((paragraph) => paragraph.replace(/\[([^\]]+)\]\((?:https:\/\/|mailto:)[^\s)]+\)/g, "$1").replace(/\s+/g, " ").trim());
-      assert.equal(sections[sectionIndex].title, `${heading[1]}. ${heading[2]}`);
-      assert.deepEqual(sections[sectionIndex].paragraphs, paragraphs);
+      if (![7, 9].includes(sectionIndex)) {
+        assert.equal(sections[sectionIndex].title, `${heading[1]}. ${heading[2]}`);
+        assert.deepEqual(sectionIndex === 8 ? sections[sectionIndex].paragraphs.slice(1) : sections[sectionIndex].paragraphs, paragraphs);
+      }
     });
     const html = renderPage(language, "terms");
     const route = pagePath(language, "terms");
@@ -61,23 +63,19 @@ test("public Terms preserve all 14 approved clauses in both languages, not opera
   assert.match(files.get("_redirects").toString(), /^\/en\/terms \/en\/terms\/ 301$/m);
 });
 
-test("Terms accurately disclose pre-release purchase availability and preserve agreed refund safeguards", () => {
+test("Terms disclose the 2.4.0 free-play model and preserve earlier refund safeguards", () => {
   const tr = renderPage("tr", "terms");
   const en = renderPage("en", "terms");
-  assert.match(tr, /GRIDSHARD genel kullanıma henüz açılmamıştır/);
-  assert.match(en, /GRIDSHARD has not yet launched publicly/);
-  assert.match(tr, /sürüme, test kanalına ve ülkeye göre değişebilir/);
-  assert.match(en, /vary by version, test track and country/);
-  assert.match(tr, /test kanalına katılmak tek başına alımları ücretsiz yapmaz/);
-  assert.match(en, /joining a test track alone does not make purchases free/);
-  assert.match(tr, /ödeme alınmayacağı/);
-  assert.match(en, /you will not be charged/);
-  assert.doesNotMatch(tr, /Ücretli satın almalar şu anda etkin değildir/);
-  assert.doesNotMatch(en, /Paid purchases are not currently enabled/);
+  assert.match(tr, /2\.4\.0 sürümünde gerçek parayla satın alma ve reklam gösterimi sunulmaz/);
+  assert.match(en, /Version 2\.4\.0 does not offer real-money purchases or display ads/);
+  assert.match(tr, /2\.4\.0 güncellemesi incelemededir/);
+  assert.match(en, /2\.4\.0 update is under review/);
+  assert.doesNotMatch(tr, /GRIDSHARD genel kullanıma henüz açılmamıştır/);
+  assert.doesNotMatch(en, /GRIDSHARD has not yet launched publicly/);
   for (const language of ["tr", "en"]) {
-    assert.equal(content[language].terms.updated, "2026-10-11");
-    assert.match(renderPage(language, "terms"), /<time datetime="2026-10-11">/);
-    assert.ok(renderPage(language, "privacy").includes(`<time datetime="${site.updated}">`), "Unchanged policies keep their previous update date.");
+    assert.equal(content[language].terms.updated, "2026-11-14");
+    assert.match(renderPage(language, "terms"), /<time datetime="2026-11-14">/);
+    assert.ok(renderPage(language, "privacy").includes(`<time datetime="${site.updated}">`));
   }
   assert.match(tr, /yeni satın alma yapmak zorunda değilsin/);
   assert.match(en, /another purchase is not required/);
@@ -92,8 +90,8 @@ test("Terms accurately disclose pre-release purchase availability and preserve a
   assert.match(tr, /otomatik yenilenmezler/i);
   assert.match(en, /do not renew automatically/);
   for (const html of [tr, en]) assert.doesNotMatch(html, /99[,.]99|199[,.]99/);
-  assert.match(renderPage("tr", "privacy"), /ücretli satın almaların etkin olduğu anlamına gelmez/);
-  assert.match(renderPage("en", "privacy"), /does not mean that paid purchases are enabled/);
+  assert.match(renderPage("tr", "privacy"), /AdMob başlatılmaz/);
+  assert.match(renderPage("en", "privacy"), /AdMob is not initialised/);
 });
 
 test("prospective Season Pass policy has the approved UTC/TR cutover and protects earlier purchases", () => {
@@ -136,7 +134,7 @@ test("both languages have every public route and a matching language switch", ()
 
 test("the static site has no game code, credentials, login form or tracking script", () => {
   const files = outputPlan(root, "pub-4974825529326987");
-  assert.equal(files.size, 21);
+  assert.equal(files.size, PAGES.length * 2 + ASSETS.length + 7);
   for (const [file, bytes] of files) {
     assert.doesNotMatch(file, /(?:^|\/)(?:\.env|server|src|node_modules|data|README|content\.js)(?:\/|$)/);
     if (file.endsWith(".html")) {
@@ -208,11 +206,31 @@ test("store download uses the supplied app identity and current approved logo", 
   }
 });
 
+test("the current landing page previews actual screens without promising a fully unlocked roster or a live season", () => {
+  const files = outputPlan(root, "");
+  assert.match(renderPage("tr", "home"), /ilk 6 modülle başlar/);
+  assert.match(renderPage("tr", "home"), /diğer 18/);
+  assert.match(renderPage("en", "home"), /first 6 modules/);
+  assert.match(renderPage("en", "home"), /other 18/);
+  assert.match(renderPage("tr", "home"), /planlanan başlangıcı 30 Kasım 2026/);
+  assert.match(renderPage("en", "home"), /scheduled to start on 30 November 2026/);
+  for (const language of ["tr", "en"]) {
+    const html = renderPage(language, "home");
+    assert.equal(content[language].home.gallery.items.length, 4);
+    for (const item of content[language].home.gallery.items) {
+      const asset = `assets/screenshots/${language}/${item.id}.webp`;
+      assert.ok(files.has(asset));
+      assert.ok(html.includes(`src="/${asset}"`));
+      assert.equal(files.get(asset).subarray(8, 12).toString(), "WEBP");
+    }
+  }
+});
+
 test("existing privacy policy disclosures are retained", () => {
   assert.match(renderPage("tr", "privacy"), /en fazla 30 gün/);
   assert.match(renderPage("tr", "privacy"), /varsayılan olarak kapalıdır/);
-  assert.match(renderPage("tr", "privacy"), /genel yayın öncesinde ayrıca doğrulanacaktır/);
-  assert.match(renderPage("en", "privacy"), /checked separately before public launch/);
+  assert.match(renderPage("tr", "privacy"), /Önceki işlemlerle ilgili/);
+  assert.match(renderPage("en", "privacy"), /Earlier transaction records/);
 });
 
 test("both privacy translations name the deployed AWS provider, not the former planned Oracle server", () => {
@@ -222,19 +240,19 @@ test("both privacy translations name the deployed AWS provider, not the former p
     assert.match(html, /https:\/\/aws\.amazon\.com\/privacy\//);
     assert.doesNotMatch(html, /Oracle|oracle\.com/);
   }
-  assert.match(renderPage("tr", "privacy"), /genel yayın öncesinde/);
-  assert.match(renderPage("en", "privacy"), /before public launch/);
+  assert.doesNotMatch(renderPage("tr", "privacy"), /oyun henüz genel yayına açılmamıştır/);
+  assert.doesNotMatch(renderPage("en", "privacy"), /game has not launched publicly/);
 });
 
-test("both privacy translations identify the user-confirmed publisher without claiming completed public launch", () => {
+test("both privacy translations identify the publisher and distinguish store review from availability", () => {
   assert.equal(site.publisher, "Alihan ÖZTÜRK");
   for (const language of ["tr", "en"]) {
     const html = renderPage(language, "privacy");
     assert.ok(html.includes(site.publisher));
     assert.match(html, /mailto:gridshardgame@gmail\.com/);
   }
-  assert.match(renderPage("tr", "privacy"), /mağaza onayı veya tamamlanmış genel yayın hazırlığı iddiası değildir/);
-  assert.match(renderPage("en", "privacy"), /does not claim store approval or completed public-release preparation/);
+  assert.match(renderPage("tr", "privacy"), /güncellemelerin mağaza incelemesi ve dağıtım durumu değişebilir/);
+  assert.match(renderPage("en", "privacy"), /store review and rollout status may vary between updates/);
 });
 
 test("both verified scoped retention jobs disclose their safety limits and untested live expiry", () => {
@@ -271,7 +289,7 @@ test("both verified scoped retention jobs disclose their safety limits and untes
 });
 
 test("both privacy translations describe the limits the game enforces for all players, without claiming legal compliance", () => {
-  assert.equal(site.updated, "2026-10-09");
+  assert.equal(site.updated, "2026-11-14");
   const tr = renderPage("tr", "privacy");
   const en = renderPage("en", "privacy");
   // Preset-only chat and the public name filter.
@@ -289,14 +307,14 @@ test("both privacy translations describe the limits the game enforces for all pl
   assert.match(tr, /Oyun yeni e-posta adresi veya telefon numarası almaz/);
   assert.match(en, /only the account identifier supplied by the provider is stored/);
   assert.match(en, /does not take new email addresses or phone numbers/);
-  // Embedded typefaces and child-directed ad requests.
+  // Embedded typefaces and the current disabled advertising flow.
   assert.match(tr, /üçüncü taraf bir yazı tipi hizmetine istek göndermez/);
   assert.match(en, /does not contact a third-party font service at startup/);
-  assert.match(tr, /çocuklara yönelik, genel izleyiciye uygun ve kişiselleştirilmemiş/);
-  assert.match(en, /child-directed, suitable for general audiences and non-personalised/);
+  assert.match(tr, /2\.4\.0 sürümünde reklam gösterimi ve ödüllü reklam başlatma akışı kapalıdır/);
+  assert.match(en, /Ad display and rewarded-ad launch flows are disabled in version 2\.4\.0/);
   // Age is asked in one place only: before optional analytics can be turned on.
   assert.match(tr, /Oyun oynamak için yaş sorulmaz/);
-  assert.match(en, /You are not asked for your age to play/);
+  assert.match(en, /No age is requested to play/);
   assert.match(tr, /önce doğum yılın sorulur; yıl saklanmaz/);
   assert.match(en, /first asked for your year of birth; the year is not stored/);
   assert.match(tr, /18 yaşından küçükler için analitik açılmaz/);

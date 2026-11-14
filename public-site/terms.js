@@ -1,15 +1,15 @@
 "use strict";
 
-// User-approved TR/EN clauses from docs/TERMS_OF_SERVICE_DRAFT_20261009.md.
-// Operator-only review notes are deliberately excluded from the public pages.
+// Public TR/EN terms, updated for the user-requested 2.4.0 free-play model.
+// Earlier refund clauses remain unchanged and apply to earlier transactions.
 module.exports = {
   "tr": {
     "title": "GRIDSHARD Kullanım Şartları",
-    "description": "GRIDSHARD kullanım, hesap, adil oyun, isteğe bağlı satın alma ve iade kuralları.",
+    "description": "GRIDSHARD ücretsiz oyun, hesap, adil oyun, geçmiş işlemler ve veri hakları.",
     "eyebrow": "OYUN VE HESAP KURALLARI",
     "headline": "Kullanım şartları",
-    "updated": "2026-10-11",
-    "intro": "Bu sayfa GRIDSHARD kullanım ve destek kurallarını açıklar. GRIDSHARD genel kullanıma henüz açılmamıştır. Satın alma seçeneklerinin bulunabilirliği sürüme, test kanalına ve ülkeye göre değişebilir; tüm ürünlerin satışta olduğu varsayılmamalıdır. Bir ödeme yalnız Google Play onay ekranında açıkça test siparişi olduğu ve ödeme alınmayacağı belirtiliyorsa ücretsiz testtir; test kanalına katılmak tek başına alımları ücretsiz yapmaz. Satın alma ve iade maddeleri ilgili seçenek etkin olduğunda uygulanır; bu sayfanın yayımlanması uygulama içi şartlar onayı alındığını veya teknik hazırlığın tamamlandığını göstermez.",
+    "updated": "2026-11-14",
+    "intro": "Bu sayfa GRIDSHARD oyun, hesap ve destek kurallarını açıklar. Oyun Google Play’de sunulmaktadır; 2.4.0 güncellemesi incelemededir. 2.4.0 sürümünde gerçek parayla satın alma ve reklam gösterimi sunulmaz. Geçmiş işlemlerle ilgili aşağıdaki açıklamalar mevcut destek, iade ve tüketici haklarını korur; yeni bir satış teklifi değildir.",
     "sections": [
       {
         "title": "1. Kapsam ve iletişim",
@@ -66,16 +66,17 @@ module.exports = {
         ]
       },
       {
-        "title": "8. İsteğe bağlı satın almalar ve sezon ürünleri",
+        "title": "8. Ücretsiz oyun ve sezonlar",
         "paragraphs": [
-          "Satış etkin olduğunda satın alma isteğe bağlıdır ve ilgili mağazanın ödeme akışı üzerinden yapılır. İşlemden önce mağazanın onay ekranındaki nihai fiyatı, para birimini, vergileri ve ürünün içeriğini kontrol et. Ürünlerin ülkeler, sürümler ve zamanlar arasında bulunabilirliği değişebilir. Bu şartlar sabit bir fiyat veya tüm ürünlerin satışta olduğu taahhüdü değildir.",
-          "Ücretli Sezon Geçişi ve Savaş Premium, satın alma açıklamasında belirtilen aktif sezon için ayrı tek-seferlik haklardır. Otomatik yenilenmezler, sonraki sezonu veya ömür boyu tüm premium içerikleri kapsamazlar. Sezon süresi ve sağlanan ödüller/haklar satın alma öncesinde gösterilen ürün açıklamasından anlaşılmalıdır.",
-          "Bir satın almanın tamamlandığı mağazadan doğrulandıktan sonra ilgili hak oyun hesabına tanımlanır. Bekleyen işlem tamamlanmış teslimat sayılmaz. Aynı doğrulanmış işlem için ödül tekrar verilmez. Ürün hesabında görünmüyorsa tekrar tekrar ödeme yapmak yerine destek adresine oyuncu kimliği, ürün ve mağaza sipariş numarasıyla başvur; özel ödeme bilgilerini gönderme."
+          "2.4.0 sürümünde gerçek para ödemesiyle satılan para birimi paketi, Ücretli Sezon Geçişi veya Savaş Premium sunulmaz. Oyun içi kaynaklar ve öğeler oyunun tanımladığı ilerleme, ödül ve oyun içi kullanım yollarına tabidir. Bir oyun içi para birimi simgesi gerçek para fiyatı değildir.",
+          "Sezonlar ve turnuvalar oyun içindeki takvime göre başlar. Günlük giriş ve sezon ödülleri sezon açılmadan alınamaz. Başlangıç ve bitiş tarihleri ile ödüller ilgili oyun ekranlarında gösterilir.",
+          "Geçmiş sürümlerde sunulan Ücretli Sezon Geçişi ve Savaş Premium ayrı tek-seferlik haklardır; otomatik yenilenmezler ve ömür boyu tüm içerikleri kapsamazlar. Önceki doğrulanmış işlemler ve ilgili iade kuralları korunur. Eski bir teslimat sorunu için oyuncu kimliği, ürün ve mağaza sipariş numarasıyla desteğe başvur; özel ödeme bilgilerini gönderme."
         ]
       },
       {
         "title": "9. İade, cayma ve satın alma düzeltmeleri",
         "paragraphs": [
+          "Bu madde geçmişte gerçekleşmiş işlemler ve bunlarla ilgili talepler için korunur. 2.4.0’da yeni gerçek para satın alma akışı sunulmaz.",
           "İade taleplerinde ilgili mağazanın güncel kuralları ve bulunduğun yerdeki emredici tüketici hakları geçerlidir. Google Play işlemleri için Google Play iade bilgilerini inceleyebilir veya bize başvurabilirsin. Dijital içerik/hizmetlerde cayma kuralları işlem ve yürürlükteki hukuka göre değişebilir. Bu şartlar bütün satın almaları iade dışı bırakmaz, cayma hakkından genel feragat oluşturmaz ve ayıplı ya da teslim edilmemiş içerikle ilgili haklarını kaldırmaz.",
           "Oyun içi para birimi paketinde mağazanın doğruladığı iade veya ödeme iptalinde yalnız o işlemle verilen miktar ilgili para biriminden geri alınır. Para birimi harcanmışsa bakiye eksiye düşebilir. Açığı aynı para birimini oyun içinde kazanarak kapatabilirsin; yeni satın alma yapmak zorunda değilsin. Yeterli bakiye oluşana kadar o para birimiyle harcama yapılamaz. Bu düzeltme gerçek para borcu veya ek tahsilat oluşturmaz; diğer para birimine kesinti yapılmaz.",
           "11 Ekim 2026 saat 08:20 Türkiye saati (11 Ekim 2026 saat 05:20 UTC) tarihinden itibaren, satın alma öncesinde uygulamada season-rewards-v1 iade koşuluyla sunulan Ücretli Sezon Geçişi alımlarında yalnız bu geçişten kazanılan premium oyun kaynakları ve premium sandıklardan gerçekten çıkan kaynaklar iade ile geri alınır. Harcanmış kaynak, aynı Akı, Devre Kredisi veya aynı parça türünde oynayarak kapatılabilen açık oluşturabilir. Mağazada kaynak türü ve açık gösterilir. Yeterli miktar oluşana kadar açık olan kaynak harcanamaz; başka kaynaklarla yapılabilen işlemler ve normal ücretsiz maçlar engellenmez. Ücretsiz ödül hattı, XP, kupalar, maç sonuçları, kozmetikler ve tamamlanmış kart/çekirdek geliştirmeleri geri çevrilmez. Enderlik değişmez. Aynı sezon geçişini yeniden almak veya iadenin geri çevrilmesi, yalnız daha önce geri alınmış miktarları geri yükler; alınmış kademeler veya sandık içerikleri ikinci kez üretilmez.",
@@ -90,9 +91,9 @@ module.exports = {
         ]
       },
       {
-        "title": "10. İsteğe bağlı ödüllü reklamlar",
+        "title": "10. Reklam durumu",
         "paragraphs": [
-          "Ödüllü reklam sunulan yerlerde izlemek isteğe bağlıdır. Gösterilen ek ödül, reklamın ilgili tamamlanma ve doğrulama koşullarına bağlıdır; yarıda kapatma, reklam bulunmaması veya bağlantı/doğrulama sorunu ödül verilmemesine neden olabilir. Reklam izleme, reklam kişiselleştirme ve diğer gizlilik tercihleri aynı onay değildir. Reklam sağlayıcısının veri işleme açıklamaları ve uygulama içindeki ayrı gizlilik seçenekleri geçerlidir."
+          "2.4.0 sürümünde reklam gösterimi veya ödüllü reklam izleme akışı sunulmaz. Reklam izlemeden elde edilen normal oyun ödülleri kendi oyun koşullarına tabidir. Geçmiş bir reklam ödülüyle ilgili destek talebi için oyuncu kimliği, maç ve zamanı belirtebilirsin. İleride bu model değişirse ilgili açıklamalar ve gerekli izin akışları ayrıca güncellenir."
         ]
       },
       {
@@ -137,11 +138,11 @@ module.exports = {
   },
   "en": {
     "title": "GRIDSHARD Terms of Service",
-    "description": "GRIDSHARD account, fair play, optional purchase and refund rules.",
+    "description": "GRIDSHARD free play, accounts, fair play, earlier transactions and data rights.",
     "eyebrow": "GAME AND ACCOUNT RULES",
     "headline": "Terms of Service",
-    "updated": "2026-10-11",
-    "intro": "This page explains GRIDSHARD use and support rules. GRIDSHARD has not yet launched publicly. Purchase option availability may vary by version, test track and country; do not assume that all products are on sale. A payment is a free test only when the Google Play confirmation screen explicitly identifies it as a test order and states that you will not be charged; joining a test track alone does not make purchases free. Purchase and refund clauses apply when the relevant option is enabled; publishing this page does not mean that in-app terms acceptance has been obtained or technical preparation is complete.",
+    "updated": "2026-11-14",
+    "intro": "These terms explain GRIDSHARD game, account and support rules. The game is available on Google Play; the 2.4.0 update is under review. Version 2.4.0 does not offer real-money purchases or display ads. The provisions below concerning earlier transactions preserve existing support, refund and consumer rights; they are not an offer of new paid products.",
     "sections": [
       {
         "title": "1. Scope and contact",
@@ -198,16 +199,17 @@ module.exports = {
         ]
       },
       {
-        "title": "8. Optional purchases and seasonal products",
+        "title": "8. Free play and seasons",
         "paragraphs": [
-          "When sales are enabled, purchases are optional and use the relevant store's payment flow. Check the final price, currency, taxes and product contents on the store's confirmation screen before completing a transaction. Availability can vary by country, version and time. These terms do not promise a fixed price or that every product is currently on sale.",
-          "Paid Season Pass and Battle Premium are separate one-time entitlements for the active season identified in the purchase description. They do not renew automatically, cover the next season, or provide lifetime access to all premium content. The season duration and included rewards or entitlements must be clear from the product description displayed before purchase.",
-          "The corresponding entitlement is applied to your game account after the store confirms a completed purchase. A pending transaction is not completed delivery. The same verified transaction does not grant rewards repeatedly. If a product does not appear on your account, contact support with your player ID, product and store order number instead of paying repeatedly. Do not send private payment details."
+          "Version 2.4.0 does not offer real-money currency packs, a paid Season Pass or Battle Premium. In-game resources and items follow the game’s progression, reward and usage rules. An in-game currency symbol is not a real-money price.",
+          "Seasons and tournaments start according to the in-game calendar. Daily login and season rewards cannot be claimed before the season opens. Relevant game screens show the dates and rewards.",
+          "Season Pass and Battle Premium products offered by earlier versions were separate one-time entitlements. They do not renew automatically and do not provide lifetime access to all content. Earlier verified transactions and applicable refund rules remain protected. For an earlier delivery issue, contact support with the player ID, product and store order number; do not send private payment details."
         ]
       },
       {
         "title": "9. Refunds, withdrawal and purchase adjustments",
         "paragraphs": [
+          "This clause is retained for earlier transactions and related requests. Version 2.4.0 does not offer a new real-money purchase flow.",
           "Refund requests are subject to the relevant store's current rules and mandatory consumer rights in your jurisdiction. For Google Play transactions, consult Google Play's refund information or contact us. Withdrawal rules for digital content and services depend on the transaction and applicable law. These terms do not make every purchase non-refundable, create a blanket waiver of withdrawal rights, or remove rights concerning defective or undelivered content.",
           "For an in-game currency pack, when the store confirms a refund or payment reversal, only the amount granted by that transaction is reclaimed from the corresponding currency. If spent, the balance may become negative. You can clear the shortfall by earning the same currency through gameplay; another purchase is not required. That currency cannot be spent until sufficient balance is available. This adjustment creates no cash debt or additional charge; no deduction is made from another currency.",
           "From 11 October 2026 at 05:20 UTC (11 October 2026 at 08:20 Türkiye time, UTC+03:00), Season Pass purchases offered in the app with the season-rewards-v1 refund condition before checkout reclaim only the premium in-game resources gained from that pass and the actual resources obtained from its premium chests. Spent amounts may become deficits in the same Flux, Circuit Credits or piece type, clearable by playing. Resource types and deficits are shown in the Store. A resource with a deficit cannot be spent until sufficient quantities are available; operations using other sufficient resources and normal free matches remain available. Free-track rewards, XP, trophies, match results, cosmetics and completed card/core upgrades are not reversed. Rarity is unchanged. Repurchasing the same season's pass or reversing a refund restores only previously reclaimed quantities; claimed tiers and chest contents are not generated again.",
@@ -222,9 +224,9 @@ module.exports = {
         ]
       },
       {
-        "title": "10. Optional rewarded advertising",
+        "title": "10. Advertising status",
         "paragraphs": [
-          "Where rewarded ads are offered, watching is optional. The displayed bonus depends on the relevant completion and verification conditions. Closing an ad early, lack of an available ad, or connection or verification issues may mean that no bonus is granted. Watching an ad, ad personalisation and other privacy choices are not the same consent. The ad provider's data-processing notices and the app's separate privacy choices apply."
+          "Version 2.4.0 does not display ads or offer a rewarded-ad viewing flow. Normal game rewards earned without ads remain subject to their in-game conditions. For a support request about an earlier ad reward, provide the player ID, match and time. Any future change to this model requires updated disclosures and any necessary consent flows."
         ]
       },
       {

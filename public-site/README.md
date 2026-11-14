@@ -1,5 +1,37 @@
 # GRIDSHARD public site — Cloudflare Pages
 
+## 14 November 2026 — 2.4.0 website package, user-managed upload
+
+The user uploaded the updated bilingual site. Anonymous custom-domain HTTPS
+verification passed on14 November2026:11 page/app-ads and15 asset checks
+match the delivery manifest byte-for-byte; strict CSP and plain mailto remain.
+The user will upload the ZIP using Edge to the existing `gridshard-public`
+Pages project's Production environment. Do not create a new Pages project,
+change DNS or publish automatically in this task.
+
+- Homepage: real 2.4.0 screenshots, the first six modules and 18 progression
+  unlocks, seven cores and the planned 30 November 03:00 Türkiye season opening.
+- The homepage explicitly identifies 2.4.0 as under Google Play review; it
+  does not claim that the update is already available to everyone.
+- TR/EN support, privacy, account deletion and Terms describe 2.4.0's disabled
+  real-money purchase and advertising flows. Earlier transaction/refund rights,
+  existing data processing, retention limits and parental controls remain.
+- The 14 Terms clauses are retained; the earlier refund clause remains intact
+  behind an explicit earlier-transactions notice. No blanket privacy exemption,
+  merchant-status decision or deletion of verified identity information is made.
+- Existing logo/favicon, domain, support email, app-ads.txt and strict static
+  CSP are preserved. Eight optimised WebP screenshots use the existing game's
+  art direction; no tracking script or game API is embedded in the site.
+
+Delivery: `deliverables/GRIDSHARD_WEB_2.4.0_2026-11-14.zip`, 29 allowlisted files
+at the ZIP root. Upload instructions and manifests live outside the ZIP in
+the matching deliverables directory. Local validation: 18 content/security
+tests and 30 TR/EN route/layout checks across 1280px, 393px and 320px. The ZIP's
+29 entries match the final build manifest byte-for-byte. Custom-domain verification has passed after the user's successful upload.
+
+Earlier records below are history. The new site files do not alter the pinned
+game release, the live API, the AAB or Play Console declarations.
+
 ## 1 November 2026 — Current V8 copy prepared locally
 
 TR/EN game introduction now explains Attack/Defense/Tactics and the approved

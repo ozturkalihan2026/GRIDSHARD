@@ -11,6 +11,10 @@ const ASSETS = [
   ["client/assets/branding/gridshard-favicon-32.png", "assets/gridshard-favicon-32.png"],
   ["client/assets/branding/gridshard-favicon-192.png", "assets/gridshard-favicon-192.png"],
   ["client/favicon.ico", "favicon.ico"],
+  ...["tr", "en"].flatMap(language => ["battle", "core", "modules", "shop"].map(name => [
+    `public-site/assets/screenshots/${language}/${name}.webp`,
+    `assets/screenshots/${language}/${name}.webp`,
+  ])),
 ];
 const escape = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const digest = (value) => crypto.createHash("sha256").update(value).digest("hex");
@@ -29,6 +33,14 @@ function deletionMail(language) {
   return `mailto:${site.email}?subject=${encodeURIComponent(content[language].deletionSubject)}&body=${encodeURIComponent(content[language].deletionBody)}`;
 }
 
+function homeHtml(copy, dictionary, language, download) {
+  const gallery = copy.gallery;
+  return `<section class="hero"><div><p class="eyebrow">${escape(copy.eyebrow)}</p><h1>${escape(copy.headline).replace("\n", "<br>")}</h1><p class="intro">${escape(copy.intro)}</p><p class="status">${escape(copy.status)}</p><p class="status-note">${escape(copy.statusNote)}</p><div class="hero-actions">${download}<a class="button secondary" href="${pagePath(language, "support")}">${escape(dictionary.nav.support)}</a></div></div><div class="hero-art hero-phone"><img src="/assets/screenshots/${language}/battle.webp" width="360" height="640" alt="${escape(gallery.items[0].alt)}" fetchpriority="high"></div></section>
+  <section class="features">${copy.features.map(feature => `<article class="card"><h2>${escape(feature.title)}</h2><p>${escape(feature.text)}</p></article>`).join("")}</section>
+  <section class="season-preview"><p class="eyebrow">${escape(copy.release.eyebrow)}</p><h2>${escape(copy.release.title)}</h2><p>${escape(copy.release.text)}</p><p class="model-note">${escape(copy.release.note)}</p></section>
+  <section class="game-gallery"><h2>${escape(gallery.title)}</h2><p>${escape(gallery.intro)}</p><div class="gallery-grid">${gallery.items.map(item => `<figure><a href="/assets/screenshots/${language}/${escape(item.id)}.webp"><img src="/assets/screenshots/${language}/${escape(item.id)}.webp" width="360" height="640" loading="lazy" alt="${escape(item.alt)}"></a><figcaption>${escape(item.title)}</figcaption></figure>`).join("")}</div></section>`;
+}
+
 function renderPage(language, page) {
   const dictionary = content[language];
   const copy = dictionary[page];
@@ -37,7 +49,7 @@ function renderPage(language, page) {
   const contact = `<aside class="contact"><p>${escape(dictionary.contact)}</p><a href="mailto:${site.email}">${site.email}</a></aside>`;
   const download = `<a class="button play-download" href="${escape(site.playStoreUrl)}" rel="noreferrer"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="currentColor" d="M6 3.5v17L21 12Z"/></svg>${escape(dictionary.home.downloadAction)}</a>`;
   const main = page === "home"
-    ? `<section class="hero"><div><p class="eyebrow">${escape(copy.eyebrow)}</p><h1>${escape(copy.headline).replace("\n", "<br>")}</h1><p class="intro">${escape(copy.intro)}</p><p class="status">${escape(copy.status)}</p><p class="status-note">${escape(copy.statusNote)}</p><div class="hero-actions">${download}<a class="button secondary" href="${pagePath(language, "support")}">${escape(dictionary.nav.support)}</a></div></div><div class="hero-art" aria-hidden="true"><img src="/assets/gridshard-logo.png" width="340" height="340" alt="" fetchpriority="high"></div></section><section class="features">${copy.features.map((feature) => `<article class="card"><h2>${escape(feature.title)}</h2><p>${escape(feature.text)}</p></article>`).join("")}</section>`
+    ? homeHtml(copy, dictionary, language, download)
     : `<article class="document"><p class="eyebrow">${escape(copy.eyebrow)}</p><h1>${escape(copy.headline)}</h1><p class="intro">${escape(copy.intro)}</p><p class="updated">${escape(dictionary.updated)}: <time datetime="${updated}">${new Intl.DateTimeFormat(dictionary.locale, { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${updated}T00:00:00Z`))}</time></p>${contact}${copy.sections.map((section) => sectionHtml(section, language, dictionary)).join("")}</article>`;
   return `<!doctype html>
 <html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark"><meta name="theme-color" content="#07142b"><title>${escape(copy.title)}</title><meta name="description" content="${escape(copy.description)}"><meta property="og:image" content="${site.origin}/assets/gridshard-logo.png"><meta property="og:image:alt" content="GRIDSHARD"><meta property="og:image:width" content="512"><meta property="og:image:height" content="512"><link rel="canonical" href="${site.origin}${pagePath(language, page)}"><link rel="alternate" hreflang="tr" href="${site.origin}${pagePath("tr", page)}"><link rel="alternate" hreflang="en" href="${site.origin}${pagePath("en", page)}"><link rel="alternate" hreflang="x-default" href="${site.origin}${pagePath("tr", page)}"><link rel="icon" href="/favicon.ico"><link rel="icon" type="image/png" sizes="32x32" href="/assets/gridshard-favicon-32.png"><link rel="apple-touch-icon" sizes="192x192" href="/assets/gridshard-favicon-192.png"><link rel="stylesheet" href="/site.css"></head>

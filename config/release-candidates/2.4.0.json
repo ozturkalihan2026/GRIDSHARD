@@ -6,10 +6,13 @@
   "tag": "v2.4.0-rc.5",
   "source_commit": "825cbe27c10407a729aeb50393f4979fdba96152",
   "release_branch": "codex/release-2.4.0-rc5",
-  "published": false,
+  "published": true,
   "production_deployed": true,
   "season_activated": false,
   "ci_run_url": null,
   "verification_mode": "local-release-acceptance",
-  "verification_report": "docs/planning/release-240-rc5-acceptance-20261113.md"
+  "verification_report": "docs/planning/release-240-rc5-acceptance-20261113.md",
+  "play_review_submitted": true,
+  "play_review_submission_basis": "User confirmed 2.4.0 approved and distributed on 2026-11-14",
+  "play_rollout_confirmed_by_user": true
 }
