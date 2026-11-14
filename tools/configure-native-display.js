@@ -13,7 +13,7 @@ function androidDisplayActivity(source) {
     .replace(classes[0][0], "public class MainActivity extends GridshardActivity");
 }
 
-function configureNativeDisplay(nativeRoot, repositoryRoot) {
+function configureNativeDisplay(nativeRoot, repositoryRoot, {excludeMonetization = false} = {}) {
   const javaRoot = path.join(nativeRoot, "app/src/main/java");
   const activities = [];
   function visit(directory) {
@@ -28,7 +28,9 @@ function configureNativeDisplay(nativeRoot, repositoryRoot) {
   if (activities.length !== 1) throw new Error("Native projede tek MainActivity.java bulunmalı.");
   const before = fs.readFileSync(activities[0], "utf8");
   const after = androidDisplayActivity(before);
-  const template = fs.readFileSync(path.join(repositoryRoot, "tools/native-templates/GridshardActivity.java"));
+  const original = fs.readFileSync(path.join(repositoryRoot, "tools/native-templates/GridshardActivity.java"), "utf8");
+  const template = Buffer.from(excludeMonetization
+    ? original.replace(/^\s*registerPlugin\(GridshardAdSafety\.class\);\r?\n/m, "") : original);
   const target = path.join(javaRoot, "com/gridshard/nativeui/GridshardActivity.java");
   fs.mkdirSync(path.dirname(target), {recursive:true});
   if (!fs.existsSync(target) || !fs.readFileSync(target).equals(template)) fs.writeFileSync(target, template);

@@ -289,7 +289,7 @@
       "tests_start_on": "2026-12-17",
       "target_release_on": "2026-12-21",
       "content": "Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. En az bir yeni menü ve bir özgün savaş bestesi; merak/umut ve kontrollü rekabet.",
-      "required": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. AUDIO-03 kabulü ve ön duyuru standardı sürüm kapısındadır.",
+      "required": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. AUDIO-03 kabulü ve ön duyuru standardı sürüm kapısındadır. Reklam/ödeme SDK’ları ve BILLING izni son AAB’de bulunmaz; geçmiş haklar korunur.",
       "optional": "Ek mağaza teklifleri yalnız ana pilot tamamlanırsa değerlendirilir.",
       "excluded": "Yeni gerçek para ürünü, yeni para birimi, ücretli yeniden çekiliş ve PvP deneme gücü artışı.",
       "work_items": [
@@ -363,11 +363,13 @@
             "Bir garantili mevcut-modül parça teklifi için fiyat, miktar, limit ve UTC pencereyi ekonomi raporundan seç; teklif revision/hash ve uygunluk kurallarını katalogda sabitle.",
             "Oyun parasıyla alımda limit+cüzdan+envanter işlemini atomik bağla. OFFER_CHANGED/EXPIRED, yetersiz bakiye, tekrar/eşzamanlı alım ve yanıt kaybını test et.",
             "Mağazaya sezon tasarımlarından ayrı iki çerçeve/zemin çifti üret; shop_collection adaptörü ve sahip olunan öğenin yeniden satış engelini uygula.",
-            "TR/EN garanti, fiyat/para türü, limit, süre ve gerçek teslimi eşleştir; yeni gerçek para ürünü ve yeni para birimi ekleme."
+            "TR/EN garanti, fiyat/para türü, limit, süre ve gerçek teslimi eşleştir; yeni gerçek para ürünü ve yeni para birimi ekleme.",
+            "2.5.0 dağıtım politikasını uygula: reklam/ödeme kaynaklarını koru, SDK ve izinlerini paketten çıkar; son AAB ve cihaz kabulünü mobile-250-without-monetization.md üzerinden tamamla."
           ],
           "acceptance": [
             "Bir ana teklif + dört özgün mağaza öğesi; sezon stoğu tüketilmiyor.",
-            "Native auth/API yönlendirmesi, para/limit eşzamanlılığı ve fiyat açıklaması gerçek servisle doğrulanmış."
+            "Native auth/API yönlendirmesi, para/limit eşzamanlılığı ve fiyat açıklaması gerçek servisle doğrulanmış.",
+            "Son AAB’de reklam/ödeme SDK’sı ve BILLING yok; Play Games/giriş/bildirim/ücretsiz mağaza ve geçmiş haklar korunmuş; Console beyanları doğrulanmış."
           ],
           "kind": "required"
         },
@@ -504,7 +506,8 @@
           ],
           "output": "Regresyon; 17 Aralık cihaz kabulü, 21 Aralık yayın hedefi."
         }
-      ]
+      ],
+      "development_policy": "14 Kasım 2026 kararı: 2.4.0 kullanıcıya açıldı. Reklam/satın alma kaynakları ve eski işlem/iade hakları korunur; 2.5.0 ve sonrası paketlere AdMob/Native Purchases SDK’ları, native mağaza köprüsü ve BILLING/reklam izinleri alınmaz. Bu temizlik için ayrı 2.4.1 üretilmez. Nihai imzalı AAB denetimi, cihaz kabulü ve Console beyanları yayın kapısıdır. Takvim değişmez. Ayrıntı: docs/planning/mobile-250-without-monetization.md."
     },
     {
       "version": "2.6.0",

@@ -63,6 +63,7 @@ def bundle(tmp_path, *, option=None, resource=True, checksum=None):
         z.writestr(audit.MAPPING, '# compiler: R8\n')
         z.writestr('base/dex/classes.dex', data)
         z.writestr('base/assets/capacitor.plugins.json', '[{"classpath":"sample.Plugin"}]')
+        z.writestr('base/assets/public/index.html', '<span id="boot-version" data-version="2.4.0">Sürüm: 2.4.0</span>')
     return target
 
 
@@ -84,3 +85,39 @@ def test_removed_plugin_annotation_fails_even_with_present_class_and_constructor
         'Lsample/Plugin;': {'methods': {'<init>'}, 'annotations': set()}})
     with pytest.raises(ValueError, match='Plugin runtime annotation removed: sample.Plugin'):
         audit.audit(bundle(tmp_path))
+
+
+@pytest.mark.parametrize('version, expected', [('2.4.10', False), ('2.5.0', True), ('2.10.0', True), ('3.0.0', True)])
+def test_artifact_policy_release_boundary(version, expected):
+    assert audit.without_monetization(version) is expected
+
+
+def free_bundle(tmp_path, manifest=b'plain protobuf manifest fixture'):
+    target = tmp_path / 'free.aab'
+    with zipfile.ZipFile(target, 'w') as z:
+        z.writestr('base/manifest/AndroidManifest.xml', manifest)
+    return target
+
+
+@pytest.mark.parametrize('identifier', [b'com.android.vending.BILLING', b'com.google.android.gms.permission.AD_ID',
+                                      b'android.permission.ACCESS_ADSERVICES_TOPICS', b'com.google.android.gms.ads.APPLICATION_ID'])
+def test_free_release_rejects_manifest_permission_or_ad_startup(tmp_path, identifier):
+    with zipfile.ZipFile(free_bundle(tmp_path, b'\x0a' + identifier)) as z:
+        with pytest.raises(ValueError, match='manifest entry'):
+            audit.audit_no_monetization(z, [], {}, b'# compiler: R8\n')
+
+
+@pytest.mark.parametrize('package', audit.FORBIDDEN_PACKAGES)
+def test_free_release_rejects_even_obfuscated_sdk_classes(tmp_path, package):
+    with zipfile.ZipFile(free_bundle(tmp_path)) as z:
+        with pytest.raises(ValueError, match='SDK packaged'):
+            audit.audit_no_monetization(z, [], {}, f'{package}Example -> a.b:\r\n'.encode())
+
+
+def test_free_release_allows_required_non_monetization_services(tmp_path):
+    classes = {'Lcom/gridshard/nativeui/GridshardPlayGames;': {}, 'Lcom/google/firebase/messaging/FirebaseMessaging;': {}}
+    plugins = [{'pkg':'@capacitor/push-notifications', 'classpath':'com.capacitorjs.plugins.pushnotifications.PushNotificationsPlugin'}]
+    with zipfile.ZipFile(free_bundle(tmp_path)) as z:
+        audit.audit_no_monetization(z, plugins, classes, b'com.aparajita.capacitor.securestorage.SecureStorage -> a.b:\n')
+        with pytest.raises(ValueError, match='plugin packaged'):
+            audit.audit_no_monetization(z, [{'pkg':'@capgo/native-purchases', 'classpath':'renamed.Plugin'}], {}, b'')

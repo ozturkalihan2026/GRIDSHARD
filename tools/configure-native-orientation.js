@@ -10,6 +10,8 @@ const {configureNativePlayGames} = require("./configure-native-play-games.js");
 const {configureNativeBilling} = require("./configure-native-billing.js");
 const {clientVersion, androidVersion} = require("./client-version.js");
 const {DEMO_APP_ID, adBuildConfig, configureNativeAdSafety} = require("./configure-native-ad-safety.js");
+const {withoutMonetization} = require("./mobile-distribution-policy.js");
+const {configureNativeWithoutMonetization} = require("./configure-native-without-monetization.js");
 
 function androidPortrait(source) {
   // Only the Capacitor main activity is changed; OAuth/system activities
@@ -93,7 +95,8 @@ function iosPortrait(source) {
 
 function configure(platform) {
   const root = path.resolve(__dirname, "..");
-  const adConfig = adBuildConfig(process.env, root);
+  const excludeMonetization = withoutMonetization(clientVersion(root).versionName);
+  const adConfig = excludeMonetization ? null : adBuildConfig(process.env, root);
   const targets = {
     android: ["android/app/src/main/AndroidManifest.xml", androidPortrait],
     ios: ["ios/App/App/Info.plist", iosPortrait],
@@ -112,17 +115,18 @@ function configure(platform) {
   const oriented = platform === "android" ? androidNoBackup(transform(before)) : transform(before);
   const networked = platform === "android"
     ? androidLocalDebugNetwork(oriented, insecureLocalDebugForBuild(process.env)) : oriented;
-  const after = platform === "android"
+  const after = platform === "android" && !excludeMonetization
     ? androidDebugAdMob(networked, adConfig.appId) : networked;
   if (before !== after) fs.writeFileSync(filename, after, "utf8");
   configureNativeBranding(platform, root, nativeDebugTarget);
   if (platform === "android") {
-    configureNativeBilling(root);
+    if (!excludeMonetization) configureNativeBilling(root);
     const nativeRoot = path.resolve(filename, "../../../..");
-    configureNativeDisplay(nativeRoot, root);
+    configureNativeDisplay(nativeRoot, root, {excludeMonetization});
     configureNativeOAuth(nativeRoot, nativeDebugTarget);
     configureNativePlayGames(nativeRoot, root);
-    configureNativeAdSafety(nativeRoot, root, adConfig);
+    if (excludeMonetization) configureNativeWithoutMonetization(nativeRoot);
+    else configureNativeAdSafety(nativeRoot, root, adConfig);
     if (nativeDebugTarget) {
       const gradle = path.join(nativeRoot, "app/build.gradle");
       const beforeGradle = fs.readFileSync(gradle, "utf8");

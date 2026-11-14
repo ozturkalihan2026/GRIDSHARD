@@ -73,6 +73,25 @@ function fixture(t, { audio = false } = {}) {
   return { root, write };
 }
 
+test("2.5 bundle omits the native monetization bridge while keeping source intact", async t => {
+  const {root, write} = fixture(t);
+  fs.writeFileSync(path.join(root, "package.json"), JSON.stringify({version:"2.5.0", gridshard:{androidVersionCode:16}}));
+  const html = fs.readFileSync(path.join(root, "client/index.html"), "utf8")
+    .replaceAll("2.4.0", "2.5.0")
+    .replace('<script src="./src/last.js">', '<script src="./src/native-store.js"></script>\n<script src="./src/last.js">');
+  write("index.html", html);
+  write("src/native-store.js", 'throw new Error("monetization must not ship");');
+  const {manifest, destination} = await buildClient({root, mobile:true, environment:{GRIDSHARD_API_BASE_URL:"https://play.gridshardgame.com"}});
+  assert.ok(!manifest.inputs.scripts.includes("./src/native-store.js"));
+  const js = Object.keys(manifest.immutable).find(name => name.endsWith(".js"));
+  const source = fs.readFileSync(path.join(destination, js), "utf8");
+  assert.doesNotMatch(source, /monetization must not ship/);
+  const context = vm.createContext({});
+  vm.runInContext(source, context);
+  assert.deepEqual(Array.from(context.order), ["first", "last"]);
+  assert.ok(fs.existsSync(path.join(root, "client/src/native-store.js")));
+});
+
 test("veri kaydındaki yön kareleri HTML etiketi olmadan pakete girer", async(t)=>{
   const {root,write}=fixture(t);
   const html=fs.readFileSync(path.join(root,"client/index.html"),"utf8");

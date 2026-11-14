@@ -7,6 +7,7 @@ const vm = require("node:vm");
 const esbuild = require("esbuild");
 const { apiBaseForBuild } = require("./mobile-network-policy.js");
 const { clientVersion, assertClientVersion } = require("./client-version.js");
+const { packagedScripts } = require("./mobile-distribution-policy.js");
 
 const TARGETS = ["chrome109", "safari15"];
 const digest = (bytes) => crypto.createHash("sha256").update(bytes).digest("hex");
@@ -188,6 +189,8 @@ async function buildClient({ root = path.resolve(__dirname, ".."), mobile = fals
   const release = clientVersion(root);
   assertClientVersion(html, release);
   const scripts = readBuildBlock(html, "scripts");
+  // Retain native-store.js in source control; omit the SDK bridge from 2.5+.
+  scripts.inputs = packagedScripts(scripts.inputs, release.versionName);
   const styles = readBuildBlock(html, "styles");
   const omittedWav = compressedAudioReplacements(source, scripts.inputs, environment);
   const runtimeTag = '<script src="./runtime-config.js"></script>';

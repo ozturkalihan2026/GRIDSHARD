@@ -1689,12 +1689,12 @@
     },
     {
       "id": "POLICY-01",
-      "title": "Yeni ürünler için fiyat/olasılık ve yaş kapısını denetle",
+      "title": "Ücretsiz ürün politikasını ve 2.5.0 SDK hariç tutma kabulünü tamamla",
       "stage": "R2",
       "owner": "Ürün / ödeme / QA",
       "effort": "M",
       "priority": "P0",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [
         "SHOP-01",
         "REWARD-02"
@@ -1703,14 +1703,19 @@
         "server/tests/test_chest_odds_disclosure.py",
         "server/tests/test_analytics_age_gate.py",
         "docs/CHILD_AUDIENCE_AUDIT.md",
-        "docs/STORE_PURCHASES.md"
+        "docs/STORE_PURCHASES.md",
+        "config/mobile-distribution.json",
+        "tools/mobile-distribution-policy.js",
+        "tools/audit_android_r8.py",
+        "docs/planning/mobile-250-without-monetization.md"
       ],
       "proposed_paths": [
         "docs/planning/new-products-store-review.md"
       ],
       "acceptance": [
-        "Satın alma öncesinde garanti, olasılık, uygun havuz ve yerel Billing fiyatı doğru görünür; sahte indirim etiketi yoktur.",
-        "O gün geçerli Play/varsa iOS ve hedef bölge politikası kontrol edilir; reklam/IAP/analitik rolloutları kendiliğinden açılmaz."
+        "Oyun parasıyla edinimde garanti, olasılık ve uygun havuz doğru görünür; gerçek para fiyatı, reklam ve ödeme girişleri kapalıdır. Geçmiş işlem/iade ve kazanılmış haklar korunur.",
+        "O gün geçerli Play/varsa iOS ve hedef bölge politikası kontrol edilir; reklam/IAP/analitik rolloutları kendiliğinden açılmaz.",
+        "2.5.0 ve sonrası AAB’lerde AdMob/Native Purchases SDK’ları, native mağaza köprüsü, BILLING ve reklam/AdServices izinleri bulunmaz. Kaynaklar silinmez; son imzalı AAB denetimi ve gerçek cihaz kabulü gerekir."
       ],
       "goals": [
         "shop",
@@ -3296,7 +3301,7 @@
       ],
       "scope": "Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. En az bir yeni menü ve bir özgün savaş bestesi; merak/umut ve kontrollü rekabet.",
       "keep_closed": "Yeni gerçek para ürünü, yeni para birimi, ücretli yeniden çekiliş ve PvP deneme gücü artışı.",
-      "exit": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. AUDIO-03 kabulü ve ön duyuru standardı sürüm kapısındadır.",
+      "exit": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. AUDIO-03 kabulü ve ön duyuru standardı sürüm kapısındadır. Reklam/ödeme SDK’ları ve BILLING izni son AAB’de bulunmaz; geçmiş haklar korunur.",
       "target_release_on": "2026-12-21",
       "scope_freezes_on": "2026-12-14",
       "season_starts_on": "2026-12-28",

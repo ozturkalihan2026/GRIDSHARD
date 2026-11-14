@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "without_monetization_from": "2.5.0",
+  "included_plugins": [
+    "@aparajita/capacitor-secure-storage",
+    "@capacitor/app",
+    "@capacitor/browser",
+    "@capacitor/push-notifications"
+  ],
+  "excluded_plugins": [
+    "@capacitor-community/admob",
+    "@capgo/native-purchases"
+  ]
+}

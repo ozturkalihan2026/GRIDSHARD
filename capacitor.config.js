@@ -2,6 +2,8 @@ const localDebug = process.env.GRIDSHARD_LOCAL_DEBUG === "1";
 const remoteDebug = localDebug && process.env.GRIDSHARD_REMOTE_DEBUG === "1";
 const { insecureLocalDebugForBuild } = require("./tools/mobile-network-policy.js");
 const insecureLocalDebug = insecureLocalDebugForBuild(process.env);
+const {policy, withoutMonetization} = require("./tools/mobile-distribution-policy.js");
+const excludeMonetization = withoutMonetization(require("./package.json").version);
 const appId = localDebug ? (remoteDebug ? "com.gridshard.remotedebug" : "com.gridshard.localdebug")
   : (process.env.GRIDSHARD_APP_ID || "com.gridshardgame.app");
 
@@ -11,6 +13,7 @@ module.exports = {
   appName: remoteDebug ? "GRIDSHARD TEST" : "GRIDSHARD",
   webDir: "dist",
   backgroundColor: "#07142B",
+  ...(excludeMonetization ? {includePlugins: policy.included_plugins} : {}),
   server: {
     androidScheme: "https",
     cleartext: insecureLocalDebug

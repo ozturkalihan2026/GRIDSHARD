@@ -14,6 +14,39 @@ import zipfile
 R8_METADATA = 'BUNDLE-METADATA/com.android.tools/r8.json'
 MAPPING = 'BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map'
 ANNOTATION = 'Lcom/getcapacitor/annotation/CapacitorPlugin;'
+POLICY = json.loads((Path(__file__).resolve().parents[1] / 'config/mobile-distribution.json').read_text(encoding='utf-8'))
+FORBIDDEN_PACKAGES = ('com.android.billingclient.', 'ee.forgr.nativepurchases.',
+                      'com.getcapacitor.community.admob.', 'com.google.android.gms.ads.',
+                      'com.google.android.gms.internal.ads.', 'com.google.ads.', 'com.google.android.ump.',
+                      'com.gridshard.nativeui.GridshardAdSafety')
+
+
+def without_monetization(version):
+    if not re.fullmatch(r'\d+\.\d+\.\d+', version):
+        raise ValueError('Invalid packaged release version')
+    return tuple(map(int, version.split('.'))) >= tuple(map(int, POLICY['without_monetization_from'].split('.')))
+
+
+def audit_no_monetization(bundle, plugins, classes, mapping):
+    """Inspect the final artifact, including original names before obfuscation."""
+    if any(p.get('pkg') in POLICY['excluded_plugins']
+           or p['classpath'].startswith(FORBIDDEN_PACKAGES) for p in plugins):
+        raise ValueError('Monetization plugin packaged in a free release')
+    names = [name[1:-1].replace('/', '.') for name in classes]
+    names += re.findall(r'^([^\s#]+) -> [^\r\n]+:\r?$', mapping.decode('utf-8'), re.M)
+    if any(name.startswith(FORBIDDEN_PACKAGES) for name in names):
+        raise ValueError('Advertising or Billing SDK packaged in a free release')
+    # AAB manifests use protobuf. Attribute strings are stored as UTF-8 even
+    # without a human-readable XML dump; scan every module's manifest.
+    forbidden = ('com.android.vending.BILLING', 'com.google.android.gms.permission.AD_ID',
+                 'android.permission.ACCESS_ADSERVICES_', 'com.google.android.gms.ads.')
+    manifests = [name for name in bundle.namelist() if name.endswith('/manifest/AndroidManifest.xml')]
+    if not manifests:
+        raise ValueError('Missing packaged manifest')
+    for name in manifests:
+        data = bundle.read(name)
+        if any(value.encode('utf-8') in data for value in forbidden):
+            raise ValueError('Advertising/Billing manifest entry in free release: ' + name)
 
 
 def dex_classes(data):
@@ -96,15 +129,25 @@ def audit(aab):
         if not checksums or checksums != {entry['checksum'] for entry in metadata['dexFiles']}:
             raise ValueError('R8 metadata does not match packaged DEX')
         plugins = json.loads(bundle.read('base/assets/capacitor.plugins.json'))
+        html = bundle.read('base/assets/public/index.html').decode('utf-8')
+        versions = re.findall(r'id="boot-version"[^>]*data-version="([^"]+)"', html)
+        if len(versions) != 1:
+            raise ValueError('Missing unique packaged release version')
+        exclude_monetization = without_monetization(versions[0])
+        if exclude_monetization:
+            audit_no_monetization(bundle, plugins, classes, mapping)
         required = {plugin['classpath']: set() for plugin in plugins}
         required.update({
-            'ee.forgr.nativepurchases.NativePurchasesPlugin':
-                {'getProducts', 'purchaseProduct', 'getPurchases', 'restorePurchases', 'isBillingSupported'},
             'com.aparajita.capacitor.securestorage.SecureStorage': {'internalSetItem', 'internalGetItem'},
             'com.gridshard.nativeui.GridshardPlayGames': {'getStatus', 'signIn'},
-            'com.gridshard.nativeui.GridshardAdSafety': {'verifyLiveBuild', 'verifyTestDevice'},
             'com.getcapacitor.plugin.SystemBars': set(),
         })
+        if not exclude_monetization:
+            required.update({
+                'ee.forgr.nativepurchases.NativePurchasesPlugin':
+                    {'getProducts', 'purchaseProduct', 'getPurchases', 'restorePurchases', 'isBillingSupported'},
+                'com.gridshard.nativeui.GridshardAdSafety': {'verifyLiveBuild', 'verifyTestDevice'},
+            })
         for name, methods in required.items():
             descriptor = 'L' + name.replace('.', '/') + ';'
             definition = classes.get(descriptor)
@@ -122,6 +165,7 @@ def audit(aab):
         return {'r8_version': metadata['version'], 'full_mode': True,
                 'code_optimization': True, 'resource_optimization': True,
                 'runtime_plugins_verified': len(required), 'dex_bytes': dex_bytes,
+                'release_version': versions[0], 'monetization_excluded': exclude_monetization,
                 'mapping_sha256': hashlib.sha256(mapping).hexdigest(),
                 'optimizer_stats': metadata.get('stats', {}),
                 'device_runtime_verified': False}

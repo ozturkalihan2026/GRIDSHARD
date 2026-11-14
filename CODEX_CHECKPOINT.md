@@ -1,4 +1,119 @@
-# Güncel teslim: 2.4.0 rc.5 sunucu ve imzalı AAB tamamlandı — 13 Kasım 2026 23.28 TR
+# Son karar: SDK hariç tutma 2.5.0 kapsamında — 14 Kasım 2026
+
+- Kullanıcı 2.4.0'ın onaylanıp kullanıcılara açıldığını teyit etti;
+  config/release-candidates/2.4.0.json published=true ve kullanıcı teyidiyle güncellendi.
+- Kullanıcı talimatı: reklam/satın alma kodları silinmez; SDK/izin temizliği
+  **2.5.0 paketine** alınır. Bu iş için2.4.1 üretme; mevcut2.4.0
+  AAB/tag/canlı sunucuyu değiştirme.21 Aralık hedefi ve28 Aralık S2 korunuyor.
+- config/mobile-distribution.json ve sürüme bağlı derleme politikası eklendi:
+  2.5+ Capacitor allowlist'inde AdMob/Native Purchases yok; native-store.js
+  web/mobil birleşik JS'ye alınmıyor. Kaynak/lockfile/Java şablonları korunur.
+  Native üretim Ad Safety sınıfı/kaynak/kaydını ve doğrudan SDK'yı dışarıda bırakır;
+  BILLING/reklam/AdServices izinleri birleştirmede engellenir. Firebase opt-in,
+  Secure Storage, Play Games/giriş/bildirimler korunur. Sunucu eski hak/iade
+  kodlarına ve oyuncu verilerine dokunulmadı.
+- tools/audit_android_r8.py son AAB'nin kendi paket sürümüne göre2.5+ için
+  DEX/R8 mapping/eklentiler/tüm manifestlerde SDK/izin varlığını reddeder;
+  2.4 beklentisi korunur. Mevcut son rc.5 AAB yeniden denetlendi:9 eklenti PASS.
+- 18 dağıtım/build +21 native regresyon +38 Python denetim/plan testi PASS;
+  diff kontrolü temiz. CI çalıştırılmadı. Son2.5 imzalı AAB ve gerçek cihaz
+  kabulü henüz yapılmadı; POLICY-01 in_progress, bitmiş sayma.
+- Plan ve checklist bağlı kaynaklardan yeniden üretildi. Ayrıntı:
+  docs/planning/mobile-250-without-monetization.md. Kullanıcı commit/push talimatı verdi;
+  web/mağaza teslimi ile 2.5.0 paketleme çalışması iki ayrı commit olarak kaydediliyor.
+- Play Console beyanları/ürünleri ve halka açık rozet kontrolü kullanıcıda;
+  otomatik işlem yapma. Bütün10 ürünün kapandığı teyit edilmedi. Mevcut web
+  yayını doğrulandı; metindeki2.4 inceleme durumu kullanıcı onay teyidinden önce
+  hazırlanmıştı, sonraki site tesliminde güncellenmeli. Bu tur siteyi tekrar yayımlama.
+
+# Önceki durum: web yayını doğrulandı, Play rozetleri inceleniyor — 14 Kasım 2026
+
+- Kullanıcı web ZIP'ini yüklediğini teyit etti. Canlı `https://gridshardgame.com`
+  **11 sayfa/app-ads +15 asset kontrolünde PASS**; boyut/SHA256 son teslimle
+  birebir, scriptsiz CSP/no-transform/plain mailto korunuyor. Kanıt
+  qa_reports/site-240-20261114/live-verification.json ve teslim klasöründeki
+  PUBLICATION_VERIFIED.json. Site için yeni yükleme gerekmiyor.
+- Kullanıcı Play mağazasında hâlâ “Reklam içerir · Uygulama içi satın alma”
+  gördüğünü bildirdi. Son rc.5 imzalı APK'da **com.android.vending.BILLING**
+  bulundu. Gerçek para girişleri gizli olsa da native satın alma/geri kazanım
+  SDK'sı pakette korunmuş; katalog kapatma rozetin kalkmasını garanti etmez.
+  SDK/izin temizliği yeni paket gerektirebilir. Sadece önbelleğe bağlama.
+- Reklam etiketi için güncel reklam beyanı ve yayın özeti doğrulanmalı.
+  Tüm10 ürünün kapanmış olduğu henüz kullanıcı/Console ile doğrulanmadı;
+  yalnız260/480 Akı kapanışı önceki turda görüldü. Oyun sürümü onayı da
+  ayrıca doğrulanmadan2.4.0 yayında kabul edilmez. Console kontrolü kullanıcıda;
+  otomatik beyan/ürün/release değişikliği yapma.
+
+# Son teslim: web sitesi paketi hazır, yükleme kullanıcıda — 14 Kasım 2026
+
+- Kullanıcı siteyi güncellemeyi istedi, ardından Edge'den kendisinin
+  yükleyeceğini söyledi. Cloudflare'da giriş/yayın yapılmadı; açılan geçici
+  giriş sekmesi kapatıldı. Yeni talimat olmadan yükleme veya DNS değişikliği yapma.
+- **deliverables/GRIDSHARD_WEB_2.4.0_2026-11-14.zip** hazır:
+ 29 izinli statik dosya, 909.226 byte; SHA256
+  **780c8d7ad58749f2005505e2eeea99688f5b526bb85b5bedbf4f2fab586d37d0**.
+  Son ZIP girdileri manifestle birebir doğrulandı. Talimat/manifestler aynı
+  adlı teslim klasöründe, yüklenen arşivin dışında durur.
+- TR/EN ana sayfa gerçek 2.4.0 ekranları, 6 açık/18 ilerlemeyle açılan modül,
+ 7 çekirdek, 30 Kasım 03.00 TR planı ve 2.4.0'ın incelemede olmasıyla yenilendi.
+  Destek/gizlilik/hesap silme/kullanım şartları güncel ücretsiz modele uyarlandı;
+  eski işlem ve iade hakları, veri/retention açıklamaları korundu. Yeni galeri
+  oyunun ortak sanat yönünü kullanır. Eski app-ads.txt/logo/favicon/CSP korunur.
+- 18 site testi ve 30 TR/EN rota/layout kontrolü PASS; son ek browser tekrarı
+  otomatik onay kullanım kotasına takılıp çalışmadı. Son kaynak tekrar derlendi;
+  paket byte/SHA karşılaştırması PASS. Canlıya yükleme henüz doğrulanmadı.
+- Mevcut Cloudflare Pages **gridshard-public → Production** hedeflenir.
+  Kullanıcı yükleyince canlı doğrulama gerekir; oyun sunucusu/AAB değişmedi.
+  Not: docs/planning/public-site-240-refresh-20261114.md.
+  Site/mağaza hazırlığı değişiklikleri çalışma ağacında; commit/push yapılmadı.
+
+# Son kontrol: üretim modül kilitleri — 14 Kasım 2026
+
+- Kullanıcı son AAB'de bütün 24 modülün açık kalmış olabileceğini sordu.
+  Son imzalı rc.5 AAB'nin SHA256'sı teslim manifestiyle doğrulandı;
+  üretim paket kimliği/HTTPS API doğru, yerel toplu açma uç noktası yok.
+- Hem aynı değişmez üretim imajında hem canlı konteynerde yalnız bellekte
+  oluşturulan sıfır kupalı yeni profilde **6 açık/18 kilitli** doğrulandı.
+  Başlangıç destesi aynı altılı, legacy_module_unlocks boş. Diğer 18 modülün
+  her biri eşikten bir kupa önce kilitli, eşikte açık: 36 sınır kontrolü PASS.
+  Gerçek üretim hesabı oluşturulmadı veya değiştirilmedi.
+- 24 açık modül, kullanıcının ses denemesi için daha önce açıkça istediği
+  ayrı yerel S1 TEST hesabındaki haktır; üretim paketine başlangıç kuralı
+  olarak taşınmamıştır. İlerlemiş gerçek hesapların kazanılmış açılımları
+  korunur. Bu konu için oyun kodu, sunucu veya AAB değişmedi.
+- Ham kanıt: qa_reports/module-unlock-audit-20261114/proof.json.
+
+# Son durum: Play incelemesi ve mağaza hazırlığı — 13 Kasım 2026
+
+- Kullanıcı rc.5 AAB'yi Play Console'a yüklediğini ve incelemeye gönderdiğini
+  doğruladı. Onay veya üretime dağıtım henüz doğrulanmadı. Pin dosyasında
+  `play_review_submitted=true`; `published=false` korunur. Canlı rc.5 değişmedi.
+- Kullanıcı mağaza görsellerini ve satış/reklam/satıcı beyanlarını güncellemek
+  istedi; ardından Console işlemlerini kendisinin yapacağını söyledi. Kontrol
+  kendisine bırakıldı. Yeni talimat olmadan Console'da değişiklik yapma.
+- Console'da 10 ürünün her birinde bir etkin `standard` satın alma seçeneği
+  görüldü. Yalnız `gridshard.flux_260` ve `gridshard.flux_480` devre dışı
+  bırakıldı; “Etkin değil” durumu doğrulandı. Kalan 8 ürün kullanıcının işi.
+  Reklam/satıcı beyanı, açıklamalar ve görseller Console'da değiştirilmedi.
+- Kullanıcıya ürün detayından “Satın alma seçeneğini göster → Devre dışı bırak”
+  yolu verildi. Satıcı beyanı hesap genelidir; bugünkü ticari faaliyete göre
+  doğru beyan kullanıcı tarafından yapılır, iş modeli değişirse güncellenir.
+  Diğer veri güvenliği/sohbet beyanları otomatik olarak “yok” yapılamaz.
+- Yeni görsel teslimi yerelde hazır: **deliverables/GRIDSHARD_MAGAZA_2.4.0_2026-11-13/**
+  ve aynı adlı ZIP. TR/EN sekizer 1080×1920 PNG, gerçek yeni savaş/çekirdek
+  etkinleşmesi ve altı menü; görüntüler uydurulmadı. Ölçü, metin sınırı,
+  gerçek sayfalarda JS/eksik görsel/taşma ve toplu görsel QA geçti. Eski
+  Premium kolajı çıkarıldı; açıklamalar gerçek parayla alımsız/reklamsız
+  modele göre hazırlandı. Yükleme öncesi tüm 10 Play ürününün kapalı olması ve
+  2.4.0'ın onaylanıp dağıtılmasıyla metin/oyun durumunu eşleştir.
+- Yeniden üretim araçları tools/capture-store-240.cjs,
+  tools/capture-store-240-battle.cjs, tools/package-store-240.cjs.
+  Bunlar üretim hesabına dokunmadan ayrı loopback 8899 üzerinde çalıştı.
+  Telefonun 8897 sunucusu/hesabı korunur. Bu tur yeni AAB/sunucu üretilmedi.
+- Ayrıntılı not: docs/planning/play-store-240-refresh-20261113.md.
+  Bu mağaza hazırlığı dosyaları henüz commit/push edilmedi.
+
+# Önceki operasyon: 2.4.0 rc.5 sunucu ve imzalı AAB tamamlandı — 13 Kasım 2026 23.28 TR
 
 - Kullanıcının açık isteğiyle son turnuva düzeltmeleri canlıya alındı. Kaynak
   **825cbe27c10407a729aeb50393f4979fdba96152**, etiket **v2.4.0-rc.5**;
@@ -25,7 +140,8 @@
  42.713.464 byte; SHA256 **7a0ce973f6504555a3da2d3b90e6e378a22a9efbeff787b4e92478ff538403d1**.
   Mevcut upload imzası,580 web dosyası/paket, 9 R8 native eklentisi PASS.
   Manifest/mapping/TR-EN Play notları/App Access talimatı aynı klasörde.
-  **Play yüklemesi/dağıtımı yapılmadı; eski rc.4 AAB yerine rc.5 kullan.**
+  Teslim anında Play yüklemesi yapılmamıştı; sonraki kullanıcı teyidi üstte.
+  Eski rc.4 AAB yerine rc.5 kullan.
 - Fiziksel S1 TEST son AAB web dosyalarıyla tekrar güncellendi; 582 ortak dosyada
   yalnız yerel API adresi farklı. Aynı hesap/24 modül, iki doğru kart ve boş
   sıralamalar PASS. Play'deki üretim uygulaması değiştirilmedi.
@@ -69,7 +185,7 @@
   Mevcut upload sertifikası ve paket denetimleri PASS; manifest/mapping/TR-EN
   Play notları aynı klasörde. **Play Console yüklemesi/dağıtımı yapılmadı.**
 - Kullanıcının son kesin kararı: S1, günlük giriş/sezon ödülleri, haftalık ve
-  takım turnuvaları **30 Kasım03.00TR**; bitiş **28 Aralık03.00TR**. Dört hafta
+  takım turnuvaları **30 Kasım 03.00 TR**; bitiş **28 Aralık03.00TR**. Dört hafta
   korunur. İki canlı tarih de2026-11-30T00:00:00Z, AdMob rollout disabled,
   test oyuncu listesi boş, ödeme/reklam test modları kapalı. Sezon şimdi aktif değil.
 - **Sonraki iş:** kullanıcı AAB'yi Play'e yüklerken App access açıklamasını
@@ -316,7 +432,7 @@
   açık geçersiz JavaHome reddedilir. Docker engine29.9.2 erişilebilir. Dosya
   secrets/android-release ana çalışma alanında kalır; Git'e girmez.
 - RC1 kaynak server VERSION2.4.0, production Android2.4.0/15, native meta,
-  release_guard/source archive2.4.0-season-one olarak hazır. Legacy alias ve
+  release_guard/source archive 2.4.0-season-one olarak hazır. Legacy alias ve
   protokol 2 değişmedi.2.4 notları kaynakta var; mesaj ancak sunucu deploy olunca
   görünür. Bugün canlı2.3 sunucu/oyuncu/telefon API verisine dokunulmadı.
 - Yerel782 istemci PASS;100 araç PASS, launcher son ek regresyon6 PASS;
@@ -829,7 +945,7 @@ değişiklikleri henüz commit/push edilmedi. Canlı sunucu ve Play paketi deği
   sunucuyu kapatma veya yeni kod için savaş ortasında yeniden başlatma.
 - Sonraki adım: kullanıcı fiziksel ses/Topla/arayüz geri bildirimi, commit/push
   ve uzak CI; ardından yayın kapıları. 2.4.0 paket hedefi23 Kasım, S1/ilk haftalık
-  30 Kasım03.00TR. Canlıya bütün geliştirme kaynağını erken dağıtma.
+  30 Kasım 03.00 TR. Canlıya bütün geliştirme kaynağını erken dağıtma.
 
 ---
 
