@@ -1,3 +1,19 @@
+# Dal düzeni sadeleştirildi — 16 Kasım 2026
+
+- Kullanıcı fazla dallanmadan devam edilmesini istedi. Aktif düzen yalnız
+  **main + codex/develop-2.5.0**. Çalışma dalı 2.5.0 olacak; iki dal bu
+  sadeleştirme kaydında aynı uçta başlatılır. Her küçük işe kalıcı dal açma.
+- Eski işlerin uçları main geçmişinde korundu; daha önce uygulanmış erken
+  yama ve rc.2 test düzeltmesi kaynak ağacı değişmeden tarihçeye bağlandı.
+  10 yerel ve 11 uzak eski dal kapatılır; tam uçlar geri dönüş için
+  docs/planning/branch-workflow-20261116.md içinde kayıtlıdır.
+- 2.4.0/rc etiketleri, AAB kaynak pini ve sabit üretim worktree'leri korunur.
+  config/release-candidates/2.4.0.json içindeki release_branch tarihsel addır;
+  source_ref/tag/source_commit üzerinden üretim yapılır. Eski dalı yeniden
+  açmak veya main'in son halinden eski AAB üretmek gerekmez.
+- Canlı S1 otomasyonu ve yayımlanmış kataloglar değişmedi. Sıradaki çalışma
+  2.5.0 backlog'udur; bu dal sadeleştirmesi özellik geliştirme değildir.
+
 # Akşam kapanışı — 16 Kasım 2026
 
 - Kullanıcı son plan düzenlemeleri için commit/push istedi; bu akşam yeni

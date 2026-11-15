@@ -1,5 +1,14 @@
 # 2.4.0 — sabit kaynak ve yayın hazırlığı
 
+**16 Kasım dal sadeleştirmesi:** Eski release dalları kapatılır; kaynaklar
+değişmez etiket/tam commit ile korunur. Aktif AAB pini
+`v2.4.0-rc.5 / 825cbe27c10407a729aeb50393f4979fdba96152`'dir.
+`release_branch` manifestte tarihsel kayıt olarak kalır; üretim araçları
+`source_commit` ve etiketi doğrular. Günlük geliştirme
+`codex/develop-2.5.0`, kabul edilmiş kayıtlar `main` üzerindedir.
+[Dal düzeni ve eski uçlar](branch-workflow-20261116.md).
+Aşağıdaki 11–13 Kasım kayıtları önceki hazırlık adımlarının tarihçesidir.
+
 13 Kasım 23.28 TR son durum: canlı kaynak **v2.4.0-rc.5 / 825cbe27c10407a729aeb50393f4979fdba96152**.
 Son turnuva kartı/başlangıç/boş sıralama düzeltmeleri canlıya alındı; aynı
 kaynaktan imzalı 2.4.0/code15 AAB üretildi ve denetlendi. Play yüklemesi yapılmadı.

@@ -25,5 +25,7 @@
     "ends_at": "2026-12-22T00:00:00Z",
     "automatic_cycles": 1,
     "aab_unchanged": true
-  }
+  },
+  "release_branch_archived": true,
+  "source_ref": "refs/tags/v2.4.0-rc.5"
 }
