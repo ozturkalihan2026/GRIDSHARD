@@ -28,6 +28,19 @@ def s1(monkeypatch):
     clock = [now]
     registry = CosmeticReleaseRegistry(cosmetic_releases.REGISTRY.document)
     document = deepcopy(first.PROFILE)
+    # Keep this historical Monday fixture stable; the Tuesday production
+    # calendar has dedicated boundary/automation tests.
+    document['starts_at'] = '2026-11-30T00:00:00Z'
+    document['season_id'] = 'gridshard_2026_11_30'
+    for allocation in document['cosmetic_allocations']:
+        if allocation['source'].startswith('season_'):
+            allocation['period_id'] = document['season_id']
+        elif allocation['source'] == 'team_tournament':
+            allocation['period_id'] = '2026-11-30'
+        else:
+            allocation['period_id'] = '2026-W52'
+    for index, week in enumerate(document['resource_weeks']):
+        week['period_id'] = f'2026-W{49 + index}'
     for index, allocation in enumerate(document['cosmetic_allocations']):
         identity = f'fixture-s1-{index}'
         registry = registry.reserve(allocation['source'], allocation['period_id'], identity)

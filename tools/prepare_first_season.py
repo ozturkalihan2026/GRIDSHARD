@@ -1,16 +1,18 @@
-"""Validate/preview the first-season draft without publishing or changing a launch date."""
+"""Prepare first-season stock and accepted content files; never deploy or change live settings."""
 import argparse
 import hashlib
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import sys
+from copy import deepcopy
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'server'))
 from app.first_season_profile import PROFILE, validate_profile
 from app.cosmetic_releases import REGISTRY
 from app.liveops_content import content_coverage, load_sources
+from app.cosmetic_releases import fingerprint
 
 AUDIT_JSON = ROOT / 'docs/planning/season-1-stock-audit.json'
 AUDIT_MD = ROOT / 'docs/planning/season-1-stock-audit.md'
@@ -20,6 +22,37 @@ AUDIT_SOURCES = (
     'server/app/cosmetic_releases.py', 'server/app/first_season_profile.py',
     'docs/planning/release_calendar_v1.json', 'tools/prepare_first_season.py',
 )
+
+
+def publication_bundle(output, acceptance):
+    """Produce reviewed immutable files; this never touches a live server."""
+    if acceptance.get('season_id') != PROFILE['season_id'] or any(
+            acceptance.get(key) is not True for key in PROFILE['release_checks']):
+        raise ValueError('Explicit season-specific acceptance evidence is required')
+    registry, _ = candidate()
+    for release in list(registry.releases.values()):
+        if release['status'] == 'draft':
+            registry = registry.publish(release['id'])
+    document = deepcopy(PROFILE)
+    document.update(status='published', release_checks={k:acceptance[k] for k in PROFILE['release_checks']})
+    document.pop('content_hash', None)
+    document['content_hash'] = fingerprint(document)
+    validate_profile(document, cosmetics=registry)
+    coverage = content_coverage(registry, cycles=1, starts_at=document['starts_at'],
+        team_starts_at=_team_start(document), first_season_profile=document)
+    if not coverage['stock_ready'] or any(r['status'] != 'published' for r in registry.releases.values()):
+        raise ValueError('Published season content is incomplete')
+    output.mkdir(parents=True, exist_ok=False)
+    files = {'first_season_launch_v1.json':document, 'cosmetic_releases_v1.json':registry.document}
+    hashes = {}
+    for name, content in files.items():
+        data = (json.dumps(content, ensure_ascii=False, indent=2)+'\n').encode('utf-8')
+        (output/name).write_bytes(data)
+        hashes[name] = hashlib.sha256(data).hexdigest()
+    proof = dict(season_id=document['season_id'], starts_at=document['starts_at'],
+        publication_ready=True, production_changed=False, files=hashes, acceptance=acceptance)
+    (output/'manifest.json').write_text(json.dumps(proof,indent=2)+'\n',encoding='utf-8')
+    return proof
 
 
 def write_bundle(output):
@@ -155,7 +188,15 @@ def main():
     action.add_argument('--audit-write', action='store_true', help='Write deterministic first-season stock evidence')
     action.add_argument('--audit-check', action='store_true', help='Fail on stale or insufficient first-season stock evidence')
     action.add_argument('--bundle', metavar='DIRECTORY',help='Write a review-only frozen candidate under qa_reports')
+    action.add_argument('--publication-bundle', metavar='DIRECTORY', help='Write accepted published files under qa_reports; never deploy')
+    parser.add_argument('--acceptance', type=Path, help='Season-specific acceptance proof for publication bundle')
     args = parser.parse_args()
+    if args.publication_bundle:
+        output = (ROOT/args.publication_bundle).resolve()
+        if not output.is_relative_to((ROOT/'qa_reports').resolve()) or not args.acceptance:
+            parser.error('Publication needs a qa_reports output and explicit acceptance proof')
+        print(json.dumps(publication_bundle(output,json.loads(args.acceptance.read_text(encoding='utf-8'))),indent=2))
+        return
     if args.audit_write or args.audit_check:
         report = stock_audit()
         if not report['stock_ready']:

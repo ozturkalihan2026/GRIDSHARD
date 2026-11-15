@@ -30,7 +30,7 @@ def test_candidate_uses_exactly_three_unique_pairs_and_three_resource_weeks_with
     assert sum(t['required'] for t in coverage['content_tasks']) == 9
     assert sum(t['reserved_for_calendar'] for t in coverage['content_tasks']) == 9
     team = next(r for r in coverage['sources'] if r['source'] == 'team_tournament')
-    assert team['period_ids'] == ['2026-11-30']
+    assert team['period_ids'] == ['2026-11-24']
     assert sum(team['reserved_for_calendar'].values()) == 3
 
 
@@ -67,7 +67,7 @@ def test_missing_team_set_cannot_pass_with_unassigned_stock_and_full_profile_has
     document['releases'] = [r for r in document['releases'] if r['source'] != 'team_tournament']
     report = content_coverage(CosmeticReleaseRegistry(document), cycles=1, starts_at=tool.PROFILE['starts_at'],
         team_starts_at=tool._team_start(tool.PROFILE), first_season_profile=tool.PROFILE)
-    assert not report['stock_ready'] and report['missing_profile_periods'] == ['team_tournament:2026-11-30']
+    assert not report['stock_ready'] and report['missing_profile_periods'] == ['team_tournament:2026-11-24']
     full = content_coverage(registry, cycles=1, starts_at=tool.PROFILE['starts_at'], team_starts_at=tool._team_start(tool.PROFILE))
     assert full['reward_profile'] == 'full_cosmetic'
     assert sum(t['required'] for t in full['content_tasks']) == 15
@@ -107,3 +107,15 @@ def test_ci_stock_gate_rejects_stale_evidence(tmp_path, monkeypatch):
     tool.AUDIT_JSON.write_text('{}\n', encoding='utf-8')
     with pytest.raises(SystemExit, match='Stock evidence is stale'):
         tool.main()
+
+
+def test_publication_requires_explicit_acceptance_and_leaves_draft_sources_unchanged(tmp_path):
+    before = deepcopy(tool.PROFILE)
+    with pytest.raises(ValueError, match='acceptance evidence'):
+        tool.publication_bundle(tmp_path/'rejected', {'season_id':tool.PROFILE['season_id']})
+    acceptance = {'season_id':tool.PROFILE['season_id'], **{k:True for k in tool.PROFILE['release_checks']}}
+    proof = tool.publication_bundle(tmp_path/'accepted', acceptance)
+    assert proof['publication_ready'] and not proof['production_changed']
+    assert tool.PROFILE == before and tool.PROFILE['status'] == 'draft'
+    published = json.loads((tmp_path/'accepted/first_season_launch_v1.json').read_text(encoding='utf-8'))
+    assert published['status'] == 'published' and published['starts_at'] == '2026-11-24T00:00:00Z'

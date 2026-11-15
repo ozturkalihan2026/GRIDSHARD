@@ -26,6 +26,7 @@ def test_announcement_ack_rolls_back_and_survives_cache_loss(social_db, monkeypa
     # published popup fixture rather than a particular production notice ID.
     identity = 'preview-persistence-fixture'
     item = deepcopy(announcements.CATALOG['announcements'][0])
+    item.pop('superseded_by', None)  # This fixture is an independent one-item campaign.
     major, minor, _ = map(int, gateway.VERSION.split('.'))
     item.update(notice_id=identity, status='published', delivery='popup_and_system',
                 target_version=f'{major}.{minor + 1}.0', publish_at='2026-11-04T00:00:00Z')

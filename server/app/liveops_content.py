@@ -88,9 +88,8 @@ def _moment(value):
 def calendar_periods(*, starts_at, cycles, team_starts_at=None):
     """Distinct periods intersecting [start, end); independent team anchor.
 
-    A mid-week launch includes the partial ISO week used by the current weekly
-    tournament. The shared week at two adjacent season boundaries is counted
-    once across the whole horizon, rather than twice or silently discarded.
+    Weekly competitions follow seven full days from this explicit start,
+    including a mid-week launch. IDs retain the ISO label of each start day.
     """
     if type(cycles) is not int or not 1 <= cycles <= 12:
         raise ContentPlanError("Cycles must be between 1 and 12")
@@ -102,7 +101,7 @@ def calendar_periods(*, starts_at, cycles, team_starts_at=None):
     if team_starts_at is not None and _moment(team_starts_at) < start:
         raise ContentPlanError("First team launch cannot precede the first season launch")
     season_ids = ["gridshard_" + (start + CYCLE_LENGTH * i).strftime("%Y_%m_%d") for i in range(cycles)]
-    week = (start - timedelta(days=start.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+    week = start
     weeks = []
     while week < end:
         iso_year, iso_week, _ = week.isocalendar()

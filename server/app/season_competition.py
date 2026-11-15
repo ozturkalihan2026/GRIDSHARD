@@ -17,6 +17,7 @@ import hashlib
 from .team_tournament import build_team_tournament_view, period_id_for
 from .competition_control import competition_eligible, configured_start, launch_status, minimum_participants
 from .competition_control import first_season_bots
+from .competition_cycle import weekly_cycle
 import json
 from pathlib import Path
 
@@ -207,11 +208,9 @@ def _iso(moment: datetime) -> str:
 
 
 def _weekly_period(moment: datetime) -> dict:
-    current = moment.astimezone(timezone.utc)
-    starts = (current - timedelta(days=current.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
-    ends = starts + timedelta(days=7) - timedelta(seconds=1)
-    year, week, _ = current.isocalendar()
-    return {"id": f"{year}-W{week:02d}", "starts_at": _iso(starts), "ends_at": _iso(ends)}
+    week = weekly_cycle(moment)
+    return {'id': week['id'], 'starts_at': _iso(week['starts_at']),
+            'ends_at': _iso(week['ends_at'] - timedelta(seconds=1))}
 
 
 WEEKLY_PRIZES: tuple[dict, ...] = (
@@ -283,7 +282,7 @@ def build_events_view(
             "minimum_participants": minimum_participants(), "participant_count": len(weekly_rows),
             "name_tr": "Haftalık Devre Turnuvası",
             "period": week,
-            "rules_tr": "100 Devre Kredisi ile katıl. Katıldıktan sonra normal Arena savaşlarında kazandığın kupalar haftalık sıralamaya eklenir; sıralama pazartesi yenilenir.",
+            "rules_tr": "100 Devre Kredisi ile katıl. Katıldıktan sonra normal Arena savaşlarında kazandığın kupalar haftalık sıralamaya eklenir; sıralama başlangıçtan itibaren her 7 günde yenilenir.",
             "entry_fee": WEEKLY_ENTRY_FEE,
             "first_season_bots": exception,
             "bot_reward_policy": "actual_rank_no_bot_rewards_all_bot_package_deferred" if exception else "none",

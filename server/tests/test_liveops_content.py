@@ -35,13 +35,13 @@ def test_aligned_two_cycle_budget_preserves_the_30_item_baseline_and_18_item_sho
     assert not report["stock_ready"] and not report["publication_ready"]
 
 
-def test_midweek_calendar_counts_the_partial_weeks_once_and_requires_extra_art():
+def test_midweek_calendar_uses_eight_full_weeks_in_two_cycles():
     report = content_coverage(registry(), starts_at="2027-01-06T12:00:00Z", team_starts_at="2027-01-06T12:00:00Z")
     weekly = next(r for r in report["sources"] if r["source"] == "weekly_tournament")
-    assert weekly["period_count"] == len(set(weekly["period_ids"])) == 9
-    assert weekly["period_ids"][0] == "2027-W01" and weekly["period_ids"][-1] == "2027-W09"
-    assert sum(r["required"] for r in report["content_tasks"]) == 32
-    assert sum(r["create_and_review"] for r in report["content_tasks"]) == 20
+    assert weekly["period_count"] == len(set(weekly["period_ids"])) == 8
+    assert weekly["period_ids"][0] == "2027-W01" and weekly["period_ids"][-1] == "2027-W08"
+    assert sum(r["required"] for r in report["content_tasks"]) == 30
+    assert sum(r["create_and_review"] for r in report["content_tasks"]) == 18
 
 
 def test_iso_year_rollover_and_exclusive_end_are_not_calendar_year_arithmetic():

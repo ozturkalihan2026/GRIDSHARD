@@ -58,9 +58,11 @@ def validate(document):
             raise ValueError('Invalid development/release sequence: ' + version)
         season = release['season']
         starts, ends = date.fromisoformat(season['starts_on']), date.fromisoformat(season['ends_on'])
-        if (target >= starts or ends - starts != timedelta(days=28) or starts.weekday() != 0
+        non_monday = season.get('operator_anchored_weeks') is True
+        manual = season.get('start_mode') == 'manual'
+        if (target >= starts or ends - starts != timedelta(days=28) or (starts.weekday() != 0 and not non_monday)
                 or season['starts_at_utc'] != '00:00' or season['number'] != number
-                or (last_season_end and starts != last_season_end)):
+                or (last_season_end and (starts < last_season_end or (starts != last_season_end and not manual)))):
             raise ValueError('Invalid season or rollout buffer: ' + version)
         last_date, last_season_end = target, ends
     return releases
@@ -91,7 +93,8 @@ def render(document, releases):
     rows += ['', '| Sezon | Başlangıç — bitiş (bitiş hariç) | Modül planı |', '| --- | --- | --- |']
     for r in releases:
         s = r['season']
-        rows.append(f"| S{s['number']} | {display(s['starts_on'])}–{display(s['ends_on'])}, 03.00 TR | {s['module']} |")
+        note = ' (koşullu hedef; ayrıca operatör onayı)' if s.get('start_mode') == 'manual' else ''
+        rows.append(f"| S{s['number']} | {display(s['starts_on'])}–{display(s['ends_on'])}, 03.00 TR{note} | {s['module']} |")
     for r in releases:
         if r.get('server_transition'):rows+=['',maintenance_summary(r)]
     rows += ['', END]

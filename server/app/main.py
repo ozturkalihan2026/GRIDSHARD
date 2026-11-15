@@ -24,6 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .production_config import environment_secret, production_endpoints
 from .competition_control import competition_eligible, launch_status, minimum_participants, configured_start, first_season_bots, ranking_eligible
+from .competition_cycle import weekly_cycle
 from .client_compatibility import health_release_fields
 from .season_entitlements import additional_chest_count, origin_for as season_premium_origin, reward_for as earned_season_reward
 from .postgres_economic_operations import PostgresEconomicOperations, EconomicOperationConflict
@@ -305,6 +306,7 @@ async def _runtime_worker_lease_loop() -> None:
 
 async def _runtime_maintenance_loop() -> None:
     last_analytics_prune = 0.0
+    last_competition_settlement = 0.0
     while True:
         await asyncio.sleep(5.0)
         if RUNTIME_STRICT and not runtime_coordinator.owns_worker:
@@ -315,6 +317,12 @@ async def _runtime_maintenance_loop() -> None:
             # One stale transport/session must not kill all future maintenance.
             # Log only a category, never request URLs/tokens or player payloads.
             logging.getLogger(__name__).warning("Runtime maintenance will retry (%s)", type(exc).__name__)
+        if time.monotonic() - last_competition_settlement >= 60:
+            try:
+                await asyncio.to_thread(_scheduled_first_season_pass)
+                last_competition_settlement = time.monotonic()
+            except Exception:
+                logging.getLogger(__name__).warning("Scheduled competition closing will retry")
         if time.monotonic() - last_analytics_prune >= 3600:
             last_analytics_prune = time.monotonic()
             try:
@@ -3501,6 +3509,8 @@ def _queue_competition_reward(profile, *, source: str, period_id: str, position:
     if not competition_eligible(profile.player_id):
         return False
     message_id = f"{source}:{period_id}:{profile.player_id}"
+    if any(receipt.get('message_id') == message_id for receipt in profile.reward_inbox_receipts.values()):
+        return False
     if any(item.get("message_id") == message_id for item in profile.reward_inbox):
         return False
     prize = dict(prize) if frozen else period_reward(source, period_id, position, prize)
@@ -3525,6 +3535,38 @@ def _queue_competition_reward(profile, *, source: str, period_id: str, position:
         "reward_content_hash": reward_hash,
     })
     return True
+
+
+def _scheduled_first_season_pass():
+    """Recover all due S1 closings without requiring an online player.
+
+    Uses the same worker ownership, pending-result barrier, transaction and
+    durable closure witnesses as HTTP operations. A crash safely retries.
+    """
+    from .first_season_profile import PROFILE
+    current = datetime.now(timezone.utc)
+    if PROFILE.get('status') != 'published' or not configured_start() or current < configured_start():
+        return
+    with PERSISTENT_STATE.lock, _pending_results_barrier(), _persistent_operation(), REWARD_INBOX_LOCK:
+        from datetime import timedelta
+        start = configured_start()
+        due = []
+        for index in range(4):
+            week_start = start + timedelta(days=7 * index)
+            if current >= week_start + timedelta(days=7):
+                year, week, _ = week_start.isocalendar()
+                due.append(f'weekly_tournament:{year}-W{week:02d}')
+        if current >= start + timedelta(days=28):
+            due.append('season_leaderboard:' + PROFILE['season_id'])
+            if configured_start(team=True):
+                due.append('team_tournament:' + configured_start(team=True).date().isoformat())
+        closed = team_service.competition_reward_state()['closures']
+        if not due or all(key in closed for key in due):
+            return
+        profiles = _real_competition_profiles()
+        _settle_first_season_rewards(profiles, current)
+        for profile in profiles:
+            persist_player_data(profile.player_id)
 
 
 def _settle_first_season_rewards(profiles, moment):
@@ -3612,8 +3654,7 @@ def _settle_competition_rewards(player_id: str) -> None:
             return
         _settle_first_season_rewards(profiles, datetime.now(timezone.utc))
         changed = False
-        iso_year, iso_week, _ = datetime.now(timezone.utc).isocalendar()
-        current_week = f"{iso_year}-W{iso_week:02d}"
+        current_week = weekly_cycle(datetime.now(timezone.utc))['id']
         current_season = season_descriptor()["id"]
 
         # Monthly general leaderboard: archived final ratings are immutable and
@@ -6082,7 +6123,7 @@ def register_team_tournament(request: EventRegistrationOperation) -> dict:
     if not team_tournament_registration_open(period_id, now):
         raise HTTPException(
             status_code=422,
-            detail="Takım turnuvası kaydı yalnız dönemin ilk Pazartesi–Çarşamba günlerinde açıktır; bu dönemin kayıt süresi doldu.",
+            detail="Takım turnuvası kaydı yalnız dönemin ilk üç gününde açıktır; bu dönemin kayıt süresi doldu.",
         )
     try:
         team_service.register_tournament(

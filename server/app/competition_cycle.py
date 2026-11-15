@@ -41,8 +41,16 @@ def competition_cycle(moment: datetime | None = None, *, team=False) -> dict:
     return _cycle((_utc(moment) - _anchor(team)) // CYCLE_LENGTH, team=team)
 
 
+def weekly_cycle(moment: datetime | None = None) -> dict:
+    """Seven full days from the operator anchor, retaining stable ISO labels."""
+    anchor = _anchor()
+    start = anchor + ((_utc(moment) - anchor) // timedelta(days=7)) * timedelta(days=7)
+    year, week, _ = start.isocalendar()
+    return {'id': f'{year}-W{week:02d}', 'starts_at': start, 'ends_at': start + timedelta(days=7)}
+
+
 def cycle_for_id(cycle_id: str, *, team=False) -> dict:
-    """Kimlikten döngü; Pazartesi'ye ve döngü sınırına oturmayan tarih geçersizdir."""
+    """Kimlikten döngü; operatör başlangıcının 28 günlük sınırları kullanılır."""
     try:
         starts_at = datetime.strptime(str(cycle_id), "%Y-%m-%d").replace(tzinfo=timezone.utc)
     except ValueError as exc:

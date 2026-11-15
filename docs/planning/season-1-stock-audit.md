@@ -4,17 +4,17 @@
 
 **2.4.0 ilk sezon stoğu yeterli.** Bu çevrimdışı tahsis denetimidir; sezon açmaz, kozmetik vermez ve Android/yayın kabulünün yerine geçmez.
 
-30.11.2026 03:00–28.12.2026 03:00 TR; takım dönemi ayrı kapıyla 30.11.2026 03:00 TR başlar. Sezon ve takım dönemi aynı 28 günü kapsar; ayrılmış üç takım ödülü korunur.
+24.11.2026 03:00–22.12.2026 03:00 TR; takım dönemi ayrı kapıyla 24.11.2026 03:00 TR başlar. Sezon ve takım dönemi aynı 28 günü kapsar; ayrılmış üç takım ödülü korunur.
 
 | Kaynak | Dönem | Tür | Ayrılmış içerik |
 | --- | --- | --- | --- |
-| season_leaderboard | gridshard_2026_11_30 | Tekil kozmetik seti | solar_frame, solar_banner |
-| season_road | gridshard_2026_11_30 | Tekil kozmetik seti | aurora_frame, aurora_banner |
-| team_tournament | 2026-11-30 | Tekil kozmetik seti | aurora_sigil, aurora_team_frame, aurora_team_name |
+| season_leaderboard | gridshard_2026_11_24 | Tekil kozmetik seti | solar_frame, solar_banner |
+| season_road | gridshard_2026_11_24 | Tekil kozmetik seti | aurora_frame, aurora_banner |
+| team_tournament | 2026-11-24 | Tekil kozmetik seti | aurora_sigil, aurora_team_frame, aurora_team_name |
+| weekly_tournament | 2026-W48 | Sabit kaynak | 1–3. sıra: kredi, akı ve mevcut modül parçası |
 | weekly_tournament | 2026-W49 | Sabit kaynak | 1–3. sıra: kredi, akı ve mevcut modül parçası |
 | weekly_tournament | 2026-W50 | Sabit kaynak | 1–3. sıra: kredi, akı ve mevcut modül parçası |
-| weekly_tournament | 2026-W51 | Sabit kaynak | 1–3. sıra: kredi, akı ve mevcut modül parçası |
-| weekly_tournament | 2026-W52 | Tekil kozmetik seti | abyss_frame, abyss_banner |
+| weekly_tournament | 2026-W51 | Tekil kozmetik seti | abyss_frame, abyss_banner |
 
 İlk sezon için 6 oyuncu + 3 takım kozmetiği; 7 ayrı kaynak/dönem tahsisi, aynı öğeyi farklı dönemlere yeniden ayırma yok. Üç kaynak haftası açıkça tanımlıdır; eksik kozmetiğin yerine sessizce kaynak konmaz.
 

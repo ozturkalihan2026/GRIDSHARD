@@ -69,6 +69,7 @@ def main() -> None:
     fixture_catalog['announcements'] = fixture_catalog['announcements'][:1]
     major, minor, _ = map(int, VERSION.split('.'))
     for item in fixture_catalog['announcements']:
+        item.pop('superseded_by', None)
         item.update(status='published', delivery='popup_and_system', target_version=f'{major}.{minor + 1}.0',
                     publish_at='2000-01-01T00:00:00Z', expires_at='2100-01-01T00:00:00Z')
     release_announcements.CATALOG = release_announcements.validate(fixture_catalog)

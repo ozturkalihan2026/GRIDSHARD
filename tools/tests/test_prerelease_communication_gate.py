@@ -39,12 +39,15 @@ def test_a_coherent_but_wrong_maintenance_hour_cannot_drift_from_calendar():
     with pytest.raises(ValueError,match='window differs'):check(document,required='2.4.0')
 
 
-def test_early_patch_repeats_the_full_unchanged_season_calendar_in_both_languages():
+def test_historical_calendar_is_preserved_and_s1_change_has_a_distinct_revision():
     calendar=json.loads((Path(__file__).resolve().parents[2]/'docs/planning/release_calendar_v1.json').read_text(encoding='utf-8'))
     expected=[('2026-11-30','2026-12-28'),('2026-12-28','2027-01-25'),
               ('2027-01-25','2027-02-22'),('2027-02-22','2027-03-22'),
               ('2027-03-22','2027-04-19'),('2027-04-19','2027-05-17')]
-    assert [(r['season']['starts_on'],r['season']['ends_on']) for r in calendar['releases']]==expected
+    actual = [(r['season']['starts_on'],r['season']['ends_on']) for r in calendar['releases']]
+    assert actual == [('2026-11-24','2026-12-22'), *expected[1:]]
+    assert calendar['releases'][1]['season']['start_mode'] == 'manual'
+    assert CATALOG['announcements'][0]['superseded_by'] == 'preview-s1-automatic-opening-20261124'
     months_tr={1:'Ocak',2:'Şubat',3:'Mart',4:'Nisan',5:'Mayıs',11:'Kasım',12:'Aralık'}
     months_en={1:'January',2:'February',3:'March',4:'April',5:'May',11:'November',12:'December'}
     notice=CATALOG['announcements'][0]

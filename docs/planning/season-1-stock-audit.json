@@ -7,20 +7,20 @@
   "stock_ready": true,
   "source_hash_normalization": "CRLF-to-LF",
   "source_sha256": {
-    "server/data/first_season_launch_v1.json": "224b93f09a81f2ff1fdeb149d1c8f2cc2a9a3aa4900fcc00089cfe4d8e0f322b",
+    "server/data/first_season_launch_v1.json": "89147da7284ac6ea07bc2621e9370d84a4c06aca5bb5c84fe628ffe18e14897a",
     "server/data/cosmetic_releases_v1.json": "80dd80285ea4c3a895927e41918604b2e905e311d2c13c7330dfb3fcf4a70f54",
     "server/data/liveops_content_sources_v1.json": "fdac5048019eca1fc4c14c5b665465c838c75d33b8116bdfb5b534866a7273c8",
-    "server/app/liveops_content.py": "cee74588a407672ca87ae049f09e103e443dbc25eb814e650eaf17c501afd0cb",
+    "server/app/liveops_content.py": "8afb6822266a012f624b3a649bc6e1caa65fb43802e75516aedd5e64043cdcac",
     "server/app/cosmetic_releases.py": "12a8c1ec82a5e2567a62c5c28b145db1265ed87b369252950cdf022aa5a2aa83",
-    "server/app/first_season_profile.py": "764732609357f244cc64a6a29eb86a454780339a89d2d3af9d83e030a54fdb23",
-    "docs/planning/release_calendar_v1.json": "7a0c8ec3724434c3d8133edb5da64c27134b01e88d7c809e4cae8e12eba2e908",
-    "tools/prepare_first_season.py": "ab36007889ce8697b9d300618d8921d26457fe3c983eecd2fb660bca9f3ef262"
+    "server/app/first_season_profile.py": "a5a66f74dda01b7750752eb928e2b5960d4d2aecaa6a34f75658ef96b91d79e0",
+    "docs/planning/release_calendar_v1.json": "9891f5a2c1f1dfb2f6dd6156e46354781e70b9c637bbee6f860bd8c0b6f6f388",
+    "tools/prepare_first_season.py": "3ee023ef85e8fbb1a9b2155513dcd33e9eee770765b01a9828d6c6c04b1a97cd"
   },
   "season_calendar": {
-    "starts_at": "2026-11-30T00:00:00Z",
-    "ends_at": "2026-12-28T00:00:00+00:00",
-    "team_starts_at": "2026-11-30T00:00:00Z",
-    "team_ends_at": "2026-12-28T00:00:00+00:00"
+    "starts_at": "2026-11-24T00:00:00Z",
+    "ends_at": "2026-12-22T00:00:00+00:00",
+    "team_starts_at": "2026-11-24T00:00:00Z",
+    "team_ends_at": "2026-12-22T00:00:00+00:00"
   },
   "source_contracts": [
     {
@@ -88,7 +88,7 @@
   "allocations": [
     {
       "source": "season_leaderboard",
-      "period_id": "gridshard_2026_11_30",
+      "period_id": "gridshard_2026_11_24",
       "reward_kind": "cosmetic_set",
       "status": "draft",
       "placements": [
@@ -103,7 +103,7 @@
     },
     {
       "source": "season_road",
-      "period_id": "gridshard_2026_11_30",
+      "period_id": "gridshard_2026_11_24",
       "reward_kind": "cosmetic_set",
       "status": "draft",
       "placements": [
@@ -118,7 +118,7 @@
     },
     {
       "source": "team_tournament",
-      "period_id": "2026-11-30",
+      "period_id": "2026-11-24",
       "reward_kind": "cosmetic_set",
       "status": "draft",
       "placements": [
@@ -134,7 +134,7 @@
     },
     {
       "source": "weekly_tournament",
-      "period_id": "2026-W49",
+      "period_id": "2026-W48",
       "reward_kind": "resource_only",
       "status": "draft",
       "placements": [
@@ -165,6 +165,44 @@
             "circuit_credits": 420,
             "flux_shards": 30,
             "module_definition_id": "laser",
+            "module_shards": 18
+          }
+        }
+      ]
+    },
+    {
+      "source": "weekly_tournament",
+      "period_id": "2026-W49",
+      "reward_kind": "resource_only",
+      "status": "draft",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 1200,
+            "flux_shards": 90,
+            "module_definition_id": "shield",
+            "module_shards": 36
+          }
+        },
+        {
+          "slot": 2,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 760,
+            "flux_shards": 55,
+            "module_definition_id": "shield",
+            "module_shards": 24
+          }
+        },
+        {
+          "slot": 3,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 420,
+            "flux_shards": 30,
+            "module_definition_id": "shield",
             "module_shards": 18
           }
         }
@@ -182,7 +220,7 @@
           "resources": {
             "circuit_credits": 1200,
             "flux_shards": 90,
-            "module_definition_id": "shield",
+            "module_definition_id": "pulse_cannon",
             "module_shards": 36
           }
         },
@@ -192,7 +230,7 @@
           "resources": {
             "circuit_credits": 760,
             "flux_shards": 55,
-            "module_definition_id": "shield",
+            "module_definition_id": "pulse_cannon",
             "module_shards": 24
           }
         },
@@ -202,7 +240,7 @@
           "resources": {
             "circuit_credits": 420,
             "flux_shards": 30,
-            "module_definition_id": "shield",
+            "module_definition_id": "pulse_cannon",
             "module_shards": 18
           }
         }
@@ -211,44 +249,6 @@
     {
       "source": "weekly_tournament",
       "period_id": "2026-W51",
-      "reward_kind": "resource_only",
-      "status": "draft",
-      "placements": [
-        {
-          "slot": 1,
-          "cosmetics": {},
-          "resources": {
-            "circuit_credits": 1200,
-            "flux_shards": 90,
-            "module_definition_id": "pulse_cannon",
-            "module_shards": 36
-          }
-        },
-        {
-          "slot": 2,
-          "cosmetics": {},
-          "resources": {
-            "circuit_credits": 760,
-            "flux_shards": 55,
-            "module_definition_id": "pulse_cannon",
-            "module_shards": 24
-          }
-        },
-        {
-          "slot": 3,
-          "cosmetics": {},
-          "resources": {
-            "circuit_credits": 420,
-            "flux_shards": 30,
-            "module_definition_id": "pulse_cannon",
-            "module_shards": 18
-          }
-        }
-      ]
-    },
-    {
-      "source": "weekly_tournament",
-      "period_id": "2026-W52",
       "reward_kind": "cosmetic_set",
       "status": "draft",
       "placements": [
@@ -278,7 +278,7 @@
         "stock_pool": "competition",
         "period_count": 1,
         "period_ids": [
-          "gridshard_2026_11_30"
+          "gridshard_2026_11_24"
         ],
         "resource_only_periods": [],
         "cosmetic_period_count": 1,
@@ -297,7 +297,7 @@
         "stock_pool": "competition",
         "period_count": 1,
         "period_ids": [
-          "gridshard_2026_11_30"
+          "gridshard_2026_11_24"
         ],
         "resource_only_periods": [],
         "cosmetic_period_count": 1,
@@ -316,15 +316,15 @@
         "stock_pool": "competition",
         "period_count": 4,
         "period_ids": [
-          "2026-W49",
-          "2026-W50",
-          "2026-W51",
-          "2026-W52"
-        ],
-        "resource_only_periods": [
+          "2026-W48",
           "2026-W49",
           "2026-W50",
           "2026-W51"
+        ],
+        "resource_only_periods": [
+          "2026-W48",
+          "2026-W49",
+          "2026-W50"
         ],
         "cosmetic_period_count": 1,
         "cosmetics_per_period": {
@@ -342,7 +342,7 @@
         "stock_pool": "competition",
         "period_count": 1,
         "period_ids": [
-          "2026-11-30"
+          "2026-11-24"
         ],
         "resource_only_periods": [],
         "cosmetic_period_count": 1,
@@ -417,8 +417,8 @@
         "stock_pool": "competition",
         "period_count": 2,
         "period_ids": [
-          "gridshard_2026_11_30",
-          "gridshard_2026_12_28"
+          "gridshard_2026_11_24",
+          "gridshard_2026_12_22"
         ],
         "resource_only_periods": [],
         "cosmetic_period_count": 2,
@@ -437,8 +437,8 @@
         "stock_pool": "competition",
         "period_count": 2,
         "period_ids": [
-          "gridshard_2026_11_30",
-          "gridshard_2026_12_28"
+          "gridshard_2026_11_24",
+          "gridshard_2026_12_22"
         ],
         "resource_only_periods": [],
         "cosmetic_period_count": 2,
@@ -457,14 +457,14 @@
         "stock_pool": "competition",
         "period_count": 8,
         "period_ids": [
+          "2026-W48",
           "2026-W49",
           "2026-W50",
           "2026-W51",
           "2026-W52",
           "2026-W53",
           "2027-W01",
-          "2027-W02",
-          "2027-W03"
+          "2027-W02"
         ],
         "resource_only_periods": [],
         "cosmetic_period_count": 8,
@@ -483,8 +483,8 @@
         "stock_pool": "competition",
         "period_count": 2,
         "period_ids": [
-          "2026-11-30",
-          "2026-12-28"
+          "2026-11-24",
+          "2026-12-22"
         ],
         "resource_only_periods": [],
         "cosmetic_period_count": 2,
@@ -559,8 +559,8 @@
         "stock_pool": "competition",
         "period_count": 2,
         "period_ids": [
-          "gridshard_2026_12_28",
-          "gridshard_2027_01_25"
+          "gridshard_2026_12_22",
+          "gridshard_2027_01_19"
         ],
         "resource_only_periods": [],
         "cosmetic_period_count": 2,
@@ -579,8 +579,8 @@
         "stock_pool": "competition",
         "period_count": 2,
         "period_ids": [
-          "gridshard_2026_12_28",
-          "gridshard_2027_01_25"
+          "gridshard_2026_12_22",
+          "gridshard_2027_01_19"
         ],
         "resource_only_periods": [],
         "cosmetic_period_count": 2,
@@ -599,14 +599,14 @@
         "stock_pool": "competition",
         "period_count": 8,
         "period_ids": [
+          "2026-W52",
           "2026-W53",
           "2027-W01",
           "2027-W02",
           "2027-W03",
           "2027-W04",
           "2027-W05",
-          "2027-W06",
-          "2027-W07"
+          "2027-W06"
         ],
         "resource_only_periods": [],
         "cosmetic_period_count": 8,
@@ -625,8 +625,8 @@
         "stock_pool": "competition",
         "period_count": 2,
         "period_ids": [
-          "2026-12-28",
-          "2027-01-25"
+          "2026-12-22",
+          "2027-01-19"
         ],
         "resource_only_periods": [],
         "cosmetic_period_count": 2,

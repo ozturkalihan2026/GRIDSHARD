@@ -18,8 +18,10 @@ def check(document=CATALOG, required=None):
     for item in document['announcements']:
         if item['target_version'] in releases:
             release = releases[item['target_version']]
+            historical_schedule = (item.get('superseded_by') and
+                item['season_starts_on'] == release['season'].get('previous_starts_on'))
             if (item['target_release_on'] != release['target_release_on']
-                    or item['season_starts_on'] != release['season']['starts_on']):
+                    or (item['season_starts_on'] != release['season']['starts_on'] and not historical_schedule)):
                 raise ValueError('Announcement dates differ from the release calendar')
             if item.get('server_transition_on') and item['server_transition_on'] != release['target_release_on']:
                 raise ValueError('Server transition differs from the release calendar')

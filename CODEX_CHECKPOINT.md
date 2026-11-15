@@ -1,3 +1,25 @@
+# S1 yeni takvim ve otomasyon kabulü — 15 Kasım 2026
+
+- Kullanıcı 30 Kasım yerine **24 Kasım 03.00 TR** otomatik açılış istedi.
+  Dört tam hafta sonunda **22 Aralık 03.00 TR** kapanış; sonra sezon arası.
+  S2 ayrıca onaylanacak, 28 Aralık yalnız koşullu planlama hedefi.
+- Haftalar operatör başlangıcına bağlı yedi tam gün: 24 Kasım/1/8/15/22 Aralık.
+  ISO etiketleri korunur, pazartesiye erken sıfırlama yapılmaz.
+- Kalıcı worker bakım döngüsüne oyuncu girişi gerektirmeyen S1 kapanışı eklendi;
+  aynı UOW/bekleyen sonuç bariyeri/worker sahipliği kullanılır. Altı kapanış
+  idempotent; kazanılmış yol hakları ve ödül kasaları korunur. Auto-cycles=1
+  S2'yi kapalı tutar. Botlara teslim yok, gerçek sıra ve paket ertelemesi sürer.
+- Linux/Python3.12 + PostgreSQL17/Redis tam kabul **2108 PASS, sıfır skip**.
+  İmzalı 2.4.0'ın değişmeyen web varlıklarıyla Chromium/WebKit uyumu PASS;
+  sadece API adresi loopback'e değişti. Yeni fiziksel test/AAB üretimi yapılmadı.
+- Yayımlanacak kabul edilmiş S1 dosyaları qa_reports/s1-autostart-20261115/published
+  altında; kaynaklar taslak kalır. Canlı geçiş henüz bu kayıt anında yapılmadı.
+  Eski rc.5/AAB pinleri değiştirilmez; yalnız server patch geçişi hazırlanır.
+- Yeni popup/Sistem kimliği preview-s1-automatic-opening-20261124;
+  önceki 30 Kasım duyurularını yeni onay gerektiren bildirimle geçersiz kılar.
+- Ayrıntı: docs/planning/s1-automatic-operations-20261115.md. Geçiş tamamlanınca
+  yedek/restore/tablo eşitliği ve canlı ayar kanıtları ayrıca kaydedilmeli.
+
 # Son karar: SDK hariç tutma 2.5.0 kapsamında — 14 Kasım 2026
 
 - Kullanıcı 2.4.0'ın onaylanıp kullanıcılara açıldığını teyit etti;

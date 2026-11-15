@@ -41,10 +41,10 @@ AI_LINEUP_SIZE = 5
 SESSION_PREFIX = "team-event-"
 
 RULES_TR = (
-    "Turnuva dört haftalık dönemlerle Pazartesi başlar. Kayıt ilk haftanın "
-    "Pazartesi–Çarşamba günlerinde açıktır ve yalnız takım lideri yapar; kadro "
-    "kayıtta sabitlenir. Her Perşembe yakın güçteki ve o dönem karşılaşmamış "
-    "takımlar eşleşir. Cuma–Pazar eşleşen oyuncular rövanşlı iki maç oynar. "
+    "Turnuva dört tam hafta sürer. Kayıt dönemin ilk üç gününde açıktır "
+    "ve yalnız takım lideri yapar; kadro kayıtta sabitlenir. Her haftanın "
+    "4. gününde yakın güçteki ve o dönem karşılaşmamış takımlar eşleşir. "
+    "5–7. günlerde eşleşen oyuncular rövanşlı iki maç oynar. "
     "Galibiyet 1, mağlubiyet 0 puandır; kupa değişmez. 4. hafta bitince ilk üç "
     "takımın en az 4 puan katkı veren oyuncuları ödül alır."
 )

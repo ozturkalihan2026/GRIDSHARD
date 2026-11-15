@@ -22,8 +22,9 @@ def validate_profile(document, *, cosmetics=None):
             or not set(document.get('existing_module_ids', [])) <= set(MODULE_SPECS)):
         raise ValueError('İlk sezon profili mevcut kadro ve sabit ödül sözleşmesiyle eşleşmiyor.')
     start = datetime.fromisoformat(document['starts_at'].replace('Z', '+00:00'))
-    if start.tzinfo is None or start.utcoffset().total_seconds() != 0 or start.weekday() != 0:
-        raise ValueError('İlk sezon başlangıcı UTC Pazartesi olmalıdır.')
+    if (start.tzinfo is None or start.utcoffset().total_seconds() != 0
+            or (start.weekday() != 0 and document.get('operator_anchored_weeks') is not True)):
+        raise ValueError('Hafta içi başlangıç açık operatör-ankorlu hafta onayı gerektirir.')
     if document.get('season_id') != 'gridshard_' + start.strftime('%Y_%m_%d'):
         raise ValueError('İlk sezon kimliği başlangıç tarihiyle eşleşmiyor.')
     if document.get('bot_competition_policy') != dict(

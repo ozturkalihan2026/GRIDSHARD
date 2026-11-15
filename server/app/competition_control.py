@@ -1,5 +1,5 @@
 """Operator-controlled production start. An empty date always means closed."""
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import os
 
 
@@ -24,6 +24,15 @@ def launch_status(moment=None, *, team=False):
     start = configured_start(team=team)
     season = configured_start()
     active = bool(start and current >= start and (not team or (season and current >= season)))
+    # A finite launch is an explicit operations setting. After S1, remain in
+    # intermission until the operator prepares the separately approved S2.
+    cycles = int(os.environ.get('GRIDSHARD_SEASON_AUTO_CYCLES', '0'))
+    if cycles < 0:
+        raise ValueError('GRIDSHARD_SEASON_AUTO_CYCLES cannot be negative')
+    if season and cycles and current >= season + timedelta(days=28 * cycles):
+        return {'active': False, 'status': 'waiting_for_content',
+                'starts_at': start.isoformat().replace('+00:00', 'Z') if start else '',
+                'intermission': True}
     if active and season:
         from .first_season_profile import content_ready
         if not content_ready(current, season):
@@ -66,7 +75,7 @@ def first_season_bots(moment=None, *, period_id=None, team=False):
         try:
             if '-W' in identity:
                 year, week = identity.split('-W')
-                current = datetime.fromisocalendar(int(year), int(week), 1).replace(tzinfo=timezone.utc)
+                current = datetime.fromisocalendar(int(year), int(week), start.isoweekday()).replace(tzinfo=timezone.utc)
             else:
                 current = datetime.fromisoformat(identity.replace('_', '-')).replace(tzinfo=timezone.utc)
         except ValueError:

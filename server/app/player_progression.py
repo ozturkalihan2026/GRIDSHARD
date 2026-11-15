@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from .competition_control import competition_eligible, launch_status
+from .competition_cycle import weekly_cycle
 from datetime import datetime, timezone
 
 from .arena_canon import trophy_delta, unlocked_module_ids
@@ -266,8 +267,7 @@ class PlayerProgressionService:
                 )
             tier_after = int(updated.engagement_view()["current_tier"])
             completed_at = (completed_at or datetime.now(timezone.utc)).astimezone(timezone.utc)
-            iso_year, iso_week, _ = completed_at.isocalendar()
-            weekly_period = f"{iso_year}-W{iso_week:02d}"
+            weekly_period = weekly_cycle(completed_at)['id']
             if (
                 updated.weekly_tournament_registered_period == weekly_period
                 and contributes_to_weekly_tournament(state.match_type)

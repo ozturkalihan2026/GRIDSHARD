@@ -39,7 +39,11 @@ def validate(document):
             raise ValueError('Invalid announcement delivery channel')
         if instant(item['publish_at']) >= instant(item['expires_at']):
             raise ValueError('Invalid announcement window')
-        if instant(item['publish_at']).date() > date.fromisoformat(item['target_release_on']):
+        schedule = item.get('campaign_type') == 'season_schedule'
+        if schedule and (item.get('min_server_version') != item['target_version'] or item.get('server_transition_on')):
+            raise ValueError('Season schedule needs an already deployed client/server line')
+        deadline = item['season_starts_on'] if schedule else item['target_release_on']
+        if instant(item['publish_at']).date() > date.fromisoformat(deadline):
             raise ValueError('Prerelease announcement cannot start after its target release date')
         if item.get('server_transition_on') and date.fromisoformat(item['server_transition_on']) != date.fromisoformat(item['target_release_on']):
             raise ValueError('Server transition must match the reviewed release target')
@@ -65,6 +69,15 @@ def validate(document):
             not isinstance(item.get(key), str) or not item[key].strip() or len(item[key]) > 6000 for key in followup
         ):
             raise ValueError('Incomplete bilingual season followup')
+    by_id = {item['notice_id']:item for item in document['announcements']}
+    for item in document['announcements']:
+        if item.get('superseded_by'):
+            replacement = by_id.get(item['superseded_by'])
+            if (not replacement or replacement.get('superseded_by')
+                    or replacement.get('campaign_type') != 'season_schedule'
+                    or replacement['target_version'] != item['target_version']
+                    or instant(replacement['publish_at']) < instant(item['publish_at'])):
+                raise ValueError('Invalid season schedule replacement')
     return document
 
 
@@ -84,7 +97,11 @@ def active_announcements(current_version, now, document=None):
     current = version_key(current_version)
     moment = (now.replace(tzinfo=timezone.utc) if now.tzinfo is None else now.astimezone(timezone.utc))
     result = []
+    replacements = {i['notice_id'] for i in document['announcements']
+                    if i['status'] == 'published' and instant(i['publish_at']) <= moment}
     for raw in sorted(document['announcements'], key=lambda i: (instant(i['publish_at']), i['notice_id'])):
+        if raw.get('superseded_by') in replacements:
+            continue
         if raw['status'] != 'published' or not instant(raw['publish_at']) <= moment < instant(raw['expires_at']):
             continue
         if raw.get('min_server_version') and current < version_key(raw['min_server_version']):

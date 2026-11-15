@@ -130,7 +130,7 @@ def test_maintenance_uses_2200_tr_and_crosses_midnight_with_two_hours():
 
 def test_post_upgrade_tournament_popup_has_its_own_ack_and_server_gate(inbox, monkeypatch):
     profile,profiles,_=inbox
-    clock=datetime(2026,11,24,tzinfo=timezone.utc)
+    clock=datetime(2026,11,14,tzinfo=timezone.utc)  # Before the subsequent schedule revision.
     monkeypatch.setattr(profiles,'_now_func',lambda:clock)
     profile.acknowledged_announcement_ids=(ID,)
     tour_id='preview-2-4-0-tournament-launch'
@@ -150,6 +150,17 @@ def test_post_upgrade_tournament_popup_has_its_own_ack_and_server_gate(inbox, mo
     assert gateway._reward_inbox_view(profile)['announcement'] is None
     assert set(profile.acknowledged_announcement_ids)=={ID,tour_id}
     assert announcements.pending_announcement(profile,'2.5.0',clock) is None
+
+
+def test_new_schedule_supersedes_old_popups_without_reusing_their_ack(inbox):
+    profile, _, _ = inbox
+    profile.acknowledged_announcement_ids = (ID, 'preview-2-4-0-tournament-launch')
+    now = datetime(2026, 11, 15, tzinfo=timezone.utc)
+    selected = announcements.pending_announcement(profile, '2.4.0', now)
+    assert selected['notice_id'] == 'preview-s1-automatic-opening-20261124'
+    assert '24 Kasım 2026' in selected['body_tr'] and '22 Aralık 2026' in selected['body_tr']
+    assert 'S2' in selected['body_tr'] and selected['season_starts_on'] == '2026-11-24'
+    assert len(announcements.active_announcements('2.4.0', now)) == 1
 
 
 def test_reading_the_previous_maintenance_notice_does_not_hide_the_early_patch(inbox, monkeypatch):
