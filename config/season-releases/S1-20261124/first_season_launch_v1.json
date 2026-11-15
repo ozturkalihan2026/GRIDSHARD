@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "status": "published",
+  "season_number": 1,
+  "season_id": "gridshard_2026_11_24",
+  "starts_at": "2026-11-24T00:00:00Z",
+  "road_additional_store_chests": false,
+  "existing_module_ids": [
+    "laser",
+    "pulse_cannon",
+    "railgun",
+    "missile_launcher",
+    "drone_bay",
+    "arc_cannon",
+    "plasma_mortar",
+    "quantum_repeater",
+    "burst_cannon",
+    "shield_breaker",
+    "shield",
+    "armor",
+    "barrier",
+    "reflector",
+    "guardian_dome",
+    "phase_armor",
+    "buffer_shield",
+    "last_bastion",
+    "repair",
+    "amplifier",
+    "emp",
+    "virus",
+    "cleanser",
+    "speed_relay"
+  ],
+  "release_checks": {
+    "reward_budget": true,
+    "unique_cosmetics": true,
+    "rollover_restore": true,
+    "old_clients": true,
+    "android_acceptance": true
+  },
+  "cosmetic_allocations": [
+    {
+      "source": "season_road",
+      "period_id": "gridshard_2026_11_24",
+      "slot": 40,
+      "cosmetics": {
+        "avatar_frame_id": "aurora_frame",
+        "profile_background_id": "aurora_banner"
+      }
+    },
+    {
+      "source": "season_leaderboard",
+      "period_id": "gridshard_2026_11_24",
+      "slot": 1,
+      "cosmetics": {
+        "avatar_frame_id": "solar_frame",
+        "profile_background_id": "solar_banner"
+      }
+    },
+    {
+      "source": "weekly_tournament",
+      "period_id": "2026-W51",
+      "slot": 1,
+      "cosmetics": {
+        "avatar_frame_id": "abyss_frame",
+        "profile_background_id": "abyss_banner"
+      }
+    },
+    {
+      "source": "team_tournament",
+      "period_id": "2026-11-24",
+      "slot": 1,
+      "cosmetics": {
+        "team_emblem_id": "aurora_sigil",
+        "team_frame_id": "aurora_team_frame",
+        "team_name_color_id": "aurora_team_name"
+      }
+    }
+  ],
+  "resource_weeks": [
+    {
+      "period_id": "2026-W48",
+      "prizes": [
+        {
+          "position": 1,
+          "circuit_credits": 1200,
+          "flux_shards": 90,
+          "module_definition_id": "laser",
+          "module_shards": 36
+        },
+        {
+          "position": 2,
+          "circuit_credits": 760,
+          "flux_shards": 55,
+          "module_definition_id": "laser",
+          "module_shards": 24
+        },
+        {
+          "position": 3,
+          "circuit_credits": 420,
+          "flux_shards": 30,
+          "module_definition_id": "laser",
+          "module_shards": 18
+        }
+      ]
+    },
+    {
+      "period_id": "2026-W49",
+      "prizes": [
+        {
+          "position": 1,
+          "circuit_credits": 1200,
+          "flux_shards": 90,
+          "module_definition_id": "shield",
+          "module_shards": 36
+        },
+        {
+          "position": 2,
+          "circuit_credits": 760,
+          "flux_shards": 55,
+          "module_definition_id": "shield",
+          "module_shards": 24
+        },
+        {
+          "position": 3,
+          "circuit_credits": 420,
+          "flux_shards": 30,
+          "module_definition_id": "shield",
+          "module_shards": 18
+        }
+      ]
+    },
+    {
+      "period_id": "2026-W50",
+      "prizes": [
+        {
+          "position": 1,
+          "circuit_credits": 1200,
+          "flux_shards": 90,
+          "module_definition_id": "pulse_cannon",
+          "module_shards": 36
+        },
+        {
+          "position": 2,
+          "circuit_credits": 760,
+          "flux_shards": 55,
+          "module_definition_id": "pulse_cannon",
+          "module_shards": 24
+        },
+        {
+          "position": 3,
+          "circuit_credits": 420,
+          "flux_shards": 30,
+          "module_definition_id": "pulse_cannon",
+          "module_shards": 18
+        }
+      ]
+    }
+  ],
+  "bot_competition_policy": {
+    "scope": "first_season_only",
+    "population": 240,
+    "teams": 12,
+    "reward_positions": "actual_rank",
+    "bot_rewards": false,
+    "all_bot_prizes": "append_frozen_package_to_plan_tail"
+  },
+  "operator_anchored_weeks": true,
+  "content_hash": "494b44678999bfb572fc6c222f1cb33c9f260acf04866bd1383a9fdbf34c93bd"
+}

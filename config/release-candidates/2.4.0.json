@@ -14,5 +14,16 @@
   "verification_report": "docs/planning/release-240-rc5-acceptance-20261113.md",
   "play_review_submitted": true,
   "play_review_submission_basis": "User confirmed 2.4.0 approved and distributed on 2026-11-14",
-  "play_rollout_confirmed_by_user": true
+  "play_rollout_confirmed_by_user": true,
+  "season_opening_prepared": true,
+  "server_operational_patch": {
+    "operation": "s1-automatic-20261115",
+    "source_commit": "3b3cdb51f52cddadd189d122c7b2a2860203b8f1",
+    "image_id": "sha256:0095b5e2652fc8755eb5e59b57db5a305dedab9d0b2393eef9f5376f9e36cd68",
+    "season_content_manifest": "config/season-releases/S1-20261124/manifest.json",
+    "starts_at": "2026-11-24T00:00:00Z",
+    "ends_at": "2026-12-22T00:00:00Z",
+    "automatic_cycles": 1,
+    "aab_unchanged": true
+  }
 }

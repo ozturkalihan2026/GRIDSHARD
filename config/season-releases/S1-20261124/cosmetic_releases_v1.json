@@ -1,0 +1,428 @@
+{
+  "schema_version": 1,
+  "themes": [
+    {
+      "id": "aurora",
+      "name_tr": "Kutup Işığı",
+      "name_en": "Aurora"
+    },
+    {
+      "id": "solar",
+      "name_tr": "Güneş Ocağı",
+      "name_en": "Solar Forge"
+    },
+    {
+      "id": "abyss",
+      "name_tr": "Derin Akım",
+      "name_en": "Deep Current"
+    }
+  ],
+  "require_fresh_from": {
+    "season_road": "gridshard_2026_11_24",
+    "season_leaderboard": "gridshard_2026_11_24",
+    "weekly_tournament": "2026-W48",
+    "team_tournament": "2026-11-24"
+  },
+  "items": [
+    {
+      "id": "aurora_frame",
+      "field": "avatar_frame_id",
+      "name_tr": "Kutup Işığı Halkası",
+      "name_en": "Aurora Frame",
+      "theme": "aurora",
+      "design_id": "aurora_frame_v1",
+      "status": "approved",
+      "look": {
+        "color": "#83f7d7",
+        "accent": "#173d6d",
+        "pattern": "arcs"
+      }
+    },
+    {
+      "id": "aurora_banner",
+      "field": "profile_background_id",
+      "name_tr": "Kutup Işığı Devresi",
+      "name_en": "Aurora Circuit",
+      "theme": "aurora",
+      "design_id": "aurora_banner_v1",
+      "status": "approved",
+      "look": {
+        "color": "#83f7d7",
+        "accent": "#173d6d",
+        "pattern": "arcs"
+      }
+    },
+    {
+      "id": "aurora_sigil",
+      "field": "team_emblem_id",
+      "name_tr": "Kutup Işığı Arması",
+      "name_en": "Aurora Sigil",
+      "theme": "aurora",
+      "design_id": "aurora_sigil_v1",
+      "status": "approved",
+      "look": {
+        "color": "#83f7d7",
+        "accent": "#173d6d",
+        "pattern": "arcs",
+        "path": "M3 17 14 3l-2 8 9-2-14 14 2-8Z"
+      }
+    },
+    {
+      "id": "aurora_team_frame",
+      "field": "team_frame_id",
+      "name_tr": "Kutup Işığı Takım Çerçevesi",
+      "name_en": "Aurora Team Frame",
+      "theme": "aurora",
+      "design_id": "aurora_team_frame_v1",
+      "status": "approved",
+      "look": {
+        "color": "#83f7d7",
+        "accent": "#173d6d",
+        "pattern": "arcs"
+      }
+    },
+    {
+      "id": "aurora_team_name",
+      "field": "team_name_color_id",
+      "name_tr": "Kutup Işığı İsim Rengi",
+      "name_en": "Aurora Name Color",
+      "theme": "aurora",
+      "design_id": "aurora_team_name_v1",
+      "status": "approved",
+      "look": {
+        "color": "#83f7d7",
+        "accent": "#173d6d",
+        "pattern": "arcs"
+      }
+    },
+    {
+      "id": "solar_frame",
+      "field": "avatar_frame_id",
+      "name_tr": "Güneş Ocağı Halkası",
+      "name_en": "Solar Forge Frame",
+      "theme": "solar",
+      "design_id": "solar_frame_v1",
+      "status": "approved",
+      "look": {
+        "color": "#ffd078",
+        "accent": "#7a3429",
+        "pattern": "rays"
+      }
+    },
+    {
+      "id": "solar_banner",
+      "field": "profile_background_id",
+      "name_tr": "Güneş Ocağı Devresi",
+      "name_en": "Solar Forge Circuit",
+      "theme": "solar",
+      "design_id": "solar_banner_v1",
+      "status": "approved",
+      "look": {
+        "color": "#ffd078",
+        "accent": "#7a3429",
+        "pattern": "rays"
+      }
+    },
+    {
+      "id": "solar_sigil",
+      "field": "team_emblem_id",
+      "name_tr": "Güneş Ocağı Arması",
+      "name_en": "Solar Forge Sigil",
+      "theme": "solar",
+      "design_id": "solar_sigil_v1",
+      "status": "approved",
+      "look": {
+        "color": "#ffd078",
+        "accent": "#7a3429",
+        "pattern": "rays",
+        "path": "M12 3 15 8 21 8 18 13 21 18 15 18 12 23 9 18 3 18 6 13 3 8 9 8Z"
+      }
+    },
+    {
+      "id": "solar_team_frame",
+      "field": "team_frame_id",
+      "name_tr": "Güneş Ocağı Takım Çerçevesi",
+      "name_en": "Solar Forge Team Frame",
+      "theme": "solar",
+      "design_id": "solar_team_frame_v1",
+      "status": "approved",
+      "look": {
+        "color": "#ffd078",
+        "accent": "#7a3429",
+        "pattern": "rays"
+      }
+    },
+    {
+      "id": "solar_team_name",
+      "field": "team_name_color_id",
+      "name_tr": "Güneş Ocağı İsim Rengi",
+      "name_en": "Solar Forge Name Color",
+      "theme": "solar",
+      "design_id": "solar_team_name_v1",
+      "status": "approved",
+      "look": {
+        "color": "#ffd078",
+        "accent": "#7a3429",
+        "pattern": "rays"
+      }
+    },
+    {
+      "id": "abyss_frame",
+      "field": "avatar_frame_id",
+      "name_tr": "Derin Akım Halkası",
+      "name_en": "Deep Current Frame",
+      "theme": "abyss",
+      "design_id": "abyss_frame_v1",
+      "status": "approved",
+      "look": {
+        "color": "#a8c8ff",
+        "accent": "#352361",
+        "pattern": "tides"
+      }
+    },
+    {
+      "id": "abyss_banner",
+      "field": "profile_background_id",
+      "name_tr": "Derin Akım Devresi",
+      "name_en": "Deep Current Circuit",
+      "theme": "abyss",
+      "design_id": "abyss_banner_v1",
+      "status": "approved",
+      "look": {
+        "color": "#a8c8ff",
+        "accent": "#352361",
+        "pattern": "tides"
+      }
+    },
+    {
+      "id": "abyss_sigil",
+      "field": "team_emblem_id",
+      "name_tr": "Derin Akım Arması",
+      "name_en": "Deep Current Sigil",
+      "theme": "abyss",
+      "design_id": "abyss_sigil_v1",
+      "status": "approved",
+      "look": {
+        "color": "#a8c8ff",
+        "accent": "#352361",
+        "pattern": "tides",
+        "path": "M12 3 17 8 17 14 21 12 18 20 12 24 6 20 3 12 7 14 7 8Z"
+      }
+    },
+    {
+      "id": "abyss_team_frame",
+      "field": "team_frame_id",
+      "name_tr": "Derin Akım Takım Çerçevesi",
+      "name_en": "Deep Current Team Frame",
+      "theme": "abyss",
+      "design_id": "abyss_team_frame_v1",
+      "status": "approved",
+      "look": {
+        "color": "#a8c8ff",
+        "accent": "#352361",
+        "pattern": "tides"
+      }
+    },
+    {
+      "id": "abyss_team_name",
+      "field": "team_name_color_id",
+      "name_tr": "Derin Akım İsim Rengi",
+      "name_en": "Deep Current Name Color",
+      "theme": "abyss",
+      "design_id": "abyss_team_name_v1",
+      "status": "approved",
+      "look": {
+        "color": "#a8c8ff",
+        "accent": "#352361",
+        "pattern": "tides"
+      }
+    }
+  ],
+  "releases": [
+    {
+      "id": "s1-cosmetics-1",
+      "source": "season_road",
+      "period_id": "gridshard_2026_11_24",
+      "status": "published",
+      "placements": [
+        {
+          "slot": 40,
+          "cosmetics": {
+            "avatar_frame_id": "aurora_frame",
+            "profile_background_id": "aurora_banner"
+          }
+        }
+      ],
+      "content_hash": "f446e95a3b822c46411c2623d507447df026ba898d5d3d6b66318c81c34e94cc"
+    },
+    {
+      "id": "s1-cosmetics-2",
+      "source": "season_leaderboard",
+      "period_id": "gridshard_2026_11_24",
+      "status": "published",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {
+            "avatar_frame_id": "solar_frame",
+            "profile_background_id": "solar_banner"
+          }
+        }
+      ],
+      "content_hash": "e64ba04e012d9f1d974750139fe38eb1be71aa4959bc215e620ce76e4bc0f77d"
+    },
+    {
+      "id": "s1-cosmetics-3",
+      "source": "weekly_tournament",
+      "period_id": "2026-W51",
+      "status": "published",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {
+            "avatar_frame_id": "abyss_frame",
+            "profile_background_id": "abyss_banner"
+          }
+        }
+      ],
+      "content_hash": "71af269eafc10c97cb24fe83534ed59a23790b0aacd092c7d64bb75da7826e1f"
+    },
+    {
+      "id": "s1-cosmetics-4",
+      "source": "team_tournament",
+      "period_id": "2026-11-24",
+      "status": "published",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {
+            "team_emblem_id": "aurora_sigil",
+            "team_frame_id": "aurora_team_frame",
+            "team_name_color_id": "aurora_team_name"
+          }
+        }
+      ],
+      "content_hash": "13de06942036fc82d082a42249a1da61e0ef060fb6315cd43e77da8cf807de9a"
+    },
+    {
+      "id": "s1-resources-1",
+      "source": "weekly_tournament",
+      "period_id": "2026-W48",
+      "status": "published",
+      "reward_kind": "resource_only",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 1200,
+            "flux_shards": 90,
+            "module_definition_id": "laser",
+            "module_shards": 36
+          }
+        },
+        {
+          "slot": 2,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 760,
+            "flux_shards": 55,
+            "module_definition_id": "laser",
+            "module_shards": 24
+          }
+        },
+        {
+          "slot": 3,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 420,
+            "flux_shards": 30,
+            "module_definition_id": "laser",
+            "module_shards": 18
+          }
+        }
+      ],
+      "content_hash": "5413811fcd71b17bdd7a76cca832c3dd490b13093e207556a42ca4262238bf01"
+    },
+    {
+      "id": "s1-resources-2",
+      "source": "weekly_tournament",
+      "period_id": "2026-W49",
+      "status": "published",
+      "reward_kind": "resource_only",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 1200,
+            "flux_shards": 90,
+            "module_definition_id": "shield",
+            "module_shards": 36
+          }
+        },
+        {
+          "slot": 2,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 760,
+            "flux_shards": 55,
+            "module_definition_id": "shield",
+            "module_shards": 24
+          }
+        },
+        {
+          "slot": 3,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 420,
+            "flux_shards": 30,
+            "module_definition_id": "shield",
+            "module_shards": 18
+          }
+        }
+      ],
+      "content_hash": "c3417939bbabe15cca7208fc6f48488a3ebbf1bbcc4e4ac9c84091e7f5e2fdae"
+    },
+    {
+      "id": "s1-resources-3",
+      "source": "weekly_tournament",
+      "period_id": "2026-W50",
+      "status": "published",
+      "reward_kind": "resource_only",
+      "placements": [
+        {
+          "slot": 1,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 1200,
+            "flux_shards": 90,
+            "module_definition_id": "pulse_cannon",
+            "module_shards": 36
+          }
+        },
+        {
+          "slot": 2,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 760,
+            "flux_shards": 55,
+            "module_definition_id": "pulse_cannon",
+            "module_shards": 24
+          }
+        },
+        {
+          "slot": 3,
+          "cosmetics": {},
+          "resources": {
+            "circuit_credits": 420,
+            "flux_shards": 30,
+            "module_definition_id": "pulse_cannon",
+            "module_shards": 18
+          }
+        }
+      ],
+      "content_hash": "7f28a409e8315f056f0921cfd8c64d8d393e435775cacd013ebe4f739af98778"
+    }
+  ]
+}

@@ -4,3 +4,5 @@
 /server/migrations/*.sql -text whitespace=cr-at-eol
 # Actual installed-client executables are active compatibility test inputs.
 /client/tests/fixtures/installed/*/relay-client.js -text
+# Published season catalogs are immutable byte-hashed deployment inputs.
+/config/season-releases/**/*.json text eol=lf

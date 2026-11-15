@@ -53,6 +53,31 @@ kalıcı ilerleme sezon arasında kullanılabilir; yeni sezon içeriği verilmez
 Kanıtlar: `qa_reports/s1-autostart-20261115/`. Canlı geçiş sonucu ayrıca
 bu dosyaya ve checkpoint'e işlenir; hazırlık kabulü canlı dağıtım kanıtı değildir.
 
+## Canlı geçiş tamamlandı
+
+15 Kasım 2026 **21.59.47 TR**'de uygulandı; kaynak
+`3b3cdb51f52cddadd189d122c7b2a2860203b8f1`, imaj
+`sha256:0095b5e2652fc8755eb5e59b57db5a305dedab9d0b2393eef9f5376f9e36cd68`.
+Yalnız onaylı 12 sunucu dosyası değişti; istemci dosyaları aynı kaldı.
+
+- Yeni yedek ayrı PostgreSQL'e restore edildi: **60 profil, 28 tablonun bütün
+  içerikleri eşit**. Şema, PG/Redis/Caddy, bağlar ve diğer ortam ayarları korundu.
+- Operasyon 20,14 saniye sürdü. Canlı HTTPS sağlıklı; runtime 2.4.0/protokol 2,
+  yeniden başlatma sayacı 0. Yedi içerik dönemi yayımlandı.
+- Canlı başlangıç/haftalık/takım takvimi 24 Kasım 00.00 UTC; bitiş 22 Aralık 00.00 UTC.
+  Sezon şu anda **scheduled / active=false**. S2 kapısı ayrıca kapalı.
+- Canlı imajın kendi ortamında veri değiştirmeyen hesaplarla açılıştan hemen
+  önce/sonra, dört tam hafta ve kapanış/sonraki hafta sınırları doğrulandı.
+- Son değişiklikten sonra bildirim/kalıcılık/plan araçlarının 62 testi de PASS.
+  Hosted CI çalıştırılmadı; doğrulamalar yereldir.
+- Yayımlanmış S1 katalogları bilgisayarlar arası devam için
+  `config/season-releases/S1-20261124/` altında versiyonlandı. Sonraki sunucu
+  geçişi bunları taslak katalogla değiştiremez veya kullanılan sanatı boş stok sayamaz.
+
+Operasyon: `/opt/gridshard/operations/s1-automatic-20261115-3b3cdb51f52c`.
+Yedek: `/var/backups/gridshard-production/20261115-before-s1-3b3cdb51f52c`.
+23 Kasım'da komut veya uygulama dağıtımı gerekmiyor. Yeni AAB üretilmedi.
+
 2.4.0'ın takım ekranında yerleşik bazı yardım metinleri hâlâ eski hafta günü
 adlarını içerir. Sunucunun güncel kuralı ve takvim duyurusu başlangıca göre
 ilk üç kayıt günü, 4. gün eşleşme ve 5–7. gün maç olarak doğru çalışır. Sabit

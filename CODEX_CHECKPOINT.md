@@ -1,3 +1,29 @@
+# S1 otomatik açılışı canlıda hazır — 15 Kasım 2026
+
+- Canlı geçiş **21.59.47 TR** tamamlandı. Kaynak3b3cdb51f52cddadd189d122c7b2a2860203b8f1;
+  imajsha256:0095b5e2652fc8755eb5e59b57db5a305dedab9d0b2393eef9f5376f9e36cd68.
+- **24 Kasım03.00TR açılış →22 Aralık03.00TR kapanış**, dört tam hafta.
+  Sezon, günlük giriş ve sezon ödülleri, iki turnuva ve botlar aynı kapıda.
+  Auto-cycles=1; S2 otomatik açılmaz, dinlenme arası sonrası ayrı karar gerekir.
+  23 Kasım'da insan müdahalesi/açık bilgisayar/AAB gerekmiyor.
+- Yeni yedek+ayrı PostgreSQL restore PASS; **60 profil/28 tablo tam içerik eşit**.
+  Yalnız12 kabul edilmiş sunucu dosyası değişti; web/client, AAB, şema,
+  PG/Redis/Caddy, bağlar ve diğer ayarlar korundu. Süre20,14s, restart0.
+- HTTPS ev bağlantısından PASS. AWS'nin kendisinden dış Cloudflare isteği403
+  verdi; loopback sağlığı ve ev bağlantısı HTTPS'i ayrı doğrulandı. Canlı durum
+  scheduled/active=false; yedi katalog dönemi published. Gelecek zaman sınırları
+  veri değiştirmeyen hesaplarla doğrulandı; canlı saat/oyuncu değiştirilmedi.
+- Kanıtlarqa_reports/s1-autostart-20261115/{live-status,final-live-verification,
+  https-verification,production-image-smoke,compatibility}.json.2108tamLinux
+  test +son62bildirim/PG/plan testi PASS. Native/AAB değişmedi; hostedCI yok.
+- **Yayımlanan gerçek içerik config/season-releases/S1-20261124/ altında.**
+  server/data taslaklarının tekrar dağıtılması S1'i kapatabilir; sonraki2.5.0
+  sunucu geçişinde bu pubkatalogları ve kullanılmış9kozmetik stoğunu koru.
+  AABrc.5/source825cbe27 pinini güncelleme; ayrı server_operational_patch kaydı var.
+- docs/planning/s1-automatic-operations-20261115.md güncel. Sabit eski hafta günü
+  yardım metinleri2.5UIkabulünde; güncel sunucu kuralı ve yeni takvim duyurusu
+  ilk3gün kayıt/4.gün eşleşme/5–7.gün maç diye doğru. S1 başlamadan açılmış sayılmaz.
+
 # S1 yeni takvim ve otomasyon kabulü — 15 Kasım 2026
 
 - Kullanıcı 30 Kasım yerine **24 Kasım 03.00 TR** otomatik açılış istedi.

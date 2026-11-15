@@ -1,0 +1,34 @@
+{
+  "season_id": "gridshard_2026_11_24",
+  "starts_at": "2026-11-24T00:00:00Z",
+  "publication_ready": true,
+  "production_changed": true,
+  "files": {
+    "first_season_launch_v1.json": "7933a929cdaa6efb7466d2570bad271d8c3e2e6eae6854ad2b41edafea74ade8",
+    "cosmetic_releases_v1.json": "a51a14a151da13c9de559d092d84e04161bac539071204471767e18bb5eecdca"
+  },
+  "acceptance": {
+    "season_id": "gridshard_2026_11_24",
+    "reward_budget": true,
+    "unique_cosmetics": true,
+    "rollover_restore": true,
+    "old_clients": true,
+    "android_acceptance": true,
+    "evidence": {
+      "server_tests": "2108 PASS, zero skips, Linux Python3.12/PostgreSQL17/Redis",
+      "compatibility": "Actual signed 2.4.0 assets, Chromium/WebKit, only runtime API changed; both PASS",
+      "android_native": "Unchanged rc.5 APK/AAB: prior physical acceptance retained; no new native build or device run",
+      "aab_sha256": "7a0ce973f6504555a3da2d3b90e6e378a22a9efbeff787b4e92478ff538403d1",
+      "publication_does_not_activate_early": true
+    }
+  },
+  "schema_version": 1,
+  "source_commit": "3b3cdb51f52cddadd189d122c7b2a2860203b8f1",
+  "base_image": "sha256:4f9b62995f551770691adcb4f26926256618136cddf9759f6d19833c0fe32b52",
+  "deployed_image": "sha256:0095b5e2652fc8755eb5e59b57db5a305dedab9d0b2393eef9f5376f9e36cd68",
+  "deployed_at_utc": "2026-11-15T18:59:47.091932+00:00",
+  "automatic_cycles": 1,
+  "ends_at": "2026-12-22T00:00:00Z",
+  "s2_start_mode": "manual",
+  "live_verified": true
+}
