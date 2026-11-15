@@ -1852,7 +1852,7 @@
       ],
       "acceptance": [
         "Mevcut 24 modül ve 15 kozmetikle S1 profili, sabit kaynak haftaları, tekil teslim, kapanış hakları ve gerçek restore kanıtı tamamlanır.",
-        "13 Kasım hedefli sürüm notu/CI/AAB ve 30 Kasım hedefli başlangıç ayrı kapılardır; eski istemci, TR/EN mobil ve Play cihaz testi geçmeden açılmaz. Yeni kart veya 18 yeni kozmetik bu sürümün koşulu değildir.",
+        "13 Kasım hedefli sürüm notu/CI/AAB ve 24 Kasım otomatik başlangıcı ayrı kapılardır; eski istemci, TR/EN mobil ve Play cihaz testi geçmeden açılmaz. Yeni kart veya 18 yeni kozmetik bu sürümün koşulu değildir.",
         "UI-07 sarı geri/ileri envanteri, AUDIO-01 saldırı ve AUDIO-02 çekirdek ses matrisleri ile Android dinleme kabulü kapanmadan 2.4.0 tamamlanmaz.",
         "Sabit kasa çekirdek teslimi, Topla açılış animasyonu ve 12.240 XP eşiğini koruyan günlük/sezonluk emirler kabul edilmeden S1 yayını tamamlanmaz.",
         "240 botun gerçek sırası, tamamen bot kazanan paketlerin tekil kalıcı ertelemesi, turnuva ödül önizlemesi ve beş arkadaş sekmesinin çizgisiz görünümü doğrulanır. Yayın öncesi gerçek hesap adlarıyla bot adı çakışması raporlanır; oyuncu adları değiştirilmez."
@@ -3303,12 +3303,13 @@
       ],
       "scope": "Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. En az bir yeni menü ve bir özgün savaş bestesi; merak/umut ve kontrollü rekabet.",
       "keep_closed": "Yeni gerçek para ürünü, yeni para birimi, ücretli yeniden çekiliş ve PvP deneme gücü artışı.",
-      "exit": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. AUDIO-03 kabulü ve ön duyuru standardı sürüm kapısındadır. Reklam/ödeme SDK’ları ve BILLING izni son AAB’de bulunmaz; geçmiş haklar korunur.",
+      "exit": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. AUDIO-03 kabulü ve ön duyuru standardı sürüm kapısındadır. Reklam/ödeme SDK’ları ve BILLING izni son AAB’de bulunmaz; geçmiş haklar korunur. Takım turnuvasının bütün sabit hafta günü açıklamaları TR/EN olarak başlangıca göre gün numaralarıyla eşleşir.",
       "target_release_on": "2026-12-21",
       "scope_freezes_on": "2026-12-14",
       "season_starts_on": "2026-12-28",
       "date_confidence": "hedef",
-      "delivery_document": "docs/planning/releases/2.5.0.md"
+      "delivery_document": "docs/planning/releases/2.5.0.md",
+      "development_policy": "15 Kasım 2026 güncel kararı: 2.4.0 yayımlandı; S1 otomatik takvimi 24 Kasım–22 Aralık 03.00 TR olarak canlıda hazır. 2.5.0 paketinin 21 Aralık yayın hedefi korunur. Reklam/satın alma kaynakları ve geçmiş işlem/iade hakları korunur; SDK’lar, native mağaza köprüsü ve BILLING/reklam izinleri pakete alınmaz; bu iş için ayrı 2.4.1 üretilmez. Sabit takım yardım metinleri başlangıca göre gün numaralarına çevrilir. Son AAB, TR/EN cihaz kabulü ve Console beyanları yayın kapısıdır. S1’in yayımlanmış kataloğu ve kullanılmış stoğu korunur. Kapanıştan sonra düzenleme/dinlenme arası vardır; 28 Aralık S2 yalnız koşullu hedeftir ve ayrıca operatör onayı gerekir. Paket yayını S2’yi açmaz. Ayrıntı: docs/planning/mobile-250-without-monetization.md."
     },
     {
       "version": "2.6.0",
@@ -3399,15 +3400,17 @@
     "confirmation_evidence": "docs/planning/release-230-user-confirmation-20261103.md"
   },
   "active_development": {
-    "target_version": "2.4.0",
-    "branch": "codex/release-2-4-0",
-    "plan": "docs/RELEASE_2_4_0_GELISTIRME_PLANI_20261103.md",
-    "milestone": "remaining_release_240_acceptance",
+    "target_version": "2.5.0",
+    "branch": "codex/develop-2.5.0",
+    "plan": "docs/planning/releases/2.5.0.md",
+    "milestone": "release_250_implementation_and_acceptance",
     "status": "in_progress",
     "scope_decision": "user_approved",
-    "target_release_on": "2026-11-13",
-    "season_starts_on": "2026-11-30",
-    "calendar": "docs/planning/release_calendar_v1.json"
+    "target_release_on": "2026-12-21",
+    "season_starts_on": "2026-12-28",
+    "calendar": "docs/planning/release_calendar_v1.json",
+    "season_start_mode": "manual",
+    "season_date_confidence": "conditional"
   },
-  "planning_updated_on": "2026-11-13"
+  "planning_updated_on": "2026-11-15"
 }

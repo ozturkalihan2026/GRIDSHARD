@@ -16,10 +16,11 @@ Karar tarihi: **3 Kasım 2026**. Kullanıcı önceliği: **2.4.0'da mevcut
 paketlere bölünsün.** Ortak sanat yönü sürer. Bu belge planlama kaydıdır;
 canlı sezonu, ödül hakkını veya mağaza ürününü açmaz.
 
-**Çalışma hedefi: 2.4.0 yayını 23 Kasım 2026; ilk sezon 30 Kasım 2026,
-03.00 Türkiye saati.** Paket ile sezon arasında bir hafta güncelleme ve
-gözlem payı var. İlk sezon 28 Aralık 03.00'te biter. Bunlar çalışma hedefidir;
-Play onayı, cihaz testi veya hata çözümü gerçekleşmiş gibi gösterilmez.
+**15 Kasım güncel durum:** 2.4.0 yayımlandı. S1 ve iki turnuva **24 Kasım 2026
+03.00 TR** otomatik başlar, **22 Aralık 2026 03.00 TR** kapanır. Otomatik
+açılış/kapanış ve ödül teslimi canlıda hazırlanmıştır; 23 Kasım'da işlem gerekmez.
+Sonrasında düzenleme/dinlenme arası vardır. **S2 ayrıca onaylanacak**; 28 Aralık
+yalnız koşullu hedeftir. 2.5.0 paketinin 21 Aralık hedefi sezon açılışından ayrıdır.
 
 ## 1. Ödülün oyuncuya ne kazandırmasını istiyoruz?
 
@@ -76,16 +77,17 @@ kupon, lisans ve yan rota bu temelin üzerinde geliştirilecek yeni işlerdir.
 **S1 yalnız ilk açılışa özel olarak mevcut 24 modülle başlar.** Eski planın
 “ilk yayından önce iki yeni kart ve 18 yeni kozmetik” koşulu kullanıcı kararıyla
 sonraki paketlere bölündü. S2'den itibaren sezon başına en az bir yeni hazır
-modül hedefi korunur. Bu istisna kodda henüz uygulanmadı; yalnız ortam değişkeni
-yazarak mevcut sezon korumaları aşılmaz.
+modül hedefi korunur. İlk sezon istisnası ve otomatik kapanış canlıda uygulanmıştır;
+yayımlanmış içerik pini `config/season-releases/S1-20261124/` altındadır. Sonraki
+sunucu geçişi bu katalogları taslakla değiştiremez veya kullanılan sanatı boş stok sayamaz.
 
 | S1 ödül kaynağı | Kullanılacak içerik | Çalışma durumu / gerekli ekleme |
 | --- | --- | --- |
 | Sezon yolu, 40 kademe | Mevcut kaynak/sandık yolu; ana kozmetik Kutup Işığı oyuncu çerçevesi + zemini | Mevcut sunum/teslim temeli var; tekil tahsis, tam bütçe ve kapanış hakları doğrulanacak. |
 | Sezon sıralaması | Mevcut kaynak ödülleri ve prestij; ana oyuncu seti Güneş Ocağı | İlk 10 için kaynak/başarı sunumu gerçek teslimle eşleşecek; aynı tasarım başka döneme ayrılmayacak. |
-| 30 Kasım, 7 Aralık ve 14 Aralık haftaları | Mevcut uygun modül parçaları, evrensel parça, kredi/Akı ve sabit içerikli paketler | **Açıkça `resource_only` dönem türü** gerekir. Kozmetik yokluğu eski tekrar eden kozmetiğe düşmeyecek. Miktarlar BASE-01 bütçesi sonrası. |
-| 21 Aralık son hafta | Kaynak paketi + Derin Akım oyuncu seti | Üçüncü oyuncu seti yalnız bu haftaya ayrılır. Sonraki haftaya dönmez. |
-| Takım turnuvası | İlk takım seti mevcut dokuz takım öğesinden; ayrı başlangıç | Yeterli gerçek takım ve hazırlık varsa en erken 7 Aralık hedefi; kişisel sezon bunun için beklemez. Otomatik açılış sözü yoktur. |
+| 24 Kasım, 1 Aralık ve 8 Aralık haftaları | Sırasıyla Lazer, Kalkan, Darbe Topu parçaları; kredi/Akı | Yayımlanmış `resource_only` paketleri. Her dönem yedi tam gün; sınır 03.00 TR. |
+| 15–22 Aralık son hafta | Kaynak paketi + Derin Akım oyuncu seti | Üçüncü oyuncu seti yalnız final haftasına ayrılmıştır. Sonraki haftaya dönmez. |
+| Takım turnuvası, 24 Kasım–22 Aralık | Kutup Işığı takım setinin üç öğesi | S1 ile aynı anda otomatik açılır. İlk üç gün kayıt, 4. gün eşleşme, 5–7. gün maç; katılım kapıları ve S1 bot takımları geçerlidir. |
 
 Mevcut 15 öğe **altı oyuncu + dokuz takım öğesidir**; üç oyuncu seti yalnız
 üç ana kozmetik ödülünü karşılar. Dört haftanın hepsine yeni kozmetik vaat
@@ -109,58 +111,59 @@ Kaynak: `docs/planning/release_calendar_v1.json`. Aşağıdaki bölüm
 backlog ile eşleşmek zorundadır.
 
 <!-- release-calendar:begin -->
+**Güncel sezon ve ara kararı:** 2.4.0 yayımlandı. S1 24 Kasım 03.00 TR otomatik başlar, 22 Aralık 03.00 TR kapanır; ardından düzenleme/dinlenme arası vardır. S2 kendiliğinden açılmaz: 28 Aralık yalnız koşullu hedef, kesin tarih ayrıca onaylanacak. S3–S6 tarihleri S2 onayına bağlı tahmindir; S2 değişirse bağlı sezonlar yeniden planlanır. 2.5.0 paketinin 21 Aralık yayın hedefi sezon açılışından ayrıdır ve korunur.
+
 **2.4.0 geliştirme ve yayın kararı:** 6 Kasım 2026 kararı: 2.4.0 yayınlanana kadar açık geliştirme sürümüdür. Hata düzeltmeleri, UI iyileştirmeleri ve kabul edilen eklemeler aynı 2.4.0 adayında birikir; her düzeltmede 2.4.1 açılmaz. Test paketleri gerektiğinde yeniden üretilir; mağaza yüklemesi gerektirirse Android versionCode ilerler, görünen sürüm 2.4.0 kalır. Sunucu geçişi ve son kaynaktan üretilecek imzalı AAB dağıtımı planlanan yayın zamanında, kabul kapıları tamamlanınca yapılır. Hazır test APK’sı yayımlanmış sürüm veya dağıtıma hazır son AAB kabul edilmez. Genel sürüm ve sezon takvimi korunur; yeni fikirler uygun sürümün backlog, kapsam ve kabul maddelerine eklenebilir, tarih değişikliği ayrıca planlanır. 2.4.0 yayımlandıktan sonraki ayrı hata düzeltme yayını 2.4.1 olur; sonraki minor/major yayınlarda mevcut sürümleme kuralı sürer. 13 Kasım 2026 ek kararı: zorunlu yama nedeniyle yalnız 2.4.0 geçiş hedefi 23 Kasım yerine 13 Kasım 22.00–14 Kasım 00.00 TR olarak öne alındı. Kapsam kapanışı ve son kabul aynı gün yapılır; açık cihaz/CI/yedek/restore kapıları geçmiş sayılmaz. Sunucu geçişi ve imzalı AAB hazırlığı ev bilgisayarında; mağaza inceleme/dağıtım sonucu ayrıca doğrulanır. S1–S6, haftalık ve koşullu takım turnuvası takvimi değişmedi. 13 Kasım evde son karar: geçiş şimdi yapılır. S1, haftalık ve takım turnuvaları 24 Kasım 03.00 TR aynı anda başlar; 22 Aralık 03.00 TR biter. Günlük giriş ve sezon ödülleri sezon kapısına bağlıdır; ücretli sezon sütunu mağaza gibi gizlidir. 15 Kasım kararı önceki 30 Kasım hedefini değiştirir: S1 ve iki turnuva 24 Kasım 03.00 TR otomatik açılır; dört tam hafta sonunda 22 Aralık 03.00 TR kapanır. Oyuncu girişi olmadan kalıcı kapanış/ödül teslimi çalışır. Sonrasında sezon arası vardır; S2 için ayrı operatör kararı gerekir.
 
-**2.5.0 geliştirme ve yayın kararı:** 14 Kasım 2026 kararı: 2.4.0 kullanıcıya açıldı. Reklam/satın alma kaynakları ve eski işlem/iade hakları korunur; 2.5.0 ve sonrası paketlere AdMob/Native Purchases SDK’ları, native mağaza köprüsü ve BILLING/reklam izinleri alınmaz. Bu temizlik için ayrı 2.4.1 üretilmez. Nihai imzalı AAB denetimi, cihaz kabulü ve Console beyanları yayın kapısıdır. Takvim değişmez. Ayrıntı: docs/planning/mobile-250-without-monetization.md. S1 22 Aralık’ta kapanır; 28 Aralık S2 yalnız koşullu planlama hedefidir. Başlangıç dinlenme arası sonrasında ayrıca onaylanır; canlıda otomatik S2 açılmaz.
+**2.5.0 geliştirme ve yayın kararı:** 15 Kasım 2026 güncel kararı: 2.4.0 yayımlandı; S1 otomatik takvimi 24 Kasım–22 Aralık 03.00 TR olarak canlıda hazır. 2.5.0 paketinin 21 Aralık yayın hedefi korunur. Reklam/satın alma kaynakları ve geçmiş işlem/iade hakları korunur; SDK’lar, native mağaza köprüsü ve BILLING/reklam izinleri pakete alınmaz; bu iş için ayrı 2.4.1 üretilmez. Sabit takım yardım metinleri başlangıca göre gün numaralarına çevrilir. Son AAB, TR/EN cihaz kabulü ve Console beyanları yayın kapısıdır. S1’in yayımlanmış kataloğu ve kullanılmış stoğu korunur. Kapanıştan sonra düzenleme/dinlenme arası vardır; 28 Aralık S2 yalnız koşullu hedeftir ve ayrıca operatör onayı gerekir. Paket yayını S2’yi açmaz. Ayrıntı: docs/planning/mobile-250-without-monetization.md.
 
 | Sürüm | Çalışma dönemi | Kapsam kapanışı | Hedef yayın | Sezon başlangıcı | Oyuncuya gelen ana içerik | Kesinlik |
 | --- | --- | --- | --- | --- | --- | --- |
-| **[2.4.0](planning/releases/2.4.0.md)** | 04.11.2026–13.11.2026 | 13.11.2026 | **13.11.2026** | 24.11.2026, 03.00 TR | Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. AAB değiştirmeden 2.3.0 Sistem mesajında 13 Kasım 22.00–14 Kasım 00.00 TR bakım ön duyurusu; 2.4.0 sunucu/AAB sonrasında ayrı kimlikli turnuva penceresi. S1 ve ilk haftalık turnuva 24 Kasım 03.00 TR. Arkadaşlar sayfasındaki Gelen/Giden İstek yazılarının üstüne taşan çizgi düzeltilir. İlk sezonda 240 bot, 12 takım, gerçek sıra ve kalıcı ödül ertelemesi; turnuvalarda ÖDÜLLER sekmesi; bütün arkadaş sekmelerinde çizgisiz tasarım. Zorunlu yama için erken geçiş duyurusu ayrı kimlikle yeniden gönderilir. Gerçek para satın alma girişleri ve savaş sonu reklamı kod silinmeden istemcide gizlenir; mevcut haklar ve oyun içi para sandıkları korunur. | hedef |
-| **[2.5.0](planning/releases/2.5.0.md)** | 24.11.2026–14.12.2026 | 14.12.2026 | **21.12.2026** | 28.12.2026, 03.00 TR | Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. En az bir yeni menü ve bir özgün savaş bestesi; merak/umut ve kontrollü rekabet. | hedef |
-| **[2.6.0](planning/releases/2.6.0.md)** | 22.12.2026–11.01.2027 | 11.01.2027 | **18.01.2027** | 25.01.2027, 03.00 TR | Günlük Devre Deneyi: önce 7 özgün problem, ilk başarı ödülü ve keşif günlüğü; Kor Fırlatıcı; üçüncü sezon için 6 yeni oyuncu kozmetiği. | tahmin |
-| **[2.7.0](planning/releases/2.7.0.md)** | 19.01.2027–08.02.2027 | 08.02.2027 | **15.02.2027** | 22.02.2027, 03.00 TR | Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi. En az bir yeni menü ve iki özgün sefer savaş bestesi; gizem, keşif gerilimi ve cesaret. | tahmin |
-| **[2.8.0](planning/releases/2.8.0.md)** | 16.02.2027–08.03.2027 | 08.03.2027 | **15.03.2027** | 22.03.2027, 03.00 TR | Takım ortak hedefi ve kişisel ikmal hakkı; ilk küçük ustalık hattı; beşinci sezon için yeni ödül setleri ve Toparlanma Feneri hedefi. | tahmin |
-| **[2.9.0](planning/releases/2.9.0.md)** | 16.03.2027–05.04.2027 | 05.04.2027 | **12.04.2027** | 19.04.2027, 03.00 TR | Yeterli gerçek rakip varsa eşit seviyeli Draft Arenası için sınırlı pilot; altıncı sezon ödül/modül hazırlığı. | koşullu |
+| **[2.4.0](planning/releases/2.4.0.md)** | 04.11.2026–13.11.2026 | 13.11.2026 | **13.11.2026** | 24.11.2026, 03.00 TR (otomatik açılış) | Mevcut 24 modülle ilk sezon; mevcut kozmetiklerin tekil tahsisi, kaynak ödüllü haftalar, güvenli kapanış ve sürüm geçişi. Bütün geri/ileri gezinme düğmelerinde ortak son sarı tasarım; saldırı VFX ve çekirdek seslerinde eksik bağlantı/cızırtı düzeltmesi. Sabit ödül kasalarında çekirdek teslimi ve Topla açılış animasyonu; mevcut XP eşiğini koruyan günlük/sezonluk Devre Emirleri. AAB değiştirmeden 2.3.0 Sistem mesajında 13 Kasım 22.00–14 Kasım 00.00 TR bakım ön duyurusu; 2.4.0 sunucu/AAB sonrasında ayrı kimlikli turnuva penceresi. S1 ve ilk haftalık turnuva 24 Kasım 03.00 TR. Arkadaşlar sayfasındaki Gelen/Giden İstek yazılarının üstüne taşan çizgi düzeltilir. İlk sezonda 240 bot, 12 takım, gerçek sıra ve kalıcı ödül ertelemesi; turnuvalarda ÖDÜLLER sekmesi; bütün arkadaş sekmelerinde çizgisiz tasarım. Zorunlu yama için erken geçiş duyurusu ayrı kimlikle yeniden gönderilir. Gerçek para satın alma girişleri ve savaş sonu reklamı kod silinmeden istemcide gizlenir; mevcut haklar ve oyun içi para sandıkları korunur. | yayımlandı |
+| **[2.5.0](planning/releases/2.5.0.md)** | 24.11.2026–14.12.2026 | 14.12.2026 | **21.12.2026** | 28.12.2026, 03.00 TR (koşullu hedef; ayrıca operatör onayı, otomatik açılmaz) | Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. En az bir yeni menü ve bir özgün savaş bestesi; merak/umut ve kontrollü rekabet. | hedef |
+| **[2.6.0](planning/releases/2.6.0.md)** | 22.12.2026–11.01.2027 | 11.01.2027 | **18.01.2027** | 25.01.2027, 03.00 TR (S2 onayına bağlı tahmin) | Günlük Devre Deneyi: önce 7 özgün problem, ilk başarı ödülü ve keşif günlüğü; Kor Fırlatıcı; üçüncü sezon için 6 yeni oyuncu kozmetiği. | tahmin |
+| **[2.7.0](planning/releases/2.7.0.md)** | 19.01.2027–08.02.2027 | 08.02.2027 | **15.02.2027** | 22.02.2027, 03.00 TR (S2 onayına bağlı tahmin) | Üç duraklı PvE Seferi, ara kayıt ve bir bonus yan rota; dördüncü sezon için 6 yeni oyuncu kozmetiği; Darbe Muhafızı hedefi. En az bir yeni menü ve iki özgün sefer savaş bestesi; gizem, keşif gerilimi ve cesaret. | tahmin |
+| **[2.8.0](planning/releases/2.8.0.md)** | 16.02.2027–08.03.2027 | 08.03.2027 | **15.03.2027** | 22.03.2027, 03.00 TR (S2 onayına bağlı tahmin) | Takım ortak hedefi ve kişisel ikmal hakkı; ilk küçük ustalık hattı; beşinci sezon için yeni ödül setleri ve Toparlanma Feneri hedefi. | tahmin |
+| **[2.9.0](planning/releases/2.9.0.md)** | 16.03.2027–05.04.2027 | 05.04.2027 | **12.04.2027** | 19.04.2027, 03.00 TR (S2 onayına bağlı tahmin) | Yeterli gerçek rakip varsa eşit seviyeli Draft Arenası için sınırlı pilot; altıncı sezon ödül/modül hazırlığı. | koşullu |
 
 | Sezon | Başlangıç — bitiş (bitiş hariç) | Modül planı |
 | --- | --- | --- |
-| S1 | 24.11.2026–22.12.2026, 03.00 TR | Mevcut 24 modül; yalnız ilk sezon istisnası |
-| S2 | 28.12.2026–25.01.2027, 03.00 TR (koşullu hedef; ayrıca operatör onayı) | Yankı Rölesi |
-| S3 | 25.01.2027–22.02.2027, 03.00 TR | Kor Fırlatıcı |
-| S4 | 22.02.2027–22.03.2027, 03.00 TR | Darbe Muhafızı — ayrıntılı üretim eforu 4 Ocak kontrolünde yeniden tahmin edilecek |
-| S5 | 22.03.2027–19.04.2027, 03.00 TR | Toparlanma Feneri — ayrıntılı üretim eforu 4 Ocak kontrolünde yeniden tahmin edilecek |
-| S6 | 19.04.2027–17.05.2027, 03.00 TR | Yeni modül konsepti 1 Mart tasarım kontrolünde belirlenecek; hazır olmadan sezon açılmaz |
+| S1 | 24.11.2026–22.12.2026, 03.00 TR (otomatik açılış) | Mevcut 24 modül; yalnız ilk sezon istisnası |
+| S2 | 28.12.2026–25.01.2027, 03.00 TR (koşullu hedef; ayrıca operatör onayı, otomatik açılmaz) | Yankı Rölesi |
+| S3 | 25.01.2027–22.02.2027, 03.00 TR (S2 onayına bağlı tahmin) | Kor Fırlatıcı |
+| S4 | 22.02.2027–22.03.2027, 03.00 TR (S2 onayına bağlı tahmin) | Darbe Muhafızı — ayrıntılı üretim eforu 4 Ocak kontrolünde yeniden tahmin edilecek |
+| S5 | 22.03.2027–19.04.2027, 03.00 TR (S2 onayına bağlı tahmin) | Toparlanma Feneri — ayrıntılı üretim eforu 4 Ocak kontrolünde yeniden tahmin edilecek |
+| S6 | 19.04.2027–17.05.2027, 03.00 TR (S2 onayına bağlı tahmin) | Yeni modül konsepti 1 Mart tasarım kontrolünde belirlenecek; hazır olmadan sezon açılmaz |
 
 **2.4.0 sunucu bakım penceresi:** 13.11.2026 22.00 → 14.11.2026 00.00, Türkiye saati; yaklaşık 2 saat. Sezon açılışı ayrı tarihtedir.
 
 <!-- release-calendar:end -->
 
-**Hedef / tahmin / koşullu ayrımı:** 2.4.0 aktif çalışma hedefi; 2.5.0 sıradaki
-hedef paket; 2.6–2.8 tarihlerinin kesinliği daha düşüktür ve 4 Ocak 2027
+**Hedef / tahmin / koşullu ayrımı:** 2.4.0 yayımlandı; 2.5.0 sıradaki
+hedef paket. S2 tarihi ayrıca onaylanacak; S3–S6 tarihleri S2 onayına bağlı
+tahmindir. 2.6–2.8 tarihlerinin kesinliği daha düşüktür ve 4 Ocak 2027
 kontrolünde efor tekrar değerlendirilir. 2.9 için aktif rakip verisi gerekir;
 1 Mart 2027 kontrolünde pilot yapılacak mı kararı alınır. Her sıradaki sürümün
 kapsamı kendi geliştirmesi başlamadan önce yeniden teyit edilir.
 
-## 5. 2.4.0'da hangi hafta ne yapılacak?
+## 5. Güncel çalışma ve sezon takvimi
 
-| Tarih | Çalışma | Somut bitiş kanıtı |
+| Tarih | İşlem | Durum / somut sonuç |
 | --- | --- | --- |
-| **4–6 Kasım** | BASE-01 bütçesi, sarı geri/ileri düğme envanteri, saldırı ses matrisi ve S1 sözleşmesi | 40 kademe taslağı, UI-07/AUDIO-01 envanteri; 6 Kasım ek yük/kapasite kontrolü. |
-| **9–13 Kasım** | Sabit kaynak, tekil tahsis, kapanış hakları; sarı düğmeler ve saldırı/çekirdek ses uygulaması | COS-04/SEASON-00, UI-07/AUDIO-01/02; tek teslim ve önce/sonra sunum kanıtı. |
-| **16–18 Kasım** | 16 Kasım kapsam kapanışı; eski istemci, mobil TR/EN, ses/miks ve tam CI regresyonu | Gerçek servis, veri koruma, değiştirilmemiş eski istemci ve yoğun savaş kanıtı. |
-| **19–20 Kasım** | İmzalı AAB, Play test kanalında güncelleme, hesap/ödeme/ödül doğrulaması | Cihaz kabulü, yayın notu, yedek/restore ve geri dönüş hazırlığı. |
-| **23 Kasım** | 2.4.0 için kontrollü sunucu/mağaza yayını hedefi | Uyumlu dağıtım ve ilk sağlık/teslim gözlemi; sezon henüz açılmaz. |
-| **23–29 Kasım** | Güncelleme ve gözlem aralığı; oyuncuya sezon/ödül önizlemesi | Doğru tarih, doğru ödül, sıfır çift teslim; başlangıç kapısının son kontrolü. |
-| **30 Kasım, 03.00 TR** | S1 kişisel sezon başlangıç hedefi | Operator başlangıcı ve gerçek saat sınırı doğrulaması. |
+| **13–14 Kasım** | 2.4.0 sunucu ve Play yayını | Tamamlandı; yayımlanan code15 paketi korunur. |
+| **15 Kasım** | S1 otomatik açılış/kapanış ve katalog geçişi | Canlıda tamamlandı; 60 profil/28 tablo korundu. |
+| **16–23 Kasım** | Canlı gözlem ve 2.5.0 içerik hazırlığı | 23 Kasım'da sezon açma veya AAB dağıtma işlemi gerekmiyor. |
+| **24 Kasım, 03.00 TR** | S1 ve iki turnuvanın otomatik açılışı | Dört tam hafta; günlük giriş/sezon ödülleri ve bot katılımı aynı kapıda. |
+| **24 Kasım–14 Aralık** | 2.5.0 geliştirmesi | Seçim kasası/mağaza/modül/sanat/müzik; SDK hariç tutma ve takım yardım yazıları. |
+| **17–21 Aralık** | 2.5.0 cihaz kabulü ve paket yayın hedefi | 21 Aralık paket hedefi korunur; S1'in canlı kataloğu ve hakları korunur, S2 açılmaz. |
+| **22 Aralık, 03.00 TR** | S1 ve takım turnuvasının otomatik kapanışı | Kazanılmış haklar ve sıralama kasaları oyuncu girişi olmadan Mesaj Kutusu'na aktarılır. |
+| **22 Aralık sonrası** | Düzenleme ve dinlenme arası | S2 ayrıca onaylanana kadar sezon kapalıdır. 28 Aralık yalnız koşullu hedeftir. |
 
-Önceki ana kapsam tahmini **12–15 aktif geliştirici günü** idi. 4 Kasımda eklenen
-buton ve ses işleriyle ön tahmin **14–17 aktif gün**; 6 Kasım kontrolünde ölçülecek.
-Takvim hedefi korunmuştur; bu ek yük kapanış tarihini riske atarsa takvim kararı
-yenilenir. Kalite işleri sessizce kapsamdan çıkarılmaz.
-Varsayım: tek ana geliştirme akışı, haftada beş gün, günde 4–6 saat odaklı
-çalışma ve yaklaşık %20 hata/test/gözlem payı. Bu kapasite ölçülmüş geçmiş
-hız değildir. Daha az aktif çalışma zamanı veya dış test gecikmesi tarihleri
-kaydırır. İlk hafta sonunda tamamlanan iş üzerinden tahmin yenilenir.
+İlk dönemlerin 24 Kasım, 1, 8 ve 15 Aralık başlangıçları yedi tam gün aralıklıdır.
+S2 başlangıcı kesinleşince S3–S6 sezon tahminleri ve bağlı paket bağımlılıkları
+birlikte yeniden değerlendirilir; tarihler otomatik olarak öne çekilmez.
+Kapasite varsayımı tek ana akış, haftada beş gün, günde 4–6 saat ve yaklaşık
+%20 hata/test/gözlem payıdır; bu süreler ölçülmüş geçmiş hız değildir.
 
 ## 6. Takvime göre çalışma kuralları
 
@@ -171,9 +174,10 @@ kaydırır. İlk hafta sonunda tamamlanan iş üzerinden tahmin yenilenir.
 3. Kritik giriş, veri kaybı, ödeme, ödül çoğaltma veya maç engeli öne alınır;
    mevcut sürüm için PATCH çıkarılır. Diğer hata işleri ayrılan paya veya
    planlı bakım paketine yazılır. Yeni iş yine MINOR, büyük uyumsuz değişim MAJOR.
-4. Hedef yayın gününden önce test/Play/istemci kapısı geçilmezse tarih
-   yeniden planlanır. İlk sezon henüz başlamadıysa ilk kaydırma seçeneği
-   2.4.0 için 30 Kasım / sezon için 7 Aralık'tır; **gerçekleşmiş otomatik karar değildir**.
+4. Hedef yayın gününden önce test/Play/istemci kapısı geçilmezse paket yeniden
+   planlanır. Canlı S1 takvimi 24 Kasım–22 Aralık olarak korunur; 2.5.0 paketi
+   gecikirse sezon uzatılmaz. S2 dinlenme arası, yeni içerik kabulü ve ayrı
+   operatör kararından sonra açılır; eski kaydırma seçenekleri geçerli değildir.
 5. Başlamış sezon ortasında tarih veya kazanılmış hak değiştirilmez. Geç
    kalan sonraki paket yüzünden mevcut sezon uzatılmaz/sıfırlanmaz; yeni dönem
    eksikse açık “başlangıç bekleniyor” durumu kullanılır, eski ödül döndürülmez.

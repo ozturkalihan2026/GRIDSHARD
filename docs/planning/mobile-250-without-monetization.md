@@ -2,7 +2,9 @@
 
 14 Kasım 2026 kullanıcı kararı: yayımlanan **2.4.0 / versionCode 15** değiştirilmez.
 Bu düzenleme **2.5.0** kapsamındadır; ayrı 2.4.1 paketi hazırlanmaz.
-Mevcut 21 Aralık yayın hedefi ve 28 Aralık S2 başlangıcı korunur.
+21 Aralık paket yayın hedefi korunur. S1 24 Kasım–22 Aralık 03.00 TR'dir;
+sonrasında düzenleme/dinlenme arası vardır. 28 Aralık S2 yalnız koşullu hedef,
+kesin başlangıç ayrıca onaylanacak; paket yayını sezonu açmayacak.
 
 ## Kaynak ve paket ayrımı
 

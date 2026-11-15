@@ -79,9 +79,25 @@ def maintenance_summary(release):
             f"{display(maintenance['ends_at'])}, Türkiye saati; yaklaşık {duration}. Sezon açılışı ayrı tarihtedir.")
 
 
+def season_timing_note(season):
+    if season.get('start_mode') == 'manual':
+        return 'koşullu hedef; ayrıca operatör onayı, otomatik açılmaz'
+    if season.get('depends_on_season'):
+        return f"S{season['depends_on_season']} onayına bağlı tahmin"
+    if season.get('start_mode') == 'automatic':
+        return 'otomatik açılış'
+    return ''
+
+
+def publication_label(release):
+    return 'yayımlandı' if release.get('publication_status') == 'published' else release['confidence']
+
+
 def render(document, releases):
     display = lambda value: date.fromisoformat(value).strftime('%d.%m.%Y')
     rows = [START]
+    if document.get('season_intermission_policy'):
+        rows += ['**Güncel sezon ve ara kararı:** ' + document['season_intermission_policy'], '']
     for release in releases:
         if release.get('development_policy'):
             rows += [f"**{release['version']} geliştirme ve yayın kararı:** {release['development_policy']}", '']
@@ -89,11 +105,14 @@ def render(document, releases):
             '| --- | --- | --- | --- | --- | --- | --- |']
     for r in releases:
         label = f"[{r['version']}](planning/releases/{r['version']}.md)" if r.get('delivery_document') else r['version']
-        rows.append(f"| **{label}** | {display(r['work_starts_on'])}–{display(r['scope_freezes_on'])} | {display(r['scope_freezes_on'])} | **{display(r['target_release_on'])}** | {display(r['season']['starts_on'])}, 03.00 TR | {r['content']} | {r['confidence']} |")
+        note = season_timing_note(r['season'])
+        timing = f" ({note})" if note else ''
+        rows.append(f"| **{label}** | {display(r['work_starts_on'])}–{display(r['scope_freezes_on'])} | {display(r['scope_freezes_on'])} | **{display(r['target_release_on'])}** | {display(r['season']['starts_on'])}, 03.00 TR{timing} | {r['content']} | {publication_label(r)} |")
     rows += ['', '| Sezon | Başlangıç — bitiş (bitiş hariç) | Modül planı |', '| --- | --- | --- |']
     for r in releases:
         s = r['season']
-        note = ' (koşullu hedef; ayrıca operatör onayı)' if s.get('start_mode') == 'manual' else ''
+        note = season_timing_note(s)
+        note = f' ({note})' if note else ''
         rows.append(f"| S{s['number']} | {display(s['starts_on'])}–{display(s['ends_on'])}, 03.00 TR{note} | {s['module']} |")
     for r in releases:
         if r.get('server_transition'):rows+=['',maintenance_summary(r)]

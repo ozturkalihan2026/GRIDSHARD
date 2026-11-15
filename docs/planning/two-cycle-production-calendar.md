@@ -2,7 +2,10 @@
 
 11 Kasım 2026 kullanıcı yönlendirmesi. Durum: üretim planı ve tasarım brief'leri hazır; yeni sanat, modül, müzik veya ödül dağıtımı hazır sayılmaz.
 
-Ana yayın tarihleri `release_calendar_v1.json` içindedir; bu dosya tarih değiştirmez. 2.4.0 son düzeltmeleri ve 19 Kasım kabulü önceliklidir. Erken hazırlık, 2.5.0 çalışma kodunun 2.4.0 paketine eklenmesi anlamına gelmez.
+Ana yayın tarihleri `release_calendar_v1.json` içindedir. 15 Kasım güncellemesi:
+2.4.0 yayımlandı, S1 otomasyonu canlıda hazır. Sıradaki paket 2.5.0'dır;
+mevcut AAB/rc.5 pini korunur. S2 başlangıcı ayrıca onaylanacak; aşağıdaki
+S2–S4 tarihleri koşullu üretim hedefleridir.
 
 ## Şimdi yapılacak somut işler
 
@@ -10,7 +13,7 @@ Ana yayın tarihleri `release_calendar_v1.json` içindedir; bu dosya tarih deği
 | --- | --- | --- | --- |
 | 1 | 11–13 Kasım | S2'nin altı öğesinin geometrisi, kaynak/ID listesi; Yankı Rölesi sözleşmesi; dört mağaza öğesi | Bu dosya ve bağlantılı brief'ler; henüz çizim/kod kabulü yok |
 | 2 | 14–18 Kasım, 2.4 düzeltmeleri izin verdikçe | Manyetik Köprü çerçeve + zemin için oyun dışında ilk iki görsel örnek | Onaylı profil/dock/sandık referanslarıyla yan yana; yeni geometrinin küçük boyda okunması |
-| 3 | 19–23 Kasım | Öncelik 2.4 kabulü; yalnız zaman kalırsa S2 örneklerinin düzeltmesi | Yeni çalışma kodu 2.4 kapsamına taşınmaz; eksik kabul varsa içerik hazırlığı bekler |
+| 3 | 19–23 Kasım | Canlı 2.4 gözlemi ve S2 örneklerinin düzeltmesi | 23 Kasım'da sezon açma/dağıtım işlemi yok; canlı S1 kataloğu ve eski haklar korunur |
 | 4 | 24–30 Kasım, mevcut 2.5 başlangıcı | Genel dönem ödül profili, renderer taslağı, ekonomi ve Yankı prototipi | S1'e özgü kaynak haftası istisnasını S2'ye kopyalamadan çalışan tasarım; 30 Kasım kapasite kontrolü |
 | 5 | 1–7 Aralık | S2 kalan dört öğe, mağaza dört öğe; Yankı sanat/ses/karşı oyun; müzik A/B | Sanat incelemeleri ayrı 6 ve 4 öğelik gruplarda; S1 gözlem payı korunur |
 | 6 | 8–14 Aralık | Ödül/sahiplik entegrasyonu, sabit kaynak haftaları ve denge | 14 Aralık kapsam kapanışı; kabul görmeyen öğe otomatik açılmaz |
@@ -22,11 +25,15 @@ Pencereler teslim hedefidir; tamamlanmış çalışma veya eşzamanlı tam ekip 
 
 | Sürüm / hedef yayın | Sezon / başlangıç (TR 03.00) | Yeni modül | Oyuncu ödül sanatı | Diğer ayrı içerik |
 | --- | --- | --- | --- | --- |
-| 2.5.0 / 21 Aralık 2026 | S2 / 28 Aralık | Yankı Rölesi | Manyetik Köprü, Bakır Örgü, Kırık Halka: 3 çerçeve + 3 zemin | 4 mağaza öğesi; seçim kasası; 1 menü + 1 savaş bestesi |
-| 2.6.0 / 18 Ocak 2027 | S3 / 25 Ocak | Kor Fırlatıcı | Reaktör Kepengi, Prizma Yuvası, Türbin Dişlisi: 3 çerçeve + 3 zemin | Yedi özgün Devre Deneyi; Keşif Günlüğü; ilk başarı ödülü |
-| 2.7.0 / 15 Şubat 2027 | S4 / 22 Şubat | Darbe Muhafızı | Seramik Siper, Kablo Kemeri, Kristal Kıskaç: 3 çerçeve + 3 zemin | PvE seferi; 1 menü + 2 savaş bestesi; aşağıdaki yeni takım seti |
+| 2.5.0 / 21 Aralık 2026 | S2 / 28 Aralık koşullu; ayrıca onay | Yankı Rölesi | Manyetik Köprü, Bakır Örgü, Kırık Halka: 3 çerçeve + 3 zemin | 4 mağaza öğesi; seçim kasası; 1 menü + 1 savaş bestesi |
+| 2.6.0 / 18 Ocak 2027 | S3 / 25 Ocak, S2 onayına bağlı | Kor Fırlatıcı | Reaktör Kepengi, Prizma Yuvası, Türbin Dişlisi: 3 çerçeve + 3 zemin | Yedi özgün Devre Deneyi; Keşif Günlüğü; ilk başarı ödülü |
+| 2.7.0 / 15 Şubat 2027 | S4 / 22 Şubat, S2 onayına bağlı | Darbe Muhafızı | Seramik Siper, Kablo Kemeri, Kristal Kıskaç: 3 çerçeve + 3 zemin | PvE seferi; 1 menü + 2 savaş bestesi; aşağıdaki yeni takım seti |
 
-13 Kasım son kararı: sezon, haftalık ve takım turnuvaları 30 Kasım 03.00 TR aynı anda başlar. Takım dönemleri ayrı operatör kapısını korur; 28 günlük 30 Kasım çapasıyla sezon sınırlarıyla hizalanır. S1 28 Aralık 03.00 TR biter; ödül planı dört haftadır.
+15 Kasım son kararı: sezon, haftalık ve takım turnuvaları **24 Kasım 03.00 TR**
+aynı anda otomatik başlar; S1 **22 Aralık 03.00 TR** biter. Haftalar 24 Kasım,
+1, 8 ve 15 Aralık'ta başlar. Kapanış ve ödül teslimi otomatik; sonrasında
+dinlenme/düzenleme arası vardır. S2 için yeni modül/özgün stok kabulü ve ayrı
+operatör kararı gerekir; 28 Aralık kesinleşmiş tarih değildir.
 
 ## Stok açığı nasıl kapanacak?
 

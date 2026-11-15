@@ -1,3 +1,28 @@
+# Akşam kapanışı — 16 Kasım 2026
+
+- Kullanıcı son plan düzenlemeleri için commit/push istedi; bu akşam yeni
+  geliştirme yapılmayacak. Plan/checklist/takvim/stok/ön duyuru kontrolleri PASS.
+- Devam noktası: 2.5.0 hazırlıkları. Seçim kasası/ekonomi/ödül tanımları,
+  sanat ve müzik işleri bağlı checklist sırasıyla yürütülecek. Takım yardım
+  metinlerinin TR/EN düzeltmesi planlanan paket notlarında ve UI-04 kabulünde.
+- Canlı S1 otomasyonu hazır: 24 Kasım–22 Aralık 03.00 TR. S2 ayrıca onaylanacak.
+  Bu son plan düzenlemesi canlı sunucuyu, yayımlanmış katalogları veya AAB'yi değiştirmedi.
+
+# 2.5.0 notları ve sürüm takvimi güncellendi — 15 Kasım 2026
+
+- Kullanıcı son yardım metni notunu 2.5.0 paket notlarına istedi. Takım
+  kuralları/kayıt/boş durum yardımı TR/EN ilk üç gün / 4. gün / 5–7. gün
+  olarak planlanan paket notlarına ve zorunlu UI-04 kabulüne bağlandı.
+- Takvim ve özetlerin eski 30 Kasım/28 Aralık S1 açıklamaları düzeltildi:
+  S1 24 Kasım–22 Aralık 03.00 TR; sonra dinlenme/düzenleme arası. S2 28 Aralık
+  yalnız koşullu hedef, ayrı onay gerekir. S3–S6 tarihleri S2 onayına bağlı tahmin.
+- 2.5.0 paket hedefi 21 Aralık korundu; paket ve sezon açılışı ayrıdır.
+  Backlog aktif hedefi 2.5.0'a güncellendi; bu tur dal değiştirilmedi.
+- Plan/checklist/altı sürüm brief'i kaynaklarından üretildi, stok kanıtı ve
+  ön duyuru plan kontrolü yenilendi. Plan regresyonunun 9 testi PASS.
+  Yalnız dokümantasyon/plan üreticileri değişti; bu tur canlı işlem yapılmadı.
+  Son plan düzenlemeleri kullanıcının 16 Kasım commit/push talimatıyla kapanış kaydına alınıyor.
+
 # S1 otomatik açılışı canlıda hazır — 15 Kasım 2026
 
 - Canlı geçiş **21.59.47 TR** tamamlandı. Kaynak3b3cdb51f52cddadd189d122c7b2a2860203b8f1;

@@ -9,10 +9,10 @@ from pathlib import Path
 
 if __package__:
     from tools.development_checklist import ROOT, BACKLOG, CHECKLIST, repository_path, validate as validate_backlog
-    from tools.release_calendar import SOURCE, validate as validate_calendar, maintenance_summary
+    from tools.release_calendar import SOURCE, validate as validate_calendar, maintenance_summary, season_timing_note, publication_label
 else:
     from development_checklist import ROOT, BACKLOG, CHECKLIST, repository_path, validate as validate_backlog
-    from release_calendar import SOURCE, validate as validate_calendar, maintenance_summary
+    from release_calendar import SOURCE, validate as validate_calendar, maintenance_summary, season_timing_note, publication_label
 
 INDEX = ROOT / 'docs/GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md'
 
@@ -91,9 +91,10 @@ def render_brief(release, backlog):
              link(CHECKLIST.relative_to(ROOT).as_posix(), output, 'Ortak checklist') + ' · ' +
              link('docs/GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md', output, 'Takvim ve ödül kararları'), '',
              f"**Geliştirme:** {release['work_starts_on']} → kapsam kapanışı {release['scope_freezes_on']}. "
-             f"**Kabul testi:** {release['tests_start_on']}. **Yayın:** {release['target_release_on']} ({release['confidence']}).", '',
+             f"**Kabul testi:** {release['tests_start_on']}. **Yayın:** {release['target_release_on']} ({publication_label(release)}).", '',
              f"**S{release['season']['number']}:** {release['season']['starts_on']} → {release['season']['ends_on']} "
-             '(bitiş hariç), 03.00 Türkiye saati. Paket yayını ve sezon açılışı ayrı kararlardır.', '',
+             '(bitiş hariç), 03.00 Türkiye saati. Paket yayını ve sezon açılışı ayrı kararlardır. '
+             + '**Takvim durumu:** ' + season_timing_note(release['season']) + '.', '',
              '## Oyuncuya teslim ve sınır', '', release['content'], '',
              '**Yayın kabulü:** ' + release['required'], '',
              '**İkincil kapsam:** ' + release['optional'], '',
@@ -108,6 +109,11 @@ def render_brief(release, backlog):
     if release.get('development_policy'):
         position=lines.index('## Oyuncuya teslim ve sınır')
         lines[position:position]=['**Geliştirme ve yayın kararı:** '+release['development_policy'],'']
+    if release.get('planned_release_notes'):
+        position = lines.index('## Oyuncuya teslim ve sınır')
+        lines[position:position] = ['## Planlanan paket notları', '',
+            *['- ' + note for note in release['planned_release_notes']],
+            '', 'Bu maddeler yayınlanmış özellik değildir; uygulama ve kabul tamamlanınca oyuncu sürüm notuna taşınır.', '']
     lines += ['', 'Aralıklar aynı ana geliştirme akışının iş sırasıdır; eşzamanlı tam zamanlı ekip varsayımı değildir. '
               'Gözlem/patch için ayrılan kapasite kullanılır; kapsam kapanışında yeni özellik eklenmez.', '',
               '## İçerik nasıl geliştirilecek?', '']
@@ -173,14 +179,16 @@ def render_index(releases, backlog):
             policy_lines += [f"**{release['version']} geliştirme ve yayın kararı:** {release['development_policy']}", '']
     lines[4:4]=policy_lines
     for r in releases:
-        lines.append(f"| {link(r['delivery_document'], INDEX, r['version'])} | {r['content']} | {r['work_starts_on']} | {r['scope_freezes_on']} | {r['tests_start_on']} | {r['target_release_on']} ({r['confidence']}) | S{r['season']['number']}: {r['season']['starts_on']}, 03.00 TR |")
+        note = season_timing_note(r['season'])
+        timing = f' ({note})' if note else ''
+        lines.append(f"| {link(r['delivery_document'], INDEX, r['version'])} | {r['content']} | {r['work_starts_on']} | {r['scope_freezes_on']} | {r['tests_start_on']} | {r['target_release_on']} ({publication_label(r)}) | S{r['season']['number']}: {r['season']['starts_on']}, 03.00 TR{timing} |")
     for r in releases:
         if r.get('server_transition'):lines+=['',maintenance_summary(r)]
     lines += ['', '## Kapasite ve karar sınırları', '',
               '- Tek ana akış, haftada 5 gün/günde 4–6 saat ve yaklaşık %20 hata/test/gözlem payı önceki varsayımdır. '
               'Önceki buton/ses kapsamı için 2.4.0 ön tahmini 14–17 aktif gündü; kasa açılışı, çekirdek teslimi ve '
               'XP emirleri bu tahmine ek iştir ve efor yeniden ölçülmelidir. '
-              '6 Kasım kontrolünde eski 12–15 gün bandına ek yük ölçülür. 16 Kasım kapanışına sığmıyorsa takvim yeniden karara bağlanır; zorunlu kalite işi sessizce çıkarılmaz.',
+              'Bu tahminler geçmiş hazırlık kaydıdır; 2.4.0 yayımlandı ve S1 otomasyonu canlıda hazırdır. Yeni kapsam 2.5.0 planına girer; zorunlu kalite işi sessizce çıkarılmaz.',
               '- 2.5.0 kapsamı yoğun: seçim/mağaza, 1 modül ve 10 oyuncu öğesi. 30 Kasım kontrolünde darboğaz ölçülür; '
               'ikincil teklifler önce çıkarılır, ana teslimler yetişmiyorsa tarih yeniden planlanır.',
               '- 2.6–2.8 eforları 4 Ocak 2027’de; Draft ve S6 modül brief’i 1 Mart 2027’de değerlendirilir. '
