@@ -20,7 +20,9 @@ def registry():
 
 def test_new_cosmetics_start_locked_and_cannot_be_equipped_or_granted_by_legacy_fallback():
     r = registry()
-    assert len(r.items) == 15 and not r.used and not r.releases
+    assert len([i for i in r.items.values() if i.get('inventory_pool','competition')=='competition']) == 15
+    assert len([i for i in r.items.values() if i.get('inventory_pool')=='shop']) == 4
+    assert not r.used and not r.releases
     service = PlayerProfileService()
     profile = service.get_or_create("cosmetic-release-new")
     for item in r.items.values():

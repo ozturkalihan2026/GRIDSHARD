@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="copper" x1="14" y1="8" x2="104" y2="123" gradientUnits="userSpaceOnUse"><stop stop-color="#f6d6af"/><stop offset=".34" stop-color="#c88d65"/><stop offset=".7" stop-color="#8a5e49"/><stop offset="1" stop-color="#413d40"/></linearGradient>
+    <linearGradient id="shelf" x1="26" y1="7" x2="96" y2="31" gradientUnits="userSpaceOnUse"><stop stop-color="#c1d8ce"/><stop offset=".48" stop-color="#718f88"/><stop offset="1" stop-color="#304e52"/></linearGradient>
+  </defs>
+  <!-- Offset frame with three short thick shelf projections, no loop or latch. -->
+  <path d="M22 11H93L109 24V100L92 120H27L14 107V29Z M30 30 28 100 34 107H84L96 95V33L87 27H36Z" fill="#081c2a" fill-rule="evenodd" stroke="#081c2a" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M22 7H93L109 20V97L92 116H27L14 103V25Z M30 26 28 96 34 103H84L96 91V29L87 23H36Z" fill="url(#copper)" fill-rule="evenodd" stroke="#443a32" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M21 29V23L27 13H65 M33 109H84L98 94" stroke="#ffe6c2" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"/>
+  <path d="M31 4H82L89 12 83 24H31L25 16Z M5 46H29L34 54 29 65H5L2 57Z M84 88H121L125 96 119 107H84L79 98Z" fill="url(#shelf)" stroke="#152f39" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M32 8H79L83 12H29 M7 50H25L29 54H5 M86 92H117L121 96H83" stroke="#d9e6d7" stroke-width="3" stroke-linecap="round"/>
+  <path d="M37 18H77 M7 59H26 M87 101H116" stroke="#2b494b" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="21" cy="87" r="4" fill="#162f3a" stroke="#e4bd87" stroke-width="2"/>
+  <circle cx="102" cy="40" r="4" fill="#162f3a" stroke="#e4bd87" stroke-width="2"/>
+</svg>

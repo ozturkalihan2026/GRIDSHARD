@@ -44,7 +44,7 @@ test("Devre Yolu'nda mağaza sandığı veren durak mağazadaki çizimi kullanı
 test("modülün adı her yerde Onarım yazılır", () => {
   assert.match(app, /if \(item\?\.name_tr === "Onarım Modülü"\) item\.name_tr = "Onarım";/);
   assert.match(app, /text\.includes\("Onarım Modülü"\) \? text\.replaceAll\("Onarım Modülü", "Onarım"\) : text/);
-  assert.equal((app.match(/withCanonicalModuleNames\(/g) || []).length, 6);
+  assert.equal((app.match(/withCanonicalModuleNames\(/g) || []).length, 7);
   assert.ok(read("src/canon-data.js").includes('"name_tr": "Onarım"'));
   const server = fs.readFileSync(path.join(root, "..", "server", "data", "arena_progression_v1.json"), "utf8");
   assert.ok(!server.includes("Onarım Modülü"));

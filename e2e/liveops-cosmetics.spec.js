@@ -114,7 +114,7 @@ test('new player and team cosmetics have distinct previews and remain locked', a
     await expect(button).toBeDisabled();
     await expect(button).toHaveAttribute('data-state','locked');
   }
-  const borderStyles = await page.locator('#avatar-frame-choice-list [data-frame-id$="_frame"] .profile-avatar').evaluateAll(nodes=>nodes.map(node=>getComputedStyle(node).borderTopStyle));
+  const borderStyles = await page.locator('#avatar-frame-choice-list :is([data-frame-id="aurora_frame"],[data-frame-id="solar_frame"],[data-frame-id="abyss_frame"]) .profile-avatar').evaluateAll(nodes=>nodes.map(node=>getComputedStyle(node).borderTopStyle));
   expect(new Set(borderStyles).size).toBe(3);
   await page.locator('[data-frame-id="aurora_frame"]').scrollIntoViewIfNeeded();
   await page.screenshot({path:info.outputPath('locked-player-frames.png')});

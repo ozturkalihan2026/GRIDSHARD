@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 240" preserveAspectRatio="none" fill="none">
+  <defs>
+    <linearGradient id="room" x1="20" y1="0" x2="590" y2="240" gradientUnits="userSpaceOnUse"><stop stop-color="#354448"/><stop offset=".4" stop-color="#182f43"/><stop offset="1" stop-color="#0c2238"/></linearGradient>
+    <linearGradient id="copper" x1="510" y1="140" x2="603" y2="240" gradientUnits="userSpaceOnUse"><stop stop-color="#f1c99e"/><stop offset=".45" stop-color="#b57b57"/><stop offset="1" stop-color="#5a4140"/></linearGradient>
+    <linearGradient id="shelf" x1="410" y1="198" x2="640" y2="240" gradientUnits="userSpaceOnUse"><stop stop-color="#b6cabc"/><stop offset=".4" stop-color="#678680"/><stop offset="1" stop-color="#243e49"/></linearGradient>
+  </defs>
+  <path fill="url(#room)" d="M0 0H640V240H0Z"/>
+  <!-- Low corner workbench with two large coils, not a stretched avatar frame. -->
+  <path d="M0 0H30V240H0Z M600 0H640V240H600Z" fill="#0c2231" fill-opacity=".7"/>
+  <path d="M0 8H25V44H0 M607 6H640" stroke="#c7b994" stroke-opacity=".25" stroke-width="5"/>
+  <path d="M432 201H640V240H432L417 219Z" fill="#061a2a"/>
+  <path d="M432 193H640V225H433L417 210Z" fill="url(#shelf)" stroke="#1b3541" stroke-width="3"/>
+  <path d="M433 197H636 M437 218H638" stroke="#d7dcca" stroke-opacity=".7" stroke-width="3"/>
+  <path d="M487 151H522V191H487Z M552 130H589V191H552Z" fill="#273d45" stroke="#132c38" stroke-width="5"/>
+  <path d="M481 156H528V165H481Z M481 173H528V182H481Z M545 135H596V145H545Z M545 153H596V163H545Z M545 172H596V182H545Z" fill="url(#copper)" stroke="#5c4b42" stroke-width="2"/>
+  <path d="M485 158H524 M485 175H524 M549 137H592 M549 155H592 M549 174H592" stroke="#f3d7ac" stroke-width="2" stroke-linecap="round"/>
+  <path d="M451 226 442 240 M610 226V240" stroke="#101e2b" stroke-width="7"/>
+</svg>

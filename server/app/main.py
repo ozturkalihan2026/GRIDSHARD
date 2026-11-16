@@ -3250,7 +3250,7 @@ def _public_player_profile_view(player_id: str) -> dict:
             "highest_rating": rating,
             "rank_name_tr": rank["name_tr"],
             "operator_title": bot.get("archetype_tr", "Devre Operatörü"),
-            "avatar": {"selected_avatar_id": "default", "selected_avatar_frame_id": "none"},
+            "avatar": {"selected_avatar_id": "default", "selected_avatar_frame_id": "none", "selected_profile_background_id": "default"},
             "team": {"team_id": bot.get("team_id"), "team_name": bot.get("team_name")},
             "featured_deck": {"module_ids": list(bot.get("battle_pool_ids", ())), "matches": matches},
             "selected_core": {"id": core["id"], "name_tr": core["name_tr"], "level": 1, "rarity": core["rarity"]},
@@ -3300,6 +3300,7 @@ def _public_player_profile_view(player_id: str) -> dict:
         "avatar": {
             "selected_avatar_id": profile.selected_avatar_id,
             "selected_avatar_frame_id": profile.selected_avatar_frame_id,
+            "selected_profile_background_id": profile.selected_profile_background_id,
         },
         "team": {
             "team_id": profile.team_id,
@@ -5303,8 +5304,9 @@ async def shop_offer_error_response(request: Request, exc):
         'purchase_limit_reached':409, 'purchase_request_conflict':409, 'offer_expired':409,
         'offer_not_started':409, 'offer_rollout_closed':409, 'offer_unpublished':404,
         'arena_locked':403, 'account_ineligible':403, 'purchase_request_invalid':422,
-        'insufficient_funds':422}
-    english = {'insufficient_funds':'Not enough Circuit Credits.',
+        'insufficient_funds':422, 'already_owned':409}
+    english = {'already_owned':'You already own at least one item in this set. No credits were spent.',
+        'insufficient_funds':'Not enough Circuit Credits.',
         'purchase_limit_reached':'Both purchases for this UTC week have been used.',
         'purchase_request_conflict':'This request ID belongs to another purchase.',
         'offer_preview_stale':'The offer changed. Review it again.',
@@ -5351,7 +5353,7 @@ def get_player_shop_offers(player_id: str) -> dict:
             if exc.code in {'offer_not_started','offer_expired','offer_rollout_closed'}:
                 continue
             if exc.code == 'arena_locked':
-                result.append(dict(offer={k:row[k] for k in ('id','revision','title_tr','title_en','minimum_arena','price','limit','art')},
+                result.append(dict(offer={k:row[k] for k in ('id','revision','title_tr','title_en','minimum_arena','price','limit','art',*(['kind'] if 'kind' in row else []))},
                                    can_purchase=False,blocking_code=exc.code))
             else:
                 raise

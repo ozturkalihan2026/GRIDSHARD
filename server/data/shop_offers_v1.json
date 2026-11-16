@@ -280,6 +280,158 @@
         }
       ],
       "content_hash": "bc96e26ae3b1c5e7f56c110e7f8548c7f14ad3974b47c5caa6d834f54a67a263"
+    },
+    {
+      "id": "cosmetic.dockyard",
+      "revision": 1,
+      "kind": "cosmetic_set",
+      "status": "draft",
+      "published_at": null,
+      "minimum_server_version": "2.5.0",
+      "starts_at": "2026-12-28T00:00:00Z",
+      "ends_at": "2027-01-25T00:00:00Z",
+      "minimum_arena": 2,
+      "price": {
+        "currency": "circuit_credits",
+        "amount": 1500
+      },
+      "guarantee": {
+        "kind": "cosmetic_set",
+        "items": [
+          "dockyard_latch_frame",
+          "dockyard_deck_background"
+        ]
+      },
+      "limit": {
+        "period": "account",
+        "count": 1,
+        "key": "cosmetic.dockyard"
+      },
+      "title_tr": "Tersane Seti",
+      "title_en": "Dockyard Set",
+      "body_tr": "Çerçeve ve profil zemini. Yalnız oyun içi Devre Kredisiyle, hesap başına bir kez edinilir.",
+      "body_en": "Avatar frame and profile background. Earned in-game Circuit Credits only; once per account.",
+      "art": {
+        "path": "assets/ui/cosmetics-shop-v1/dockyard_latch.svg",
+        "sha256": "39a1ca9f1a03d3cae68ce67c25903347774e0605e014696e2ae19ab53affea4d"
+      },
+      "cosmetics": [
+        {
+          "id": "dockyard_latch_frame",
+          "field": "avatar_frame_id",
+          "name_tr": "Tersane Kilidi Çerçevesi",
+          "name_en": "Dockyard Latch Frame",
+          "theme": "dockyard",
+          "design_id": "dockyard_latch_frame_v1",
+          "status": "approved",
+          "inventory_pool": "shop",
+          "look": {
+            "color": "#c7dee3",
+            "accent": "#294b60",
+            "pattern": "dockyard_latch",
+            "asset": {
+              "path": "assets/ui/cosmetics-shop-v1/dockyard_latch.svg",
+              "sha256": "39a1ca9f1a03d3cae68ce67c25903347774e0605e014696e2ae19ab53affea4d"
+            }
+          }
+        },
+        {
+          "id": "dockyard_deck_background",
+          "field": "profile_background_id",
+          "name_tr": "Tersane Güvertesi",
+          "name_en": "Dockyard Deck",
+          "theme": "dockyard",
+          "design_id": "dockyard_deck_background_v1",
+          "status": "approved",
+          "inventory_pool": "shop",
+          "look": {
+            "color": "#b9c7b5",
+            "accent": "#17354a",
+            "pattern": "dockyard_deck",
+            "asset": {
+              "path": "assets/ui/cosmetics-shop-v1/dockyard_deck.svg",
+              "sha256": "38f3eabfb37b5675cb2a8e60f134aa3064d7c462a94c8ed47121a4d844b1eeac"
+            }
+          }
+        }
+      ],
+      "content_hash": "163cd116bbe75b50ceed1fc13a48e34440ff7a4f4e0fba88e2004126e52d5037"
+    },
+    {
+      "id": "cosmetic.workshop",
+      "revision": 1,
+      "kind": "cosmetic_set",
+      "status": "draft",
+      "published_at": null,
+      "minimum_server_version": "2.5.0",
+      "starts_at": "2026-12-28T00:00:00Z",
+      "ends_at": "2027-01-25T00:00:00Z",
+      "minimum_arena": 2,
+      "price": {
+        "currency": "circuit_credits",
+        "amount": 1500
+      },
+      "guarantee": {
+        "kind": "cosmetic_set",
+        "items": [
+          "workshop_shelf_frame",
+          "workshop_bay_background"
+        ]
+      },
+      "limit": {
+        "period": "account",
+        "count": 1,
+        "key": "cosmetic.workshop"
+      },
+      "title_tr": "Atölye Seti",
+      "title_en": "Workshop Set",
+      "body_tr": "Çerçeve ve profil zemini. Yalnız oyun içi Devre Kredisiyle, hesap başına bir kez edinilir.",
+      "body_en": "Avatar frame and profile background. Earned in-game Circuit Credits only; once per account.",
+      "art": {
+        "path": "assets/ui/cosmetics-shop-v1/workshop_shelf.svg",
+        "sha256": "8a425421111234b2c538ca862494b3404d2018957ee0533adb172ff3fbf9a5a1"
+      },
+      "cosmetics": [
+        {
+          "id": "workshop_shelf_frame",
+          "field": "avatar_frame_id",
+          "name_tr": "Atölye Rafı Çerçevesi",
+          "name_en": "Workshop Shelf Frame",
+          "theme": "workshop",
+          "design_id": "workshop_shelf_frame_v1",
+          "status": "approved",
+          "inventory_pool": "shop",
+          "look": {
+            "color": "#e2b28b",
+            "accent": "#554843",
+            "pattern": "workshop_shelf",
+            "asset": {
+              "path": "assets/ui/cosmetics-shop-v1/workshop_shelf.svg",
+              "sha256": "8a425421111234b2c538ca862494b3404d2018957ee0533adb172ff3fbf9a5a1"
+            }
+          }
+        },
+        {
+          "id": "workshop_bay_background",
+          "field": "profile_background_id",
+          "name_tr": "Atölye Bölmesi",
+          "name_en": "Workshop Bay",
+          "theme": "workshop",
+          "design_id": "workshop_bay_background_v1",
+          "status": "approved",
+          "inventory_pool": "shop",
+          "look": {
+            "color": "#d1a27a",
+            "accent": "#243748",
+            "pattern": "workshop_bay",
+            "asset": {
+              "path": "assets/ui/cosmetics-shop-v1/workshop_bay.svg",
+              "sha256": "44216057239ede7d8744f09090123deb19a0f5b37f085d382d1b450021d8064f"
+            }
+          }
+        }
+      ],
+      "content_hash": "0f70fa6c84b4671fbcb705ddc1e750e0bd15c623dc45daf925d57bc19c4d0bbe"
     }
   ]
 }

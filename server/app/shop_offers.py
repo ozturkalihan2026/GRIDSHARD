@@ -73,6 +73,9 @@ def _asset(value, root):
 
 
 def checked_offer(row, *, assets=None):
+    if isinstance(row, dict) and row.get('kind') == 'cosmetic_set':
+        from .shop_cosmetic_offers import checked
+        return checked(row, assets=assets)
     required = {'id', 'revision', 'status', 'published_at', 'minimum_server_version',
                 'starts_at', 'ends_at', 'minimum_arena', 'price', 'guarantee',
                 'limit', 'title_tr', 'title_en', 'body_tr', 'body_en', 'art', 'targets', 'content_hash'}
@@ -171,9 +174,12 @@ class ShopOfferCatalog:
         if any(r['id'] == identity and r['status'] == 'published' and r['revision'] >= revision for r in self._offers.values()):
             _invalid('Yayınlanan yeni teklif revision değeri artmalı.')
         # Every declared target must already be real main-game content.
-        if {t['module_definition_id'] for t in row['targets']} != set(MODULE_SPECS):
+        if row.get('kind') == 'cosmetic_set':
+            from .shop_cosmetic_offers import checked
+            checked(row, assets=self._assets)
+        elif {t['module_definition_id'] for t in row['targets']} != set(MODULE_SPECS):
             _invalid('Teklif havuzu güncel ana oyunun tüm modüllerini içermeli.')
-        for target in row['targets']:
+        for target in row.get('targets', []):
             spec = MODULE_SPECS[target['module_definition_id']]
             if (target['rarity'] != spec['rarity'] or target['name_tr'] != spec['name_tr']
                     or spec['runtime_status'] != 'main_game' or spec['art_status'] != 'runtime_registered'):
@@ -224,6 +230,9 @@ def preview(profile, catalog, identity, revision, *, moment, secret):
         raise ShopOfferError('account_ineligible', 'Bu hesap teklif için uygun değil.')
     if arena_index_for_rating(max(profile.rating, profile.highest_rating)) < row['minimum_arena']:
         raise ShopOfferError('arena_locked', 'Teklifin arena şartı henüz açılmadı.')
+    if row.get('kind') == 'cosmetic_set':
+        from .shop_cosmetic_offers import preview as cosmetic_preview
+        return cosmetic_preview(row)
     if not isinstance(secret, bytes) or len(secret) < 32:
         raise ShopOfferError('selection_not_configured', 'Teklif seçimi için sunucu anahtarı gerekli.')
     saved = deepcopy(profile.shop_offer_state)

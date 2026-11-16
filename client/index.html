@@ -40,6 +40,7 @@
   <link rel="stylesheet" href="./src/startup-loading.css" />
   <link rel="stylesheet" href="./src/release-announcement.css" />
   <link rel="stylesheet" href="./src/rewards/choice-view.css" />
+  <link rel="stylesheet" href="./src/shop/offer-view.css" />
   <!-- /build:styles -->
 </head>
 <!-- Açılış ekranı betikler yüklenmeden de Ev düzeninde çizilir (Ev'e özgü
@@ -573,6 +574,14 @@
     </nav>
 
     <section id="shop-screen" class="mobile-hub-screen shop-screen" data-screen-panel="shop" hidden>
+      <nav id="shop-tabs" class="shop-offer-tabs" role="tablist" aria-label="Mağaza bölümleri">
+        <button type="button" role="tab" id="shop-tab-featured" data-shop-tab="featured" aria-selected="true" aria-controls="shop-panel-featured">Öne Çıkanlar</button>
+        <button type="button" role="tab" id="shop-tab-chests" data-shop-tab="chests" aria-selected="false" aria-controls="shop-panel-chests" tabindex="-1">Sandıklar</button>
+        <button type="button" role="tab" id="shop-tab-modules" data-shop-tab="modules" aria-selected="false" aria-controls="shop-panel-modules" tabindex="-1">Modül Parçaları</button>
+        <button type="button" role="tab" id="shop-tab-cosmetics" data-shop-tab="cosmetics" aria-selected="false" aria-controls="shop-panel-cosmetics" tabindex="-1">Kozmetikler</button>
+      </nav>
+      <p id="shop-pending-purchase" class="shop-pending-purchase" hidden></p>
+      <div id="shop-panel-featured" role="tabpanel" aria-labelledby="shop-tab-featured">
       <template id="painted-shop-chest-assets">
         <span class="chest-visual chest-visual-bronze chest-painted-visual" data-painted-chest-tier="bronze" aria-hidden="true"><img class="chest-painted-art" src="./assets/ui/chests-casual-v2/bronze.webp" width="256" height="256" alt="" aria-hidden="true" draggable="false" decoding="async" /></span>
         <span class="chest-visual chest-visual-silver chest-painted-visual" data-painted-chest-tier="silver" aria-hidden="true"><img class="chest-painted-art" src="./assets/ui/chests-casual-v2/silver.webp" width="256" height="256" alt="" aria-hidden="true" draggable="false" decoding="async" /></span>
@@ -594,6 +603,23 @@
         <!-- Hediye sandık ayrı bir bölüm değildir: Bronz Sandık kartındaki düğmeyle açılır.
              Yenilenme notları Ödül Listesi penceresindedir. -->
       </section>
+      <section id="shop-offers-section" class="shop-offers-section" aria-labelledby="shop-offers-title">
+        <h3 id="shop-offers-title">Garantili Modül Parçaları</h3>
+        <p id="shop-offers-state" role="status"></p>
+        <div id="shop-offer-list" class="shop-offer-list"></div>
+      </section>
+      </div>
+      <div id="shop-panel-chests" role="tabpanel" aria-labelledby="shop-tab-chests" hidden></div>
+      <div id="shop-panel-modules" role="tabpanel" aria-labelledby="shop-tab-modules" hidden></div>
+      <div id="shop-panel-cosmetics" role="tabpanel" aria-labelledby="shop-tab-cosmetics" hidden>
+        <div id="shop-cosmetic-state" role="status"></div>
+        <div id="shop-cosmetic-list" class="shop-offer-list"></div>
+        <section class="shop-collection-preview">
+          <h3 id="shop-cosmetics-title">Koleksiyon Vitrini</h3>
+          <p id="shop-cosmetics-copy">Mağaza kozmetik seçkisi henüz yayımlanmadı. Önizleme sahiplik veya kuşanma hakkı vermez.</p>
+          <button type="button" id="shop-collections-preview">Yeni Koleksiyonları Önizle</button>
+        </section>
+      </div>
       <section class="shop-section paid-store-section" aria-labelledby="paid-store-title">
         <div class="mobile-section-heading"><div><h3 id="paid-store-title" data-ui-icon="gem:violet">Premium ve Paketler</h3></div><small id="paid-store-mode"></small></div>
         <div id="paid-store-premium" class="paid-store-premium"></div>
@@ -604,6 +630,14 @@
       </section>
       <p id="shop-action-status" class="mobile-action-status" role="status">Sandık ödülleri sunucu tarafından belirlenir.</p>
     </section>
+
+    <dialog id="shop-offer-dialog" class="shop-offer-dialog" aria-labelledby="shop-offer-title">
+      <header class="shop-offer-heading">
+        <button id="shop-offer-back" class="navigation-back" type="button" aria-label="Geri"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg></button>
+        <h2 id="shop-offer-title">Teklif Detayı</h2>
+      </header>
+      <div id="shop-offer-body"></div>
+    </dialog>
 
     <dialog id="reward-ad-dialog" class="reward-ad-dialog" aria-labelledby="reward-ad-title">
       <div class="reward-ad-stage">
@@ -2065,6 +2099,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
   <script src="./src/home-interface-view.js"></script>
   <script src="./src/competition-chest-art.js"></script>
   <script src="./src/rewards/choice-view.js"></script>
+  <script src="./src/shop/offer-view.js"></script>
   <script src="./src/detail-card-layout.js"></script>
   <script src="./src/trophy-select.js"></script>
   <script src="./src/release-announcement.js"></script>

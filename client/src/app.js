@@ -533,6 +533,22 @@
     onChange:() => renderRewardInbox(),
     cue:() => gridshardAudioDirector?.triggerCue('energy_transfer'),
   });
+  const shopOffers = globalThis.GridshardShopOffers.create({
+    document, playerId:() => participantPlayerId,
+    request:(path, options) => requestJsonWithDeadline(path, options, 12000),
+    requestId:() => operationRequestId('shop-offer'),
+    applyPayload:payload => {
+      profileState.applyProfile(payload.profile);
+      metaProgressionState = withCanonicalModuleNames(payload.meta_progression);
+      renderProfileSummary();
+      renderMetaHubScreens();
+    },
+    previewCollections:() => {
+      renderCosmeticCollection();
+      const dialog = document.getElementById('cosmetic-collection-dialog');
+      if (!dialog.open) dialog.showModal();
+    },
+  });
   const releaseAnnouncement = globalThis.GridshardReleaseAnnouncement.create({
     document, playerId:() => participantPlayerId,
     canPresent:() => participantBootstrap.status === 'ready' && startupLoading?.state === 'done'
@@ -777,7 +793,8 @@
             payload.detail?.message || payload.detail || `Sunucu işlemi reddetti (${response.status}).`
           );
           responseError.status = response.status;
-          responseError.code = payload.detail?.code || "";
+          responseError.code = payload.detail?.code || payload.code || "";
+          responseError.messageEn = payload.message_en || payload.detail?.message_en || "";
           if (attempt === 0 && [500, 502, 503, 504].includes(response.status)) {
             lastError = responseError;
             await new Promise((resolve) => { window.setTimeout(resolve, 150); });
@@ -1068,6 +1085,7 @@
     renderAppScreen();
     recordProductEvent("screen_view", {screen});
     if (screen === 'daily') void engineerChoices.load({force:true});
+    if (screen === 'shop') void shopOffers.load();
 
     if (screen === "play") {
       // Beta.26: Oyna doğrudan tek çevrimiçi hazırlık ekranını açar.
@@ -18077,7 +18095,7 @@
     const find = group => Object.values(group).find(item => item.theme === theme.id);
     const frame = find(catalog.avatarFrames), background = find(catalog.backgrounds);
     const emblem = find(catalog.teamEmblems), teamFrame = find(catalog.teamFrames), color = find(catalog.teamNameColors);
-    if (!frame || !background || !emblem || !teamFrame || !color) return;
+    if (!frame || !background) return;
     const nav = document.getElementById("cosmetic-collection-themes");
     nav.replaceChildren();
     for (const item of catalog.themes) {
@@ -18097,9 +18115,12 @@
     applyAvatarVisual(player.querySelector(".profile-avatar"), profileState.viewModel()?.cosmetics?.selected_avatar_id || "default", frame.id);
     player.querySelector("strong").textContent = "Profil Önizlemesi";
     const team = document.getElementById("cosmetic-collection-team");
-    applyTeamAppearance(team, {emblem_id:emblem.id,frame_id:teamFrame.id,name_color_id:color.id},
-      {emblemHost:team.querySelector(".team-appearance-badge"),nameHost:team.querySelector("strong")});
-    team.querySelector("strong").textContent = teamState?.name || "Takım Önizlemesi";
+    team.hidden = !emblem || !teamFrame || !color;
+    if (!team.hidden) {
+      applyTeamAppearance(team, {emblem_id:emblem.id,frame_id:teamFrame.id,name_color_id:color.id},
+        {emblemHost:team.querySelector(".team-appearance-badge"),nameHost:team.querySelector("strong")});
+      team.querySelector("strong").textContent = teamState?.name || "Takım Önizlemesi";
+    }
     const items = document.getElementById("cosmetic-collection-items");
     items.replaceChildren();
     for (const item of values) {
@@ -18185,6 +18206,7 @@
     applyAvatarVisual(document.getElementById("profile-hero-avatar"), avatarId, frameId);
     document.getElementById("app-progress-ribbon")?.setAttribute("data-profile-background", backgroundId);
     document.querySelector(".profile-identity-card")?.setAttribute("data-profile-background", backgroundId);
+    document.querySelector("#profile-summary-panel .profile-hero")?.setAttribute("data-profile-background", backgroundId);
 
     const choiceSignature = JSON.stringify([cosmetics, document.documentElement.lang]);
     const choiceHosts = ["avatar-choice-list", "avatar-frame-choice-list", "battle-emoji-choice-list", "profile-background-choice-list"]
@@ -18358,6 +18380,8 @@
   // barında durur; içerik kaydırılsa da kimlik görünür kalır. payload yoksa
   // (profil yüklenirken) önceki oyuncunun kimliği temizlenir.
   function renderPublicProfileIdentity(payload = null) {
+    document.getElementById("public-profile-identity")?.setAttribute("data-profile-background",
+      payload?.avatar?.selected_profile_background_id || "default");
     const setText = (id, value) => {
       const element = document.getElementById(id);
       if (element) element.textContent = String(value);

@@ -1,0 +1,22 @@
+/* Same painted navy/gold/mint family. No new art, gift, or ownership state. */
+.shop-set-background{display:block;width:100%;height:70px;object-fit:fill;border:1px solid #587381;border-radius:10px;margin:12px 0}.shop-set-item{display:block;color:#d0e3eb;line-height:1.5}#shop-cosmetic-list{margin-bottom:20px}#shop-cosmetic-state{color:#c6dae8;font-size:14px;line-height:1.5;margin-bottom:12px}
+#shop-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0 0 16px}
+#shop-tabs button{min-width:0;min-height:48px;padding:8px 4px;border:1px solid #4d7793;border-radius:11px;background:linear-gradient(#274c68,#16344e);color:#d3e3ee;font:700 11px/1.35 var(--gs-font-display);text-decoration:none;box-shadow:inset 0 1px #a6c9de33,0 3px #071727}
+#shop-tabs button[aria-selected="true"]{background:linear-gradient(#426c76,#254b58);border-color:#98d8d0;color:#effff7}
+#shop-tabs button::after{content:none!important}
+#shop-screen>[role="tabpanel"][hidden]{display:none!important}
+.shop-offers-section{margin:18px 0}.shop-offers-section h3{font:700 18px/1.3 var(--gs-font-display);color:#f0f6ff}
+#shop-offers-state{color:#c6dae8;font-size:14px;line-height:1.5}.shop-offer-list{display:grid;gap:13px}
+.shop-offer-card,.shop-collection-preview{padding:15px;border:1px solid #507795;border-radius:15px;background:linear-gradient(135deg,#244a69,#122c45);box-shadow:inset 0 2px #b2d7e125,0 4px #061627;color:#f2f6ed;min-width:0;overflow-wrap:anywhere}
+.shop-offer-hero{display:flex;align-items:center;gap:12px;min-width:0}.shop-module-art{width:100px;height:100px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 7px 5px #0004)}.shop-offer-copy{min-width:0;flex:1}.shop-offer-copy h3{font:700 19px/1.2 var(--gs-font-display);margin:7px 0;color:#f3f6f0;overflow-wrap:anywhere}.shop-offer-eyebrow{font:700 10px/1.5 var(--gs-font-display);letter-spacing:.06em;color:#9ae9d8}.shop-offer-quantity{font-size:17px;color:#ffe1a0;line-height:1.4;display:block}
+.shop-offer-price{font:700 17px/1.4 var(--gs-font-display);color:#ffe0a0;margin:13px 0}.shop-offer-note,.shop-offer-dates{font-size:13px;line-height:1.5;color:#c1d6e5}.shop-offer-reason,.shop-offer-status{padding:11px;border:1px solid #667f90;border-radius:9px;background:#10283d;color:#e0e9ee;line-height:1.5;margin:10px 0}
+.shop-offer-secondary,.shop-offer-primary,#shop-collections-preview{display:block;width:100%;min-height:46px;margin:12px 0 0;padding:11px 12px;border:1px solid #6f94a8;border-radius:12px;background:linear-gradient(#325873,#1a3a52);box-shadow:inset 0 2px #baddf122,0 3px #071625;color:#f3f6ee;font:700 13px/1.4 var(--gs-font-display);text-decoration:none}
+.shop-offer-primary{border-color:#e8c47c;background:linear-gradient(#ffe29b,#e8b257);color:#3b280f;box-shadow:inset 0 2px #fff4c4,0 4px #785223}
+.shop-offer-primary:disabled,.shop-offer-secondary:disabled{background:#223b4c;border-color:#536c7f;color:#b8c9d6;box-shadow:none;cursor:default}
+.shop-collection-preview{border-color:#a89575;background:linear-gradient(130deg,#535d52,#223b47)}#shop-collections-preview{background:linear-gradient(#e2c994,#b59263);border-color:#ebd4a6;color:#34291a}
+.shop-pending-purchase{padding:12px;border:1px solid #bda378;border-radius:12px;background:#233b45;color:#ffe5b3;font-size:14px;line-height:1.5}.shop-pending-purchase[hidden]{display:none}
+:root body[data-app-screen] #shop-offer-dialog{box-sizing:border-box;width:min(430px,calc(100vw - 20px));max-width:calc(100vw - 20px);max-height:calc(100dvh - 24px);padding:16px;border:2px solid #7297a6;border-radius:21px;background:linear-gradient(145deg,#214761,#10283e)!important;color:#f2f6ed;box-shadow:inset 0 2px #a9ccda33,0 8px #061626,0 20px 60px #0008;overflow:auto}
+.shop-offer-heading{display:flex;align-items:center;gap:12px;margin-bottom:17px}.shop-offer-heading h2{min-width:0;flex:1;font:700 20px/1.25 var(--gs-font-display);margin:0;overflow-wrap:anywhere}#shop-offer-back{flex:0 0 44px}#shop-offer-body{min-width:0;overflow-wrap:anywhere}#shop-offer-body>p{font-size:15px;line-height:1.5}
+#shop-tabs button:focus-visible,.shop-offer-card button:focus-visible,#shop-offer-dialog button:focus-visible,#shop-collections-preview:focus-visible{outline:3px solid #8ee5d4;outline-offset:3px}
+@media(max-width:360px){#shop-tabs{gap:5px}#shop-tabs button{font-size:10px}.shop-module-art{width:84px;height:84px}.shop-offer-copy h3{font-size:17px}.shop-offer-heading h2{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.shop-offer-card *,#shop-offer-dialog *{animation:none!important;transition:none!important}}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 240" preserveAspectRatio="none" fill="none">
+  <defs>
+    <linearGradient id="water" x1="60" y1="0" x2="540" y2="240" gradientUnits="userSpaceOnUse"><stop stop-color="#21485b"/><stop offset=".45" stop-color="#112f47"/><stop offset="1" stop-color="#091f35"/></linearGradient>
+    <linearGradient id="deck" x1="20" y1="10" x2="164" y2="220" gradientUnits="userSpaceOnUse"><stop stop-color="#a2bfbd"/><stop offset=".4" stop-color="#597b85"/><stop offset="1" stop-color="#254657"/></linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="80" y2="200" gradientUnits="userSpaceOnUse"><stop stop-color="#e6cea0"/><stop offset="1" stop-color="#8a7352"/></linearGradient>
+  </defs>
+  <path fill="url(#water)" d="M0 0H640V240H0Z"/>
+  <!-- Stepped decks remain at the margins; the middle 60 percent is quiet for names. -->
+  <path d="M0 0H71V37H48V81H65V123H38V176H57V240H0Z M640 0H594V50H608V99H585V151H602V203H580V240H640Z" fill="#061a2b"/>
+  <path d="M0 0H65V31H42V75H59V117H32V170H51V240H0Z M640 0H600V44H614V93H591V145H608V197H586V240H640Z" fill="url(#deck)" stroke="#1b394a" stroke-width="3"/>
+  <path d="M0 6H59V26H36V80H53V112H26V175H45V236 M640 6H606V39H620V98H597V140H614V202H592V236" stroke="#c8d7cd" stroke-opacity=".6" stroke-width="3"/>
+  <path d="M0 55H39 M0 145H29 M613 70H640 M608 175H640" stroke="#223f4d" stroke-width="7"/>
+  <path d="M8 16H28V28H8Z M11 190H31V202H11Z M616 112H632V129H616Z" fill="url(#edge)" stroke="#3d4f50" stroke-width="2"/>
+  <path d="M94 222H150L166 235H94Z M485 3H549L549 14H499Z" fill="#87aaa6" fill-opacity=".1"/>
+</svg>

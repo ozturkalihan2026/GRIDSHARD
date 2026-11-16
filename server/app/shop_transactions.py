@@ -4,6 +4,7 @@ from dataclasses import fields
 from hashlib import sha256
 
 from . import shop_offers as offers
+from . import shop_cosmetic_offers as cosmetics
 from .catalog_migration import award_module_shards
 from .reward_definitions import checked, fingerprint
 
@@ -36,18 +37,24 @@ def _validated(profile):
             if (not isinstance(snapshot, dict) or snapshot.get('protocol') != 'shop-offer-preview-v1'
                     or snapshot.get('preview_hash') != fingerprint({k:v for k,v in snapshot.items() if k != 'preview_hash'})
                     or not isinstance(snapshot.get('id'), str) or not offers.KEY.fullmatch(snapshot['id'])
-                    or type(snapshot.get('revision')) is not int or snapshot['revision'] < 1
-                    or snapshot.get('price') != dict(currency='circuit_credits', amount=500)
-                    or type(snapshot['price']['amount']) is not int
-                    or snapshot.get('limit') != dict(period='utc_week', count=2, key=offers.LIMIT_KEY)
-                    or type(snapshot['limit']['count']) is not int):
+                    or type(snapshot.get('revision')) is not int or snapshot['revision'] < 1):
                 raise ValueError('Offer snapshot')
             when = offers._moment(row['purchased_at'])
-            if (offers._week(when)[0] != snapshot['period_id']
+            cosmetic = snapshot.get('kind') == 'cosmetic_set'
+            if ((not cosmetic and offers._week(when)[0] != snapshot['period_id'])
                     or not offers._moment(snapshot['starts_at']) <= when < offers._moment(snapshot['ends_at'])):
                 raise ValueError('Period binding')
             reward = checked(snapshot['reward_snapshot'])
-            if (reward['kind'] != 'fixed' or set(reward['payload']) != {'module_definition_id', 'module_shards'}
+            if row['charged'] != snapshot['price'] or row['rewards'] != reward['payload']:
+                raise ValueError('Charge binding')
+            if cosmetic:
+                cosmetics.validate_snapshot(snapshot, reward)
+            elif (snapshot.get('kind') is not None
+                    or snapshot.get('price') != dict(currency='circuit_credits', amount=500)
+                    or type(snapshot['price']['amount']) is not int
+                    or snapshot.get('limit') != dict(period='utc_week', count=2, key=offers.LIMIT_KEY)
+                    or type(snapshot['limit']['count']) is not int
+                    or reward['kind'] != 'fixed' or set(reward['payload']) != {'module_definition_id', 'module_shards'}
                     or reward['id'] != 'shop.module-parts.' + fingerprint(reward['payload'])
                     or row['charged'] != snapshot['price'] or row['rewards'] != reward['payload']
                     or snapshot['target']['module_definition_id'] != row['rewards']['module_definition_id']
@@ -59,7 +66,7 @@ def _validated(profile):
 
 
 def _used(receipts, snapshot):
-    return sum(r['offer_snapshot']['period_id'] == snapshot['period_id']
+    return sum((snapshot['limit']['period'] == 'account' or r['offer_snapshot']['period_id'] == snapshot['period_id'])
                and r['offer_snapshot']['limit']['key'] == snapshot['limit']['key'] for r in receipts.values())
 
 
@@ -71,7 +78,8 @@ def quote(profile, catalog, identity, revision, *, moment, secret):
     snapshot = offers.preview(profile, catalog, identity, revision, moment=moment, secret=secret)
     used = _used(receipts, snapshot)
     remaining = max(0, snapshot['limit']['count'] - used)
-    reason = 'purchase_limit_reached' if not remaining else 'insufficient_funds' if balance < snapshot['price']['amount'] else None
+    reason = ('already_owned' if snapshot.get('kind') == 'cosmetic_set' and cosmetics.owned(profile,snapshot)
+              else 'purchase_limit_reached' if not remaining else 'insufficient_funds' if balance < snapshot['price']['amount'] else None)
     return dict(offer=snapshot, purchases_used=used, purchases_remaining=remaining,
                 balance=balance, can_purchase=reason is None, blocking_code=reason)
 
@@ -102,10 +110,15 @@ def purchase(profile, catalog, identity, revision, preview_hash, *, request_id, 
         raise ShopTransactionError('offer_preview_stale', 'Teklif önizlemesi değişti; yeniden incele.')
     if not view['can_purchase']:
         code = view['blocking_code']
-        raise ShopTransactionError(code, 'Bu haftanın iki alımı kullanıldı.' if code == 'purchase_limit_reached' else 'Devre Kredisi yetersiz.')
+        raise ShopTransactionError(code, {'purchase_limit_reached':'Bu teklifin edinim hakkı kullanıldı.',
+            'already_owned':'Bu setteki öğelerden en az birine zaten sahipsin.',
+            'insufficient_funds':'Devre Kredisi yetersiz.'}[code])
     reward = deepcopy(snapshot['reward_snapshot']['payload'])
     working.circuit_credits -= snapshot['price']['amount']
-    award_module_shards(working, reward['module_definition_id'], reward['module_shards'])
+    if snapshot.get('kind') == 'cosmetic_set':
+        cosmetics.grant(working,reward)
+    else:
+        award_module_shards(working, reward['module_definition_id'], reward['module_shards'])
     body = dict(format_version=1, purchase_id=fingerprint(dict(player_id=profile.player_id, request_hash=request_hash)),
         request_hash=request_hash, player_id=profile.player_id, purchased_at=offers._stamp(moment),
         offer_snapshot=deepcopy(snapshot), charged=deepcopy(snapshot['price']), rewards=reward)

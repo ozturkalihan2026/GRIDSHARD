@@ -129,6 +129,24 @@ function runtimeAssets(source, html, scripts, omittedWav) {
     if (!omittedWav.has(file)) assets.add(relative);
   };
   for (const match of html.matchAll(/(?:src|href)="(\.\/assets\/[^"\s]+)"/g)) add(match[1]);
+  // Authored cosmetics also retain canonical source paths for the server's
+  // catalog hash check. CSS media-* copies alone do not satisfy that contract.
+  if (scripts.includes("./src/liveops-cosmetic-catalog.js")) {
+    const context = vm.createContext({});
+    vm.runInContext(readText(sourceFile(source,"./src/liveops-cosmetic-catalog.js")),context,{timeout:1000});
+    const pending = [context.GRIDSHARD_LIVEOPS_COSMETICS];
+    while (pending.length) {
+      const item = pending.pop();
+      if (!item || typeof item !== "object") continue;
+      for (const [key,value] of Object.entries(item)) {
+        if (key === "asset") {
+          if (!value || typeof value.path !== "string" || !/^[a-f0-9]{64}$/.test(value.sha256)) throw new Error("Kozmetik kaynak kaydı geçersiz.");
+          add(value.path);
+          if (digest(fs.readFileSync(sourceFile(source,"./"+value.path))) !== value.sha256) throw new Error("Kozmetik kaynak hash kaydı uyuşmuyor.");
+        } else if (value && typeof value === "object") pending.push(value);
+      }
+    }
+  }
   // Painted yaw frames are selected from generated data, so their paths do not
   // appear as HTML img tags. Include the actual registry in web/mobile bundles.
   if(scripts.includes("./src/module-layer-data.js")){

@@ -97,6 +97,7 @@ def test_reservations_outside_the_calendar_are_consumed_and_inside_are_credited_
 
 
 def test_shop_inventory_is_not_competition_stock_or_a_reservation_candidate():
+    baseline = task(content_coverage(registry(),extra_periods={"shop_collection":2}),pool="shop")["ready_unassigned"]
     doc=registry().document
     for item in doc["items"]:
         if item["id"].startswith("aurora_"):
@@ -105,8 +106,8 @@ def test_shop_inventory_is_not_competition_stock_or_a_reservation_candidate():
     report=content_coverage(r,extra_periods={"shop_collection":2})
     assert task(report)["ready_unassigned"] == 2
     assert task(report,pool="shop")["required"] == 2
-    assert task(report,pool="shop")["ready_unassigned"] == 1
-    assert report["unimplemented_sources"] == ["shop_collection"] and not report["stock_ready"]
+    assert task(report,pool="shop")["ready_unassigned"] == baseline + 1
+    assert report["unimplemented_sources"] == [] and not report["stock_ready"]
     reserved=r.reserve("weekly_tournament","2027-W01","competition")
     assert set(reserved.used) == {"solar_frame","solar_banner"}
     bad=deepcopy(reserved.document)
@@ -129,14 +130,15 @@ def test_unknown_pool_and_only_shop_stock_fail_closed_in_runtime_reservation():
 @pytest.mark.parametrize("mutation", ["activate_planned","change_pool","reduce_budget","unknown_source","duplicate_source"])
 def test_json_cannot_install_a_handler_change_channels_or_hide_stock_demand(mutation):
     doc=json.loads(SOURCES_PATH.read_text(encoding="utf-8"))
-    if mutation=="activate_planned":doc["sources"][-2]["state"]="supported"
+    if mutation=="activate_planned":doc["sources"][-1]["state"]="supported"
     if mutation=="change_pool":doc["sources"][0]["stock_pool"]="shop"
     if mutation=="reduce_budget":doc["sources"][0]["cosmetics_per_period"]["avatar_frame_id"]=0
     if mutation=="unknown_source":doc["sources"][0]["id"]="instant_reward"
     if mutation=="duplicate_source":doc["sources"].append(deepcopy(doc["sources"][0]))
     with pytest.raises(ContentPlanError):ContentSourceRegistry(doc)
     with pytest.raises(ContentPlanError,match="runtime adapter"):
-        load_sources().require_supported("shop_collection")
+        load_sources().require_supported("daily_trial")
+    assert load_sources().require_supported("shop_collection")["stock_pool"] == "shop"
 
 
 @pytest.mark.parametrize("extra", [{"season_road":1},{"unknown":2},{"shop_collection":True},{"shop_collection":-1}])
@@ -150,5 +152,5 @@ def test_stock_cli_reports_shortfall_and_rejects_planned_reservation_without_wri
     result=subprocess.run(args+["coverage","--check-stock","--starts-at","2027-01-04T00:00:00Z"],cwd=ROOT,capture_output=True,text=True,encoding="utf-8")
     assert result.returncode == 2 and not json.loads(result.stdout)["stock_ready"]
     result=subprocess.run(args+["reserve","--source","shop_collection","--period-id","2027-01-04","--release-id","no-handler"],cwd=ROOT,capture_output=True,text=True,encoding="utf-8")
-    assert result.returncode == 2 and "runtime adapter" in result.stderr
+    assert result.returncode == 2 and "offer catalog" in result.stderr
     assert CATALOG_PATH.read_bytes() == before

@@ -38,7 +38,7 @@ def main(argv=None):
                 handle.write('\n')
             catalog = result
         print(json.dumps(dict(schema_version=1, offers=[
-            {**{k: row[k] for k in ('id', 'revision', 'status', 'starts_at', 'ends_at', 'minimum_arena', 'price', 'guarantee', 'limit', 'content_hash')}, 'preview_count': len(row['targets'])}
+            {**{k: row[k] for k in ('id', 'revision', 'status', 'starts_at', 'ends_at', 'minimum_arena', 'price', 'guarantee', 'limit', 'content_hash')}, 'preview_count': len(row.get('targets',row.get('cosmetics',[])))}
             for row in catalog.document['offers']], runtime_changed=False, production_changed=False), ensure_ascii=False))
         return 0
     except (OSError, ValueError) as exc:

@@ -402,7 +402,7 @@
       "owner": "Sanat / ürün",
       "effort": "L",
       "priority": "P1",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "COS-01",
         "ECON-01"
@@ -427,7 +427,17 @@
       "old_plan_sections": [
         4
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/shop-art-manifest.md",
+        "client/assets/ui/cosmetics-shop-v1/README.md",
+        "server/data/cosmetic_releases_v1.json",
+        "server/app/cosmetic_releases.py",
+        "tools/prepare_liveops_rewards.py",
+        "client/src/liveops-cosmetics-v1.css",
+        "server/tests/test_shop_cosmetic_art.py",
+        "e2e/shop-cosmetics.spec.js",
+        "docs/planning/shop-cosmetics-250-acceptance.md"
+      ],
       "planned_releases": [
         "2.5.0"
       ]
@@ -871,7 +881,7 @@
       "owner": "Ürün / backend / istemci",
       "effort": "M",
       "priority": "P1",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "SHOP-02",
         "COS-03"
@@ -897,7 +907,17 @@
         4,
         5
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/first-shop-release.md",
+        "docs/planning/shop-pilot-250-acceptance.md",
+        "server/app/shop_cosmetic_offers.py",
+        "server/app/shop_transactions.py",
+        "server/data/shop_offers_v1.json",
+        "server/tests/test_shop_cosmetic_purchases.py",
+        "server/tests/test_shop_cosmetic_http.py",
+        "server/tests/test_postgres_shop_cosmetics.py",
+        "e2e/shop-pilot.spec.js"
+      ],
       "planned_releases": [
         "2.5.0"
       ]
@@ -992,10 +1012,11 @@
       "owner": "İstemci",
       "effort": "L",
       "priority": "P1",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "UI-01",
-        "SHOP-01"
+        "SHOP-01",
+        "SHOP-02"
       ],
       "existing_paths": [
         "client/index.html",
@@ -1019,7 +1040,14 @@
         5,
         7
       ],
-      "evidence": [],
+      "evidence": [
+        "client/src/shop/offer-view.js",
+        "client/src/shop/offer-view.css",
+        "client/tests/shop-offers.test.js",
+        "e2e/shop-offers.spec.js",
+        "tools/shop_offers_browser_fixture.py",
+        "docs/planning/shop-ui-250-acceptance.md"
+      ],
       "planned_releases": [
         "2.5.0"
       ]

@@ -1,6 +1,6 @@
 # 2.5.0 — ilk ücretsiz teklif ve Mühendis Kasası kararı
 
-16 Kasım 2026. ECON-01 yerel bütçe adayı; canlı katalog veya kazanılmış hak
+17 Kasım 2026. ECON-01 yerel bütçe adayı; canlı katalog veya kazanılmış hak
 değişikliği değildir. Miktar/fiyat ayarı BALANCE-01 ve gerçek API kabulünde
 incelenir; yayımlanmış revision üzerine yazılmaz.
 
@@ -13,7 +13,41 @@ fiziksel cihaz kapısı açıktır. SHOP-01 sürümlü katalog ve sabit önizlem
 [kabulü](shop-offers-250-acceptance.md) tamamlandı. Katalog draft kalır;
 satın alma uçları/atomik cüzdan da SHOP-02
 [kabul kaydıyla](shop-transactions-250-acceptance.md) dalda hazırdır.
-Katalog draft, UI-02 mağaza entegrasyonu ve SHOP-03 kozmetik pilotu açıktır.
+Katalog draft. UI-02 gerçek mağaza [kabulü](shop-ui-250-acceptance.md) hazır;
+COS-03 ayrı dört mağaza kozmetiği [kabulü](shop-cosmetics-250-acceptance.md)
+ile kilitli önizlemede hazırdır. SHOP-03 iki setin oyun içi kredili edinimi,
+sahiplik/tek ücret ve pilot fiyatı [kabul kaydıyla](shop-pilot-250-acceptance.md)
+dalda hazırdır. Üç teklif de draft; yayımlama veya S2 açılışı yapılmadı.
+
+## İki kozmetik seti — yalnız oyun içi kaynak
+
+| Teklif | Kesin içerik | Fiyat | Uygunluk / limit |
+| --- | --- | --- | --- |
+| cosmetic.dockyard | Tersane Kilidi çerçevesi + Tersane Güvertesi | 1.500 Devre Kredisi | Arena2 /300 zirve kupa; hesap başına bir kez |
+| cosmetic.workshop | Atölye Rafı çerçevesi + Atölye Bölmesi | 1.500 Devre Kredisi | Arena2 /300 zirve kupa; hesap başına bir kez |
+
+Gerçek para, TL/döviz fiyatı, reklam izleme, ödeme sağlayıcısı veya yeni para
+birimi yoktur. İstek fiyat/ödül/provider gönderemez; sunucunun incelenmiş
+oyun içi kredi teklifi yeniden doğrulanır. Set yalnız görünüm verir; modül,
+parça, XP, kupa, savaş gücü veya para geri vermez. Otomatik kuşanmaz.
+
+Bir öğe bile zaten oyuncudaysa set yeniden ücretlendirilemez; kısmi sahiplik
+için rastgele telafi veya fiyat indirimi üretilmez. Tam set edinimi ve kalıcı
+makbuz tek ekonomik işlemdir. Hesap limiti UTC haftası, revision, cihaz veya
+mağaza yenilemesiyle sıfırlanmaz. Aynı istek, dönem/sürüm/katalog kapandıktan
+sonra da ilk makbuzu ve güncel hesabı döndürür.
+
+İki set toplam3.000 kredi; dört haftalık iki500 kredi modül alımı/hafta
+ile toplam isteğe bağlı mağaza yükü7.000 kredidir. ECON-01 Arena1 aday
+28 günlük bütçesinde2 savaş/3 emir için19.274→12.274,4 savaş/6 emir için
+33.072→26.072 kredi kalır (başka harcama öncesi). Yalnız iki set bu
+bütçelerin yaklaşık%15,6 ve%9,1'idir. Bu senaryo hesap garantisi değildir;
+kredi yükseltme/çekirdek/yetenekle aynı cüzdandan harcanır. Modül sahipliği
+ve ilerleme kozmetik edinimi gerektirmez. Son savaş/ekonomi kabulü BALANCE-01'dedir.
+
+İki setin28 Aralık–25 Ocak, modül teklifinin28 Aralık–4 Ocak UTC penceresi
+yalnız incelenebilir kaynak taslağıdır. Gerçek2.5/S2 tarihi veya otomatik
+yayın kararı değildir; kaynakta bütün teklifler draft kalır.
 
 ## Parça teklifi
 
@@ -55,7 +89,7 @@ kredidir. Modül hâlâ planned; bu karar runtime/sanat/denge kapılarını kapa
 Altılı deste, çekirdek ve ilk yetenekler aynı cüzdandan harcanır. Sezon arası
 ve daha yüksek arenada parça havuzunun genişlemesi ayrı incelenir. Sekiz
 sentetik kimlikteki örnekler gerçek kullanıcı verisi veya başarı garantisi değildir.
-Kozmetik fiyatları zorunlu savaş gücü bütçesine eklenmez; ayrı SHOP-03 kararıdır.
+Kozmetik fiyatları zorunlu savaş gücü bütçesine eklenmez; yukarıdaki ayrı pilot kararıdır.
 
 [Birlikte harcama raporu](free-economy-250-progression-report.md) ·
 [Makine kararı](free-economy-250-progression-v1.json) ·

@@ -107,6 +107,7 @@ const sandbox = {
   fetch: async () => ({ ok: false, status: 503, json: async () => ({}) }),
   WebSocket: function WebSocket() {},
   GridshardRewardChoices: { create:() => ({ load:async()=>{}, renderInbox() {}, pendingCount:()=>0 }) },
+  GridshardShopOffers: { create:() => ({ load:async()=>{}, render() {} }) },
   localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
   crypto: { randomUUID: () => "test-uuid" },
   URL,

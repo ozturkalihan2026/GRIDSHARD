@@ -6,8 +6,10 @@ Publishing is an offline source operation, never an unauthenticated HTTP API.
 from copy import deepcopy
 from hashlib import sha256
 import json
+import os
 from pathlib import Path
 import re
+import xml.etree.ElementTree as ET
 from datetime import date, datetime, timezone
 
 
@@ -18,6 +20,46 @@ COSMETIC_FIELDS = PLAYER_FIELDS | TEAM_FIELDS | {"avatar_id", "emoji_id"}
 RESOURCE_FIELDS = {'circuit_credits', 'flux_shards', 'module_definition_id', 'module_shards'}
 SOURCES = {"season_road", "season_leaderboard", "weekly_tournament", "team_tournament"}
 INVENTORY_POOLS = {"competition", "shop", "daily_trial"}
+AUTHORED_SHOP_PATTERNS = {
+    'dockyard_latch': 'avatar_frame_id', 'workshop_shelf': 'avatar_frame_id',
+    'dockyard_deck': 'profile_background_id', 'workshop_bay': 'profile_background_id',
+}
+
+
+def checked_shop_art(item):
+    """Versioned native art, not a renamed/recolored competition motif."""
+    look = item['look']
+    pattern = look['pattern']
+    if (item['field'] != AUTHORED_SHOP_PATTERNS[pattern]
+            or item.get('inventory_pool') != 'shop'
+            or set(look) != {'color', 'accent', 'pattern', 'asset'}):
+        raise CosmeticReleaseError('Authored shop art has an invalid field or stock pool')
+    asset = look['asset']
+    if (not isinstance(asset, dict) or set(asset) != {'path', 'sha256'}
+            or asset['path'] != f'assets/ui/cosmetics-shop-v1/{pattern}.svg'
+            or not re.fullmatch(r'[0-9a-f]{64}', str(asset['sha256']))):
+        raise CosmeticReleaseError('Invalid authored cosmetic asset')
+    root = Path(os.environ.get('GRIDSHARD_CLIENT_DIR') or Path(__file__).resolve().parents[2] / 'client').resolve()
+    target = (root / asset['path']).resolve()
+    if not target.is_relative_to(root) or not target.is_file():
+        raise CosmeticReleaseError('Authored cosmetic asset is missing')
+    data = target.read_bytes()
+    if len(data) > 32768 or sha256(data).hexdigest() != asset['sha256']:
+        raise CosmeticReleaseError('Authored cosmetic asset hash changed')
+    try:
+        if b'<!DOCTYPE' in data.upper() or b'<!ENTITY' in data.upper():
+            raise ValueError()
+        svg = ET.fromstring(data)
+        allowed = {'svg', 'defs', 'linearGradient', 'stop', 'path', 'rect', 'circle'}
+        for node in svg.iter():
+            if node.tag.removeprefix('{http://www.w3.org/2000/svg}') not in allowed:
+                raise ValueError()
+            for name, value in node.attrib.items():
+                if (name.lower().startswith('on') or name in {'style', 'href'} or name.startswith('{')
+                        or ('url(' in value and not re.fullmatch(r'url\(#[a-zA-Z0-9_-]+\)', value))):
+                    raise ValueError()
+    except (ET.ParseError, ValueError) as exc:
+        raise CosmeticReleaseError('Unsafe authored cosmetic SVG') from exc
 
 
 class CosmeticReleaseError(ValueError):
@@ -76,9 +118,11 @@ class CosmeticReleaseRegistry:
             designs.add(design)
             look = item.get("look", {})
             if (not re.fullmatch(r"[a-z][a-z0-9_]{1,63}", identity)
-                or look.get("pattern") not in {"arcs", "rays", "tides"}
+                or look.get("pattern") not in {"arcs", "rays", "tides", *AUTHORED_SHOP_PATTERNS}
                 or any(not re.fullmatch(r"#[0-9a-fA-F]{6}", str(look.get(k, ""))) for k in ("color", "accent"))):
                 raise CosmeticReleaseError("Unsupported cosmetic rendering contract")
+            if look['pattern'] in AUTHORED_SHOP_PATTERNS:
+                checked_shop_art(item)
             if item["field"] == "team_emblem_id" and not re.fullmatch(r"[0-9., \-MmLlHhVvCcSsQqTtAaZz]+", look.get("path", "")):
                 raise CosmeticReleaseError("Unsafe emblem path")
             visual = fingerprint({"field": item["field"], "look": look})

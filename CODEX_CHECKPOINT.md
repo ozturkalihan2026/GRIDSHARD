@@ -1,3 +1,177 @@
+# 2.5.0 / SHOP-03 — kredili pilot hazır; toplu commit kaydı, 17 Kasım 2026
+
+Kullanıcı yeni kozmetik zeminlerin kupa tarafında boşta kaldığını belirtti;
+düzeltip sıradaki işi tamamlamamızı, gerçek para olmamasını özellikle istedi.
+SHOP-03 branch_ready. Kullanıcı17 Kasım commit/push istedi; UI-02/COS-03,
+SHOP-03, profil barı düzeltmesi ve bağlı plan/kabul kayıtları bu toplu commit
+kapsamındadır. Dal codex/develop-2.5.0; önceki uç75521a87, main bb987bf6.
+Önceki çalışmayı silme/temizleme. Paket/gerçek sürüm2.4.0 kalır.
+Commit öncesi yeni hash'li SVG kaynaklarına .gitattributes LF kuralı eklendi;
+Windows/Linux checkout aynı kaynak byte'larını korur. Index'teki dört gerçek
+SVG'nin SHA256'sı katalogla karşılaştırılır; canlı/paket yayını kapsamda değil.
+
+Zemin SVG'lerine preserveAspectRatio=none eklendi; dar/geniş profil barını
+kupa dahil doldurur. Frame oranı değişmez. Kendi profili zemini artık tüm
+rozet kartı yerine .profile-hero üzerindedir; ana ekran barı/ziyaret/
+koleksiyon aynı kaynakla çalışır. Sağ kupa bar içinde ve iki kenar alfa255
+ölçüldü.320/393 TR/EN görseller incelendi. Yeni4 sanatın hash'leri ve
+generated JS/CSS yenilendi; eski15 dönem öğesi ve S1 overlay değişmedi.
+
+shop_cosmetic_offers.py: Tersane ve Atölye ayrı çerçeve+zemin setleri;
+set başına1500 oyun içi Devre Kredisi, Arena2/300 zirve, hesap başına bir.
+Gerçek para/TRY/döviz, reklam, ödeme SDK/provider/token yok. Oyun gücü,
+XP/parça/kupa/para geri verme veya otomatik kuşanma yok. Bir öğe zaten
+sahipse yeni alım already_owned ile reddedilir. Hesap limiti haftalık veya
+revision/cihaz değişimiyle yenilenmez; modülün500 kredi/haftalık2 sınırı
+aynı kaldı. Üç teklif source shop_offers_v1.json içinde draft; örnek28 Aralık
+sonrası pencere yayın veya S2 kararı değildir. Bakiyeler/gift/S1 değişmedi.
+
+Mevcut GET liste/detay ve POST purchase/SHOP-02 request+revision+previewhash,
+actor lock ve PostgreSQL economic UOW genişletildi. Kredi, iki kalıcı
+sahiplik, hesap limit tanığı ve makbuz aynı commit/rollback. Yeni tablo veya
+migration yok. Eski makbuzlar destekli. Aynı başarılı istek katalog/asset/
+gate kapalıyken ilk makbuz+güncel hesabı döndürür; tekrar ücret/grant yok.
+Bozuk canlı SVG stabil invalid_catalog hatasına çevrilir. Tarihsel makbuz
+mevcut sanat/katalogu yeniden yükleyip bozulmaz. shop_collection manuel
+adaptör kodda/source metadata supported; ayrı shop stoğu, dönem reserve
+CLI'siyle açılamaz. daily_trial hâlâ planned ve JSON ile açılamaz.
+
+İstemci Kozmetikler sekmesinde gerçek iki seti/iki kaynağı/fiyatı/hesap
+limitini gösterir; ikisi de yüklenmeden onay yok. Onay+hash doğrulanmış
+makbuz sonrası kalıcı owned seçenekleri gerçek PUT ile kuşanılır. Pending
+kayıt/reload/kapalı liste kurtarması korunur; çevrimdışı sekmede retry var.
+Kabul docs/planning/shop-pilot-250-acceptance.md; fiyat/bütçe kararı
+docs/planning/first-shop-release.md. İki set3000, dört haftalık modül+set
+isteğe bağlı toplam7000 kredi; yeni edinim için ayrı para kaynağı eklenmedi.
+
+Linux eski modül+HTTP+gerçekPG katalog/işlem82 PASS. Son yeni domain/HTTP/
+PG yarış/rollback+stok/sanat55 PASS (örtüşür; tek137 değildir), skip0.
+Windows HTTP beklemesi kesildi; Linux ilk PYTHONPATH/arena fixture hataları
+düzeltildi, final koşular kabul edildi. Browser Chrome6+Android6+Safari6
+=18 PASS, gerçek ödeme/reklam isteği0; fiziksel cihaz değildir. İstemci792,
+build15, plan11 PASS; import533/0. Son web build35d90ac33d14e255 ve dist
+registry/offer preflight PASS. Üç plan check/diff check PASS; uzak CI iddiası
+yok. Görev label'lı PG/test konteynerleri ve loopback sunucusu kapanışta
+kapatılır; diğer Kivilcim konteynerlerine dokunulmaz.
+
+2.5.0:25 maddede14 branch_ready,2 in_progress,9 todo =11 açık madde.
+Tüm78:done8/branch_ready22/in_progress4/todo37/later7. Checklist/takvim/
+brief güncel; tarih hedefi değişmedi. Sıradaki öneri CARD-01 Geri Tepme Topu
+veya UI-04 vitrin. COS-05 altı sezon öğesi, AUDIO-03 müzikler, denge/paket/
+cihaz/yayın kapıları açık. Gerçek parasız geliştirme sürer; eski ödeme/
+reklam kaynakları depoda korunur,2.5 paket dışlama POLICY-01'de kabul edilir.
+RELEASE-02, yeni shop stoğunu yayımlanmış S1 kayıtlarını bozmadan dağıtım
+adayında birlikte doğrulamalıdır; eski15-only registry pilot açamaz.
+Main/deploy/AAB/Console işi yapılmadı. Geçiş S1 kapanış ve ödül kabulü
+sonrası, en erken22 Aralık03.00TR; kesin pencere/S2 onayı yok.
+
+---
+
+# 2.5.0 / COS-03 — dört mağaza kozmetiği hazır; 12 açık madde, 16 Kasım 2026
+
+Kullanıcı sıradaki işi ve2.5.0 için kaç madde kaldığını sordu. COS-03
+tamamlandı, branch_ready. Önceki UI-02 ve bu çalışmanın değişiklikleri
+codex/develop-2.5.0 üzerinde henüz commit/push edilmedi. HEAD75521a87,
+main bb987bf6; önceki çalışmayı silme veya tekrar başlatma.
+
+client/assets/ui/cosmetics-shop-v1/: dört el yazımı native SVG,7072 bayt.
+Tersane Kilidi Çerçevesi/dockyard_latch_frame, Tersane Güvertesi/
+dockyard_deck_background; Atölye Rafı/workshop_shelf_frame, Atölye Bölmesi/
+workshop_bay_background. Ayrı128 kare çerçeveler ve640x240 zeminler;
+kalın döküm kelepçe+alt kilit ve asimetrik raf+köşe bobin motifleri farklıdır.
+Ortak boyalı metal/lacivert/üst-sol ışık korunur; dönem çizimi veya recolor
+kullanılmadı. Mevcut sistem native SVG/CSS olduğundan raster üretimi yok.
+
+Katalog19 öğe: eski15 nesne/renk/desen ve releases/freshness HEAD ile aynı;
+4 yeni approved/shop/atanmamış/kilitli öğe. Registry pattern-alan-havuz,
+sabit kaynak yolu, gerçek SHA ve güvenli SVG doğrular. Yanlış alan/havuz,
+değişmiş/eksik kaynak, yeniden adlandırma/recolor, script/dış image reddedilir.
+Sync JS/CSS/TR-EN üretir. Yeni oyuncu-only temalar takım önizlemesini
+gizler, eski temaya dönünce geri getirir. Mevcut sahiplik kapısı korunur;
+önizleme hiçbir mutasyon yapmaz. Edinim/fiyat/satış henüz yok (SHOP-03).
+
+Public profile artık yalnız seçili zemin kimliğini avatar görünümüne ekler;
+istemci bunu uygular, yüklemede/eski yanıtta default'a temizler. Envanter/
+ayar açılmaz. Gerçek PUT seçim, reload, arama ve ziyaret testlidir.
+İlk Atölye gölgesi portreyi örttü; düzeltildi ve iki merkez alfa0 ölçüldü.
+Build'de CSS media kopyaları yeterli değildi: tools/build-client.js artık
+katalogdaki özgün SVG'leri de hash doğrulayarak kanonik yola kopyalar.
+Bozuk/eksik kaynak son iyi çıktıyı bozmaz; web/mobile yeni testlidir.
+GRIDSHARD_CLIENT_DIR=dist ile registry validate PASS; gerçek yayın açılış
+dosyaları paket içinde bulunur. Son web build282a4976092c3fa4; AAB değil.
+
+Kabul docs/planning/shop-cosmetics-250-acceptance.md. Sunucu odaklı52 PASS,
+istemci791 PASS, build15 PASS, plan11 PASS, import529/0 sorun. Chrome6+
+Android6+Safari6=18 PASS; Safari2 ek sahip olunan set tekrarı320/393 TR/EN
+normal/ziyaret, eski oyuncu/takım koleksiyonu Chrome1 PASS.18+2+1 ayrı
+koşudur; tek21 koşu/uzak Actions yeşili/fiziksel cihaz kabulü değildir.
+Test fixture yalnız development/loopback/opt-in özel başlıkla geçici
+hesap sahipliği hazırlar; üretim import etmez. Test sunucusu kabul sonrası
+kapatılır. S1 overlay, gerçek2.4.0, saat, SQL, main ve canlı değişmedi.
+
+2.5.0:25 görev,13 branch_ready /2 in_progress /10 todo =12 açık madde.
+Kalan CARD-01, SHOP-03, UI-03, UI-04, QA-01, ANALYT-01, BALANCE-01,
+POLICY-01, OPS-02, RELEASE-02, COS-05, AUDIO-03. Bütün plan78 görevde
+done8/branch_ready21/in_progress4/todo38/later7. Üç plan üretildi;
+takvim yalnız ilerleme metniyle düzeldi, hedef gün veya yayın kararı değişmedi.
+Sıradaki öneri SHOP-03: garantili teklif+iki ayrı kozmetik seti pilotu,
+ekonomik fiyat/arena/limit, sahip olunan ürün reddi, atomik tek ücret ve
+kalıcı sahiplik. COS-05 altı sezon öğesi ve AUDIO-03 hâlâ ayrı açık işlerdir.
+Canlı geçiş S1 kapanış/ödül kabulü sonrası, en erken22 Aralık03.00TR;
+kesin pencere/S2 onayı yok. Commit/push/deploy/AAB bu istekte yapılmadı.
+
+---
+
+# 2.5.0 / UI-02 — gerçek mağaza arayüzü hazır, 16 Kasım 2026
+
+Kullanıcı sıradaki işi tamamlamamızı istedi. codex/develop-2.5.0 üzerinde
+UI-02 tamamlandı; bu oturumun değişiklikleri henüz commit/push edilmedi.
+HEAD ve uzak dalın önceki kayıtlı ucu75521a87; main bb987bf6 değişmedi.
+Sonraki kullanıcı isteğinde mevcut değişiklikleri silmeden buradan devam et.
+
+client/src/shop/offer-view.js/css + index/app entegrasyonu: dört bölüm,
+tek mevcut Bronz hediye/sandık bölümü, garanti/olasılık ayrımı, gerçek
+SHOP-01/02 liste/detay/inceleme/onay/makbuz. Fiyat/hedef/ödül/limit API'den;
+yerel ödül veya yeni hediye kaynağı yok. Kozmetik sekmesi yalnız mevcut
+kilitli/sahip olunan koleksiyon önizlemesidir; gerçek satış COS-03/SHOP-03.
+Lacivert boyalı yüzey, gerçek modül çizimi, altın CTA, ortak yalnız ok geri
+tuşu ve çizgisiz sekmeler korunur. Yeni sanat/ses üretimi yapılmadı.
+
+İlk POST öncesi hesap kapsamlı localStorage kaydı; aynı request/revision/hash
+ile kurtarma. Kayıp yanıt/bozuk makbuz/genel403/kapalı liste durumunda hak
+ve işlem saklanır, yeni alım engellenir. Yalnız tanınan kesin iş kuralı
+reddi bekleyeni temizler. Bozuk yerel kayıt sessizce silinmez. Hesap/yükleme
+ve ayrı detay kuşağı eski yanıtı engeller. Makbuz hesap/istek/önizleme/
+ücret/ödül hash'leri doğrulanmadan profil/meta uygulanmaz. Çift dokunma tek
+işlem. Safari dokunmasında odak kaybı düzeltildi; liste yenilenince aynı
+teklifin yeni düğmesine odak döner. Ortak HTTP hata çözücü hem eski nested
+detail.code hem yeni top-level code'u okur.
+
+Kabul docs/planning/shop-ui-250-acceptance.md. İstemci791 PASS, build14 PASS,
+plan11 PASS, üç plan check PASS, import527 dosya/0 sorun. Son web build
+5274a360e95acf49. Chrome10 PASS (iki eski hediye/sandık regresyonu dahil),
+Android4+Safari4 PASS. Son odak/yanıt değişiklikleri sonrası Chrome odaklı2
+PASS (TR320 tekrar + yeni gecikmiş detay/bozuk kayıt).20 sonuç19 farklı
+proje/test durumu; tek kesintisiz20 koşu veya uzak CI yeşili sayılmaz.
+320/393 TR/EN görseller incelendi; fiziksel telefon kabulü yapılmadı.
+İlk sandbox erişimi/test seçicileri ve Safari odak hatası son kabul değildir.
+
+Fixture yalnız tools/e2e_server.py opt-in GRIDSHARD_E2E_SHOP_OFFERS=1 ve
+development/loopback: geçici hesaplar, bellekte2.5/future clock/published
+katalog ve arena2. Kaynak katalog tek draft/arena1/24 hedef olarak kaldı.
+Üretim fixture'ı import etmez. S1, gerçek2.4.0, SQL ve mevcut yayın değişmedi.
+Test sunucusu kabul sonrası kapatılır; AAB/sunucu/main/Console işlemi yok.
+
+UI-02 branch_ready; gerçek API bağımlılığı SHOP-02 de görev grafiğine eklendi.
+Checklist/2.5 brief üretildi:78 görev, done8/branch_ready20/in_progress4/
+todo39/later7. Sıradaki COS-03: dönem ödülünden ayrı2 mağaza çerçevesi +2
+zemin, ortak sanat yönüyle. SHOP-03 buna bağlı. UI-03 genel sonuç işi devam
+ediyor; UI-02 tamamlandı diye sanat/cihaz/yayın kapıları kapanmış sayılmaz.
+2.5 canlı geçişi S1 kapanış/ödül kabulü sonrası, en erken22 Aralık03.00TR;
+örnek28 Aralık–4 Ocak teklif penceresi S2/yayın onayı değildir.
+
+---
+
 # 2.5.0 / SHOP-02 — atomik satın alma hazır; toplu commit/push kaydı, 16 Kasım 2026
 
 Kullanıcı SHOP-02'yi tamamlamamızı ve bu oturumda birikmiş bütün çalışmaları

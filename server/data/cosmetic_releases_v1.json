@@ -1,9 +1,31 @@
 {
   "schema_version": 1,
   "themes": [
-    {"id":"aurora","name_tr":"Kutup Işığı","name_en":"Aurora"},
-    {"id":"solar","name_tr":"Güneş Ocağı","name_en":"Solar Forge"},
-    {"id":"abyss","name_tr":"Derin Akım","name_en":"Deep Current"}
+    {
+      "id": "aurora",
+      "name_tr": "Kutup Işığı",
+      "name_en": "Aurora"
+    },
+    {
+      "id": "solar",
+      "name_tr": "Güneş Ocağı",
+      "name_en": "Solar Forge"
+    },
+    {
+      "id": "abyss",
+      "name_tr": "Derin Akım",
+      "name_en": "Deep Current"
+    },
+    {
+      "id": "dockyard",
+      "name_tr": "Tersane",
+      "name_en": "Dockyard"
+    },
+    {
+      "id": "workshop",
+      "name_tr": "Atölye",
+      "name_en": "Workshop"
+    }
   ],
   "require_fresh_from": {},
   "items": [
@@ -218,6 +240,82 @@
         "color": "#a8c8ff",
         "accent": "#352361",
         "pattern": "tides"
+      }
+    },
+    {
+      "id": "dockyard_latch_frame",
+      "field": "avatar_frame_id",
+      "name_tr": "Tersane Kilidi Çerçevesi",
+      "name_en": "Dockyard Latch Frame",
+      "theme": "dockyard",
+      "design_id": "dockyard_latch_frame_v1",
+      "status": "approved",
+      "inventory_pool": "shop",
+      "look": {
+        "color": "#c7dee3",
+        "accent": "#294b60",
+        "pattern": "dockyard_latch",
+        "asset": {
+          "path": "assets/ui/cosmetics-shop-v1/dockyard_latch.svg",
+          "sha256": "39a1ca9f1a03d3cae68ce67c25903347774e0605e014696e2ae19ab53affea4d"
+        }
+      }
+    },
+    {
+      "id": "dockyard_deck_background",
+      "field": "profile_background_id",
+      "name_tr": "Tersane Güvertesi",
+      "name_en": "Dockyard Deck",
+      "theme": "dockyard",
+      "design_id": "dockyard_deck_background_v1",
+      "status": "approved",
+      "inventory_pool": "shop",
+      "look": {
+        "color": "#b9c7b5",
+        "accent": "#17354a",
+        "pattern": "dockyard_deck",
+        "asset": {
+          "path": "assets/ui/cosmetics-shop-v1/dockyard_deck.svg",
+          "sha256": "38f3eabfb37b5675cb2a8e60f134aa3064d7c462a94c8ed47121a4d844b1eeac"
+        }
+      }
+    },
+    {
+      "id": "workshop_shelf_frame",
+      "field": "avatar_frame_id",
+      "name_tr": "Atölye Rafı Çerçevesi",
+      "name_en": "Workshop Shelf Frame",
+      "theme": "workshop",
+      "design_id": "workshop_shelf_frame_v1",
+      "status": "approved",
+      "inventory_pool": "shop",
+      "look": {
+        "color": "#e2b28b",
+        "accent": "#554843",
+        "pattern": "workshop_shelf",
+        "asset": {
+          "path": "assets/ui/cosmetics-shop-v1/workshop_shelf.svg",
+          "sha256": "8a425421111234b2c538ca862494b3404d2018957ee0533adb172ff3fbf9a5a1"
+        }
+      }
+    },
+    {
+      "id": "workshop_bay_background",
+      "field": "profile_background_id",
+      "name_tr": "Atölye Bölmesi",
+      "name_en": "Workshop Bay",
+      "theme": "workshop",
+      "design_id": "workshop_bay_background_v1",
+      "status": "approved",
+      "inventory_pool": "shop",
+      "look": {
+        "color": "#d1a27a",
+        "accent": "#243748",
+        "pattern": "workshop_bay",
+        "asset": {
+          "path": "assets/ui/cosmetics-shop-v1/workshop_bay.svg",
+          "sha256": "44216057239ede7d8744f09090123deb19a0f5b37f085d382d1b450021d8064f"
+        }
       }
     }
   ],

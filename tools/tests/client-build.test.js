@@ -73,6 +73,24 @@ function fixture(t, { audio = false } = {}) {
   return { root, write };
 }
 
+test("authored cosmetics keep canonical bytes in web/mobile and corrupt sources preserve the prior package", async t => {
+  const {root,write}=fixture(t);
+  const asset="assets/shop-frame.svg",art='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"/>';
+  const html=fs.readFileSync(path.join(root,"client/index.html"),"utf8").replace('<script src="./src/last.js">','<script src="./src/liveops-cosmetic-catalog.js"></script>\n<script src="./src/last.js">');
+  write("index.html",html);write(asset,art);
+  write("src/liveops-cosmetic-catalog.js","globalThis.GRIDSHARD_LIVEOPS_COSMETICS="+JSON.stringify({avatarFrames:[{asset:{path:asset,sha256:sha256(art)}}]})+";");
+  let destination;
+  for (const mobile of [false,true]) {
+    const result=await buildClient({root,mobile,environment:{GRIDSHARD_API_BASE_URL:"https://play.gridshardgame.com"}});destination=result.destination;
+    assert.ok(result.manifest.assets.includes(asset));
+    assert.equal(fs.readFileSync(path.join(destination,asset),"utf8"),art);
+  }
+  write(asset,art+" ");await assert.rejects(buildClient({root}),/Kozmetik kaynak hash/);
+  assert.equal(fs.readFileSync(path.join(destination,asset),"utf8"),art);
+  fs.rmSync(path.join(root,"client",asset));await assert.rejects(buildClient({root}),/ENOENT/);
+  assert.equal(fs.readFileSync(path.join(destination,asset),"utf8"),art);
+});
+
 test("2.5 bundle omits the native monetization bridge while keeping source intact", async t => {
   const {root, write} = fixture(t);
   fs.writeFileSync(path.join(root, "package.json"), JSON.stringify({version:"2.5.0", gridshard:{androidVersionCode:16}}));

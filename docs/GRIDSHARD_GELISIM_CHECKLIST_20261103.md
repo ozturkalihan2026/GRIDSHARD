@@ -2,7 +2,7 @@
 
 **Tarih: 3 Kasım 2026 · Proje: mağaza, ödül, içerik ve yaşayan oyun**
 
-Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **78 iş** vardır: **40 yapılacak**, **19 dalda hazır; canlıda yok**, **4 çalışılıyor**, **8 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
+Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **78 iş** vardır: **37 yapılacak**, **22 dalda hazır; canlıda yok**, **4 çalışılıyor**, **8 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
 
 **Son plan güncellemesi: 2026-11-16.** Takvim → sürüm briefi → görev → dosya/kanıt bağlantıları korunur. Kayıtlı sunucu 2.4.0, Android code15. Mağaza yayını kullanıcı tarafından teyit edilmiş. Aktif geliştirme 2.5.0; paket hazırlık hedefi 2026-12-21. Canlı sunucu geçişi S1 kapanışı/ödül kabulünden sonra; kesin bakım penceresi belirlenmedi. Yayın teyidi açık cihaz/ses kabulü veya checklist görevlerini kendiliğinden kapatmaz. Bu rapor canlı sorgu yapmaz; kaynak kayıt ve checkpoint okunur.
 
@@ -525,14 +525,15 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 <a id="cos-03"></a>
 
-- [ ] **COS-03 — Mağazaya özel dört ayrı kozmetik hazırla**
-  - Durum: Yapılacak. Öncelik: P1; rol: Sanat / ürün; efor: L.
+- [x] **COS-03 — Mağazaya özel dört ayrı kozmetik hazırla**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P1; rol: Sanat / ürün; efor: L.
   - Önkoşullar: COS-01, ECON-01.
   - Mevcut bağlar: `server/data/cosmetic_releases_v1.json`, `client/src/liveops-cosmetic-catalog.js`, `docs/planning/shop-art-manifest.md`.
   - Yeni teslim önerisi: `docs/planning/shop-art-manifest.md`.
   - Sürüm briefleri: [2.5.0](planning/releases/2.5.0.md).
   - Kabul 1: İki mağaza çerçevesi ve iki zemin dönem ödül stoğundan farklı ID/tasarımla hazırlanır.
   - Kabul 2: Sahip olunan veya dönem ödülü olmuş öğe yeni mağaza ürünü gibi satılmaz; görünürlük ve kuşanma önizlemesi doğrulanır.
+  - Geçmiş hazırlık kanıtı: `docs/planning/shop-art-manifest.md`, `client/assets/ui/cosmetics-shop-v1/README.md`, `server/data/cosmetic_releases_v1.json`, `server/app/cosmetic_releases.py`, `tools/prepare_liveops_rewards.py`, `client/src/liveops-cosmetics-v1.css`, `server/tests/test_shop_cosmetic_art.py`, `e2e/shop-cosmetics.spec.js`, `docs/planning/shop-cosmetics-250-acceptance.md`.
 
 <a id="card-01"></a>
 
@@ -597,25 +598,27 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 <a id="shop-03"></a>
 
-- [ ] **SHOP-03 — İlk garantili teklif ve kozmetik pilotunu hazırla**
-  - Durum: Yapılacak. Öncelik: P1; rol: Ürün / backend / istemci; efor: M.
+- [x] **SHOP-03 — İlk garantili teklif ve kozmetik pilotunu hazırla**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P1; rol: Ürün / backend / istemci; efor: M.
   - Önkoşullar: SHOP-02, COS-03.
   - Mevcut bağlar: `server/app/module_roster.py`, `server/app/cosmetic_releases.py`, `client/src/app.js`.
   - Yeni teslim önerisi: `docs/planning/first-shop-release.md`.
   - Sürüm briefleri: [2.5.0](planning/releases/2.5.0.md).
   - Kabul 1: Bir hedefli güncel modül-parçası teklifi ve iki ayrı kozmetik seti ekonomik bütçeyle tanımlanır.
   - Kabul 2: Arena uygunluğu, sahip olunan ürün reddi, açık fiyat/miktar ve satın alma limitleri gerçek API ile doğrulanır.
+  - Geçmiş hazırlık kanıtı: `docs/planning/first-shop-release.md`, `docs/planning/shop-pilot-250-acceptance.md`, `server/app/shop_cosmetic_offers.py`, `server/app/shop_transactions.py`, `server/data/shop_offers_v1.json`, `server/tests/test_shop_cosmetic_purchases.py`, `server/tests/test_shop_cosmetic_http.py`, `server/tests/test_postgres_shop_cosmetics.py`, `e2e/shop-pilot.spec.js`.
 
 <a id="ui-02"></a>
 
-- [ ] **UI-02 — Mağaza gezinmesini ve ürün detayını uygula**
-  - Durum: Yapılacak. Öncelik: P1; rol: İstemci; efor: L.
-  - Önkoşullar: UI-01, SHOP-01.
+- [x] **UI-02 — Mağaza gezinmesini ve ürün detayını uygula**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P1; rol: İstemci; efor: L.
+  - Önkoşullar: UI-01, SHOP-01, SHOP-02.
   - Mevcut bağlar: `client/index.html`, `client/src/app.js`, `client/src/shop-rewards-v6.css`, `e2e/painted-shop-chests.spec.js`.
   - Yeni teslim önerisi: `client/src/shop/offer-view.js`.
   - Sürüm briefleri: [2.5.0](planning/releases/2.5.0.md).
   - Kabul 1: Dört mağaza bölümü, mevcut Bronz hediye ve garanti/olasılık ayrımı görünür; yeni hediye kaynağı eklenmez.
   - Kabul 2: Yetersiz bakiye, limit dolu, sahip olunan, süresi bitmiş, fiyat yüklenmedi ve çevrimdışı durumları doğru çalışır.
+  - Geçmiş hazırlık kanıtı: `client/src/shop/offer-view.js`, `client/src/shop/offer-view.css`, `client/tests/shop-offers.test.js`, `e2e/shop-offers.spec.js`, `tools/shop_offers_browser_fixture.py`, `docs/planning/shop-ui-250-acceptance.md`.
 
 <a id="ui-03"></a>
 

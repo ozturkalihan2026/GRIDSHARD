@@ -2,7 +2,7 @@
 
 Source adapters are registered in code. Editing JSON cannot implement a shop,
 grant cosmetics, or activate a planned mode. Existing cosmetics default to the
-competition pool; a future shop must use its own authored inventory.
+competition pool; the shop uses its own authored inventory.
 """
 from __future__ import annotations
 
@@ -25,8 +25,10 @@ SUPPORTED = {
     "weekly_tournament": ("iso_week", "competition", PLAYER_FIELDS),
     "team_tournament": ("team_cycle", "competition", TEAM_FIELDS),
 }
-PLANNED = {
+MANUAL_SUPPORTED = {
     "shop_collection": ("manual", "shop", PLAYER_FIELDS),
+}
+PLANNED = {
     "daily_trial": ("manual", "daily_trial", PLAYER_FIELDS),
 }
 
@@ -49,11 +51,12 @@ class ContentSourceRegistry:
             identity = entry.get("id")
             if not isinstance(identity, str):
                 raise ContentPlanError("Invalid content source identity")
-            known = SUPPORTED if identity in SUPPORTED else PLANNED
+            adapters = {**SUPPORTED, **MANUAL_SUPPORTED}
+            known = adapters if identity in adapters else PLANNED
             if identity not in known or identity in self.sources:
                 raise ContentPlanError("Unknown or duplicate source; implement its adapter in code first")
             schedule, pool, fields = known[identity]
-            state = "supported" if identity in SUPPORTED else "planned"
+            state = "supported" if identity in adapters else "planned"
             amounts = entry.get("cosmetics_per_period")
             if (set(entry) != {"id", "state", "schedule", "stock_pool", "cosmetics_per_period"}
                     or entry.get("state") != state or entry.get("schedule") != schedule
@@ -62,11 +65,11 @@ class ContentSourceRegistry:
                     or any(type(value) is not int or value != 1 for value in amounts.values())):
                 raise ContentPlanError("Source contract differs from its code adapter")
             self.sources[identity] = deepcopy(entry)
-        if set(self.sources) != set(SUPPORTED) | set(PLANNED):
+        if set(self.sources) != set(SUPPORTED) | set(MANUAL_SUPPORTED) | set(PLANNED):
             raise ContentPlanError("Missing content source contract")
 
     def require_supported(self, source):
-        if source not in SUPPORTED:
+        if source not in SUPPORTED and source not in MANUAL_SUPPORTED:
             raise ContentPlanError("Source has no runtime adapter; a JSON entry cannot enable it")
         return deepcopy(self.sources[source])
 
@@ -152,7 +155,7 @@ def content_coverage(cosmetics, *, sources=None, cycles=2, starts_at=None,
               {"season_road": cycles, "season_leaderboard": cycles,
                "weekly_tournament": cycles * (CYCLE_LENGTH.days // 7), "team_tournament": cycles})
     for source, count in (extra_periods or {}).items():
-        if source not in PLANNED or type(count) is not int or not 1 <= count <= 100:
+        if source not in PLANNED and source not in MANUAL_SUPPORTED or type(count) is not int or not 1 <= count <= 100:
             raise ContentPlanError("Extra periods require a known planned source and a count from 1 to 100")
         counts[source] = count
 
@@ -200,7 +203,7 @@ def content_coverage(cosmetics, *, sources=None, cycles=2, starts_at=None,
               "reserved_for_calendar": assigned[pool, field], "ready_unassigned": available[pool, field],
               "create_and_review": max(0, total - assigned[pool, field] - available[pool, field])}
              for (pool, field), total in sorted(required.items())]
-    unsupported = sorted(source for source, count in counts.items() if count and source not in SUPPORTED)
+    unsupported = sorted(source for source, count in counts.items() if count and source not in SUPPORTED and source not in MANUAL_SUPPORTED)
     return {"cycles": cycles, "calendar_bound": starts_at is not None, "production_changed": False,
             "reward_profile": "first_season" if first_season_profile is not None else "full_cosmetic",
             "missing_profile_periods": missing_profile_periods,

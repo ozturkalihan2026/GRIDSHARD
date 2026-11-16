@@ -6,3 +6,5 @@
 /client/tests/fixtures/installed/*/relay-client.js -text
 # Published season catalogs are immutable byte-hashed deployment inputs.
 /config/season-releases/**/*.json text eol=lf
+# Authored shop artwork is verified against catalog SHA256 on every platform.
+/client/assets/ui/cosmetics-shop-v1/*.svg text eol=lf

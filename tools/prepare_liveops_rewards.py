@@ -17,6 +17,8 @@ def frontend_catalog(registry):
         look = item["look"]
         published = any(r["status"] in {"published","retired"} and any(item["id"] in p["cosmetics"].values() for p in r["placements"]) for r in registry.releases.values())
         view = {"id": item["id"], "theme":item["theme"], "upcoming":not published, "nameTr": item["name_tr"], "nameEn": item["name_en"], **look}
+        if 'inventory_pool' in item:
+            view['inventoryPool'] = item['inventory_pool']
         field = item["field"]
         if field == "avatar_frame_id":
             result["avatarFrames"].append(view)
@@ -40,6 +42,18 @@ def render_styles(registry):
     for item in registry.items.values():
         identity, look, field = item["id"], item["look"], item["field"]
         color, accent, pattern = look["color"], look["accent"], look["pattern"]
+        if pattern in {'dockyard_latch', 'workshop_shelf', 'dockyard_deck', 'workshop_bay'}:
+            image = 'url("../' + look['asset']['path'] + '")'
+            if field == 'avatar_frame_id':
+                selector = ':root body[data-app-screen] .profile-avatar[data-frame="' + identity + '"]:not([data-frame="none"])'
+                lines.append(selector + ' { position:relative; isolation:isolate; overflow:visible !important; border:0 !important; padding:0 !important; border-radius:10px !important; box-shadow:none !important; }')
+                lines.append(selector + '::after { content:""; position:absolute; inset:-7%; z-index:1; pointer-events:none; background:' + image + ' center/100% 100% no-repeat; }')
+                lines.append(selector + ' > :is(.ui-art,.profile-avatar-art) { width:70% !important; height:70% !important; margin:auto; object-fit:contain; }')
+            else:
+                selector = ':root body[data-app-screen] :is(#app-progress-ribbon,#profile-summary-panel .profile-hero,#public-profile-dialog #public-profile-identity,#cosmetic-collection-player)[data-profile-background="' + identity + '"]'
+                swatch = ':root body[data-app-screen] #avatar-customization-screen .profile-background-choice[data-background-id="' + identity + '"] .profile-background-swatch'
+                lines.append(selector + ', ' + swatch + ' { background:' + image + ' center/100% 100% no-repeat,' + accent + ' !important; }')
+            continue
         style, radius = borders[pattern]
         if field == "avatar_frame_id":
             selector = ':root body[data-app-screen] .profile-avatar[data-frame="' + identity + '"]:not([data-frame="none"])'
@@ -98,6 +112,8 @@ def main():
             parser.error("reserve requires --source, --period-id, --release-id")
         try:
             load_sources().require_supported(args.source)
+            if args.source not in {"season_road","season_leaderboard","weekly_tournament","team_tournament"}:
+                raise ContentPlanError("Manual shop collections use the reviewed offer catalog, not period reservation")
         except ContentPlanError as exc:
             parser.error(str(exc))
         registry = registry.reserve(args.source, args.period_id, args.release_id)
