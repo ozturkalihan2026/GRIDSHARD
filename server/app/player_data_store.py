@@ -663,6 +663,8 @@ class PlayerDataStoreService:
             "season_reward_state": deepcopy(profile.season_reward_state),
             "free_economy_state": deepcopy(profile.free_economy_state),
             "reward_choice_state": deepcopy(profile.reward_choice_state),
+            "shop_offer_state": deepcopy(profile.shop_offer_state),
+            "shop_purchase_receipts": deepcopy(profile.shop_purchase_receipts),
             "season_archives": [dict(item) for item in profile.season_archives],
             "coins": profile.coins,
             "circuit_credits": profile.circuit_credits,
@@ -859,6 +861,8 @@ class PlayerDataStoreService:
             season_reward_state=deepcopy(meta.get("season_reward_state") or {}),
             free_economy_state=deepcopy(meta.get("free_economy_state") or {}),
             reward_choice_state=deepcopy(meta.get("reward_choice_state") or {}),
+            shop_offer_state=deepcopy(meta.get("shop_offer_state", {})),
+            shop_purchase_receipts=deepcopy(meta.get("shop_purchase_receipts", {})),
             weekly_reward_closures=deepcopy(meta.get("weekly_reward_closures") or {}),
             daily_mission_progress={
                 str(item.get("id")): int(item.get("progress", 0))

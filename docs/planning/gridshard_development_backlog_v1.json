@@ -108,7 +108,7 @@
       "owner": "Ürün / analiz",
       "effort": "S",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [],
       "existing_paths": [
         "server/app/product_analytics.py",
@@ -130,7 +130,13 @@
         7,
         8
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/measurement-baseline.md",
+        "server/tests/test_product_analytics.py",
+        "server/tests/test_analytics_age_gate.py",
+        "server/tests/test_postgres_product_analytics.py",
+        "client/tests/analytics-age-gate.test.js"
+      ],
       "planned_releases": [
         "2.5.0"
       ]
@@ -142,7 +148,7 @@
       "owner": "Ürün / istemci",
       "effort": "M",
       "priority": "P1",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "BASE-02"
       ],
@@ -167,7 +173,13 @@
         5,
         7
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/onboarding-return-flow.md",
+        "client/tests/onboarding-flow.test.js",
+        "client/tests/onboarding-lifecycle.test.js",
+        "server/tests/test_tutorial_battle.py",
+        "server/tests/test_starter_pool_tutorial_markup.py"
+      ],
       "planned_releases": [
         "2.5.0"
       ]
@@ -682,7 +694,7 @@
       "owner": "Backend / ürün",
       "effort": "L",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "REWARD-01",
         "DATA-01"
@@ -709,7 +721,11 @@
         5
       ],
       "evidence": [
-        "docs/planning/engineer-case-ui-250-acceptance.md"
+        "docs/planning/engineer-case-ui-250-acceptance.md",
+        "server/app/period_reward_closeout.py",
+        "server/tests/test_period_reward_closeout.py",
+        "server/tests/test_postgres_period_reward_closeout.py",
+        "docs/planning/period-reward-closeout-250-acceptance.md"
       ],
       "planned_releases": [
         "2.5.0"
@@ -758,7 +774,7 @@
       "owner": "Backend",
       "effort": "L",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "REWARD-01",
         "ECON-01",
@@ -788,7 +804,15 @@
         3,
         4
       ],
-      "evidence": [],
+      "evidence": [
+        "server/app/shop_offers.py",
+        "server/data/shop_offers_v1.json",
+        "tools/prepare_shop_offers.py",
+        "server/tests/test_shop_offers.py",
+        "server/tests/test_postgres_shop_offers.py",
+        "tools/tests/test_shop_catalog_review.py",
+        "docs/planning/shop-offers-250-acceptance.md"
+      ],
       "planned_releases": [
         "2.5.0"
       ]
@@ -800,7 +824,7 @@
       "owner": "Backend",
       "effort": "L",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "SHOP-01",
         "DATA-01"
@@ -829,7 +853,13 @@
         3,
         8
       ],
-      "evidence": [],
+      "evidence": [
+        "server/app/shop_transactions.py",
+        "server/tests/test_shop_transactions.py",
+        "server/tests/test_postgres_shop_transactions.py",
+        "client/tests/shop-api-auth.test.js",
+        "docs/planning/shop-transactions-250-acceptance.md"
+      ],
       "planned_releases": [
         "2.5.0"
       ]
@@ -916,7 +946,7 @@
       "owner": "Arayüz / ürün",
       "effort": "M",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "BASE-03"
       ],
@@ -932,7 +962,8 @@
       ],
       "acceptance": [
         "Ana ekran, mağaza, ürün, seçim kasası, sezon, profil ve maç sonrası için hiyerarşi/durumlar hazırlanır.",
-        "Mevcut onaylı boyalı dil/dock korunur; prototip ile oyuna bağlanmış ekran açıkça ayrılır."
+        "Mevcut onaylı boyalı dil/dock korunur; prototip ile oyuna bağlanmış ekran açıkça ayrılır.",
+        "onboarding-return-flow.md ile tek bağlamsal hedef, modal önceliği, isteğe bağlı yardım, ilk6/alternatif deste kapısı ve korunmuş eski hesap akışı prototipte gösterilir; gelecek UI-06/RET-01/PLAY-01 uygulaması tamamlanmış sayılmaz."
       ],
       "goals": [
         "presentation",
@@ -943,7 +974,13 @@
         5,
         7
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/screen-and-component-spec.md",
+        "docs/planning/prototypes/release-250/index.html",
+        "docs/planning/prototypes/release-250/prototype.css",
+        "docs/planning/prototypes/release-250/prototype.js",
+        "docs/planning/prototypes/release-250/README.md"
+      ],
       "planned_releases": [
         "2.5.0"
       ]
@@ -1263,7 +1300,9 @@
       ],
       "acceptance": [
         "Offer/event/choice/equip olayları sınırlı enum alanlarıyla; istemci olayı ile sunucu teslimi ayrı tanımlanır.",
-        "Yaş/onay/silme/retention korunur; olay kaybı oyunu veya ödül teslimini bozmaz, kimlik/serbest metin eklenmez."
+        "Yaş/onay/silme/retention korunur; olay kaybı oyunu veya ödül teslimini bozmaz, kimlik/serbest metin eklenmez.",
+        "measurement-baseline.md sözleşmesiyle yeni/eski/geç izin kohortu, olgun UTC D1/D7/D28, sıralı ilk maç/deste değişimi ve sunucu kaynaklı geçiş tekilliği uygulanır; onaysız geçmiş doldurulmaz.",
+        "Küçük pay/payda/tamamlayıcı gruplar birlikte bastırılır; 30 gün/20.000 olay kaybı ve toplama kesintisi kapsam eksikliği verir. PG kaynaklı güvenli toplu rapor yolu JSON dosyasından ayrılır."
       ],
       "goals": [
         "analytics",

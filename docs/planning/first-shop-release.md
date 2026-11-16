@@ -7,8 +7,13 @@ incelenir; yayımlanmış revision üzerine yazılmaz.
 REWARD-02 haftalık kazanım ve seçim API katmanı dalda hazırdır;
 [kabul kaydı](reward-choices-250-acceptance.md). UI-03 özgün kasa, seçim/açılış
 ve Mesaj Kutusu erişimi de [ayrı kayıtta](engineer-case-ui-250-acceptance.md)
-hazırdır. Genel kapanış/aktarım ve fiziksel cihaz kapıları açık; parça teklifi
-henüz uygulanmadı.
+hazırdır. Genel kapanış/aktarım REWARD-03
+[kabul kaydıyla](period-reward-closeout-250-acceptance.md) dalda hazırdır;
+fiziksel cihaz kapısı açıktır. SHOP-01 sürümlü katalog ve sabit önizleme
+[kabulü](shop-offers-250-acceptance.md) tamamlandı. Katalog draft kalır;
+satın alma uçları/atomik cüzdan da SHOP-02
+[kabul kaydıyla](shop-transactions-250-acceptance.md) dalda hazırdır.
+Katalog draft, UI-02 mağaza entegrasyonu ve SHOP-03 kozmetik pilotu açıktır.
 
 ## Parça teklifi
 

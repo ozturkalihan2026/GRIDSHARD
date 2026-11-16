@@ -23,7 +23,7 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, Res
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .production_config import environment_secret, production_endpoints
-from . import reward_choices
+from . import reward_choices, shop_offers, shop_transactions
 from .postgres_reward_entitlements import PostgresRewardEntitlements
 from .reward_entitlements import RewardEntitlementError
 from .reward_definitions import RewardDefinitionError
@@ -34,7 +34,7 @@ from .season_entitlements import additional_chest_count, origin_for as season_pr
 from .postgres_economic_operations import PostgresEconomicOperations, EconomicOperationConflict
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.websockets import WebSocketDisconnect
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictInt
 
 from .auth import (
     AuthenticationError,
@@ -1052,6 +1052,7 @@ ECONOMIC_OPERATIONS = frozenset({
     "reset_player_module_talents", "claim_daily_mission_reward", "claim_login_period_reward",
     "claim_season_tier_reward", "claim_premium_season_tier_reward", "claim_season_mission_reward",
     "claim_player_reward_choice",
+    "purchase_player_shop_offer",
 })
 
 
@@ -1129,6 +1130,8 @@ def persistent_operation(function):
             try:
                 key, previous = receipts.begin(actor_id, request_id, kind, payload)
             except EconomicOperationConflict as exc:
+                if kind == 'purchase_player_shop_offer':
+                    raise shop_offers.ShopOfferError('purchase_request_conflict', str(exc)) from exc
                 raise HTTPException(status_code=409, detail=str(exc)) from exc
             if previous is not None:
                 return _replay_economic_operation(actor_id, previous)
@@ -1373,6 +1376,13 @@ class RewardChoiceClaimRequest(BaseModel):
     model_config = {"extra": "forbid"}
     request_id: str = Field(min_length=1,max_length=160)
     option_id: str = Field(pattern=r'^(attack|defense|tactical)$')
+
+
+class ShopOfferPurchaseRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    request_id: str = Field(min_length=1, max_length=160, strict=True)
+    revision: StrictInt = Field(ge=1)
+    preview_hash: str = Field(pattern=r'^[0-9a-f]{64}$', strict=True)
 
 
 class SeasonMissionClaimRequest(BaseModel):
@@ -5277,6 +5287,91 @@ def get_profile(
 def get_player_meta_progression(player_id: str) -> dict:
     profile = player_profile_service.get_or_create(player_id)
     return meta_progression_service.view(profile)
+
+
+@app.middleware('http')
+async def shop_private_cache_policy(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith('/profile/') and '/shop-offers' in request.url.path:
+        response.headers['Cache-Control'] = 'no-store'
+    return response
+
+
+@app.exception_handler(shop_offers.ShopOfferError)
+async def shop_offer_error_response(request: Request, exc):
+    codes = {'offer_not_found':404, 'offer_revision_stale':409, 'offer_preview_stale':409,
+        'purchase_limit_reached':409, 'purchase_request_conflict':409, 'offer_expired':409,
+        'offer_not_started':409, 'offer_rollout_closed':409, 'offer_unpublished':404,
+        'arena_locked':403, 'account_ineligible':403, 'purchase_request_invalid':422,
+        'insufficient_funds':422}
+    english = {'insufficient_funds':'Not enough Circuit Credits.',
+        'purchase_limit_reached':'Both purchases for this UTC week have been used.',
+        'purchase_request_conflict':'This request ID belongs to another purchase.',
+        'offer_preview_stale':'The offer changed. Review it again.',
+        'offer_revision_stale':'This offer revision is unavailable. Refresh the shop.',
+        'offer_expired':'This offer has expired.', 'offer_not_started':'This offer has not started.',
+        'offer_rollout_closed':'This offer is not enabled for this server release.',
+        'arena_locked':'The required arena has not been unlocked.',
+        'account_ineligible':'This account is not eligible for the offer.'}
+    return JSONResponse(status_code=codes.get(exc.code,503), content=dict(code=exc.code,
+        detail=str(exc), message_en=english.get(exc.code,'The shop action could not be completed. Refresh and try again.')),
+        headers={'Cache-Control':'no-store'})
+
+
+def _shop_profile(player_id):
+    # JSON development also reloads a committed receipt after a lost response.
+    # Production has already loaded and locked the account in its outer UOW.
+    if not RUNTIME_STRICT and player_data_repository.load(player_id) is not None:
+        player_data_store_service.load_player(player_id)
+    return _team_member_profile(player_id)
+
+
+def _shop_quote(profile, catalog, identity, revision):
+    previous = deepcopy(profile.shop_offer_state)
+    result = shop_transactions.quote(profile,catalog,identity,revision,
+        moment=player_profile_service.now(),secret=participant_auth_service.signing_key)
+    if profile.shop_offer_state != previous:
+        persist_player_data(profile.player_id)
+    return result
+
+
+@app.get('/profile/{player_id}/shop-offers')
+@persistent_operation
+def get_player_shop_offers(player_id: str) -> dict:
+    profile = _shop_profile(player_id)
+    catalog = shop_offers.load_catalog()
+    result = []
+    for row in catalog.document['offers']:
+        if row['status'] != 'published':
+            continue
+        try:
+            catalog.offer(row['id'],row['revision'],moment=player_profile_service.now())
+            result.append(_shop_quote(profile,catalog,row['id'],row['revision']))
+        except shop_offers.ShopOfferError as exc:
+            if exc.code in {'offer_not_started','offer_expired','offer_rollout_closed'}:
+                continue
+            if exc.code == 'arena_locked':
+                result.append(dict(offer={k:row[k] for k in ('id','revision','title_tr','title_en','minimum_arena','price','limit','art')},
+                                   can_purchase=False,blocking_code=exc.code))
+            else:
+                raise
+    return dict(protocol='shop-offers-v1',availability='open' if result else 'closed',offers=result)
+
+
+@app.get('/profile/{player_id}/shop-offers/{offer_id}')
+@persistent_operation
+def get_player_shop_offer(player_id: str, offer_id: str, revision: int = Query(ge=1)) -> dict:
+    return dict(protocol='shop-offers-v1',**_shop_quote(_shop_profile(player_id),shop_offers.load_catalog(),offer_id,revision))
+
+
+@app.post('/profile/{player_id}/shop-offers/{offer_id}/purchase')
+@persistent_operation
+def purchase_player_shop_offer(player_id: str, offer_id: str, request: ShopOfferPurchaseRequest) -> dict:
+    profile = _shop_profile(player_id)
+    receipt = shop_transactions.purchase(profile,shop_offers.load_catalog,offer_id,request.revision,request.preview_hash,
+        request_id=request.request_id,moment=player_profile_service.now(),secret=participant_auth_service.signing_key,
+        persist=lambda:persist_player_data(player_id))
+    return dict(profile=profile.to_view(),meta_progression=meta_progression_service.view(profile),shop_purchase_receipt=receipt)
 
 
 @app.get('/profile/{player_id}/reward-choices')

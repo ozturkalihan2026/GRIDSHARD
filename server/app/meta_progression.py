@@ -1582,18 +1582,12 @@ def archive_and_soft_reset_season(profile, next_season_id: str, archived_at: str
         raise MetaProgressionError("Yeni sezon kimliği zorunludur.")
     if profile.active_meta_season_id == next_season_id:
         return None
-    from .season_missions import settle_earned
     from copy import deepcopy
     from dataclasses import fields
-    from .season_entitlements import queue_unclaimed
+    from .period_reward_closeout import prepare_period_closeout
     original = profile
-    profile = deepcopy(original)
-    from .free_economy_rewards import settle_daily
-    from .player_profile import DAILY_MISSIONS
     closed_at = archived_at or iso_utc(utc_now())
-    settle_daily(profile,moment=parse_utc(closed_at),active=True,missions=DAILY_MISSIONS)
-    settle_earned(profile, closing=True, moment=parse_utc(closed_at))
-    queued = queue_unclaimed(profile, now_iso=closed_at)
+    profile, queued = prepare_period_closeout(original, closed_at=closed_at)
     archive = {
         "season_id": profile.active_meta_season_id,
         "final_rating": int(profile.rating),

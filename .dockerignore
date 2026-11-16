@@ -63,4 +63,5 @@ CODEX_CHECKPOINT.md
 !server/data/release_announcements_v1.json
 !server/data/reward_definitions_v1.json
 !server/data/free_economy_rewards_v1.json
+!server/data/shop_offers_v1.json
 !server/data/bot_nicknames_v1.json

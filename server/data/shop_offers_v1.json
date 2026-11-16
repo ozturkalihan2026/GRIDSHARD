@@ -1,0 +1,285 @@
+{
+  "schema_version": 1,
+  "offers": [
+    {
+      "id": "weekly.module-parts",
+      "revision": 1,
+      "status": "draft",
+      "published_at": null,
+      "minimum_server_version": "2.5.0",
+      "starts_at": "2026-12-28T00:00:00Z",
+      "ends_at": "2027-01-04T00:00:00Z",
+      "minimum_arena": 1,
+      "price": {
+        "currency": "circuit_credits",
+        "amount": 500
+      },
+      "guarantee": {
+        "kind": "module_shards",
+        "selection": "player_utc_week_open_pool_v1",
+        "pieces_by_rarity": {
+          "common": 12,
+          "rare": 6,
+          "epic": 3,
+          "legendary": 1
+        }
+      },
+      "limit": {
+        "period": "utc_week",
+        "count": 2,
+        "key": "weekly_module_parts"
+      },
+      "title_tr": "Haftanın Modül Parçaları",
+      "title_en": "Weekly Module Shards",
+      "body_tr": "Açık modül havuzundan sunucunun sabitlediği hedef için garantili parçalar. Haftada en fazla iki alım.",
+      "body_en": "Guaranteed shards for a server-pinned target from your unlocked module pool. Up to two purchases per UTC week.",
+      "art": {
+        "path": "assets/ui/dock-casual-v1/cards.webp",
+        "sha256": "3989d35cdbeb32fcf161b97c865ccceca507f7eb803ed9a603fd7461bba7334c"
+      },
+      "targets": [
+        {
+          "module_definition_id": "laser",
+          "rarity": "common",
+          "name_tr": "Lazer",
+          "name_en": "Laser",
+          "art": {
+            "path": "assets/ui/modules-physical-v1/laser.webp",
+            "sha256": "98d3b75b28463551eb6fd1ef31a9b0ea69a5a041c8839304484b36a9a33f5c25"
+          }
+        },
+        {
+          "module_definition_id": "pulse_cannon",
+          "rarity": "common",
+          "name_tr": "Darbe Topu",
+          "name_en": "Pulse Cannon",
+          "art": {
+            "path": "assets/ui/modules-physical-v1/pulse_cannon.webp",
+            "sha256": "46bdeb7b04905f6f099c83a9c0cc66596f0ea937575d435ed6da23abead740e7"
+          }
+        },
+        {
+          "module_definition_id": "railgun",
+          "rarity": "rare",
+          "name_tr": "Ray Topu",
+          "name_en": "Railgun",
+          "art": {
+            "path": "assets/ui/modules-physical-v2/railgun.webp",
+            "sha256": "b3089c57ef40434e5108652531b0f45478b6ecc206c4cf28ba3cf2abf7e40a44"
+          }
+        },
+        {
+          "module_definition_id": "missile_launcher",
+          "rarity": "rare",
+          "name_tr": "Füze Fırlatıcı",
+          "name_en": "Missile Launcher",
+          "art": {
+            "path": "assets/ui/modules-physical-v1/missile_launcher.webp",
+            "sha256": "73f007d0a0130e0e8828261c004d6300f9fee46eb0bf8164e059826c679e0cfd"
+          }
+        },
+        {
+          "module_definition_id": "drone_bay",
+          "rarity": "rare",
+          "name_tr": "Dron Üssü",
+          "name_en": "Drone Bay",
+          "art": {
+            "path": "assets/ui/modules-physical-v2/drone_bay.webp",
+            "sha256": "05ee5a8c07512312fc1babcbbd9a84f7249062449fb929fe9a760ab2eb1335d2"
+          }
+        },
+        {
+          "module_definition_id": "arc_cannon",
+          "rarity": "epic",
+          "name_tr": "Ark Topu",
+          "name_en": "Arc Cannon",
+          "art": {
+            "path": "assets/ui/modules-physical-v2/arc_cannon.webp",
+            "sha256": "27220eeab957c2112e1c2df7ba38517e8e0b4c49f1468ca1622102b457e60baf"
+          }
+        },
+        {
+          "module_definition_id": "plasma_mortar",
+          "rarity": "epic",
+          "name_tr": "Plazma Havanı",
+          "name_en": "Plasma Mortar",
+          "art": {
+            "path": "assets/ui/modules-physical-v2/plasma_mortar.webp",
+            "sha256": "623074bc3425e2ed74a7defdcd9d58e7df2528534ec001916f99f038a00c1ad6"
+          }
+        },
+        {
+          "module_definition_id": "quantum_repeater",
+          "rarity": "legendary",
+          "name_tr": "Kuantum Tekrarlayıcı",
+          "name_en": "Quantum Repeater",
+          "art": {
+            "path": "assets/ui/modules-physical-v2/quantum_repeater.webp",
+            "sha256": "06003900255c5bd0f3817d72bfa7d0de6982a7aba2379ebbf5a22bca3ccc6a03"
+          }
+        },
+        {
+          "module_definition_id": "burst_cannon",
+          "rarity": "common",
+          "name_tr": "Seri Top",
+          "name_en": "Burst Cannon",
+          "art": {
+            "path": "assets/ui/modules-physical-v3/burst_cannon.webp",
+            "sha256": "2e002a9160d23065a522d49c52db2d24db1cf03d114b5701f11cb39a8fde9640"
+          }
+        },
+        {
+          "module_definition_id": "shield_breaker",
+          "rarity": "epic",
+          "name_tr": "Kalkan Kırıcı",
+          "name_en": "Shield Breaker",
+          "art": {
+            "path": "assets/ui/modules-physical-v3/shield_breaker.webp",
+            "sha256": "7a9e4cce8ea45afb40f2ba2819313d8e84c56d8172568fe157f0ca7cc0946426"
+          }
+        },
+        {
+          "module_definition_id": "shield",
+          "rarity": "common",
+          "name_tr": "Kalkan",
+          "name_en": "Shield",
+          "art": {
+            "path": "assets/ui/modules-physical-v1/shield.webp",
+            "sha256": "54c0c741c80fa91a90ddd9b7e42cc74ff7430b082bdbbf5aa54be735ab84aebd"
+          }
+        },
+        {
+          "module_definition_id": "armor",
+          "rarity": "common",
+          "name_tr": "Zırh",
+          "name_en": "Armor",
+          "art": {
+            "path": "assets/ui/modules-physical-v1/armor.webp",
+            "sha256": "5372761160604056c236918a437be9c90178296fb311d30d35edbd548040ac32"
+          }
+        },
+        {
+          "module_definition_id": "barrier",
+          "rarity": "common",
+          "name_tr": "Bariyer",
+          "name_en": "Barrier",
+          "art": {
+            "path": "assets/ui/modules-physical-v2/barrier.webp",
+            "sha256": "4cf593f960a83f1aacd4058da3a3e418a4f4956fd2cb8ebab9b5a04f18723afb"
+          }
+        },
+        {
+          "module_definition_id": "reflector",
+          "rarity": "rare",
+          "name_tr": "Yansıtıcı",
+          "name_en": "Reflector",
+          "art": {
+            "path": "assets/ui/modules-physical-v2/reflector.webp",
+            "sha256": "d0d7c2cf5f0c8e2ce9fcd57a1ba01772ab98bda5d39a23dadbdd1d904b73084a"
+          }
+        },
+        {
+          "module_definition_id": "guardian_dome",
+          "rarity": "rare",
+          "name_tr": "Muhafız Kubbe",
+          "name_en": "Guardian Dome",
+          "art": {
+            "path": "assets/ui/modules-physical-v2/guardian_dome.webp",
+            "sha256": "af16225b1b6406130788627b7042f6aed7219ec496b9fc9c9339e30306d40cc5"
+          }
+        },
+        {
+          "module_definition_id": "phase_armor",
+          "rarity": "legendary",
+          "name_tr": "Faz Zırhı",
+          "name_en": "Phase Armor",
+          "art": {
+            "path": "assets/ui/modules-physical-v2/phase_armor.webp",
+            "sha256": "21bbb30ab7f7a3ecf57563d423a0827191b028175c8c6c7422cf2ce4c2e0e3d2"
+          }
+        },
+        {
+          "module_definition_id": "buffer_shield",
+          "rarity": "epic",
+          "name_tr": "Tampon",
+          "name_en": "Buffer Shield",
+          "art": {
+            "path": "assets/ui/modules-physical-v3/buffer_shield.webp",
+            "sha256": "3d7f6366ef52feb5fd0202e25b95eaf68df645c5da588f4d3b9fe3087066d58c"
+          }
+        },
+        {
+          "module_definition_id": "last_bastion",
+          "rarity": "legendary",
+          "name_tr": "Son Siper",
+          "name_en": "Last Bastion",
+          "art": {
+            "path": "assets/ui/modules-physical-v3/last_bastion.webp",
+            "sha256": "b16892ac08bc343f5486cb86e211e2b18bc2aff4b135a5111ca46ed49628d43b"
+          }
+        },
+        {
+          "module_definition_id": "repair",
+          "rarity": "common",
+          "name_tr": "Onarım",
+          "name_en": "Repair",
+          "art": {
+            "path": "assets/ui/modules-physical-v1/repair.webp",
+            "sha256": "4c6acdaa0f9b04731a135c06a7a71b30233b10311f3fad6a58fc2d80c88837fd"
+          }
+        },
+        {
+          "module_definition_id": "amplifier",
+          "rarity": "common",
+          "name_tr": "Güçlendirici",
+          "name_en": "Amplifier",
+          "art": {
+            "path": "assets/ui/modules-physical-v1/amplifier.webp",
+            "sha256": "b7749fc31860825dec47598c94811ab50a8de56ebe4c93303aee053f4c9b4346"
+          }
+        },
+        {
+          "module_definition_id": "emp",
+          "rarity": "rare",
+          "name_tr": "EMP",
+          "name_en": "EMP",
+          "art": {
+            "path": "assets/ui/modules-physical-v1/emp.webp",
+            "sha256": "6e97fe490ef1e0f7185377c3bbfb1895a8cb77b9eaa8a4faf622f524187a44ee"
+          }
+        },
+        {
+          "module_definition_id": "virus",
+          "rarity": "epic",
+          "name_tr": "Yavaşlatıcı Virüs",
+          "name_en": "Slowing Virus",
+          "art": {
+            "path": "assets/ui/modules-physical-v2/virus.webp",
+            "sha256": "5b666c2a8266da9ceebaf006a2a15661cec70691e26a6aa8b759d47232125bd5"
+          }
+        },
+        {
+          "module_definition_id": "cleanser",
+          "rarity": "rare",
+          "name_tr": "Arındırıcı",
+          "name_en": "Cleanser",
+          "art": {
+            "path": "assets/ui/modules-physical-v3/cleanser.webp",
+            "sha256": "bbb2d39e447194cdfee40e7fb87e7ac696df6c9d67b4bbd5c199c25fa1d6da9e"
+          }
+        },
+        {
+          "module_definition_id": "speed_relay",
+          "rarity": "rare",
+          "name_tr": "Hız Rölesi",
+          "name_en": "Speed Relay",
+          "art": {
+            "path": "assets/ui/modules-physical-v3/speed_relay.webp",
+            "sha256": "a5ddd75a771debd69dee39e614f0f06405e3142f812671ab045b66b17d62b902"
+          }
+        }
+      ],
+      "content_hash": "bc96e26ae3b1c5e7f56c110e7f8548c7f14ad3974b47c5caa6d834f54a67a263"
+    }
+  ]
+}

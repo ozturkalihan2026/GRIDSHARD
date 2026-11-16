@@ -2,7 +2,7 @@
 
 **Tarih: 3 Kasım 2026 · Proje: mağaza, ödül, içerik ve yaşayan oyun**
 
-Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **78 iş** vardır: **46 yapılacak**, **13 dalda hazır; canlıda yok**, **4 çalışılıyor**, **8 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
+Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **78 iş** vardır: **40 yapılacak**, **19 dalda hazır; canlıda yok**, **4 çalışılıyor**, **8 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
 
 **Son plan güncellemesi: 2026-11-16.** Takvim → sürüm briefi → görev → dosya/kanıt bağlantıları korunur. Kayıtlı sunucu 2.4.0, Android code15. Mağaza yayını kullanıcı tarafından teyit edilmiş. Aktif geliştirme 2.5.0; paket hazırlık hedefi 2026-12-21. Canlı sunucu geçişi S1 kapanışı/ödül kabulünden sonra; kesin bakım penceresi belirlenmedi. Yayın teyidi açık cihaz/ses kabulü veya checklist görevlerini kendiliğinden kapatmaz. Bu rapor canlı sorgu yapmaz; kaynak kayıt ve checkpoint okunur.
 
@@ -126,25 +126,27 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 <a id="base-02"></a>
 
-- [ ] **BASE-02 — Analitik ve ilk deneyim ölçüm planını hazırla**
-  - Durum: Yapılacak. Öncelik: P0; rol: Ürün / analiz; efor: S.
+- [x] **BASE-02 — Analitik ve ilk deneyim ölçüm planını hazırla**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P0; rol: Ürün / analiz; efor: S.
   - Önkoşullar: yok.
   - Mevcut bağlar: `server/app/product_analytics.py`, `tools/product_analytics_report.py`, `docs/LOCALIZATION_AND_PRODUCT_ANALYTICS.md`.
   - Yeni teslim önerisi: `docs/planning/measurement-baseline.md`.
   - Sürüm briefleri: [2.5.0](planning/releases/2.5.0.md).
   - Kabul 1: Onay/yaş/30 gün saklama/hesap silme ve düşük örneklem bastırması kaynakta doğrulanır.
   - Kabul 2: D1-D7-D28 için uygun kohort ve ilk maç/deste değişimi hunisi tanımlanır; onaysız oyuncu takip edilmez.
+  - Geçmiş hazırlık kanıtı: `docs/planning/measurement-baseline.md`, `server/tests/test_product_analytics.py`, `server/tests/test_analytics_age_gate.py`, `server/tests/test_postgres_product_analytics.py`, `client/tests/analytics-age-gate.test.js`.
 
 <a id="base-03"></a>
 
-- [ ] **BASE-03 — İlk deneyim ve geri dönen oyuncu akışını tasarla**
-  - Durum: Yapılacak. Öncelik: P1; rol: Ürün / istemci; efor: M.
+- [x] **BASE-03 — İlk deneyim ve geri dönen oyuncu akışını tasarla**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P1; rol: Ürün / istemci; efor: M.
   - Önkoşullar: BASE-02.
   - Mevcut bağlar: `client/src/app.js`, `client/index.html`, `e2e/onboarding-visibility.spec.js`.
   - Yeni teslim önerisi: `docs/planning/onboarding-return-flow.md`.
   - Sürüm briefleri: [2.5.0](planning/releases/2.5.0.md).
   - Kabul 1: İlk strateji kararı, ilk deste değişimi ve bugünün hedefi için ekran akışı hazırlanır.
   - Kabul 2: Eski oyuncu sürüm özeti ve isteğe bağlı öğrenme akışı görür; ilerlemesi veya kazanılmış hakkı sıfırlanmaz.
+  - Geçmiş hazırlık kanıtı: `docs/planning/onboarding-return-flow.md`, `client/tests/onboarding-flow.test.js`, `client/tests/onboarding-lifecycle.test.js`, `server/tests/test_tutorial_battle.py`, `server/tests/test_starter_pool_tutorial_markup.py`.
 
 <a id="econ-01"></a>
 
@@ -163,14 +165,16 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 <a id="ui-01"></a>
 
-- [ ] **UI-01 — Ekran hiyerarşileri ve ortak bileşen prototipini hazırla**
-  - Durum: Yapılacak. Öncelik: P0; rol: Arayüz / ürün; efor: M.
+- [x] **UI-01 — Ekran hiyerarşileri ve ortak bileşen prototipini hazırla**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P0; rol: Arayüz / ürün; efor: M.
   - Önkoşullar: BASE-03.
   - Mevcut bağlar: `client/index.html`, `client/src/app.js`, `client/src/shop-rewards-v6.css`, `client/src/visual-polish-v9.css`, `docs/GORSEL_DONUSUM_PLANI_20261015.md`.
   - Yeni teslim önerisi: `docs/planning/screen-and-component-spec.md`.
   - Sürüm briefleri: [2.5.0](planning/releases/2.5.0.md).
   - Kabul 1: Ana ekran, mağaza, ürün, seçim kasası, sezon, profil ve maç sonrası için hiyerarşi/durumlar hazırlanır.
   - Kabul 2: Mevcut onaylı boyalı dil/dock korunur; prototip ile oyuna bağlanmış ekran açıkça ayrılır.
+  - Kabul 3: onboarding-return-flow.md ile tek bağlamsal hedef, modal önceliği, isteğe bağlı yardım, ilk6/alternatif deste kapısı ve korunmuş eski hesap akışı prototipte gösterilir; gelecek UI-06/RET-01/PLAY-01 uygulaması tamamlanmış sayılmaz.
+  - Geçmiş hazırlık kanıtı: `docs/planning/screen-and-component-spec.md`, `docs/planning/prototypes/release-250/index.html`, `docs/planning/prototypes/release-250/prototype.css`, `docs/planning/prototypes/release-250/prototype.js`, `docs/planning/prototypes/release-250/README.md`.
 
 ### R1 — Kilitli kozmetik önizlemesi → dönem ödülü/içerik açılışı
 
@@ -268,6 +272,8 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Sürüm briefleri: [2.5.0](planning/releases/2.5.0.md).
   - Kabul 1: Offer/event/choice/equip olayları sınırlı enum alanlarıyla; istemci olayı ile sunucu teslimi ayrı tanımlanır.
   - Kabul 2: Yaş/onay/silme/retention korunur; olay kaybı oyunu veya ödül teslimini bozmaz, kimlik/serbest metin eklenmez.
+  - Kabul 3: measurement-baseline.md sözleşmesiyle yeni/eski/geç izin kohortu, olgun UTC D1/D7/D28, sıralı ilk maç/deste değişimi ve sunucu kaynaklı geçiş tekilliği uygulanır; onaysız geçmiş doldurulmaz.
+  - Kabul 4: Küçük pay/payda/tamamlayıcı gruplar birlikte bastırılır; 30 gün/20.000 olay kaybı ve toplama kesintisi kapsam eksikliği verir. PG kaynaklı güvenli toplu rapor yolu JSON dosyasından ayrılır.
 
 <a id="live-01"></a>
 
@@ -553,20 +559,20 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 
 <a id="reward-03"></a>
 
-- [ ] **REWARD-03 — Kapanışta kazanılmış ama alınmamış hakları koru**
-  - Durum: Yapılacak. Öncelik: P0; rol: Backend / ürün; efor: L.
+- [x] **REWARD-03 — Kapanışta kazanılmış ama alınmamış hakları koru**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P0; rol: Backend / ürün; efor: L.
   - Önkoşullar: REWARD-01, DATA-01.
   - Mevcut bağlar: `server/app/player_profile.py`, `server/app/reward_delivery.py`, `server/app/premium_reward_recovery.py`.
   - Yeni teslim önerisi: `server/app/period_reward_closeout.py`, `server/tests/test_period_reward_closeout.py`.
   - Sürüm briefleri: [2.5.0](planning/releases/2.5.0.md).
   - Kabul 1: Sezon kapanışı, geç dönen oyuncu ve dolu Mesaj Kutusu için kazanılmış hak kaybolmadan tekil aktarım tasarlanır.
   - Kabul 2: Premium iade, önceden alınmış ödül ve birden çok kapanış denemesi aynı teslimi tekrar üretmez.
-  - Geçmiş hazırlık kanıtı: `docs/planning/engineer-case-ui-250-acceptance.md`.
+  - Geçmiş hazırlık kanıtı: `docs/planning/engineer-case-ui-250-acceptance.md`, `server/app/period_reward_closeout.py`, `server/tests/test_period_reward_closeout.py`, `server/tests/test_postgres_period_reward_closeout.py`, `docs/planning/period-reward-closeout-250-acceptance.md`.
 
 <a id="shop-01"></a>
 
-- [ ] **SHOP-01 — Sürümlü ve incelenebilir teklif kataloğu kur**
-  - Durum: Yapılacak. Öncelik: P0; rol: Backend; efor: L.
+- [x] **SHOP-01 — Sürümlü ve incelenebilir teklif kataloğu kur**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P0; rol: Backend; efor: L.
   - Önkoşullar: REWARD-01, ECON-01, COS-04.
   - Mevcut bağlar: `server/app/store_catalog.py`, `server/app/meta_progression.py`, `server/app/cosmetic_releases.py`, `docs/planning/first-shop-release.md`.
   - Yeni teslim önerisi: `server/app/shop_offers.py`, `server/data/shop_offers_v1.json`.
@@ -574,11 +580,12 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 1: UTC başlangıç/bitiş, arena, fiyat türü, garanti içerik, limit, görsel ve TR/EN doğrulanır.
   - Kabul 2: Yayınlanan teklif değişmez; süre bitmiş/eski revision ve eksik ürün önizlemesi doğru hata verir.
   - Kabul 3: Yeni ürün veya temel ilerleme için gerçek para/reklam varsayılmaz; Akı ve kredi fiyatları ECON-01 ücretsiz kaynak/harcama kararına bağlıdır. Kozmetik harcama zorunlu savaş gücünün yerine geçirilmez.
+  - Geçmiş hazırlık kanıtı: `server/app/shop_offers.py`, `server/data/shop_offers_v1.json`, `tools/prepare_shop_offers.py`, `server/tests/test_shop_offers.py`, `server/tests/test_postgres_shop_offers.py`, `tools/tests/test_shop_catalog_review.py`, `docs/planning/shop-offers-250-acceptance.md`.
 
 <a id="shop-02"></a>
 
-- [ ] **SHOP-02 — Limit ve cüzdan işlemlerini atomik bağla**
-  - Durum: Yapılacak. Öncelik: P0; rol: Backend; efor: L.
+- [x] **SHOP-02 — Limit ve cüzdan işlemlerini atomik bağla**
+  - Durum: Dalda hazır; canlıda yok. Öncelik: P0; rol: Backend; efor: L.
   - Önkoşullar: SHOP-01, DATA-01.
   - Mevcut bağlar: `server/app/postgres_economic_operations.py`, `server/app/main.py`, `server/app/store_refund_policy.py`, `client/src/auth-session.js`.
   - Yeni teslim önerisi: `server/app/shop_transactions.py`, `server/tests/test_shop_offers.py`.
@@ -586,6 +593,7 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
   - Kabul 1: Önizlemedeki teklif ID/sürümüyle alım yapılır; istemci ödül veya fiyat belirlemez.
   - Kabul 2: İki eşzamanlı alım limit aşamaz; yanıt kaybı tekrar ücret düşürmez; bakiyeler/eski makbuzlar korunur.
   - Kabul 3: Yeni API yolları Bearer kimliği/hesap sahipliği ve native API prefix yönlendirmesiyle doğrulanır.
+  - Geçmiş hazırlık kanıtı: `server/app/shop_transactions.py`, `server/tests/test_shop_transactions.py`, `server/tests/test_postgres_shop_transactions.py`, `client/tests/shop-api-auth.test.js`, `docs/planning/shop-transactions-250-acceptance.md`.
 
 <a id="shop-03"></a>
 

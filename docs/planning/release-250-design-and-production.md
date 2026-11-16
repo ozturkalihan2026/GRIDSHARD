@@ -10,6 +10,30 @@ kazanım sözü değildir. [Uygulama kabulü](free-economy-250-acceptance.md).
 · [Takvim](release_calendar_v1.json) · [Ekonomi karşılaştırması](free-economy-250-report.md)
 · [Aday veri](free-economy-250-v1.json).
 
+16 Kasım kaynak hazırlığı: BASE-02 [ölçüm sözleşmesi](measurement-baseline.md)
+ve BASE-03 [ilk deneyim/geri dönüş akışı](onboarding-return-flow.md) dalda
+hazırdır. UI-01 [ortak ekran/durum sözleşmesi](screen-and-component-spec.md)
+ve [etkileşimli prototip](prototypes/release-250/index.html) de dalda hazırdır;
+TR/EN×320/393 için184 durum birleşimi kontrol edildi. Bunlar tasarım
+teslimidir; yeni ana ekran, kohort raporu veya dönüş kişiselleştirmesi canlıya
+alınmış değildir. Başlangıç altılısında anlamlı alternatif açılmadan deste
+değişimi zorlanmaz; normal ilk arena ile ödülsüz eğitim tekrarı ayrılır.
+
+REWARD-03 [dönem kapanışı kabulü](period-reward-closeout-250-acceptance.md)
+dalda hazırdır: görevlerden sonra donmuş yol hakları aktarılır, aynı mesaj
+kimliğinin gerçek paketi de doğrulanır; çakışmada kapanış sıfırlama yapmaz.
+İade/legacy ek sandıklar, dolu kutu ve seçim hakları korunur. Tam sunucu
+regresyonu ve ayrı gerçek PG17/backup/restore kabulü kayıttadır. Sonraki
+backend hazırlığı SHOP-01 de [katalog/önizleme kabulüyle](shop-offers-250-acceptance.md)
+dalda hazırdır. Tek draft teklif500 kredi/haftada2 politikası ve24 gerçek
+modül önizlemesi taşır; alım sayacı/cüzdan/teslim kabulü aşağıda SHOP-02'ye bağlıdır.
+28 Aralık–4 Ocak taslak pencere örnektir, canlı yayın tarihi değildir.
+SHOP-02 [satın alma kabulü](shop-transactions-250-acceptance.md) de dalda
+hazırdır: mevcut ekonomik UOW'da tek ücret/teslim, kalıcı haftalık limit,
+Bearer/native yollar ve eski istek replay'i doğrulandı. Katalog draft kalır;
+UI-02, COS-03 ve SHOP-03 pilot entegrasyonu açıktır. Bu kabuller canlıya
+geçiş anlamına gelmez.
+
 ## 1. Oyuncuya gelecek paket
 
 | İş | Tasarım | Üretilecek teslim / kabul |

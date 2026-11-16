@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GRIDSHARD · 2.5 ekran prototipi</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="prototype.css">
+<body>
+  <aside class="inspector" aria-label="Prototip kontrolleri">
+    <strong>GRIDSHARD / UI-01</strong>
+    <p id="prototype-note">Tasarım prototipi · örnek veriler · sunucuya bağlanmaz.</p>
+    <div class="controls">
+      <label><span id="screen-label">Ekran</span><select id="screen"></select></label>
+      <label><span id="state-label">Durum</span><select id="state"></select></label>
+      <label><span id="language-label">Dil</span><select id="language"><option value="tr">Türkçe</option><option value="en">English</option></select></label>
+    </div>
+    <p id="scope-note">Yerleşim ve durum örneğidir; gerçek oyun kabulü değildir.</p>
+    <a href="../../screen-and-component-spec.md" id="spec-link">Ekran sözleşmesi</a>
+  </aside>
+  <div class="phone" id="phone">
+    <header class="resource-bar" aria-label="Kaynaklar" id="resources"></header>
+    <div class="page-heading"><button id="back" class="back" type="button" aria-label="Geri">←</button><h1 id="title"></h1><span class="revision">2.5</span></div>
+    <main id="content" tabindex="-1"></main>
+    <nav id="dock" aria-label="Ana menü"></nav>
+  </div>
+  <p class="footnote" id="footnote">Hiçbir satın alma, ödül teslimi veya kalıcı kayıt yapılmaz.</p>
+  <script src="prototype.js"></script>
+</body>
+</html>

@@ -1,3 +1,193 @@
+# 2.5.0 / SHOP-02 — atomik satın alma hazır; toplu commit/push kaydı, 16 Kasım 2026
+
+Kullanıcı SHOP-02'yi tamamlamamızı ve bu oturumda birikmiş bütün çalışmaları
+commit/push etmemizi istedi. Kaynak dal codex/develop-2.5.0; main/live/AAB
+dağıtımı kapsamda değil. Bu kayıt BASE-02/03, UI-01, REWARD-03, SHOP-01/02
+ve bağlı checklist/kabul belgeleriyle birlikte commit kapsamındadır.
+
+shop_transactions.py + mevcut persistent_operation/PostgresEconomicOperations:
+500 kredi düşümü, garantili modül parçası ve özel shop_purchase_receipts aynı
+UOW. Limit, kalıcı makbuzlardan hesaplanan UTC hafta+limitkey kapsamında2;
+revision/cihaz/yeniden bağlantı sıfırlamaz. Eski başarılı istek katalog/gate
+kapandıktan sonra da ilk makbuz ve güncel cüzdanla replay olur. Bozuk makbuz,
+aynı request/farklı içerik, istemci fiyat/ödül, strict olmayan revision
+reddedilir. Negatif bakiye/iade ve eski haklar korunur. Yeni migration yok.
+
+GET list/detail ve POST purchase /profile/{player_id}/shop-offers altında;
+mevcut Bearer/sahiplik/native API prefix korumaları testli, no-store ve
+stabil hata code/TR/EN var. Draft teklif listelenmez. quality.yml'e offline
+katalog check eklendi; bu dal push'unda workflow tetiklenmez (push:main).
+
+Kanıt docs/planning/shop-transactions-250-acceptance.md. Yeni domain/HTTP14
+PASS; gerçek PG17 odaklı32 PASS. Linux tam sunucu2280 PASS; üç QA yazı
+izni ve Redis DB15 fixture koşulu doğru ortamda tekrar4 PASS (skip yok).
+İstemci787 PASS, build14 PASS, gerçek web build b7cc6e9ddb373e98; araç169
+PASS kısa workspace basetemp ile, Python import526 dosya/0 sorun. İlk
+Windows HTTP beklemesi kesildi; kabul tamamlanan Linux koşularındandır.
+İlk uzun Windows Git worktree yolu hataları son kabul değildir. Sayılar
+birleştirilerek tek koşu/uzak CI yeşili iddiası yapılmaz.
+Göreve ait geçici PG/Redis konteynerleri kimlik/etiket denetimiyle
+kapatıldı ve envanterde kaldırıldıkları doğrulandı. Başka servis değişmedi.
+
+SHOP-02 branch_ready. Sıradaki UI-02 gerçek mağaza ekranı veya COS-03
+mağaza sanatı; SHOP-03 COS-03'e bağlıdır. Katalog tek draft; S2/2.5 için
+örnek tarih otomatik yayına çevrilmedi. Gerçek2.4.0, yayımlanmış S1 katalog
+ve eski SQL korunur.2.5 geçişi S1 kapanış/ödül kabulü sonrası, en erken
+22 Aralık03.00TR; kesin pencere yok. Main'e birleşme/sunucu/Console/AAB yok.
+
+---
+
+# 2.5.0 / SHOP-01 — sürümlü katalog ve sabit ürün önizlemesi hazır, 16 Kasım 2026
+
+Kullanıcı sıradaki işi tamamlamamızı istedi. shop_offers.py +
+server/data/shop_offers_v1.json: tek draft500 kredi/UTC haftasında2 alım
+politikası, common12/rare6/epic3/legendary1 garantili parça.24 mevcut
+modülün gerçek kayıtlı çizim hash'i ve TR/EN adı; yeni sanat yok. UTC
+pencere/arena/sürüm/garanti/limit ve değişmez yayın baseline denetimi var.
+prepare_shop_offers.py check/publish yalnız yerel inceleme artifact'i üretir;
+kaynak/baseline üzerine yazamaz, canlıya dağıtmaz. Draft28 Aralık–4 Ocak
+örnek penceredir, onaylanmış2.5/S2 mağaza açılış tarihi değildir.
+
+Özel shop_offer_state JSON/PG snapshot'ında saklanır, public profilde yok.
+Hedef hesap+limitkey+UTC ISO haftasında ilk önizlemeye pinlenir; havuz/arena,
+revision veya anahtar değişimi aynı hafta yeniden seçtirmez. İstemci deste
+tercihi kullanılmaz. Bakiye/XP/envanter değişmez. Gerçek PG UOW kaydı,
+rollback/yeniden yükleme,8 paralel önizleme ve dump/restore testlidir.
+Statik JSON Docker/source paket listesine eklendi; runtime oyuncu dosyası
+eklenmedi. Yeni SQL/migration veya gerçek sürüm artışı yok.
+
+Kanıt docs/planning/shop-offers-250-acceptance.md. Tam sunucu2177 PASS/86
+SKIP; son odaklı teklif/araç/paket/plan64 PASS; Linux Py3.12+gerçek PG17
+ve eşleşen backup araçlarıyla26 PASS/0 SKIP. Tam koşudan sonraki bir ek
+pin tür kontrolü son odaklı ve final PG koşusunda doğrulandı. Sonuçlar
+benzersiz toplam/CI yeşili olarak birleştirilmez.
+Geçici shop01 PG konteyneri kimlik/etiketi doğrulanarak kapatıldı ve
+envanterde kaldırıldığı görüldü. Hero+24 hedef gerçek client build
+allowlist kontrolünden geçti; yeni AAB veya cihaz kabulü yapılmadı.
+
+SHOP-01 branch_ready. Sıradaki SHOP-02: Bearer/native API rotası, bakiye+
+haftalık alım sayacı+parça teslimi+makbuz aynı UOW, eski revision/yanıt kaybı
+tekrarlarında tek ücret. Satın alma uygulaması henüz yok; önizleme satın
+alma uygunluğu veya kalan limit değildir. SHOP-03/COS-03 kozmetik pilotu ve
+UI-02 gerçek mağaza entegrasyonu açık; shop_collection kaynağı planned kalır.
+Gerçek2.4.0/S1 yayın katalogları/eski SQL korunur. Canlı/AAB/Console/commit/
+push yok.2.5 kapısı S1 kapanış/ödül kabulünden sonra, en erken22 Aralık
+03.00TR; kesin pencere yok. Önceki BASE/UI/REWARD dosyaları korunur.
+
+---
+
+# 2.5.0 / REWARD-03 — kapanış ve kazanılmış hak aktarımı hazır, 16 Kasım 2026
+
+Kullanıcı sıradaki işi tamamlamamızı istedi. period_reward_closeout.py,
+meta_progression.archive_and_soft_reset_season tarafından kullanılır:
+profil kopyasında günlük/sezonluk emirleri işle, donan yol haklarını aktar,
+gerçek mesaj/paket/hash/revision/premium bağını doğrula, ancak sonra arşivle
+ve sıfırla. Sadece aynı mesaj kimliğinin var olması artık aktarım kanıtı
+sayılmaz. Çakışma testte önce üretildi; hata giriş profilini değiştirmez.
+Legacy ayrı rastgele sandık borcu ve donmuş tanımı da denetlenir. Yeni
+kalıcı alan, migration, API veya ödül bütçesi eklenmedi.
+
+Kanıt docs/planning/period-reward-closeout-250-acceptance.md. Windows tam
+sunucu2133 PASS/79 SKIP; son saf kapanış14 PASS; Linux Py3.12/gerçek PG17
+ve eşleşen dump/restore araçlarıyla23 PASS/0 SKIP.4 yeni PG testi: kayıttan
+sonra hata/rollback/yeniden yükleme,8 eşzamanlı kapanış, kalıcı paket
+çakışması, gerçek dump/restore sonrası eski hak ve ilk açılış makbuzu.
+İlk Windows PG16 dump/PG17 uyumsuzluğu ve test kurulum hataları son kabul
+değildir. Son ek testler tam koşudan sonra ayrıca odaklı doğrulandı; sayılar
+toplanarak benzersiz toplam/CI yeşili iddiası yapılmaz.
+Geçici reward03 PG konteyneri kimlik/etiket doğrulamasıyla kapatıldı;
+son envanter kontrolünde kaldırıldığı görüldü. Başka konteyner değişmedi.
+
+Geç dönüş60 gün, dolu Mesaj Kutusu, alınmış kademe, kapanış tekrarı,
+iade→eski hakkı geri açma, legacy ek sandık ve alınmış/alınmamış Mühendis
+Kasası korunumu testlidir. Kasa seçim/competition closure mekanizmaları
+yeniden yazılmadı. REWARD-03 branch_ready; sıradaki iş SHOP-01, sonra
+SHOP-02/03 ve UI-02. UI-03 üst görevi hâlâ in_progress; kapsamı otomatik
+tamamlanmış sayılmaz. BASE-02/03 ve UI-01'in önceki dosyaları korunur.
+
+Gerçek kaynak sürümü2.4.0; S1 yayınlanmış katalog ve eski SQL değişmedi.
+Canlı/AAB/Console/commit/push yok.2.5 kapısı S1 kapanış/ödül kabulü sonrası,
+en erken22 Aralık03.00TR; kesin pencere yok.
+
+---
+
+# 2.5.0 / UI-01 — ortak ekran sözleşmesi ve prototip hazır, 16 Kasım 2026
+
+Kullanıcının ikinci devam isteğiyle BASE-03 sonrasında UI-01 tamamlandı.
+docs/planning/screen-and-component-spec.md ve prototypes/release-250/
+altında bağımsız HTML/CSS/JS: ana ekran, mağaza, teklif detayı, seçim kasası,
+sezon, oyuncu/takım profili ve maç sonrası. Mevcut boyalı sanat/font/dock
+kullanılır; modüller physical-v1 tekil çizimleriyle gösterilir. Önizleme
+bakır/şampanya vurgusu, yalnız ok geri, tek hedef ve durum matrisi tanımlandı.
+
+Prototip sentetik veridir; API, hesap, kalıcı depolama, alım/ödül/savaş ve
+analitik yok. Runtime girdilerine eklenmedi. Chrome TR/EN×320/393,46 durumun
+184 birleşimi; beş gezinme/seçim/tekrar deneme akışı, JS/HTTP hata0,
+oyun isteği0. Sekiz screenshot; ana ekran/mağaza ve320 İngilizce kasa
+görsel incelendi. Yerel kanıt qa_reports/ui01-prototype-20261116.{json,cjs}
+ve ui01-*.png; Git dışıdır. Bu gerçek API/AAB/cihaz/200% metin kabulü değil.
+
+Backlog UI-01 branch_ready; BASE-02/03 korunur. Üst UI-03 in_progress
+kalmıştır: yalnız önkoşul kapanması bütün ödül yüzeyini bitirmiş sayılmaz.
+Sıradaki backend işi REWARD-03 genel dönem kapanışı/aktarım; ardından
+SHOP-01/02/03 ve UI-02 entegrasyonu. Gerçek sürüm2.4.0, S1 katalog/SQL
+değişmedi. Canlı/AAB/Console/commit/push yok.2.5 canlı geçiş kapısı hâlâ
+S1 kapanış/ödül kabulü sonrası, en erken22 Aralık03.00TR; kesin pencere yok.
+
+---
+
+# 2.5.0 / BASE-03 — ilk deneyim ve geri dönüş akışı hazır, 16 Kasım 2026
+
+Kullanıcının devam isteğiyle BASE-03 tasarım teslimi tamamlandı:
+docs/planning/onboarding-return-flow.md. Menü turu isteğe bağlı; ilk gerçek
+strateji kararı kesintisiz savaşta saldırı/savunma tercihi. Normal ilk arena
+ile Ayarlar'dan açılan ödülsüz tekrar eğitim ayrıldı. Başlangıç6 dışında
+gerçek alternatif yokken deste değişimi hedefi yok; kilit/sahiplik korunur.
+Gerçek sunucu kaydı olmadan değişim başarı sayılmaz. Tek bağlamsal hedef,
+duyuru/meta modal önceliği, eski hesap/yeni cihaz/geç yanıt/offline ve dönem
+kapıları tanımlandı. Bunlar yeni runtime entegrasyonu değildir.
+
+Mevcut akışın yerel testleri: istemci onboarding flow/lifecycle20 PASS,
+sunucu tutorial/starter markup10 PASS. E2E kaynakları incelendi, tarayıcı veya
+telefon çalıştırılmadı. Eski release-announcement E2E'deki13/30 Kasım sabit
+beklentiler yeni takvim kabulü sayılmaz; fixture güncellemesi uygulama
+kabulüne bırakıldı. Backlog BASE-03 branch_ready; UI-01'e akış kabul maddesi
+bağlandı. Gelişmiş UI-06/RET-01/PLAY-01 bu belgeyle2.5'e taşınmadı.
+
+Sıradaki iş UI-01: ortak ekran hiyerarşisi/durumlar ve prototip. REWARD-03,
+SHOP-01 ayrı açık. Çalışma codex/develop-2.5.0'da; önceki BASE-02 dosyaları
+korunur. Gerçek sürüm2.4.0, canlı S1/katalog ve SQL değişmedi. Canlı/AAB/
+Console/commit/push yapılmadı;2.5 geçişi S1 kapanış/ödül kabulü sonrasında,
+en erken22 Aralık03.00TR; kesin pencere yok.
+
+---
+
+# 2.5.0 / BASE-02 — ölçüm ve ilk deneyim planı hazır, 16 Kasım 2026
+
+Kullanıcı sıradaki işi başlatmamızı istedi. Güncel develop checkpoint'inden
+BASE-02 önkoşulu tamamlandı; docs/planning/measurement-baseline.md kaynak
+denetimi, UTC D1/D7/D28 uygunluğu, ilk maç/deste değişimi sıralı hunisi ve
+geri dönüş akışının ölçüm sözleşmesini içerir. Backlog BASE-02 branch_ready;
+ANALYT-01'e somut uygulama/kabul kapıları eklendi. Bu bir plan teslimidir,
+yeni olay veya rapor uygulaması değildir. Eski analitik sözleşmesindeki
+yalnız PvP ve tüm hücreler bastırılır ifadeleri kaynakla uyumlu düzeltildi.
+
+Bulgu: mevcut D1/D7 elde kalan ilk session'dan başlar, gerçek yeni hesap
+kohortu değildir; küçük dönen grup ayrıca bastırılmıyor. D28/deste değişimi
+olayı yok, JSON rapor aracı PG okumuyor. Bunlar ANALYT-01'de açık; yeni
+kohort/ilk deneyim başarı oranı veya canlı veri ölçümü iddia edilmez.
+
+Yerel odaklı kabul: ürün analitiği/yaş kapısı/sentetik PG 19 PASS;
+istemci yaş kapısı 1 PASS. Yeni runtime kodu, gerçek PG veya cihaz kabulü
+yok. Gerçek sürüm2.4.0, S1 ve yayımlanmış katalog korunur. Canlı/AAB/Console
+işlemi yok. Çalışma codex/develop-2.5.0 üzerinde; main'e birleşmedi.
+
+Sıradaki önkoşul BASE-03 (ilk deneyim ve geri dönüş ekran akışı), sonra
+UI-01. REWARD-03 ve SHOP-01 ayrı açık işler. 2.5 canlı geçişi hâlâ S1
+kapanış/ödül kabulünden sonra, en erken22 Aralık03.00TR; kesin pencere yok.
+
+---
+
 # 2.5.0 — kaynak devir kaydı, 16 Kasım 2026
 
 Kullanıcı biriken çalışmaları commit/push etmemizi istedi. Kaynak dalı

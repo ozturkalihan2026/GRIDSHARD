@@ -453,6 +453,8 @@ class PlayerProfile:
     engagement_claim_receipts: dict[str, dict] = field(default_factory=dict)
     free_economy_state: dict = field(default_factory=dict)
     reward_choice_state: dict = field(default_factory=dict)
+    shop_offer_state: dict = field(default_factory=dict)
+    shop_purchase_receipts: dict = field(default_factory=dict)
     # Notification acknowledgements are persisted so a page refresh cannot
     # dismiss a newly unlocked reward or cosmetic.
     seen_notification_keys: tuple[str, ...] = ()

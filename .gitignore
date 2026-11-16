@@ -43,6 +43,7 @@ server/data/*
 !server/data/release_announcements_v1.json
 !server/data/reward_definitions_v1.json
 !server/data/free_economy_rewards_v1.json
+!server/data/shop_offers_v1.json
 !server/data/game_updates.json
 !server/data/cosmetic_releases_v1.json
 !server/data/liveops_content_sources_v1.json
