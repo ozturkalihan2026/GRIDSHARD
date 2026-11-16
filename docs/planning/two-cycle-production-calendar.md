@@ -11,21 +11,21 @@ S2–S4 tarihleri koşullu üretim hedefleridir.
 
 | Sıra | Hazırlık penceresi / kontrol | Teslim | Tamamlanma ölçütü |
 | --- | --- | --- | --- |
-| 1 | 11–13 Kasım | S2'nin altı öğesinin geometrisi, kaynak/ID listesi; Yankı Rölesi sözleşmesi; dört mağaza öğesi | Bu dosya ve bağlantılı brief'ler; henüz çizim/kod kabulü yok |
+| 1 | 11–13 Kasım | S2'nin altı öğesinin geometrisi, kaynak/ID listesi; Geri Tepme Topu sözleşmesi; dört mağaza öğesi | Bu dosya ve bağlantılı brief'ler; henüz çizim/kod kabulü yok |
 | 2 | 14–18 Kasım, 2.4 düzeltmeleri izin verdikçe | Manyetik Köprü çerçeve + zemin için oyun dışında ilk iki görsel örnek | Onaylı profil/dock/sandık referanslarıyla yan yana; yeni geometrinin küçük boyda okunması |
 | 3 | 19–23 Kasım | Canlı 2.4 gözlemi ve S2 örneklerinin düzeltmesi | 23 Kasım'da sezon açma/dağıtım işlemi yok; canlı S1 kataloğu ve eski haklar korunur |
-| 4 | 24–30 Kasım, mevcut 2.5 başlangıcı | Genel dönem ödül profili, renderer taslağı, ekonomi ve Yankı prototipi | S1'e özgü kaynak haftası istisnasını S2'ye kopyalamadan çalışan tasarım; 30 Kasım kapasite kontrolü |
-| 5 | 1–7 Aralık | S2 kalan dört öğe, mağaza dört öğe; Yankı sanat/ses/karşı oyun; müzik A/B | Sanat incelemeleri ayrı 6 ve 4 öğelik gruplarda; S1 gözlem payı korunur |
+| 4 | 24–30 Kasım, mevcut 2.5 başlangıcı | Genel dönem ödül profili, renderer taslağı, beş kaynağın ekonomisi ve Geri Tepme Topu prototipi | S1'e özgü kaynak haftası istisnasını S2'ye kopyalamadan çalışan tasarım; 30 Kasım kapasite kontrolü |
+| 5 | 1–7 Aralık | S2 kalan dört öğe, mağaza dört öğe; Geri Tepme Topu sanat/ses/karşı oyun; müzik A/B | Sanat incelemeleri ayrı 6 ve 4 öğelik gruplarda; S1 gözlem payı korunur |
 | 6 | 8–14 Aralık | Ödül/sahiplik entegrasyonu, sabit kaynak haftaları ve denge | 14 Aralık kapsam kapanışı; kabul görmeyen öğe otomatik açılmaz |
 | 7 | 17–21 Aralık | 2.5 cihaz kabulü ve hedef yayın | Oyun/sanat/ses/ödül kapılarının tümü; sezon ayrı tarihte açılır |
 
-Pencereler teslim hedefidir; tamamlanmış çalışma veya eşzamanlı tam ekip kapasitesi iddiası değildir. İlk somut sanat işi **Manyetik Köprü'nün iki öğelik örneği**; ardından Bakır Örgü ve Kırık Halka gelir. İlk oyun mekaniği işi **Yankı Rölesi prototipi**dir. Çizim ve kod birbirinin onayı sayılmaz.
+Pencereler teslim hedefidir; tamamlanmış çalışma veya eşzamanlı tam ekip kapasitesi iddiası değildir. İlk somut sanat işi **Manyetik Köprü'nün iki öğelik örneği**; ardından Bakır Örgü ve Kırık Halka gelir. İlk oyun mekaniği işi **Geri Tepme Topu prototipi**dir. Çizim ve kod birbirinin onayı sayılmaz.
 
 ## Üç sezonluk içerik tablosu
 
 | Sürüm / hedef yayın | Sezon / başlangıç (TR 03.00) | Yeni modül | Oyuncu ödül sanatı | Diğer ayrı içerik |
 | --- | --- | --- | --- | --- |
-| 2.5.0 / 21 Aralık 2026 | S2 / 28 Aralık koşullu; ayrıca onay | Yankı Rölesi | Manyetik Köprü, Bakır Örgü, Kırık Halka: 3 çerçeve + 3 zemin | 4 mağaza öğesi; seçim kasası; 1 menü + 1 savaş bestesi |
+| 2.5.0 / 21 Aralık 2026 | S2 / 28 Aralık koşullu; ayrıca onay | Geri Tepme Topu | Manyetik Köprü, Bakır Örgü, Kırık Halka: 3 çerçeve + 3 zemin | 4 mağaza öğesi; seçim kasası; 1 menü + 1 savaş bestesi |
 | 2.6.0 / 18 Ocak 2027 | S3 / 25 Ocak, S2 onayına bağlı | Kor Fırlatıcı | Reaktör Kepengi, Prizma Yuvası, Türbin Dişlisi: 3 çerçeve + 3 zemin | Yedi özgün Devre Deneyi; Keşif Günlüğü; ilk başarı ödülü |
 | 2.7.0 / 15 Şubat 2027 | S4 / 22 Şubat, S2 onayına bağlı | Darbe Muhafızı | Seramik Siper, Kablo Kemeri, Kristal Kıskaç: 3 çerçeve + 3 zemin | PvE seferi; 1 menü + 2 savaş bestesi; aşağıdaki yeni takım seti |
 
@@ -81,7 +81,7 @@ Yeni para birimi, kayıtsız kalıcı güç veya bütçesiz hediye bu planla aç
 
 - [S2 sanat kabul listesi](art-2.5.0-acceptance.md)
 - [Mağaza sanat manifesti](shop-art-manifest.md)
-- [Yankı Rölesi mekanik brief'i](echo-relay-release.md)
+- [Geri Tepme Topu mekanik brief'i](recoil-cannon-release.md)
 - [Kor Fırlatıcı mekanik brief'i](ember-launcher-release.md)
 - [Üç grubun ortak sanat manifesti](two-cycle-art-manifest.md)
 

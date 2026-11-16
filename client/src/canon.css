@@ -11509,3 +11509,8 @@ body:not([data-app-screen="play"]) .app-progress-ribbon #lobby-menu-button:focus
 
 /* Simplified details have one statistics tab. */
 .module-detail-tabs:has(> button:only-child),.core-detail-tabs:has(> button:only-child){grid-template-columns:1fr;}
+
+/* Four result resources keep readable labels on narrow phones. */
+#post-match-reward-list.has-match-flux { grid-template-columns:repeat(2,minmax(0,1fr)); }
+#post-match-flux-limit { color:#bed2e8; font:600 11px/1.3 var(--gs-font-copy); text-align:center; }
+.daily-mission-card .daily-mission-rewards { flex-wrap:wrap; justify-content:flex-end; }

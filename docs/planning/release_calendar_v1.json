@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "planning_only": true,
-  "as_of": "2026-11-15",
+  "as_of": "2026-11-16",
   "timezone": "Europe/Istanbul",
   "capacity_assumption": "Tek ana geliştirme akışı; haftada 5 gün, günde 4–6 saat odaklı çalışma; kapasitenin yaklaşık yüzde 20'si hata/test/gözlem payı. Bu çalışma kapasitesi teyit edilmiş zaman çizelgesi değildir.",
   "scope_decision": "Kullanıcı 2.4.0'da mevcut 24 modülle ilk sezonun açılmasını önceliklendirdi. Yeni kart ve geniş kozmetik üretimi sonraki paketlere bölündü. 4 Kasım: aynı takvim korunarak sürüm içerikleri ayrıntılandırıldı; 2.4.0 sarı geri/ileri gezinme ve saldırı/çekirdek ses kalitesi zorunlu kapsamına alındı. 4 Kasım kullanıcı açıklaması: XP açığı bilinçli; eşik düşmez. Topla kasa açılışı ve çekirdek teslimi ile günlük/sezonluk XP emirleri 2.4 zorunlu kapsamıdır.",
@@ -292,8 +292,8 @@
       "scope_freezes_on": "2026-12-14",
       "tests_start_on": "2026-12-17",
       "target_release_on": "2026-12-21",
-      "content": "Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. En az bir yeni menü ve bir özgün savaş bestesi; merak/umut ve kontrollü rekabet.",
-      "required": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. AUDIO-03 kabulü ve ön duyuru standardı sürüm kapısındadır. Reklam/ödeme SDK’ları ve BILLING izni son AAB’de bulunmaz; geçmiş haklar korunur. Takım turnuvasının bütün sabit hafta günü açıklamaları TR/EN olarak başlangıca göre gün numaralarıyla eşleşir.",
+      "content": "Mühendis seçim kasası ve tek garantili parça teklifi; Geri Tepme Topu; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. En az bir yeni menü ve bir özgün savaş bestesi; merak/umut ve kontrollü rekabet. Tamamen ücretsiz/reklamsız ilerleme için Akı ve Devre Kredisi kaynak-harcama dengesi; mevcut günlük/sezonluk emir, giriş, ücretsiz sezon yolu ve maç sonucunun para dengesi ve sezon arası erişim.",
+      "required": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. AUDIO-03 kabulü ve ön duyuru standardı sürüm kapısındadır. Reklam/ödeme SDK’ları ve BILLING izni son AAB’de bulunmaz; geçmiş haklar korunur. Takım turnuvasının bütün sabit hafta günü açıklamaları TR/EN olarak başlangıca göre gün numaralarıyla eşleşir. ECON-01 ücretsiz kaynak-harcama kararı ve ECON-02 beş ödül kanalının tek teslim/yeni sezon/sezon arası kabulü zorunludur; temel ilerleme reklam, yeni premium veya sıralama kazanımı varsaymaz.",
       "optional": "Ek mağaza teklifleri yalnız ana pilot tamamlanırsa değerlendirilir.",
       "excluded": "Yeni gerçek para ürünü, yeni para birimi, ücretli yeniden çekiliş ve PvP deneme gücü artışı.",
       "work_items": [
@@ -320,18 +320,37 @@
         "COS-05",
         "OPS-02",
         "RELEASE-02",
-        "AUDIO-03"
+        "AUDIO-03",
+        "ECON-02"
       ],
       "season": {
         "number": 2,
         "starts_on": "2026-12-28",
         "ends_on": "2027-01-25",
         "starts_at_utc": "00:00",
-        "module": "Yankı Rölesi",
+        "module": "Geri Tepme Topu",
         "start_mode": "manual"
       },
       "delivery_document": "docs/planning/releases/2.5.0.md",
       "delivery_packages": [
+        {
+          "id": "S2-EKONOMI",
+          "title": "Mevcut beş kaynakla ücretsiz Akı ve Devre Kredisi dengesi",
+          "kind": "required",
+          "tasks": [
+            "ECON-02"
+          ],
+          "steps": [
+            "Günlük/sezonluk emir, giriş, ücretsiz sezon yolu ve maç sonucu artışını 1/7/28 günlük bütçede birlikte hesapla; düşük katılım, mağlubiyet, sezon arası ve altılı deste/parça/çekirdek harcamasını karşılaştır. Ayrı günlük/haftalık desteği üstüne yığma.",
+            "Günlük emir para ödüllerini ve yeni sezonun giriş/yol/sezonluk emir para miktarlarını revizyonla sabitle. XP hedefleri, parça/kozmetik içeriği ve yayımlanmış S1 dosyaları değişmesin; eski kazanılmış haklar eski revisionda kalsın.",
+            "Uygun pes edilmemiş maçlarda kredi artışını ve ilk6 maç için sınırlı Akıyı battle_id makbuzunda aynı ekonomik işlemle uygula. Tekrar, paralel sonuç, günlük devir, rollback ve restore ikinci para doğurmasın; mevcut kupa/sandık/XP çarpanları değişmesin.",
+            "Mevcut emir/giriş/sezon yolu/maç sonucu ekranlarında iki para, toplama ve kapalı sezonu TR/EN320/393 göster. Sezon arasında temel günlük emir ve uygun maç kaynakları sürsün; sezonluk hakları sezon kapısı dışında verme."
+          ],
+          "acceptance": [
+            "Beş kaynak tek bütçede, gelir/harcama ve eski premium hakları ayrı; ödeme/reklam veya sıralama gerekmez. Yalnız giriş kendi ödülünü alır, tam ilerleme düzenli emir/savaş ister.",
+            "Yeni miktarlar tanım/makbuz revisionuyla tek teslim; eski S1/oyuncu hakları, XP ve maliyet tabloları korunmuş. Yeni sezon/onay ve sezon arası farkı gerçek API/restore/UI ile kanıtlanmış."
+          ]
+        },
         {
           "id": "S2-HAK",
           "title": "Sabit seçenekli Mühendis Kasası ve kalıcı teslim",
@@ -406,15 +425,15 @@
         },
         {
           "id": "S2-ICERIK",
-          "title": "Yankı Rölesi ve altı S2 oyuncu öğesi",
+          "title": "Geri Tepme Topu ve altı S2 oyuncu öğesi",
           "tasks": [
             "CARD-01",
             "BALANCE-01",
             "COS-05"
           ],
           "steps": [
-            "Yankı Rölesi: bir silahın sonraki atışına düşük güçlü tek ek vuruş. Yük atama/tüketme, kaynak yok oluşu, hedef kaybı ve kalkan etkileşimini motor sözleşmesine yaz; yankı kendini tekrar tetiklemesin.",
-            "Otomatik yerleşim ve mevcut hedef önceliğini koru; arena 3 uygunluğu, ücretsiz edinim, aktif katalog ve sayısal dengeyi raporla. Tek yankı yükü ve ayrı ikinci mermi VFX/sesini tamamla.",
+            "Geri Tepme Topu saldırı modülü: kendi güçlü tek atışı karşılığında sabit kendi CAN bedeli. Kaynak1 CAN sınırı, EMP/Faz/kalkan, source/hedef ölümü ve tekrar event sözleşmesini motor prototipinde doğrula; kendi CAN kaybından Akım veya emir geliri üretme.",
+            "Mevcut yerleşim/hedef önceliği ve arena3/ücretsiz edinim korunur. İlk prototip4 Akım/240 CAN/50 hasar/3sn/16 geri tepme adayıdır; eski destelere karşı denge, özgün geri tepme VFX/ses ve dört eşikli yetenekler kabul edilmeden aktif kataloğa girmez.",
             "Manyetik Köprü, Bakır Örgü ve Kırık Halka çiftlerini altı özgün öğe olarak üret. S2 sezon yolu/sıralama/son hafta tahsisini ve diğer kaynak haftalarını gerçek takvimle hesapla."
           ],
           "acceptance": [
@@ -474,12 +493,13 @@
             "UI-01",
             "AUDIO-03"
           ],
-          "output": "Ekonomi ve hak tasarımı; 30 Kasım kapasite kararı, S1 gözlemi payı."
+          "output": "Ücretsiz/reklamsız Akı ve kredi kaynak-harcama kararı, hak tasarımı ve ekran durumları; 30 Kasım kapasite kararı, S1 gözlemi payı."
         },
         {
           "starts_on": "2026-12-01",
           "ends_on": "2026-12-07",
           "tasks": [
+            "ECON-02",
             "REWARD-02",
             "REWARD-03",
             "SHOP-01",
@@ -488,7 +508,7 @@
             "COS-03",
             "COS-05"
           ],
-          "output": "Seçim/atomik alım; modül prototipi ve iki ayrı sanat grubu."
+          "output": "Mevcut beş kanalda kaynak artışı, seçim/atomik alım; modül prototipi ve ayrı 6+4 sanat grubu; müzik A/B."
         },
         {
           "starts_on": "2026-12-08",
@@ -515,12 +535,20 @@
           "output": "Regresyon; 17 Aralık cihaz kabulü, 21 Aralık yayın hedefi."
         }
       ],
-      "development_policy": "15 Kasım 2026 güncel kararı: 2.4.0 yayımlandı; S1 otomatik takvimi 24 Kasım–22 Aralık 03.00 TR olarak canlıda hazır. 2.5.0 paketinin 21 Aralık yayın hedefi korunur. Reklam/satın alma kaynakları ve geçmiş işlem/iade hakları korunur; SDK’lar, native mağaza köprüsü ve BILLING/reklam izinleri pakete alınmaz; bu iş için ayrı 2.4.1 üretilmez. Sabit takım yardım metinleri başlangıca göre gün numaralarına çevrilir. Son AAB, TR/EN cihaz kabulü ve Console beyanları yayın kapısıdır. S1’in yayımlanmış kataloğu ve kullanılmış stoğu korunur. Kapanıştan sonra düzenleme/dinlenme arası vardır; 28 Aralık S2 yalnız koşullu hedeftir ve ayrıca operatör onayı gerekir. Paket yayını S2’yi açmaz. Ayrıntı: docs/planning/mobile-250-without-monetization.md.",
+      "development_policy": "16 Kasım 2026 güncel karar: 2.4.0 yayındadır; S1, 24 Kasım–22 Aralık 03.00 TR takviminde mevcut yayımlanmış katalogla sürer. 2.5.0 için 21 Aralık paket hazırlık hedefidir. Canlı sunucu geçişi S1 kapanışı ve ödül teslimi doğrulandıktan sonra yapılacak; 22 Aralık 03.00 TR öncesinde geçiş yoktur ve kesin bakım penceresi henüz belirlenmedi. S2, 28 Aralık koşullu hedefiyle ayrıca onaylanır; paket hazırlığı sezon açmaz. Reklam/satın alma kaynakları ve geçmiş işlem/iade hakları korunur; SDK, native mağaza köprüsü ve BILLING/reklam izinleri 2.5.0 paketine alınmaz. Son imzalı AAB, TR/EN cihaz kabulü ve Console beyanları yayın kapısıdır. Mevcut günlük/sezonluk emir, giriş, ücretsiz sezon yolu ve maç sonucunda Akı/kredi miktarları birlikte dengelenir; ayrı günlük/haftalık para desteği eklenmez. Yeni modül destek değil, saldırı adayı Geri Tepme Topudur; aktif katalog kapıları tamamlanmadan açılmaz. ECON-01 ortak cüzdan/parça modeli ve ECON-02 beş kanallı sürümlü para teslimi yerel dalda hazır; yeni miktarlar sürüm/yürürlük/onaylı dönem kapısındadır. REWARD-02 haftalık kazanım/sabit seçenek/tek teslim API katmanı ve UI-03 özgün petrol/fildişi/bakır Mühendis Kasası seçim/açılış ekranı yerel dalda hazır; Ödüller ve Mesaj Kutusu aynı kazanılmış hakka gider. Genel kapanış/aktarım REWARD-03 ve fiziksel cihaz kabulü açıktır. Mağaza, son denge, sanat/ses ve cihaz/yayın kabulü açıktır. Ek efor 30 Kasım kapasite kontrolünde ölçülür.",
       "planned_release_notes": [
         "Takım turnuvasının eski Pazartesi–Çarşamba / Perşembe / Cuma–Pazar yardım metinleri, operatör başlangıcına göre ilk üç gün kayıt, 4. gün eşleşme ve 5–7. gün maç olarak TR/EN güncellenecek. Kurallar, kayıt uyarıları ve boş durum mesajları yeni S1 takvimiyle aynı olacak.",
         "Reklam ve satın alma kaynakları depoda korunacak; 2.5.0 paketine AdMob/Native Purchases SDK’ları, native mağaza köprüsü ve BILLING/reklam izinleri alınmayacak.",
-        "S1’in canlıda yayımlanmış katalogları, kullanılmış kozmetik stoğu ve kazanılmış hakları sonraki sunucu geçişinde korunacak; paket yayını S2’yi otomatik başlatmayacak."
-      ]
+        "S1’in canlıda yayımlanmış katalogları, kullanılmış kozmetik stoğu ve kazanılmış hakları sonraki sunucu geçişinde korunacak; paket yayını S2’yi otomatik başlatmayacak.",
+        "Günlük/sezonluk Devre Emirleri, giriş, ücretsiz sezon yolu ve maç sonucu Akı/Devre Kredisi miktarları ücretsiz/reklamsız oyun için birlikte artırılacak; kesin tutarlar ekonomik denge kabulüyle belirlenecek. Sezonluk değişiklikler yeni onaylı dönemde geçerli olacak.",
+        "S2 yeni modülünün saldırı adayı Geri Tepme Topu: kendi güçlü atışı karşılığında kendi CAN bedeli. Destek tasarımı Yankı Rölesi ana paketten çıkarıldı; yeni modül henüz aktif değildir."
+      ],
+      "server_transition_policy": {
+        "after_season_number": 1,
+        "not_before": "2026-12-22T00:00:00Z",
+        "requires_closeout_acceptance": true,
+        "exact_window_status": "not_scheduled"
+      }
     },
     {
       "version": "2.6.0",

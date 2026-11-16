@@ -9,10 +9,10 @@ from pathlib import Path
 
 if __package__:
     from tools.development_checklist import ROOT, BACKLOG, CHECKLIST, repository_path, validate as validate_backlog
-    from tools.release_calendar import SOURCE, validate as validate_calendar, maintenance_summary, season_timing_note, publication_label
+    from tools.release_calendar import SOURCE, validate as validate_calendar, maintenance_summary, season_timing_note, publication_label, transition_policy_summary
 else:
     from development_checklist import ROOT, BACKLOG, CHECKLIST, repository_path, validate as validate_backlog
-    from release_calendar import SOURCE, validate as validate_calendar, maintenance_summary, season_timing_note, publication_label
+    from release_calendar import SOURCE, validate as validate_calendar, maintenance_summary, season_timing_note, publication_label, transition_policy_summary
 
 INDEX = ROOT / 'docs/GRIDSHARD_SURUM_UYGULAMA_REHBERI_20261104.md'
 
@@ -91,7 +91,7 @@ def render_brief(release, backlog):
              link(CHECKLIST.relative_to(ROOT).as_posix(), output, 'Ortak checklist') + ' · ' +
              link('docs/GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md', output, 'Takvim ve ödül kararları'), '',
              f"**Geliştirme:** {release['work_starts_on']} → kapsam kapanışı {release['scope_freezes_on']}. "
-             f"**Kabul testi:** {release['tests_start_on']}. **Yayın:** {release['target_release_on']} ({publication_label(release)}).", '',
+             f"**Kabul testi:** {release['tests_start_on']}. **{'Paket hazırlık hedefi' if release.get('server_transition_policy') else 'Yayın'}:** {release['target_release_on']} ({publication_label(release)}).", '',
              f"**S{release['season']['number']}:** {release['season']['starts_on']} → {release['season']['ends_on']} "
              '(bitiş hariç), 03.00 Türkiye saati. Paket yayını ve sezon açılışı ayrı kararlardır. '
              + '**Takvim durumu:** ' + season_timing_note(release['season']) + '.', '',
@@ -106,6 +106,9 @@ def render_brief(release, backlog):
     if release.get('server_transition'):
         position=lines.index('## Oyuncuya teslim ve sınır')
         lines[position:position]=[maintenance_summary(release),'']
+    if release.get('server_transition_policy'):
+        position=lines.index('## Oyuncuya teslim ve sınır')
+        lines[position:position]=[transition_policy_summary(release),'']
     if release.get('development_policy'):
         position=lines.index('## Oyuncuya teslim ve sınır')
         lines[position:position]=['**Geliştirme ve yayın kararı:** '+release['development_policy'],'']
@@ -158,8 +161,9 @@ def render_brief(release, backlog):
 
 def render_index(releases, backlog):
     lines = ['# GRIDSHARD — sürümlere göre bağlı uygulama rehberi', '',
-             '**4 Kasım 2026.** 3 Kasım takvimi ve ürün yönü korunur. İlk çalışma 2.4.0; '
-             'sarı geri/ileri kontrolleri, saldırı/çekirdek sesleri, Topla kasa açılışı ve XP emirleri bu paketin zorunlu kapsamına eklendi. '
+             f"**Plan güncellemesi: {backlog.get('planning_updated_on', 'kayıtsız')}.** "
+             f"Aktif çalışma {backlog.get('active_development', {}).get('target_version', 'belirlenmedi')}; "
+             'güncel tasarım/üretim ve ücretsiz ekonomi kararları sürüm briefiyle bağlıdır. Önceki S1 sözleşmesi: '
              + link('docs/planning/season-1-rewards-and-xp.md', INDEX, 'S1 ödül ve XP sözleşmesi') + '.', '',
              '## Kullanım ve tek kaynak düzeni', '',
              '1. Takvimden sürümü aç; aşağıdaki ayrıntılı brief içinden iş sırasını, uygulama adımlarını ve dosyaları takip et.',
@@ -181,7 +185,9 @@ def render_index(releases, backlog):
     for r in releases:
         note = season_timing_note(r['season'])
         timing = f' ({note})' if note else ''
-        lines.append(f"| {link(r['delivery_document'], INDEX, r['version'])} | {r['content']} | {r['work_starts_on']} | {r['scope_freezes_on']} | {r['tests_start_on']} | {r['target_release_on']} ({publication_label(r)}) | S{r['season']['number']}: {r['season']['starts_on']}, 03.00 TR{timing} |")
+        target = r['target_release_on'] + f" ({publication_label(r)})"
+        if r.get('server_transition_policy'): target += ' paket hazırlığı; canlı S1 sonrası'
+        lines.append(f"| {link(r['delivery_document'], INDEX, r['version'])} | {r['content']} | {r['work_starts_on']} | {r['scope_freezes_on']} | {r['tests_start_on']} | {target} | S{r['season']['number']}: {r['season']['starts_on']}, 03.00 TR{timing} |")
     for r in releases:
         if r.get('server_transition'):lines+=['',maintenance_summary(r)]
     lines += ['', '## Kapasite ve karar sınırları', '',

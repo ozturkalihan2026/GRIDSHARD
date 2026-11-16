@@ -27,6 +27,7 @@ PERSISTENT_TABLES = (
     "telemetry_events",
     "battle_results", "battle_participant_results",
     "player_economic_operations",
+    "player_reward_entitlements",
 )
 
 

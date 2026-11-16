@@ -14,7 +14,7 @@
     {
       "season_offset": 1,
       "status": "planned",
-      "modules": [{"id": "echo_relay", "name_tr": "Yankı Rölesi", "category": "taktik", "job": "Bir silahın sonraki atışını düşük güçlü ikinci bir vuruşla tekrarlar.", "feedback": "Silah üzerinde tek yankı yükü; ikinci mermi ayrı görünür.", "counterplay": "Ek vuruş tek isabetlik kalkanı tüketebilir; destek yok edilerek yeni yük engellenir.", "arena_unlock": 3}]
+      "modules": [{"id": "recoil_cannon", "name_tr": "Geri Tepme Topu", "category": "saldırı", "job": "Kendi güçlü doğrudan atışı karşılığında kendi CAN'ından sabit geri tepme bedeli öder.", "feedback": "Tek ağır mermi, mekanik piston ve ayrı kendi CAN aşınması; dost silaha destek vermez.", "counterplay": "EMP ateşi durdurur; kalkan/zırh hasarı karşılar, aşınmış gövde normal saldırıyla yok edilir. Kendi CAN kaybı V8 Akım geliri üretmez.", "arena_unlock": 3}]
     },
     {
       "season_offset": 2,

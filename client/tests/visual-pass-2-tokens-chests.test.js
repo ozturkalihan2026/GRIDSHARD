@@ -102,7 +102,7 @@ test("ödül satırlarının simgeleri aynı çizimi kullanır", () => {
 
 test("sabit sayfadaki simgeler koddaki çizimle aynıdır", () => {
   const sandbox = tokenSandbox();
-  const expected = { flux: 1, credit: 2, current: 2, experience: 1, trophy: 1, team_point: 1 };
+  const expected = { flux: 2, credit: 2, current: 2, experience: 1, trophy: 1, team_point: 1 };
   for (const [kind, count] of Object.entries(expected)) {
     const markup = sandbox.resourceTokenMarkup(kind, "i");
     assert.equal(html.split(markup).length - 1, count, `${kind}: sayfada ${count} kez olmalı`);

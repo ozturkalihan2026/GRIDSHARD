@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "release": "2.5.0",
+  "planning_only": true,
+  "runtime_changed": false,
+  "sample_count": 8,
+  "deck": ["laser", "pulse_cannon", "shield", "armor", "repair", "amplifier"],
+  "deck_target_level": 5,
+  "mixed_deck": ["laser", "railgun", "shield", "barrier", "repair", "emp"],
+  "core_type_id": "core_resonance",
+  "core_target_level": 5,
+  "buy_first_talents": true,
+  "initial_wallet": {"circuit_credits": 0, "flux_shards": 0},
+  "include_starter_laser_pieces": true,
+  "guaranteed_offer_candidate": {
+    "currency": "circuit_credits",
+    "price": 500,
+    "purchases_per_utc_week": 2,
+    "pieces_by_rarity": {"common": 12, "rare": 6, "epic": 3, "legendary": 1},
+    "target_strategy": "server_hash_player_week_from_eligible_pool_frozen_before_purchase",
+    "source": "eligible_owned_arena_pool_only",
+    "status": "tuning_candidate_not_live"
+  },
+  "choice_crate_candidate": {
+    "completed_qualified_battles_per_utc_week": 12,
+    "rights_per_utc_week": 1,
+    "pieces_by_rarity": {"common": 20, "rare": 10, "epic": 4, "legendary": 2},
+    "options": ["saldırı", "savunma", "taktik"],
+    "target_selection": "server_hash_of_player_week_and_class_from_eligible_pool_frozen_at_earn",
+    "status": "tuning_candidate_not_live"
+  },
+  "new_module": {
+    "id": "recoil_cannon",
+    "rarity": "rare",
+    "arena_unlock": 3,
+    "ownership_rule": "arena_unlock_level_1_no_shard_purchase",
+    "activation": "planned_until_runtime_art_balance_and_free_acquisition_gates_pass"
+  },
+  "spend_priority": ["deck_upgrades_round_robin", "core_upgrades", "first_deck_talents", "first_core_talent"],
+  "exclude": ["ads", "new_premium", "competition_awards", "donations", "one_off_road_awards", "extra_legacy_nested_road_chests"],
+  "fixed_rating_is_not_a_new_account_journey": true
+}

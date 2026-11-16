@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "minimum_server_version": "2.5.0",
+  "earliest_effective_at": "2026-12-22T00:00:00Z",
+  "approved_seasons": [],
+  "match_rewards": {
+    "credit_multiplier_numerator": 3,
+    "credit_multiplier_denominator": 2,
+    "flux_per_completed_battle": 2,
+    "daily_flux_battle_cap": 6,
+    "increase_xp": false,
+    "increase_chest_or_trophy_rewards": false
+  },
+  "engineer_choice": {
+    "revision": 1,
+    "completed_qualified_battles_per_utc_week": 12,
+    "rights_per_utc_week": 1,
+    "pieces_by_rarity": {
+      "common": 20,
+      "rare": 10,
+      "epic": 4,
+      "legendary": 2
+    },
+    "options": [
+      "saldırı",
+      "savunma",
+      "taktik"
+    ],
+    "target_selection": "server_hash_of_player_week_and_class_from_eligible_pool_frozen_at_earn",
+    "status": "tuning_candidate_not_live"
+  }
+}

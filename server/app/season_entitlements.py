@@ -71,6 +71,9 @@ def freeze_earned(profile):
             if tier in claimed:
                 continue  # Do not invent a new right for an old completed claim.
             source = deepcopy(base) if premium else period_reward('season_road', profile.active_meta_season_id, tier, base)
+            if not premium:
+                from .free_economy_rewards import currency_reward
+                source = currency_reward(profile,'season_road',profile.active_meta_season_id,tier,source)
             reward = _profile_reward_identity(profile, source,
                 f'{"season-premium" if premium else "season"}:{profile.active_meta_season_id}:{profile.player_id}:{tier}')
             count = 0 if fixed or not reward.get('chest_tier') else int(reward.get('chest_count', 0) if premium else 1)

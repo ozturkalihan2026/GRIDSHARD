@@ -13,7 +13,7 @@
     "server/app/liveops_content.py": "8afb6822266a012f624b3a649bc6e1caa65fb43802e75516aedd5e64043cdcac",
     "server/app/cosmetic_releases.py": "12a8c1ec82a5e2567a62c5c28b145db1265ed87b369252950cdf022aa5a2aa83",
     "server/app/first_season_profile.py": "a5a66f74dda01b7750752eb928e2b5960d4d2aecaa6a34f75658ef96b91d79e0",
-    "docs/planning/release_calendar_v1.json": "bbe387475003a5f4c70243e950d5ef2e81977af79a7e45f4d5c7d4e2046191d6",
+    "docs/planning/release_calendar_v1.json": "6dfb571084c28c726431d9207605ba53257712a243ec219ef468e7ade8a9d106",
     "tools/prepare_first_season.py": "3ee023ef85e8fbb1a9b2155513dcd33e9eee770765b01a9828d6c6c04b1a97cd"
   },
   "season_calendar": {

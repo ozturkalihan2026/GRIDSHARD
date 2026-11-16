@@ -23,7 +23,7 @@ from .text_safety import public_name_rejection
 from .competition_cycle import CYCLE_EPOCH, CYCLE_LENGTH, competition_cycle, cycle_for_id
 from .cosmetic_releases import period_reward
 from .competition_control import launch_status, configured_start, owner_account, competition_eligible
-from . import season_missions
+from . import season_missions, free_economy_rewards as free_economy
 from .season_competition import LEADERBOARD_PRIZES, TEAM_PRIZES, WEEKLY_PRIZES
 from .game.battle_pool import default_battle_pool, validate_battle_pool
 from .store_catalog import BATTLE_PREMIUM_BONUS_PERCENT, PRODUCTS_BY_ID, price_label_tr
@@ -451,6 +451,8 @@ class PlayerProfile:
     # Idempotency receipts for reward buttons.  A lost HTTP response must not
     # turn a successful claim into a permanent "doğrulanıyor"/duplicate error.
     engagement_claim_receipts: dict[str, dict] = field(default_factory=dict)
+    free_economy_state: dict = field(default_factory=dict)
+    reward_choice_state: dict = field(default_factory=dict)
     # Notification acknowledgements are persisted so a page refresh cannot
     # dismiss a newly unlocked reward or cosmetic.
     seen_notification_keys: tuple[str, ...] = ()
@@ -718,6 +720,9 @@ class PlayerProfile:
         def reward_view(reward: dict, kind: str, identity: int) -> dict:
             if kind == "tiers":
                 reward = period_reward("season_road", self.active_meta_season_id, identity, reward)
+            if kind in {'tiers','login'}:
+                reward = free_economy.currency_reward(self,'season_road' if kind=='tiers' else 'login',
+                    self.active_meta_season_id if kind=='tiers' else self.login_period_id,identity,reward)
             seed = (
                 f"login:{self.login_period_id}:{self.player_id}:{identity}"
                 if kind == "login"
@@ -747,6 +752,8 @@ class PlayerProfile:
                 None,
             )
             if previous:
+                for key in ('circuit_credits','flux_shards','economy_definition_id','economy_revision','economy_content_hash'):
+                    if key in previous: result[key] = previous[key]
                 # Alınmış ödül, alındığı andaki kartı ve miktarı gösterir.
                 for key in ("module_definition_id", "core_type_id", "module_shards", "avatar_id", "avatar_frame_id", "profile_background_id", "emoji_id", "cosmetic_release_id", "cosmetic_release_hash"):
                     if previous.get(key):
@@ -780,10 +787,11 @@ class PlayerProfile:
             )["current"]["title_tr"],
             "unlocked_titles": list(self.unlocked_titles),
             "daily_mission_day": self.daily_mission_day,
-            **season_missions.view(self, moment=datetime.now(timezone.utc), active=season["active"]),
+            **season_missions.view(self, moment=datetime.now(timezone.utc), active=season["active"],day_key=self.daily_mission_day),
             "daily_missions": [
                 {
-                    **mission,
+                    **free_economy.daily_row(self,mission),
+                    "season_xp_reward": mission["season_xp_reward"] if season["active"] else 0,
                     "progress": min(
                         mission["target"],
                         int(self.daily_mission_progress.get(mission["id"], 0)),
@@ -1198,15 +1206,17 @@ class PlayerProfileService:
         day_key: str | None = None,
     ) -> None:
         current_day = day_key or utc_day_key(self.now())
-        season_missions.settle_earned(profile, before_day=current_day)
+        season_missions.settle_earned(profile, before_day=current_day, moment=self.now())
         if profile.daily_mission_day == current_day:
             return
+        free_economy.settle_daily(profile,moment=self.now(),active=launch_status(self.now())['active'],missions=DAILY_MISSIONS)
         profile.daily_mission_day = current_day
         profile.daily_mission_progress = {
             mission["id"]: 0
             for mission in DAILY_MISSIONS
         }
         profile.claimed_daily_missions = ()
+        free_economy.start_daily(profile,current_day,moment=self.now(),mission_ids=[m['id'] for m in DAILY_MISSIONS])
 
     def _sync_login_period(self, profile: PlayerProfile) -> None:
         """Giriş takvimi sezonla aynı döngüdür: 28 gün, Pazartesi başlar."""
@@ -1217,16 +1227,23 @@ class PlayerProfileService:
             profile.login_period_day_count = len(LOGIN_PERIOD_REWARDS)
             return
         cycle = competition_cycle(now)
+        free_economy.pin_season(profile,cycle['id'],moment=now)
         if profile.login_period_id != cycle["id"]:
             profile.login_period_id = cycle["id"]
             profile.claimed_login_period_days = tuple(range(1, 29)) if owner_account(profile.player_id) else ()
         profile.login_period_day = (now - cycle["starts_at"]).days + 1
         profile.login_period_day_count = len(LOGIN_PERIOD_REWARDS)
+        if profile.login_period_day not in profile.claimed_login_period_days:
+            free_economy.currency_reward(profile,'login',profile.login_period_id,profile.login_period_day,
+                LOGIN_PERIOD_REWARDS[profile.login_period_day-1],earned_at=self.now())
 
     def claim_login_reward(self, player_id: str, day: int, request_id: str | None = None) -> dict:
         profile = self.get_or_create(player_id)
         if request_id and request_id in profile.engagement_claim_receipts:
-            return dict(profile.engagement_claim_receipts[request_id])
+            previous=profile.engagement_claim_receipts[request_id]
+            if previous.get('kind')!='login' or previous.get('day')!=day:
+                raise PlayerProfileError('Talep kimliği farklı bir ödüle ait.')
+            return dict(previous)
         if not launch_status(self.now())["active"]:
             raise PlayerProfileError("Sezon henüz başlamadı.")
         self._sync_login_period(profile)
@@ -1236,7 +1253,7 @@ class PlayerProfileService:
             raise PlayerProfileError("Bugünün giriş ödülü daha önce alındı.")
         reward = _profile_reward_identity(
             profile,
-            LOGIN_PERIOD_REWARDS[day - 1],
+            free_economy.currency_reward(profile,'login',profile.login_period_id,day,LOGIN_PERIOD_REWARDS[day-1]),
             f"login:{profile.login_period_id}:{profile.player_id}:{day}",
         )
         module_id = reward["module_definition_id"]
@@ -1256,6 +1273,7 @@ class PlayerProfileService:
             **reward,
             "kind": "login",
             "period": profile.login_period_id,
+            **free_economy.complete_currency(profile,'login',profile.login_period_id,f'{day}.currency',moment=self.now()),
         }
         if request_id:
             profile.engagement_claim_receipts[request_id] = dict(receipt)
@@ -1301,6 +1319,7 @@ class PlayerProfileService:
                 int(profile.daily_mission_progress.get(mission_id, 0))
                 + increments[mission_id],
             )
+        free_economy.mark_daily(profile,moment=self.now(),active=launch_status(self.now())['active'],missions=DAILY_MISSIONS)
         return profile
 
     def claim_season_mission(self, player_id, mission_id, *, season_id, day_key, request_id):
@@ -1326,6 +1345,9 @@ class PlayerProfileService:
     ) -> PlayerProfile:
         profile = self.get_or_create(player_id, day_key=day_key)
         if request_id and request_id in profile.engagement_claim_receipts:
+            previous=profile.engagement_claim_receipts[request_id]
+            if previous.get('kind')!='missions' or previous.get('mission_id')!=mission_id:
+                raise PlayerProfileError('Talep kimliği farklı bir ödüle ait.')
             return profile
         self._sync_daily_missions(profile, day_key)
         mission = next(
@@ -1334,13 +1356,14 @@ class PlayerProfileService:
         )
         if mission is None:
             raise PlayerProfileError("Bilinmeyen günlük görev.")
-        if mission_id in profile.claimed_daily_missions:
+        if mission_id in profile.claimed_daily_missions and not free_economy.preview(profile,'daily_orders',profile.daily_mission_day,mission_id):
             raise PlayerProfileError("Bu görev ödülü daha önce alındı.")
         if profile.daily_mission_progress.get(mission_id, 0) < mission["target"]:
             raise PlayerProfileError("Görev henüz tamamlanmadı.")
-        if launch_status(self.now())["active"]:
-            profile.season_xp += int(mission["season_xp_reward"])
-        profile.flux_shards += int(mission["flux_shard_reward"])
+        currency=free_economy.claim_daily(profile,mission,moment=self.now(),active=launch_status(self.now())['active'])
+        if currency is None:
+            if launch_status(self.now())["active"]: profile.season_xp += int(mission["season_xp_reward"])
+            profile.flux_shards += int(mission["flux_shard_reward"])
         profile.claimed_daily_missions = tuple(
             sorted({*profile.claimed_daily_missions, mission_id})
         )
@@ -1349,6 +1372,7 @@ class PlayerProfileService:
                 "kind": "missions",
                 "mission_id": mission_id,
                 "day": profile.daily_mission_day,
+                **(currency or {}),
             }
         return profile
 

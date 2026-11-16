@@ -2375,6 +2375,7 @@
     "arena.node_title": {tr:"{trophies} Kupa{reward}", en:"{trophies} trophies{reward}"},
     "arena.node_reward_suffix": {tr:" · {description}", en:" · {description}"},
     "arena.reward_credits": {tr:"{amount} Devre Kredisi", en:"{amount} Circuit Credits"},
+    "economy.daily_flux_matches": {tr:"Günlük maç: {count}/{cap}", en:"Daily matches: {count}/{cap}"},
     "arena.reward_flux": {tr:"{amount} Akı", en:"{amount} Flux"},
     "arena.reward_module_shards": {tr:"{amount} Modül Parçası", en:"{amount} Module Shards"},
     "arena.reward_targeted_shards": {tr:"{name} · {amount} Modül Parçası", en:"{name} · {amount} Module Shards"},

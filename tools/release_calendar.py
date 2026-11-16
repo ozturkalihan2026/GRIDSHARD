@@ -31,6 +31,19 @@ def validate(document):
             raise ValueError('Backlog and calendar release dates differ: ' + version)
         if plans[version].get('server_transition') != release.get('server_transition'):
             raise ValueError('Backlog and calendar maintenance windows differ: '+version)
+        policy = release.get('server_transition_policy')
+        if plans[version].get('server_transition_policy') != policy:
+            raise ValueError('Backlog and calendar transition policies differ: '+version)
+        if policy:
+            prior = next((r for r in releases if r['season']['number'] == policy['after_season_number']), None)
+            if prior is None or prior['season']['number'] >= release['season']['number']:
+                raise ValueError('Transition policy requires an earlier season: '+version)
+            earliest = datetime.fromisoformat(policy['not_before'].replace('Z','+00:00'))
+            season_end = datetime.fromisoformat(prior['season']['ends_on']+'T'+prior['season']['starts_at_utc']+':00+00:00')
+            if (earliest.tzinfo is None or earliest < season_end
+                    or policy['requires_closeout_acceptance'] is not True
+                    or policy['exact_window_status'] != 'not_scheduled'):
+                raise ValueError('Server transition must follow accepted season closeout: '+version)
         maintenance=release.get('server_transition')
         if maintenance:
             start=datetime.fromisoformat(maintenance['starts_at'].replace('Z','+00:00'))
@@ -93,6 +106,15 @@ def publication_label(release):
     return 'yayımlandı' if release.get('publication_status') == 'published' else release['confidence']
 
 
+def transition_policy_summary(release):
+    policy = release.get('server_transition_policy')
+    if not policy: return ''
+    local = datetime.fromisoformat(policy['not_before'].replace('Z','+00:00')).astimezone(timezone(timedelta(hours=3)))
+    return (f"**Canlı sunucu geçişi:** S{policy['after_season_number']} kapanışı ve ödül teslimi "
+            f"doğrulandıktan sonra; en erken {local.strftime('%d.%m.%Y %H.%M')} TR. "
+            'Kesin bakım penceresi henüz belirlenmedi. Paket hazırlık hedefi canlı geçiş tarihi değildir.')
+
+
 def render(document, releases):
     display = lambda value: date.fromisoformat(value).strftime('%d.%m.%Y')
     rows = [START]
@@ -107,7 +129,9 @@ def render(document, releases):
         label = f"[{r['version']}](planning/releases/{r['version']}.md)" if r.get('delivery_document') else r['version']
         note = season_timing_note(r['season'])
         timing = f" ({note})" if note else ''
-        rows.append(f"| **{label}** | {display(r['work_starts_on'])}–{display(r['scope_freezes_on'])} | {display(r['scope_freezes_on'])} | **{display(r['target_release_on'])}** | {display(r['season']['starts_on'])}, 03.00 TR{timing} | {r['content']} | {publication_label(r)} |")
+        target = f"**{display(r['target_release_on'])}**"
+        if r.get('server_transition_policy'): target += ' paket hazırlığı; canlı S1 sonrası'
+        rows.append(f"| **{label}** | {display(r['work_starts_on'])}–{display(r['scope_freezes_on'])} | {display(r['scope_freezes_on'])} | {target} | {display(r['season']['starts_on'])}, 03.00 TR{timing} | {r['content']} | {publication_label(r)} |")
     rows += ['', '| Sezon | Başlangıç — bitiş (bitiş hariç) | Modül planı |', '| --- | --- | --- |']
     for r in releases:
         s = r['season']
@@ -116,6 +140,7 @@ def render(document, releases):
         rows.append(f"| S{s['number']} | {display(s['starts_on'])}–{display(s['ends_on'])}, 03.00 TR{note} | {s['module']} |")
     for r in releases:
         if r.get('server_transition'):rows+=['',maintenance_summary(r)]
+        if r.get('server_transition_policy'):rows+=['',transition_policy_summary(r)]
     rows += ['', END]
     return '\n'.join(rows)
 

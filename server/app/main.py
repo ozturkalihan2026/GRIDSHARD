@@ -23,6 +23,10 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, Res
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .production_config import environment_secret, production_endpoints
+from . import reward_choices
+from .postgres_reward_entitlements import PostgresRewardEntitlements
+from .reward_entitlements import RewardEntitlementError
+from .reward_definitions import RewardDefinitionError
 from .competition_control import competition_eligible, launch_status, minimum_participants, configured_start, first_season_bots, ranking_eligible
 from .competition_cycle import weekly_cycle
 from .client_compatibility import health_release_fields
@@ -403,6 +407,8 @@ async def application_lifespan(_app: FastAPI):
     reconcile_stop = asyncio.Event()
     reconcile_task = None
     try:
+        from .free_economy_rewards import cutover
+        cutover()  # Reject an invalid 2.5 rollout before accepting mutations.
         if postgres_pool is not None:
             await asyncio.to_thread(postgres_pool.open)
             if RUNTIME_STRICT:
@@ -826,9 +832,10 @@ def process_completed_pvp_battle(state) -> None:
     player_statistics_service.process_finished_battle(
         state
     )
-    player_progression_service.process_finished_battle(
+    progression_applied=player_progression_service.process_finished_battle(
         state
     )
+    if progression_applied:_record_engineer_choices(state,player_profile_service.now())
     telemetry_service.ingest_finished_battle(
         state
     )
@@ -1044,6 +1051,7 @@ ECONOMIC_OPERATIONS = frozenset({
     "unlock_player_core_skill", "upgrade_player_core", "choose_player_module_talent",
     "reset_player_module_talents", "claim_daily_mission_reward", "claim_login_period_reward",
     "claim_season_tier_reward", "claim_premium_season_tier_reward", "claim_season_mission_reward",
+    "claim_player_reward_choice",
 })
 
 
@@ -1142,6 +1150,17 @@ def _pending_results_barrier():
     yield
 
 
+def _choice_repository():
+    return PostgresRewardEntitlements(postgres_pool) if RUNTIME_STRICT else None
+
+
+def _record_engineer_choices(state,moment):
+    if not reward_choices.economy.enabled(moment):return
+    for owner in state.account_player_ids or tuple(state.players):
+        reward_choices.record_battle(player_profile_service.get_or_create(owner),state,moment=moment,
+            secret=participant_auth_service.signing_key,repository=_choice_repository())
+
+
 def _process_durable_battle_result(state, *, replaying=False) -> None:
     if state.match_type == "local_test":
         telemetry_service.ingest_finished_battle(state)
@@ -1171,6 +1190,7 @@ def _process_durable_battle_result(state, *, replaying=False) -> None:
                         player_progression_service.process_finished_battle(
                             state, completed_at=entry["completed_at"],
                         )
+                        _record_engineer_choices(state,entry['completed_at'])
                         if state.match_type == "team_tournament":
                             _record_team_tournament_leg(state)
                         _complete_social_battle_invites(state.battle_id)
@@ -1347,6 +1367,12 @@ class ProfileCosmeticsRequest(BaseModel):
 class MetaOperationRequest(BaseModel):
     model_config = {"extra": "forbid"}
     request_id: str
+
+
+class RewardChoiceClaimRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    request_id: str = Field(min_length=1,max_length=160)
+    option_id: str = Field(pattern=r'^(attack|defense|tactical)$')
 
 
 class SeasonMissionClaimRequest(BaseModel):
@@ -5251,6 +5277,44 @@ def get_profile(
 def get_player_meta_progression(player_id: str) -> dict:
     profile = player_profile_service.get_or_create(player_id)
     return meta_progression_service.view(profile)
+
+
+@app.get('/profile/{player_id}/reward-choices')
+@persistent_operation
+def get_player_reward_choices(player_id: str,limit: int=20,after: str | None=None) -> dict:
+    profile=_team_member_profile(player_id)
+    try:
+        return reward_choices.view(profile,moment=player_profile_service.now(),limit=limit,after=after,repository=_choice_repository())
+    except (reward_choices.RewardChoiceError,RewardEntitlementError,RewardDefinitionError) as exc:
+        raise HTTPException(status_code=422,detail=str(exc)) from exc
+
+
+@app.get('/profile/{player_id}/reward-choices/{entitlement_id}')
+@persistent_operation
+def get_player_reward_choice(player_id: str,entitlement_id: str) -> dict:
+    profile=_team_member_profile(player_id)
+    try:item=reward_choices.get(profile,entitlement_id,repository=_choice_repository())
+    except (reward_choices.RewardChoiceError,RewardEntitlementError,RewardDefinitionError) as exc:
+        raise HTTPException(status_code=422,detail=str(exc)) from exc
+    if item is None:raise HTTPException(status_code=404,detail='Bu hesaba ait seçim hakkı bulunamadı.')
+    return dict(reward_choice=reward_choices.public(item),reward_choice_receipt=item['receipt'])
+
+
+@app.post('/profile/{player_id}/reward-choices/{entitlement_id}/claim')
+@persistent_operation
+def claim_player_reward_choice(player_id: str,entitlement_id: str,request: RewardChoiceClaimRequest) -> dict:
+    profile=_team_member_profile(player_id)
+    try:
+        repository=_choice_repository()
+        if reward_choices.get(profile,entitlement_id,repository=repository) is None:
+            raise HTTPException(status_code=404,detail='Bu hesaba ait seçim hakkı bulunamadı.')
+        receipt=reward_choices.claim(profile,entitlement_id,request.option_id,request_id=request.request_id,
+            moment=player_profile_service.now(),repository=repository,
+            persist=(lambda:persist_player_data(player_id)) if RUNTIME_STRICT else None)
+        if not RUNTIME_STRICT:persist_player_data(player_id)
+        return dict(profile=profile.to_view(),reward_choice_receipt=receipt)
+    except (reward_choices.RewardChoiceError,RewardEntitlementError,RewardDefinitionError) as exc:
+        raise HTTPException(status_code=422,detail=str(exc)) from exc
 
 
 @app.post("/profile/{player_id}/meta-progression/arena/{node_id}/claim")

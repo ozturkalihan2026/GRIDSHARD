@@ -16,6 +16,9 @@ import pytest
 from app.clean_install import ensure_clean_postgres_installation
 from app.postgres_repository import PostgresPool
 from app.postgres_worker_guard import WORKER_LOCK_ID
+from app.postgres_reward_entitlements import PostgresRewardEntitlements
+from app.reward_definitions import seal
+from datetime import datetime, timezone
 
 spec = importlib.util.spec_from_file_location("server_backup_tool", Path(__file__).resolve().parents[2] / "tools" / "server_backup.py")
 backup_tool = importlib.util.module_from_spec(spec)
@@ -58,6 +61,10 @@ def test_real_backup_restore_preserves_installation_schema_and_pending_results(e
     with pool.connection() as connection:
         connection.execute("INSERT INTO player_data (player_id, profile, statistics, settings) VALUES ('restore-player', '{\"credits\":777}', '{}', '{}')")
         connection.execute("INSERT INTO battle_results (battle_id, input_hash, status, account_player_ids, match_type, terminal, summary, completed_at) VALUES ('restore-battle', %s, 'pending', ARRAY['restore-player'], 'ranked_pvp', '{\"pending\":true}', '{}', NOW())", ("a" * 64,))
+    with pool.transaction():
+        pending=PostgresRewardEntitlements(pool).earn(player_id='restore-player',source='choice_crate',period_id='closed-season',
+            node_id='backup-proof',earned_at=datetime(2026,11,16,tzinfo=timezone.utc),
+            definition_snapshot=seal(identity='test.backup',revision=1,kind='fixed',payload={'flux_shards':50}))['record']
     try:
         with tempfile.TemporaryDirectory(prefix="gridshard-restore-drill-") as directory:
             path = Path(directory)
@@ -69,9 +76,11 @@ def test_real_backup_restore_preserves_installation_schema_and_pending_results(e
             assert metadata["installation_id"] == installation
             restored = backup_tool.restore(target, path / "backup", path / "runtime", installation, pg_bin)
             assert restored["counts"]["player_data"] == restored["counts"]["battle_results"] == 1
+            assert restored['counts']['player_reward_entitlements']==1
             with psycopg.connect(target) as connection:
                 assert connection.execute("SELECT profile ->> 'credits' FROM player_data").fetchone()[0] == "777"
                 assert connection.execute("SELECT status FROM battle_results").fetchone()[0] == "pending"
+                assert connection.execute('SELECT earned_document FROM player_reward_entitlements').fetchone()[0]==pending
             assert json.loads((path / "runtime" / ".gridshard-installation.json").read_text())["installation_id"] == installation
             with pytest.raises(backup_tool.BackupError, match="boş veritabanında"):
                 backup_tool.restore(target, path / "backup", path / "other-runtime", installation, pg_bin)
@@ -80,4 +89,33 @@ def test_real_backup_restore_preserves_installation_schema_and_pending_results(e
             with pytest.raises(backup_tool.BackupError, match="özet"):
                 backup_tool.restore(target, path / "backup", path / "other-runtime", installation, pg_bin)
     finally:
+        pool.close()
+
+
+def test_schema_014_backup_restores_before_the_additive_reward_migration(empty_database_pair):
+    (source,target),pg_bin=empty_database_pair
+    pool=PostgresPool(source);pool.open()
+    installation=ensure_clean_postgres_installation(pool)
+    from app.postgres_repository import MIGRATIONS_DIR
+    with pool.connection() as connection:
+        connection.execute((MIGRATIONS_DIR/'015_reward_entitlements.down.sql').read_text(encoding='utf-8'))
+        connection.execute("DELETE FROM schema_migrations WHERE version='015'")
+        connection.execute("INSERT INTO player_data (player_id,profile,statistics,settings) VALUES ('legacy-backup','{\"credits\":1234}','{}','{}')")
+    upgraded=None
+    try:
+        with tempfile.TemporaryDirectory(prefix='gridshard-legacy-reward-restore-') as directory:
+            path=Path(directory)
+            metadata=backup_tool.backup(source,path/'backup',pg_bin)
+            assert 'player_reward_entitlements' not in metadata['counts']
+            result=backup_tool.restore(target,path/'backup',path/'runtime',installation,pg_bin)
+            assert result['counts']==metadata['counts']
+            with psycopg.connect(target) as connection:
+                assert connection.execute("SELECT to_regclass('public.player_reward_entitlements')").fetchone()[0] is None
+                assert connection.execute("SELECT profile FROM player_data WHERE player_id='legacy-backup'").fetchone()[0]=={'credits':1234}
+            upgraded=PostgresPool(target);upgraded.open()
+            with upgraded.connection() as connection:
+                assert connection.execute('SELECT COUNT(*) FROM player_reward_entitlements').fetchone()[0]==0
+                assert connection.execute("SELECT profile FROM player_data WHERE player_id='legacy-backup'").fetchone()[0]=={'credits':1234}
+    finally:
+        if upgraded is not None:upgraded.close()
         pool.close()

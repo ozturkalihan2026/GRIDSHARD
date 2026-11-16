@@ -14,6 +14,15 @@ def test_future_concepts_are_not_live_cards_or_rewards():
 def test_release_requires_new_card_and_all_delivery_checks():
     release=deepcopy(MANIFEST['roadmap'][0])
     release['modules'][0]['release_checks']={k:True for k in MANIFEST['policy']['release_requires']}
-    assert validate_season_release(release)==('echo_relay',)
+    assert validate_season_release(release)==('recoil_cannon',)
     with pytest.raises(ValueError):validate_season_release({'modules':[]})
-    with pytest.raises(ValueError):validate_season_release(release,existing_ids={'echo_relay'})
+    with pytest.raises(ValueError):validate_season_release(release,existing_ids={'recoil_cannon'})
+
+
+def test_s2_candidate_is_an_attack_module_and_does_not_activate_the_retired_support_concept():
+    module=MANIFEST['roadmap'][0]['modules'][0]
+    assert module['id']=='recoil_cannon'
+    assert module['category']=='saldırı'
+    assert 'echo_relay' not in {m['id'] for r in MANIFEST['roadmap'] for m in r['modules']}
+    assert module['id'] not in MODULE_SPECS
+    with pytest.raises(ValueError):validate_season_release(MANIFEST['roadmap'][0])

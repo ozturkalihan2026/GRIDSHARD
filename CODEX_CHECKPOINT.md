@@ -1,4 +1,370 @@
-# Dal düzeni sadeleştirildi — 16 Kasım 2026
+# 2.5.0 — kaynak devir kaydı, 16 Kasım 2026
+
+Kullanıcı biriken çalışmaları commit/push etmemizi istedi. Kaynak dalı
+`codex/develop-2.5.0`; main'e birleştirme veya canlı dağıtım bu isteğin kapsamında değil.
+Bu kaydın bağlı olduğu değişiklikler ekonomi bütçesi/uygulaması, sabit ödül
+tanımları,015 hak kalıcılığı, Mühendis Kasası sunucusu ve özgün oyuncu ekranı,
+bağlı takvim/checklist/kabul belgelerini birlikte taşır.
+
+Son yerel kabul: sunucu2121 PASS/79 SKIP (REWARD-02), ayrı gerçek PG25 PASS;
+istemci786 PASS, derleme14 PASS, bağlı araç59 PASS. Ortak tarayıcı13 PASS,
+son kasa7 PASS ve bütün kasalar alındıktan sonraki odaklı kontrol1 PASS.
+Web build test API'si ve PNG ustalarını dışladı; iki alpha WebP pakette.
+Geçici PG/tarayıcı sunucuları kapalı. Ayrıntılı kanıtlar aşağıdaki kayıtlarda.
+
+Devam: BASE-02/03→UI-01 ortak ekran hazırlığı; REWARD-03 genel kapanış/aktarım
+ve SHOP-01/02/03. Mühendis Kasası yerel ekranı hazır; üst UI-03 önkoşul nedeniyle
+in_progress. Gerçek sürüm2.4.0, S1/aktif24 ve eski SQL korunur;2.5 canlı geçişi
+S1 kapanış/ödül kabulü sonrasıdır. Canlı/Console/AAB/cihaz işlemi yapılmadı.
+
+---
+
+# 2.5.0 / UI-03 — özgün Mühendis Kasası yerel ekran dilimi hazır
+
+16 Kasım 2026, codex/develop-2.5.0. Kullanıcı sıradaki adımı tamamlamamızı,
+kasayı mevcut kasalarla aynı yapmamamızı ve ortak tasarım dilini korumamızı
+istedi; açılış animasyonunda serbestlik verdi. Canlı/AAB/commit/push yapılmadı.
+
+- Petrol emaye + fildişi pahlar + bakır mekanizma; taşıma sapı, üç kollu
+  seçici ve iki yanal kapak. Mevcut kasa yeniden renklendirilmedi. Yerleşik
+  Imagegen ile kapalı/açık iki aynı nesne; final istemler asset README'sinde.
+  client/assets/ui/engineer-case-v1/{closed,open}.webp:512×512 alpha, toplam
+  397734 bayt. Değiştirilmemiş PNG ustaları yerel ignored sanat arşivinde.
+- client/src/rewards/choice-view.js + choice-view.css; app.js bağları ve
+  HTML paket girdileri. Ödüller sayfasında haftalık ilerleme, açık/kapalı
+  kazanım, eski haklar ve sayfalama. Mesaj Kutusu/Ödül ayrı seçim kartından
+  aynı hakka gider; Hepsini Topla/silme/okuma bu hakkı dönüştürmez veya seçmez.
+- Gerçek sabit üç modülün resmi/adı/parçası; seçim → inceleme → son onay.
+  Yalnız request_id/option_id POST edilir. Sonuç gerçek teslim makbuzunun
+  hak/hash/hedef/miktarıyla eşleşmeden görünmez. Para veya XP eklenmedi.
+- Yanıt kaybında hak detayı okunur, teslim varsa ilk makbuz ve güncel profil;
+  yoksa hesap+hak kapsamında saklanan aynı seçim/talep yeniden kullanılır.
+  Escape/×/Sonra Seç hakkı korur. Teslim sürerken çift onay engellenir.
+  Sonradan haftanın kasa düğmesi makbuzu tekrar okur; ikinci claim yapmaz.
+- Animasyon: kilit hareketi, yanal açık kasa, mint ışık/bakır parçacık,
+  gerçek modül kartının yükselişi. Atla/düşük grafik/hareket azaltma
+  anında durağan sonuç. Mevcut energy_transfer sesi aynı mute/efekt ayarına
+  tabidir; yeni özgün ses veya fiziksel hoparlör kabulü yapılmadı.
+- TR/EN×320/393 gerçek API Android Chrome öykünmesi. Kasa/normal açılış/
+  ücretsiz ekonomi ortak regresyonu13 PASS; son animasyon/klavye/mute ve
+  tekrar bağlantı yedi senaryosu ayrıca7 PASS. Tam istemci786 PASS,
+  derleme14 PASS, araç/katalog/ekonomi/takvim/paket59 PASS. Gerçek web build
+  iki WebP'yi içerir; test API'si/PNG içermez. Son kasa sonrası durum ayrıca
+  engineer-case-empty-final.log ile kontrol edildi.
+- Kanıtlar docs/planning/engineer-case-ui-250-acceptance.md ve
+  client/assets/ui/engineer-case-v1/README.md; loglar .audit-runtime altında
+  engineer-case-browser-final/confirm, client-final, build-contracts,
+  tools-final ve web-build. İlk başarısız denemeler son kabul yerine geçmez.
+- Kasa yerel teslimi branch_ready; üst UI-03 in_progress. Genel ekran
+  hiyerarşisi UI-01, BASE-02/03'e bağlı ve henüz açık: bu önkoşul gevşetilmedi
+  veya tamamlandı sayılmadı. Backlog local_delivery ve kanıt ayrı kayıtta.
+  UI-02 mağaza ve REWARD-03 genel dönem kapanışı/aktarım açık. Sıradaki
+  hazırlık akışı BASE-02/03→UI-01; kalıcılık REWARD-03 ve SHOP-01/02/03.
+- S1 yayımlanmış katalogları, aktif24, eski19 SQL ve gerçek2.4.0 kaynak
+  sürümü korunur. Yeni kazanım hâlâ2.5+yürürlük kapısında, env boş. Canlı
+  geçiş S1 kapanışı ve ödül kabulü sonrası; en erken22 Aralık03.00TR,
+  kesin bakım penceresi yok. Fiziksel cihaz/son imzalı AAB/Console kabulü açık.
+
+Önceki kayıtlar aşağıda.
+
+---
+
+# 2.5.0 / REWARD-02 — Mühendis Kasası sunucu katmanı hazır
+
+16 Kasım 2026, codex/develop-2.5.0. Kullanıcı Mühendis Kasası açıklamasından
+sonra "Başla" dedi. Haftalık kazanım ve kalıcı seçim/tek teslim API'si uygulandı.
+Bu kayıt oyuncu seçim ekranı veya açılış animasyonunun bittiği anlamına gelmez.
+
+- UTC ISO haftası Pazartesi00.00Z /03.00TR; turnuvanın operatöre bağlı
+  haftalarından ayrıdır. Tamamlanmış12 uygun ranked_pvp/arena_ai maçı,
+  zafer şartı olmadan haftada bir hak. Tekrar battle_id, pes/teslim/hareketsizlik,
+  bot/operatör/nötr modlar ilerletmez. Eksik ilerleme sonraki haftaya taşınmaz.
+- İlk maçta haftanın kuralı, on ikinci maçta açık arena/zirve/legacy havuzundan
+  saldırı/savunma/taktik hedefleri ve miktarları sabitlenir. Sunucu HMAC'i;
+  deste/dil/cihaz/yeniden giriş değiştirmez. Tek seçime sıradan20/nadir10/
+  destansı4/efsanevi2 parça; para veya XP yok. Planlı modül havuza girmez.
+- reward_choices.py, mevcut DATA-01 SQL hak/makbuzu ve özel reward_choice_state.
+  Yeni SQL yok. Kesinleşmiş maç, profil sayacı ve kasa hakkı aynı PostgreSQL
+  UOW'sinde; parça ve makbuz da aynı teslim transaction'ında. Başka hesap,
+  miktar enjeksiyonu, seçenek değiştirme ve request_id tekrar kullanımı korunur.
+- GET liste/detay ve POST claim /profile/{player_id}/reward-choices altında;
+  mevcut Bearer oturumu zorunlu. Kaynak filtreli pending sayfalama ve mevcut
+  haftanın hak kimliği. Hafta/sezon/yürürlük kapanınca eski hak kaybolmaz.
+  Aktif katalog değişince seçenekler yeniden üretilmez. JSON restart ve gerçek
+  PostgreSQL dump/restore eski makbuz/pending hakkı korur.
+- Sezon kapanışında yalnız sezonluk satır istenirken boş günlük satır üretilmesi
+  düzeltildi; ek emir ilerlemesiyle gerçek kapanış regresyonu eklendi.
+- Kabul: tam sunucu **2121 PASS/79 SKIP**, son odaklı HTTP/haftalık/kapanış
+  **18 PASS**, ayrı gerçek PostgreSQL16.14 **25 PASS**. On ikinci maç
+  rollback/kurtarma, paralel seçim, callback sonrası rollback ve gerçek
+  dump/restore dahil. CI PG17 listesi güncellendi; uzak CI çalıştırılmadı.
+- Loglar .audit-runtime/reward-choices-server-final.log ve
+  reward-choices-postgres-final.log. Geçici PostgreSQL kümesi durduruldu.
+- Araç/katalog/ekonomi/takvim/paket sözleşmeleri **59 PASS**; bağlı üretici
+  --check'leri, 515 dosyalık import taraması ve diff kontrolü PASS.
+  Eski19 SQL birebir aynı; S1/kadro/sürüm/paket metin içerikleri korunur.
+- REWARD-02 branch_ready. REWARD-03 kapanış/Mesaj Kutusu erişimi ve UI-02/03
+  seçim ekranı/animasyonu açık; ardından SHOP-01/02/03. Parça teklifi API değil.
+- VERSION/package hâlâ2.4.0; yeni kazanım en az2.5.0 + açık
+  GRIDSHARD_FREE_ECONOMY_FROM ister. Değer boş; canlıya açılmadı. Geçiş S1
+  kapanışı ve ödül kabulü sonrası, en erken22 Aralık03.00TR; kesin pencere yok.
+  S1 katalogları ve aktif24 kadro korunur. Canlı/Console/AAB/cihaz/commit/push yok.
+
+Bağlı kabul: docs/planning/reward-choices-250-acceptance.md. Önceki kayıtlar aşağıda.
+
+---
+
+# 2.5.0 / ECON-02 — beş para kanalı dalda hazır, 16 Kasım 2026
+
+Kullanıcı sıradaki işi tamamlamamızı istedi; ECON-02 uygulandı.
+codex/develop-2.5.0 dalında devam. Canlı sunucu geçişi S1 kapanışı ve ödül
+teslimi sonrasıdır; bu turda canlı, Console, AAB veya fiziksel cihaz işlemi yok.
+
+- free_economy_rewards.py ve derlenmiş free_economy_rewards_v1.json: altı
+  temel günlük emir105 Akı+120 DK; aktif sezondaki4/6 savaş emirleriyle
+  toplam115 Akı+180 DK. Sezonluk emirler600 Akı+3000 DK; giriş Akı3/kredi2,
+  ücretsiz yol para2 katı; uygun maç kredisi1,5 katı ve ilk6 maçta2 Akı.
+  XP/parça/kupa/sandık olasılığı ve premium geçmiş hakları aynı.
+- En az2.5.0 runtime ve GRIDSHARD_FREE_ECONOMY_FROM açık UTC gece yarısı
+  gerekir; en erken22 Aralık00.00Z /03.00TR. Yanlış tarih başlangıçta reddedilir.
+  Örnek/Compose değeri boş, gerçek VERSION hâlâ2.4.0; yeni gelir canlıda açılmadı.
+  Sezon bütçesi ayrıca yayımlanmış yeni manifestte free_economy_revision:1 ister;
+  derlenmiş onay listesi boş, S1 açıkça dışlanır. S2 kendiliğinden açılmaz.
+- Onaylı yeni dönemde82 para tanımı baştan sabitlenir; bu82 ödül vermez.
+  Eski/başlamış dönem legacy kalır. Aktif katalog veya rollout sonradan
+  kapansa bile sabit dönem tanımı/kazanılmış hak yeniden fiyatlanmaz.
+  Günlük snapshot gün başında, gerçek hak tamamlanınca doğar; XP de hash taşır.
+- Özel free_economy_state mevcut oyuncu JSON'unda kalıcı; public profile girmez.
+  DATA-01 hak/makbuz doğrulaması ve mevcut PostgreSQL oyuncu/ekonomi/maç UOW'si
+  kullanılır. Bu adım yeni SQL eklemedi. Eski19 SQL HEAD baytlarıyla aynı.
+  Para, makbuz ve altı maç sayacı birlikte commit/rollback olur.
+- Maç boost'u yalnız uygun gerçek hesap, kesinleşmiş ranked_pvp/arena_ai;
+  pes etme/teslim/hareketsizlik, bot/operatör ve nötr modlar dışarıda. battle_id
+  defteri kalıcı tekillik sahibidir. Kota UTC tarihinde yenilenir; başka istek,
+  bellek kaybı veya restore kota/ödülü çoğaltmaz.
+- Günlük/ek emir kapanışında kazanılmış para/XP bir kez tamamlanır; yolun
+  sabit tam snapshot'ı mevcut kasa/Mesaj Kutusu yoluyla korunur. Sezon arasında
+  yalnız temel günlük ve uygun maç gelirleri sürer. Boş giriş dönemi görünüm
+  hatası düzeltildi; kapalı sezonun temel emri kazanılmayacak XP göstermez.
+- UI: emirlerde XP/Akı/DK; giriş/yol aynı gerçek miktar; maçta ayrı Akı kartı
+  ve günlük1/6→6/6 sayacı, kota sonunda+0. TR/EN, iki sütunlu320/393 kabulü.
+- Kabul: son tam sunucu **2103 PASS/69 SKIP**, ayrı gerçek PostgreSQL16.14
+  **24 PASS**; beş kanalın API işlem/rollback/replay'i, paralel farklı talepler,
+  gerçek dump/restore ve günlük kota. Geçici PG kümesi durduruldu; CI PG17
+  listesine yeni dosya eklendi, uzak CI çalıştırıldı sayılmaz.
+- Yerel Android Chrome öykünmesi TR/EN×320/393 **4 PASS**, 6 istemci ve
+  14 derleme sözleşmesi PASS. Gerçek web build test yardımcısını dışladı;
+  son imzalı2.5 AAB veya fiziksel cihaz kabulü değildir. Yerel fixture sistem
+  sürüm notunu2.5 diye yayımlamaz; yalnız ekonomi runtime kapısı simüle edilir.
+- Loglar .audit-runtime/free-economy-server-final.log,
+  free-economy-postgres-final.log, free-economy-browser-final.log. İlk başarısız
+  fixture/önizleme denemeleri kabul kanıtı değildir. Son başarılı kayıtlar esas.
+- Son araç/ekonomi/katalog/bağlı plan/paket sözleşmeleri59 PASS; bütün bağlı
+  üretici --check'leri ve512 dosyalık import taraması PASS. Geçici PostgreSQL
+  kümesi ve8898 tarayıcı sunucusu kapalı; S1/aktif kadro/sürüm dosyaları aynı.
+- ECON-02 branch_ready; sonraki ana dilim REWARD-02 kalıcı Mühendis Kasası
+  seçimi, ardından REWARD-03 kapanış/erişim ve SHOP-01/02/03. Yeni haftalık
+  seçim kasası/parça teklifi henüz API olarak açılmadı. Commit/push yok.
+
+Bağlı kabul: docs/planning/free-economy-250-acceptance.md. Önceki kayıtlar aşağıda.
+
+---
+
+# 2.5.0 — ortak cüzdan/parça bütçesi hazır, canlı geçiş S1 sonrası
+
+16 Kasım 2026, codex/develop-2.5.0. Son kullanıcı kararı: paket geliştirmesi
+sürer; canlı sunucu geçişi S1 kapandıktan ve ödül teslimi doğrulandıktan sonra.
+En erken sınır 22 Aralık 03.00 TR, kesin bakım penceresi belirlenmedi.
+21 Aralık yalnız paket hazırlık hedefi olarak takvim/checklist/briefte ayrıldı;
+S2'nin 28 Aralık koşullu hedefi ayrı onay ister. Hiçbir canlı işlem yapılmadı.
+
+- ECON-01 branch_ready: tools/simulate_progression_budget.py, gerçek sandık
+  çözümleyicisi ve gerçek parça hedeflemesiyle 10 profil × iki gelir adayı ×
+  üç harcama stratejisi × sekiz sentetik kimlik = 480 tekrar üretilebilir örnek.
+  1/7/28 gün, tek cüzdanda deste/çekirdek yükseltmesi ve uygun ilk yetenekler;
+  modül ve çekirdek parçaları hedef bazında ayrı, para/parça korunumu doğrulandı.
+- Beş kaynak miktarı/XP/maliyet eğrileri aynı. Model sıfır para ve mevcut
+  iki Lazer parçasıyla başlar; ek eski yol sandığı, premium, yarışma, bağış veya
+  reklam geliri varsaymaz. Sabit kupa gelir örneğiyle kupa yolculuğu ayrıdır;
+  sekiz tohum başarı garantisi veya oyuncu davranışı verisi değildir.
+- Uygulama adayları first-shop-release.md içinde: 500 DK/UTC haftasında en
+  fazla iki garantili parça alımı; oyuncu/hafta hedefi açık havuzdan sabitlenir.
+  12 uygun tamamlanmış savaş/hafta bir Mühendis Kasası; üç sınıf seçeneğinden
+  biri, sezon arasında da erişim. Bu adaylar henüz ürün/API veya canlı ödül değil.
+  Sırasıyla sıradan/nadir/destansı/efsanevi: teklif12/6/3/1, seçim20/10/4/2 parça.
+- Yeni saldırı modülü hâlâ planned. Arena3/600 zirve kupasında 1. seviye sahiplik
+  ücretsiz adaydır; satın alma/parça sahiplik ön koşulu değil. 1→5 ayrıca
+  36 nadir hedef parça ve2800 kredi ister; aktif24 katalog değiştirilmedi.
+- Kabul: ekonomi/ortak cüzdan/gerçek maliyet/tekrar üretim, takvim geçiş kapısı,
+  bağlı plan, katalog, S1 hazırlık ve paket sınırları dahil **84 test PASS**.
+  Log .audit-runtime/economy-joint-budget-final.log. Bağlı üretici kontrolleri
+  ve import taraması PASS; canlı/cihaz/PG kabulü bu turda yapılmadı.
+- Sıradaki ana iş ECON-02 gerçek beş ödül kanalının sürümlü kazanım/tek teslim
+  entegrasyonu; REWARD-02/03 ve SHOP-01/02/03 açık. Yalnız model tamam diye
+  oyun ödülü/mağaza/seçim API'si tamam sayılmaz. Commit/push yapılmadı.
+
+Rapor docs/planning/free-economy-250-progression-report.md; karar
+docs/planning/first-shop-release.md. Önceki DATA-01/REWARD-01 kayıtları aşağıda.
+
+---
+
+# Sıradaki 2.5.0 kod dilimi — DATA-01 kalıcılık dalda hazır, 16 Kasım 2026
+
+- Kullanıcı sıradaki işe geçmemizi istedi. Mevcut codex/develop-2.5.0 dalı;
+  DATA-01 uygulandı, yeni oyun ödülü/API/canlı dağıtım veya AAB yok.
+- Yeni015_reward_entitlements SQL ve korumalı down eklendi; eski001–014
+  migration baytları değiştirilmedi. Hesap+kaynak+dönem+düğüm tek hakkı,
+  ilk teslimin request hash'i tek talebi temsil eder; kazanım snapshot'ı
+  ve teslim tanığı kalıcıdır. FK hesap silmede cascade uygular.
+- reward_entitlements.py değişmez model/bağlam/makbuz doğrular.
+  postgres_reward_entitlements.py açık UOW ve hesap/satır kilidiyle çalışır;
+  cüzdan grant callback'i aynı pool transactionında olmak zorundadır.
+  İç savepoint ve dış rollback cüzdan/makbuzu birlikte korur. Aynı veya farklı
+  request_id ile tekrar teslim eski makbuzu döndürür; başka seçenek reddedilir.
+- server_backup/clean_install yeni tabloyu tanır. Eski014 yedeği ayrı
+  hedefte restore edilebilir;015 ayrıca uygulanınca eski profil aynı kalır.
+  015 down, bekleyen veya teslim edilmiş tek satır bile varsa reddedilir.
+- **Gerçek yerel PostgreSQL16.14 kabulü:18 PASS,0 skip**. Paralel12 kazanım/
+  12 teslim tek ödeme; farklı seçenek yarışı, içeride yakalanan/dış rollback,
+  yabancı hesap, bozuk kayıt, request çakışması, hesap silme ve sayfalama PASS.
+  Gerçek pg_dump/pg_restore boş DB'de pending/claimed/cüzdan aynı; restore
+  sonrası sıfır ikinci ödeme. Eski014 restore→015 geçişi PASS.
+- Test kümesi yalnız loopback'te geçici/sentetikti ve durduruldu. Windows
+  pg_ctl başlatıcısındaki daemon beklemesi gizli Start-Process ile, pytest
+  TEMP erişimi fixture içi basetemp ile düzeltildi. Önceki iki deneme bu
+  yüzden kabul sayılmaz; son log .audit-runtime/reward-entitlements-postgres-final.log.
+- Son bayt kontrolünde eski altı SQL dosyasının Windows checkout satır sonları
+  HEAD'den farklıydı; yalnız satır sonu dönüşümü doğrulanıp HEAD baytları geri
+  yazıldı. Eski 19 SQL dosyası artık HEAD ile birebir aynı. Bu düzeltmeden sonra
+  taze PostgreSQL kümesinde 18 PASS/0 skip yeniden alındı (8,86 sn).
+  Model/clean-install/transaction/paket/plan sözleşmeleri 34 PASS; dokuz bağlı
+  plan/katalog/ekonomi/XP/duyuru/stok kontrolü ve git diff --check PASS.
+- DATA-01 branch_ready. REWARD-02/ECON-02 kaynak/uygunluk/auth/API ve yeni
+  miktarların gerçek kazanıma bağlanması hâlâ açık; ECON-01 in_progress.
+  PostgreSQL17/Redis/cihaz veya canlı kabulü yapılmış sayılmaz.
+  Ayrıntı docs/planning/reward-persistence-migration.md. Commit/push yok.
+
+---
+
+# İlk 2.5.0 kod dilimi — REWARD-01 dalda hazır, 16 Kasım 2026
+
+- Kullanıcı plan tamamlandıysa uygulamaya başlamamızı istedi. Mevcut
+  `codex/develop-2.5.0` dalında devam; yeni dal, canlı dağıtım veya AAB yok.
+- `server/app/reward_definitions.py` ve `server/data/reward_definitions_v1.json`
+  eklendi: fixed/choice/random doğrulaması, kimlik/revision/hash, minimum
+  sunucu sürümü ve katalogdan bağımsız kazanılmış snapshot. Seçim çözümleyici
+  cüzdanı değiştirmez; kalıcı seçim hakkı/atomik teslim REWARD-02'de yapılacak.
+- 92 tanım: dört mevcut normal sandık ve yeni ekonomi planının88 sabit para
+  bileşeni. 2.5 para tanımları mevcut2.4 runtime'ında seçilemez. Günlük,
+  sezonluk, giriş, yol ve maç artışları henüz gerçek ödül işlemlerine bağlanmadı.
+- Hediye/savaş/posta/anlık/mağaza normal sandığı hak anında özel
+  `reward_definition_snapshot` taşır; açılış tabloyu buradan okur. Eski
+  snapshotsız stok explicit legacy revision1'i kullanır; aynı hak taşınırken
+  yeniden aktif kataloğa bağlanmaz. Miktar/olasılık, tohum ve mevcut uygun
+  parça havuzu sözleşmesi değişmez. Public envanter/cevap tam snapshot'ı gizler.
+- Bozuk hash/yanlış sandık snapshot'ı para veya stok değişmeden reddedilir.
+  Sabit S1 kasasının mevcut fixed_reward/premium/iade yolu korunur.
+  Oyuncu JSON taşıyıcısı snapshot'ı saklar; yeni migration/SQL tablosu yok.
+- Derleme: `tools/prepare_reward_definitions.py --check` katalog/girdi
+  uyuşmasını ve yayımlanabilir aynı revision'ın üzerine yazılmamasını denetler.
+  Yeni statik JSON Docker/.dockerignore/.gitignore/kaynak paket izin listesi
+  ve CI'a eklendi. Uygulanmış migration veya özel oyuncu dosyası değiştirilmedi.
+- Kabul: tam sunucu regresyonu2073 PASS/53 SKIP; son snapshot taşıma koruması
+  sonrasında ilgili131 test PASS. JSON restart/boş hedef restore, çift açılış,
+  gizlilik,2.4 sürüm kapısı, eski stok ve bozuk kayıt reddi doğrulandı.
+  Son araç/katalog/paket/ekonomi/bağlı plan sözleşmeleri39 PASS; bütün plan,
+  katalog, ekonomi, XP, duyuru ve stok --check kontrolleri PASS; diff temiz.
+  Gerçek PostgreSQL/Redis, cihaz veya canlı kabulü yapılmış sayılmaz.
+  Ayrıntı: docs/planning/reward-definitions-250-acceptance.md.
+- REWARD-01 branch_ready; ECON-01 hâlâ in_progress, DATA-01/REWARD-02 ve
+  ECON-02'nin gerçek ödül/kaynak teslimi ve kalıcılık akışları sırada. Yeni modül
+  Geri Tepme Topu hâlâ planned; üretim başlatıldı diye aktif yapılmadı.
+- Bu bir yerel uygulama dilimi; commit/push ve uzak CI henüz yapılmadı.
+
+---
+
+# Son yönlendirme — beş mevcut ödül kaynağı ve saldırı modülü, 16 Kasım 2026
+
+- Kullanıcı günlük/sezonluk Devre Emirleri, giriş, sezon yolu ve maç sonu
+  Akı/Devre Kredisi miktarlarının artırılmasını istedi. Yeni ana aday bu beş
+  mevcut kaynağı birlikte dengeler; aşağıdaki önceki ayrı günlük/haftalık
+  destek adayı uygulanmayacak, bunun üzerine eklenmeyecek.
+- free-economy-250-v1.json analiz adayı: temel6 günlük emir toplam105 Akı
+  +120 kredi; mevcut4/6 savaş emirleriyle tüm8 emir115 Akı+180 kredi/gün.
+  On iki sezonluk emrin tamamı600 Akı+3000 kredi ek para; giriş Akı3/kredi2
+  katı, ücretsiz yol para2 katı; uygun maç kredi1,5 katı ve ilk6 maçta2 Akı.
+  **Miktarlar denge adayıdır; çalışma sunucusuna/canlıya uygulanmadı.**
+- XP12.240 ve emir XP'leri değişmez. Yeni sezon giriş/yol/sezonluk emir
+  miktarı yalnız yeni onaylı dönem revisionında; yayımlanmış S1 ve eski
+  makbuzlar aynı. Sezon arasında temel günlük emir ve uygun maç artışı sürer;
+  kapalı sezonun giriş/yol/sezonluk parası verilmez. Maç boost'u pes etme,
+  bot/operatör/nötr/tekrar battle_id için yok; eski temel emir uygunluğu korunur.
+- Güncellenen28 günlük4 savaş/2 zafer/6 emir/2 hediye beklentisi:
+  2916,44→5179,44 Akı;18296→33072 kredi. Yalnız giriş kendi artan payını
+  alır:134→402 Akı,2678→5356 kredi; savaş/emir/XP kazanmış sayılmaz.
+- Yeni modül için kullanıcı saldırı veya savunma istedi; **saldırı** adayı
+  **Geri Tepme Topu (`recoil_cannon`)** seçildi. Destek fikri Yankı Rölesi
+  planned manifestten çıkarıldı. Eski brief yeni
+  docs/planning/recoil-cannon-release.md ile değiştirildi; bütün güncel
+  plan/checklist/takvim bağlantıları aynı adayda. İlk prototip4 Akım/240CAN/
+  50 hasar/3sn/16 kendi CAN bedeli; kesin denge değildir. Kendini en az1CAN'da
+  bırakır; kendi kaybı V8 Akım/hasar/imha ödülü veya yansıma üretmez.
+- Aktif24 modül ve yayımlanmış S1 dosyaları değişmedi; yeni modül planned,
+  henüz motor/sanat/ses/denge/ücretsiz edinim kabulü yok. ECON-02 beş kaynağa
+  göre güncellendi (L efor); takvim hedefleri ve30 Kasım kapasite kararı aynı.
+- Bu dilim hâlâ yerel plan/hesap/test; sunucu/AAB/Console değişmedi.
+- Güncel yerel kabul: beş kanal/ekonomi baz çizgisi/plan/duyuru ve planlı
+  modül kapısının **52 testi PASS**. Checklist, takvim, brief, ücretsiz
+  ekonomi, BASE-01 raporu, XP planı, ön duyuru ve S1 stok --check PASS.
+  Stok raporunun takvim hash'i yenilendi; yayımlanmış S1 verisi aynı kaldı.
+  Önceki46 test kaydı önceki adaya aittir. Gerçek yeni ödül teslimi veya
+  Geri Tepme Topu motor/cihaz kabulü yapılmış sayılmaz.
+
+---
+
+# Önceki analiz — 2.5.0 başlangıcı ve ilk destek adayı, 16 Kasım 2026
+
+- Kullanıcı 2.5.0 çalışmalarını başlattı; tamamen ücretsiz oyunda Akı ve
+  Devre Kredisi kazanım tedbirlerini bu pakete istedi. Çalışma dalı
+  `codex/develop-2.5.0`; main ile iki dal düzeni korunur, yeni kalıcı dal yok.
+- [Güncel tasarım ve üretim planı](docs/planning/release-250-design-and-production.md):
+  seçim kasası, garantili oyun parası teklifi, Yankı Rölesi, altı sezon + dört
+  mağaza öğesi, Devrenin Ufku/Akımın Nabzı, SDK hariç tutma ve üretim sırası.
+  İlk görsel örnek Manyetik Köprü çifti; henüz sanat/beste veya modül üretilmedi.
+- `ECON-01` in_progress. `tools/simulate_liveops_economy.py` mevcut kaynak ve
+  maliyetlerden 9 profil × 1/7/28 gün karşılaştırması üretir; mevcut günlük ve
+  sezonluk ek XP dahil, reklam/para/yeni premium geliri yok. Sandıklar beklenen
+  değer, emir ve hediye toplama açık varsayım; gerçek oyuncu ölçümü değildir.
+  [Rapor](docs/planning/free-economy-250-report.md) para/parça/seviye sınırını
+  ayırır. Yeni modül ve altılı gerçek deste/parça edinimi kabulü henüz açık.
+- Yeni zorunlu `ECON-02` todo: günlük 2/4/6 uygun savaş için kademeli destek,
+  haftalık 4 aktif gün/16 uygun savaş; zafer/sıralama/reklam/ödeme gerekmez.
+  İlk denge adayı toplam 60 Akı+300 kredi/gün ve 240 Akı+1500 kredi/hafta.
+  **Bu miktarlar analiz adayıdır; sunucu kuralı veya kesinleşmiş ödül değildir.**
+  Yeni haklar ayrı kalıcı/tek teslim, pes etme/bot/nötr maç dışlama ve sezon
+  arası erişimle uygulanacak. XP eşiği, mevcut maliyet ve canlı S1 değişmedi.
+- Dört savaş/altı emir/iki hediye, Arena1, 28 gün: mevcut beklenti
+  2916,44 Akı /18296 kredi; aday 4856,44 Akı /29196 kredi. Yeni destek XP
+  eklemez; aynı senaryoda33. kademe, altı savaşta39, sekiz savaşta40 korunur.
+- Takvim/backlog/checklist/briefler yeni işi aynı2.5.0'a bağlar. Ana çalışma
+  24 Kasım; kapsam14 Aralık, cihaz kabulü17 Aralık, yayın hedefi21 Aralık
+  korunur. Ek yük30 Kasım kapasite kontrolünde değerlendirilir.
+- Belge dizini ve checklist üreticisinin eski2.3/2.4 aktif sürüm metinleri
+  güncellendi. Backlog yayın kaydı config/release-candidates/2.4.0.json ve
+  kullanıcı teyidine alındı; eski2.3 kaydı previous_deployment_status içinde.
+  RELEASE-01 veya fiziksel kabuller otomatik done yapılmadı.
+- Bu dilim yerel analiz/plan ve test aracıdır. Sunucu/AAB/Console/AdMob ve
+  yayımlanmış S1 kataloglarına işlem yapılmadı; commit/push ayrıca doğrulanır.
+- Yerel kabul: ücretsiz ekonomi/gelir baz çizgisi/bağlı plan/duyuru kapısının
+  **46 testi PASS**. Yeni rapor, ekonomi baz çizgisi, checklist, takvim,
+  briefler ve duyuru --check PASS; diff kontrolü temiz. Yeni doküman bağlantıları
+  doğrulandı; kaynak maliyetleri, yayınlanmış S1 dosyaları ve bütün sürüm/sezon
+  tarihleri HEAD ile karşılaştırılarak aynı bulundu. Güncel uygulama/AAB veya
+  fiziksel telefon testi yapılmadı; değişiklikler araç ve plan kapsamındadır.
+
+---
+
+# Önceki durum — Dal düzeni sadeleştirildi, 16 Kasım 2026
 
 - Kullanıcı fazla dallanmadan devam edilmesini istedi. Aktif düzen yalnız
   **main + codex/develop-2.5.0**. Çalışma dalı 2.5.0 olacak; iki dal bu

@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "release": "2.5.0",
+  "decision_on": "2026-11-16",
+  "status": "analysis_proposal",
+  "planning_only": true,
+  "runtime_changed": false,
+  "preserve_existing_xp": true,
+  "preserve_published_s1": true,
+  "simulation_starts_on": "2026-12-28",
+  "simulation_calendar_is_launch_commitment": false,
+  "eligible_modes": ["ranked_pvp", "arena_ai"],
+  "exclude_forfeits": true,
+  "strategy": "rebalance_existing_five_channels",
+  "separate_daily_weekly_support": false,
+  "effective_scope": {
+    "daily_and_match": "new_revision_after_release_no_receipt_rewrite",
+    "login_seasonal_and_road": "new_approved_season_only_preserve_published_s1"
+  },
+  "daily_orders": {
+    "complete_battles": {"flux_shards": 15, "circuit_credits": 15},
+    "deal_damage": {"flux_shards": 20, "circuit_credits": 25},
+    "circuit_actions": {"flux_shards": 20, "circuit_credits": 25},
+    "win_battles": {"flux_shards": 20, "circuit_credits": 25},
+    "destroy_modules": {"flux_shards": 15, "circuit_credits": 15},
+    "core_power": {"flux_shards": 15, "circuit_credits": 15}
+  },
+  "daily_extra_orders": {
+    "daily_battles_4": {"flux_shards": 5, "circuit_credits": 30},
+    "daily_battles_6": {"flux_shards": 5, "circuit_credits": 30}
+  },
+  "seasonal_orders": {
+    "season_battles_20": {"flux_shards": 40, "circuit_credits": 200},
+    "season_battles_40": {"flux_shards": 60, "circuit_credits": 300},
+    "season_battles_80": {"flux_shards": 80, "circuit_credits": 400},
+    "season_battles_120": {"flux_shards": 100, "circuit_credits": 500},
+    "season_wins_10": {"flux_shards": 30, "circuit_credits": 150},
+    "season_wins_25": {"flux_shards": 40, "circuit_credits": 200},
+    "season_wins_40": {"flux_shards": 60, "circuit_credits": 300},
+    "season_days_7": {"flux_shards": 30, "circuit_credits": 150},
+    "season_days_14": {"flux_shards": 40, "circuit_credits": 200},
+    "season_days_21": {"flux_shards": 60, "circuit_credits": 300},
+    "season_core_20": {"flux_shards": 20, "circuit_credits": 100},
+    "season_core_50": {"flux_shards": 40, "circuit_credits": 200}
+  },
+  "login_multiplier": {"flux_shards": 3, "circuit_credits": 2},
+  "free_season_road_multiplier": {"flux_shards": 2, "circuit_credits": 2},
+  "match_rewards": {
+    "credit_multiplier_numerator": 3,
+    "credit_multiplier_denominator": 2,
+    "flux_per_completed_battle": 2,
+    "daily_flux_battle_cap": 6,
+    "increase_xp": false,
+    "increase_chest_or_trophy_rewards": false
+  },
+  "scenarios": [
+    {"id": "login_only", "name_tr": "Yalnız giriş", "rating": 0, "battles": 0, "wins": 0, "gifts": 0, "missions": [], "core_uses": 0},
+    {"id": "casual_2", "name_tr": "2 savaş / 3 emir", "rating": 0, "battles": 2, "wins": 1, "gifts": 1, "missions": ["complete_battles", "circuit_actions", "win_battles"], "core_uses": 0},
+    {"id": "regular_4", "name_tr": "4 savaş / 6 emir", "rating": 0, "battles": 4, "wins": 2, "gifts": 2, "missions": "all", "core_uses": 2},
+    {"id": "engaged_6", "name_tr": "6 savaş / 6 emir", "rating": 0, "battles": 6, "wins": 3, "gifts": 2, "missions": "all", "core_uses": 2},
+    {"id": "active_8", "name_tr": "8 savaş / 6 emir", "rating": 0, "battles": 8, "wins": 4, "gifts": 2, "missions": "all", "core_uses": 2},
+    {"id": "losses_4", "name_tr": "4 mağlubiyet / 5 emir", "rating": 0, "battles": 4, "wins": 0, "gifts": 2, "missions": "without_win", "core_uses": 2},
+    {"id": "returning_4_days", "name_tr": "Haftada 4 gün / 4 savaş", "rating": 0, "battles": 4, "wins": 2, "gifts": 1, "missions": "all", "core_uses": 2, "login_weekdays": [0, 1, 3, 5]},
+    {"id": "arena_6", "name_tr": "Arena 6 / 4 savaş", "rating_arena": 6, "battles": 4, "wins": 2, "gifts": 2, "missions": "all", "core_uses": 2},
+    {"id": "between_seasons", "name_tr": "Sezon arası / 4 savaş", "rating": 0, "battles": 4, "wins": 2, "gifts": 2, "missions": "all", "core_uses": 2, "season_active": false}
+  ]
+}

@@ -61,7 +61,7 @@ Bu belge önceki “iki yeni modül + 18 yeni öğe önce tamamlansın” kapsam
 - S1'in diğer üç haftası açık kaynak ödülü türüdür; sadece eksik kozmetiği
   görmezden gelmek için gerekli adet düşürülmez. Mevcut kod bunu henüz desteklemiyor.
 - 18 öğelik sanat brief'i altışar grupta 2.5/S2, 2.6/S3, 2.7/S4'e dağıtıldı.
-- Yankı Rölesi 2.5/S2; Kor Fırlatıcı 2.6/S3. S2'den itibaren yeni hazır
+- Geri Tepme Topu 2.5/S2; Kor Fırlatıcı 2.6/S3. S2'den itibaren yeni hazır
   modül koşulu korunur; S1 istisnası genel kuralı sıfırlamaz.
 - Mağaza/seçim kasası 2.5; günlük deney 2.6; PvE 2.7. Lisans/kupon gibi
   yeni ödüller zorunlu kapsam ile ikincil kapsam ayrımıyla tarihlendi.

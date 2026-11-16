@@ -14,4 +14,4 @@ Doğrudan vuruştan sonra üç saniyelik okunabilir yanma bırakan saldırı mod
 - [ ] Roster, motor, snapshot, AI, TR/EN, kart/sahne sanatı, özgün ses ve mobil codec tamamlanır.
 - [ ] Eski altılılar ve Arındırıcı/Onarım karşı oyunu ile denge raporu; yeni modül sezon kapısı, Android ve CI kabulü.
 
-S2 Yankı Rölesi'nin motor/denge sonuçları bu tasarıma girdi olur. Ön hazırlık erken yapılabilir; uygulama 2.6 takviminde, yeni günlük problem stoğuyla birlikte planlanır.
+S2 Geri Tepme Topu'nun motor/denge sonuçları bu tasarıma girdi olur. Ön hazırlık erken yapılabilir; uygulama 2.6 takviminde, yeni günlük problem stoğuyla birlikte planlanır.

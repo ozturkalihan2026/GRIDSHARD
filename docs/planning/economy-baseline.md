@@ -162,18 +162,18 @@ Miktarlar yayınlanmamış ilk sezon taslağında doğrulanır. Kredi/Akı mevcu
 
 | Dönem (bitiş hariç) | Tür | Sıra | Kredi | Akı | Sabit modül/parça | Yeni koleksiyon |
 | --- | --- | --- | --- | --- | --- | --- |
-| 2026-11-30–2026-12-07 03.00 TR / 2026-W49 | resource_only | 1 | 1200 | 90 | laser / 36 | — |
-| 2026-11-30–2026-12-07 03.00 TR / 2026-W49 | resource_only | 2 | 760 | 55 | laser / 24 | — |
-| 2026-11-30–2026-12-07 03.00 TR / 2026-W49 | resource_only | 3 | 420 | 30 | laser / 18 | — |
-| 2026-12-07–2026-12-14 03.00 TR / 2026-W50 | resource_only | 1 | 1200 | 90 | shield / 36 | — |
-| 2026-12-07–2026-12-14 03.00 TR / 2026-W50 | resource_only | 2 | 760 | 55 | shield / 24 | — |
-| 2026-12-07–2026-12-14 03.00 TR / 2026-W50 | resource_only | 3 | 420 | 30 | shield / 18 | — |
-| 2026-12-14–2026-12-21 03.00 TR / 2026-W51 | resource_only | 1 | 1200 | 90 | pulse_cannon / 36 | — |
-| 2026-12-14–2026-12-21 03.00 TR / 2026-W51 | resource_only | 2 | 760 | 55 | pulse_cannon / 24 | — |
-| 2026-12-14–2026-12-21 03.00 TR / 2026-W51 | resource_only | 3 | 420 | 30 | pulse_cannon / 18 | — |
-| 2026-12-21–2026-12-28 03.00 TR / 2026-W52 | cosmetic_set | 1 | 1200 | 90 | — / 0 | Derin Akım çerçeve + zemin |
-| 2026-12-21–2026-12-28 03.00 TR / 2026-W52 | cosmetic_set | 2 | 760 | 55 | — / 0 | — |
-| 2026-12-21–2026-12-28 03.00 TR / 2026-W52 | cosmetic_set | 3 | 420 | 30 | — / 0 | — |
+| 2026-11-24–2026-12-01 03.00 TR / 2026-W48 | resource_only | 1 | 1200 | 90 | laser / 36 | — |
+| 2026-11-24–2026-12-01 03.00 TR / 2026-W48 | resource_only | 2 | 760 | 55 | laser / 24 | — |
+| 2026-11-24–2026-12-01 03.00 TR / 2026-W48 | resource_only | 3 | 420 | 30 | laser / 18 | — |
+| 2026-12-01–2026-12-08 03.00 TR / 2026-W49 | resource_only | 1 | 1200 | 90 | shield / 36 | — |
+| 2026-12-01–2026-12-08 03.00 TR / 2026-W49 | resource_only | 2 | 760 | 55 | shield / 24 | — |
+| 2026-12-01–2026-12-08 03.00 TR / 2026-W49 | resource_only | 3 | 420 | 30 | shield / 18 | — |
+| 2026-12-08–2026-12-15 03.00 TR / 2026-W50 | resource_only | 1 | 1200 | 90 | pulse_cannon / 36 | — |
+| 2026-12-08–2026-12-15 03.00 TR / 2026-W50 | resource_only | 2 | 760 | 55 | pulse_cannon / 24 | — |
+| 2026-12-08–2026-12-15 03.00 TR / 2026-W50 | resource_only | 3 | 420 | 30 | pulse_cannon / 18 | — |
+| 2026-12-15–2026-12-22 03.00 TR / 2026-W51 | cosmetic_set | 1 | 1200 | 90 | — / 0 | Derin Akım çerçeve + zemin |
+| 2026-12-15–2026-12-22 03.00 TR / 2026-W51 | cosmetic_set | 2 | 760 | 55 | — / 0 | — |
+| 2026-12-15–2026-12-22 03.00 TR / 2026-W51 | cosmetic_set | 3 | 420 | 30 | — / 0 | — |
 
 **Ek parça tavanı:** bütün ilk üç ödülleri toplamında 234 sıradan parça/sezon; aynı oyuncu ilk üç haftayı kazanırsa en çok 108. Bu ek kaynak artışıdır; mevcut bütçenin içinde varmış gibi gösterilmedi. Katılma bedeli haftada 100 Kredi; dört kez katılan oyuncuda 400 Kredi çıkış. Varsayılan en az dört gerçek katılımcı eşiği ve owner/bot hariçliği korunur; yetersiz katılımla dağıtım yapılmaz. Her ödül oyuncu+kaynak+dönem+sıra ile bir kez teslim edilir.
 

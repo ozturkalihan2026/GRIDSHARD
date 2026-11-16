@@ -1,14 +1,41 @@
 # GRIDSHARD — güncel belge dizini
 
-13 Kasım 2026. Çalışmaya bu dizinden başla. Aktif sürüm geliştirmesi **2.4.0**;
-2.3.0/code14 yayını kullanıcı tarafından teyit edilmiştir. Planlanan özellikler,
+16 Kasım 2026. Çalışmaya bu dizinden başla. Aktif sürüm geliştirmesi **2.5.0**;
+2.4.0/code15 yayını kullanıcı tarafından teyit edilmiştir. S1 otomatik takvimi
+24 Kasım–22 Aralık 03.00 TR; S2 ayrı onayla açılacak. Planlanan özellikler,
 gerçekten uygulanıp kanıtlanana kadar oyunda mevcut sayılmaz.
 
 ## Plan ve takip
 
+- [Mühendis Kasası ekranı ve özgün açılışı](planning/engineer-case-ui-250-acceptance.md):
+  UI-03; petrol/fildişi/bakır çanta, üç gerçek seçenek, Ödüller/Mesaj Kutusu ve güvenli yeniden bağlantı.
+
+- [Mühendis Kasası sunucu kabulü](planning/reward-choices-250-acceptance.md):
+  REWARD-02; haftalık 12 maç, üç sabit seçenek ve atomik tek teslim. Ekran/animasyon UI-03 kabul kaydında.
+
+- [2.5.0 beş ödül kanalı uygulaması](planning/free-economy-250-acceptance.md):
+  ECON-02; sürümlü Akı/kredi, atomik teslim, dönem sabitleme ve yerel TR/EN kabulü.
+- [2.5.0 ortak cüzdan ve parça bütçesi](planning/free-economy-250-progression-report.md):
+  gerçek sandık çözümleyicisiyle 480 sentetik örnek; altılı deste, çekirdek,
+  ilk yetenek ve teklif/seçim adayları aynı cüzdanda. ECON-01 dal hazırlığı hazır.
+- [İlk teklif ve Mühendis Kasası kararı](planning/first-shop-release.md):
+  ücretsiz erişim, miktar/fiyat/limit adayı ve REWARD-02/SHOP-01 uygulama sınırı.
+- [2.5.0 ödül hakkı kalıcılığı](planning/reward-persistence-migration.md):
+ 015 SQL, cüzdanla atomik tek teslim, eski şema yedeği ve gerçek yerel PG restore kabulü.
+- [2.5.0 ödül tanımları ilk uygulaması](planning/reward-definitions-250-acceptance.md):
+  normal sandık tablosunu kazanımda sabitleme, eski stok uyumu ve sürümlü
+  fixed/choice/random tanımları; yeni para artışları henüz etkin değil.
+- [2.5.0 tasarım, üretim ve ücretsiz ekonomi planı](planning/release-250-design-and-production.md):
+  seçim kasası, Geri Tepme Topu saldırı adayı, ayrı6+4 kozmetik grubu, iki beste;
+  günlük/sezonluk emir, giriş, sezon yolu ve maç sonucunda Akı/kredi dengesi.
+- [Ücretsiz ekonomi karşılaştırması](planning/free-economy-250-report.md):
+  mevcut/adayı 1/7/28 günde karşılaştırır; yeni miktarlar analiz adayı, canlı ödül değildir.
+- [2.5.0 SDK hariç tutma kabulü](planning/mobile-250-without-monetization.md):
+  kaynaklar ve eski haklar korunur; son imzalı AAB/cihaz kapısı açık.
+- [Canlı S1 otomasyon kaydı](planning/s1-automatic-operations-20261115.md):
+  yayımlanmış kataloglar korunur, S2 kendiliğinden açılmaz.
 - [13 Kasım erken yama ve ev bilgisayarı geçiş planı](planning/release-240-expedited-handoff-20261113.md):
-  22.00–00.00 TR bakım, yeni kimlikli Sistem haberi, değişmeyen S1–S6 takvimi;
-  canlı geçiş ve imzalı AAB henüz uygulanmadı.
+  tarihsel 2.4.0 hazırlık/geçiş kaydı; sonraki canlı durum için checkpoint ve S1 otomasyon kaydı okunur.
 - [5 Kasım canlı bakım duyurusu dağıtımı](planning/release-230-prerelease-deployment-20261105.md):
   mevcut 2.3.0 Sistem mesajı canlıda; üç dosyalık yama, yedek/restore ve hesap koruma kanıtı.
 - [5 Kasım S1 kabul matrisi](planning/release-240-s1-acceptance.md): bütçe,

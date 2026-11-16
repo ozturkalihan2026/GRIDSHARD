@@ -40,6 +40,8 @@ STATIC_SERVER_DATA_FILES = {
     "server/data/season_module_releases_v2.json",
     "server/data/first_season_launch_v1.json",
     "server/data/release_announcements_v1.json",
+    "server/data/reward_definitions_v1.json",
+    "server/data/free_economy_rewards_v1.json",
 }
 GENERATED_ROOT_PATTERNS = (
     "GRIDSHARD-*.zip",

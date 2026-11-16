@@ -16,7 +16,7 @@ oldukları veya canlıda çalıştıkları anlamına gelmez.
 **Güncel yayın ayrımı:** 2.3.0 yayımlandı. Kullanıcı kararıyla 2.4.0 mevcut
 24 modülle yalnız ilk sezonu açmaya odaklanır. Kaynak haftası türü, ilk-sezon
 istisnası, kapanışta hak koruma ve eski istemci uyumu henüz uygulanacaktır.
-Yeni seçimli hak/mağaza/Yankı Rölesi 2.5.0; günlük deney/Kor Fırlatıcı 2.6.0.
+Yeni seçimli hak/mağaza/Geri Tepme Topu 2.5.0; günlük deney/Kor Fırlatıcı 2.6.0.
 18 oyuncu öğesi S2/S3/S4 için altışar gruptur. Aşağıdaki tam-koleksiyon
 kapasitesi önceki her-hafta-kozmetik profilinin hesabıdır; ilk sezon kapısı
 olarak kullanılmaz. [Tarihli plan](GRIDSHARD_ODUL_PORTFOYU_VE_SURUM_TAKVIMI_20261103.md).
@@ -169,7 +169,7 @@ Bu eski tam-koleksiyon hesabındaki 18 öğe artık üç üretim grubuna bölün
 hesabı yeterli değildir. Her yeni kaynak için `coverage` girdisi ve stok
 talebi genişletilir. Mevcut araç henüz genel bir etkinlik stok planlayıcısı değil.
 
-Sezon başına en az bir yeni modül politikası ayrıca vardır. Yalnız ilk sezon mevcut 24 modülle başlayacak; bu istisna açıkça kodlanıp test edilecektir. S2 ve sonrasında yeni modülün çalışma kodu, çizimi, karşı oyunu, arena açılışı ve ücretsiz kazanımı hazır olmalıdır. `echo_relay` ve `ember_launcher` mevcut manifestte yalnız
+Sezon başına en az bir yeni modül politikası ayrıca vardır. Yalnız ilk sezon mevcut 24 modülle başlayacak; bu istisna açıkça kodlanıp test edilecektir. S2 ve sonrasında yeni modülün çalışma kodu, çizimi, karşı oyunu, arena açılışı ve ücretsiz kazanımı hazır olmalıdır. `recoil_cannon` ve `ember_launcher` mevcut manifestte yalnız
 planlıdır. Kalite yetişmezse sezon başlangıcı yeniden planlanır; kart hazırmış
 gibi gösterilmez veya mevcut politika sessizce kaldırılmaz.
 

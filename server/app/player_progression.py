@@ -101,6 +101,8 @@ class ProgressionResult:
     team_tournament_points_after: int
     battle_premium_applied: bool = False
     newly_unlocked_module_ids: tuple[str, ...] = ()
+    flux_shards_awarded: int = 0
+    economy_reward: dict | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -109,6 +111,8 @@ class ProgressionResult:
             "rating_after": self.rating_after,
             "rating_delta": self.rating_delta,
             "circuit_credits_awarded": self.circuit_credits_awarded,
+            "flux_shards_awarded": self.flux_shards_awarded,
+            "economy_reward": self.economy_reward,
             "xp_awarded": self.xp_awarded,
             "level_after": self.level_after,
             "experience_after": self.experience_after,
@@ -310,8 +314,9 @@ class PlayerProgressionService:
                 draw=state.is_draw,
                 match_type=state.match_type,
             )
-            if battle_premium_applied:
-                circuit_credits_awarded = battle_premium_amount(circuit_credits_awarded)
+            from .free_economy_rewards import match_currency
+            circuit_credits_awarded,flux_shards_awarded,economy_reward = match_currency(
+                updated,state,moment=completed_at,base_credits=circuit_credits_awarded,premium=battle_premium_applied)
             updated.circuit_credits += circuit_credits_awarded
             if profile_progression_applied:
                 self._record_lifetime_stats(
@@ -358,6 +363,8 @@ class PlayerProgressionService:
                         - rating_before
                     ),
                     circuit_credits_awarded=circuit_credits_awarded,
+                    flux_shards_awarded=flux_shards_awarded,
+                    economy_reward=economy_reward,
                     xp_awarded=xp_awarded,
                     level_after=updated.level,
                     experience_after=(

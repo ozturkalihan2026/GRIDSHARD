@@ -1471,6 +1471,8 @@
           result.rating_delta,
         circuitCreditsAwarded:
           Number(result.circuit_credits_awarded || 0),
+        fluxShardsAwarded: Number(result.flux_shards_awarded || 0),
+        economyReward: result.economy_reward || null,
         xpAwarded:
           result.xp_awarded,
         levelAfter:

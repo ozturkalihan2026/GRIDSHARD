@@ -1,4 +1,4 @@
-"""Versioned, server-counted extra daily and season missions; XP only."""
+"""Server-counted XP missions, with separately gated frozen currency rights."""
 from copy import deepcopy
 from hashlib import sha256
 
@@ -61,6 +61,10 @@ def progress_battle(profile, *, match_type, moment, won, core_uses, eligible=Tru
     counters['wins'] = min(40, counters.get('wins', 0) + int(bool(won)))
     counters['core_uses'] = min(50, counters.get('core_uses', 0) + max(0, int(core_uses)))
     counters['active_days'] = min(21, len(state['active_days']))
+    from .free_economy_rewards import mission_snapshot
+    daily_rows,seasonal_rows = _rows(profile,day=day)
+    for row in daily_rows+seasonal_rows:
+        if row['completed'] and not row['claimed']: mission_snapshot(profile,row,moment=moment)
 
 
 def _rows(profile, *, day):
@@ -71,26 +75,36 @@ def _rows(profile, *, day):
     daily = state.get('daily', {}).get(day, {})
     def row(mission, scope, progress):
         key = f'{scope}:{day if scope == "daily" else ""}:{mission["id"]}'
-        return dict(**mission, scope=scope, day_key=day if scope == 'daily' else '',
+        result = dict(**mission, scope=scope, day_key=day if scope == 'daily' else '',
                     season_id=profile.active_meta_season_id, mission_protocol='season-v1', flux_shard_reward=0,
                     progress=min(mission['target'], progress), completed=progress >= mission['target'], claimed=key in rewards)
-    return ([row(m,'daily',daily.get('battles',0)) for m in DAILY],
+        from .free_economy_rewards import mission_snapshot
+        value = mission_snapshot(profile,result)
+        if value:
+            result.update(flux_shard_reward=value['flux_shards'],circuit_credit_reward=value['circuit_credits'],
+                **{k:v for k,v in value.items() if k.startswith('economy_')})
+        return result
+    return ([row(m,'daily',daily.get('battles',0)) for m in DAILY] if day else [],
             [row(m,'seasonal',state.get('progress',{}).get(m['metric'],0)) for m in SEASONAL])
 
 
-def view(profile, *, moment, active):
-    daily, seasonal = _rows(profile, day=moment.date().isoformat())
+def view(profile, *, moment, active, day_key=None):
+    daily, seasonal = _rows(profile, day=day_key or moment.date().isoformat())
     for row in daily + seasonal:
         row['claimable'] = active and row['completed'] and not row['claimed']
     return dict(extra_daily_missions=daily, seasonal_missions=seasonal, season_mission_revision=REVISION)
 
 
-def _award(profile, row, *, automatic=False):
+def _award(profile, row, *, automatic=False, moment=None):
     from .player_profile import SEASON_REWARD_TRACK
     state = _state(profile)
     key = f'{row["scope"]}:{row["day_key"]}:{row["id"]}'
     if key in state['rewards']:
         return deepcopy(state['rewards'][key])
+    from .free_economy_rewards import grant_mission
+    from datetime import datetime,timezone
+    moment = moment or datetime.now(timezone.utc)
+    currency = grant_mission(profile,row,moment=moment)
     before = sum(profile.season_xp >= t['required_xp'] for t in SEASON_REWARD_TRACK)
     profile.season_xp += row['season_xp_reward']
     after = sum(profile.season_xp >= t['required_xp'] for t in SEASON_REWARD_TRACK)
@@ -98,6 +112,7 @@ def _award(profile, row, *, automatic=False):
     receipt = dict(kind='season-missions', mission_id=row['id'], scope=row['scope'],
                    season_id=profile.active_meta_season_id, day_key=row['day_key'],
                    season_xp_reward=row['season_xp_reward'], revision=REVISION, automatic=automatic)
+    receipt.update(currency)
     state['rewards'][key] = receipt
     return deepcopy(receipt)
 
@@ -119,12 +134,12 @@ def claim(profile, *, mission_id, season_id, day_key, request_id, moment):
         return deepcopy(previous)
     if not row['completed']:
         raise MissionError('Emir henüz tamamlanmadı.')
-    receipt = _award(profile, row)
+    receipt = _award(profile, row, moment=moment)
     profile.engagement_claim_receipts[request_id] = deepcopy(receipt)
     return receipt
 
 
-def settle_earned(profile, *, before_day=None, closing=False):
+def settle_earned(profile, *, before_day=None, closing=False, moment=None):
     """Earned XP is never discarded by a UTC day/season rollover."""
     state = profile.season_mission_state
     if not state or state.get('season_id') != profile.active_meta_season_id:
@@ -134,9 +149,9 @@ def settle_earned(profile, *, before_day=None, closing=False):
             daily, _ = _rows(profile, day=day)
             for row in daily:
                 if row['completed']:
-                    _award(profile, row, automatic=True)
+                    _award(profile, row, automatic=True, moment=moment)
     if closing:
         _, seasonal = _rows(profile, day='')
         for row in seasonal:
             if row['completed']:
-                _award(profile, row, automatic=True)
+                _award(profile, row, automatic=True, moment=moment)

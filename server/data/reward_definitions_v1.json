@@ -1,0 +1,1219 @@
+{
+  "schema_version": 1,
+  "definitions": [
+    {
+      "id": "legacy.chest.field_3h",
+      "revision": 1,
+      "kind": "random",
+      "minimum_server_version": "0.0.0",
+      "payload": {
+        "id": "field_3h",
+        "name_tr": "Bronz Sandık",
+        "visual_tier": "bronze",
+        "unlock_hours": 0,
+        "claim_cooldown_hours": 8,
+        "open_seconds": 1,
+        "coins": [
+          45,
+          75
+        ],
+        "flux": [
+          2,
+          4
+        ],
+        "shards": [
+          1,
+          2
+        ],
+        "shards_by_rarity": {
+          "common": [
+            1,
+            2
+          ]
+        },
+        "module_drop_chance": 0.35,
+        "module_rarity_drop_odds": {
+          "common": 0.35
+        },
+        "core_drop_chance": 0.01,
+        "core_drop_shards": 1,
+        "reward_odds": {
+          "circuit_credits": 1.0,
+          "flux_shards": 1.0,
+          "module_shards": 0.35,
+          "core_shards": 0.01
+        },
+        "allowed_rarities": [
+          "common"
+        ],
+        "rarity_odds": {
+          "common": 1.0
+        }
+      },
+      "content_hash": "283a33baf6c71f1f7c3200bab41a9aebabf485037ab73d607b4978fd16971b5a"
+    },
+    {
+      "id": "legacy.chest.circuit_8h",
+      "revision": 1,
+      "kind": "random",
+      "minimum_server_version": "0.0.0",
+      "payload": {
+        "id": "circuit_8h",
+        "name_tr": "Gümüş Sandık",
+        "visual_tier": "silver",
+        "unlock_hours": 0,
+        "claim_cooldown_hours": 8,
+        "open_seconds": 1,
+        "coins": [
+          90,
+          145
+        ],
+        "flux": [
+          3,
+          6
+        ],
+        "shards": [
+          1,
+          3
+        ],
+        "shards_by_rarity": {
+          "common": [
+            2,
+            3
+          ],
+          "rare": [
+            1,
+            2
+          ]
+        },
+        "module_drop_chance": 0.35,
+        "module_rarity_drop_odds": {
+          "common": 0.25,
+          "rare": 0.1
+        },
+        "core_drop_chance": 0.03,
+        "core_drop_shards": 2,
+        "reward_odds": {
+          "circuit_credits": 1.0,
+          "flux_shards": 1.0,
+          "module_shards": 0.35,
+          "core_shards": 0.03
+        },
+        "allowed_rarities": [
+          "common",
+          "rare"
+        ],
+        "rarity_odds": {
+          "common": 0.714285,
+          "rare": 0.285715
+        }
+      },
+      "content_hash": "337a7cc78a0b6907e7eca248b99d5f3bc33b88fe185e7f8ad2c7d1a904b537c6"
+    },
+    {
+      "id": "legacy.chest.core_24h",
+      "revision": 1,
+      "kind": "random",
+      "minimum_server_version": "0.0.0",
+      "payload": {
+        "id": "core_24h",
+        "name_tr": "Altın Sandık",
+        "visual_tier": "gold",
+        "unlock_hours": 0,
+        "claim_cooldown_hours": 16,
+        "open_seconds": 1,
+        "coins": [
+          175,
+          280
+        ],
+        "flux": [
+          5,
+          9
+        ],
+        "shards": [
+          1,
+          4
+        ],
+        "shards_by_rarity": {
+          "common": [
+            3,
+            4
+          ],
+          "rare": [
+            2,
+            3
+          ],
+          "epic": [
+            1,
+            2
+          ]
+        },
+        "module_drop_chance": 0.5,
+        "module_rarity_drop_odds": {
+          "common": 0.3,
+          "rare": 0.15,
+          "epic": 0.05
+        },
+        "core_drop_chance": 0.05,
+        "core_drop_shards": 3,
+        "reward_odds": {
+          "circuit_credits": 1.0,
+          "flux_shards": 1.0,
+          "module_shards": 0.5,
+          "core_shards": 0.05
+        },
+        "allowed_rarities": [
+          "common",
+          "rare",
+          "epic"
+        ],
+        "rarity_odds": {
+          "common": 0.6,
+          "rare": 0.3,
+          "epic": 0.1
+        }
+      },
+      "content_hash": "26df30d59fcec8130918a5fe0e38263f26c0dd5650d411b76335b6ed0c379ac4"
+    },
+    {
+      "id": "legacy.chest.diamond_24h",
+      "revision": 1,
+      "kind": "random",
+      "minimum_server_version": "0.0.0",
+      "payload": {
+        "id": "diamond_24h",
+        "name_tr": "Elmas Sandık",
+        "visual_tier": "diamond",
+        "unlock_hours": 0,
+        "claim_cooldown_hours": 24,
+        "open_seconds": 1,
+        "coins": [
+          320,
+          480
+        ],
+        "flux": [
+          10,
+          15
+        ],
+        "shards": [
+          1,
+          5
+        ],
+        "shards_by_rarity": {
+          "common": [
+            4,
+            5
+          ],
+          "rare": [
+            3,
+            4
+          ],
+          "epic": [
+            2,
+            3
+          ],
+          "legendary": [
+            1,
+            1
+          ]
+        },
+        "module_drop_chance": 0.53,
+        "module_rarity_drop_odds": {
+          "common": 0.25,
+          "rare": 0.15,
+          "epic": 0.1,
+          "legendary": 0.03
+        },
+        "core_drop_chance": 0.1,
+        "core_drop_shards": 5,
+        "reward_odds": {
+          "circuit_credits": 1.0,
+          "flux_shards": 1.0,
+          "module_shards": 0.53,
+          "core_shards": 0.1
+        },
+        "allowed_rarities": [
+          "common",
+          "rare",
+          "epic",
+          "legendary"
+        ],
+        "rarity_odds": {
+          "common": 0.471698,
+          "rare": 0.283019,
+          "epic": 0.188679,
+          "legendary": 0.056604
+        }
+      },
+      "content_hash": "e12ced0231f5264d521cf0ba7e2e1617741dd47e011b8fa83bbf3a2dc57e0cfe"
+    },
+    {
+      "id": "free250.daily_orders.complete_battles",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 15,
+        "circuit_credits": 15
+      },
+      "content_hash": "643a9e938329647c17a0a63f41d6e11e077e4be28a16ba3409063dfe3ccecf44"
+    },
+    {
+      "id": "free250.daily_orders.deal_damage",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 20,
+        "circuit_credits": 25
+      },
+      "content_hash": "da6460c08999b1fd81fd297a296b0412b26a383bdc3519ecd9e0872693d02b7a"
+    },
+    {
+      "id": "free250.daily_orders.circuit_actions",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 20,
+        "circuit_credits": 25
+      },
+      "content_hash": "db77293462bca7e43fb48d7f4c799f2ea1ba556fe26586954bdca7354ddb05a4"
+    },
+    {
+      "id": "free250.daily_orders.win_battles",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 20,
+        "circuit_credits": 25
+      },
+      "content_hash": "bf303b3d486ae675fc6acfeefc60aff7022a99fd94117aea90468da12bd17f03"
+    },
+    {
+      "id": "free250.daily_orders.destroy_modules",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 15,
+        "circuit_credits": 15
+      },
+      "content_hash": "d6d24635c9fa95c89a44732469c50ddf0d97881f3dc16ef3432b31f8188be93b"
+    },
+    {
+      "id": "free250.daily_orders.core_power",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 15,
+        "circuit_credits": 15
+      },
+      "content_hash": "0be913ed800cc4de8aaa6f52740385f8dea843c1024c49753a024a7958a33cfb"
+    },
+    {
+      "id": "free250.daily_extra_orders.daily_battles_4",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 5,
+        "circuit_credits": 30
+      },
+      "content_hash": "bf9868ab9a7277e32cc28021b323688e4371d46cff97cf5e9a39caa1a2d2233a"
+    },
+    {
+      "id": "free250.daily_extra_orders.daily_battles_6",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 5,
+        "circuit_credits": 30
+      },
+      "content_hash": "1b7cd2249ec469d38cc41989e59ca10d1524ac6203d0b6be554632a43c0774e3"
+    },
+    {
+      "id": "free250.seasonal_orders.season_battles_20",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 40,
+        "circuit_credits": 200
+      },
+      "content_hash": "6b481408dbf241cae63f7524fcd2a563c9662b950207b50763a80d1934dde0ef"
+    },
+    {
+      "id": "free250.seasonal_orders.season_battles_40",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 60,
+        "circuit_credits": 300
+      },
+      "content_hash": "121f56acf51bda3fdbdf03f94d8783ac18652a6210aecc5e1bb179a261379e36"
+    },
+    {
+      "id": "free250.seasonal_orders.season_battles_80",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 80,
+        "circuit_credits": 400
+      },
+      "content_hash": "2c941154b96c4246c538fb37171915b00b04571576a4e26f0e514dfc058f382b"
+    },
+    {
+      "id": "free250.seasonal_orders.season_battles_120",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 100,
+        "circuit_credits": 500
+      },
+      "content_hash": "ba38955ba78a5917e249917ba14fe8dcd6afe1506abd95781580bd89e500f0e7"
+    },
+    {
+      "id": "free250.seasonal_orders.season_wins_10",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 30,
+        "circuit_credits": 150
+      },
+      "content_hash": "400b09c6f95ad5ba9035041a0f0985ad3b0e83d60ee08bd75fae6973f22a271e"
+    },
+    {
+      "id": "free250.seasonal_orders.season_wins_25",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 40,
+        "circuit_credits": 200
+      },
+      "content_hash": "e30e5a5175328d02ef07e6e0d3fcf1354fe115931bb6e55e90fa7e2e192935b3"
+    },
+    {
+      "id": "free250.seasonal_orders.season_wins_40",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 60,
+        "circuit_credits": 300
+      },
+      "content_hash": "d60d61d79326ac54cae621806bcbc303582d768527195069081d908cc7aa671b"
+    },
+    {
+      "id": "free250.seasonal_orders.season_days_7",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 30,
+        "circuit_credits": 150
+      },
+      "content_hash": "2786378ec0f43b0bda64839d09d17496bd74afb6c8b07857f9b7b0ca6b5f280d"
+    },
+    {
+      "id": "free250.seasonal_orders.season_days_14",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 40,
+        "circuit_credits": 200
+      },
+      "content_hash": "a2006b0fc1a06116c796507c05e107c86532d981572c40c1f452dccbafea49fc"
+    },
+    {
+      "id": "free250.seasonal_orders.season_days_21",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 60,
+        "circuit_credits": 300
+      },
+      "content_hash": "c0f1e38042355734e59af1afdce0aa2770204556c2d2ac827ae38ebf96969b66"
+    },
+    {
+      "id": "free250.seasonal_orders.season_core_20",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 20,
+        "circuit_credits": 100
+      },
+      "content_hash": "d06fe908ad48a483bfc99e495016ed298b44e2fa3888cfafb7369466bfdb95ff"
+    },
+    {
+      "id": "free250.seasonal_orders.season_core_50",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "flux_shards": 40,
+        "circuit_credits": 200
+      },
+      "content_hash": "3a0c1a3eff2ab403b4035c34b9b5aaa56b0844f63a51559c0ab486f3429a5393"
+    },
+    {
+      "id": "free250.login.1.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 76,
+        "flux_shards": 9
+      },
+      "content_hash": "5cd1e99daef1adfbd83a021947887799752655217912c0189e36c61c5aea50ad"
+    },
+    {
+      "id": "free250.login.2.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 82,
+        "flux_shards": 12
+      },
+      "content_hash": "84354b962854b3a617e895728fc9eb44a1ce0af646b5548c051fda890312b208"
+    },
+    {
+      "id": "free250.login.3.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 88,
+        "flux_shards": 15
+      },
+      "content_hash": "43e1fdfbf15846ca3c002bfced4928dde31c0e6af236fa383c2b2e0b44388fca"
+    },
+    {
+      "id": "free250.login.4.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 94,
+        "flux_shards": 6
+      },
+      "content_hash": "edee6d22f81c5255671f9b088c29a69f12958fc8032e089308e180fcaeafae96"
+    },
+    {
+      "id": "free250.login.5.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 100,
+        "flux_shards": 9
+      },
+      "content_hash": "eb4eda665d4d706b398b07787ee8f46802b3d1ccb37efc777c7889d832d40432"
+    },
+    {
+      "id": "free250.login.6.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 106,
+        "flux_shards": 12
+      },
+      "content_hash": "445276b3377f1098025753c7b44effa5a57a92a2a0d4e615ebe6968f728e39b9"
+    },
+    {
+      "id": "free250.login.7.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 310,
+        "flux_shards": 33
+      },
+      "content_hash": "e9089bb854ba3cb70de93df1620b4775123879d8b480452153aa430b9f26ddad"
+    },
+    {
+      "id": "free250.login.8.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 118,
+        "flux_shards": 6
+      },
+      "content_hash": "8ca7ae6a8b28c680ec07a432f32e614a4b5135713b46cd1efe69c19153f1826b"
+    },
+    {
+      "id": "free250.login.9.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 124,
+        "flux_shards": 9
+      },
+      "content_hash": "21c4fd599cf6f756a1f7fd1f4410fdf957f2fa8a5584081ccfc2ccfe8b3a42f7"
+    },
+    {
+      "id": "free250.login.10.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 130,
+        "flux_shards": 12
+      },
+      "content_hash": "29f3ee5999f56dd8baca0e58cee8adec49e41dde48c3155fbde2fcfbf2032b1b"
+    },
+    {
+      "id": "free250.login.11.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 136,
+        "flux_shards": 15
+      },
+      "content_hash": "e87b70a0b42ff468ac72b9232d064bb8cfa8b623132c8795bc6867d67c319ae8"
+    },
+    {
+      "id": "free250.login.12.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 142,
+        "flux_shards": 6
+      },
+      "content_hash": "46d313fcae80aa023565e7e01f56cf7ab050861aa3276e220fd191c1c3260373"
+    },
+    {
+      "id": "free250.login.13.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 148,
+        "flux_shards": 9
+      },
+      "content_hash": "37311049f57f680d4147cb502d97b43a689bec4817641e4b265b88155b30a3cc"
+    },
+    {
+      "id": "free250.login.14.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 380,
+        "flux_shards": 36
+      },
+      "content_hash": "df89f1f1e14f9260914b1c1faedf7c359f66a2991a80f6198ec7b976a66d70a6"
+    },
+    {
+      "id": "free250.login.15.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 160,
+        "flux_shards": 15
+      },
+      "content_hash": "60f78d5345d067487ee88464a80d1ee6054ead2c5e0e2c5bd051f4fed5b483f3"
+    },
+    {
+      "id": "free250.login.16.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 166,
+        "flux_shards": 6
+      },
+      "content_hash": "4f59fa82fb2674816b7b3a97351c8e55551f0216609b1d12d58a4a6fbb0069c1"
+    },
+    {
+      "id": "free250.login.17.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 172,
+        "flux_shards": 9
+      },
+      "content_hash": "275e32e50ba1e561dbb9cbf8a03e42c05ae9744061ea28f69e9b276dd2a7dbdb"
+    },
+    {
+      "id": "free250.login.18.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 178,
+        "flux_shards": 12
+      },
+      "content_hash": "c7e9a6e1da2d59fab0e5fe7e71ec00d81f86589f60e84f8ba85146eaf091b0fe"
+    },
+    {
+      "id": "free250.login.19.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 184,
+        "flux_shards": 15
+      },
+      "content_hash": "50806ac91c5b58160aa83b1ddb0f85f605f241babaf008edd40878dfc871d01b"
+    },
+    {
+      "id": "free250.login.20.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 190,
+        "flux_shards": 6
+      },
+      "content_hash": "58a242f14facac344c86db7698f040441e2740bd4abc9f98975beeece84f085a"
+    },
+    {
+      "id": "free250.login.21.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 450,
+        "flux_shards": 39
+      },
+      "content_hash": "0f753010ab55fd937174fbbec7bd4b66a1d2ec12541bd118f4687b0d7e4839a3"
+    },
+    {
+      "id": "free250.login.22.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 202,
+        "flux_shards": 12
+      },
+      "content_hash": "0ef23779a44e24f3b2dcbe17de5db18b80863e93e4b56185b73239c65c560aa2"
+    },
+    {
+      "id": "free250.login.23.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 208,
+        "flux_shards": 15
+      },
+      "content_hash": "dbdea0a7b13a042ec8dc2c506478a493ac718fce620d1d880ffdf67f4515003c"
+    },
+    {
+      "id": "free250.login.24.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 214,
+        "flux_shards": 6
+      },
+      "content_hash": "8f5bf11fe7160ee40eeb90105c6b44cba6157593d81f357393e9ef768ad8ea42"
+    },
+    {
+      "id": "free250.login.25.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 220,
+        "flux_shards": 9
+      },
+      "content_hash": "6c8f03057ead98b59e51dc71bca7e20077e845bac3404255bb052480e052e6c5"
+    },
+    {
+      "id": "free250.login.26.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 226,
+        "flux_shards": 12
+      },
+      "content_hash": "e5fb1aee9f670dc570e3d77198e2e7b1e04e40d0e5e9c4fa7ca10200b2ec7469"
+    },
+    {
+      "id": "free250.login.27.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 232,
+        "flux_shards": 15
+      },
+      "content_hash": "8d774008f98def42ba1ac518102918ab0ca4509868bc31f1bff22624662d1269"
+    },
+    {
+      "id": "free250.login.28.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 520,
+        "flux_shards": 42
+      },
+      "content_hash": "dd8163b740a8c4ae845c500a944dba318d670ac3ddbed5d942eb03cb4e68c3b6"
+    },
+    {
+      "id": "free250.season_road.1.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 80,
+        "flux_shards": 0
+      },
+      "content_hash": "1730fde2d1dea88937adbb1f289ccc8c530b3692a580c72a0ef24c6771c05288"
+    },
+    {
+      "id": "free250.season_road.2.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 120,
+        "flux_shards": 8
+      },
+      "content_hash": "61f11a1d56b8b36943599acace3ed9566080a95da6862d8cf81bb90bc0af6d54"
+    },
+    {
+      "id": "free250.season_road.3.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 0,
+        "flux_shards": 10
+      },
+      "content_hash": "89d56de14063614dc7a4da18703dac3edb2a0e5437261eef3e5fe38f69f0fa2b"
+    },
+    {
+      "id": "free250.season_road.4.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 140,
+        "flux_shards": 8
+      },
+      "content_hash": "60ca1d582449416b5e4f4d1452475a80b60ce11a9cce0f0545ac3dd01f2064f3"
+    },
+    {
+      "id": "free250.season_road.5.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 240,
+        "flux_shards": 30
+      },
+      "content_hash": "585476dca80b6ccb554a7de41079b2dfb858ffe3a61a375b40fc5b11454c2f53"
+    },
+    {
+      "id": "free250.season_road.6.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 0,
+        "flux_shards": 10
+      },
+      "content_hash": "a7e3a8d9c9a6eb56d9aa8e5613a174aa0291cfc1ffd4efad927319a8d6e836b0"
+    },
+    {
+      "id": "free250.season_road.7.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 140,
+        "flux_shards": 0
+      },
+      "content_hash": "5d4706a3f044bec43a76edb68334d6427c7689235d514ffb0dbfafcb6eee00d1"
+    },
+    {
+      "id": "free250.season_road.8.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 180,
+        "flux_shards": 8
+      },
+      "content_hash": "8934034900192ad1f1d7edcce22ff62745630b9a43d93dd4a08afd08f609999e"
+    },
+    {
+      "id": "free250.season_road.9.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 0,
+        "flux_shards": 10
+      },
+      "content_hash": "2924e26ad3a494209f064fcb1efaa1208926975fbaf5af70441aae502d06c052"
+    },
+    {
+      "id": "free250.season_road.10.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 700,
+        "flux_shards": 70
+      },
+      "content_hash": "92b24ccd62e7924aece5c86bd91a8563f42cdb839c12c83be91609389efda7e5"
+    },
+    {
+      "id": "free250.season_road.11.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 180,
+        "flux_shards": 0
+      },
+      "content_hash": "9d6cd916dbf42271bac84c512ae8342084074adcd7a1510f01bd11c2818613b4"
+    },
+    {
+      "id": "free250.season_road.12.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 0,
+        "flux_shards": 10
+      },
+      "content_hash": "20791c802a8576ae3f526c4bb993a9fe816c38b047ff9c24d261720a88248668"
+    },
+    {
+      "id": "free250.season_road.13.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 200,
+        "flux_shards": 0
+      },
+      "content_hash": "54b761b4fc4ce8a88caa2eac21587b25ad54515622b2aefda1910b53d5e5b022"
+    },
+    {
+      "id": "free250.season_road.14.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 240,
+        "flux_shards": 8
+      },
+      "content_hash": "6d687dd348c8b215c01b35c5031fe9ecd645c580da4372a1c7a6cfa9109849f7"
+    },
+    {
+      "id": "free250.season_road.15.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 320,
+        "flux_shards": 50
+      },
+      "content_hash": "64b166bf8581c2b019a8a0ec7d4598d49700587be2faacef53c021c5a2fb8cad"
+    },
+    {
+      "id": "free250.season_road.16.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 260,
+        "flux_shards": 8
+      },
+      "content_hash": "186b8b44864c1ed6d75f2993873c31bdf4d4a477ab7867a93ea6304a0daab022"
+    },
+    {
+      "id": "free250.season_road.17.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 240,
+        "flux_shards": 0
+      },
+      "content_hash": "b119f69ba886a53050be88bb0c6ed94753117faa29ce20a8484464468486800b"
+    },
+    {
+      "id": "free250.season_road.18.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 0,
+        "flux_shards": 10
+      },
+      "content_hash": "5cbc5c9b5a9e60bb7eab475b4c8b4e299af96797f380fd4bc385edc3ba049259"
+    },
+    {
+      "id": "free250.season_road.19.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 260,
+        "flux_shards": 0
+      },
+      "content_hash": "9bccb3c5feb11b08f95fcf5bb2fec70666442f2d9e917645d954bd7ed33a3f84"
+    },
+    {
+      "id": "free250.season_road.20.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 900,
+        "flux_shards": 90
+      },
+      "content_hash": "ed587420697a98c8bf75db4984ece88dbb60c0a10eda57e4dae00c7463237c01"
+    },
+    {
+      "id": "free250.season_road.21.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 0,
+        "flux_shards": 10
+      },
+      "content_hash": "c9fce5b75c7b451fae519e3eebb73aeac7721fbaa7fb7051659b4a4cc69c6d79"
+    },
+    {
+      "id": "free250.season_road.22.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 320,
+        "flux_shards": 8
+      },
+      "content_hash": "adf8e17ce25dbd5c57a3923094ae2e2307bf052508c54cb54c212a2180ce3005"
+    },
+    {
+      "id": "free250.season_road.23.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 300,
+        "flux_shards": 0
+      },
+      "content_hash": "48070a938b13fa81bed0fd97e0c811811433c571ae5412bceba151fdf87adec0"
+    },
+    {
+      "id": "free250.season_road.24.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 0,
+        "flux_shards": 10
+      },
+      "content_hash": "2811f5a43a9ed3e94d1fad92259ec1e032d811e3679432430cfced31ef69ac8e"
+    },
+    {
+      "id": "free250.season_road.25.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 400,
+        "flux_shards": 70
+      },
+      "content_hash": "ac488765b42928915841eafcf8d09371fa4756a47d7ae6a6e4d75a801aa2693b"
+    },
+    {
+      "id": "free250.season_road.26.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 360,
+        "flux_shards": 8
+      },
+      "content_hash": "bdd67302531a742e198abf3c44ca8b5a845ddc8ab18fa6582546eb25368d47db"
+    },
+    {
+      "id": "free250.season_road.27.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 0,
+        "flux_shards": 10
+      },
+      "content_hash": "0d1726a8dc2ab4a3160f46b73c21f0c6bc8398932cd10ac1b3415e7fe9e583e1"
+    },
+    {
+      "id": "free250.season_road.28.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 380,
+        "flux_shards": 8
+      },
+      "content_hash": "1a7d0be3ba9e0c5d2f8b55c49d3b385ad59e7c3f6a53bd0adc4580ad3de9cf8b"
+    },
+    {
+      "id": "free250.season_road.29.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 360,
+        "flux_shards": 0
+      },
+      "content_hash": "e24068df7ab6c49ec1cb1e8534c86f68fc4fbb106e361be44925842bad28fcf1"
+    },
+    {
+      "id": "free250.season_road.30.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 1100,
+        "flux_shards": 110
+      },
+      "content_hash": "9580923650686264955f1618d71387ce28401f28e7429bb03d78132c13f9728c"
+    },
+    {
+      "id": "free250.season_road.31.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 380,
+        "flux_shards": 0
+      },
+      "content_hash": "a80b157a66b41196011fb5eb3921c75fa2caeb5d10abc4aa7e8bf43da476a2a9"
+    },
+    {
+      "id": "free250.season_road.32.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 420,
+        "flux_shards": 8
+      },
+      "content_hash": "3bb0f04a440e834a68d40e66fca62446dd7d15978602678de697db51ff59e9f2"
+    },
+    {
+      "id": "free250.season_road.33.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 0,
+        "flux_shards": 10
+      },
+      "content_hash": "d32150654d62bc1ad2ceb199700fddf262eb4c60a78cb401436b7990d5908741"
+    },
+    {
+      "id": "free250.season_road.34.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 440,
+        "flux_shards": 8
+      },
+      "content_hash": "ca9858194709fa4ded6005fd822ba9f488ae6ff4930c960a5d66a5fc229958b5"
+    },
+    {
+      "id": "free250.season_road.35.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 480,
+        "flux_shards": 90
+      },
+      "content_hash": "55e86e7db7d6db17d8b351279176917c23f4aec1b87281f09c1fddcc922c5c18"
+    },
+    {
+      "id": "free250.season_road.36.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 0,
+        "flux_shards": 10
+      },
+      "content_hash": "67a3eb12c0fbe99031d514c9622b61ed74c9c5f0a8ea4a16312df1b72e83ea38"
+    },
+    {
+      "id": "free250.season_road.37.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 440,
+        "flux_shards": 0
+      },
+      "content_hash": "671eb94d610f43587bb77e22b942c141a29283eb46671c82cee784e7e548fa14"
+    },
+    {
+      "id": "free250.season_road.38.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 480,
+        "flux_shards": 8
+      },
+      "content_hash": "6a4df3a3ef6511f46f80982652dd44ab5049f41b77d90937b57118469ef95aef"
+    },
+    {
+      "id": "free250.season_road.39.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 0,
+        "flux_shards": 10
+      },
+      "content_hash": "ea7dcd6b5a58dda99917da510dd501d90e64b26a7a6aacf43c7b10b6a656f827"
+    },
+    {
+      "id": "free250.season_road.40.currency",
+      "revision": 1,
+      "kind": "fixed",
+      "minimum_server_version": "2.5.0",
+      "payload": {
+        "circuit_credits": 1300,
+        "flux_shards": 130
+      },
+      "content_hash": "1e79bc292e94c89a3b06f54034a2d60d0c4a56e2e1fbad160915235cb3827a42"
+    }
+  ]
+}

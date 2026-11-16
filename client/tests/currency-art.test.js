@@ -18,7 +18,8 @@ function sandbox() {
 }
 test("currency files have one CSS mapping shared by static and dynamic views", () => {
   const context = sandbox();
-  for (const [kind, count] of [["flux",1],["credit",2]]) {
+  // Both the wallet and the direct match reward use the same Flux token.
+  for (const [kind, count] of [["flux",2],["credit",2]]) {
     const file = `../assets/ui/currency-v1/${kind}.webp`;
     assert.equal(css.split(file).length - 1, 1);
     const data = fs.readFileSync(path.resolve(root, "src", file));

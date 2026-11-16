@@ -79,8 +79,18 @@ def _summary(connection):
     row = connection.execute("SELECT installation_id FROM server_installation WHERE singleton = TRUE").fetchone()
     if not row:
         raise BackupError("Veritabanının temiz kurulum kimliği yok.")
-    counts = {table: connection.execute(f"SELECT COUNT(*) FROM public.{table}").fetchone()[0] for table in PERSISTENT_TABLES}
     status = migration_status(connection, ROOT / "server" / "migrations")
+    counts = {}
+    for table in PERSISTENT_TABLES:
+        # A pre-2.5 backup must remain restorable before migration 015 is
+        # applied. Never treat a missing table as valid after that migration.
+        if table == "player_reward_entitlements":
+            present = connection.execute("SELECT to_regclass('public.player_reward_entitlements')").fetchone()[0]
+            if present is None:
+                if (status['current_version'] or '000') >= '015':
+                    raise BackupError('Uygulanmış ödül migration tablosu eksik; yedek doğrulanamadı.')
+                continue
+        counts[table] = connection.execute(f"SELECT COUNT(*) FROM public.{table}").fetchone()[0]
     return {"installation_id": str(row[0]), "counts": counts,
             "migrations": [{key: item[key] for key in ("version", "name", "checksum")} for item in status["applied"]]}
 

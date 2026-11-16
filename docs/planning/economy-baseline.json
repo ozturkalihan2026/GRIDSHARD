@@ -13,31 +13,34 @@
   "scenario_reward_policy": "s1_fixed_road_draft_excluding_legacy_api_extra_chests",
   "current_legacy_api_has_additional_road_chests": true,
   "source_hashes": {
-    "server/app/player_profile.py": "4dbc5590b2eabbf901e70aba454fcc1330a6ad30001b8fc868b9d8a23eafeafb",
-    "server/app/player_progression.py": "248a4a001d3e3d8d94cf12bdef515c8e3bd0bf06e57ea3790868a06e72a91bde",
-    "server/app/meta_progression.py": "19775809df2b3358e41c56f04123b7024e20b852cc7af1e220e3c0022b7d45dd",
-    "server/app/season_competition.py": "da0cac4e34112f00719f39ed24325f44fac3f504ee803ed1519973472fce91d7",
-    "server/app/reward_delivery.py": "6ae4429137a5f432c43bdd39e4624be7de649fdd54cb04639e273bc5ba3e451f",
+    "server/app/player_profile.py": "6b7d3f81d546ed9bf4fac08efc8e7f45c9df82de9172ba4787012f4b527becc9",
+    "server/app/player_progression.py": "ceaac1694c107fdacec28d8c8b1c40e04a7154a0a7c2806df4f79a50b5a47c2a",
+    "server/app/meta_progression.py": "b7408a05a9a0e28285d57172efaaca21d25282548f40930fef6ee8188071b45f",
+    "server/app/season_competition.py": "de50a0e209cb7f3af87bb53f18c1eb3b6cca41571fd3c338899d451097aeed8c",
+    "server/app/reward_delivery.py": "1736b367fd8567c74cc5852d17de9dfe5df71e46802f80289bccfaf43cc5c52c",
     "server/app/store_catalog.py": "33a45c32c1bdcf3c1d96c396eaac2a34751a9c8fb6893f7d739fc7c90f88bcf4",
     "server/app/arena_canon.py": "00fd413c9b041d32057987a5040548466176caf49f9d5bef180663890ee757dd",
     "server/app/match_accounting.py": "833638d43b49293424def2663a9f64a9b1c5b096f2ce74f2455ac6c3a0e10721",
-    "server/app/competition_control.py": "6ec6f2266d091130682a14a2a6eeffe44949b2e67e34ee576ca19cb3e534b79f",
-    "server/app/season_missions.py": "7f1142deb1d49650563ef393ebf8ec9fd947c6da5628161d144cc9500133ab87",
+    "server/app/competition_control.py": "450f339b1ddffbcfa9f1a9cfde4e6efd4801617067acebc775da5fd4df653531",
+    "server/app/season_missions.py": "43c0d4e68ec51253da49acc50b07e007919933d875619f5f828f40f74e0a3843",
     "docs/planning/season-1-engagement-v1.json": "9539be37219632246d6ba5ecefe250d30f3e3aa1df4e53910ebaecc9571bc9cb",
-    "server/app/season_entitlements.py": "0b61c2f73c2435e21309ef5a0c5c9d1fbfb465004fa145303ba18ebd09f4f241",
-    "server/app/first_season_profile.py": "764732609357f244cc64a6a29eb86a454780339a89d2d3af9d83e030a54fdb23",
-    "server/app/main.py": "1402b26b192928f7746711bd08add0173cc07d3177c69d8153d71bfd3be9e2eb",
+    "server/app/season_entitlements.py": "847c6cd924e169cbb128384ed288c5a25d0fe76ae6fadc1042f31f2db7b99e8e",
+    "server/app/first_season_profile.py": "a5a66f74dda01b7750752eb928e2b5960d4d2aecaa6a34f75658ef96b91d79e0",
+    "server/app/main.py": "c756a736930fc6ce121759497cf5e88847cbff1804a31cb8de556d0af8ffb1c9",
     "server/app/cosmetic_releases.py": "12a8c1ec82a5e2567a62c5c28b145db1265ed87b369252950cdf022aa5a2aa83",
-    "server/data/first_season_launch_v1.json": "224b93f09a81f2ff1fdeb149d1c8f2cc2a9a3aa4900fcc00089cfe4d8e0f322b",
+    "server/data/first_season_launch_v1.json": "89147da7284ac6ea07bc2621e9370d84a4c06aca5bb5c84fe628ffe18e14897a",
     "server/data/cosmetic_releases_v1.json": "80dd80285ea4c3a895927e41918604b2e905e311d2c13c7330dfb3fcf4a70f54",
-    "docs/planning/release_calendar_v1.json": "7a0c8ec3724434c3d8133edb5da64c27134b01e88d7c809e4cae8e12eba2e908"
+    "docs/planning/release_calendar_v1.json": "6dfb571084c28c726431d9207605ba53257712a243ec219ef468e7ade8a9d106"
   },
   "season": {
     "number": 1,
-    "starts_on": "2026-11-30",
-    "ends_on": "2026-12-28",
+    "starts_on": "2026-11-24",
+    "ends_on": "2026-12-22",
     "starts_at_utc": "00:00",
-    "module": "Mevcut 24 modül; yalnız ilk sezon istisnası"
+    "module": "Mevcut 24 modül; yalnız ilk sezon istisnası",
+    "operator_anchored_weeks": true,
+    "start_mode": "automatic",
+    "previous_starts_on": "2026-11-30"
   },
   "free_track": [
     {
@@ -3211,8 +3214,40 @@
     "season_chest_tags_are_not_extra_chests": true,
     "weekly": [
       {
-        "starts_on": "2026-11-30",
-        "ends_on": "2026-12-07",
+        "starts_on": "2026-11-24",
+        "ends_on": "2026-12-01",
+        "period_id": "2026-W48",
+        "reward_kind": "resource_only",
+        "prizes": [
+          {
+            "position": 1,
+            "circuit_credits": 1200,
+            "flux_shards": 90,
+            "chest_tier": "weekly_first",
+            "module_definition_id": "laser",
+            "module_shards": 36
+          },
+          {
+            "position": 2,
+            "circuit_credits": 760,
+            "flux_shards": 55,
+            "chest_tier": "weekly_second",
+            "module_definition_id": "laser",
+            "module_shards": 24
+          },
+          {
+            "position": 3,
+            "circuit_credits": 420,
+            "flux_shards": 30,
+            "chest_tier": "weekly_third",
+            "module_definition_id": "laser",
+            "module_shards": 18
+          }
+        ]
+      },
+      {
+        "starts_on": "2026-12-01",
+        "ends_on": "2026-12-08",
         "period_id": "2026-W49",
         "reward_kind": "resource_only",
         "prizes": [
@@ -3221,7 +3256,7 @@
             "circuit_credits": 1200,
             "flux_shards": 90,
             "chest_tier": "weekly_first",
-            "module_definition_id": "laser",
+            "module_definition_id": "shield",
             "module_shards": 36
           },
           {
@@ -3229,7 +3264,7 @@
             "circuit_credits": 760,
             "flux_shards": 55,
             "chest_tier": "weekly_second",
-            "module_definition_id": "laser",
+            "module_definition_id": "shield",
             "module_shards": 24
           },
           {
@@ -3237,14 +3272,14 @@
             "circuit_credits": 420,
             "flux_shards": 30,
             "chest_tier": "weekly_third",
-            "module_definition_id": "laser",
+            "module_definition_id": "shield",
             "module_shards": 18
           }
         ]
       },
       {
-        "starts_on": "2026-12-07",
-        "ends_on": "2026-12-14",
+        "starts_on": "2026-12-08",
+        "ends_on": "2026-12-15",
         "period_id": "2026-W50",
         "reward_kind": "resource_only",
         "prizes": [
@@ -3253,7 +3288,7 @@
             "circuit_credits": 1200,
             "flux_shards": 90,
             "chest_tier": "weekly_first",
-            "module_definition_id": "shield",
+            "module_definition_id": "pulse_cannon",
             "module_shards": 36
           },
           {
@@ -3261,7 +3296,7 @@
             "circuit_credits": 760,
             "flux_shards": 55,
             "chest_tier": "weekly_second",
-            "module_definition_id": "shield",
+            "module_definition_id": "pulse_cannon",
             "module_shards": 24
           },
           {
@@ -3269,47 +3304,15 @@
             "circuit_credits": 420,
             "flux_shards": 30,
             "chest_tier": "weekly_third",
-            "module_definition_id": "shield",
+            "module_definition_id": "pulse_cannon",
             "module_shards": 18
           }
         ]
       },
       {
-        "starts_on": "2026-12-14",
-        "ends_on": "2026-12-21",
+        "starts_on": "2026-12-15",
+        "ends_on": "2026-12-22",
         "period_id": "2026-W51",
-        "reward_kind": "resource_only",
-        "prizes": [
-          {
-            "position": 1,
-            "circuit_credits": 1200,
-            "flux_shards": 90,
-            "chest_tier": "weekly_first",
-            "module_definition_id": "pulse_cannon",
-            "module_shards": 36
-          },
-          {
-            "position": 2,
-            "circuit_credits": 760,
-            "flux_shards": 55,
-            "chest_tier": "weekly_second",
-            "module_definition_id": "pulse_cannon",
-            "module_shards": 24
-          },
-          {
-            "position": 3,
-            "circuit_credits": 420,
-            "flux_shards": 30,
-            "chest_tier": "weekly_third",
-            "module_definition_id": "pulse_cannon",
-            "module_shards": 18
-          }
-        ]
-      },
-      {
-        "starts_on": "2026-12-21",
-        "ends_on": "2026-12-28",
-        "period_id": "2026-W52",
         "reward_kind": "cosmetic_set",
         "prizes": [
           {
@@ -3354,7 +3357,7 @@
       },
       {
         "source": "weekly_tournament",
-        "period_id": "2026-W52",
+        "period_id": "2026-W51",
         "slot": 1,
         "items": [
           "abyss_frame",

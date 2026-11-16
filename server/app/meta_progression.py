@@ -14,6 +14,7 @@ from .game.core_balance import core_signature
 from .game.core_stats import core_max_hp
 from .player_profile import CURRENT_SEASON_ID, OPERATOR_TITLE_STAGES, operator_title_view
 from .premium_reward_recovery import wallet_snapshot
+from .reward_definitions import freeze_chest, chest_contents, RewardDefinitionError
 from .reward_delivery import (
     apply_fixed_contents, chest_available, public_chest, queue_chest, collect_chest,
     record_opened_premium_chest,
@@ -1173,13 +1174,14 @@ class MetaProgressionService:
             "awarded_at": iso_utc(now),
             "unlocks_at": iso_utc(now + timedelta(hours=definition["unlock_hours"])),
         }
+        freeze_chest(chest)
         profile.chest_slots.append(chest)
         receipt = {
             "request_id": request_id,
             "definition_id": definition_id,
             "claim_day": claim_day,
             "claimed_at": iso_utc(now),
-            "chest": dict(chest),
+            "chest": public_chest(chest),
         }
         profile.gift_chest_claim_receipts[request_id] = dict(receipt)
         return receipt
@@ -1252,6 +1254,7 @@ class MetaProgressionService:
                 "awarded_at": iso_utc(awarded_at),
                 "unlocks_at": iso_utc(awarded_at),
             }
+            freeze_chest(chest)
             profile.chest_slots.append(chest)
             receipt = self._open_chest(profile, chest["chest_id"], request_id)
             receipt["source_id"] = source_id
@@ -1264,7 +1267,7 @@ class MetaProgressionService:
         if not won:
             return None
         if any(item.get("source_battle_id") == battle_id for item in profile.chest_slots):
-            return next(item for item in profile.chest_slots if item.get("source_battle_id") == battle_id)
+            return public_chest(next(item for item in profile.chest_slots if item.get("source_battle_id") == battle_id))
         existing = next((item for item in profile.reward_inbox if item.get("message_id") == f"battle-chest:{battle_id}"), None)
         if existing:
             return public_chest(existing["inventory_chest"])
@@ -1287,7 +1290,7 @@ class MetaProgressionService:
         }
         queue_chest(profile, chest, message_id=f"battle-chest:{battle_id}", title="Savaş zaferi sandığı", category="battle")
         chest["delivery"] = "inbox"
-        return dict(chest)
+        return public_chest(chest)
 
     def open_chest(self, profile, chest_id: str, request_id: str) -> dict:
         with self._lock:
@@ -1407,7 +1410,10 @@ class MetaProgressionService:
                           if chest.get('reward_content_hash') else {})}
             profile.chest_receipts[request_id] = dict(receipt)
             return receipt
-        definition = CHEST_DEFINITIONS[str(chest["definition_id"])]
+        try:
+            definition, reward_definition = chest_contents(chest)
+        except RewardDefinitionError as exc:
+            raise MetaProgressionError(str(exc)) from exc
         seed = f"{profile.player_id}:{chest_id}"
         coins = _hash_range(f"{seed}:coins", *definition["coins"])
         rarity = _rarity_from_roll(definition["rarity_odds"], _hash_unit(f"{seed}:rarity"))
@@ -1447,6 +1453,9 @@ class MetaProgressionService:
             "chest_id": chest_id,
             "source_battle_id": chest.get("source_battle_id"),
             "definition_id": definition["id"],
+            "reward_definition_id": reward_definition['id'],
+            "reward_definition_revision": reward_definition['revision'],
+            "reward_definition_hash": reward_definition['content_hash'],
             "opened_at": iso_utc(now),
             "rewards": {
                 "circuit_credits": coins,
@@ -1490,7 +1499,6 @@ class MetaProgressionService:
         if balance < cost:
             label = "Akı" if currency == "flux_shards" else "Devre Kredisi"
             raise MetaProgressionError(f"Bu sandık için {cost} {label} gerekir.")
-        setattr(profile, currency, balance - cost)
         definition = CHEST_DEFINITIONS[definition_id]
         chest = {
             "chest_id": f"store-{uuid4().hex}",
@@ -1501,6 +1509,8 @@ class MetaProgressionService:
             "awarded_at": iso_utc(now),
             "unlocks_at": iso_utc(now),
         }
+        freeze_chest(chest)
+        setattr(profile, currency, balance - cost)
         profile.chest_slots.append(chest)
         # Standart sandık açılışı: ödül tablosu ve tohum sandık kimliğinden gelir,
         # böylece aynı hafta içindeki alımlar aynı ödülü vermez.
@@ -1509,7 +1519,7 @@ class MetaProgressionService:
             **opened,
             "request_id": request_id,
             "store_chest_id": definition_id,
-            "chest": dict(chest),
+            "chest": public_chest(chest),
             "currency": currency,
             "cost": cost,
             "base_cost": base_cost,
@@ -1578,8 +1588,11 @@ def archive_and_soft_reset_season(profile, next_season_id: str, archived_at: str
     from .season_entitlements import queue_unclaimed
     original = profile
     profile = deepcopy(original)
-    settle_earned(profile, closing=True)
+    from .free_economy_rewards import settle_daily
+    from .player_profile import DAILY_MISSIONS
     closed_at = archived_at or iso_utc(utc_now())
+    settle_daily(profile,moment=parse_utc(closed_at),active=True,missions=DAILY_MISSIONS)
+    settle_earned(profile, closing=True, moment=parse_utc(closed_at))
     queued = queue_unclaimed(profile, now_iso=closed_at)
     archive = {
         "season_id": profile.active_meta_season_id,

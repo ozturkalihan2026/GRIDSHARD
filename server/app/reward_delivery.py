@@ -23,7 +23,7 @@ PLAYER_UNLOCKS = {
 
 def public_chest(chest: dict) -> dict:
     result = {key: deepcopy(value) for key, value in chest.items()
-              if key not in {"premium_origin", "fixed_reward", "team_reward"}}
+              if key not in {"premium_origin", "fixed_reward", "team_reward", "reward_definition_snapshot"}}
     # Display identity only. Keep the fixed contents and refund provenance
     # private while letting the client show the same crate before opening.
     fixed = chest.get("fixed_reward")
@@ -76,6 +76,8 @@ def queue_chest(profile, chest: dict, *, message_id: str, title: str, category: 
     previous = next((item for item in profile.reward_inbox if item.get("message_id") == message_id), None)
     if previous:
         return {"message_id": message_id, "definition_id": chest["definition_id"], "delivered": True}
+    from .reward_definitions import freeze_chest
+    freeze_chest(chest)
     tier = next((tier for tier, definition in TIER_DEFINITIONS.items() if definition == chest["definition_id"]), "bronze")
     profile.reward_inbox.append({
         "message_id": message_id, "source": chest.get("source", "reward"), "category": category,

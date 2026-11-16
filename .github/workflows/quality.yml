@@ -38,6 +38,9 @@ jobs:
       - name: Check connected release plans
         run: |
           python tools/report_economy_baseline.py --check
+          python tools/simulate_liveops_economy.py --check
+          python tools/simulate_progression_budget.py --check
+          python tools/prepare_reward_definitions.py --check
           python tools/release_announcements.py --check --require 2.4.0
           python tools/plan_season_xp.py --check
           python tools/prepare_first_season.py --check
@@ -148,6 +151,9 @@ jobs:
           server/tests/test_s1_bot_competition.py
           server/tests/test_postgres_runtime_integration.py
           server/tests/test_postgres_battle_results.py
+          server/tests/test_postgres_reward_entitlements.py
+          server/tests/test_postgres_reward_choices.py
+          server/tests/test_postgres_free_economy.py
           server/tests/test_review_access_postgres.py
           server/tests/test_worker_ownership.py
           server/tests/test_real_redis_runtime.py

@@ -102,6 +102,7 @@ test('closed inbox polls update notification counts without constructing message
   const context = {document:{getElementById:get, createElement:() => { created++; return node(); }},
     noteTeamApplicationsFromInbox() {}, pruneInboxExpansionState() {}, inboxReadStore:{has:() => false}, inboxReadKey:n => n.notice_id,
     INBOX_AREA_LIMIT:50, renderInboxDismissControls() {},
+    engineerChoices:{pendingCount:()=>2,renderInbox() {}},
     rewardInboxState:{unclaimed_count:1, unread_count:3, messages:[{status:'unclaimed', category:'battle'}],
       purchases:[{notice_id:'purchase'}], notices:[{notice_id:'system'}]},
   };
@@ -112,7 +113,7 @@ test('closed inbox polls update notification counts without constructing message
   vm.runInNewContext(source.slice(start, end) + ';this.render=renderRewardInbox;', context);
   for (let n = 0; n < 100; n++) context.render();
   assert.equal(cards, 0); assert.equal(created, 0);
-  assert.equal(get('reward-inbox-notification').textContent, '3');
+  assert.equal(get('reward-inbox-notification').textContent, '5');
   assert.equal(get('reward-inbox-button').flags['has-reward'], true);
   get('reward-inbox-dialog').open = true; context.render();
   assert.equal(cards, 3);

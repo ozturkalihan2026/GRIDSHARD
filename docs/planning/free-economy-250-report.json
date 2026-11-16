@@ -1,0 +1,6739 @@
+{
+  "schema_version": 1,
+  "release": "2.5.0",
+  "planning_only": true,
+  "runtime_changed": false,
+  "policy_status": "analysis_proposal",
+  "no_ads": true,
+  "no_purchases": true,
+  "no_new_premium": true,
+  "currency_values_are_expectations": true,
+  "cost_probes": {
+    "common_level_1_to_5": {
+      "circuit_credits": 1300,
+      "flux_shards": 0,
+      "shards": 36
+    },
+    "six_common_level_1_to_8": {
+      "circuit_credits": 40800,
+      "flux_shards": 0,
+      "shards": 1896
+    },
+    "legendary_level_14_to_15": {
+      "circuit_credits": 80000,
+      "shards": 90,
+      "flux_shards": 10000
+    },
+    "legendary_first_talent": {
+      "circuit_credits": 10000,
+      "flux_shards": 1000
+    },
+    "legendary_all_talents": {
+      "circuit_credits": 100000,
+      "flux_shards": 10000
+    },
+    "legendary_core_all_talents": {
+      "circuit_credits": 90000,
+      "flux_shards": 9000
+    },
+    "single_talent_reset": {
+      "circuit_credits": 0,
+      "flux_shards": 25
+    },
+    "core_24h": {
+      "circuit_credits": 0,
+      "flux_shards": 500
+    },
+    "diamond_24h": {
+      "circuit_credits": 0,
+      "flux_shards": 1000
+    }
+  },
+  "assumptions": [
+    "Fixed rating, explicit wins and mission completions; not player telemetry.",
+    "Logged-in days claim all specified gifts/orders and earned free tiers.",
+    "Synthetic 28-day active season uses current free-track amounts and extra mission XP.",
+    "Synthetic dates are not a season opening or deployment decision.",
+    "No starting wallet, road/title one-off awards, competition wins, donations or premium rights.",
+    "Shard/arena/level eligibility is not inferred from currency affordability.",
+    "Cost probes are independent alternatives; they do not spend the same wallet together.",
+    "Candidate uses existing five channels, with no additional daily/weekly support campaign.",
+    "Match currency boosts exclude forfeits/neutral matches; existing basic-order eligibility is retained.",
+    "Season-dependent login/order/road revisions are a new-season candidate; published S1 is unchanged.",
+    "All new amounts are a tuning candidate, not an implemented or approved runtime grant."
+  ],
+  "source_hashes": {
+    "server/app/arena_canon.py": "00fd413c9b041d32057987a5040548466176caf49f9d5bef180663890ee757dd",
+    "server/app/meta_progression.py": "b7408a05a9a0e28285d57172efaaca21d25282548f40930fef6ee8188071b45f",
+    "server/app/player_profile.py": "6b7d3f81d546ed9bf4fac08efc8e7f45c9df82de9172ba4787012f4b527becc9",
+    "server/app/player_progression.py": "ceaac1694c107fdacec28d8c8b1c40e04a7154a0a7c2806df4f79a50b5a47c2a",
+    "server/app/game/talents.py": "80f1a8079bd0242805cd14ef172814f7b6a6fb4357f3b0c8982f6265288b1b79",
+    "docs/planning/season-1-engagement-v1.json": "9539be37219632246d6ba5ecefe250d30f3e3aa1df4e53910ebaecc9571bc9cb",
+    "docs/planning/free-economy-250-v1.json": "7a5b8f4e9fa845ebcf128de365e31247c21552b419b0d79b298cc09f5a443f56",
+    "tools/simulate_liveops_economy.py": "7c2ee460f061529589340c5598a774340a992b8f4fb1a28dec3a19cc2a9cc824",
+    "server/app/free_economy_rewards.py": "d270ffcdc31fc450a11a7aacd4a4a3b73a8854b9cbefa664e6324f0897f77c8f",
+    "server/data/free_economy_rewards_v1.json": "f7a1a38252accd446d1ec51885ab28fe2d409aa7a5d7ca969e85c1c461f1c102"
+  },
+  "scenarios": [
+    {
+      "id": "login_only",
+      "days": 1,
+      "current": {
+        "id": "login_only",
+        "name_tr": "Yalnız giriş",
+        "days": 1,
+        "active_battle_days": 0,
+        "season_active": true,
+        "reached_tier": 0,
+        "season_xp": 0,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 38.0,
+          "flux_shards": 3.0
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 38.0,
+            "flux_shards": 3.0
+          }
+        ]
+      },
+      "candidate": {
+        "id": "login_only",
+        "name_tr": "Yalnız giriş",
+        "days": 1,
+        "active_battle_days": 0,
+        "season_active": true,
+        "reached_tier": 0,
+        "season_xp": 0,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 76,
+            "flux_shards": 9
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 76.0,
+          "flux_shards": 9.0
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 38,
+          "flux_shards": 6
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 6
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 76.0,
+            "flux_shards": 9.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "login_only",
+      "days": 7,
+      "current": {
+        "id": "login_only",
+        "name_tr": "Yalnız giriş",
+        "days": 7,
+        "active_battle_days": 0,
+        "season_active": true,
+        "reached_tier": 0,
+        "season_xp": 0,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 32
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 428.0,
+          "flux_shards": 32.0
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 38.0,
+            "flux_shards": 3.0
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 428.0,
+            "flux_shards": 32.0
+          }
+        ]
+      },
+      "candidate": {
+        "id": "login_only",
+        "name_tr": "Yalnız giriş",
+        "days": 7,
+        "active_battle_days": 0,
+        "season_active": true,
+        "reached_tier": 0,
+        "season_xp": 0,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 856,
+            "flux_shards": 96
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 856.0,
+          "flux_shards": 96.0
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 428,
+          "flux_shards": 64
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 64
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 76.0,
+            "flux_shards": 9.0
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 856.0,
+            "flux_shards": 96.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "login_only",
+      "days": 28,
+      "current": {
+        "id": "login_only",
+        "name_tr": "Yalnız giriş",
+        "days": 28,
+        "active_battle_days": 0,
+        "season_active": true,
+        "reached_tier": 0,
+        "season_xp": 0,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 2678.0,
+          "flux_shards": 134.0
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 38.0,
+            "flux_shards": 3.0
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 428.0,
+            "flux_shards": 32.0
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 1017.0,
+            "flux_shards": 63.0
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 1767.0,
+            "flux_shards": 97.0
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 2678.0,
+            "flux_shards": 134.0
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 1378.0,
+              "flux_shards": 134.0
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -38122.0,
+              "flux_shards": 134.0
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -77322.0,
+              "flux_shards": -9866.0
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -7322.0,
+              "flux_shards": -866.0
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -97322.0,
+              "flux_shards": -9866.0
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -87322.0,
+              "flux_shards": -8866.0
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 2678.0,
+              "flux_shards": 109.0
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 2678.0,
+              "flux_shards": -366.0
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 2678.0,
+              "flux_shards": -866.0
+            }
+          }
+        }
+      },
+      "candidate": {
+        "id": "login_only",
+        "name_tr": "Yalnız giriş",
+        "days": 28,
+        "active_battle_days": 0,
+        "season_active": true,
+        "reached_tier": 0,
+        "season_xp": 0,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 5356,
+            "flux_shards": 402
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 5356.0,
+          "flux_shards": 402.0
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 2678,
+          "flux_shards": 268
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 268
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 76.0,
+            "flux_shards": 9.0
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 856.0,
+            "flux_shards": 96.0
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 2034.0,
+            "flux_shards": 189.0
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 3534.0,
+            "flux_shards": 291.0
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 5356.0,
+            "flux_shards": 402.0
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 4056.0,
+              "flux_shards": 402.0
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -35444.0,
+              "flux_shards": 402.0
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -74644.0,
+              "flux_shards": -9598.0
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -4644.0,
+              "flux_shards": -598.0
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -94644.0,
+              "flux_shards": -9598.0
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -84644.0,
+              "flux_shards": -8598.0
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 5356.0,
+              "flux_shards": 377.0
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 5356.0,
+              "flux_shards": -98.0
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 5356.0,
+              "flux_shards": -598.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "casual_2",
+      "days": 1,
+      "current": {
+        "id": "casual_2",
+        "name_tr": "2 savaş / 3 emir",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 0,
+        "season_xp": 135,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 47,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 40
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 98.5,
+            "flux_shards": 3.99
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 60.0,
+            "flux_shards": 3.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 243.5,
+          "flux_shards": 49.99
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 135,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 243.5,
+            "flux_shards": 49.99
+          }
+        ]
+      },
+      "candidate": {
+        "id": "casual_2",
+        "name_tr": "2 savaş / 3 emir",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 0,
+        "season_xp": 135,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 70,
+            "flux_shards": 4
+          },
+          "daily_orders": {
+            "circuit_credits": 65,
+            "flux_shards": 55
+          },
+          "login": {
+            "circuit_credits": 76,
+            "flux_shards": 9
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 98.5,
+            "flux_shards": 3.99
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 60.0,
+            "flux_shards": 3.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 369.5,
+          "flux_shards": 74.99
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 126,
+          "flux_shards": 25
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 23,
+            "flux_shards": 4
+          },
+          "daily_orders": {
+            "circuit_credits": 65,
+            "flux_shards": 15
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 6
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 135,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 369.5,
+            "flux_shards": 74.99
+          }
+        ]
+      }
+    },
+    {
+      "id": "casual_2",
+      "days": 7,
+      "current": {
+        "id": "casual_2",
+        "name_tr": "2 savaş / 3 emir",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": true,
+        "reached_tier": 6,
+        "season_xp": 1045,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 329,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 280
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 32
+          },
+          "season_road": {
+            "circuit_credits": 290,
+            "flux_shards": 33
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 689.5,
+            "flux_shards": 27.930000000000007
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 420.0,
+            "flux_shards": 21.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 2156.5,
+          "flux_shards": 393.93
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 135,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 243.5,
+            "flux_shards": 49.99
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 1045,
+            "new_seasonal_xp": 100,
+            "tier": 6,
+            "circuit_credits": 2156.5,
+            "flux_shards": 393.93
+          }
+        ]
+      },
+      "candidate": {
+        "id": "casual_2",
+        "name_tr": "2 savaş / 3 emir",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": true,
+        "reached_tier": 6,
+        "season_xp": 1045,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 490,
+            "flux_shards": 28
+          },
+          "daily_orders": {
+            "circuit_credits": 455,
+            "flux_shards": 385
+          },
+          "login": {
+            "circuit_credits": 856,
+            "flux_shards": 96
+          },
+          "season_road": {
+            "circuit_credits": 580,
+            "flux_shards": 66
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 689.5,
+            "flux_shards": 27.930000000000007
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 420.0,
+            "flux_shards": 21.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 150,
+            "flux_shards": 30
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 3640.5,
+          "flux_shards": 653.93
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 1484,
+          "flux_shards": 260
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 161,
+            "flux_shards": 28
+          },
+          "daily_orders": {
+            "circuit_credits": 455,
+            "flux_shards": 105
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 64
+          },
+          "season_road": {
+            "circuit_credits": 290,
+            "flux_shards": 33
+          },
+          "seasonal_orders": {
+            "circuit_credits": 150,
+            "flux_shards": 30
+          }
+        },
+        "seasonal_currency_claims": 1,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 135,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 369.5,
+            "flux_shards": 74.99
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 1045,
+            "new_seasonal_xp": 100,
+            "tier": 6,
+            "circuit_credits": 3640.5,
+            "flux_shards": 653.93
+          }
+        ]
+      }
+    },
+    {
+      "id": "casual_2",
+      "days": 28,
+      "current": {
+        "id": "casual_2",
+        "name_tr": "2 savaş / 3 emir",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": true,
+        "reached_tier": 20,
+        "season_xp": 4680,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 1316,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 1120
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134
+          },
+          "season_road": {
+            "circuit_credits": 2100,
+            "flux_shards": 165
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 2758.0,
+            "flux_shards": 111.71999999999997
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 1680.0,
+            "flux_shards": 84.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 10532.0,
+          "flux_shards": 1614.72
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 135,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 243.5,
+            "flux_shards": 49.99
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 1045,
+            "new_seasonal_xp": 100,
+            "tier": 6,
+            "circuit_credits": 2156.5,
+            "flux_shards": 393.93
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 2340,
+            "new_seasonal_xp": 100,
+            "tier": 12,
+            "circuit_credits": 4784.0,
+            "flux_shards": 802.86
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 3585,
+            "new_seasonal_xp": 100,
+            "tier": 16,
+            "circuit_credits": 7482.5,
+            "flux_shards": 1198.79
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 4680,
+            "new_seasonal_xp": 0,
+            "tier": 20,
+            "circuit_credits": 10532.0,
+            "flux_shards": 1614.72
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 9232.0,
+              "flux_shards": 1614.72
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -30268.0,
+              "flux_shards": 1614.72
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -69468.0,
+              "flux_shards": -8385.28
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 532.0,
+              "flux_shards": 614.72
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -89468.0,
+              "flux_shards": -8385.28
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -79468.0,
+              "flux_shards": -7385.28
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 10532.0,
+              "flux_shards": 1589.72
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 10532.0,
+              "flux_shards": 1114.72
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 10532.0,
+              "flux_shards": 614.72
+            }
+          }
+        }
+      },
+      "candidate": {
+        "id": "casual_2",
+        "name_tr": "2 savaş / 3 emir",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": true,
+        "reached_tier": 20,
+        "season_xp": 4680,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 1960,
+            "flux_shards": 112
+          },
+          "daily_orders": {
+            "circuit_credits": 1820,
+            "flux_shards": 1540
+          },
+          "login": {
+            "circuit_credits": 5356,
+            "flux_shards": 402
+          },
+          "season_road": {
+            "circuit_credits": 4200,
+            "flux_shards": 330
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 2758.0,
+            "flux_shards": 111.71999999999997
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 1680.0,
+            "flux_shards": 84.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 1500,
+            "flux_shards": 300
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 19274.0,
+          "flux_shards": 2879.72
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 8742,
+          "flux_shards": 1265
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 644,
+            "flux_shards": 112
+          },
+          "daily_orders": {
+            "circuit_credits": 1820,
+            "flux_shards": 420
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 268
+          },
+          "season_road": {
+            "circuit_credits": 2100,
+            "flux_shards": 165
+          },
+          "seasonal_orders": {
+            "circuit_credits": 1500,
+            "flux_shards": 300
+          }
+        },
+        "seasonal_currency_claims": 7,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 135,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 369.5,
+            "flux_shards": 74.99
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 1045,
+            "new_seasonal_xp": 100,
+            "tier": 6,
+            "circuit_credits": 3640.5,
+            "flux_shards": 653.93
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 2340,
+            "new_seasonal_xp": 100,
+            "tier": 12,
+            "circuit_credits": 8623.0,
+            "flux_shards": 1416.86
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 3585,
+            "new_seasonal_xp": 100,
+            "tier": 16,
+            "circuit_credits": 13797.5,
+            "flux_shards": 2166.79
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 4680,
+            "new_seasonal_xp": 0,
+            "tier": 20,
+            "circuit_credits": 19274.0,
+            "flux_shards": 2879.72
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 17974.0,
+              "flux_shards": 2879.72
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -21526.0,
+              "flux_shards": 2879.72
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -60726.0,
+              "flux_shards": -7120.28
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 9274.0,
+              "flux_shards": 1879.72
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -80726.0,
+              "flux_shards": -7120.28
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -70726.0,
+              "flux_shards": -6120.28
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 19274.0,
+              "flux_shards": 2854.72
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 19274.0,
+              "flux_shards": 2379.72
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 19274.0,
+              "flux_shards": 1879.72
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "regular_4",
+      "days": 1,
+      "current": {
+        "id": "regular_4",
+        "name_tr": "4 savaş / 6 emir",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 1,
+        "season_xp": 280,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 94,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 75
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3
+          },
+          "season_road": {
+            "circuit_credits": 40,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 197.0,
+            "flux_shards": 7.98
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 489.0,
+          "flux_shards": 91.98
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 489.0,
+            "flux_shards": 91.98
+          }
+        ]
+      },
+      "candidate": {
+        "id": "regular_4",
+        "name_tr": "4 savaş / 6 emir",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 1,
+        "season_xp": 280,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 140,
+            "flux_shards": 8
+          },
+          "daily_orders": {
+            "circuit_credits": 150,
+            "flux_shards": 110
+          },
+          "login": {
+            "circuit_credits": 76,
+            "flux_shards": 9
+          },
+          "season_road": {
+            "circuit_credits": 80,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 197.0,
+            "flux_shards": 7.98
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 763.0,
+          "flux_shards": 140.98
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 274,
+          "flux_shards": 49
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 46,
+            "flux_shards": 8
+          },
+          "daily_orders": {
+            "circuit_credits": 150,
+            "flux_shards": 35
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 6
+          },
+          "season_road": {
+            "circuit_credits": 40,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 763.0,
+            "flux_shards": 140.98
+          }
+        ]
+      }
+    },
+    {
+      "id": "regular_4",
+      "days": 7,
+      "current": {
+        "id": "regular_4",
+        "name_tr": "4 savaş / 6 emir",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": true,
+        "reached_tier": 11,
+        "season_xp": 2310,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 658,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 525
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 32
+          },
+          "season_road": {
+            "circuit_credits": 890,
+            "flux_shards": 77
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 1379.0,
+            "flux_shards": 55.860000000000014
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 840.0,
+            "flux_shards": 42.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 4195.0,
+          "flux_shards": 731.86
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 489.0,
+            "flux_shards": 91.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 2310,
+            "new_seasonal_xp": 100,
+            "tier": 11,
+            "circuit_credits": 4195.0,
+            "flux_shards": 731.86
+          }
+        ]
+      },
+      "candidate": {
+        "id": "regular_4",
+        "name_tr": "4 savaş / 6 emir",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": true,
+        "reached_tier": 11,
+        "season_xp": 2310,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 980,
+            "flux_shards": 56
+          },
+          "daily_orders": {
+            "circuit_credits": 1050,
+            "flux_shards": 770
+          },
+          "login": {
+            "circuit_credits": 856,
+            "flux_shards": 96
+          },
+          "season_road": {
+            "circuit_credits": 1780,
+            "flux_shards": 154
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 1379.0,
+            "flux_shards": 55.860000000000014
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 840.0,
+            "flux_shards": 42.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 500,
+            "flux_shards": 100
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 7385.0,
+          "flux_shards": 1273.86
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 3190,
+          "flux_shards": 542
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 322,
+            "flux_shards": 56
+          },
+          "daily_orders": {
+            "circuit_credits": 1050,
+            "flux_shards": 245
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 64
+          },
+          "season_road": {
+            "circuit_credits": 890,
+            "flux_shards": 77
+          },
+          "seasonal_orders": {
+            "circuit_credits": 500,
+            "flux_shards": 100
+          }
+        },
+        "seasonal_currency_claims": 3,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 763.0,
+            "flux_shards": 140.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 2310,
+            "new_seasonal_xp": 100,
+            "tier": 11,
+            "circuit_credits": 7385.0,
+            "flux_shards": 1273.86
+          }
+        ]
+      }
+    },
+    {
+      "id": "regular_4",
+      "days": 28,
+      "current": {
+        "id": "regular_4",
+        "name_tr": "4 savaş / 6 emir",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": true,
+        "reached_tier": 33,
+        "season_xp": 9340,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 2632,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 2100
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134
+          },
+          "season_road": {
+            "circuit_credits": 4110,
+            "flux_shards": 291
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 5516.0,
+            "flux_shards": 223.43999999999994
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 18296.0,
+          "flux_shards": 2916.44
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 489.0,
+            "flux_shards": 91.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 2310,
+            "new_seasonal_xp": 100,
+            "tier": 11,
+            "circuit_credits": 4195.0,
+            "flux_shards": 731.86
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 4770,
+            "new_seasonal_xp": 100,
+            "tier": 20,
+            "circuit_credits": 8871.0,
+            "flux_shards": 1473.72
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 7280,
+            "new_seasonal_xp": 100,
+            "tier": 28,
+            "circuit_credits": 13378.0,
+            "flux_shards": 2192.58
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 9340,
+            "new_seasonal_xp": 0,
+            "tier": 33,
+            "circuit_credits": 18296.0,
+            "flux_shards": 2916.44
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 16996.0,
+              "flux_shards": 2916.44
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -22504.0,
+              "flux_shards": 2916.44
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -61704.0,
+              "flux_shards": -7083.56
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 8296.0,
+              "flux_shards": 1916.44
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -81704.0,
+              "flux_shards": -7083.56
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -71704.0,
+              "flux_shards": -6083.56
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 18296.0,
+              "flux_shards": 2891.44
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 18296.0,
+              "flux_shards": 2416.44
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 18296.0,
+              "flux_shards": 1916.44
+            }
+          }
+        }
+      },
+      "candidate": {
+        "id": "regular_4",
+        "name_tr": "4 savaş / 6 emir",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": true,
+        "reached_tier": 33,
+        "season_xp": 9340,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 3920,
+            "flux_shards": 224
+          },
+          "daily_orders": {
+            "circuit_credits": 4200,
+            "flux_shards": 3080
+          },
+          "login": {
+            "circuit_credits": 5356,
+            "flux_shards": 402
+          },
+          "season_road": {
+            "circuit_credits": 8220,
+            "flux_shards": 582
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 5516.0,
+            "flux_shards": 223.43999999999994
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 2500,
+            "flux_shards": 500
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 33072.0,
+          "flux_shards": 5179.44
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 14776,
+          "flux_shards": 2263
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 1288,
+            "flux_shards": 224
+          },
+          "daily_orders": {
+            "circuit_credits": 4200,
+            "flux_shards": 980
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 268
+          },
+          "season_road": {
+            "circuit_credits": 4110,
+            "flux_shards": 291
+          },
+          "seasonal_orders": {
+            "circuit_credits": 2500,
+            "flux_shards": 500
+          }
+        },
+        "seasonal_currency_claims": 11,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 763.0,
+            "flux_shards": 140.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 2310,
+            "new_seasonal_xp": 100,
+            "tier": 11,
+            "circuit_credits": 7385.0,
+            "flux_shards": 1273.86
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 4770,
+            "new_seasonal_xp": 100,
+            "tier": 20,
+            "circuit_credits": 16032.0,
+            "flux_shards": 2626.72
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 7280,
+            "new_seasonal_xp": 100,
+            "tier": 28,
+            "circuit_credits": 24541.0,
+            "flux_shards": 3976.58
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 9340,
+            "new_seasonal_xp": 0,
+            "tier": 33,
+            "circuit_credits": 33072.0,
+            "flux_shards": 5179.44
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 31772.0,
+              "flux_shards": 5179.44
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -7728.0,
+              "flux_shards": 5179.44
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -46928.0,
+              "flux_shards": -4820.56
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 23072.0,
+              "flux_shards": 4179.44
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -66928.0,
+              "flux_shards": -4820.56
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -56928.0,
+              "flux_shards": -3820.56
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 33072.0,
+              "flux_shards": 5154.44
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 33072.0,
+              "flux_shards": 4679.44
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 33072.0,
+              "flux_shards": 4179.44
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "engaged_6",
+      "days": 1,
+      "current": {
+        "id": "engaged_6",
+        "name_tr": "6 savaş / 6 emir",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 2,
+        "season_xp": 360,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 141,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 75
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3
+          },
+          "season_road": {
+            "circuit_credits": 100,
+            "flux_shards": 4
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 295.5,
+            "flux_shards": 11.97
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 694.5,
+          "flux_shards": 99.97
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 360,
+            "new_seasonal_xp": 0,
+            "tier": 2,
+            "circuit_credits": 694.5,
+            "flux_shards": 99.97
+          }
+        ]
+      },
+      "candidate": {
+        "id": "engaged_6",
+        "name_tr": "6 savaş / 6 emir",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 2,
+        "season_xp": 360,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 210,
+            "flux_shards": 12
+          },
+          "daily_orders": {
+            "circuit_credits": 180,
+            "flux_shards": 115
+          },
+          "login": {
+            "circuit_credits": 76,
+            "flux_shards": 9
+          },
+          "season_road": {
+            "circuit_credits": 200,
+            "flux_shards": 8
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 295.5,
+            "flux_shards": 11.97
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 1081.5,
+          "flux_shards": 161.97
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 387,
+          "flux_shards": 62
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 69,
+            "flux_shards": 12
+          },
+          "daily_orders": {
+            "circuit_credits": 180,
+            "flux_shards": 40
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 6
+          },
+          "season_road": {
+            "circuit_credits": 100,
+            "flux_shards": 4
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 360,
+            "new_seasonal_xp": 0,
+            "tier": 2,
+            "circuit_credits": 1081.5,
+            "flux_shards": 161.97
+          }
+        ]
+      }
+    },
+    {
+      "id": "engaged_6",
+      "days": 7,
+      "current": {
+        "id": "engaged_6",
+        "name_tr": "6 savaş / 6 emir",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": true,
+        "reached_tier": 14,
+        "season_xp": 3070,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 987,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 525
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 32
+          },
+          "season_road": {
+            "circuit_credits": 1110,
+            "flux_shards": 86
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 2068.5,
+            "flux_shards": 83.79
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 840.0,
+            "flux_shards": 42.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 5433.5,
+          "flux_shards": 768.79
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 360,
+            "new_seasonal_xp": 0,
+            "tier": 2,
+            "circuit_credits": 694.5,
+            "flux_shards": 99.97
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 3070,
+            "new_seasonal_xp": 300,
+            "tier": 14,
+            "circuit_credits": 5433.5,
+            "flux_shards": 768.79
+          }
+        ]
+      },
+      "candidate": {
+        "id": "engaged_6",
+        "name_tr": "6 savaş / 6 emir",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": true,
+        "reached_tier": 14,
+        "season_xp": 3070,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 1470,
+            "flux_shards": 84
+          },
+          "daily_orders": {
+            "circuit_credits": 1260,
+            "flux_shards": 805
+          },
+          "login": {
+            "circuit_credits": 856,
+            "flux_shards": 96
+          },
+          "season_road": {
+            "circuit_credits": 2220,
+            "flux_shards": 172
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 2068.5,
+            "flux_shards": 83.79
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 840.0,
+            "flux_shards": 42.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 800,
+            "flux_shards": 160
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 9514.5,
+          "flux_shards": 1442.79
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 4081,
+          "flux_shards": 674
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 483,
+            "flux_shards": 84
+          },
+          "daily_orders": {
+            "circuit_credits": 1260,
+            "flux_shards": 280
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 64
+          },
+          "season_road": {
+            "circuit_credits": 1110,
+            "flux_shards": 86
+          },
+          "seasonal_orders": {
+            "circuit_credits": 800,
+            "flux_shards": 160
+          }
+        },
+        "seasonal_currency_claims": 4,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 360,
+            "new_seasonal_xp": 0,
+            "tier": 2,
+            "circuit_credits": 1081.5,
+            "flux_shards": 161.97
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 3070,
+            "new_seasonal_xp": 300,
+            "tier": 14,
+            "circuit_credits": 9514.5,
+            "flux_shards": 1442.79
+          }
+        ]
+      }
+    },
+    {
+      "id": "engaged_6",
+      "days": 28,
+      "current": {
+        "id": "engaged_6",
+        "name_tr": "6 savaş / 6 emir",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": true,
+        "reached_tier": 39,
+        "season_xp": 11880,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 3948,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 2100
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134
+          },
+          "season_road": {
+            "circuit_credits": 5030,
+            "flux_shards": 354
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 8274.0,
+            "flux_shards": 335.1600000000002
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 23290.0,
+          "flux_shards": 3091.16
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 360,
+            "new_seasonal_xp": 0,
+            "tier": 2,
+            "circuit_credits": 694.5,
+            "flux_shards": 99.97
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 3070,
+            "new_seasonal_xp": 300,
+            "tier": 14,
+            "circuit_credits": 5433.5,
+            "flux_shards": 768.79
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 6340,
+            "new_seasonal_xp": 550,
+            "tier": 25,
+            "circuit_credits": 11418.0,
+            "flux_shards": 1578.58
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 9260,
+            "new_seasonal_xp": 100,
+            "tier": 33,
+            "circuit_credits": 17563.5,
+            "flux_shards": 2340.37
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 11880,
+            "new_seasonal_xp": 0,
+            "tier": 39,
+            "circuit_credits": 23290.0,
+            "flux_shards": 3091.16
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 21990.0,
+              "flux_shards": 3091.16
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -17510.0,
+              "flux_shards": 3091.16
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -56710.0,
+              "flux_shards": -6908.84
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 13290.0,
+              "flux_shards": 2091.16
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -76710.0,
+              "flux_shards": -6908.84
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -66710.0,
+              "flux_shards": -5908.84
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 23290.0,
+              "flux_shards": 3066.16
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 23290.0,
+              "flux_shards": 2591.16
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 23290.0,
+              "flux_shards": 2091.16
+            }
+          }
+        }
+      },
+      "candidate": {
+        "id": "engaged_6",
+        "name_tr": "6 savaş / 6 emir",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": true,
+        "reached_tier": 39,
+        "season_xp": 11880,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 5880,
+            "flux_shards": 336
+          },
+          "daily_orders": {
+            "circuit_credits": 5040,
+            "flux_shards": 3220
+          },
+          "login": {
+            "circuit_credits": 5356,
+            "flux_shards": 402
+          },
+          "season_road": {
+            "circuit_credits": 10060,
+            "flux_shards": 708
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 8274.0,
+            "flux_shards": 335.1600000000002
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 3000,
+            "flux_shards": 600
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 40970.0,
+          "flux_shards": 5769.16
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 17680,
+          "flux_shards": 2678
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 1932,
+            "flux_shards": 336
+          },
+          "daily_orders": {
+            "circuit_credits": 5040,
+            "flux_shards": 1120
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 268
+          },
+          "season_road": {
+            "circuit_credits": 5030,
+            "flux_shards": 354
+          },
+          "seasonal_orders": {
+            "circuit_credits": 3000,
+            "flux_shards": 600
+          }
+        },
+        "seasonal_currency_claims": 12,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 360,
+            "new_seasonal_xp": 0,
+            "tier": 2,
+            "circuit_credits": 1081.5,
+            "flux_shards": 161.97
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 3070,
+            "new_seasonal_xp": 300,
+            "tier": 14,
+            "circuit_credits": 9514.5,
+            "flux_shards": 1442.79
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 6340,
+            "new_seasonal_xp": 550,
+            "tier": 25,
+            "circuit_credits": 20531.0,
+            "flux_shards": 3046.58
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 9260,
+            "new_seasonal_xp": 100,
+            "tier": 33,
+            "circuit_credits": 31469.5,
+            "flux_shards": 4477.37
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 11880,
+            "new_seasonal_xp": 0,
+            "tier": 39,
+            "circuit_credits": 40970.0,
+            "flux_shards": 5769.16
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 39670.0,
+              "flux_shards": 5769.16
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 170.0,
+              "flux_shards": 5769.16
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -39030.0,
+              "flux_shards": -4230.84
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 30970.0,
+              "flux_shards": 4769.16
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -59030.0,
+              "flux_shards": -4230.84
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -49030.0,
+              "flux_shards": -3230.84
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 40970.0,
+              "flux_shards": 5744.16
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 40970.0,
+              "flux_shards": 5269.16
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 40970.0,
+              "flux_shards": 4769.16
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "active_8",
+      "days": 1,
+      "current": {
+        "id": "active_8",
+        "name_tr": "8 savaş / 6 emir",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 2,
+        "season_xp": 425,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 188,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 75
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3
+          },
+          "season_road": {
+            "circuit_credits": 100,
+            "flux_shards": 4
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 394.0,
+            "flux_shards": 15.96
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 840.0,
+          "flux_shards": 103.96
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 425,
+            "new_seasonal_xp": 0,
+            "tier": 2,
+            "circuit_credits": 840.0,
+            "flux_shards": 103.96
+          }
+        ]
+      },
+      "candidate": {
+        "id": "active_8",
+        "name_tr": "8 savaş / 6 emir",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 2,
+        "season_xp": 425,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 280,
+            "flux_shards": 12
+          },
+          "daily_orders": {
+            "circuit_credits": 180,
+            "flux_shards": 115
+          },
+          "login": {
+            "circuit_credits": 76,
+            "flux_shards": 9
+          },
+          "season_road": {
+            "circuit_credits": 200,
+            "flux_shards": 8
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 394.0,
+            "flux_shards": 15.96
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 1250.0,
+          "flux_shards": 165.96
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 410,
+          "flux_shards": 62
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 92,
+            "flux_shards": 12
+          },
+          "daily_orders": {
+            "circuit_credits": 180,
+            "flux_shards": 40
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 6
+          },
+          "season_road": {
+            "circuit_credits": 100,
+            "flux_shards": 4
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 425,
+            "new_seasonal_xp": 0,
+            "tier": 2,
+            "circuit_credits": 1250.0,
+            "flux_shards": 165.96
+          }
+        ]
+      }
+    },
+    {
+      "id": "active_8",
+      "days": 7,
+      "current": {
+        "id": "active_8",
+        "name_tr": "8 savaş / 6 emir",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": true,
+        "reached_tier": 17,
+        "season_xp": 3675,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 1316,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 525
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 32
+          },
+          "season_road": {
+            "circuit_credits": 1520,
+            "flux_shards": 115
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 2758.0,
+            "flux_shards": 111.72000000000003
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 840.0,
+            "flux_shards": 42.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 6862.0,
+          "flux_shards": 825.72
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 425,
+            "new_seasonal_xp": 0,
+            "tier": 2,
+            "circuit_credits": 840.0,
+            "flux_shards": 103.96
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 3675,
+            "new_seasonal_xp": 250,
+            "tier": 17,
+            "circuit_credits": 6862.0,
+            "flux_shards": 825.72
+          }
+        ]
+      },
+      "candidate": {
+        "id": "active_8",
+        "name_tr": "8 savaş / 6 emir",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": true,
+        "reached_tier": 17,
+        "season_xp": 3675,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 1960,
+            "flux_shards": 84
+          },
+          "daily_orders": {
+            "circuit_credits": 1260,
+            "flux_shards": 805
+          },
+          "login": {
+            "circuit_credits": 856,
+            "flux_shards": 96
+          },
+          "season_road": {
+            "circuit_credits": 3040,
+            "flux_shards": 230
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 2758.0,
+            "flux_shards": 111.72000000000003
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 840.0,
+            "flux_shards": 42.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 1000,
+            "flux_shards": 200
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 11714.0,
+          "flux_shards": 1568.72
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 4852,
+          "flux_shards": 743
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 644,
+            "flux_shards": 84
+          },
+          "daily_orders": {
+            "circuit_credits": 1260,
+            "flux_shards": 280
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 64
+          },
+          "season_road": {
+            "circuit_credits": 1520,
+            "flux_shards": 115
+          },
+          "seasonal_orders": {
+            "circuit_credits": 1000,
+            "flux_shards": 200
+          }
+        },
+        "seasonal_currency_claims": 5,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 425,
+            "new_seasonal_xp": 0,
+            "tier": 2,
+            "circuit_credits": 1250.0,
+            "flux_shards": 165.96
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 3675,
+            "new_seasonal_xp": 250,
+            "tier": 17,
+            "circuit_credits": 11714.0,
+            "flux_shards": 1568.72
+          }
+        ]
+      }
+    },
+    {
+      "id": "active_8",
+      "days": 28,
+      "current": {
+        "id": "active_8",
+        "name_tr": "8 savaş / 6 emir",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": true,
+        "reached_tier": 40,
+        "season_xp": 13700,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 5264,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 2100
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134
+          },
+          "season_road": {
+            "circuit_credits": 5680,
+            "flux_shards": 419
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 11032.0,
+            "flux_shards": 446.8799999999999
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 28014.0,
+          "flux_shards": 3267.88
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 425,
+            "new_seasonal_xp": 0,
+            "tier": 2,
+            "circuit_credits": 840.0,
+            "flux_shards": 103.96
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 3675,
+            "new_seasonal_xp": 250,
+            "tier": 17,
+            "circuit_credits": 6862.0,
+            "flux_shards": 825.72
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 7250,
+            "new_seasonal_xp": 100,
+            "tier": 28,
+            "circuit_credits": 13825.0,
+            "flux_shards": 1647.44
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 10625,
+            "new_seasonal_xp": 100,
+            "tier": 36,
+            "circuit_credits": 21079.0,
+            "flux_shards": 2478.16
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 13700,
+            "new_seasonal_xp": 0,
+            "tier": 40,
+            "circuit_credits": 28014.0,
+            "flux_shards": 3267.88
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 26714.0,
+              "flux_shards": 3267.88
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -12786.0,
+              "flux_shards": 3267.88
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -51986.0,
+              "flux_shards": -6732.12
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 18014.0,
+              "flux_shards": 2267.88
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -71986.0,
+              "flux_shards": -6732.12
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -61986.0,
+              "flux_shards": -5732.12
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 28014.0,
+              "flux_shards": 3242.88
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 28014.0,
+              "flux_shards": 2767.88
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 28014.0,
+              "flux_shards": 2267.88
+            }
+          }
+        }
+      },
+      "candidate": {
+        "id": "active_8",
+        "name_tr": "8 savaş / 6 emir",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": true,
+        "reached_tier": 40,
+        "season_xp": 13700,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 7840,
+            "flux_shards": 336
+          },
+          "daily_orders": {
+            "circuit_credits": 5040,
+            "flux_shards": 3220
+          },
+          "login": {
+            "circuit_credits": 5356,
+            "flux_shards": 402
+          },
+          "season_road": {
+            "circuit_credits": 11360,
+            "flux_shards": 838
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 11032.0,
+            "flux_shards": 446.8799999999999
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 3000,
+            "flux_shards": 600
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 46988.0,
+          "flux_shards": 6010.88
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 18974,
+          "flux_shards": 2743
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 2576,
+            "flux_shards": 336
+          },
+          "daily_orders": {
+            "circuit_credits": 5040,
+            "flux_shards": 1120
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 268
+          },
+          "season_road": {
+            "circuit_credits": 5680,
+            "flux_shards": 419
+          },
+          "seasonal_orders": {
+            "circuit_credits": 3000,
+            "flux_shards": 600
+          }
+        },
+        "seasonal_currency_claims": 12,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 425,
+            "new_seasonal_xp": 0,
+            "tier": 2,
+            "circuit_credits": 1250.0,
+            "flux_shards": 165.96
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 3675,
+            "new_seasonal_xp": 250,
+            "tier": 17,
+            "circuit_credits": 11714.0,
+            "flux_shards": 1568.72
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 7250,
+            "new_seasonal_xp": 100,
+            "tier": 28,
+            "circuit_credits": 23630.0,
+            "flux_shards": 3128.44
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 10625,
+            "new_seasonal_xp": 100,
+            "tier": 36,
+            "circuit_credits": 35928.0,
+            "flux_shards": 4669.16
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 13700,
+            "new_seasonal_xp": 0,
+            "tier": 40,
+            "circuit_credits": 46988.0,
+            "flux_shards": 6010.88
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 45688.0,
+              "flux_shards": 6010.88
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 6188.0,
+              "flux_shards": 6010.88
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -33012.0,
+              "flux_shards": -3989.12
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 36988.0,
+              "flux_shards": 5010.88
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -53012.0,
+              "flux_shards": -3989.12
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -43012.0,
+              "flux_shards": -2989.12
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 46988.0,
+              "flux_shards": 5985.88
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 46988.0,
+              "flux_shards": 5510.88
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 46988.0,
+              "flux_shards": 5010.88
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "losses_4",
+      "days": 1,
+      "current": {
+        "id": "losses_4",
+        "name_tr": "4 mağlubiyet / 5 emir",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 1,
+        "season_xp": 225,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 48,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 60
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3
+          },
+          "season_road": {
+            "circuit_credits": 40,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 246.0,
+          "flux_shards": 69.0
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 225,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 246.0,
+            "flux_shards": 69.0
+          }
+        ]
+      },
+      "candidate": {
+        "id": "losses_4",
+        "name_tr": "4 mağlubiyet / 5 emir",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 1,
+        "season_xp": 225,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 72,
+            "flux_shards": 8
+          },
+          "daily_orders": {
+            "circuit_credits": 125,
+            "flux_shards": 90
+          },
+          "login": {
+            "circuit_credits": 76,
+            "flux_shards": 9
+          },
+          "season_road": {
+            "circuit_credits": 80,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 473.0,
+          "flux_shards": 113.0
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 227,
+          "flux_shards": 44
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 24,
+            "flux_shards": 8
+          },
+          "daily_orders": {
+            "circuit_credits": 125,
+            "flux_shards": 30
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 6
+          },
+          "season_road": {
+            "circuit_credits": 40,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 225,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 473.0,
+            "flux_shards": 113.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "losses_4",
+      "days": 7,
+      "current": {
+        "id": "losses_4",
+        "name_tr": "4 mağlubiyet / 5 emir",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": true,
+        "reached_tier": 9,
+        "season_xp": 1825,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 336,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 420
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 32
+          },
+          "season_road": {
+            "circuit_credits": 450,
+            "flux_shards": 42
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 840.0,
+            "flux_shards": 42.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 2054.0,
+          "flux_shards": 536.0
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 225,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 246.0,
+            "flux_shards": 69.0
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 1825,
+            "new_seasonal_xp": 100,
+            "tier": 9,
+            "circuit_credits": 2054.0,
+            "flux_shards": 536.0
+          }
+        ]
+      },
+      "candidate": {
+        "id": "losses_4",
+        "name_tr": "4 mağlubiyet / 5 emir",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": true,
+        "reached_tier": 9,
+        "season_xp": 1825,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 504,
+            "flux_shards": 56
+          },
+          "daily_orders": {
+            "circuit_credits": 875,
+            "flux_shards": 630
+          },
+          "login": {
+            "circuit_credits": 856,
+            "flux_shards": 96
+          },
+          "season_road": {
+            "circuit_credits": 900,
+            "flux_shards": 84
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 840.0,
+            "flux_shards": 42.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 350,
+            "flux_shards": 70
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 4325.0,
+          "flux_shards": 978.0
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 2271,
+          "flux_shards": 442
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 168,
+            "flux_shards": 56
+          },
+          "daily_orders": {
+            "circuit_credits": 875,
+            "flux_shards": 210
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 64
+          },
+          "season_road": {
+            "circuit_credits": 450,
+            "flux_shards": 42
+          },
+          "seasonal_orders": {
+            "circuit_credits": 350,
+            "flux_shards": 70
+          }
+        },
+        "seasonal_currency_claims": 2,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 225,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 473.0,
+            "flux_shards": 113.0
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 1825,
+            "new_seasonal_xp": 100,
+            "tier": 9,
+            "circuit_credits": 4325.0,
+            "flux_shards": 978.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "losses_4",
+      "days": 28,
+      "current": {
+        "id": "losses_4",
+        "name_tr": "4 mağlubiyet / 5 emir",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": true,
+        "reached_tier": 28,
+        "season_xp": 7350,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 1344,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 1680
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134
+          },
+          "season_road": {
+            "circuit_credits": 2980,
+            "flux_shards": 227
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 10362.0,
+          "flux_shards": 2209.0
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 225,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 246.0,
+            "flux_shards": 69.0
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 1825,
+            "new_seasonal_xp": 100,
+            "tier": 9,
+            "circuit_credits": 2054.0,
+            "flux_shards": 536.0
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 3750,
+            "new_seasonal_xp": 100,
+            "tier": 17,
+            "circuit_credits": 4889.0,
+            "flux_shards": 1102.0
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 5675,
+            "new_seasonal_xp": 100,
+            "tier": 23,
+            "circuit_credits": 7705.0,
+            "flux_shards": 1657.0
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 7350,
+            "new_seasonal_xp": 0,
+            "tier": 28,
+            "circuit_credits": 10362.0,
+            "flux_shards": 2209.0
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 9062.0,
+              "flux_shards": 2209.0
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -30438.0,
+              "flux_shards": 2209.0
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -69638.0,
+              "flux_shards": -7791.0
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 362.0,
+              "flux_shards": 1209.0
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -89638.0,
+              "flux_shards": -7791.0
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -79638.0,
+              "flux_shards": -6791.0
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 10362.0,
+              "flux_shards": 2184.0
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 10362.0,
+              "flux_shards": 1709.0
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 10362.0,
+              "flux_shards": 1209.0
+            }
+          }
+        }
+      },
+      "candidate": {
+        "id": "losses_4",
+        "name_tr": "4 mağlubiyet / 5 emir",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": true,
+        "reached_tier": 28,
+        "season_xp": 7350,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 2016,
+            "flux_shards": 224
+          },
+          "daily_orders": {
+            "circuit_credits": 3500,
+            "flux_shards": 2520
+          },
+          "login": {
+            "circuit_credits": 5356,
+            "flux_shards": 402
+          },
+          "season_road": {
+            "circuit_credits": 5960,
+            "flux_shards": 454
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 0.0,
+            "flux_shards": 0.0
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 1850,
+            "flux_shards": 370
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 22042.0,
+          "flux_shards": 4138.0
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 11680,
+          "flux_shards": 1929
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 672,
+            "flux_shards": 224
+          },
+          "daily_orders": {
+            "circuit_credits": 3500,
+            "flux_shards": 840
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 268
+          },
+          "season_road": {
+            "circuit_credits": 2980,
+            "flux_shards": 227
+          },
+          "seasonal_orders": {
+            "circuit_credits": 1850,
+            "flux_shards": 370
+          }
+        },
+        "seasonal_currency_claims": 8,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 225,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 473.0,
+            "flux_shards": 113.0
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 1825,
+            "new_seasonal_xp": 100,
+            "tier": 9,
+            "circuit_credits": 4325.0,
+            "flux_shards": 978.0
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 3750,
+            "new_seasonal_xp": 100,
+            "tier": 17,
+            "circuit_credits": 10462.0,
+            "flux_shards": 2065.0
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 5675,
+            "new_seasonal_xp": 100,
+            "tier": 23,
+            "circuit_credits": 16661.0,
+            "flux_shards": 3153.0
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 7350,
+            "new_seasonal_xp": 0,
+            "tier": 28,
+            "circuit_credits": 22042.0,
+            "flux_shards": 4138.0
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 20742.0,
+              "flux_shards": 4138.0
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -18758.0,
+              "flux_shards": 4138.0
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -57958.0,
+              "flux_shards": -5862.0
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 12042.0,
+              "flux_shards": 3138.0
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -77958.0,
+              "flux_shards": -5862.0
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -67958.0,
+              "flux_shards": -4862.0
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 22042.0,
+              "flux_shards": 4113.0
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 22042.0,
+              "flux_shards": 3638.0
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 22042.0,
+              "flux_shards": 3138.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "returning_4_days",
+      "days": 1,
+      "current": {
+        "id": "returning_4_days",
+        "name_tr": "Haftada 4 gün / 4 savaş",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 1,
+        "season_xp": 280,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 94,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 75
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3
+          },
+          "season_road": {
+            "circuit_credits": 40,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 197.0,
+            "flux_shards": 7.98
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 60.0,
+            "flux_shards": 3.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 429.0,
+          "flux_shards": 88.98
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 429.0,
+            "flux_shards": 88.98
+          }
+        ]
+      },
+      "candidate": {
+        "id": "returning_4_days",
+        "name_tr": "Haftada 4 gün / 4 savaş",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 1,
+        "season_xp": 280,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 140,
+            "flux_shards": 8
+          },
+          "daily_orders": {
+            "circuit_credits": 150,
+            "flux_shards": 110
+          },
+          "login": {
+            "circuit_credits": 76,
+            "flux_shards": 9
+          },
+          "season_road": {
+            "circuit_credits": 80,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 197.0,
+            "flux_shards": 7.98
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 60.0,
+            "flux_shards": 3.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 703.0,
+          "flux_shards": 137.98
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 274,
+          "flux_shards": 49
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 46,
+            "flux_shards": 8
+          },
+          "daily_orders": {
+            "circuit_credits": 150,
+            "flux_shards": 35
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 6
+          },
+          "season_road": {
+            "circuit_credits": 40,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 703.0,
+            "flux_shards": 137.98
+          }
+        ]
+      }
+    },
+    {
+      "id": "returning_4_days",
+      "days": 7,
+      "current": {
+        "id": "returning_4_days",
+        "name_tr": "Haftada 4 gün / 4 savaş",
+        "days": 7,
+        "active_battle_days": 4,
+        "season_active": true,
+        "reached_tier": 6,
+        "season_xp": 1120,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 376,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 300
+          },
+          "login": {
+            "circuit_credits": 179,
+            "flux_shards": 13
+          },
+          "season_road": {
+            "circuit_credits": 290,
+            "flux_shards": 33
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 788.0,
+            "flux_shards": 31.92
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 240.0,
+            "flux_shards": 12.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 1873.0,
+          "flux_shards": 389.92
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 429.0,
+            "flux_shards": 88.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": false,
+            "season_xp": 1120,
+            "new_seasonal_xp": 0,
+            "tier": 6,
+            "circuit_credits": 1873.0,
+            "flux_shards": 389.92
+          }
+        ]
+      },
+      "candidate": {
+        "id": "returning_4_days",
+        "name_tr": "Haftada 4 gün / 4 savaş",
+        "days": 7,
+        "active_battle_days": 4,
+        "season_active": true,
+        "reached_tier": 6,
+        "season_xp": 1120,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 560,
+            "flux_shards": 32
+          },
+          "daily_orders": {
+            "circuit_credits": 600,
+            "flux_shards": 440
+          },
+          "login": {
+            "circuit_credits": 358,
+            "flux_shards": 39
+          },
+          "season_road": {
+            "circuit_credits": 580,
+            "flux_shards": 66
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 788.0,
+            "flux_shards": 31.92
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 240.0,
+            "flux_shards": 12.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 3126.0,
+          "flux_shards": 620.92
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 1253,
+          "flux_shards": 231
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 184,
+            "flux_shards": 32
+          },
+          "daily_orders": {
+            "circuit_credits": 600,
+            "flux_shards": 140
+          },
+          "login": {
+            "circuit_credits": 179,
+            "flux_shards": 26
+          },
+          "season_road": {
+            "circuit_credits": 290,
+            "flux_shards": 33
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 703.0,
+            "flux_shards": 137.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": false,
+            "season_xp": 1120,
+            "new_seasonal_xp": 0,
+            "tier": 6,
+            "circuit_credits": 3126.0,
+            "flux_shards": 620.92
+          }
+        ]
+      }
+    },
+    {
+      "id": "returning_4_days",
+      "days": 28,
+      "current": {
+        "id": "returning_4_days",
+        "name_tr": "Haftada 4 gün / 4 savaş",
+        "days": 28,
+        "active_battle_days": 16,
+        "season_active": true,
+        "reached_tier": 22,
+        "season_xp": 5330,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 1504,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 1200
+          },
+          "login": {
+            "circuit_credits": 1220,
+            "flux_shards": 56
+          },
+          "season_road": {
+            "circuit_credits": 2260,
+            "flux_shards": 174
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 3152.0,
+            "flux_shards": 127.68000000000005
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 960.0,
+            "flux_shards": 48.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 9096.0,
+          "flux_shards": 1605.68
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 429.0,
+            "flux_shards": 88.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": false,
+            "season_xp": 1120,
+            "new_seasonal_xp": 0,
+            "tier": 6,
+            "circuit_credits": 1873.0,
+            "flux_shards": 389.92
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": false,
+            "season_xp": 2590,
+            "new_seasonal_xp": 0,
+            "tier": 13,
+            "circuit_credits": 4240.0,
+            "flux_shards": 795.84
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": false,
+            "season_xp": 3960,
+            "new_seasonal_xp": 0,
+            "tier": 18,
+            "circuit_credits": 6521.0,
+            "flux_shards": 1190.76
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": false,
+            "season_xp": 5330,
+            "new_seasonal_xp": 0,
+            "tier": 22,
+            "circuit_credits": 9096.0,
+            "flux_shards": 1605.68
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 7796.0,
+              "flux_shards": 1605.68
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -31704.0,
+              "flux_shards": 1605.68
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -70904.0,
+              "flux_shards": -8394.32
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -904.0,
+              "flux_shards": 605.68
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -90904.0,
+              "flux_shards": -8394.32
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -80904.0,
+              "flux_shards": -7394.32
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 9096.0,
+              "flux_shards": 1580.68
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 9096.0,
+              "flux_shards": 1105.68
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 9096.0,
+              "flux_shards": 605.68
+            }
+          }
+        }
+      },
+      "candidate": {
+        "id": "returning_4_days",
+        "name_tr": "Haftada 4 gün / 4 savaş",
+        "days": 28,
+        "active_battle_days": 16,
+        "season_active": true,
+        "reached_tier": 22,
+        "season_xp": 5330,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 2240,
+            "flux_shards": 128
+          },
+          "daily_orders": {
+            "circuit_credits": 2400,
+            "flux_shards": 1760
+          },
+          "login": {
+            "circuit_credits": 2440,
+            "flux_shards": 168
+          },
+          "season_road": {
+            "circuit_credits": 4520,
+            "flux_shards": 348
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 3152.0,
+            "flux_shards": 127.68000000000005
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 960.0,
+            "flux_shards": 48.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 1300,
+            "flux_shards": 260
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 17012.0,
+          "flux_shards": 2839.68
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 7916,
+          "flux_shards": 1234
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 736,
+            "flux_shards": 128
+          },
+          "daily_orders": {
+            "circuit_credits": 2400,
+            "flux_shards": 560
+          },
+          "login": {
+            "circuit_credits": 1220,
+            "flux_shards": 112
+          },
+          "season_road": {
+            "circuit_credits": 2260,
+            "flux_shards": 174
+          },
+          "seasonal_orders": {
+            "circuit_credits": 1300,
+            "flux_shards": 260
+          }
+        },
+        "seasonal_currency_claims": 7,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 703.0,
+            "flux_shards": 137.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": false,
+            "season_xp": 1120,
+            "new_seasonal_xp": 0,
+            "tier": 6,
+            "circuit_credits": 3126.0,
+            "flux_shards": 620.92
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": false,
+            "season_xp": 2590,
+            "new_seasonal_xp": 0,
+            "tier": 13,
+            "circuit_credits": 7740.0,
+            "flux_shards": 1373.84
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": false,
+            "season_xp": 3960,
+            "new_seasonal_xp": 0,
+            "tier": 18,
+            "circuit_credits": 12082.0,
+            "flux_shards": 2084.76
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": false,
+            "season_xp": 5330,
+            "new_seasonal_xp": 0,
+            "tier": 22,
+            "circuit_credits": 17012.0,
+            "flux_shards": 2839.68
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 15712.0,
+              "flux_shards": 2839.68
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -23788.0,
+              "flux_shards": 2839.68
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -62988.0,
+              "flux_shards": -7160.32
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 7012.0,
+              "flux_shards": 1839.68
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -82988.0,
+              "flux_shards": -7160.32
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -72988.0,
+              "flux_shards": -6160.32
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 17012.0,
+              "flux_shards": 2814.68
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 17012.0,
+              "flux_shards": 2339.68
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 17012.0,
+              "flux_shards": 1839.68
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "arena_6",
+      "days": 1,
+      "current": {
+        "id": "arena_6",
+        "name_tr": "Arena 6 / 4 savaş",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 1,
+        "season_xp": 280,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 156,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 75
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 3
+          },
+          "season_road": {
+            "circuit_credits": 40,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 197.0,
+            "flux_shards": 7.98
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 551.0,
+          "flux_shards": 91.98
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 551.0,
+            "flux_shards": 91.98
+          }
+        ]
+      },
+      "candidate": {
+        "id": "arena_6",
+        "name_tr": "Arena 6 / 4 savaş",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": true,
+        "reached_tier": 1,
+        "season_xp": 280,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 234,
+            "flux_shards": 8
+          },
+          "daily_orders": {
+            "circuit_credits": 150,
+            "flux_shards": 110
+          },
+          "login": {
+            "circuit_credits": 76,
+            "flux_shards": 9
+          },
+          "season_road": {
+            "circuit_credits": 80,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 197.0,
+            "flux_shards": 7.98
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 857.0,
+          "flux_shards": 140.98
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 306,
+          "flux_shards": 49
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 78,
+            "flux_shards": 8
+          },
+          "daily_orders": {
+            "circuit_credits": 150,
+            "flux_shards": 35
+          },
+          "login": {
+            "circuit_credits": 38,
+            "flux_shards": 6
+          },
+          "season_road": {
+            "circuit_credits": 40,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 857.0,
+            "flux_shards": 140.98
+          }
+        ]
+      }
+    },
+    {
+      "id": "arena_6",
+      "days": 7,
+      "current": {
+        "id": "arena_6",
+        "name_tr": "Arena 6 / 4 savaş",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": true,
+        "reached_tier": 11,
+        "season_xp": 2310,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 1092,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 525
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 32
+          },
+          "season_road": {
+            "circuit_credits": 890,
+            "flux_shards": 77
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 1379.0,
+            "flux_shards": 55.860000000000014
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 840.0,
+            "flux_shards": 42.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 4629.0,
+          "flux_shards": 731.86
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 551.0,
+            "flux_shards": 91.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 2310,
+            "new_seasonal_xp": 100,
+            "tier": 11,
+            "circuit_credits": 4629.0,
+            "flux_shards": 731.86
+          }
+        ]
+      },
+      "candidate": {
+        "id": "arena_6",
+        "name_tr": "Arena 6 / 4 savaş",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": true,
+        "reached_tier": 11,
+        "season_xp": 2310,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 1638,
+            "flux_shards": 56
+          },
+          "daily_orders": {
+            "circuit_credits": 1050,
+            "flux_shards": 770
+          },
+          "login": {
+            "circuit_credits": 856,
+            "flux_shards": 96
+          },
+          "season_road": {
+            "circuit_credits": 1780,
+            "flux_shards": 154
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 1379.0,
+            "flux_shards": 55.860000000000014
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 840.0,
+            "flux_shards": 42.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 500,
+            "flux_shards": 100
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 8043.0,
+          "flux_shards": 1273.86
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 3414,
+          "flux_shards": 542
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 546,
+            "flux_shards": 56
+          },
+          "daily_orders": {
+            "circuit_credits": 1050,
+            "flux_shards": 245
+          },
+          "login": {
+            "circuit_credits": 428,
+            "flux_shards": 64
+          },
+          "season_road": {
+            "circuit_credits": 890,
+            "flux_shards": 77
+          },
+          "seasonal_orders": {
+            "circuit_credits": 500,
+            "flux_shards": 100
+          }
+        },
+        "seasonal_currency_claims": 3,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 857.0,
+            "flux_shards": 140.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 2310,
+            "new_seasonal_xp": 100,
+            "tier": 11,
+            "circuit_credits": 8043.0,
+            "flux_shards": 1273.86
+          }
+        ]
+      }
+    },
+    {
+      "id": "arena_6",
+      "days": 28,
+      "current": {
+        "id": "arena_6",
+        "name_tr": "Arena 6 / 4 savaş",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": true,
+        "reached_tier": 33,
+        "season_xp": 9340,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 4368,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 2100
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 134
+          },
+          "season_road": {
+            "circuit_credits": 4110,
+            "flux_shards": 291
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 5516.0,
+            "flux_shards": 223.43999999999994
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 20032.0,
+          "flux_shards": 2916.44
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 551.0,
+            "flux_shards": 91.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 2310,
+            "new_seasonal_xp": 100,
+            "tier": 11,
+            "circuit_credits": 4629.0,
+            "flux_shards": 731.86
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 4770,
+            "new_seasonal_xp": 100,
+            "tier": 20,
+            "circuit_credits": 9739.0,
+            "flux_shards": 1473.72
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 7280,
+            "new_seasonal_xp": 100,
+            "tier": 28,
+            "circuit_credits": 14680.0,
+            "flux_shards": 2192.58
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 9340,
+            "new_seasonal_xp": 0,
+            "tier": 33,
+            "circuit_credits": 20032.0,
+            "flux_shards": 2916.44
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 18732.0,
+              "flux_shards": 2916.44
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -20768.0,
+              "flux_shards": 2916.44
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -59968.0,
+              "flux_shards": -7083.56
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 10032.0,
+              "flux_shards": 1916.44
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -79968.0,
+              "flux_shards": -7083.56
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -69968.0,
+              "flux_shards": -6083.56
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 20032.0,
+              "flux_shards": 2891.44
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 20032.0,
+              "flux_shards": 2416.44
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 20032.0,
+              "flux_shards": 1916.44
+            }
+          }
+        }
+      },
+      "candidate": {
+        "id": "arena_6",
+        "name_tr": "Arena 6 / 4 savaş",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": true,
+        "reached_tier": 33,
+        "season_xp": 9340,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 6552,
+            "flux_shards": 224
+          },
+          "daily_orders": {
+            "circuit_credits": 4200,
+            "flux_shards": 3080
+          },
+          "login": {
+            "circuit_credits": 5356,
+            "flux_shards": 402
+          },
+          "season_road": {
+            "circuit_credits": 8220,
+            "flux_shards": 582
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 5516.0,
+            "flux_shards": 223.43999999999994
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 2500,
+            "flux_shards": 500
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 35704.0,
+          "flux_shards": 5179.44
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 15672,
+          "flux_shards": 2263
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 2184,
+            "flux_shards": 224
+          },
+          "daily_orders": {
+            "circuit_credits": 4200,
+            "flux_shards": 980
+          },
+          "login": {
+            "circuit_credits": 2678,
+            "flux_shards": 268
+          },
+          "season_road": {
+            "circuit_credits": 4110,
+            "flux_shards": 291
+          },
+          "seasonal_orders": {
+            "circuit_credits": 2500,
+            "flux_shards": 500
+          }
+        },
+        "seasonal_currency_claims": 11,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 280,
+            "new_seasonal_xp": 0,
+            "tier": 1,
+            "circuit_credits": 857.0,
+            "flux_shards": 140.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 2310,
+            "new_seasonal_xp": 100,
+            "tier": 11,
+            "circuit_credits": 8043.0,
+            "flux_shards": 1273.86
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 4770,
+            "new_seasonal_xp": 100,
+            "tier": 20,
+            "circuit_credits": 17348.0,
+            "flux_shards": 2626.72
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 7280,
+            "new_seasonal_xp": 100,
+            "tier": 28,
+            "circuit_credits": 26515.0,
+            "flux_shards": 3976.58
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 9340,
+            "new_seasonal_xp": 0,
+            "tier": 33,
+            "circuit_credits": 35704.0,
+            "flux_shards": 5179.44
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 34404.0,
+              "flux_shards": 5179.44
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -5096.0,
+              "flux_shards": 5179.44
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -44296.0,
+              "flux_shards": -4820.56
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 25704.0,
+              "flux_shards": 4179.44
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -64296.0,
+              "flux_shards": -4820.56
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -54296.0,
+              "flux_shards": -3820.56
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 35704.0,
+              "flux_shards": 5154.44
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 35704.0,
+              "flux_shards": 4679.44
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 35704.0,
+              "flux_shards": 4179.44
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "between_seasons",
+      "days": 1,
+      "current": {
+        "id": "between_seasons",
+        "name_tr": "Sezon arası / 4 savaş",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": false,
+        "reached_tier": 0,
+        "season_xp": 0,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 94,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 75
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 197.0,
+            "flux_shards": 7.98
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 411.0,
+          "flux_shards": 88.98
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 411.0,
+            "flux_shards": 88.98
+          }
+        ]
+      },
+      "candidate": {
+        "id": "between_seasons",
+        "name_tr": "Sezon arası / 4 savaş",
+        "days": 1,
+        "active_battle_days": 1,
+        "season_active": false,
+        "reached_tier": 0,
+        "season_xp": 0,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 140,
+            "flux_shards": 8
+          },
+          "daily_orders": {
+            "circuit_credits": 120,
+            "flux_shards": 105
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 197.0,
+            "flux_shards": 7.98
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 120.0,
+            "flux_shards": 6.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 577.0,
+          "flux_shards": 126.98
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 166,
+          "flux_shards": 38
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 46,
+            "flux_shards": 8
+          },
+          "daily_orders": {
+            "circuit_credits": 120,
+            "flux_shards": 30
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 577.0,
+            "flux_shards": 126.98
+          }
+        ]
+      }
+    },
+    {
+      "id": "between_seasons",
+      "days": 7,
+      "current": {
+        "id": "between_seasons",
+        "name_tr": "Sezon arası / 4 savaş",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": false,
+        "reached_tier": 0,
+        "season_xp": 0,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 658,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 525
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 1379.0,
+            "flux_shards": 55.860000000000014
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 840.0,
+            "flux_shards": 42.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 2877.0,
+          "flux_shards": 622.86
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 411.0,
+            "flux_shards": 88.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 2877.0,
+            "flux_shards": 622.86
+          }
+        ]
+      },
+      "candidate": {
+        "id": "between_seasons",
+        "name_tr": "Sezon arası / 4 savaş",
+        "days": 7,
+        "active_battle_days": 7,
+        "season_active": false,
+        "reached_tier": 0,
+        "season_xp": 0,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 980,
+            "flux_shards": 56
+          },
+          "daily_orders": {
+            "circuit_credits": 840,
+            "flux_shards": 735
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 1379.0,
+            "flux_shards": 55.860000000000014
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 840.0,
+            "flux_shards": 42.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 4039.0,
+          "flux_shards": 888.86
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 1162,
+          "flux_shards": 266
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 322,
+            "flux_shards": 56
+          },
+          "daily_orders": {
+            "circuit_credits": 840,
+            "flux_shards": 210
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 577.0,
+            "flux_shards": 126.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 4039.0,
+            "flux_shards": 888.86
+          }
+        ]
+      }
+    },
+    {
+      "id": "between_seasons",
+      "days": 28,
+      "current": {
+        "id": "between_seasons",
+        "name_tr": "Sezon arası / 4 savaş",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": false,
+        "reached_tier": 0,
+        "season_xp": 0,
+        "proposed": false,
+        "sources": {
+          "matches": {
+            "circuit_credits": 2632,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 2100
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 5516.0,
+            "flux_shards": 223.43999999999994
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 11508.0,
+          "flux_shards": 2491.44
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 0,
+          "flux_shards": 0
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "daily_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 411.0,
+            "flux_shards": 88.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 2877.0,
+            "flux_shards": 622.86
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 5754.0,
+            "flux_shards": 1245.72
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 8631.0,
+            "flux_shards": 1868.58
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 11508.0,
+            "flux_shards": 2491.44
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 10208.0,
+              "flux_shards": 2491.44
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -29292.0,
+              "flux_shards": 2491.44
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -68492.0,
+              "flux_shards": -7508.56
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 1508.0,
+              "flux_shards": 1491.44
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -88492.0,
+              "flux_shards": -7508.56
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -78492.0,
+              "flux_shards": -6508.56
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 11508.0,
+              "flux_shards": 2466.44
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 11508.0,
+              "flux_shards": 1991.44
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 11508.0,
+              "flux_shards": 1491.44
+            }
+          }
+        }
+      },
+      "candidate": {
+        "id": "between_seasons",
+        "name_tr": "Sezon arası / 4 savaş",
+        "days": 28,
+        "active_battle_days": 28,
+        "season_active": false,
+        "reached_tier": 0,
+        "season_xp": 0,
+        "proposed": true,
+        "sources": {
+          "matches": {
+            "circuit_credits": 3920,
+            "flux_shards": 224
+          },
+          "daily_orders": {
+            "circuit_credits": 3360,
+            "flux_shards": 2940
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "victory_chests_expected": {
+            "circuit_credits": 5516.0,
+            "flux_shards": 223.43999999999994
+          },
+          "gift_chests_expected": {
+            "circuit_credits": 3360.0,
+            "flux_shards": 168.0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "total_expected": {
+          "circuit_credits": 16156.0,
+          "flux_shards": 3555.44
+        },
+        "extra_from_rebalance": {
+          "circuit_credits": 4648,
+          "flux_shards": 1064
+        },
+        "bonus_by_source": {
+          "matches": {
+            "circuit_credits": 1288,
+            "flux_shards": 224
+          },
+          "daily_orders": {
+            "circuit_credits": 3360,
+            "flux_shards": 840
+          },
+          "login": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "season_road": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          },
+          "seasonal_orders": {
+            "circuit_credits": 0,
+            "flux_shards": 0
+          }
+        },
+        "seasonal_currency_claims": 0,
+        "checkpoints": [
+          {
+            "day": 1,
+            "date": "2026-12-28",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 577.0,
+            "flux_shards": 126.98
+          },
+          {
+            "day": 7,
+            "date": "2027-01-03",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 4039.0,
+            "flux_shards": 888.86
+          },
+          {
+            "day": 14,
+            "date": "2027-01-10",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 8078.0,
+            "flux_shards": 1777.72
+          },
+          {
+            "day": 21,
+            "date": "2027-01-17",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 12117.0,
+            "flux_shards": 2666.58
+          },
+          {
+            "day": 28,
+            "date": "2027-01-24",
+            "logged_in": true,
+            "season_xp": 0,
+            "new_seasonal_xp": 0,
+            "tier": 0,
+            "circuit_credits": 16156.0,
+            "flux_shards": 3555.44
+          }
+        ],
+        "spend_alternatives": {
+          "common_level_1_to_5": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 14856.0,
+              "flux_shards": 3555.44
+            }
+          },
+          "six_common_level_1_to_8": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -24644.0,
+              "flux_shards": 3555.44
+            }
+          },
+          "legendary_level_14_to_15": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -63844.0,
+              "flux_shards": -6444.56
+            }
+          },
+          "legendary_first_talent": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 6156.0,
+              "flux_shards": 2555.44
+            }
+          },
+          "legendary_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -83844.0,
+              "flux_shards": -6444.56
+            }
+          },
+          "legendary_core_all_talents": {
+            "currency_only_affordable": false,
+            "remaining_after_currency_spend": {
+              "circuit_credits": -73844.0,
+              "flux_shards": -5444.56
+            }
+          },
+          "single_talent_reset": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 16156.0,
+              "flux_shards": 3530.44
+            }
+          },
+          "core_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 16156.0,
+              "flux_shards": 3055.44
+            }
+          },
+          "diamond_24h": {
+            "currency_only_affordable": true,
+            "remaining_after_currency_spend": {
+              "circuit_credits": 16156.0,
+              "flux_shards": 2555.44
+            }
+          }
+        }
+      }
+    }
+  ]
+}

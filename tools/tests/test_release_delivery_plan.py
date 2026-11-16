@@ -18,6 +18,21 @@ class ReleaseDeliveryPlanTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'scope differs'):
             plan.validate(self.calendar, self.backlog)
 
+    def test_free_economy_support_is_in_the_release_gate_and_production_schedule(self):
+        release=next(r for r in self.calendar['releases'] if r['version']=='2.5.0')
+        gate=next(t for t in self.backlog['tasks'] if t['id']=='RELEASE-02')
+        self.assertIn('ECON-02',gate['depends_on'])
+        self.assertIn('ECON-02',release['work_items'])
+        self.assertTrue(any('ECON-02' in phase['tasks'] for phase in release['work_schedule']))
+        plan.validate(self.calendar,self.backlog)
+
+    def test_generated_status_uses_current_deployment_and_active_release(self):
+        from tools.development_checklist import render,validate
+        output=render(self.backlog,validate(self.backlog))
+        self.assertIn('Kayıtlı sunucu 2.4.0',output)
+        self.assertIn('Aktif geliştirme 2.5.0',output)
+        self.assertNotIn('Aktif geliştirme 2.4.0',output)
+
     def test_same_day_final_acceptance_requires_an_explicit_expedited_decision(self):
         release = self.calendar['releases'][0]
         self.assertEqual(release['tests_start_on'], release['target_release_on'])

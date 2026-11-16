@@ -76,6 +76,9 @@ def main() -> None:
     if os.environ.get('GRIDSHARD_E2E_S1_ACCEPTANCE') == '1':
         from s1_browser_fixture import install
         install()
+    if os.environ.get('GRIDSHARD_E2E_FREE_ECONOMY') == '1':
+        from free_economy_browser_fixture import install
+        install()
     config = uvicorn.Config("app.main:app", host="127.0.0.1", port=base.port or 8879, access_log=False)
     server = uvicorn.Server(config)
     default_handle_exit = server.handle_exit

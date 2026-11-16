@@ -24,6 +24,16 @@ $taskListener.Stop()
 $taskPreviousUrl = [Environment]::GetEnvironmentVariable('GRIDSHARD_TEST_DATABASE_URL', 'Process')
 $taskStarted = $false
 function Invoke-TaskChecked([string]$Executable, [string[]]$Arguments) {
+    if ([IO.Path]::GetFileName($Executable) -eq 'pg_ctl.exe') {
+        # PowerShell's native pipeline can wait for pg_ctl's detached cmd.exe
+        # child while postgres is alive. Wait for pg_ctl itself in a hidden
+        # process instead; the daemon writes only to its explicit fixture log.
+        $taskCommandLine = ($Arguments | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' }) -join ' '
+        $taskProcess = Start-Process -FilePath $Executable -ArgumentList $taskCommandLine -WindowStyle Hidden -PassThru
+        $taskProcess.WaitForExit()
+        if ($taskProcess.ExitCode -ne 0) { throw "Fixture command failed: $Executable ($($taskProcess.ExitCode))" }
+        return
+    }
     & $Executable @Arguments
     if ($LASTEXITCODE -ne 0) { throw "Fixture command failed: $Executable ($LASTEXITCODE)" }
 }
@@ -38,7 +48,7 @@ try {
     $taskTests = @('server/tests/test_review_access.py', 'server/tests/test_review_access_postgres.py')
     if ($FullSuite) { $taskTests = @('server/tests') }
     if ($TestPaths) { $taskTests = $TestPaths }
-    Invoke-TaskChecked 'python' (@('-m', 'pytest') + $taskTests + @('-q', '-p', 'no:cacheprovider'))
+    Invoke-TaskChecked 'python' (@('-m', 'pytest') + $taskTests + @('-q', '-p', 'no:cacheprovider', "--basetemp=$taskFixture\pytest-temp"))
 } finally {
     [Environment]::SetEnvironmentVariable('GRIDSHARD_TEST_DATABASE_URL', $taskPreviousUrl, 'Process')
     if ($taskStarted) {

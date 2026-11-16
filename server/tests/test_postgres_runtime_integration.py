@@ -101,7 +101,7 @@ def test_social_schema_is_additive_and_ready() -> None:
             "social_battle_invites", "social_push_outbox", "server_installation",
             "platform_document", "team_document", "battle_pool_presets",
             "product_analytics_document", "telemetry_events",
-            "battle_results", "battle_participant_results", "player_economic_operations",
+            "battle_results", "battle_participant_results", "player_economic_operations", "player_reward_entitlements",
         }
         with pool.connection() as connection:
             rows = connection.execute(
@@ -109,7 +109,7 @@ def test_social_schema_is_additive_and_ready() -> None:
             ).fetchall()
             status = migration_status(connection, MIGRATIONS_DIR)
         assert expected <= {row[0] for row in rows}
-        assert status["latest_version"] == "014"
+        assert status["latest_version"] == "015"
         assert status["ready"] is True
     finally:
         pool.close()

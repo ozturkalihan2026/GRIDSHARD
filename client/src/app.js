@@ -517,6 +517,22 @@
   let activeTrophyLeaderboardScope = "general";
   let leaderboardPayload = null;
   let rewardInboxState = null;
+  let engineerChoicesPrimed = false;
+  const engineerChoices = globalThis.GridshardRewardChoices.create({
+    document, playerId:() => participantPlayerId,
+    request:(path, options) => requestJsonWithDeadline(path, options, 12000),
+    requestId:() => operationRequestId('engineer'),
+    applyProfile:view => { profileState.applyProfile(view); renderProfileSummary(); },
+    refreshProfile:async () => { await accountDataLoader.loadProfile(); renderProfileSummary(); },
+    moduleArt:option => {
+      const visual = document.createElement('span');
+      visual.innerHTML = moduleShardSymbolMarkup(option);
+      return visual;
+    },
+    navigate:() => openAppScreen('daily'),
+    onChange:() => renderRewardInbox(),
+    cue:() => gridshardAudioDirector?.triggerCue('energy_transfer'),
+  });
   const releaseAnnouncement = globalThis.GridshardReleaseAnnouncement.create({
     document, playerId:() => participantPlayerId,
     canPresent:() => participantBootstrap.status === 'ready' && startupLoading?.state === 'done'
@@ -1051,6 +1067,7 @@
 
     renderAppScreen();
     recordProductEvent("screen_view", {screen});
+    if (screen === 'daily') void engineerChoices.load({force:true});
 
     if (screen === "play") {
       // Beta.26: Oyna doğrudan tek çevrimiçi hazırlık ekranını açar.
@@ -8945,6 +8962,9 @@
     const accountingNote = document.getElementById("post-match-accounting-note");
     const trophyCard = document.getElementById("post-match-trophy-card");
     const creditCard = document.getElementById("post-match-credit-card");
+    const fluxCard = document.getElementById("post-match-flux-card");
+    const fluxReward = document.getElementById("post-match-flux-reward");
+    const fluxLimit = document.getElementById("post-match-flux-limit");
     const experienceCard = document.getElementById("post-match-experience-card");
     const teamPointCard = document.getElementById("post-match-team-point-card");
     const matchType = progression?.matchType || result?.match_type || "local_test";
@@ -8966,6 +8986,11 @@
     if (credits) credits.textContent = progression
       ? `+${Number(progression.circuitCreditsAwarded || 0) * adMultiplier}${adReceipt ? " · x2" : ""}`
       : localTest ? "+0" : pendingLabel;
+    if (fluxCard) fluxCard.hidden = !progression?.economyReward || teamTournament || profileNeutral;
+    if (rewardList) rewardList.classList.toggle("has-match-flux", Boolean(progression?.economyReward));
+    if (fluxReward) fluxReward.textContent = `+${Number(progression?.fluxShardsAwarded || 0)}`;
+    if (fluxLimit) fluxLimit.textContent = progression?.economyReward
+      ? localizedMessage("economy.daily_flux_matches", {count:Number(progression.economyReward.flux_battles_today || 0), cap:Number(progression.economyReward.flux_battle_cap || 0)}) : "";
     if (experience) experience.textContent = progression
       ? `+${Number(progression.xpAwarded || 0) * adMultiplier}${adReceipt ? " · x2" : ""}`
       : localTest ? "+0" : pendingLabel;
@@ -19300,11 +19325,12 @@
     pruneInboxExpansionState();
     const button = document.getElementById("reward-inbox-button");
     const notification = document.getElementById("reward-inbox-notification");
-    const unclaimed = Number(rewardInboxState?.unclaimed_count || 0);
+    const engineerPending = engineerChoices.pendingCount();
+    const unclaimed = Number(rewardInboxState?.unclaimed_count || 0) + engineerPending;
     const locallyReadNotices = [...(rewardInboxState?.purchases || []), ...(rewardInboxState?.notices || [])]
       .filter((notice) => !notice.seen && inboxReadStore.has(inboxReadKey(notice, "notice"))).length;
     // A read envelope never dismisses an unclaimed chest or pending invitation.
-    const unread = Math.max(unclaimed, Number(rewardInboxState?.unread_count ?? unclaimed) - locallyReadNotices);
+    const unread = Math.max(unclaimed, Number(rewardInboxState?.unread_count ?? 0) - locallyReadNotices + engineerPending);
     button?.classList.toggle("has-reward", unclaimed > 0);
     button?.classList.toggle("has-unread", unread > 0);
     if (notification) {
@@ -19317,6 +19343,7 @@
     // Kapalı kutunun içindeki bütün sekmeleri her sosyal yoklamada kurmayız.
     // Üstteki sayaçlar canlı kalır; içerik kutu açılınca son veriden kurulur.
     if (!document.getElementById("reward-inbox-dialog")?.open) return;
+    engineerChoices.renderInbox();
     const fill = (hostId, items, createCard, emptyCopy) => {
       const host = document.getElementById(hostId);
       if (!host) return;
@@ -19451,6 +19478,10 @@
       );
       if (version !== inboxMutationVersion || inboxDismissBusy || inboxClaimBusy || playerId !== participantPlayerId) return;
       rewardInboxState = payload;
+      if (open || !engineerChoicesPrimed) {
+        engineerChoicesPrimed = true;
+        await engineerChoices.load({force:open});
+      }
       if (status && !quiet) status.textContent = "";
       renderRewardInbox();
       releaseAnnouncement.offer(payload.announcement, playerId);
@@ -19567,6 +19598,7 @@
     for (const [kind, amount, label] of [
       ["experience", Number(mission.season_xp_reward || 0), "Deneyim"],
       ["flux_shards", Number(mission.flux_shard_reward || 0), "Akı"],
+      ["circuit_credits", Number(mission.circuit_credit_reward || 0), "Devre Kredisi"],
     ]) {
       if (amount <= 0) continue;
       const reward = document.createElement("em");
@@ -22048,6 +22080,15 @@
         renderPlayerCoreSummary=wrap("coreSummary",renderPlayerCoreSummary);
       },
       startQuickLocalBattle,
+      // Render server-produced fixture facts only; removed by production builds.
+      previewEconomyResult:result=>{
+        openAppScreen("play");
+        setActivePlayMode("local");localBattleStarted=true;localBattleFinished=true;
+        localBattleOutcome="victory";postMatchRevealReady=true;
+        progressionState.applyResult(result);
+        renderPlayModeUi();showPostMatchStage("rewards");renderPostMatchRewards();
+        return {progression:progressionState.viewModel(),fluxHidden:document.getElementById("post-match-flux-card").hidden};
+      },
       fillBattlePoolForQuickTest,
       // Visual-only chest previews. This API is removed by production builds.
       showChestOpening,

@@ -40,7 +40,17 @@
     "docs/planning/release-240-bot-competition.md",
     "docs/planning/audio-direction-circuit-forge-v21.md",
     "docs/planning/two-cycle-production-calendar.md",
-    "docs/planning/release-240-expedited-handoff-20261113.md"
+    "docs/planning/release-240-expedited-handoff-20261113.md",
+    "docs/planning/release-250-design-and-production.md",
+    "docs/planning/free-economy-250-v1.json",
+    "docs/planning/free-economy-250-report.md",
+    "docs/planning/reward-definitions-250-acceptance.md",
+    "docs/planning/reward-persistence-migration.md",
+    "docs/planning/free-economy-250-progression-report.md",
+    "docs/planning/first-shop-release.md",
+    "docs/planning/free-economy-250-acceptance.md",
+    "docs/planning/reward-choices-250-acceptance.md",
+    "docs/planning/engineer-case-ui-250-acceptance.md"
   ],
   "tasks": [
     {
@@ -169,21 +179,29 @@
       "owner": "Backend / oyun tasarımı",
       "effort": "L",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "BASE-01"
       ],
       "existing_paths": [
         "server/app/meta_progression.py",
         "server/app/player_progression.py",
-        "server/app/store_catalog.py"
+        "server/app/store_catalog.py",
+        "tools/simulate_liveops_economy.py",
+        "docs/planning/free-economy-250-v1.json",
+        "docs/planning/release-250-design-and-production.md",
+        "tools/simulate_progression_budget.py",
+        "docs/planning/free-economy-250-progression-v1.json"
       ],
       "proposed_paths": [
         "tools/simulate_liveops_economy.py"
       ],
       "acceptance": [
         "Yeni/ücretsiz/premium oyuncu senaryolarında 1 ve 28 günlük kaynak giriş-çıkışı mevcut tanımlardan hesaplanır.",
-        "Yeni kartın ücretsiz edinimi, hedef deste gelişimi ve biriken para raporlanır; miktar/fiyat kararı rapora bağlanır."
+        "Yeni kartın ücretsiz edinimi, hedef deste gelişimi ve biriken para raporlanır; miktar/fiyat kararı rapora bağlanır.",
+        "16 Kasım ücretsiz oyun kararı: yeni gelir modeli reklam, yeni premium veya gerçek para gerektirmez. 1/7/28 gün, az/çok oynayan, hiç kazanmayan, kaçıran ve sezon arası profillerinde Akı/Devre Kredisi ayrı hesaplanır; mevcut ek emir XP’si dahil edilir.",
+        "Maliyet analizi altılı deste, yükseltme, çekirdek, yetenek, reset, sandık/garantili teklif ve yeni modülün ücretsiz edinimini ayırır. İlk para beklentisi raporu nihai parça/denge kabulü değildir; fiyat ve miktar kararları kanıta bağlanır.",
+        "Son kullanıcı yönlendirmesi: temel aday yeni ayrı destek değil, mevcut günlük/sezonluk emir, giriş, sezon yolu ve maç sonucunun birlikte dengelenmesidir. Yalnız giriş ve bütün savaşları kaybetme profili ayrıca raporlanır; XP değişmez."
       ],
       "goals": [
         "shop",
@@ -195,7 +213,75 @@
         4,
         8
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/free-economy-250-report.md",
+        "docs/planning/free-economy-250-report.json",
+        "tools/tests/test_free_economy_250.py",
+        "docs/planning/free-economy-250-progression-report.md",
+        "docs/planning/free-economy-250-progression-report.json",
+        "tools/tests/test_progression_budget.py",
+        "docs/planning/first-shop-release.md"
+      ],
+      "planned_releases": [
+        "2.5.0"
+      ]
+    },
+    {
+      "id": "ECON-02",
+      "title": "Mevcut beş ödül kanalında ücretsiz Akı ve Devre Kredisi dengesini uygula",
+      "stage": "R2",
+      "owner": "Backend / oyun tasarımı",
+      "effort": "L",
+      "priority": "P0",
+      "status": "branch_ready",
+      "depends_on": [
+        "ECON-01",
+        "REWARD-01",
+        "DATA-01"
+      ],
+      "existing_paths": [
+        "server/app/player_progression.py",
+        "server/app/player_profile.py",
+        "server/app/reward_delivery.py",
+        "server/app/postgres_economic_operations.py",
+        "client/src/app.js",
+        "docs/planning/free-economy-250-v1.json",
+        "docs/planning/release-250-design-and-production.md",
+        "server/app/season_missions.py",
+        "server/app/season_entitlements.py",
+        "server/app/free_economy_rewards.py",
+        "server/data/free_economy_rewards_v1.json",
+        "server/app/player_data_store.py",
+        "tools/prepare_reward_definitions.py",
+        "client/src/relay-client.js",
+        "client/src/i18n-catalog.js"
+      ],
+      "proposed_paths": [
+        "server/app/free_economy_rewards.py",
+        "server/tests/test_free_economy_rewards.py"
+      ],
+      "acceptance": [
+        "Günlük ve sezonluk Devre Emirleri, giriş, ücretsiz sezon yolu ve maç sonucu için ECON-01 beş kanallı kaynak-harcama kararı uygulanır. Ayrı günlük/haftalık destek bunun üstüne eklenmez; yeni para, reklam/yeni premium gereksinimi veya XP artışı yoktur. Miktarlar free-economy-250-v1.json analiz adayından son denge kabulüne taşınır.",
+        "Altı günlük emrin adayı 105 Akı+120 kredi; mevcut 4/6 savaş emirleriyle en fazla115 Akı+180 kredi/gün. On iki sezonluk emrin toplam adayı600 Akı+3000 kredi; girişte Akı3/kredi2 katı ve ücretsiz sezon yolunda para2 katı. Uygun maç kredisinin adayı1,5 katı; ilk6 uygun maçta2 Akı/maç. Her kaynak miktar/revision/tek teslim anahtarıyla açıkça bütçelenir.",
+        "Maç artışı ranked_pvp/arena_ai gerçek oyuncu, sunucuda kesinleşmiş pes edilmemiş sonuçla verilir; bot/operatör/nötr/tekrar battle_id kapsam dışıdır. Mevcut temel emir uygunluğu korunur. Kazanılmış haklar, bakiye, request_id tekrarı, eşzamanlı talep, UTC devir, kapanış ve restore tek teslimle doğrulanır.",
+        "Sezon girişi/yolu/sezonluk emir para artışı yeni onaylı dönem revisionında başlar; yayımlanmış S1 profili ve eski hak/makbuzlar değiştirilmez. Sezon arasında yalnız mevcut temel günlük emir ve uygun maç artışları sürer. UI mevcut ekranlarda TR/EN miktar/ilerleme/kaynak/toplama ve kapalı sezonu doğru gösterir; XP/parça/kupa/sandık olasılığı değişmez."
+      ],
+      "goals": [
+        "rewards",
+        "shop",
+        "operations"
+      ],
+      "old_plan_sections": [
+        4,
+        8
+      ],
+      "evidence": [
+        "docs/planning/free-economy-250-acceptance.md",
+        "server/tests/test_free_economy_rewards.py",
+        "server/tests/test_postgres_free_economy.py",
+        "client/tests/free-economy.test.js",
+        "e2e/free-economy.spec.js"
+      ],
       "planned_releases": [
         "2.5.0"
       ]
@@ -382,7 +468,7 @@
     },
     {
       "id": "CARD-01",
-      "title": "Yankı Rölesi sezon modülünü uçtan uca geliştir",
+      "title": "Geri Tepme Topu sezon modülünü uçtan uca geliştir",
       "stage": "R2",
       "owner": "Oyun motoru / sanat / denge",
       "effort": "XL",
@@ -396,13 +482,13 @@
         "server/data/season_module_releases_v2.json",
         "server/app/module_roster.py",
         "server/app/game/engine.py",
-        "docs/planning/echo-relay-release.md"
+        "docs/planning/recoil-cannon-release.md"
       ],
       "proposed_paths": [
-        "docs/planning/echo-relay-release.md"
+        "docs/planning/recoil-cannon-release.md"
       ],
       "acceptance": [
-        "Planlı echo_relay için mekanik, karşı oyun, çalışma görseli, aktif katalog ve arena kapısı tamamlanır.",
+        "Planlı recoil_cannon saldırı modülüdür; dost silahı güçlendirmez. Güçlü tek doğrudan atış ve kendi CAN bedeli, karşı oyun, VFX/ses, aktif katalog ve arena3/ücretsiz edinim kabulü tamamlanır. Kendi CAN kaybı V8 geliri üretmez; kaynak en az1 CAN kalır.",
         "Ücretsiz kazanım yolu ve otomatik yerleşim/hedefleme sözleşmeleri test edilir; planlı kart hazır diye ödül havuzuna girmez."
       ],
       "goals": [
@@ -443,7 +529,7 @@
       ],
       "acceptance": [
         "Planlı ember_launcher için yanma, arındırma/karşı oyun ve okunabilir süre/hasar göstergesi hazırlanır.",
-        "S2 Yankı Rölesi, S3 Kor Fırlatıcı ile en az birer yeni hazır modül alır; yalnız S1 mevcut 24 modülle başlar. Planlı kart hazır sayılmaz."
+        "S2 Geri Tepme Topu, S3 Kor Fırlatıcı ile en az birer yeni hazır modül alır; yalnız S1 mevcut 24 modülle başlar. Planlı kart hazır sayılmaz."
       ],
       "goals": [
         "content",
@@ -498,7 +584,7 @@
       "owner": "Backend",
       "effort": "L",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "BASE-01"
       ],
@@ -506,7 +592,10 @@
         "server/app/reward_delivery.py",
         "server/app/meta_progression.py",
         "server/app/postgres_economic_operations.py",
-        "server/tests/test_reward_integrity.py"
+        "server/tests/test_reward_integrity.py",
+        "server/app/reward_definitions.py",
+        "server/data/reward_definitions_v1.json",
+        "tools/prepare_reward_definitions.py"
       ],
       "proposed_paths": [
         "server/app/reward_definitions.py",
@@ -525,7 +614,12 @@
         4,
         8
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/reward-definitions-250-acceptance.md",
+        "server/tests/test_reward_definitions.py",
+        "tools/tests/test_reward_definition_catalog.py",
+        "tools/tests/test_release_data_boundary.py"
+      ],
       "planned_releases": [
         "2.5.0"
       ]
@@ -537,7 +631,7 @@
       "owner": "Backend",
       "effort": "L",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "REWARD-01",
         "ECON-01",
@@ -546,7 +640,13 @@
       "existing_paths": [
         "server/app/postgres_economic_operations.py",
         "server/app/reward_delivery.py",
-        "server/app/player_profile.py"
+        "server/app/player_profile.py",
+        "docs/planning/first-shop-release.md",
+        "server/app/reward_choices.py",
+        "server/app/main.py",
+        "server/app/postgres_reward_entitlements.py",
+        "server/app/player_data_store.py",
+        "server/data/free_economy_rewards_v1.json"
       ],
       "proposed_paths": [
         "server/app/reward_choices.py",
@@ -565,7 +665,12 @@
         4,
         5
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/reward-choices-250-acceptance.md",
+        "server/tests/test_reward_choices.py",
+        "server/tests/test_postgres_reward_choices.py",
+        "server/tests/test_free_economy_rewards.py"
+      ],
       "planned_releases": [
         "2.5.0"
       ]
@@ -603,7 +708,9 @@
         4,
         5
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/engineer-case-ui-250-acceptance.md"
+      ],
       "planned_releases": [
         "2.5.0"
       ]
@@ -660,7 +767,8 @@
       "existing_paths": [
         "server/app/store_catalog.py",
         "server/app/meta_progression.py",
-        "server/app/cosmetic_releases.py"
+        "server/app/cosmetic_releases.py",
+        "docs/planning/first-shop-release.md"
       ],
       "proposed_paths": [
         "server/app/shop_offers.py",
@@ -668,7 +776,8 @@
       ],
       "acceptance": [
         "UTC başlangıç/bitiş, arena, fiyat türü, garanti içerik, limit, görsel ve TR/EN doğrulanır.",
-        "Yayınlanan teklif değişmez; süre bitmiş/eski revision ve eksik ürün önizlemesi doğru hata verir."
+        "Yayınlanan teklif değişmez; süre bitmiş/eski revision ve eksik ürün önizlemesi doğru hata verir.",
+        "Yeni ürün veya temel ilerleme için gerçek para/reklam varsayılmaz; Akı ve kredi fiyatları ECON-01 ücretsiz kaynak/harcama kararına bağlıdır. Kozmetik harcama zorunlu savaş gücünün yerine geçirilmez."
       ],
       "goals": [
         "shop",
@@ -885,7 +994,7 @@
       "owner": "İstemci / sanat",
       "effort": "L",
       "priority": "P1",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [
         "UI-01",
         "REWARD-02"
@@ -893,14 +1002,19 @@
       "existing_paths": [
         "client/src/app.js",
         "client/src/reward-chest-art-v5.css",
-        "e2e/casual-chest-opening.spec.js"
+        "e2e/casual-chest-opening.spec.js",
+        "client/src/rewards/choice-view.js",
+        "client/src/rewards/choice-view.css",
+        "client/assets/ui/engineer-case-v1",
+        "client/index.html"
       ],
       "proposed_paths": [
         "client/src/rewards/choice-view.js"
       ],
       "acceptance": [
-        "Üç seçenekli önizleme/seç/onay/teslim akışı; çıkışta ve bağlantı kopmasında hak korunur.",
-        "Sandık sonucu makbuzla aynı; kaynak/garanti/olasılık etiketi, atla ve toplu açma özeti test edilir."
+        "Özgün petrol/fildişi/bakır Mühendis Kasası; gerçek üç seçenek, seçim inceleme/onay/tek teslim, Ödüller ve Mesaj Kutusu erişimi. Çıkış ve bağlantı kopmasında hak korunur.",
+        "Sonuç gerçek makbuzla eşleşir; garanti/tek seçim etiketi, 320/393 px TR/EN, klavye, Atla, mute/azaltılmış hareket/düşük grafik ve tekrar bağlantı doğrulanır. Normal sandığın toplu açma özeti korunur; seçim hakları tek tek seçilir. Son fiziksel cihaz kabulü yayın kapısındadır.",
+        "Mühendis Kasası yerel ekran dilimi uygulanmıştır; genel ekran hiyerarşisi/prototipi UI-01 kapanmadan üst UI-03 görevi branch_ready olmaz. Kasa kabul kanıtı ayrı kayıttadır."
       ],
       "goals": [
         "presentation",
@@ -912,10 +1026,22 @@
         5,
         7
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/engineer-case-ui-250-acceptance.md",
+        "client/assets/ui/engineer-case-v1/README.md",
+        "e2e/engineer-case.spec.js",
+        "e2e/casual-chest-opening.spec.js",
+        "client/tests/visible-ui-work.test.js"
+      ],
       "planned_releases": [
         "2.5.0"
-      ]
+      ],
+      "local_delivery": {
+        "engineer_case_ui": "branch_ready",
+        "shared_screen_spec": "pending_UI-01",
+        "physical_device": "pending_release_gate",
+        "evidence": "docs/planning/engineer-case-ui-250-acceptance.md"
+      }
     },
     {
       "id": "UI-04",
@@ -941,7 +1067,8 @@
       "acceptance": [
         "Gerçek oyuncu/takım üzerinde önizleme, kazanım kaynağı ve kilit nedeni görünür.",
         "Ücretsiz/premium/katkı/prestij ayrımı, dönem arşivi ve sahiplik kuşanma akışı tutarlı olur.",
-        "Takım turnuvası yardım metinleri sabit Pazartesi–Pazar adları yerine operatör başlangıcına göre ilk üç gün / 4. gün / 5–7. gün olarak TR/EN gösterilir; 24 Kasım S1 takvimiyle çelişmez."
+        "Takım turnuvası yardım metinleri sabit Pazartesi–Pazar adları yerine operatör başlangıcına göre ilk üç gün / 4. gün / 5–7. gün olarak TR/EN gösterilir; 24 Kasım S1 takvimiyle çelişmez.",
+        "ECON-02 ile mevcut emir/giriş/sezon yolu/maç sonucu para artışı ve sezon arası erişim mevcut görev/ödül yüzeyinde TR/EN gösterilir; temel kaynak kazanımı ücretli ürün satırına veya sıralamaya yönlendirmez."
       ],
       "goals": [
         "presentation",
@@ -1073,7 +1200,7 @@
       "owner": "Backend / QA",
       "effort": "L",
       "priority": "P0",
-      "status": "todo",
+      "status": "branch_ready",
       "depends_on": [
         "REWARD-01"
       ],
@@ -1081,7 +1208,11 @@
         "server/app/json_schema_migrations.py",
         "server/app/postgres_economic_operations.py",
         "server/migrations",
-        "tools/server_backup.py"
+        "tools/server_backup.py",
+        "server/app/reward_entitlements.py",
+        "server/app/postgres_reward_entitlements.py",
+        "server/migrations/015_reward_entitlements.sql",
+        "server/migrations/015_reward_entitlements.down.sql"
       ],
       "proposed_paths": [
         "docs/planning/reward-persistence-migration.md"
@@ -1099,7 +1230,12 @@
         4,
         9
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/reward-persistence-migration.md",
+        "server/tests/test_reward_entitlements.py",
+        "server/tests/test_postgres_reward_entitlements.py",
+        "server/tests/test_server_backup.py"
+      ],
       "planned_releases": [
         "2.5.0"
       ]
@@ -1716,7 +1852,8 @@
       "acceptance": [
         "Oyun parasıyla edinimde garanti, olasılık ve uygun havuz doğru görünür; gerçek para fiyatı, reklam ve ödeme girişleri kapalıdır. Geçmiş işlem/iade ve kazanılmış haklar korunur.",
         "O gün geçerli Play/varsa iOS ve hedef bölge politikası kontrol edilir; reklam/IAP/analitik rolloutları kendiliğinden açılmaz.",
-        "2.5.0 ve sonrası AAB’lerde AdMob/Native Purchases SDK’ları, native mağaza köprüsü, BILLING ve reklam/AdServices izinleri bulunmaz. Kaynaklar silinmez; son imzalı AAB denetimi ve gerçek cihaz kabulü gerekir."
+        "2.5.0 ve sonrası AAB’lerde AdMob/Native Purchases SDK’ları, native mağaza köprüsü, BILLING ve reklam/AdServices izinleri bulunmaz. Kaynaklar silinmez; son imzalı AAB denetimi ve gerçek cihaz kabulü gerekir.",
+        "Yeni ürün veya temel ilerleme için gerçek para/reklam varsayılmaz; Akı ve kredi fiyatları ECON-01 ücretsiz kaynak/harcama kararına bağlıdır. Kozmetik harcama zorunlu savaş gücünün yerine geçirilmez."
       ],
       "goals": [
         "shop",
@@ -1895,7 +2032,8 @@
         "COS-05",
         "ANALYT-01",
         "UI-04",
-        "AUDIO-03"
+        "AUDIO-03",
+        "ECON-02"
       ],
       "existing_paths": [
         "e2e/reward-navigation.spec.js",
@@ -1908,7 +2046,8 @@
       "acceptance": [
         "Gerçek API ile limit/ödeme/tekrar/çevrimdışı/yanlış seçenek/sahiplik ve eski stok senaryoları geçer.",
         "Kazanılmış haklar korunarak pilot kapatılabilir; fiyat/miktar kararı ve sonraki minor numarası kayıtlanır.",
-        "S2 için COS-02 ilk altı öğelik kilometre taşı ve Yankı Rölesi hazırdır; üst 18 öğelik görevin tamamı veya Kor Fırlatıcı beklenmez."
+        "S2 için COS-02 ilk altı öğelik kilometre taşı ve Geri Tepme Topu hazırdır; üst 18 öğelik görevin tamamı veya Kor Fırlatıcı beklenmez.",
+        "Ücretsiz/reklamsız Akı ve kredi bütçesi, sezon arası erişim, mevcut beş ödül kanalındaki kaynak artışı ve yeni modülün ücretsiz edinimi kanıtlanır; eski S1 kataloğu/bakiyesi ve satın alınmış haklar korunur."
       ],
       "goals": [
         "operations",
@@ -3301,15 +3440,21 @@
       "gate_tasks": [
         "RELEASE-02"
       ],
-      "scope": "Mühendis seçim kasası ve tek garantili parça teklifi; Yankı Rölesi; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. En az bir yeni menü ve bir özgün savaş bestesi; merak/umut ve kontrollü rekabet.",
+      "scope": "Mühendis seçim kasası ve tek garantili parça teklifi; Geri Tepme Topu; ikinci sezon için 6 yeni oyuncu kozmetiği ve mağazaya ayrı 4 öğe. En az bir yeni menü ve bir özgün savaş bestesi; merak/umut ve kontrollü rekabet. Tamamen ücretsiz/reklamsız ilerleme için Akı ve Devre Kredisi kaynak-harcama dengesi; mevcut günlük/sezonluk emir, giriş, ücretsiz sezon yolu ve maç sonucunun para dengesi ve sezon arası erişim.",
       "keep_closed": "Yeni gerçek para ürünü, yeni para birimi, ücretli yeniden çekiliş ve PvP deneme gücü artışı.",
-      "exit": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. AUDIO-03 kabulü ve ön duyuru standardı sürüm kapısındadır. Reklam/ödeme SDK’ları ve BILLING izni son AAB’de bulunmaz; geçmiş haklar korunur. Takım turnuvasının bütün sabit hafta günü açıklamaları TR/EN olarak başlangıca göre gün numaralarıyla eşleşir.",
+      "exit": "Seçim hakkı/sabit seçenek/tek teslim, atomik limit/harcama, ücretsiz yeni modül edinimi, denge/karşı oyun ve kanal stok ayrımı. AUDIO-03 kabulü ve ön duyuru standardı sürüm kapısındadır. Reklam/ödeme SDK’ları ve BILLING izni son AAB’de bulunmaz; geçmiş haklar korunur. Takım turnuvasının bütün sabit hafta günü açıklamaları TR/EN olarak başlangıca göre gün numaralarıyla eşleşir. ECON-01 ücretsiz kaynak-harcama kararı ve ECON-02 beş ödül kanalının tek teslim/yeni sezon/sezon arası kabulü zorunludur; temel ilerleme reklam, yeni premium veya sıralama kazanımı varsaymaz.",
       "target_release_on": "2026-12-21",
       "scope_freezes_on": "2026-12-14",
       "season_starts_on": "2026-12-28",
       "date_confidence": "hedef",
       "delivery_document": "docs/planning/releases/2.5.0.md",
-      "development_policy": "15 Kasım 2026 güncel kararı: 2.4.0 yayımlandı; S1 otomatik takvimi 24 Kasım–22 Aralık 03.00 TR olarak canlıda hazır. 2.5.0 paketinin 21 Aralık yayın hedefi korunur. Reklam/satın alma kaynakları ve geçmiş işlem/iade hakları korunur; SDK’lar, native mağaza köprüsü ve BILLING/reklam izinleri pakete alınmaz; bu iş için ayrı 2.4.1 üretilmez. Sabit takım yardım metinleri başlangıca göre gün numaralarına çevrilir. Son AAB, TR/EN cihaz kabulü ve Console beyanları yayın kapısıdır. S1’in yayımlanmış kataloğu ve kullanılmış stoğu korunur. Kapanıştan sonra düzenleme/dinlenme arası vardır; 28 Aralık S2 yalnız koşullu hedeftir ve ayrıca operatör onayı gerekir. Paket yayını S2’yi açmaz. Ayrıntı: docs/planning/mobile-250-without-monetization.md."
+      "development_policy": "15 Kasım 2026 güncel kararı: 2.4.0 yayımlandı; S1 otomatik takvimi 24 Kasım–22 Aralık 03.00 TR olarak canlıda hazır. 2.5.0 paketinin 21 Aralık yayın hedefi korunur. Reklam/satın alma kaynakları ve geçmiş işlem/iade hakları korunur; SDK’lar, native mağaza köprüsü ve BILLING/reklam izinleri pakete alınmaz; bu iş için ayrı 2.4.1 üretilmez. Sabit takım yardım metinleri başlangıca göre gün numaralarına çevrilir. Son AAB, TR/EN cihaz kabulü ve Console beyanları yayın kapısıdır. S1’in yayımlanmış kataloğu ve kullanılmış stoğu korunur. Kapanıştan sonra düzenleme/dinlenme arası vardır; 28 Aralık S2 yalnız koşullu hedeftir ve ayrıca operatör onayı gerekir. Paket yayını S2’yi açmaz. Ayrıntı: docs/planning/mobile-250-without-monetization.md.",
+      "server_transition_policy": {
+        "after_season_number": 1,
+        "not_before": "2026-12-22T00:00:00Z",
+        "requires_closeout_acceptance": true,
+        "exact_window_status": "not_scheduled"
+      }
     },
     {
       "version": "2.6.0",
@@ -3389,6 +3534,39 @@
     ]
   },
   "deployment_status": {
+    "server_release": "2.4.0",
+    "android_code": 15,
+    "aab_delivered": true,
+    "play_uploaded": true,
+    "device_update_verified": false,
+    "evidence": "config/release-candidates/2.4.0.json",
+    "play_rollout_confirmed_by_user": true,
+    "confirmation_source": "user_report",
+    "confirmation_evidence": "docs/planning/mobile-250-without-monetization.md",
+    "season_content_manifest": "config/season-releases/S1-20261124/manifest.json",
+    "note": "2.4.0 kullanıcı yayın teyidi ve canlı S1 operasyon kaydı kaynak alındı; bu plan turunda canlı sorgu veya yeni dağıtım yapılmadı."
+  },
+  "active_development": {
+    "target_version": "2.5.0",
+    "branch": "codex/develop-2.5.0",
+    "plan": "docs/planning/releases/2.5.0.md",
+    "milestone": "engineer_choice_ui_ready_closeout_and_shop_next",
+    "status": "in_progress",
+    "scope_decision": "user_approved",
+    "target_release_on": "2026-12-21",
+    "season_starts_on": "2026-12-28",
+    "calendar": "docs/planning/release_calendar_v1.json",
+    "season_start_mode": "manual",
+    "season_date_confidence": "conditional",
+    "server_transition_policy": {
+      "after_season_number": 1,
+      "not_before": "2026-12-22T00:00:00Z",
+      "requires_closeout_acceptance": true,
+      "exact_window_status": "not_scheduled"
+    }
+  },
+  "planning_updated_on": "2026-11-16",
+  "previous_deployment_status": {
     "server_release": "2.3.0",
     "android_code": 14,
     "aab_delivered": true,
@@ -3398,19 +3576,5 @@
     "play_rollout_confirmed_by_user": true,
     "confirmation_source": "user_report",
     "confirmation_evidence": "docs/planning/release-230-user-confirmation-20261103.md"
-  },
-  "active_development": {
-    "target_version": "2.5.0",
-    "branch": "codex/develop-2.5.0",
-    "plan": "docs/planning/releases/2.5.0.md",
-    "milestone": "release_250_implementation_and_acceptance",
-    "status": "in_progress",
-    "scope_decision": "user_approved",
-    "target_release_on": "2026-12-21",
-    "season_starts_on": "2026-12-28",
-    "calendar": "docs/planning/release_calendar_v1.json",
-    "season_start_mode": "manual",
-    "season_date_confidence": "conditional"
-  },
-  "planning_updated_on": "2026-11-15"
+  }
 }
