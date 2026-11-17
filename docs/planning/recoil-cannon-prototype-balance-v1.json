@@ -1,0 +1,899 @@
+{
+  "summary": {
+    "matches": 20,
+    "finished": 20,
+    "recoil_wins": 10,
+    "min_seconds": 122.7,
+    "median_seconds": 329.85,
+    "max_seconds": 432.6,
+    "runtime_seconds": 27.2,
+    "production_changed": false,
+    "scope": "Candidate fixed AI decks, two levels, swapped sides; not human win-rate or final balance acceptance",
+    "candidate_deployed_in_all_matches": true
+  },
+  "matches": [
+    {
+      "left": "recoil",
+      "right": "starter",
+      "level": 1,
+      "core": "core_resonance",
+      "seconds": 122.7,
+      "winner": "b",
+      "finished": true,
+      "first_loss_seconds": 21.5,
+      "median_module_life_seconds": 12.0,
+      "peak_modules": 14,
+      "cards_used": [
+        "amplifier",
+        "armor",
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "pulse_cannon",
+        "recoil_cannon",
+        "repair",
+        "shield"
+      ],
+      "core_uses": {
+        "a": 3,
+        "b": 3
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 464
+        },
+        "b": {
+          "direct_damage": 295,
+          "executions": 2
+        }
+      },
+      "current_from_damage": {
+        "a": 29,
+        "b": 39
+      },
+      "total_current": {
+        "a": 76,
+        "b": 73
+      },
+      "deployments": 45
+    },
+    {
+      "left": "starter",
+      "right": "recoil",
+      "level": 1,
+      "core": "core_resonance",
+      "seconds": 147.6,
+      "winner": "b",
+      "finished": true,
+      "first_loss_seconds": 21.0,
+      "median_module_life_seconds": 10.5,
+      "peak_modules": 14,
+      "cards_used": [
+        "amplifier",
+        "armor",
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "pulse_cannon",
+        "recoil_cannon",
+        "repair",
+        "shield"
+      ],
+      "core_uses": {
+        "a": 4,
+        "b": 4
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 720
+        },
+        "b": {
+          "direct_damage": 882,
+          "executions": 4
+        }
+      },
+      "current_from_damage": {
+        "a": 41,
+        "b": 47
+      },
+      "total_current": {
+        "a": 97,
+        "b": 88
+      },
+      "deployments": 56
+    },
+    {
+      "left": "recoil",
+      "right": "pierce",
+      "level": 1,
+      "core": "core_guardian",
+      "seconds": 386.1,
+      "winner": "b",
+      "finished": true,
+      "first_loss_seconds": 21.0,
+      "median_module_life_seconds": 6.5,
+      "peak_modules": 14,
+      "cards_used": [
+        "armor",
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "railgun",
+        "recoil_cannon",
+        "repair",
+        "shield_breaker"
+      ],
+      "core_uses": {
+        "a": 11,
+        "b": 10
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 1173
+        },
+        "b": {
+          "reinforcements": 10
+        }
+      },
+      "current_from_damage": {
+        "a": 171,
+        "b": 170
+      },
+      "total_current": {
+        "a": 265,
+        "b": 265
+      },
+      "deployments": 178
+    },
+    {
+      "left": "pierce",
+      "right": "recoil",
+      "level": 1,
+      "core": "core_guardian",
+      "seconds": 131.1,
+      "winner": "b",
+      "finished": true,
+      "first_loss_seconds": 24.0,
+      "median_module_life_seconds": 7.0,
+      "peak_modules": 14,
+      "cards_used": [
+        "armor",
+        "barrier",
+        "emp",
+        "laser",
+        "railgun",
+        "recoil_cannon",
+        "repair",
+        "shield_breaker"
+      ],
+      "core_uses": {
+        "a": 4,
+        "b": 3
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 474,
+          "damage_blocked": 256
+        },
+        "b": {
+          "reinforcements": 3
+        }
+      },
+      "current_from_damage": {
+        "a": 30,
+        "b": 36
+      },
+      "total_current": {
+        "a": 80,
+        "b": 67
+      },
+      "deployments": 45
+    },
+    {
+      "left": "recoil",
+      "right": "control",
+      "level": 1,
+      "core": "core_overdrive",
+      "seconds": 352.1,
+      "winner": "a",
+      "finished": true,
+      "first_loss_seconds": 20.0,
+      "median_module_life_seconds": 5.9,
+      "peak_modules": 14,
+      "cards_used": [
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "pulse_cannon",
+        "recoil_cannon",
+        "repair",
+        "virus"
+      ],
+      "core_uses": {
+        "a": 10,
+        "b": 10
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 2118
+        },
+        "b": {
+          "direct_damage": 1233
+        }
+      },
+      "current_from_damage": {
+        "a": 193,
+        "b": 205
+      },
+      "total_current": {
+        "a": 270,
+        "b": 328
+      },
+      "deployments": 194
+    },
+    {
+      "left": "control",
+      "right": "recoil",
+      "level": 1,
+      "core": "core_overdrive",
+      "seconds": 334.1,
+      "winner": "b",
+      "finished": true,
+      "first_loss_seconds": 20.0,
+      "median_module_life_seconds": 5.6,
+      "peak_modules": 14,
+      "cards_used": [
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "pulse_cannon",
+        "recoil_cannon",
+        "repair",
+        "virus"
+      ],
+      "core_uses": {
+        "a": 9,
+        "b": 9
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 1924
+        },
+        "b": {
+          "direct_damage": 1034
+        }
+      },
+      "current_from_damage": {
+        "a": 189,
+        "b": 201
+      },
+      "total_current": {
+        "a": 298,
+        "b": 279
+      },
+      "deployments": 187
+    },
+    {
+      "left": "recoil",
+      "right": "fortress",
+      "level": 1,
+      "core": "core_disruptor",
+      "seconds": 134.1,
+      "winner": "a",
+      "finished": true,
+      "first_loss_seconds": 21.5,
+      "median_module_life_seconds": 9.0,
+      "peak_modules": 14,
+      "cards_used": [
+        "armor",
+        "barrier",
+        "emp",
+        "guardian_dome",
+        "laser",
+        "railgun",
+        "recoil_cannon",
+        "reflector",
+        "repair"
+      ],
+      "core_uses": {
+        "a": 4,
+        "b": 4
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 1052,
+          "executions": 4
+        },
+        "b": {
+          "direct_damage": 456
+        }
+      },
+      "current_from_damage": {
+        "a": 40,
+        "b": 37
+      },
+      "total_current": {
+        "a": 75,
+        "b": 88
+      },
+      "deployments": 46
+    },
+    {
+      "left": "fortress",
+      "right": "recoil",
+      "level": 1,
+      "core": "core_disruptor",
+      "seconds": 324.1,
+      "winner": "a",
+      "finished": true,
+      "first_loss_seconds": 24.0,
+      "median_module_life_seconds": 7.0,
+      "peak_modules": 14,
+      "cards_used": [
+        "armor",
+        "barrier",
+        "cleanser",
+        "emp",
+        "guardian_dome",
+        "laser",
+        "railgun",
+        "recoil_cannon",
+        "reflector",
+        "repair"
+      ],
+      "core_uses": {
+        "a": 9,
+        "b": 9
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 442,
+          "executions": 2
+        },
+        "b": {
+          "direct_damage": 1512
+        }
+      },
+      "current_from_damage": {
+        "a": 145,
+        "b": 132
+      },
+      "total_current": {
+        "a": 228,
+        "b": 225
+      },
+      "deployments": 139
+    },
+    {
+      "left": "recoil",
+      "right": "pulse-reference",
+      "level": 1,
+      "core": "core_capacitor",
+      "seconds": 321.2,
+      "winner": "a",
+      "finished": true,
+      "first_loss_seconds": 21.0,
+      "median_module_life_seconds": 6.0,
+      "peak_modules": 14,
+      "cards_used": [
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "pulse_cannon",
+        "recoil_cannon",
+        "repair"
+      ],
+      "core_uses": {
+        "a": 9,
+        "b": 9
+      },
+      "core_contributions": {
+        "a": {
+          "reinforcements": 9
+        },
+        "b": {
+          "direct_damage": 1605
+        }
+      },
+      "current_from_damage": {
+        "a": 153,
+        "b": 164
+      },
+      "total_current": {
+        "a": 222,
+        "b": 262
+      },
+      "deployments": 165
+    },
+    {
+      "left": "pulse-reference",
+      "right": "recoil",
+      "level": 1,
+      "core": "core_capacitor",
+      "seconds": 342.1,
+      "winner": "b",
+      "finished": true,
+      "first_loss_seconds": 20.0,
+      "median_module_life_seconds": 6.0,
+      "peak_modules": 14,
+      "cards_used": [
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "pulse_cannon",
+        "recoil_cannon",
+        "repair"
+      ],
+      "core_uses": {
+        "a": 9,
+        "b": 10
+      },
+      "core_contributions": {
+        "a": {
+          "reinforcements": 9
+        },
+        "b": {
+          "direct_damage": 1481
+        }
+      },
+      "current_from_damage": {
+        "a": 163,
+        "b": 183
+      },
+      "total_current": {
+        "a": 262,
+        "b": 267
+      },
+      "deployments": 180
+    },
+    {
+      "left": "recoil",
+      "right": "starter",
+      "level": 15,
+      "core": "core_resonance",
+      "seconds": 317.7,
+      "winner": "b",
+      "finished": true,
+      "first_loss_seconds": 20.0,
+      "median_module_life_seconds": 6.6,
+      "peak_modules": 14,
+      "cards_used": [
+        "amplifier",
+        "armor",
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "pulse_cannon",
+        "recoil_cannon",
+        "repair",
+        "shield"
+      ],
+      "core_uses": {
+        "a": 9,
+        "b": 9
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 2365
+        },
+        "b": {
+          "direct_damage": 990,
+          "executions": 3
+        }
+      },
+      "current_from_damage": {
+        "a": 154,
+        "b": 182
+      },
+      "total_current": {
+        "a": 225,
+        "b": 222
+      },
+      "deployments": 143
+    },
+    {
+      "left": "starter",
+      "right": "recoil",
+      "level": 15,
+      "core": "core_resonance",
+      "seconds": 369.1,
+      "winner": "a",
+      "finished": true,
+      "first_loss_seconds": 20.0,
+      "median_module_life_seconds": 6.8,
+      "peak_modules": 14,
+      "cards_used": [
+        "amplifier",
+        "armor",
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "pulse_cannon",
+        "recoil_cannon",
+        "repair",
+        "shield"
+      ],
+      "core_uses": {
+        "a": 10,
+        "b": 10
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 2908
+        },
+        "b": {
+          "direct_damage": 3862,
+          "executions": 10
+        }
+      },
+      "current_from_damage": {
+        "a": 264,
+        "b": 203
+      },
+      "total_current": {
+        "a": 330,
+        "b": 268
+      },
+      "deployments": 193
+    },
+    {
+      "left": "recoil",
+      "right": "pierce",
+      "level": 15,
+      "core": "core_guardian",
+      "seconds": 361.6,
+      "winner": "b",
+      "finished": true,
+      "first_loss_seconds": 18.5,
+      "median_module_life_seconds": 6.0,
+      "peak_modules": 14,
+      "cards_used": [
+        "armor",
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "railgun",
+        "recoil_cannon",
+        "repair",
+        "shield_breaker"
+      ],
+      "core_uses": {
+        "a": 10,
+        "b": 10
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 1919
+        },
+        "b": {
+          "reinforcements": 10
+        }
+      },
+      "current_from_damage": {
+        "a": 210,
+        "b": 233
+      },
+      "total_current": {
+        "a": 268,
+        "b": 287
+      },
+      "deployments": 186
+    },
+    {
+      "left": "pierce",
+      "right": "recoil",
+      "level": 15,
+      "core": "core_guardian",
+      "seconds": 432.6,
+      "winner": "a",
+      "finished": true,
+      "first_loss_seconds": 21.0,
+      "median_module_life_seconds": 5.0,
+      "peak_modules": 14,
+      "cards_used": [
+        "armor",
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "railgun",
+        "recoil_cannon",
+        "repair",
+        "shield_breaker"
+      ],
+      "core_uses": {
+        "a": 12,
+        "b": 11
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 2444
+        },
+        "b": {
+          "reinforcements": 11
+        }
+      },
+      "current_from_damage": {
+        "a": 347,
+        "b": 274
+      },
+      "total_current": {
+        "a": 412,
+        "b": 339
+      },
+      "deployments": 250
+    },
+    {
+      "left": "recoil",
+      "right": "control",
+      "level": 15,
+      "core": "core_overdrive",
+      "seconds": 346.3,
+      "winner": "b",
+      "finished": true,
+      "first_loss_seconds": 20.0,
+      "median_module_life_seconds": 5.5,
+      "peak_modules": 14,
+      "cards_used": [
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "pulse_cannon",
+        "recoil_cannon",
+        "repair",
+        "virus"
+      ],
+      "core_uses": {
+        "a": 10,
+        "b": 10
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 3529
+        },
+        "b": {
+          "direct_damage": 2025
+        }
+      },
+      "current_from_damage": {
+        "a": 206,
+        "b": 244
+      },
+      "total_current": {
+        "a": 269,
+        "b": 319
+      },
+      "deployments": 193
+    },
+    {
+      "left": "control",
+      "right": "recoil",
+      "level": 15,
+      "core": "core_overdrive",
+      "seconds": 322.1,
+      "winner": "b",
+      "finished": true,
+      "first_loss_seconds": 20.0,
+      "median_module_life_seconds": 6.0,
+      "peak_modules": 14,
+      "cards_used": [
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "pulse_cannon",
+        "recoil_cannon",
+        "repair",
+        "virus"
+      ],
+      "core_uses": {
+        "a": 9,
+        "b": 9
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 3290
+        },
+        "b": {
+          "direct_damage": 1638
+        }
+      },
+      "current_from_damage": {
+        "a": 226,
+        "b": 242
+      },
+      "total_current": {
+        "a": 289,
+        "b": 292
+      },
+      "deployments": 188
+    },
+    {
+      "left": "recoil",
+      "right": "fortress",
+      "level": 15,
+      "core": "core_disruptor",
+      "seconds": 348.6,
+      "winner": "b",
+      "finished": true,
+      "first_loss_seconds": 21.0,
+      "median_module_life_seconds": 6.75,
+      "peak_modules": 14,
+      "cards_used": [
+        "armor",
+        "barrier",
+        "cleanser",
+        "emp",
+        "guardian_dome",
+        "laser",
+        "railgun",
+        "recoil_cannon",
+        "reflector",
+        "repair"
+      ],
+      "core_uses": {
+        "a": 10,
+        "b": 10
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 4247,
+          "executions": 10
+        },
+        "b": {
+          "direct_damage": 2253
+        }
+      },
+      "current_from_damage": {
+        "a": 173,
+        "b": 223
+      },
+      "total_current": {
+        "a": 237,
+        "b": 290
+      },
+      "deployments": 160
+    },
+    {
+      "left": "fortress",
+      "right": "recoil",
+      "level": 15,
+      "core": "core_disruptor",
+      "seconds": 313.6,
+      "winner": "a",
+      "finished": true,
+      "first_loss_seconds": 21.0,
+      "median_module_life_seconds": 6.5,
+      "peak_modules": 14,
+      "cards_used": [
+        "armor",
+        "barrier",
+        "cleanser",
+        "emp",
+        "guardian_dome",
+        "laser",
+        "railgun",
+        "recoil_cannon",
+        "reflector",
+        "repair"
+      ],
+      "core_uses": {
+        "a": 9,
+        "b": 9
+      },
+      "core_contributions": {
+        "a": {
+          "direct_damage": 1949,
+          "executions": 5
+        },
+        "b": {
+          "direct_damage": 2713
+        }
+      },
+      "current_from_damage": {
+        "a": 182,
+        "b": 166
+      },
+      "total_current": {
+        "a": 227,
+        "b": 233
+      },
+      "deployments": 140
+    },
+    {
+      "left": "recoil",
+      "right": "pulse-reference",
+      "level": 15,
+      "core": "core_capacitor",
+      "seconds": 325.6,
+      "winner": "a",
+      "finished": true,
+      "first_loss_seconds": 19.5,
+      "median_module_life_seconds": 5.8,
+      "peak_modules": 14,
+      "cards_used": [
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "pulse_cannon",
+        "recoil_cannon",
+        "repair"
+      ],
+      "core_uses": {
+        "a": 8,
+        "b": 9
+      },
+      "core_contributions": {
+        "a": {
+          "reinforcements": 8
+        },
+        "b": {
+          "direct_damage": 2702
+        }
+      },
+      "current_from_damage": {
+        "a": 205,
+        "b": 212
+      },
+      "total_current": {
+        "a": 241,
+        "b": 279
+      },
+      "deployments": 176
+    },
+    {
+      "left": "pulse-reference",
+      "right": "recoil",
+      "level": 15,
+      "core": "core_capacitor",
+      "seconds": 348.6,
+      "winner": "b",
+      "finished": true,
+      "first_loss_seconds": 19.5,
+      "median_module_life_seconds": 6.1,
+      "peak_modules": 14,
+      "cards_used": [
+        "barrier",
+        "cleanser",
+        "emp",
+        "laser",
+        "pulse_cannon",
+        "recoil_cannon",
+        "repair"
+      ],
+      "core_uses": {
+        "a": 9,
+        "b": 10
+      },
+      "core_contributions": {
+        "a": {
+          "reinforcements": 9
+        },
+        "b": {
+          "direct_damage": 2944
+        }
+      },
+      "current_from_damage": {
+        "a": 206,
+        "b": 201
+      },
+      "total_current": {
+        "a": 274,
+        "b": 256
+      },
+      "deployments": 183
+    }
+  ]
+}

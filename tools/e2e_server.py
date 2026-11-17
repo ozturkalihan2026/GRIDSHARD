@@ -85,7 +85,11 @@ def main() -> None:
     if os.environ.get('GRIDSHARD_E2E_SHOP_COSMETICS') == '1':
         from shop_cosmetics_browser_fixture import install
         install()
-    config = uvicorn.Config("app.main:app", host="127.0.0.1", port=base.port or 8879, access_log=False)
+    if os.environ.get('GRIDSHARD_E2E_RECOIL_CANNON') == '1':
+        from recoil_cannon_browser_fixture import install
+        install()
+    config = uvicorn.Config("app.main:app", host="127.0.0.1", port=base.port or 8879, access_log=False,
+                            log_level='warning' if os.environ.get('GRIDSHARD_E2E_RECOIL_CANNON') == '1' else 'info')
     server = uvicorn.Server(config)
     default_handle_exit = server.handle_exit
 

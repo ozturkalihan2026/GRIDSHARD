@@ -2,7 +2,7 @@
 
 **Tarih: 3 Kasım 2026 · Proje: mağaza, ödül, içerik ve yaşayan oyun**
 
-Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **78 iş** vardır: **37 yapılacak**, **22 dalda hazır; canlıda yok**, **4 çalışılıyor**, **8 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
+Bu dosya araştırmayı uygulanabilir işlere böler. Toplam **78 iş** vardır: **36 yapılacak**, **22 dalda hazır; canlıda yok**, **5 çalışılıyor**, **8 kanıtla tamamlandı**, **7 ölçüme bağlı ileri aşama**. Dalda hazır iş canlıda yayımlanmış sayılmaz. Yeni mağaza, seçim kasası ve modlar henüz uygulanmadı.
 
 **Son plan güncellemesi: 2026-11-16.** Takvim → sürüm briefi → görev → dosya/kanıt bağlantıları korunur. Kayıtlı sunucu 2.4.0, Android code15. Mağaza yayını kullanıcı tarafından teyit edilmiş. Aktif geliştirme 2.5.0; paket hazırlık hedefi 2026-12-21. Canlı sunucu geçişi S1 kapanışı/ödül kabulünden sonra; kesin bakım penceresi belirlenmedi. Yayın teyidi açık cihaz/ses kabulü veya checklist görevlerini kendiliğinden kapatmaz. Bu rapor canlı sorgu yapmaz; kaynak kayıt ve checkpoint okunur.
 
@@ -538,13 +538,14 @@ Yayın öncesinde karar dosyasına yazılacaklar: yeni teklif miktarı/fiyatı v
 <a id="card-01"></a>
 
 - [ ] **CARD-01 — Geri Tepme Topu sezon modülünü uçtan uca geliştir**
-  - Durum: Yapılacak. Öncelik: P0; rol: Oyun motoru / sanat / denge; efor: XL.
+  - Durum: Çalışılıyor. Öncelik: P0; rol: Oyun motoru / sanat / denge; efor: XL.
   - Önkoşullar: ECON-01.
   - Mevcut bağlar: `server/app/season_module_releases.py`, `server/data/season_module_releases_v2.json`, `server/app/module_roster.py`, `server/app/game/engine.py`, `docs/planning/recoil-cannon-release.md`.
-  - Yeni teslim önerisi: `docs/planning/recoil-cannon-release.md`.
+  - Yeni teslim önerisi: `docs/planning/recoil-cannon-release.md`, `server/app/game/recoil_cannon.py`, `client/src/battle/recoil-cannon-presentation.js`.
   - Sürüm briefleri: [2.5.0](planning/releases/2.5.0.md).
   - Kabul 1: Planlı recoil_cannon saldırı modülüdür; dost silahı güçlendirmez. Güçlü tek doğrudan atış ve kendi CAN bedeli, karşı oyun, VFX/ses, aktif katalog ve arena3/ücretsiz edinim kabulü tamamlanır. Kendi CAN kaybı V8 geliri üretmez; kaynak en az1 CAN kalır.
   - Kabul 2: Ücretsiz kazanım yolu ve otomatik yerleşim/hedefleme sözleşmeleri test edilir; planlı kart hazır diye ödül havuzuna girmez.
+  - Geçmiş hazırlık kanıtı: `docs/planning/recoil-cannon-prototype-acceptance.md`, `docs/planning/recoil-cannon-prototype-balance-v1.json`, `server/app/game/recoil_cannon.py`, `server/tests/game/test_recoil_cannon.py`, `client/src/battle/recoil-cannon-presentation.js`, `client/tests/recoil-cannon-presentation.test.js`, `client/assets/ui/module-candidates-v1/README.md`, `client/assets/audio/candidates-v1/recoil_cannon-audit.json`, `docs/planning/prototypes/recoil-cannon/index.html`, `e2e/recoil-cannon.spec.js`, `docs/planning/recoil-cannon-free-acquisition-acceptance.md`, `server/tests/test_season_module_acquisition.py`, `client/assets/ui/module-candidates-v1/recoil_cannon-directions.json`, `tools/prepare-recoil-cannon-atlas.cjs`, `docs/planning/recoil-cannon-battle-integration.md`, `client/src/battle/recoil-cannon-art-data.js`, `client/tests/recoil-cannon-integration.test.js`, `e2e/recoil-cannon-battle.spec.js`, `tools/recoil_cannon_browser_fixture.py`, `tools/tests/client-build.test.js`.
 
 <a id="reward-02"></a>
 

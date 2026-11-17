@@ -158,6 +158,11 @@
 :root body[data-app-screen="play"] .vertical-circuit-arena .module-card.physical-module-card[data-core="true"] > .module-icon.has-module-device {
   bottom:8px !important;
 }
+/* Current-only battles have one HP meter. Do not retain the retired heat
+ * meter's empty row; legacy/two-meter previews retain their 13px clearance. */
+:root body[data-app-screen="play"] .vertical-circuit-arena .module-card.physical-module-card:not(:has(> .module-heat-bar:not([hidden]))) > .module-icon.has-module-device {
+  bottom:8px !important;
+}
 /* Share the board's paint order: ground cables < meters < standing art.
  * Each device ends above its own meters. A neighbour's opaque silhouette
  * may occlude a meter, but that meter must never paint across the neighbour. */

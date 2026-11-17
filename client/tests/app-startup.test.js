@@ -140,6 +140,7 @@ for (const relativePath of [
   ["src", "module-view-data.js"],
   ["src", "module-device-art.js"],
   ["src", "battle", "module-motion.js"],
+  ["src", "battle", "recoil-cannon-presentation.js"],
   ["src", "battle", "current-economy-v8.js"],
   ["src", "battle", "module-presentation-profiles.js"],
   ["src", "battle", "core-vfx-v6.js"],

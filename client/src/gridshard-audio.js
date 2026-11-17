@@ -178,7 +178,7 @@
   }
 
   function gridshardResolveAudioAsset(asset) {
-    const match = /^(.*\/assets\/audio\/)((?:modules\/)?[a-z0-9_]+)\.wav$/.exec(String(asset || ""));
+    const match = /^(.*\/assets\/audio\/)((?:[a-z0-9_-]+\/)*[a-z0-9_-]+)\.wav$/.exec(String(asset || ""));
     const encoding = match && gridshardPreferredEncoding();
     if (!encoding || !encoding.names.has(match[2])) return asset;
     return `${match[1]}mobile/${match[2]}.${encoding.extension}`;
@@ -187,7 +187,7 @@
   function gridshardAudioCandidates(asset) {
     const resolved = gridshardResolveAudioAsset(asset);
     const result = [resolved];
-    const match = /^(.*\/assets\/audio\/)((?:modules\/)?[a-z0-9_]+)\.wav$/.exec(String(asset || ""));
+    const match = /^(.*\/assets\/audio\/)((?:[a-z0-9_-]+\/)*[a-z0-9_-]+)\.wav$/.exec(String(asset || ""));
     if (match && resolved !== asset) {
       for (const extension of ["ogg", "m4a"]) {
         if (global.GRIDSHARD_AUDIO_ENCODINGS?.formats?.[extension]?.includes(match[2]))
@@ -273,6 +273,9 @@
   });
 
   const GRIDSHARD_SFX_CUES = Object.freeze({
+    ...(global.GridshardModulePresentation?.recoil_cannon?{
+      recoil_cannon_hit:{asset:"./assets/audio/candidates-v1/recoil_cannon-hit.wav",gain:.32,identity:'Geri Tepme Topu · metal isabeti'}
+    }:{}),
     core_resonance_activate:{asset:"./assets/audio/core_resonance_activate.wav",gain:0.78,identity:"core v6 resonance activate"},
     core_resonance_shot:{asset:"./assets/audio/core_resonance_shot.wav",gain:0.58,identity:"core v6 resonance shot"},
     core_guardian_activate:{asset:"./assets/audio/core_guardian_activate.wav",gain:0.78,identity:"core v6 guardian activate"},

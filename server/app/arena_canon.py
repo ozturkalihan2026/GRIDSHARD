@@ -97,6 +97,11 @@ MODULES = {
     }
     for item in CANON["modules"]
 }
+# Follow-up cards need both an accepted cumulative release and a real runtime
+# roster entry. Planned concepts do not create ownership or reward eligibility.
+from .module_roster import MODULE_SPECS
+from .season_module_releases import published_module_progression
+MODULES.update(published_module_progression(MODULES, MODULE_SPECS, ARENA_MINIMUM_RATING_BY_INDEX))
 # 12 Ekim 2026 öncesinin kupa ölçeği (değişmez kayıt): 12 arena 300'er kupa;
 # 3600'den sonra 200'er kupalık beş lig, Şampiyonlar I-V ve 5600'den itibaren
 # Efsanevi Lig. O günün kayıtları bu ölçektedir; ilk yüklemede yeni ölçeğe
@@ -264,6 +269,9 @@ from .game.talents import TALENT_LEVELS
 
 
 def module_talent_options(module_id):
+    if module_id == 'recoil_cannon' and module_id in MODULES:
+        from .game.recoil_cannon import tree as candidate_tree
+        return candidate_tree()
     from .game.module_talents_v3 import tree
     return tree(module_id)
 LEAGUE_NAMES = tuple(stage["name_tr"] for stage in _LEAGUE_OUTLINE)
@@ -530,6 +538,16 @@ RARITY_STAT_MULTIPLIER = {
 
 
 def module_stats(definition, upgrade_level, talents=None):
+    if definition.id=='recoil_cannon':
+        # Candidate mathematics is available without adding the planned card
+        # to live catalogs, ownership or reward pools.
+        from .game.recoil_cannon import stats as candidate_stats
+        result=candidate_stats(upgrade_level,talents)
+        result['rarity']='rare';result['parameters']={'recoil_hp':result.pop('recoil_hp')}
+        result.update(cycle_label_tr='ATIŞ',cycle_label_en='FIRING',specials=[
+            dict(key='recoil_hp',label_tr='Atış başına kendi CAN kaybı',label_en='Self HP lost per shot',
+                 value=result['parameters']['recoil_hp'],unit='hp')])
+        return result
     level=max(0,min(14,int(upgrade_level)))
     scale=1.04**level
     stats={'level':level+1,'rarity':definition.rarity,'max_hp':round(definition.max_hp*scale),

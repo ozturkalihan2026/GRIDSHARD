@@ -38,7 +38,7 @@ module.exports = defineConfig({
     reuseExistingServer: false,
     timeout: 60_000,
     stdout: process.env.CI ? "pipe" : "ignore",
-    stderr: process.env.CI ? "pipe" : "ignore",
+    stderr: process.env.CI || process.env.GRIDSHARD_E2E_RECOIL_CANNON==='1' ? "pipe" : "ignore",
     env: {
       ...process.env,
       GRIDSHARD_PYTHON: process.env.GRIDSHARD_PYTHON || bundledPython,
@@ -56,12 +56,12 @@ module.exports = defineConfig({
   projects: [
     {
       name: "desktop-chromium",
-      testMatch: /(shop-pilot|shop-cosmetics|shop-offers|engineer-case|free-economy|tournament-status|s1-acceptance|release-announcement|client-compatibility|navigation-back|liveops-cosmetics|release221-social|balance-rollout|battle-platform|battle-audio|battle-polish|battle-emoji-memory|startup-loading|talent-costs|reward-navigation|core-level-costs|two-client-pvp|menu-navigation|persistent-render|visual-atmosphere|presentation-refinements|battle-render-budget|onboarding-visibility|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|battle-density|beta33-season|beta381-battle-events)\.spec\.js/,
+      testMatch: /(recoil-cannon-battle|recoil-cannon|shop-pilot|shop-cosmetics|shop-offers|engineer-case|free-economy|tournament-status|s1-acceptance|release-announcement|client-compatibility|navigation-back|liveops-cosmetics|release221-social|balance-rollout|battle-platform|battle-audio|battle-polish|battle-emoji-memory|startup-loading|talent-costs|reward-navigation|core-level-costs|two-client-pvp|menu-navigation|persistent-render|visual-atmosphere|presentation-refinements|battle-render-budget|onboarding-visibility|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|battle-density|beta33-season|beta381-battle-events)\.spec\.js/,
       use: { ...devices["Desktop Chrome"], ...localChrome }
     },
     {
       name: "android-chrome-emulated",
-      testMatch: /(shop-pilot|shop-cosmetics|shop-offers|engineer-case|free-economy|tournament-status|s1-acceptance|release-announcement|client-compatibility|navigation-back|liveops-cosmetics|release221-social|balance-rollout|battle-platform|battle-audio|battle-polish|battle-emoji-memory|startup-loading|talent-costs|reward-navigation|core-level-costs|two-client-pvp|visual-atmosphere|presentation-refinements|battle-render-budget|onboarding-visibility|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|mobile-battle|settings-layout|onboarding)\.spec\.js/,
+      testMatch: /(recoil-cannon-battle|recoil-cannon|shop-pilot|shop-cosmetics|shop-offers|engineer-case|free-economy|tournament-status|s1-acceptance|release-announcement|client-compatibility|navigation-back|liveops-cosmetics|release221-social|balance-rollout|battle-platform|battle-audio|battle-polish|battle-emoji-memory|startup-loading|talent-costs|reward-navigation|core-level-costs|two-client-pvp|visual-atmosphere|presentation-refinements|battle-render-budget|onboarding-visibility|embedded-typography|painted-shop-chests|casual-chest-opening|casual-dock|mobile-battle|settings-layout|onboarding)\.spec\.js/,
       use: { ...devices["Pixel 7"], ...localChrome }
     },
     {
@@ -69,7 +69,7 @@ module.exports = defineConfig({
       // Windows'taki WebKit öykünmesi yavaştır: testler işlevsel olarak geçer ama
       // 60 sn sınırına dayanır (ayar ekranı testi tek başına 58 sn sürdü).
       timeout: 150_000,
-      testMatch: /(shop-pilot|shop-cosmetics|shop-offers|engineer-case|free-economy|tournament-status|s1-acceptance|release-announcement|client-compatibility|navigation-back|liveops-cosmetics|release221-social|balance-rollout|battle-platform|battle-audio|battle-polish|startup-loading|talent-costs|reward-navigation|core-level-costs|mobile-battle|settings-layout|presentation-refinements|battle-render-budget|onboarding|onboarding-visibility)\.spec\.js/,
+      testMatch: /(recoil-cannon-battle|recoil-cannon|shop-pilot|shop-cosmetics|shop-offers|engineer-case|free-economy|tournament-status|s1-acceptance|release-announcement|client-compatibility|navigation-back|liveops-cosmetics|release221-social|balance-rollout|battle-platform|battle-audio|battle-polish|startup-loading|talent-costs|reward-navigation|core-level-costs|mobile-battle|settings-layout|presentation-refinements|battle-render-budget|onboarding|onboarding-visibility)\.spec\.js/,
       use: { ...devices["iPhone 15"] }
     }
   ]

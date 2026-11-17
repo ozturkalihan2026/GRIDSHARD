@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GRIDSHARD · Geri Tepme Topu prototipi</title>
+<link rel="stylesheet" href="style.css">
+<main>
+  <header><p class="eyebrow">GRIDSHARD · CARD-01</p><h1>Geri Tepme Topu</h1><p>Güçlü tek atış. Her atışta gövde aşınması.</p></header>
+  <aside class="notice">Geliştirme önizlemesi · Aktif oyuna eklenmedi. Sekiz yönlü atlas hazır; savaş ekranı ve yayın kabulü sürüyor.</aside>
+  <section class="card identity">
+    <img class="hero" src="../../../../client/assets/ui/module-candidates-v1/recoil_cannon.webp" alt="Tek geniş namlu, iki piston ve geri tepme kızağı olan Geri Tepme Topu">
+    <div><p class="eyebrow">SALDIRI · NADİR · ARENA 3 ADAYI</p><h2>Güç ve dayanıklılık tercihi</h2><p>4 Akım · 240 CAN · 50 hasar<br>3 sn çevrim · Atış başına 16 CAN bedeli</p><p>Kendi CAN'ı en az 1 kalır. Rakip normal saldırıyla yok edebilir.</p><div class="sizes"><img src="../../../../client/assets/ui/module-candidates-v1/recoil_cannon.webp" width="64" height="64" alt="64 piksel ikon"><img src="../../../../client/assets/ui/module-candidates-v1/recoil_cannon.webp" width="48" height="48" alt="48 piksel ikon"></div></div>
+  </section>
+  <section class="card">
+    <h2>Sekiz yön, aynı gövde</h2><p>Taban dik kalır. Her yön ayrı çizimden gelir; düz resmi çevirme veya aynalama kullanılmaz.</p>
+    <div class="direction-stage"><img id="direction-art" alt="Geri Tepme Topu yön görünümü"><span class="ground-mark" aria-hidden="true"></span></div>
+    <label for="direction">Bakış yönü</label><select id="direction"></select>
+    <div class="controls"><output id="direction-name" aria-live="polite"></output><button id="next-direction" type="button">Sonraki yön →</button></div>
+    <div id="direction-thumbnails" class="direction-thumbnails"></div>
+    <p class="footnote">Yayınlandığında Arena 3 / 600 zirve kupada seviye 1 ücretsiz ve kalıcı açılacak. Kupa düşüşü veya sezon sonu yeniden kilitlemeyecek.</p>
+  </section>
+  <section class="card">
+    <h2>Karşı oyun</h2><p>Gerçek savaş motorundan kaydedilen adımları incele.</p>
+    <label for="scenario">Senaryo</label>
+    <select id="scenario"><option value="armor">Zırh: hasar azaltımı</option><option value="phase">Faz: atış engelleme</option><option value="emp">EMP: 3,5 sn ateş kesintisi</option><option value="low-hp">5 CAN + kalkan: kendi aşınması</option></select>
+    <div class="arena"><article id="gun"><img src="../../../../client/assets/ui/module-candidates-v1/recoil_cannon.webp" alt="Geri Tepme Topu"><strong>Geri Tepme Topu</strong><meter id="gun-meter" min="0" max="240" value="240"></meter><span id="gun-hp"></span><small id="own-shield"></small></article><span class="trajectory" aria-hidden="true">➜</span><article id="target"><img id="target-art" src="../../../../client/assets/ui/modules-physical-v1/armor.webp" alt="Rakip savunma"><strong id="target-name"></strong><meter id="target-meter" min="0" value="0"></meter><span id="target-hp"></span></article></div>
+    <div class="controls"><button id="reset" type="button">Başa dön</button><output id="time" aria-live="polite"></output><button id="next" class="gold" type="button">Sonraki adım →</button></div>
+    <p id="summary" role="status"></p><ol id="events"></ol>
+  </section>
+  <section class="card"><h2>Ses karakteri</h2><p>Tek ağır atış, ardından kısa piston dönüşü. İsabet ayrı ses; mevcut ses yüksekliği standardında özgün sentez.</p><div class="controls audio-controls"><button id="shot" class="teal" type="button">Atışı dinle</button><button id="hit" class="teal" type="button">İsabeti dinle</button><button id="stop" type="button">Sustur</button></div><p id="audio-status" role="status">Ses kendiliğinden başlamaz.</p></section>
+  <audio id="candidate-audio" preload="none"></audio>
+  <footer>Bu sayfa kayıtlı motor verisiyle çalışır. Canlı hesap, ödül havuzu veya oyun ses ayarını değiştirmez.</footer>
+</main>
+<script src="demo-data.js"></script><script src="directions-data.js"></script><script src="../../../../client/src/battle/recoil-cannon-presentation.js"></script><script src="workbench.js"></script>
+</html>

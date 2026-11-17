@@ -111,3 +111,12 @@ body[data-graphics="dusuk"] .module-layer-head { transition:none; }
 @keyframes gs-core-crack { 0% { opacity:1; scale:1.25; } 100% { opacity:.3; scale:.9; } }
 body[data-graphics="dusuk"] .module-core-pulse { animation:none; opacity:.4; scale:1; }
 @media (prefers-reduced-motion: reduce) { .module-core-pulse { animation:none; opacity:.4; } }
+
+/* Recoil Cannon: the pedestal stays fixed; only the upper painted sled moves. */
+.module-recoil-sled{clip-path:inset(0 0 22% 0)}
+.module-recoil-pedestal{clip-path:inset(76% 0 0 0);z-index:1}
+.module-device-rig[data-device="recoil_cannon"][data-phase="work"] .module-recoil-sled{animation:gs-recoil-sled 240ms ease-out both}
+@keyframes gs-recoil-sled{0%,100%{translate:0 0}30%{translate:var(--layer-recoil-x,0) var(--layer-recoil-y,0)}}
+body[data-graphics="dusuk"] .module-recoil-sled{animation:none!important}
+@media(prefers-reduced-motion:reduce){.module-recoil-sled{animation:none!important}}
+body[data-app-screen="play"] .battle-floating-feedback.recoil{color:#e9bd78!important;font-size:11px}

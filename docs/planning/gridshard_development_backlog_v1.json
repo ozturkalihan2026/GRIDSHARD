@@ -495,7 +495,7 @@
       "owner": "Oyun motoru / sanat / denge",
       "effort": "XL",
       "priority": "P0",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [
         "ECON-01"
       ],
@@ -507,7 +507,9 @@
         "docs/planning/recoil-cannon-release.md"
       ],
       "proposed_paths": [
-        "docs/planning/recoil-cannon-release.md"
+        "docs/planning/recoil-cannon-release.md",
+        "server/app/game/recoil_cannon.py",
+        "client/src/battle/recoil-cannon-presentation.js"
       ],
       "acceptance": [
         "Planlı recoil_cannon saldırı modülüdür; dost silahı güçlendirmez. Güçlü tek doğrudan atış ve kendi CAN bedeli, karşı oyun, VFX/ses, aktif katalog ve arena3/ücretsiz edinim kabulü tamamlanır. Kendi CAN kaybı V8 geliri üretmez; kaynak en az1 CAN kalır.",
@@ -523,7 +525,28 @@
         4,
         7
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/planning/recoil-cannon-prototype-acceptance.md",
+        "docs/planning/recoil-cannon-prototype-balance-v1.json",
+        "server/app/game/recoil_cannon.py",
+        "server/tests/game/test_recoil_cannon.py",
+        "client/src/battle/recoil-cannon-presentation.js",
+        "client/tests/recoil-cannon-presentation.test.js",
+        "client/assets/ui/module-candidates-v1/README.md",
+        "client/assets/audio/candidates-v1/recoil_cannon-audit.json",
+        "docs/planning/prototypes/recoil-cannon/index.html",
+        "e2e/recoil-cannon.spec.js",
+        "docs/planning/recoil-cannon-free-acquisition-acceptance.md",
+        "server/tests/test_season_module_acquisition.py",
+        "client/assets/ui/module-candidates-v1/recoil_cannon-directions.json",
+        "tools/prepare-recoil-cannon-atlas.cjs",
+        "docs/planning/recoil-cannon-battle-integration.md",
+        "client/src/battle/recoil-cannon-art-data.js",
+        "client/tests/recoil-cannon-integration.test.js",
+        "e2e/recoil-cannon-battle.spec.js",
+        "tools/recoil_cannon_browser_fixture.py",
+        "tools/tests/client-build.test.js"
+      ],
       "target_release": "2.5.0",
       "planned_releases": [
         "2.5.0"

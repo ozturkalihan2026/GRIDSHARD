@@ -9549,6 +9549,7 @@
   });
   // Approved painted devices are the sole deployed-art renderer.
   const motionPlaneCache = new WeakMap();
+  const recoilPresentation = new RecoilCannonPresentation();
   const moduleMotion = new GridshardModuleMotion({
     now:() => performance.now(),
     hidden:() => document.hidden || document.body.dataset.appScreen !== "play",
@@ -9697,6 +9698,9 @@
   }
 
   const WEAPON_PRESENTATION = Object.freeze({
+    ...(globalThis.GridshardModulePresentation?.recoil_cannon?{recoil_cannon:{
+      cue:'module_recoil_cannon',impactCue:'recoil_cannon_hit',fx:'pulse',travelMs:360,
+    }}:{}),
     laser:{
       cue:"laser_fire",
       impactCue:null, // Burning beam already owns the contact sound; no extra ping.
@@ -9774,10 +9778,12 @@
     ).cue;
   }
 
-  function attackImpactCue({sourceDefinitionId=null, defended=false, targetDefinitionId=null}={}) {
+  function attackImpactCue({sourceDefinitionId=null, defended=false, targetDefinitionId=null, damage=null}={}) {
     const protection=globalThis.GridshardModulePresentation?.[targetDefinitionId];
     if (defended && protection?.audioFamily === "protection") return protection.cue;
     if (defended && !targetDefinitionId) return "shield_absorb";
+    const own=globalThis.GridshardModulePresentation?.[sourceDefinitionId];
+    if(own?.impactCue)return damage===0?null:own.impactCue;
     if(!CRAFTED_WEAPON_IDS.has(sourceDefinitionId)&&globalThis.GridshardModulePresentation?.[sourceDefinitionId])return null; // One quiet, complete shot sound, no layered impact ping.
     const presentation=WEAPON_PRESENTATION[String(sourceDefinitionId || "").trim().replaceAll("-", "_")];
     if (presentation && Object.hasOwn(presentation, "impactCue")) return presentation.impactCue;
@@ -9790,8 +9796,9 @@
     targetDefinitionId=null,
     travelMs=0,
     pan=0,
+    damage=null,
   }={}) {
-    const cue=attackImpactCue({sourceDefinitionId, defended, targetDefinitionId});
+    const cue=attackImpactCue({sourceDefinitionId, defended, targetDefinitionId,damage});
     if (!cue) return;
     const delay=Math.max(0,Number(travelMs || 0));
     const dueAt=performance.now()+delay;
@@ -11884,7 +11891,7 @@
       sabotage:"sabotage",
       warning:"warning",
     }[variant] || "status";
-    const pulsed=pulseBattleFx(moduleDomId,feedbackKind);
+    const pulsed=variant==='recoil'?false:pulseBattleFx(moduleDomId,feedbackKind);
     const emitted = emitFloatingBattleFeedback(
       moduleDomId,
       text,
@@ -12096,6 +12103,16 @@
     events,
     snapshot
   ) {
+    if(globalThis.GridshardModulePresentation?.recoil_cannon){
+      const candidateIds=Object.values(snapshot.players||{}).flatMap(p=>(p.modules||[])
+        .filter(m=>m.definition_id==='recoil_cannon').map(m=>m.instance_id));
+      const freshAt=Math.max(Number(snapshot.elapsed_ms||0),...(events||[]).map(e=>Number(e.at_ms)||0));
+      const recoilActions=recoilPresentation.consume(events||[],{session:snapshot.session_id,elapsedMs:freshAt,
+        moduleIds:candidateIds,visible:!document.hidden,finished:snapshot.status==='finished'});
+      for(const action of recoilActions)if(action.type==='wear'){
+        emitServerModuleFeedback(snapshot,action.playerId,action.moduleId,`−${action.hpLoss} ${document.documentElement.lang==='en'?'HP':'CAN'}`,'recoil');
+      }
+    }
     moduleMotion.receive(events, snapshot, { ownPlayerId:participantPlayerId, domId:serverModuleDomId });
     queueModuleVfx(events, snapshot);
     requestBattleMotionFrame();
@@ -12437,6 +12454,7 @@
       );
       scheduleAttackImpactCue({
         sourceDefinitionId:sourceModule?.definition_id,
+        damage:hitDamage,
         defended,
         targetDefinitionId:
           targetModule?.definition_id,
@@ -22156,6 +22174,15 @@
         emitFloatingBattleFeedback(moduleId, text, variant),
       emitModuleExplosion,
       // Presentation-only activation preview; same handler as server events.
+      previewCoreActivation:(effect='heal')=>{
+        const snapshot=pvpState.snapshot||localServerState.snapshot;
+        if(!snapshot?.players||!['heal','attack','sabotage','defense','energy','hybrid'].includes(effect))return false;
+        const core=snapshot.players[participantPlayerId]?.modules?.find(m=>m.definition_id==='core');
+        if(!core)return false;
+        presentCorePowerActivation(snapshot,{player_id:participantPlayerId,module_id:core.instance_id,
+          power_id:'core_resonance',effect_kind:effect,role:'qa-preview',affected_targets:[]});
+        return true;
+      },
 
       // Presentation-only death/rebirth preview; never mutates authoritative
       // modules, rewards or the server. Removed with this API in production.

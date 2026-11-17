@@ -1,3 +1,220 @@
+# 2.5.0 / CARD-01 — gerçek savaş sunumu bağlandı; 17 Kasım 2026
+
+Son kullanıcı isteği devam et: sıradaki gerçek savaş yön/atış/ses bağlantısı
+tamamlandı. Dal codex/develop-2.5.0; önceki uç5567eea0. Kullanıcı17 Kasım
+commit/push istedi; bütün CARD-01 kademeleri bu toplu commit kapsamındadır.
+Son uç ve uzak eşitliği `git log -1` / `git status -sb` ile okunur.
+Önceki SHOP-03 işlerini veya eski checkpoint
+kayıtlarını temizleme. Main/SSH/canlı geçiş/AAB/sürüm bump yapılmadı. Kaynak
+2.4.0/code15 kalır; yayımlanmış S1 kaynakları değişmedi. CARD-01 in_progress.
+
+client/index.html kanonik kart verisini art/audio kaydından önce yükler.
+Üretici tools/prepare-recoil-cannon-atlas.cjs artık ayrıca koşullu
+client/src/battle/recoil-cannon-art-data.js yazar. Derlenmiş kanonik liste
+recoil_cannon içermiyorsa art/audio profilini eklemez. Bugünkü liste24'tür;
+normal oynanır katalog24 ve başlangıç6 aynıdır. Sunucu yayın/admission ve
+ücretsiz edinim kapısı ayrıca korunur; test fixture dışında25. kart açılmadı.
+
+Gerçek module-device-art/module-motion/module-vfx/app olay yolu ve
+AudioDirector bağlandı.8 yönün ölçülmüş tabanları ve ayrı namlu noktaları,
+mevcut billboard/düzlem projeksiyonunu kullanır. Resim dönüşü/aynalama yok.
+socketBounds/socketFit tüm yönlerin birleşik opak sınırını diğer modüller
+gibi çekirdek referansının%85'ine eşler. Sabit kaide +hareketli üst kızak,
+aynı resmin örtüşen CSS kırpma katmanlarıdır; bitmap boyanmadı. Yön değişince
+DOM oluşturulmaz. Tek çelik/amber mermi ve ayrı isabet vardır.
+
+RecoilCannonPresentation artık uygulamada da yüklüdür fakat yalnız derlenmiş
+aday profil varsa olayları işler. Kendi kayıp amber −16 CAN /−16 HP yazısı;
+kendi hit flash/V8/muhasebe yok.1 CAN'da0 bedel pop-up yaratmaz. Olaylar
+tekrar/eski/gizli/bitmiş olduğunda sessizdir. Ortak sahne temizliği dedupe
+geçmişini silmez; yeni maç kimliği sıfırlar. EMP atış/ses/bedel doğurmaz;
+Faz gerçek atış/kendi bedelini korur, hasarlı metal isabet sesi çalmaz.
+
+İki özgün sesin OGG/AAC türevleri client/assets/audio/mobile/candidates-v1/:
+107 kaynak metadata kaydı vardır; önceki105 giriş ve hash'leri HEAD ile
+birebir karşılaştırıldı. Atış .58/isabet .32 trim, aynı rutin3 ses sınırı,
+mute ve müzik kanalları kullanılır. Mobil dosya adları güvenli alt klasör/
+tireyi destekler. Build collector derlenmiş kadro kapısını da uygular:
+24'lü web/native pakete8 resim veya2 WAV/4 codec alınmaz; onaylı25'te birlikte
+alınırlar. Atlas/master/PNG paketlenmez. Ad/uzantı güvenlik kontrolleri kapıdan
+önce yapılır. Son web build0502222fdd142a37; önceki35d90/ee99... eski kademe.
+Son dist manifestinde aday varlıkları yok; __GRIDSHARD_TEST_API ve
+previewCoreActivation build'den çıkarıldığı doğrulandı. AAB üretilmedi.
+
+tools/recoil_cannon_browser_fixture.py yalnız E2E runner'ın açık geliştirme/
+loopback bayrağında geçici25. kartı kurar. Yayın JSON'u kopyadır, kaynak
+dosyaları değiştirmez. Kanonik tarayıcı yanıtı yalnız Playwright route'unda
+değiştirilir; gerçek profil/matchmaking/ws/setup/deploy/motor/render/decode
+kullanılır. GRIDSHARD_E2E_RECOIL_CANNON=1 ile e2e/recoil-cannon-battle.spec.js
+çalışır; normal24 testi için bu değişken kaldırılır. Yerel test verileri
+geçicidir, gerçek para/dış hesap/production endpoint yoktur.
+
+Son kabul: gerçek savaş Chrome3+Android3+Safari3=9 PASS; normal atış/kendi
+CAN/iki decoded ses, EMP+reduced motion, Faz+EN. Son log
+qa_reports/card01-battle-final.log (3dk). Görseller card01-real-battle-*.png,
+son Android resmi incelendi. Önceki standalone12 PASS ayrı kapsamdadır.
+İstemci801 PASS, build15 PASS, odaklı server95 PASS, plan11 PASS. Import541/0.
+107 codec check PASS. Eski Linux163/1 PG SKIP önceki kademeye aittir;
+bu tur tam server/PG/uzak CI veya fiziksel cihaz kabulü yapılmadı.
+
+Normal24 Chrome battle-audio iki test PASS; platform ayrı son koşu1 PASS.
+Eski platform harness'i eksik previewCoreActivation ve36 kart/58 bar
+varsayımı taşıyordu. Üretimden strip edilen görsel kanca aynı gerçek handler'a
+geri eklendi; PVP snapshot'unu kullanır. Test artık gerçek24 kaynak kümesini
+720 modül/yuva ve30 CAN barı ile karşılaştırır, sıkı geometri/örtüşme kapıları
+korundu. Eksik ısı barı için13px ayrılan boşluk normal modülleri5px havada
+bırakıyordu (320px ölçüm5.61px). Bar yok/gizliyse alt boşluk8px; iki gerçek
+barlı eski düzende13px kalır. Son320/393/1280/1920 ölçümü0.5–2px taban/CAN
+kabulünü ve yoğun sahnede30 bar/90çerçeve katmanını geçti. Log
+qa_reports/card01-existing-platform.log; önceki karma log başarısız eski
+koşuyu da içerir, son platform koşusu PASS'tir.
+
+Ayrıntı docs/planning/recoil-cannon-battle-integration.md. Checklist/backlog/
+2.5brief kanıtları yenilendi; üç check ve diff check PASS. Halen2.5 için
+14 branch_ready/3 in_progress/8 todo=11 açık. Sıradaki CARD-01: geniş
+çekirdek/yetenek/onarım/eşit parça bütçeli denge matrisi ve insan karşı oyun,
+tam TR/EN kart/kilit ekranı, fiziksel Android ses/okunurluk ve yayın kabulü.
+release_art_accepted:false, roadmap planned kalır.22 Aralık03.00 TR S1
+kapanış+ödül kabulü öncesi2.5 geçiş yok; S2 koşullu28 Aralık ayrıca onaylanır.
+
+## Önceki atlas ve ücretsiz edinim kademesinin kaydı
+
+# 2.5.0 / CARD-01 — sekiz yön atlası ve ücretsiz edinim; 17 Kasım 2026
+
+Son kullanıcı isteği: devam et; ayrıca yön atlasını da üret. Tamamlandı:
+sekiz gerçek boyalı yön ve ücretsiz kalıcı edinim altyapısı. CARD-01 bütünü
+in_progress; gerçek savaş renderer/ankraj/ses, geniş denge ve cihaz kabulü
+açık. Dal codex/develop-2.5.0 HEAD5567eea0; bu CARD-01 işleri henüz commit/
+push edilmedi. Önceki çalışmaları silme. Main/deploy/AAB/sürüm değişimi yok.
+
+ÖNEMLİ: aşağıdaki eski checkpoint'te atlas için yazan araç engeli artık
+çözülmüş tarihsel kayıttır. Kullanıcı ayrıca üretim istedi; normal yerleşik
+image_gen aynı çizimden atlası, sonra yalnız kenar temizliği düzenlemesini
+başarıyla verdi. CLI/alternatif servis kullanılmadı. İki yeni PNG basename:
+exec-b414959e-dfdd-4028-bc32-472d29e34137.png ve exec-a07b1860-4f7d-4b2b-
+88db-5ed5f39ec291.png. client/assets/ui/module-candidates-v1/README.md ve
+atlas-generation.json tam prompt/provenance içerir. Master1254 kare lossless
+WebP,1024atlasoverview,8 ayrı512px yön ve recoil_cannon-directions.json var.
+Yön sırası E/NE/N/NW/W/SW/S/SE. Eski tek açılı master ayrıca korunur.
+
+tools/prepare-recoil-cannon-atlas.cjs teknik hücre kesimi/boyut/format yapar;
+alfa boyanmaz/eşiklenmez, düz döndürme/aynalama yoktur. PNG'ler mevcutignore'a
+tabi; portablemaster ve bütün WebP/JSON/JS depoya girebilir. PNG olmadığında
+master'dan tekrar üretim aynı manifesti verir (doğrulandı). Sharp için mevcut
+GRIDSHARD_SHARP_MODULE convention'ı. Boş9. hücrede133px alfa1/255 artığı var,
+manifestte ölçülü kayıtlı; görünür dokuzuncu nesne yok.8 frame kesilmez.
+Önizleme taban pivotunu/genişliğini hizalar, kare değiştirir; rotation:none.
+320/393 ve Safari görselleri incelendi. Canlı art registry'si değişmedi;
+release_art_accepted:false. Gerçek ateşleme ankrajları sıradaki iş.
+
+server/app/season_module_releases.py artık kalıcı ücretsiz arena edinimini
+doğrular; recoil planned kaydı acquisition arena_peak/level1/permanent/0kredi/
+0Akı içerir. published_module_progression gerçek arena_canon başlangıcına
+bağlı: yalnız benzersiz published dönem +6 kabul +uyumlu runtime birlikte
+açar. Eksik runtime veya yayını olmayan yeni runtime startup'ta reddedilir.
+Kalıcı katalog kaldırılamaz/ücretli güce veya sezon sonunda silmeye dönemez.
+Bugünkü kaynakta admitted ekler boştur:24 aktif/6 başlangıç aynıdır. Kaynak
+ve paket2.4.0/code15, S1 dönem dosyaları değişmedi. Yeni25. kart açılmadı.
+
+Mevcut zirve-kupa/koleksiyon/PvP/reward/save-load/season-close yollarıyla
+600 altı kapalı;600 zirvede seviye1 ücretsiz; düşüş/sezon sonu kilitlemez.
+Gerçek maç4 Akım keser, profil para/parça kesmez.23 parça, yükseltme6,
+yetenek ve signed cüzdan restore sonrası korunur. Yükseltme/yetenek replay
+ikinci bedel kesmez. module_talents_v3 aday için tek sahip recoil_cannon
+matematiği/tree'sine yönlenir; ad+açıklama TR/EN. Ayrıntı ve açık kabul:
+docs/planning/recoil-cannon-free-acquisition-acceptance.md.
+
+Son doğrulamalar: Windows edinim/yayın/arena/migration/aday94 PASS; Linux
+ana oyun/V7/S1 açılış-kapanış/ödül haklarıyla163 PASS/1 SKIP. Skip, izole
+PostgreSQL URL'si olmayan scheduled-closeout rollback testidir; PG kabulü
+yapılmış deme. İstemci798 PASS; Chrome4+Android4+Safari4=12 PASS. Safari ses
+geçişi için yalnız preview tek audio+nesil koruması ve HTTP Range fixture'ı
+kullanır. Oyun AudioDirector/müzik tercihleri değişmez. Son loglar
+qa_reports/card01-linux.log, card01-acquisition.log, card01-client.log,
+card01-browser-final.log. Teste ait geçici ağsız konteyner --rm; diğer
+projeye dokunulmadı. Import540/0. Build araçlarının15 PASS kaydı önceki
+kademededir; son web build yine35d90ac33d14e255, aday JS/art/ses manifestte
+yok. Fiziksel cihaz veya uzak CI iddiası yok.
+
+Checklist/backlog/2.5brief kanıtları yenilendi.2.5 halen14 branch_ready,
+3 in_progress,8 todo=11 açık. S1 kapanış+ödül kabulünden önce2.5 canlıya
+geçmez;22 Aralık03.00 TR alt sınır, S2 koşullu28 Aralık ayrıca onaylanır.
+
+## Önceki prototip kademesinin kaydı
+
+# 2.5.0 / CARD-01 — Geri Tepme Topu prototipi; 17 Kasım 2026
+
+Kullanıcı SHOP-03 sonrasında sıradaki işe başlamamızı ve devam etmemizi
+istedi. Dal codex/develop-2.5.0, HEAD5567eea0 (önceki SHOP-03 commit/push).
+Bu CARD-01 değişiklikleri henüz commit/push edilmedi. Önceki işleri silme.
+Main bb987bf6; kaynak sürümü2.4.0 / Android15 kalır. Deploy/AAB/main merge yok.
+
+CARD-01 in_progress; uçtan uca tamamlanmış/branch_ready değildir. Aktif
+MODULE_SPECS24, ilk6 ücretsiz başlangıç, S1 overlay ve yayımlanmış dönem
+dosyaları değişmedi. Recoil adayının normal katalog/deste erişimi reddedilir.
+Python üretim kodu tanı araçlarını import etmez. tools/recoil_cannon_candidate.py
+yalnız offline context içinde geçici tanım+deste kaydı yapıp finally geri alır.
+
+server/app/game/recoil_cannon.py:4 Akım/240 CAN/50 hasar/3 sn/16 kendi CAN.
+Seviye1–15 aynı1.04 çarpanı; dört nadir yetenek eşiği6/9/12/15. İmza hasar+%12
+veya kendi bedeli−%25. arena_canon.module_stats aynı matematiği bir kez çağırır.
+battle_actions_v2 son intent aşamasında adayı fire() ile denetler. Gerçek
+atıştan önce kendi CAN doğrudan azalır, en az1 kalır; EMP/dead/stale intent
+ateşlemez. Faz geçerli atışın bedelini iade etmez. Ayrı module_recoil olayı
+kendi kalkanını tüketmez, rakip hasarı/V8/mission/yansıma üretmez. Aynı elapsed
+damgası ikinci atışı engeller. Tam restart kalıcılığı ayrıca kabul edilecek.
+
+Tek açılı boyalı özgün sanat client/assets/ui/module-candidates-v1/ içinde.
+Kayıpsız WebP master +512px preview taşınabilir; genel PNG ignore korunur.
+Prompt/provenance/hash README'de. Sekiz yönlü atlas üretimi image_gen aracında
+HTTP400 moderation_blocked/illicit ile reddedildi, request7f509551-da1d-46b2-
+a665-c7e09d2853e5. Atlas yok; engeli başka araç/ifadeyle aşmaya çalışma.
+Tek resmi screen-rotate yapıp yön atlası sayma; mevcut dik taban/yaw kuralı.
+
+Özgün iki WAV tools/generate_recoil_cannon_audio.py ile mevcut sentez bitirme
+hattında üretildi; candidates-v1 ses audit'inde hash/RMS/peak var. Atış0.44sn
+RMS.10452/peak.23475, isabet0.19sn RMS.07964/peak.17072. Canlı105 ses ve müzik
+ayarları değişmedi; AudioDirector'a bağlanmadı. Donanım dinleme kabulü açık.
+
+client/src/battle/recoil-cannon-presentation.js aday olay bağdaştırıcısı:
+kendi aşınması ayrı, tek atış/isabet ayrı; dedupe/eski/gizli/bitmiş olay
+koruması. Yalnız docs/planning/prototypes/recoil-cannon/index.html yükler.
+tools/recoil_cannon_demo.py dört senaryo için40 gerçek engine frame üretir
+(Zırh/Faz/EMP/düşük CAN+kalkan). Ses açık düğmeyle çalar; kaydedilmiş oyun
+tercihini değiştirmez. Bu, gerçek savaş renderer/AudioDirector bağlantısının
+yerine geçmez. Canlı HTML/asset registry adayı import etmez. Web manifestinde
+aday dosyaları yok, build_id yine35d90ac33d14e255.
+
+20 gerçek motor/AI tanı maçı iki seviye, beş karşı deste ve ters taraflarla
+tamamlandı; aday10 galibiyet, süre122.7–432.6sn/medyan329.85. Tek seed ve
+sabit AI; insan kazanma oranı/son denge kabulü değildir. Kalıcı veri
+docs/planning/recoil-cannon-prototype-balance-v1.json. Aracı yeniden çalıştır:
+python tools/probe_recoil_cannon.py --seeds 1. Üretim kaydı değişmez.
+
+Odaklı yeni+ana oyun+V7 motor72 PASS; istemci796 PASS; build15 PASS; plan11
+PASS; import539/0. E2E Chrome3+Android3+Safari3=9 PASS. Son loglar qa_reports/
+card01-*.log.320/393 görüntüleri incelendi. İlk tarayıcı koşularında varsayılan
+WebKit yolu, file URI medya ve sandbox loopback hatası vardı; son kabul
+kayıtlı PLAYWRIGHT_BROWSERS_PATH=C:\Users\S-A\AppData\Local\ms-playwright ve
+require_escalated yerel HTTP fixture'ıyla geçti. E2E kendi geçici loopback
+sunucusunu kapatır; dış API/hesap yok. GRIDSHARD_E2E_EXTERNAL_SERVER=1 ile
+pnpm exec playwright test e2e/recoil-cannon.spec.js. Fiziksel cihaz/uzak CI yok.
+Tüm game dizini koşusu sonuç vermeden kesildi; tam sunucu suite'i geçti deme.
+
+Ayrıntı docs/planning/recoil-cannon-prototype-acceptance.md. Sıradaki CARD-01
+teslimleri: gerçek8 yön atlası+ankraj, savaş renderer/VFX/ses ve TR/EN bağlantısı,
+onarım/çekirdek/yetenek/eşit parça bütçesiyle geniş denge, Arena3/600 zirve
+ücretsiz kalıcı seviye1 edinim/ödül havuzu, restart+fiziksel cihaz kabulü.
+Bunlar tamamlanmadan planned kaydı/24 katalog değişmez, S2 otomatik açılmaz.
+Atlas beklerken bağımsız entegrasyon/denge işleri veya UI-04 sürdürülebilir.
+
+Checklist/backlog/2.5 brief yeniden üretildi, üç --check PASS.2.5:25 maddede
+14 branch_ready/3 in_progress/8 todo =11 açık. Tüm78:8 done/22 branch_ready/
+5 in_progress/36 todo/7 later. Tarih hedefleri aynı; S1 kapanış+ödül kabulü
+22 Aralık03.00 TR öncesi2.5 geçiş yok; S2 koşullu28 Aralık ayrıca onaylanır.
+
+## Önceki SHOP-03 checkpoint'i
+
 # 2.5.0 / SHOP-03 — kredili pilot hazır; toplu commit kaydı, 17 Kasım 2026
 
 Kullanıcı yeni kozmetik zeminlerin kupa tarafında boşta kaldığını belirtti;

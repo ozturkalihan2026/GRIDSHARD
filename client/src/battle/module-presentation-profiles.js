@@ -27,6 +27,8 @@
     ["cleanser","heal","#57ef9a",null,370,0.28],
     ["speed_relay","chevrons","#a4f55b",null,320,0.24],
   ];
+  const recoilEnabled=root.GRIDSHARD_CANON_MODULES?.some(m=>m.id==='recoil_cannon');
+  if(recoilEnabled)rows.push(['recoil_cannon','slug','#e7b763',360,160,.44]);
   // Different roles share a sound family without equal foreground loudness.
   const soundGains=Object.freeze({laser:.38, pulse_cannon:.60, missile_launcher:.60,
     railgun:.58, drone_bay:.52, arc_cannon:.58, plasma_mortar:.62,
@@ -36,7 +38,8 @@
     repair:.30, amplifier:.28, emp:.35, virus:.30, cleanser:.30, speed_relay:.28});
   const profiles=Object.freeze(Object.fromEntries(rows.map(([id,shape,color,travel,hz,seconds])=>[id,Object.freeze({
     id,shape,color,travel,hz,seconds,cue:"module_"+id,
-    asset:"./assets/audio/modules/"+id+".wav",gain:soundGains[id],
+    asset:id==='recoil_cannon'?"./assets/audio/candidates-v1/recoil_cannon-shot.wav":"./assets/audio/modules/"+id+".wav",gain:id==='recoil_cannon'?.58:soundGains[id],
+    ...(id==='recoil_cannon'?{impactCue:'recoil_cannon_hit'}:{}),
     audioFamily:travel!==null?"weapon":["shield","armor","barrier","reflector","guardian_dome","phase_armor","buffer_shield","last_bastion"].includes(id)?"protection":"utility"
   })])));
   root.GridshardModulePresentation=profiles;

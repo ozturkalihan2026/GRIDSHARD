@@ -133,6 +133,22 @@
       "m4a_bytes": 476979,
       "m4a_sha256": "f869b092a3f1f0e3d0f2fa5da6b24d0e3afa7f0dd7b00bd74616eb5c9515a83e"
     },
+    "candidates-v1/recoil_cannon-hit": {
+      "sha256": "f8fe3b0851a636584cce222d04de77695645c30efccfcc037d05222593bc3db1",
+      "wav_bytes": 8424,
+      "ogg_bytes": 4498,
+      "ogg_sha256": "a4e59d8391294f22ebe666a14619acb150fe4047e9a96186f7b8d9708b3ff5be",
+      "m4a_bytes": 2326,
+      "m4a_sha256": "dba46bec563802d8f5418c12c7a98f22ad83c692b61fe2dbe61ee3f0cb3fb08d"
+    },
+    "candidates-v1/recoil_cannon-shot": {
+      "sha256": "cc7930d586983404c48a66a44846e8ac8bacb5be357434e16630ca02806016c5",
+      "wav_bytes": 19448,
+      "ogg_bytes": 5537,
+      "ogg_sha256": "f9172f0abd1aa2a4603919950be26be45b927848ee71f568bc07c91e86294a34",
+      "m4a_bytes": 4065,
+      "m4a_sha256": "a92138e5c30f8f0c4d52c10ceeec75bab1f8224f4dcda6083a69435df3c7b63e"
+    },
     "cooling_air": {
       "sha256": "823d49e85a5d3f3100ede2742a2cf58f4bb582fb5f3045d1296eb288fc693782",
       "wav_bytes": 20330,

@@ -3,6 +3,8 @@
 
   // New screen copy belongs here; the legacy dictionary remains in i18n.js.
   const translations = Object.freeze({
+    "Geri Tepme Topu":"Recoil Cannon",
+    "Geri Tepme":"Recoil",
     "Efekt Sesi":"Effects Volume",
     "Menü Müziği":"Menu Music",
     "Savaş Müziği":"Battle Music",

@@ -1,5 +1,6 @@
 const {test,expect}=require('@playwright/test');
 const {waitForParticipantReady}=require('./ui-helpers');
+const currentRoster=require('../server/data/module_roster_v2.json').modules;
 
 test('painted platforms keep live 5x3 sockets, real power buses and touch geometry',async({page},info)=>{
   test.setTimeout(150000);
@@ -213,8 +214,8 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
     for(const axis of[0,1])expect(Math.max(...layout.sockets.map(s=>s.renderedSize[axis]))-Math.min(...layout.sockets.map(s=>s.renderedSize[axis]))).toBeLessThan(.2);
     expect(layout.sockets.every(s=>s.registrationError<=1)).toBe(true);
     expect(layout.sockets.every(s=>!s.sprite||(s.sprite.square&&s.sprite.centered
-      &&s.sprite.horizontalSeatError<1&&s.sprite.shadowTouchesFoot&&s.sprite.hostBottom===(s.sprite.core?8:13)
-      &&s.sprite.footToMeters>=.5&&s.sprite.footToMeters<2))).toBe(true);
+      &&s.sprite.horizontalSeatError<1&&s.sprite.shadowTouchesFoot&&s.sprite.hostBottom===8
+      &&s.sprite.footToMeters>=.5&&s.sprite.footToMeters<2)),JSON.stringify({width,height,sprites:layout.sockets.filter(s=>s.sprite).map(s=>s.sprite)})).toBe(true);
     expect(layout.coreHealth).toHaveLength(2);
     expect(layout.coreHealth.every(bar=>bar.visible&&bar.realHP)).toBe(true);
     expect(layout.boards.every(b=>b.cableZ.length===2&&b.cableZ[0]<b.artZ
@@ -316,8 +317,9 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
     }
     return results;
   });
-  await info.attach('all-36-modules-all-30-sockets',{body:JSON.stringify(matrix,null,2),contentType:'application/json'});
-  expect(matrix).toHaveLength(1080);
+  await info.attach('all-current-modules-all-30-sockets',{body:JSON.stringify(matrix,null,2),contentType:'application/json'});
+  expect(matrix).toHaveLength(30*currentRoster.length);
+  expect([...new Set(matrix.map(f=>f.id))].sort()).toEqual(currentRoster.map(m=>m.id).sort());
   for(const entry of matrix){
     expect(entry.ratio,JSON.stringify(entry)).toBeCloseTo(.85,3);
     expect(entry.bars,JSON.stringify(entry)).toBe(true);
@@ -407,7 +409,7 @@ test('painted platforms keep live 5x3 sockets, real power buses and touch geomet
     return {bars:result,frames};
   });
   await info.attach('crowded-board-meters',{body:JSON.stringify(crowded,null,2),contentType:'application/json'});
-  expect(crowded.bars).toHaveLength(58);
+  expect(crowded.bars).toHaveLength(30); // Current-only: one HP meter per occupied socket.
   expect(crowded.bars.flatMap(bar=>bar.samples).some(sample=>sample.foreign>0)).toBe(true);
   for(const bar of crowded.bars){expect(bar.inside,JSON.stringify(bar)).toBe(true);expect(bar.properOrder,JSON.stringify(bar)).toBe(true);}
   expect(crowded.frames).toHaveLength(90);

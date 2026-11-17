@@ -5,6 +5,7 @@
   // First ten devices share continuous aim geometry and upright view atlases.
   // Events, never local guesses, supply their targets. The board owns camera.
   const MOVING = new Set(["laser", "pulse_cannon", "missile_launcher", "repair",  "emp", "shield",  "amplifier", "armor","barrier","arc_cannon","drone_bay","railgun","reflector","virus","plasma_mortar","guardian_dome","quantum_repeater","phase_armor",]);
+  MOVING.add('recoil_cannon');
   const keyFor = (player, instance) => JSON.stringify([player, instance]);
   const alive = module => module && module.status === "active" && Number(module.hp) > 0
     && module.x != null && module.y != null;
@@ -147,7 +148,7 @@
             player = data.source_player_id || data.player_id; sourceId = data.source_module_id;
             // Contributions for active attackers/support repeat their primary
             // event. Passive devices may face their real contribution receiver.
-            if (["laser","pulse_cannon","missile_launcher","repair","emp","arc_cannon","drone_bay","railgun","reflector","virus","plasma_mortar","quantum_repeater",].includes(records.get(keyFor(player, sourceId))?.definition)) continue;
+            if (["laser","pulse_cannon","missile_launcher","repair","emp","arc_cannon","drone_bay","railgun","reflector","virus","plasma_mortar","quantum_repeater","recoil_cannon"].includes(records.get(keyFor(player, sourceId))?.definition)) continue;
             targetPlayer=data.target_player_id || player;
             targetId=data.target_module_id;
             break;

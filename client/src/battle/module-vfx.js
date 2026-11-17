@@ -155,7 +155,7 @@
         if(!defended)this.strike(targetId,travel);
         return travel;
       }
-      if(!["laser","pulse_cannon","missile_launcher"].includes(definition)){
+      if(!["laser","pulse_cannon","missile_launcher","recoil_cannon"].includes(definition)){
         this.signature(definition,sourceId,targetId,true,from,destination);
         return travel;
       }
@@ -169,7 +169,10 @@
       node.style.left=`${from.x}px`;node.style.top=`${from.y}px`;node.style.width=`${distance}px`;
       node.style.transform=`rotate(${Math.atan2(dy,dx)}rad)`;node.style.setProperty("--projectile-distance",`${distance}px`);node.style.setProperty("--travel-ms",`${travel}ms`);
       const projectile=this.svg("svg",{viewBox:"0 0 30 14",width:30,height:14,"aria-hidden":"true"},node);projectile.classList.add("vfx-flying-projectile");
-      if(definition==="missile_launcher"){
+      if(definition==='recoil_cannon'){
+        this.svg('path',{d:'M2 4H17L27 7 17 10H2Z',fill:'#d5e0e7',stroke:'#324958','stroke-width':1.5},projectile);
+        this.svg('path',{d:'M3 4V10M8 4V10',stroke:'#c99549','stroke-width':2},projectile);
+      }else if(definition==="missile_launcher"){
         this.svg("path",{d:"M0 7 8 3 8 11Z",fill:"#ffc83b"},projectile);
         this.svg("path",{d:"M8 4 19 4 28 7 19 10 8 10Z",fill:"#e4f8ff",stroke:"#17314a","stroke-width":1.5},projectile);
         this.svg("path",{d:"M19 4 28 7 19 10Z",fill:"#ff354b"},projectile);

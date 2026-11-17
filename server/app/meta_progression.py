@@ -841,6 +841,8 @@ class MetaProgressionService:
         selected_talent_count = len(profile.module_talents.get(module_id, {}))
         return {
             "definition_id": module_id,
+            **({'acquisition': dict(MODULES[module_id]['acquisition'])}
+               if 'acquisition' in MODULES[module_id] else {}),
             "name_tr": definition.name_tr,
             "category": MODULES[module_id]["category"],
             "rarity": rarity,

@@ -330,7 +330,11 @@ def tick(e):
             others=[v for v in selectable_targets(opponent) if v is not target and v.definition.id!='core']
             for other,ratio in zip(others,params(gun).get('secondary_ratios',())):
                 intents.append((side,gun,enemy,other,raw*ratio,True,True))
-    for intent in intents:hit(e,*intent)
+    for intent in intents:
+        if intent[1].definition.id=='recoil_cannon':
+            from .recoil_cannon import fire
+            if not fire(e,intent[0],intent[1],intent[3]):continue
+        hit(e,*intent)
 
 
 def charge_cores(e):

@@ -60,7 +60,7 @@ FORMATS = ("ogg", "m4a")
 
 
 def source_wavs():
-    return sorted([*AUDIO.glob('*.wav'), *(AUDIO / 'modules').glob('*.wav')])
+    return sorted([*AUDIO.glob('*.wav'), *(AUDIO / 'modules').glob('*.wav'), *(AUDIO / 'candidates-v1').glob('*.wav')])
 
 
 def sha256(path: Path) -> str:

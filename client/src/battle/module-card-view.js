@@ -6,6 +6,7 @@
   // adlar için kart üstünde kısa ad yazılır; tam ad başlık ve erişilebilirlik
   // etiketinde kalır.
   const SHORT_NAMES = Object.freeze({
+    "Geri Tepme Topu":"Geri Tepme",
     "Onarım Modülü":"Onarım",
     "Hedefleme Bilgisayarı":"Hedefleme",
     "Aşırı Hızlandırıcı":"Hızlandırıcı",

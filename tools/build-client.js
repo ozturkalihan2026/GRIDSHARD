@@ -77,6 +77,8 @@ function compressedAudioReplacements(source, scripts, environment) {
   }
   const context = vm.createContext({});
   vm.runInContext(readText(sourceFile(source, "./src/gridshard-audio-formats.js")), context);
+  if(scripts.includes('./src/canon-data.js'))vm.runInContext(readText(sourceFile(source,'./src/canon-data.js')),context,{timeout:1000});
+  const recoilEnabled=Boolean(context.GRIDSHARD_CANON_MODULES?.some(m=>m.id==='recoil_cannon'));
   const runtime = context.GRIDSHARD_AUDIO_ENCODINGS;
   if (runtime?.version !== manifest.version
       || JSON.stringify(Object.keys(runtime.formats || {}).sort()) !== JSON.stringify([...formats].sort())) {
@@ -85,7 +87,8 @@ function compressedAudioReplacements(source, scripts, environment) {
   const listed = formats.map((extension) => new Set(runtime.formats[extension]));
   for (const name of new Set(listed.flatMap((names) => [...names]))) {
     const entry = manifest.sources[name];
-    if (!/^(?:modules\/)?[a-z0-9_]+$/.test(name) || !entry) throw new Error(`Manifestte olmayan ses türevi: ${name}`);
+    if (!/^(?:[a-z0-9_-]+\/)*[a-z0-9_-]+$/.test(name) || !entry) throw new Error(`Manifestte olmayan ses türevi: ${name}`);
+    if(name.startsWith('candidates-v1/recoil_cannon-')&&!recoilEnabled)continue;
     const wav = path.join(audioRoot, `${name}.wav`);
     if (!fs.existsSync(wav)) throw new Error(`Türevi listelenen sesin kanonik WAV dosyası yok: ${name}.wav`);
     if (digest(fs.readFileSync(wav)) !== entry.sha256) {
@@ -109,6 +112,9 @@ function compressedAudioReplacements(source, scripts, environment) {
 
 function runtimeAssets(source, html, scripts, omittedWav) {
   const assets = new Set();
+  const moduleContext=vm.createContext({});
+  if(scripts.includes('./src/canon-data.js'))vm.runInContext(readText(sourceFile(source,'./src/canon-data.js')),moduleContext,{timeout:1000});
+  const recoilEnabled=Boolean(moduleContext.GRIDSHARD_CANON_MODULES?.some(m=>m.id==='recoil_cannon'));
   const add = (raw) => {
     const relative = String(raw).split(/[?#]/, 1)[0].replace(/^\.\//, "");
     if (!/^assets\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+$/.test(relative)
@@ -119,6 +125,9 @@ function runtimeAssets(source, html, scripts, omittedWav) {
         || /(?:^|[\/_-])(?:secret|private|test|debug|old|backup|keystore|credential|token|key)(?:[\/_-]|\.)/i.test(relative)) {
       throw new Error(`Paket için yasaklı varlık: ${raw}`);
     }
+    // Validate even inactive paths above. Only admitted compiled content is
+    // copied; a declaration cannot smuggle assets into the 24-card package.
+    if(!recoilEnabled && /^assets\/(?:ui\/module-candidates-v1\/recoil_cannon|audio\/(?:mobile\/)?candidates-v1\/recoil_cannon)/.test(relative))return;
     let component = source;
     for (const part of relative.split("/")) {
       component = path.join(component, part);
@@ -150,8 +159,10 @@ function runtimeAssets(source, html, scripts, omittedWav) {
   // Painted yaw frames are selected from generated data, so their paths do not
   // appear as HTML img tags. Include the actual registry in web/mobile bundles.
   if(scripts.includes("./src/module-layer-data.js")){
-    const context=vm.createContext({});
+    const context=moduleContext;
     vm.runInContext(readText(sourceFile(source,"./src/module-layer-data.js")),context,{timeout:1000});
+    if(scripts.includes('./src/battle/recoil-cannon-art-data.js'))
+      vm.runInContext(readText(sourceFile(source,'./src/battle/recoil-cannon-art-data.js')),context,{timeout:1000});
     const pending=[context.GridshardModuleLayerData];
     while(pending.length){const item=pending.pop();if(!item||typeof item!=="object")continue;
       for(const [key,value]of Object.entries(item)){
@@ -163,10 +174,11 @@ function runtimeAssets(source, html, scripts, omittedWav) {
   const webManifest = JSON.parse(readText(sourceFile(source, "./manifest.webmanifest")));
   for (const icon of webManifest.icons || []) add(icon.src);
   if (scripts.includes("./src/gridshard-audio.js")) {
-    const audioScript = readText(sourceFile(source, "./src/gridshard-audio.js"));
+    const audioScript = readText(sourceFile(source, "./src/gridshard-audio.js"))+
+      (scripts.includes('./src/battle/module-presentation-profiles.js')?readText(sourceFile(source,'./src/battle/module-presentation-profiles.js')):'');
     const audioNames = new Set();
-    for (const match of html.matchAll(/\.\/assets\/audio\/((?:modules\/)?[a-z0-9_]+)\.wav/g)) audioNames.add(match[1]);
-    for (const match of audioScript.matchAll(/["']\.\/assets\/audio\/((?:modules\/)?[a-z0-9_]+)\.wav["']/g)) {
+    for (const match of html.matchAll(/\.\/assets\/audio\/((?:[a-z0-9_-]+\/)*[a-z0-9_-]+)\.wav/g)) audioNames.add(match[1]);
+    for (const match of audioScript.matchAll(/["']\.\/assets\/audio\/((?:[a-z0-9_-]+\/)*[a-z0-9_-]+)\.wav["']/g)) {
       audioNames.add(match[1]);
       add(`./assets/audio/${match[1]}.wav`);
     }

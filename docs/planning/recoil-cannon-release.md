@@ -6,6 +6,17 @@ Rölesi'nin yerini **Geri Tepme Topu / Recoil Cannon (`recoil_cannon`)** alır.
 Aktif 24 modüle henüz eklenmedi; planned kaydı hazır oyun kodu değildir.
 S2 başlangıcı ayrıca onaylanacak; 28 Aralık yalnız koşullu hedeftir.
 
+17 Kasım: motor, geçici tanı kataloğu, gerçek AI maç koşusu, sekiz yönlü
+sanat atlası, özgün iki SFX ve gerçek motor verili önizleme hazır.
+Ücretsiz Arena3/600 zirve ve sezon sonrası kalıcı koleksiyon altyapısı gerçek
+kod yolunda test edildi. Gerçek savaş renderer/ankraj/mermi/ses bağlantısı
+derlenmiş kadro kapısıyla hazır; üç tarayıcıda normal/EMP/Faz ve TR/EN sınandı.
+CARD-01 **in_progress**; aktif katalog, geniş denge ve fiziksel cihaz/yayın
+kabulü tamamlanmadı.
+[Prototip kabulü ve kalan kapılar](recoil-cannon-prototype-acceptance.md).
+[Ücretsiz edinim kabulü](recoil-cannon-free-acquisition-acceptance.md).
+[Savaş sunum kabulü](recoil-cannon-battle-integration.md).
+
 ## Oyuncuya davranış ve ayrışma
 
 Kendi hedefini mevcut saldırı önceliğiyle seçip güçlü tek atış yapar. Her
@@ -24,28 +35,28 @@ altılı destelerle ölçülmeden yayımlanmaz; HP/hasar/recoil aynı seviye
 
 ## Motor ve muhasebe sözleşmesi
 
-- [ ] Rastgele uygun boş hücre, mevcut ana hedef türü/eşitlik sırası korunur;
+- [x] Prototipte rastgele uygun boş hücre, mevcut ana hedef türü/eşitlik sırası korunur;
   manuel nişan, komşuluk, yeni sınıf kotası veya zorunlu yerleşim eklenmez.
-- [ ] Tek doğrudan mermi mevcut hasar yolunu kullanır: Faz, Zırh, blok,
+- [x] Prototip tek doğrudan atışı mevcut hasar yolunu kullanır: Faz, Zırh, blok,
   Kubbe ve CAN kalkanları sırayla işler; zırh/kalkan delme veya saf hasar yok.
-- [ ] Geri tepme yalnız sunucuda gerçekten ateşlenen atış için bir kez
+- [x] Geri tepme yalnız sunucuda gerçekten ateşlenen atış için bir kez
   uygulanır. EMP ile ateşlenmeyen çevrim, boşa çıkan intent veya tekrarlanan
   snapshot/event ikinci bedel doğurmaz. Uçuşa çıkmış geçerli atış Faz ile
   engellense de geri tepme bedeli iade edilmez.
-- [ ] Geri tepme, kaynağın kendi CAN'ından doğrudan düşer; kendi kalkanı,
+- [x] Geri tepme, kaynağın kendi CAN'ından doğrudan düşer; kendi kalkanı,
   zırhı veya Yansıtıcıyla atlatılmaz. Kaynak en az 1 CAN'da kalır; kendi
   kendini yok ederek ölüm/onarım zinciri üretmez. Rakip normal yoldan öldürebilir.
-- [ ] Kendi CAN kaybı V8'in saldırı/savunma Akım gelirine, rakibin hasar/imha
+- [x] Kendi CAN kaybı V8'in saldırı/savunma Akım gelirine, rakibin hasar/imha
   emrine, yansıma veya yeni saldırı zincirine yazılmaz. Rakibe verilen gerçek
   CAN kaybı mevcut kurala göre yalnız bir kez sayılır.
 - [ ] Aynı adımda önce ölen kaynak yeni atış oluşturmaz. Ateşlenen mermi ve
   sonradan yok olan hedef mevcut mermi sözleşmesine uyar; bedelsiz hedef
   atlama, ek mermi veya ikinci ödül yoktur. Restart/snapshot tekrarları aynı kalır.
-- [ ] Yetenek ağacı dört mevcut eşik/iki dal ve mevcut maliyet sözleşmesini
+- [x] Prototip yetenek ağacı dört mevcut eşik/iki dal ve mevcut maliyet sözleşmesini
   kullanır; iş gücü/CAN/çevrim temel dalları korunur. İmza adayı hasarı
   artırma ile geri tepmeyi azaltma arasında seçimdir; alt sınır/tavan ve
   birleşik çarpanlar denge raporunda açıkça kaydedilir.
-- [ ] Yeni Isı/Enerji kaynağı veya sayaç yoktur; yalnız mevcut Akım ve CAN.
+- [x] Yeni Isı/Enerji kaynağı veya sayaç yoktur; yalnız mevcut Akım ve CAN.
 
 ## Karşı oyun, sanat ve ses
 

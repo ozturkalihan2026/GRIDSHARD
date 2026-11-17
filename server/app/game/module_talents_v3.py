@@ -11,6 +11,9 @@ from pathlib import Path
 V7=json.loads((Path(__file__).resolve().parents[2]/'data/module_talents_v7.json').read_text(encoding='utf8'))
 
 CHOICES=('power','resilience')
+# A future admitted Recoil Cannon owns its nonlinear recoil tradeoff in one
+# source. Listing the adapter does not register that candidate in the roster.
+EXTERNAL_TALENT_MODULE_IDS=frozenset({'recoil_cannon'})
 
 
 def option(tr,en,description,en_description,**changes):
@@ -42,6 +45,9 @@ def primary_copy(module_id,percent):
 
 
 def tree(module_id):
+    if module_id in EXTERNAL_TALENT_MODULE_IDS and module_id in MODULE_SPECS:
+        from .recoil_cannon import tree as recoil_tree
+        return recoil_tree()
     spec=MODULE_SPECS[module_id];rarity=spec['rarity']
     hp=lambda n:option(f'CAN +%{n}',f'HP +{n}%',f'Azami CAN’ı %{n} artırır.',f'Increases maximum HP by {n}%.')
     tuning=option('Dolum −%4','Recharge −4%','Atış veya eylem çevrimini %4 kısaltır.','Reduces firing or action interval by 4%.') if spec['cooldown_ms'] else primary_copy(module_id,4)
@@ -54,6 +60,11 @@ def tree(module_id):
 
 def effective_stats(module_id,stats,selections):
     if module_id not in MODULE_SPECS:return stats
+    if module_id in EXTERNAL_TALENT_MODULE_IDS:
+        from .recoil_cannon import stats as recoil_stats
+        result={**stats,**recoil_stats(int(stats['level'])-1,selections)}
+        result['parameters']={'recoil_hp':result.pop('recoil_hp')}
+        return result
     result=dict(stats);parameters=deepcopy(MODULE_SPECS[module_id]['parameters']);picks=dict(selections or {})
     def power(percent):
         factor=1+percent/100
@@ -98,5 +109,5 @@ def effective_stats(module_id,stats,selections):
     return result
 
 
-if set(SPECIALIZATIONS)!=set(MODULE_SPECS):
+if set(SPECIALIZATIONS)!=set(MODULE_SPECS)-EXTERNAL_TALENT_MODULE_IDS:
     raise ValueError('Her aktif modülün iki uzmanlığı tanımlanmalı.')

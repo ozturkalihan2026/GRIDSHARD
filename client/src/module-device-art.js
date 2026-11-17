@@ -11,6 +11,7 @@
   // Approved paintings as layers: fixed base + painted heading head (8A v1).
   // Registration is measured from the art by tools/prepare-module-layers.cjs.
   const LAYERS = global.GridshardModuleLayerData || (typeof module !== "undefined" && module.exports ? require("./module-layer-data.js") : null);
+  if (LAYERS?.recoil_cannon) IDS.add('recoil_cannon');
   // The painted stage is a little larger than the cell and rises above it,
   // like an upright object standing on its socket. Square, bottom anchored.
   // Both stand on one socket. The reactor is the visual anchor, rather than
@@ -112,6 +113,7 @@
   }
   const V3_IDS = new Set(["burst_cannon","shield_breaker","buffer_shield","last_bastion","cleanser","speed_relay"]);
   const url = name => (V3_IDS.has(name) ? "./assets/ui/modules-physical-v3/" : ATLAS_IDS.has(name) ? ROOT : "./assets/ui/modules-physical-v2/") + name + ".webp";
+  const iconUrl = id => LAYERS?.[id]?.icon ? './'+LAYERS[id].icon : url(id);
   function image(doc, className, src) {
     const img = doc.createElement("img");
     img.className = className; img.alt = ""; img.draggable = false;
@@ -120,7 +122,7 @@
   }
   function markup(model) {
     const id = idFor(model);
-    return id ? `<img class="module-emblem module-device-icon" src="${url(id)}" alt="" aria-hidden="true" draggable="false" decoding="async">` : null;
+    return id ? `<img class="module-emblem module-device-icon" src="${iconUrl(id)}" alt="" aria-hidden="true" draggable="false" decoding="async">` : null;
   }
   function mount(host, model, enemy = false) {
     const id = idFor(model);
@@ -156,7 +158,7 @@
     rig.appendChild(shadow);
     const billboard=doc.createElement("span"); billboard.className="module-device-billboard";
     const window=doc.createElement("span"); window.className="module-view-window";
-    let stage=null,head=null;
+    let stage=null,head=null,foot=null;
     if(layer){
       stage=doc.createElement("span"); stage.className="module-layer-stage";
       boxStyle(stage,{left:frame.left,top:frame.top,size:frame.size});
@@ -164,6 +166,11 @@
         if (layer.base) { const base=image(doc,"module-layer-base","./"+layer.base.src); boxStyle(base,layer.base); stage.appendChild(base); }
         head=doc.createElement("img"); head.className="module-layer-head"; head.alt=""; head.draggable=false;
         head.setAttribute("aria-hidden","true"); head.decoding="async"; stage.appendChild(head); // src set by the first pose
+        if(layer.recoilSplit){
+          head.classList.add('module-recoil-sled');
+          foot=doc.createElement('img');foot.className='module-recoil-pedestal';foot.alt='';foot.draggable=false;
+          foot.setAttribute('aria-hidden','true');foot.decoding='async';stage.appendChild(foot);
+        }
       }else{
         const art=image(doc,"module-layer-art","./"+layer.art.src); boxStyle(art,layer.art); stage.appendChild(art);
         // Working core: coloured stone pulse over the painting (CSS, --core-accent from the card).
@@ -183,7 +190,7 @@
     host.replaceChildren(rig);
     host.classList.add("has-module-device");
     views.set(host, { id, rig, window, layer, headings:layer?.kind === "layered" ? headingsFor(layer) : null,
-      stage:frame, head, headKey:"", angle:enemy ? Math.PI/4 : -Math.PI/4, pose:"", frame:-1 });
+      stage:frame, head, foot, headKey:"", angle:enemy ? Math.PI/4 : -Math.PI/4, pose:"", frame:-1 });
     pose(host, { heading, phase:"rest", disabled:false });
     return true;
   }
@@ -242,6 +249,7 @@
       const part=view.layer.heads[key];
       boxStyle(view.head,part);
       view.head.src="./"+part.src;
+      if(view.foot){boxStyle(view.foot,part);view.foot.src=view.head.src;}
       view.headKey=key; view.rig.dataset.heading=heading; view.rig.dataset.headPose=key;
       const yaw=GROUND_YAW[heading];
       view.rig.style?.setProperty?.("--layer-recoil-x",`${Math.round(-Math.cos(yaw)*40)/10}%`);

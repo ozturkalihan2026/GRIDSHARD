@@ -1,0 +1,25 @@
+{
+  "candidate": true,
+  "original_synthesis": true,
+  "runtime_registered": false,
+  "cues": [
+    {
+      "file": "recoil_cannon-shot.wav",
+      "rate": 22050,
+      "channels": 1,
+      "seconds": 0.44,
+      "rms": 0.10452,
+      "peak": 0.23475,
+      "sha256": "cc7930d586983404c48a66a44846e8ac8bacb5be357434e16630ca02806016c5"
+    },
+    {
+      "file": "recoil_cannon-hit.wav",
+      "rate": 22050,
+      "channels": 1,
+      "seconds": 0.19,
+      "rms": 0.07964,
+      "peak": 0.17072,
+      "sha256": "f8fe3b0851a636584cce222d04de77695645c30efccfcc037d05222593bc3db1"
+    }
+  ]
+}

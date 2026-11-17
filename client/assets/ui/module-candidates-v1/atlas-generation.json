@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-17",
+  "tool": "image_gen.imagegen",
+  "mode": "built_in_edit",
+  "transparent_background": true,
+  "original_reference": "recoil_cannon.png",
+  "runtime_registered": false,
+  "atlas": {
+    "generated_png": "exec-b414959e-dfdd-4028-bc32-472d29e34137.png",
+    "status": "success",
+    "prompt": "Use case: game sprite-sheet editing. The attached image is an approved fictional game turret, the Recoil Cannon module from the stylized mobile strategy game GRIDSHARD. Create a transparent directional sprite atlas of this exact same painted game object. Preserve its red enamel armor, cool silver steel bevels, dark navy chassis, amber piston housings, ONE wide short barrel on a recoil slide, two thick pistons, and compact octagonal turntable base. No redesign, extra barrels, missing pistons, changes of proportions, or additional equipment. Render eight genuinely different ground-plane yaw views, rotating the model about its upright vertical axis while the elevated orthographic camera remains fixed. Never rotate, tip, roll or mirror the whole flat image. All bases remain upright and rest on the same level ground plane; upper-left world lighting stays consistent. Layout: exact equal-cell 3 by 3 square grid. Row 1: barrel pointing screen RIGHT (E), UPPER RIGHT (NE), UP/AWAY (N). Row 2: UPPER LEFT (NW), LEFT (W), LOWER LEFT/TOWARD (SW). Row 3: DOWN/TOWARD VIEWER (S), LOWER RIGHT/TOWARD (SE), entirely empty transparent cell. In away views show the rear of the assembly and the barrel receding away; in toward views show the broad dark circular muzzle. Every cell contains the full isolated object at identical scale, base center and camera elevation, with generous transparent margins and no overlap across cell boundaries. Match the original chunky beveled hand-painted casual mobile game style and thick readable silhouettes, crisp clean alpha edges. Transparent background for the entire sheet and between sprites, no ground shadows, no opaque backdrops, no labels, no letters, no captions, no UI, no grid lines, no firing or explosion effects. Prefer a 1536 by 1536 square sheet with nine equal 512 by 512 cells."
+  },
+  "cleanup": {
+    "generated_png": "exec-a07b1860-4f7d-4b2b-88db-5ed5f39ec291.png",
+    "status": "success",
+    "prompt": "Use case: precise image cleanup. Edit target: the attached transparent 3 by 3 sprite atlas for the fictional GRIDSHARD video game module. Keep the eight existing sprite views and their exact orientations, shapes, red/steel/navy/amber colors, scale, proportions, positions and grid layout unchanged. Change ONLY the unwanted detached red/pink/gray speckles and stray colored edge fragments around the eight objects: remove those artifacts to clean transparent alpha. Preserve all real metal, pistons, barrel, slide and bases, with crisp antialiased outer silhouettes. Do not redesign, rotate, mirror, relight, recolor, add or remove any of the eight turret sprites. Do not paint a background or cast shadow. Keep the ninth bottom-right cell entirely transparent, and keep the whole background and gaps transparent. The object artwork itself must remain intact; only clean isolated pixel noise around it.",
+    "reference": "recoil_cannon-atlas-source.png"
+  },
+  "delivered_master": "recoil_cannon-atlas-master.webp",
+  "directions_manifest": "recoil_cannon-directions.json",
+  "native_size": {
+    "width": 1254,
+    "height": 1254
+  },
+  "frame_size": 512,
+  "technical_prepare": "tools/prepare-recoil-cannon-atlas.cjs",
+  "notes": [
+    "Final alpha retained, including invisible alpha1 residue recorded in the direction manifest.",
+    "No screen-space rotation, mirroring or code-painted artwork.",
+    "Renderer/muzzle/audio integration is prepared behind the compiled-roster gate; physical device and release-art acceptance remain open."
+  ],
+  "original_reference_portable": "recoil_cannon-master.webp"
+}
